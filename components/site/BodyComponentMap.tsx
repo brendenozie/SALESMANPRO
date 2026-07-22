@@ -4,6 +4,7 @@ import { StoreForm } from '@/types/typings';
 import GhubaSite from '@/components/site/layouts/GhubaLayout/body/GhubaSite';
 import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
 import AutomotiveSite from './layouts/AutomotiveLayout/body/AutomotiveSite';
+import Automotive2Site from './layouts/Automotive2Layout/body/Automotive2Site';
 import BlogSite from './layouts/BlogLayout/body/BlogSite';
 import BookingsSite from './layouts/BookingsLayout/body/BookingsSite';
 import ConsultancyLayout from './layouts/ConsultancyLayout/body/ConsultancySite';
@@ -62,6 +63,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'GhubaSite': GhubaSite,
   'PublicSpeakingSite': PublicSpeakingSite,
   'AutomotiveSite': AutomotiveSite,
+  'Automotive2Site': Automotive2Site,
   'EcommerceSite': EcommerceSite,
   'EcommerceShoesSite': EcommerceShoesSite,
   'EcommerceBookSite': EcommerceBookSite,

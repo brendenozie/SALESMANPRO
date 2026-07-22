@@ -3,20 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from "@heroicons/react/24/solid";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  StarIcon,
+} from "@heroicons/react/24/solid";
+import {
+  ChatBubbleBottomCenterTextIcon,
+  CheckBadgeIcon,
+} from "@heroicons/react/24/outline";
 import { Testimonial } from "@/types/typings";
 
 const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
-
-// interface Testimonial {
-//   quote: string;
-//   author: string;
-//   role?: string;
-//   avatarUrl?: string;
-//   rating?: number;
-// }
 
 interface Props {
   testimonials: Testimonial[];
@@ -25,9 +25,9 @@ interface Props {
 // Animation variants for carousel transitions
 const itemVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
+    x: direction > 0 ? 250 : -250,
     opacity: 0,
-    scale: 0.8,
+    scale: 0.95,
   }),
   center: {
     x: 0,
@@ -36,14 +36,14 @@ const itemVariants = {
     transition: {
       type: "spring",
       stiffness: 120,
-      damping: 15,
-      opacity: { duration: 0.3 },
+      damping: 18,
+      opacity: { duration: 0.25 },
     },
   },
   exit: (direction: number) => ({
-    x: direction < 0 ? 300 : -300,
+    x: direction < 0 ? 250 : -250,
     opacity: 0,
-    scale: 0.8,
+    scale: 0.95,
     transition: {
       type: "spring",
       stiffness: 100,
@@ -53,28 +53,47 @@ const itemVariants = {
   }),
 };
 
+/* Background Mesh Pattern */
+const GridPattern = () => (
+  <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+    <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="testimonial-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M0 32L32 0H16L0 16M32 32V16L16 32" stroke="currentColor" strokeWidth="1" fill="none" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#testimonial-grid)" />
+    </svg>
+  </div>
+);
+
 export default function TestimonialsCarouselSection({ testimonials }: Props) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  if (!testimonials || testimonials.length === 0) {
-    return (
-      <section className="py-16 text-center">
-        <p className="text-lg text-gray-600 dark:text-gray-300">
-          No testimonials available at the moment. Be the first to share your experience!
-        </p>
-      </section>
-    );
-  }
-
   // Auto-rotate every 7 seconds
   useEffect(() => {
+    if (!testimonials || testimonials.length === 0) return;
     const timer = setInterval(() => {
       setDirection(1);
       setCurrent((prev) => (prev + 1) % testimonials.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [testimonials.length]);
+  }, [testimonials?.length]);
+
+  if (!testimonials || testimonials.length === 0) {
+    return (
+      <section className="py-20 bg-slate-900 dark:bg-[#080B10] text-center border-t border-slate-800">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold uppercase tracking-wider mb-4">
+          <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-amber-500" />
+          <span>Client Reviews</span>
+        </div>
+        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+          No commercial reviews available at the moment.
+        </p>
+      </section>
+    );
+  }
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
@@ -84,30 +103,52 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
     });
   };
 
+  const activeTestimonial = testimonials[current];
+
   return (
-    <section className="py-16 px-4 md:px-8 lg:px-16 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-950 relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-200 dark:bg-purple-800 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "-3s" }}></div>
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-200 dark:bg-blue-800 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob-reverse" style={{ animationDelay: "-5s" }}></div>
+    <section className="relative py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white border-t border-slate-800 overflow-hidden">
+      <GridPattern />
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      {/* Ambient Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white leading-tight mb-3">
-            Hear From Our Community! 🌟
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Discover why our users love us. Real stories from real people.
-          </p>
-        </motion.div>
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4"
+          >
+            <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
+            <span>Verified Fleet Operators</span>
+          </motion.div>
 
-        <div className="relative max-w-2xl mx-auto h-[350px] md:h-[300px] flex items-center justify-center">
+          <motion.h2
+            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            Commercial <span className="text-amber-500">Trust & Reviews</span>
+          </motion.h2>
+
+          <motion.p
+            className="text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            Read authentic feedback from logistics directors, yard managers, and fleet owners operating across our network.
+          </motion.p>
+        </div>
+
+        {/* Carousel Container */}
+        <div className="relative max-w-3xl mx-auto min-h-[380px] md:min-h-[320px] flex items-center justify-center">
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={current}
@@ -118,112 +159,118 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
               exit="exit"
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              onDragEnd={(e: any, { offset, velocity }:any) => {
-                const swipePower = Math.abs(offset.x) * velocity.x;
+              dragElastic={0.8}
+              onDragEnd={(e: React.MouseEvent<HTMLDivElement>, { offset, velocity }: { offset: { x: number }; velocity: number }) => {
+                const swipePower = Math.abs(offset.x) * velocity;
                 if (swipePower < -10000) {
                   paginate(1);
                 } else if (swipePower > 10000) {
                   paginate(-1);
                 }
               }}
-              className="absolute w-full px-4"
+              className="absolute w-full px-2 sm:px-4 cursor-grab active:cursor-grabbing"
             >
-              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-10 shadow-2xl border border-blue-100 dark:border-gray-700 transform hover:scale-[1.01] transition-transform duration-300 ease-out cursor-grab">
+              <div className="bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl backdrop-blur-md">
                 <div className="flex flex-col items-center text-center">
-                  {/* Avatar */}
-                  {testimonials[current].avatarUrl && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
-                      className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 dark:border-blue-400 shadow-md mb-6"
-                    >
-                      <Image
-                        src={testimonials[current].avatarUrl || 'placeholder.com'}
-                        alt={testimonials[current].authorName || 'author name'}
-                        width={96}
-                        height={96}
-                        loader={customLoader}
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </motion.div>
-                  )}
-
-                  {/* Quote */}
-                  <p className="text-xl md:text-2xl italic text-gray-800 dark:text-gray-100 mb-6 font-serif leading-relaxed">
-                    &ldquo;{testimonials[current].quote}&rdquo;
-                  </p>
-
-                  {/* Rating */}
-                  {testimonials[current].rating && (
-                    <div className="flex justify-center mb-4">
+                  
+                  {/* Rating Stars */}
+                  {activeTestimonial?.rating && (
+                    <div className="flex justify-center gap-1 mb-6">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <StarIcon
                           key={i}
-                          className={`w-6 h-6 ${
-                            i < (testimonials[current].rating ?? 0)
-                              ? "text-yellow-400"
-                              : "text-gray-300 dark:text-gray-600"
+                          className={`w-5 h-5 ${
+                            i < (activeTestimonial.rating ?? 0)
+                              ? "text-amber-400"
+                              : "text-slate-700"
                           }`}
                         />
                       ))}
                     </div>
                   )}
 
-                  {/* Author */}
-                  <p className="font-bold text-blue-700 dark:text-blue-400 text-lg">
-                    {testimonials[current].authorName}
-                  </p>
-                  {testimonials[current].authorTitle && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {testimonials[current].authorTitle}
-                    </p>
-                  )}
+                  {/* Quote Statement */}
+                  <blockquote className="text-base md:text-xl font-medium text-slate-200 mb-8 leading-relaxed max-w-2xl italic">
+                    &ldquo;{activeTestimonial?.quote}&rdquo;
+                  </blockquote>
+
+                  {/* Author Details & Avatar */}
+                  <div className="flex items-center gap-4 pt-6 border-t border-slate-700/60 w-full justify-center">
+                    {activeTestimonial?.avatarUrl && (
+                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500/40 shrink-0 bg-slate-900">
+                        <Image
+                          src={activeTestimonial.avatarUrl}
+                          alt={activeTestimonial.authorName || "Author Avatar"}
+                          width={48}
+                          height={48}
+                          loader={customLoader}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    )}
+
+                    <div className="text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-extrabold text-white text-sm uppercase tracking-wide">
+                          {activeTestimonial?.authorName}
+                        </span>
+                        <CheckBadgeIcon className="w-4 h-4 text-amber-500" title="Verified Operator" />
+                      </div>
+                      
+                      {activeTestimonial?.authorTitle && (
+                        <p className="text-xs text-amber-400/90 font-semibold uppercase tracking-wider mt-0.5">
+                          {activeTestimonial.authorTitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation */}
+          {/* Nav Buttons */}
           <motion.button
             onClick={() => paginate(-1)}
             aria-label="Previous testimonial"
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-3 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 z-20 opacity-80 hover:opacity-100 -ml-2 md:-ml-8"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="absolute left-0 sm:-left-6 top-1/2 -translate-y-1/2 p-3 rounded-2xl bg-slate-800/80 border border-slate-700/80 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-800 transition-all z-20 shadow-xl"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ChevronLeftIcon className="w-6 h-6 text-blue-600 dark:text-blue-300" />
+            <ChevronLeftIcon className="w-5 h-5" />
           </motion.button>
+
           <motion.button
             onClick={() => paginate(1)}
             aria-label="Next testimonial"
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-3 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 z-20 opacity-80 hover:opacity-100 -mr-2 md:-mr-8"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="absolute right-0 sm:-right-6 top-1/2 -translate-y-1/2 p-3 rounded-2xl bg-slate-800/80 border border-slate-700/80 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-800 transition-all z-20 shadow-xl"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ChevronRightIcon className="w-6 h-6 text-blue-600 dark:text-blue-300" />
+            <ChevronRightIcon className="w-5 h-5" />
           </motion.button>
         </div>
 
-        {/* Dots */}
-        <div className="flex justify-center mt-12 gap-3">
+        {/* Carousel Indicators / Pagination Dots */}
+        <div className="flex justify-center items-center mt-12 gap-2">
           {testimonials.map((_, idx) => (
-            <motion.button
+            <button
               key={idx}
               onClick={() => {
                 setDirection(idx > current ? 1 : -1);
                 setCurrent(idx);
               }}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                idx === current ? "bg-blue-600 w-8" : "bg-gray-300 dark:bg-gray-600"
+              className={`h-2 rounded-full transition-all duration-300 ${
+                idx === current
+                  ? "bg-amber-500 w-8"
+                  : "bg-slate-700 hover:bg-slate-600 w-2"
               }`}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              aria-label={`Go to testimonial ${idx + 1}`}
+              aria-label={`Go to testimonial slide ${idx + 1}`}
             />
           ))}
         </div>
+
       </div>
     </section>
   );

@@ -143,6 +143,9 @@ const RestaurantLayout = dynamic(
 const AutomotiveLayout = dynamic(
   () => import("@/components/site/layouts/AutomotiveLayout/AutomotiveLayout"),
 );
+const Automotive2Layout = dynamic(
+  () => import("@/components/site/layouts/Automotive2Layout/Automotive2Layout"),
+);
 const PublicSpeakingLayout = dynamic(
   () =>
     import("@/components/site/layouts/PublicSpeakingLayout/PublicSpeakingLayout"),
@@ -266,6 +269,7 @@ const categoryHeaderFooterLayoutMap: Record<
   // 'saas':SaaSLayout ,
   // 'saas & web apps':SaaSLayout ,
   automotive: AutomotiveLayout,
+  "automotive 2": Automotive2Layout,
   media: MediaLayout,
   "media & entertainment": MediaLayout,
   finance: FinanceLayout,
@@ -292,6 +296,7 @@ const categoryHeaderFooterLayoutMap: Record<
   "film studio": MediaLayout,
   "financial advisor": FinanceLayout,
   "car dealership": AutomotiveLayout,
+  "car dealership 2": Automotive2Layout,
   "travel agency": TravelLayout,
   "gym & fitness": FitnessLayout,
   "business directory": DirectoryLayout,

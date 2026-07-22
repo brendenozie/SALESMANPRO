@@ -6,11 +6,13 @@ import Image from "next/image";
 import {
   MapPinIcon,
   ChevronDownIcon,
-  BanknotesIcon,
-  CpuChipIcon,
-  AdjustmentsHorizontalIcon,
+  TruckIcon,
+  TagIcon,
+  MagnifyingGlassIcon,
+  ShieldCheckIcon,
+  DevicePhoneMobileIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
-import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { IStoreCategory, ISubcategory, StoreForm, HeroSlide } from "@/types/typings";
 
 export interface SearchFilters {
@@ -28,30 +30,30 @@ export interface SearchFilters {
 const defaultSlides: HeroSlide[] = [
   {
     id: "1",
-    imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560",
-    headline: "VELOCITY\nWITHOUT BORDERS",
-    subline: "The world's most exclusive automotive icons, delivered to your coordinates.",
+    imageUrl: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=2560",
+    headline: "AFRICA'S\n#1 TRUCK\nMARKETPLACE",
+    subline: "Buy. Sell. Finance. Deliver.\nAll in one powerful platform.",
     type: null,
     companyId: "",
     productImageUrl: null,
     ctaText: null,
     ctaLink: null,
     videoLink: null,
-    badgeText: null,
+    badgeText: "#1 COMMERCIAL TRUCK PLATFORM IN AFRICA",
     price: null,
     endsAt: null,
     order: 0,
     iconKey: null,
     backgroundColor: null,
     textColor: null,
-    stats: null
-  }
+    stats: null,
+  },
 ];
 
-export default function LuxuryCommandHero({
+export default function HeroCommandSection({
   store,
   onSearch,
-  trendingLocations = [{ name: "Monaco" }, { name: "Dubai Marina" }, { name: "Beverly Hills" }],
+  trendingLocations = [{ name: "Nairobi" }, { name: "Mombasa" }, { name: "Nakuru" }, { name: "Kiambu" }],
 }: {
   store?: StoreForm | null;
   onSearch: (filters: SearchFilters) => void;
@@ -62,7 +64,6 @@ export default function LuxuryCommandHero({
 
   const [current, setCurrent] = useState(0);
   const [location, setLocation] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<IStoreCategory | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<ISubcategory | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -70,15 +71,15 @@ export default function LuxuryCommandHero({
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 50, damping: 25 });
-  const springY = useSpring(mouseY, { stiffness: 50, damping: 25 });
+  const springX = useSpring(mouseX, { stiffness: 40, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 40, damping: 20 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return;
+    if (typeof window !== "undefined" && window.innerWidth < 768) return;
     const { clientX, clientY } = e;
     const { innerWidth, innerHeight } = window;
-    mouseX.set((clientX / innerWidth - 0.5) * 40);
-    mouseY.set((clientY / innerHeight - 0.5) * 40);
+    mouseX.set((clientX / innerWidth - 0.5) * 25);
+    mouseY.set((clientY / innerHeight - 0.5) * 25);
   };
 
   const nextSlide = useCallback(() => setCurrent((prev) => (prev + 1) % heroSlides.length), [heroSlides.length]);
@@ -99,13 +100,15 @@ export default function LuxuryCommandHero({
     };
   }, [nextSlide]);
 
+  const slide = heroSlides[current];
+
   return (
     <section
       onMouseMove={handleMouseMove}
-      className="relative min-h-[100dvh] w-full bg-white dark:bg-[#050505] selection:bg-blue-500/30 overflow-visible flex flex-col justify-center"
+      className="relative min-h-[100dvh] w-full bg-slate-900 dark:bg-[#080B10] text-white selection:bg-amber-500/30 overflow-hidden flex flex-col justify-between pt-16 pb-10 px-4 md:px-8"
     >
-      {/* 1. KINETIC BACKGROUND */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      {/* 1. BACKGROUND ENGINE */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -113,204 +116,269 @@ export default function LuxuryCommandHero({
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 1, scale: 1.05 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
             <Image
-              src={heroSlides[current].imageUrl || defaultSlides[0].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
+              src={slide.imageUrl || defaultSlides[0].imageUrl!}
               alt="Hero Background"
               fill
-              className="object-cover brightness-[0.5] dark:brightness-[0.35] saturate-[1.1]"
+              className="object-cover brightness-[0.35] dark:brightness-[0.25] saturate-[1.1]"
               priority
               loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
             />
-            {/* Elegant vignette overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-black/20 dark:from-[#050505] dark:via-transparent dark:to-black/50" />
+            {/* Visual Overlays & Gradients */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-950/80 dark:from-[#05070A] dark:via-[#080B10]/70 dark:to-[#080B10]/90" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.75)_100%)]" />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* 2. CONTENT LAYER */}
-      <div className="relative z-10 flex flex-col items-center justify-center px-4 md:px-8 py-24 w-full h-full mt-auto">
-        
-        {/* Luxury Badge */}
+      {/* 2. MAIN HERO CONTENT */}
+      <div className="relative z-10 my-auto w-full max-w-7xl mx-auto flex flex-col items-start justify-center pt-8">
+        {/* Top Badge */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="mb-8 flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 dark:bg-black/20 px-5 py-2 backdrop-blur-xl shadow-lg"
+          transition={{ delay: 0.1, duration: 0.6 }}
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/15 px-4 py-1.5 backdrop-blur-md shadow-sm"
         >
-          <SparklesIcon className="h-4 w-4 text-blue-400" />
-          <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-white">
-            Exclusive Inventory Access
+          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-300 dark:text-amber-400">
+            {slide.badgeText || "#1 COMMERCIAL TRUCK PLATFORM IN AFRICA"}
           </span>
         </motion.div>
 
-        {/* Headline & Subline Container */}
-        <div className="mb-12 md:mb-16 text-center select-none w-full max-w-5xl mx-auto flex flex-col items-center">
+        {/* Dynamic Headline */}
+        <div className="mb-8 select-none max-w-4xl">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -20, filter: "blur(8px)" }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="flex flex-col items-center gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="flex flex-col gap-4"
             >
-              {/* Scaled Responsive Headline */}
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-[900] leading-[0.95] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 uppercase drop-shadow-2xl whitespace-pre-line">
-                {heroSlides[current].headline}
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.25rem] font-black leading-[0.95] tracking-tight uppercase text-white drop-shadow-xl whitespace-pre-line">
+                {slide.headline.includes("#1 TRUCK") ? (
+                  <>
+                    AFRICA’S{"\n"}
+                    <span className="text-amber-400 dark:text-amber-400 drop-shadow-[0_4px_25px_rgba(245,158,11,0.3)]">
+                      #1 TRUCK
+                    </span>
+                    {"\n"}MARKETPLACE
+                  </>
+                ) : (
+                  slide.headline
+                )}
               </h1>
 
-              {/* Added Subline for Better Engagement */}
-              {heroSlides[current].subline && (
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.8 }}
-                  className="text-base sm:text-lg md:text-xl font-medium text-white/80 max-w-2xl leading-relaxed tracking-wide drop-shadow-md"
-                >
-                  {heroSlides[current].subline}
-                </motion.p>
+              {slide.subline && (
+                <div className="mt-2 text-base sm:text-lg md:text-xl font-medium text-slate-200 dark:text-slate-300 max-w-2xl leading-snug">
+                  <span className="font-bold text-white block sm:inline">{slide.subline.split("\n")[0]}</span>{" "}
+                  <span className="text-slate-400 font-normal">{slide.subline.split("\n")[1]}</span>
+                </div>
               )}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* 3. THE COMMAND CONSOLE */}
+        {/* 3. COMMAND SEARCH BAR CONSOLE */}
         <motion.div
-            ref={containerRef}
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-[9999] w-full max-w-6xl overflow-visible"
-          >
-          <div className="flex flex-col md:flex-row gap-2 md:gap-0 bg-white/70 dark:bg-[#111]/70 backdrop-blur-2xl p-2 md:p-2 rounded-[2rem] md:rounded-full border border-white/40 dark:border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/5 dark:ring-white/5">
-            
+          ref={containerRef}
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-[999] w-full max-w-4xl"
+        >
+          <div className="flex flex-col md:flex-row items-stretch gap-2 md:gap-0 bg-slate-900/90 dark:bg-[#0F141C]/90 backdrop-blur-2xl p-2 md:p-2.5 rounded-3xl border border-slate-700/60 dark:border-slate-800/80 shadow-2xl ring-1 ring-black/40">
+            {/* Category / Type Selector */}
             <CommandInput
-              label="Coordinates"
-              value={location || "Worldwide"}
-              icon={<MapPinIcon className="h-5 w-5" />}
-              active={activeDropdown === 'loc'}
-              onClick={() => setActiveDropdown(activeDropdown === 'loc' ? null : 'loc')}
+              label="TYPE"
+              value={selectedCategory?.displayName || "All Trucks"}
+              icon={<TruckIcon className="h-4 w-4" />}
+              active={activeDropdown === "cat"}
+              onClick={() => setActiveDropdown(activeDropdown === "cat" ? null : "cat")}
               isFirst
             >
-              <Dropdown isOpen={activeDropdown === 'loc'}>
-                <div className="p-3 border-b border-black/5 dark:border-white/10 mb-1">
-                  <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-wider ml-2">Trending</span>
-                </div>
-                {trendingLocations.map((loc, i) => (
-                  <button key={i} onClick={() => { setLocation(loc.name); setActiveDropdown(null); }} className="dropdown-item">
-                    {loc.name}
-                  </button>
-                ))}
-              </Dropdown>
-            </CommandInput>
-
-            <CommandInput
-              label="Collection"
-              value={selectedCategory?.displayName || "Select Group"}
-              icon={<CpuChipIcon className="h-5 w-5" />}
-              active={activeDropdown === 'cat'}
-              onClick={() => setActiveDropdown(activeDropdown === 'cat' ? null : 'cat')}
-            >
-              <Dropdown isOpen={activeDropdown === 'cat'}>
+              <Dropdown isOpen={activeDropdown === "cat"}>
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedSubcategory(null);
+                    setActiveDropdown(null);
+                  }}
+                  className="dropdown-item"
+                >
+                  All Trucks
+                </button>
                 {categories.map((cat) => (
-                  <button key={cat.id} onClick={() => { setSelectedCategory(cat); setSelectedSubcategory(null); setActiveDropdown(null); }} className="dropdown-item">
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setSelectedSubcategory(null);
+                      setActiveDropdown(null);
+                    }}
+                    className="dropdown-item"
+                  >
                     {cat.displayName}
                   </button>
                 ))}
               </Dropdown>
             </CommandInput>
 
+            {/* Subcategory / Make Selector */}
             <CommandInput
-              label="Model Variant"
-              value={selectedSubcategory?.name || "All Types"}
-              icon={<AdjustmentsHorizontalIcon className="h-5 w-5" />}
-              active={activeDropdown === 'sub'}
+              label="MAKE"
+              value={selectedSubcategory?.name || "All Makes"}
+              icon={<TagIcon className="h-4 w-4" />}
+              active={activeDropdown === "sub"}
               disabled={!selectedCategory}
-              onClick={() => setActiveDropdown(activeDropdown === 'sub' ? null : 'sub')}
+              onClick={() => setActiveDropdown(activeDropdown === "sub" ? null : "sub")}
             >
-              <Dropdown isOpen={activeDropdown === 'sub'}>
+              <Dropdown isOpen={activeDropdown === "sub"}>
+                <button
+                  onClick={() => {
+                    setSelectedSubcategory(null);
+                    setActiveDropdown(null);
+                  }}
+                  className="dropdown-item"
+                >
+                  All Makes
+                </button>
                 {(selectedCategory?.subcategories || []).map((sub) => (
-                  <button key={sub.id} onClick={() => { setSelectedSubcategory(sub); setActiveDropdown(null); }} className="dropdown-item">
+                  <button
+                    key={sub.id}
+                    onClick={() => {
+                      setSelectedSubcategory(sub);
+                      setActiveDropdown(null);
+                    }}
+                    className="dropdown-item"
+                  >
                     {sub.name}
                   </button>
                 ))}
               </Dropdown>
             </CommandInput>
 
-            {/* Budget Input */}
-            <div className="relative flex-1 flex flex-col justify-center px-6 py-4 md:py-0 md:border-l border-black/10 dark:border-white/10 bg-black/5 md:bg-transparent rounded-2xl md:rounded-none group focus-within:bg-blue-50/50 dark:focus-within:bg-white/5 transition-colors">
-              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5">Budget</span>
-              <div className="flex items-center gap-2.5">
-                <BanknotesIcon className="h-5 w-5 text-black/40 dark:text-white/40 group-focus-within:text-blue-500 transition-colors" />
-                <input
-                  type="number"
-                  placeholder="Max USD"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="bg-transparent text-sm md:text-base font-bold text-black dark:text-white outline-none placeholder:text-black/30 dark:placeholder:text-white/30 w-full"
-                />
-              </div>
-            </div>
-
-            {/* Execute Button */}
-            <button
-              onClick={() => onSearch({
-                location, minPrice: "", maxPrice,
-                category: selectedCategory?.id, subcategory: selectedSubcategory?.id,
-                vehicleType: "", make: "", model: "", isBuy: false
-              })}
-              className="group/btn relative overflow-hidden rounded-[1.5rem] md:rounded-full bg-blue-600 dark:bg-white text-white dark:text-black transition-all hover:scale-[1.02] active:scale-95 shadow-xl mt-2 md:mt-0 ml-0 md:ml-2 w-full md:w-auto flex-shrink-0"
+            {/* Location Selector */}
+            <CommandInput
+              label="LOCATION"
+              value={location || "All Locations"}
+              icon={<MapPinIcon className="h-4 w-4" />}
+              active={activeDropdown === "loc"}
+              onClick={() => setActiveDropdown(activeDropdown === "loc" ? null : "loc")}
             >
-              <div className="relative z-10 flex items-center justify-center gap-3 py-5 px-8 h-full">
-                <MagnifyingGlassIcon className="h-5 w-5 transition-transform duration-300 group-hover/btn:rotate-12 group-hover/btn:scale-110" />
-                <span className="text-sm font-[900] uppercase tracking-widest">Execute</span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
-            </button>
+              <Dropdown isOpen={activeDropdown === "loc"}>
+                <button
+                  onClick={() => {
+                    setLocation("");
+                    setActiveDropdown(null);
+                  }}
+                  className="dropdown-item"
+                >
+                  All Locations
+                </button>
+                <div className="p-2.5 border-b border-slate-700/50 mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Popular Locations
+                  </span>
+                </div>
+                {trendingLocations.map((loc, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setLocation(loc.name);
+                      setActiveDropdown(null);
+                    }}
+                    className="dropdown-item"
+                  >
+                    {loc.name}
+                  </button>
+                ))}
+              </Dropdown>
+            </CommandInput>
 
+            {/* Primary Search CTA Button */}
+            <button
+              onClick={() =>
+                onSearch({
+                  location,
+                  minPrice: "",
+                  maxPrice: "",
+                  category: selectedCategory?.id,
+                  subcategory: selectedSubcategory?.id,
+                  vehicleType: "",
+                  make: "",
+                  model: "",
+                  isBuy: true,
+                })
+              }
+              className="group/btn relative overflow-hidden rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/25 active:scale-[0.98] mt-2 md:mt-0 md:ml-2 px-8 py-4 flex items-center justify-center gap-2.5 font-bold flex-shrink-0"
+            >
+              <MagnifyingGlassIcon className="h-5 w-5 text-slate-950 transition-transform duration-300 group-hover/btn:scale-110" />
+              <span className="text-sm font-extrabold uppercase tracking-wide">Search Trucks</span>
+            </button>
           </div>
         </motion.div>
       </div>
 
+      {/* 4. BOTTOM TRUST BADGES / HIGHLIGHTS */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.8 }}
+        className="relative z-10 w-full max-w-7xl mx-auto pt-10 border-t border-slate-800/60 dark:border-slate-800/40 mt-8"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <TrustFeature
+            icon={<ShieldCheckIcon className="h-5 w-5 text-amber-400" />}
+            title="AA Kenya Certified"
+            subtitle="Independent valuations"
+          />
+          <TrustFeature
+            icon={<DevicePhoneMobileIcon className="h-5 w-5 text-amber-400" />}
+            title="M-Pesa Payments"
+            subtitle="Pay securely, your way"
+          />
+          <TrustFeature
+            icon={<MapPinIcon className="h-5 w-5 text-amber-400" />}
+            title="47 Counties Covered"
+            subtitle="Nationwide reach"
+          />
+        </div>
+      </motion.div>
+
+      {/* STYLES */}
       <style jsx global>{`
         .dropdown-item {
-          @apply block w-full text-left px-5 py-3.5 text-xs font-bold 
-          text-neutral-700 dark:text-white/80 
-          hover:text-blue-600 dark:hover:text-white 
-          hover:bg-blue-50 dark:hover:bg-white/10 
-          transition-colors uppercase tracking-[0.15em] rounded-xl;
+          @apply block w-full text-left px-4 py-2.5 text-xs font-semibold
+          text-slate-200 hover:text-amber-400
+          hover:bg-slate-800/80 rounded-xl
+          transition-colors tracking-wide;
           user-select: none;
           -webkit-tap-highlight-color: transparent;
         }
-        /* Elegant scrollbar for dropdowns */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { 
-          @apply bg-black/10 dark:bg-white/20 rounded-full; 
-          border: 2px solid transparent; 
-          background-clip: padding-box; 
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { @apply bg-black/20 dark:bg-white/30; }
-        
-        /* Remove arrows from number input */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
         }
-        input[type="number"] {
-          -moz-appearance: textfield;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          @apply bg-slate-700/60 rounded-full;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          @apply bg-slate-600;
         }
       `}</style>
     </section>
   );
 }
 
-// --- STRICTLY TYPED SUB-COMPONENTS ---
+// --- SUB-COMPONENTS ---
 
 interface CommandInputProps {
   label: string;
@@ -323,28 +391,27 @@ interface CommandInputProps {
   isFirst?: boolean;
 }
 
-function CommandInput({ label, value, icon, active, disabled, onClick, children, isFirst }: CommandInputProps) {
+function CommandInput({ label, value, icon, active, disabled, onClick, children }: CommandInputProps) {
   return (
-    <div  className={`relative flex-1 w-full overflow-visible ${ !isFirst ? "md:border-l border-black/10 dark:border-white/10" : "" }`}>
+    <div className="relative flex-1 w-full overflow-visible">
       <button
+        type="button"
         disabled={disabled}
         onClick={onClick}
-        className={`w-full h-full flex flex-col justify-center px-6 py-4 md:py-5 rounded-2xl md:rounded-none transition-all text-left group
-          ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/5 dark:hover:bg-white/5'}
-          ${active ? 'bg-black/5 dark:bg-white/5' : ''}
-          ${isFirst ? 'md:rounded-l-full' : ''}`}
+        className={`w-full h-full flex flex-col justify-center px-4 py-3.5 rounded-2xl md:rounded-xl transition-all text-left group
+          ${disabled ? "opacity-30 cursor-not-allowed" : "hover:bg-slate-800/50"}
+          ${active ? "bg-slate-800/80 ring-1 ring-slate-700" : ""}`}
       >
-        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5 transition-colors">{label}</span>
-        <div className="flex items-center gap-2.5">
-          <span className={`transition-colors duration-300 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-black/40 dark:text-white/40'}`}>
-            {icon}
-          </span>
-          <span className="text-sm md:text-base font-bold text-black dark:text-white truncate max-w-[120px] md:max-w-full">
-            {value}
-          </span>
-          <ChevronDownIcon 
-            className={`h-4 w-4 ml-auto transition-transform duration-300 ease-out 
-            ${active ? 'rotate-180 text-blue-600 dark:text-blue-400' : 'text-black/30 dark:text-white/30 group-hover:translate-y-0.5'}`} 
+        <span className="text-[10px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest mb-1">
+          {label}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 group-hover:text-amber-400 transition-colors">{icon}</span>
+          <span className="text-sm font-bold text-white truncate max-w-[130px] lg:max-w-none">{value}</span>
+          <ChevronDownIcon
+            className={`h-4 w-4 ml-auto text-slate-400 transition-transform duration-200 ${
+              active ? "rotate-180 text-amber-400" : "group-hover:translate-y-0.5"
+            }`}
           />
         </div>
       </button>
@@ -353,57 +420,39 @@ function CommandInput({ label, value, icon, active, disabled, onClick, children,
   );
 }
 
-function Dropdown({
-  children,
-  isOpen,
-}: {
-  children: React.ReactNode;
-  isOpen: boolean;
-}) {
+function Dropdown({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) {
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0, y: -10, scale: 0.98 }}
+          initial={{ opacity: 0, y: -8, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.98 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          exit={{ opacity: 0, y: -8, scale: 0.98 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
           className="
-            absolute
-            left-0
-            right-0
-            top-[calc(100%+8px)]
-            md:right-auto
-            md:w-[320px]
-            md:top-[calc(100%+16px)]
-
-            z-[99999]
-
-            overflow-hidden
-            rounded-2xl
-            md:rounded-3xl
-
-            bg-white/95
-            dark:bg-[#151515]/95
-            backdrop-blur-3xl
-
-            border
-            border-black/10
-            dark:border-white/10
-
-            shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)]
-            ring-1
-            ring-black/5
-            dark:ring-white/5
-
-            p-2.5
+            absolute left-0 right-0 top-[calc(100%+8px)]
+            md:w-[260px] z-[99999] overflow-hidden
+            rounded-2xl bg-slate-900/95 dark:bg-[#0F141C]/95 backdrop-blur-2xl
+            border border-slate-700/80 dark:border-slate-800 shadow-2xl p-2
           "
         >
-          <div className="custom-scrollbar flex max-h-[45vh] flex-col gap-1 overflow-y-auto pr-1 md:max-h-[350px]">
-            {children}
-          </div>
+          <div className="custom-scrollbar flex max-h-[280px] flex-col gap-0.5 overflow-y-auto">{children}</div>
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function TrustFeature({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
+  return (
+    <div className="flex items-center gap-3.5">
+      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20">
+        {icon}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-sm font-bold text-white leading-tight">{title}</span>
+        <span className="text-xs text-slate-400 leading-tight mt-0.5">{subtitle}</span>
+      </div>
+    </div>
   );
 }

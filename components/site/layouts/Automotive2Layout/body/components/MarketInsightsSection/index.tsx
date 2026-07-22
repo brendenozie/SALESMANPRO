@@ -1,150 +1,244 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import Link from "next/link";
-import { CalculatorIcon, ChartBarIcon, NewspaperIcon } from "@heroicons/react/24/outline"; // New icons
+import {
+  CalculatorIcon,
+  ChartBarIcon,
+  NewspaperIcon,
+  ArrowRightIcon,
+  SparklesIcon,
+  BanknotesIcon,
+} from "@heroicons/react/24/outline";
 
-// Dummy data for Market Insights
+/* -------------------------------------------------------------------------- */
+/* Constants & Commercial Data */
+/* -------------------------------------------------------------------------- */
 const regions = [
-  { name: "North America", avgPrice: 42500 },
-  { name: "Europe", avgPrice: 38000 },
-  { name: "Asia", avgPrice: 31000 },
-  { name: "Oceania", avgPrice: 45000 },
-  { name: "South America", avgPrice: 28000 },
+  { name: "Nairobi Metro & Central", avgPrice: 6500000, trend: "+4.2%" },
+  { name: "Mombasa & Coastal Corridor", avgPrice: 5800000, trend: "+2.8%" },
+  { name: "Rift Valley & Western Yards", avgPrice: 5200000, trend: "+1.5%" },
+  { name: "Northern Corridor Transit", avgPrice: 7100000, trend: "+5.0%" },
 ];
 
 const blogPosts = [
-  { id: 1, title: "5 Tips for Buying Your First Electric Vehicle", href: "/blog/ev-tips" },
-  { id: 2, title: "Understanding Loan Terms: What You Need to Know", href: "/blog/loan-terms" },
-  { id: 3, title: "The Resale Value of Luxury Cars in 2025", href: "/blog/luxury-resale" },
-  { id: 4, title: "Hybrid vs. Gas: Making the Right Choice", href: "/blog/hybrid-gas" },
+  {
+    id: 1,
+    title: "Financing Heavy Machinery: Fixed vs Variable Commercial Rates",
+    href: "/blog/machinery-financing-guide",
+    category: "Finance",
+  },
+  {
+    id: 2,
+    title: "2026 Fleet Maintenance Costs: Howo vs Isuzu Box Trucks",
+    href: "/blog/fleet-maintenance-analysis",
+    category: "Insights",
+  },
+  {
+    id: 3,
+    title: "Navigating Import Duties & Excise Taxes on Tipper Trucks",
+    href: "/blog/import-duties-guide",
+    category: "Policy",
+  },
+  {
+    id: 4,
+    title: "Maximizing Resale Valuation on Pre-Owned Excavators",
+    href: "/blog/excavator-resale-value",
+    category: "Valuation",
+  },
 ];
 
-// Reusing consistent animation variants
-const sectionVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+/* -------------------------------------------------------------------------- */
+/* Animation Variants */
+/* -------------------------------------------------------------------------- */
+const sectionVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 30 },
-  visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 10 } },
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 30, scale: 0.97 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 18 },
+  },
 };
 
+/* -------------------------------------------------------------------------- */
+/* Subcomponents */
+/* -------------------------------------------------------------------------- */
+const GridPattern = () => (
+  <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+    <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="insights-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M0 32L32 0H16L0 16M32 32V16L16 32" stroke="currentColor" strokeWidth="1" fill="none" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#insights-grid)" />
+    </svg>
+  </div>
+);
+
+/* -------------------------------------------------------------------------- */
+/* Main Component */
+/* -------------------------------------------------------------------------- */
 export default function MarketInsightsSection() {
-  const [loanAmount, setLoanAmount] = useState(30000); // Increased default for better examples
-  const [interestRate, setInterestRate] = useState(6.5); // More realistic rate
-  const [termYears, setTermYears] = useState(5);
+  const [loanAmount, setLoanAmount] = useState(4500000);
+  const [interestRate, setInterestRate] = useState(13.5);
+  const [termYears, setTermYears] = useState(4);
 
+  // Monthly payment calculation formula
+  const monthlyRate = interestRate / 100 / 12;
+  const totalMonths = termYears * 12;
   const monthlyPayment =
-    (loanAmount * (interestRate / 100 / 12)) /
-    (1 - Math.pow(1 + (interestRate / 100 / 12), -termYears * 12));
-
-  // Input styling for consistency
-  const inputStyle =
-    "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out appearance-none";
+    (loanAmount * monthlyRate) /
+    (1 - Math.pow(1 + monthlyRate, -totalMonths));
 
   return (
     <motion.section
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
+      viewport={{ once: true, margin: "-50px" }}
       variants={sectionVariants}
-      className="py-16 px-4 md:px-8 lg:px-16 bg-gradient-to-br from-blue-50 to-white dark:from-gray-800 dark:to-gray-950 relative overflow-hidden"
+      className="relative py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white border-t border-slate-800 overflow-hidden"
     >
-      {/* Background Shapes for Visual Appeal */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-blue-200 dark:bg-blue-900 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" style={{ animationDelay: '-2s' }}></div>
-      <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-200 dark:bg-purple-900 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" style={{ animationDelay: '-4s' }}></div>
+      <GridPattern />
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      {/* Ambient Glow Effects */}
+      <div className="absolute top-1/4 left-10 w-[500px] h-[500px] bg-amber-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-amber-500/5 blur-[160px] rounded-full pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white leading-tight mb-3">
-            Market Insights & Smart Tools 📈
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Empower your decisions with our comprehensive market insights and helpful financial tools.
-          </p>
-        </motion.div>
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4"
+          >
+            <SparklesIcon className="w-4 h-4" />
+            <span>Commercial Tools & Analytics</span>
+          </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          {/* Auto Loan Calculator */}
+          <motion.h2
+            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            Market Insights & <span className="text-amber-500">Asset Financing</span>
+          </motion.h2>
+
+          <motion.p
+            className="text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            Calculate commercial vehicle financing options, evaluate regional yard pricing trends, and read active industry guides.
+          </motion.p>
+        </div>
+
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          {/* Commercial Loan Calculator Card (7 Columns) */}
           <motion.div
             variants={cardVariants}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border border-blue-100 dark:border-gray-700 flex flex-col justify-between"
+            className="lg:col-span-7 bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center text-blue-600 dark:text-blue-400 mb-4">
-                <CalculatorIcon className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Auto Loan Calculator</h3>
+              <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-700/60">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                    <CalculatorIcon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-extrabold uppercase tracking-tight text-white">
+                      Asset Finance Calculator
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium">
+                      Estimate monthly financing schedules for trucks & machinery
+                    </p>
+                  </div>
+                </div>
+                <BanknotesIcon className="w-8 h-8 text-slate-700 hidden sm:block" />
               </div>
-              <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Estimate your monthly payments with ease.
-              </p>
-              <div className="space-y-5">
+
+              {/* Sliders & Controls */}
+              <div className="space-y-6">
+                
+                {/* Loan Amount */}
                 <div>
-                  <label htmlFor="loanAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Loan Amount ($)
-                  </label>
-                  <input
-                    id="loanAmount"
-                    type="number"
-                    value={loanAmount}
-                    onChange={(e) => setLoanAmount(Number(e.target.value))}
-                    className={inputStyle}
-                  />
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+                      Vehicle / Asset Cost
+                    </label>
+                    <span className="text-sm font-black text-amber-400">
+                      KES {loanAmount.toLocaleString()}
+                    </span>
+                  </div>
                   <input
                     type="range"
-                    min="1000"
-                    max="100000"
-                    step="500"
+                    min="500000"
+                    max="20000000"
+                    step="250000"
                     value={loanAmount}
                     onChange={(e) => setLoanAmount(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg dark:bg-gray-700 mt-2"
-                    style={{ background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${((loanAmount - 1000) / 99000) * 100}%, #E5E7EB ${((loanAmount - 1000) / 99000) * 100}%, #E5E7EB 100%)` }}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                   />
+                  <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-1">
+                    <span>KES 500K</span>
+                    <span>KES 20M</span>
+                  </div>
                 </div>
+
+                {/* Interest Rate */}
                 <div>
-                  <label htmlFor="interestRate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Interest Rate (%)
-                  </label>
-                  <input
-                    id="interestRate"
-                    type="number"
-                    step="0.1"
-                    value={interestRate}
-                    onChange={(e) => setInterestRate(Number(e.target.value))}
-                    className={inputStyle}
-                  />
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+                      Annual Interest Rate (%)
+                    </label>
+                    <span className="text-sm font-black text-amber-400">
+                      {interestRate}%
+                    </span>
+                  </div>
                   <input
                     type="range"
-                    min="1"
-                    max="20"
-                    step="0.1"
+                    min="5"
+                    max="25"
+                    step="0.5"
                     value={interestRate}
                     onChange={(e) => setInterestRate(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg dark:bg-gray-700 mt-2"
-                    style={{ background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${((interestRate - 1) / 19) * 100}%, #E5E7EB ${((interestRate - 1) / 19) * 100}%, #E5E7EB 100%)` }}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                   />
+                  <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-1">
+                    <span>5%</span>
+                    <span>25%</span>
+                  </div>
                 </div>
+
+                {/* Repayment Term */}
                 <div>
-                  <label htmlFor="termYears" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Term (Years)
-                  </label>
-                  <input
-                    id="termYears"
-                    type="number"
-                    value={termYears}
-                    onChange={(e) => setTermYears(Number(e.target.value))}
-                    className={inputStyle}
-                  />
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+                      Repayment Term
+                    </label>
+                    <span className="text-sm font-black text-amber-400">
+                      {termYears} {termYears === 1 ? "Year" : "Years"} ({termYears * 12} Mos)
+                    </span>
+                  </div>
                   <input
                     type="range"
                     min="1"
@@ -152,83 +246,117 @@ export default function MarketInsightsSection() {
                     step="1"
                     value={termYears}
                     onChange={(e) => setTermYears(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg dark:bg-gray-700 mt-2"
-                    style={{ background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${((termYears - 1) / 6) * 100}%, #E5E7EB ${((termYears - 1) / 6) * 100}%, #E5E7EB 100%)` }}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
                   />
+                  <div className="flex justify-between text-[10px] font-bold text-slate-500 mt-1">
+                    <span>1 Year</span>
+                    <span>7 Years</span>
+                  </div>
                 </div>
+
               </div>
             </div>
-            <motion.div
-              layout // Animate layout changes
-              className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-3xl font-extrabold text-blue-700 dark:text-blue-400 text-center"
-            >
-              Monthly Payment: ${isFinite(monthlyPayment) ? monthlyPayment.toFixed(2) : "0.00"}
-            </motion.div>
+
+            {/* Calculated Result Display */}
+            <div className="mt-8 pt-6 border-t border-slate-700/60 bg-slate-900/60 rounded-2xl p-5 text-center">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1">
+                Estimated Monthly Repayment
+              </span>
+              <span className="text-2xl md:text-4xl font-black text-amber-400 tracking-tight">
+                KES {isFinite(monthlyPayment) ? Math.round(monthlyPayment).toLocaleString() : "0"}
+                <span className="text-xs text-slate-400 font-bold tracking-normal"> / month</span>
+              </span>
+            </div>
           </motion.div>
 
-          {/* Regional Average & Blog Links */}
-          <div className="space-y-8 flex flex-col">
-            {/* Average Vehicle Price by Region */}
+          {/* Regional Market Trends & Articles Column (5 Columns) */}
+          <div className="lg:col-span-5 flex flex-col gap-8">
+            
+            {/* Regional Valuation Card */}
             <motion.div
               variants={cardVariants}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border border-purple-100 dark:border-gray-700 flex-grow"
+              className="bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-xl flex-1"
             >
-              <div className="flex items-center text-purple-600 dark:text-purple-400 mb-4">
-                <ChartBarIcon className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Average Vehicle Price by Region</h3>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  <ChartBarIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold uppercase tracking-tight text-white">
+                    Regional Average Price
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Commercial inventory index across key hubs
+                  </p>
+                </div>
               </div>
-              <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Understand price trends across different geographies.
-              </p>
-              <ul className="space-y-4">
+
+              <div className="space-y-2.5">
                 {regions.map((region) => (
-                  <motion.li
+                  <div
                     key={region.name}
-                    className="flex justify-between items-center py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 ease-in-out"
-                    whileHover={{ scale: 1.01 }}
+                    className="flex justify-between items-center py-2.5 px-3.5 bg-slate-900/60 border border-slate-800/80 rounded-xl hover:border-slate-700 transition-colors"
                   >
-                    <span className="text-gray-800 dark:text-gray-200 font-medium text-lg">{region.name}</span>
-                    <span className="font-extrabold text-blue-600 dark:text-blue-300 text-xl">
-                      ${region.avgPrice.toLocaleString()}
+                    <span className="text-xs font-bold text-slate-300">
+                      {region.name}
                     </span>
-                  </motion.li>
+                    <div className="text-right">
+                      <span className="text-xs font-black text-amber-400 block">
+                        KES {region.avgPrice.toLocaleString()}
+                      </span>
+                      <span className="text-[9px] font-extrabold text-emerald-400">
+                        {region.trend} MoM
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </motion.div>
 
-            {/* Latest Buying Guides */}
+            {/* Industry Guides / Articles Card */}
             <motion.div
               variants={cardVariants}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border border-green-100 dark:border-gray-700 flex-grow"
+              className="bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 rounded-3xl p-6 shadow-xl flex-1"
             >
-              <div className="flex items-center text-green-600 dark:text-green-400 mb-4">
-                <NewspaperIcon className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Latest Buying Guides</h3>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  <NewspaperIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold uppercase tracking-tight text-white">
+                    Fleet Buying Guides
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Industry advisories & commercial reports
+                  </p>
+                </div>
               </div>
-              <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Stay informed with expert advice and helpful tips.
-              </p>
-              <ul className="space-y-4">
+
+              <div className="space-y-3">
                 {blogPosts.map((post) => (
-                  <motion.li
+                  <Link
                     key={post.id}
-                    whileHover={{ x: 5 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    href={post.href}
+                    className="group flex items-start justify-between p-2.5 rounded-xl hover:bg-slate-800/60 transition-colors"
                   >
-                    <Link href={post.href} className="flex items-center group text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition duration-200">
-                      <span className="mr-3 text-blue-400 dark:text-blue-600 group-hover:text-blue-600 dark:group-hover:text-blue-500">
-                        →
+                    <div className="pr-2">
+                      <span className="inline-block px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">
+                        {post.category}
                       </span>
-                      <span className="font-medium text-lg group-hover:underline">
+                      <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-400 transition-colors line-clamp-1">
                         {post.title}
-                      </span>
-                    </Link>
-                  </motion.li>
+                      </h4>
+                    </div>
+                    <ArrowRightIcon className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 transition-colors shrink-0 mt-2" />
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </motion.div>
+
           </div>
+
         </div>
+
       </div>
     </motion.section>
   );

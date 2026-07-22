@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 import { createCachedFetcher } from "@/lib/swrCachedFetcher";
 import { MarketListingForm } from "@/types/typings";
-import PopularVehiclesSection from "./PopularVehiclesSection"; // your Popular UI component
+import PopularVehiclesSection from "./PopularVehiclesSection";
 
 // API base
 const apiBaseUrl =
@@ -71,7 +71,6 @@ export default function PopularVehiclesWrapper({
 
   const listings: MarketListingForm[] = data?.data || [];
 
-  // Pass functional data to your original UI
   return (
     <PopularVehiclesSection
       listings={listings}

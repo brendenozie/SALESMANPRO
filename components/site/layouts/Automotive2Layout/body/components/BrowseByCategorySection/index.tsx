@@ -3,23 +3,23 @@
 import React, { useMemo } from "react";
 import { motion, Variants } from "framer-motion";
 import Link from "next/link";
-import { ArrowRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, SparklesIcon, TruckIcon } from "@heroicons/react/24/outline";
 import { StoreForm, ISubcategory, IStoreCategory } from "@/types/typings";
 
 /* -------------------------------------------------------------------------- */
-/* Constants & Mock Data */
+/* Constants & Commercial Mock Fallbacks */
 /* -------------------------------------------------------------------------- */
-const FALLBACK_ICON = "🚗";
+const FALLBACK_ICON = "🚛";
 
 const fallbackSubcategories: ISubcategory[] = [
-  { id: "sedan", name: "Sedan", slug: "sedan", sortOrder: 0, visible: true, icon: "🚗" },
-  { id: "suv", name: "SUV", slug: "suv", sortOrder: 1, visible: true, icon: "🚙" },
-  { id: "truck", name: "Truck", slug: "truck", sortOrder: 2, visible: true, icon: "🚚" },
-  { id: "sports", name: "Sports", slug: "sports", sortOrder: 3, visible: true, icon: "🏎️" },
-  { id: "electric", name: "Electric", slug: "electric", sortOrder: 4, visible: true, icon: "⚡" },
-  { id: "luxury", name: "Luxury", slug: "luxury", sortOrder: 5, visible: true, icon: "💎" },
-  { id: "van", name: "Van", slug: "van", sortOrder: 6, visible: true, icon: "🚐" },
-  { id: "bike", name: "Motorcycle", slug: "motorcycle", sortOrder: 7, visible: true, icon: "🏍️" },
+  { id: "tipper", name: "Tipper Trucks", slug: "tipper-trucks", sortOrder: 0, visible: true, icon: "🚛" },
+  { id: "prime-mover", name: "Prime Movers", slug: "prime-movers", sortOrder: 1, visible: true, icon: "🚜" },
+  { id: "box-body", name: "Box Body", slug: "box-body", sortOrder: 2, visible: true, icon: "🚚" },
+  { id: "flatbed", name: "Flatbed Trailers", slug: "flatbed-trailers", sortOrder: 3, visible: true, icon: "🛣️" },
+  { id: "tanker", name: "Fuel Tankers", slug: "fuel-tankers", sortOrder: 4, visible: true, icon: "⚓" },
+  { id: "buses", name: "Commercial Buses", slug: "commercial-buses", sortOrder: 5, visible: true, icon: "🚌" },
+  { id: "machinery", name: "Excavators & Diggers", slug: "excavators-diggers", sortOrder: 6, visible: true, icon: "🏗️" },
+  { id: "pickup", name: "Commercial Pickups", slug: "commercial-pickups", sortOrder: 7, visible: true, icon: "🛻" },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -29,42 +29,42 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 30, scale: 0.9 },
+  hidden: { opacity: 0, y: 25, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
+    transition: { type: "spring", stiffness: 120, damping: 14 },
   },
 };
 
 /* -------------------------------------------------------------------------- */
-/* Components */
+/* Subcomponents */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Technical Grid Pattern for that "Blueprint/Engineering" feel
+ * Industrial Engineering Blueprint Grid
  */
 const GridPattern = () => (
-  <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.04] dark:opacity-[0.06]">
+  <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
     <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M0 40L40 0H20L0 20M40 40V20L20 40" stroke="currentColor" strokeWidth="1" fill="none"/>
+        <pattern id="industrial-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M0 32L32 0H16L0 16M32 32V16L16 32" stroke="currentColor" strokeWidth="1" fill="none" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+      <rect width="100%" height="100%" fill="url(#industrial-grid)" />
     </svg>
   </div>
 );
 
 /**
- * Individual Subcategory Card
+ * Individual Subcategory Tile
  */
 const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
   const icon = subcat.icon || FALLBACK_ICON;
@@ -73,75 +73,50 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
   return (
     <motion.div variants={itemVariants} className="h-full">
       <Link href={`/automotive/listings?subcategory=${subcat.name}`} passHref legacyBehavior>
-        <a className="group relative flex flex-col items-center justify-between h-52 w-full p-6
-                      rounded-[2rem] overflow-hidden transition-all duration-500 ease-out
-                      bg-white dark:bg-white/5 
-                      border border-gray-100 dark:border-white/10
-                      hover:border-[color:var(--primary)]/50 dark:hover:border-[color:var(--primary)]/50
-                      hover:shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.15)]
-                      active:scale-[0.98]">
+        <a className="group relative flex flex-col items-center justify-between h-48 w-full p-5 rounded-3xl transition-all duration-300 ease-out bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 hover:border-amber-500/50 shadow-lg hover:shadow-amber-500/5 active:scale-[0.98] overflow-hidden">
           
-          {/* 1. Dynamic Hover Gradient Background */}
-          <div 
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out"
-            style={{ 
-              background: `radial-gradient(circle at 50% 120%, rgba(var(--primary-rgb), 0.15), transparent 70%)` 
-            }}
-          />
+          {/* Subtle Dynamic Ambient Glow */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_100%,rgba(245,158,11,0.12),transparent_70%)]" />
 
-          {/* 2. Floating Icon Bubble */}
+          {/* Icon Stage */}
           <div className="relative z-10 flex-1 flex items-center justify-center w-full">
-             {/* Back Glow */}
-             <div className="absolute w-24 h-24 bg-[color:var(--primary)] blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-full" />
-             
-             <div className="relative flex items-center justify-center w-20 h-20 
-                             rounded-2xl bg-gray-50/80 dark:bg-white/5 backdrop-blur-sm
-                             shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_rgba(255,255,255,0.05)]
-                             border border-gray-100 dark:border-white/10
-                             group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
-                             group-hover:bg-white dark:group-hover:bg-gray-800
-                             group-hover:shadow-xl">
-                
-                {hasImageIcon ? (
-                    <img src={icon} alt={subcat.name} className="w-10 h-10 object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
-                ) : (
-                    <span className="text-4xl filter drop-shadow-sm group-hover:drop-shadow-md transition-all">{icon}</span>
-                )}
-             </div>
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-800/80 dark:bg-slate-900 border border-slate-700/60 group-hover:scale-110 group-hover:border-amber-500/40 group-hover:bg-slate-800 transition-all duration-300">
+              {hasImageIcon ? (
+                <img src={icon} alt={subcat.name} className="w-8 h-8 object-contain drop-shadow-sm" />
+              ) : (
+                <span className="text-3xl filter drop-shadow-sm">{icon}</span>
+              )}
+            </div>
           </div>
 
-          {/* 3. Sliding Text Interaction */}
-          <div className="relative z-10 w-full text-center mt-2">
-             <span className="block text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-[color:var(--primary)] transition-colors duration-300">
-                {subcat.name}
-             </span>
-             
-             {/* The Slide-Up Container */}
-             <div className="h-5 overflow-hidden mt-1 relative">
-                <div className="flex flex-col items-center w-full transition-transform duration-300 ease-out group-hover:-translate-y-5">
-                    {/* State 1: Default Text */}
-                    <span className="text-xs font-medium text-gray-400 dark:text-gray-500 h-5 flex items-center justify-center w-full">
-                      View Listings
-                    </span>
-                    {/* State 2: Hover Action */}
-                    <span className="text-xs font-bold text-[color:var(--secondary)] flex items-center justify-center gap-1 h-5 w-full">
-                        Explore <ArrowRightIcon className="w-3 h-3" />
-                    </span>
-                </div>
-             </div>
+          {/* Card Typography & Interaction */}
+          <div className="relative z-10 w-full text-center">
+            <span className="block text-sm font-extrabold uppercase tracking-tight text-white group-hover:text-amber-400 transition-colors duration-300 line-clamp-1">
+              {subcat.name}
+            </span>
+
+            {/* Slide Interaction */}
+            <div className="h-4 overflow-hidden mt-1 relative">
+              <div className="flex flex-col items-center w-full transition-transform duration-300 ease-out group-hover:-translate-y-4">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 h-4 flex items-center justify-center">
+                  View Category
+                </span>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center justify-center gap-1 h-4">
+                  Explore <ArrowRightIcon className="w-3 h-3" />
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* 4. Status Light (Top Right Corner) */}
-          <div className="absolute top-4 right-4 p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 group-hover:translate-x-0">
-             <div className="w-2 h-2 rounded-full bg-[color:var(--secondary)] shadow-[0_0_8px_var(--secondary)] animate-pulse" />
+          {/* Active Status Pulse */}
+          <div className="absolute top-3.5 right-3.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-pulse" />
           </div>
-
         </a>
       </Link>
     </motion.div>
   );
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* Main Component */
@@ -152,110 +127,89 @@ type AutomotiveSubcategoriesSectionProps = {
 };
 
 export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubcategoriesSectionProps) {
-  // 1. Extract Colors & Theme
-  const theme = store?.themeSettings || {};
-  const primaryColor = theme.primaryColor || "#3b82f6"; // Default Blue
-  const secondaryColor = theme.secondaryColor || "#f59e0b"; // Default Amber
-
-  // Helper to convert hex to rgb for CSS variable opacity usage
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "59, 130, 246";
-  };
-
-  // 2. Process Data
+  // Extract Categories from Store
   const subcategories = useMemo(() => {
     const allSubcategories: ISubcategory[] = [];
     (store?.StoreCategory ?? []).forEach((cat: IStoreCategory) => {
       if (Array.isArray(cat.subcategories)) {
-        allSubcategories.push(...cat.subcategories.filter(s => s.visible !== false));
+        allSubcategories.push(...cat.subcategories.filter((s) => s.visible !== false));
       }
     });
     return allSubcategories.length > 0 ? allSubcategories : fallbackSubcategories;
   }, [store]);
 
-  const limitedSubcategories = subcategories.slice(0, 10); // Show top 10
-
-  // 3. Inject CSS Variables for clean cleaner styling
-  const sectionStyle = {
-    "--primary": primaryColor,
-    "--primary-rgb": hexToRgb(primaryColor),
-    "--secondary": secondaryColor,
-  } as React.CSSProperties;
+  const limitedSubcategories = subcategories.slice(0, 10);
 
   return (
-    <section 
-      id="automotive-categories" 
-      className="relative py-24 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-hidden"
-      style={sectionStyle}
+    <section
+      id="automotive-categories"
+      className="relative py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white border-t border-slate-800 overflow-hidden"
     >
       <GridPattern />
-      
-      {/* Ambient Background Glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[color:var(--primary)] opacity-10 blur-[120px] -z-10" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[color:var(--secondary)] opacity-10 blur-[120px] -z-10" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      {/* Ambient Radial Background Glows */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 blur-[140px] rounded-full pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Header */}
+        {/* Section Header */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm mb-6"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4"
           >
-            <SparklesIcon className="w-4 h-4 text-[color:var(--secondary)]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Find Your Drive</span>
+            <SparklesIcon className="w-4 h-4" />
+            <span>Industrial Equipment Classifications</span>
           </motion.div>
 
           <motion.h2
-            className="text-4xl md:text-6xl font-black tracking-tight mb-6"
+            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[color:var(--primary)] to-[color:var(--secondary)]">Type</span>
+            Browse By <span className="text-amber-500">Category</span>
           </motion.h2>
 
-          <motion.p 
-             className="text-lg text-gray-600 dark:text-gray-400"
-             initial={{ opacity: 0 }}
-             whileInView={{ opacity: 1 }}
-             viewport={{ once: true }}
-             transition={{ delay: 0.2 }}
+          <motion.p
+            className="text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
           >
-            From agile sports cars to rugged trucks, filter our inventory to find the perfect chassis for your lifestyle.
+            Filter commercial inventory by specialized machinery, haulage configuration, or heavy-duty chassis type.
           </motion.p>
         </div>
 
-        {/* Grid */}
+        {/* Categories Grid */}
         <motion.div
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, margin: "-40px" }}
         >
           {limitedSubcategories.map((subcat) => (
             <SubcategoryCard key={subcat.slug} subcat={subcat} />
           ))}
         </motion.div>
 
-        {/* Footer Action */}
+        {/* Action Button */}
         <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
-          <Link href="/automotive/listings" passHref legacyBehavior>
-            <a className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white rounded-full shadow-xl transition-transform duration-300 hover:scale-105 active:scale-95"
-               style={{ background: `linear-gradient(135deg, var(--primary), var(--secondary))` }}>
-              View Full Inventory
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
+          <Link href="/automotive/categories" passHref legacyBehavior>
+            <a className="inline-flex items-center justify-center px-8 py-4 text-xs font-extrabold uppercase tracking-wider rounded-xl text-slate-950 bg-amber-500 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+              <span>View All Categories</span>
+              <TruckIcon className="w-4 h-4 ml-2.5" />
             </a>
           </Link>
         </motion.div>

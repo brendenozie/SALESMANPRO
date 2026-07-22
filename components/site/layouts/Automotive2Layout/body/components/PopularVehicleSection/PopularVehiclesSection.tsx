@@ -1,257 +1,222 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { MarketListingForm } from "@/types/typings";
-import clsx from "clsx";
 import {
   SparklesIcon,
-  FireIcon,
   TagIcon,
-  MapPinIcon,
   ArrowRightIcon,
-  Cog6ToothIcon, // Implied for Transmission
-  BeakerIcon,    // Implied for Fuel
-  ScaleIcon,     // Implied for Mileage
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import AutomotiveCard from "../AutomotiveCard";
 
-
-// --- Helpers ---
-
-const customLoader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-const formatCurrency = (amount?: number | null) => {
-  if (!amount) return "Contact for Price";
-  return new Intl.NumberFormat("en-KE", {
-    style: "currency",
-    currency: "KES",
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-// --- Sub-Components ---
-
-/**
- * SpecItem: Displays a single technical detail with an icon
- */
-const SpecItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-  <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-gray-50 dark:bg-gray-700/40 border border-gray-100 dark:border-gray-700">
-    <Icon className="w-4 h-4 text-gray-400 mb-1" />
-    <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{label}</span>
-    <span className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate max-w-[80px]">
-      {value}
-    </span>
+/* -------------------------------------------------------------------------- */
+/* Background Technical Grid */
+/* -------------------------------------------------------------------------- */
+const GridPattern = () => (
+  <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+    <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="popular-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M0 32L32 0H16L0 16M32 32V16L16 32" stroke="currentColor" strokeWidth="1" fill="none" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#popular-grid)" />
+    </svg>
   </div>
 );
 
-/**
- * VehicleCard: A high-impact, spec-rich card component
- */
-const VehicleCard = ({
-  item,
-  slug,
-  badge,
-}: {
-  item: MarketListingForm;
-  slug: string;
-  badge?: "New Arrival" | "Hot Deal" | "Featured";
-}) => {
-  // Mocking technical data if not present in your specific form type
-  // In a real scenario, ensure these exist on MarketListingForm or map them
-  const mileage = (item as any).mileage || Math.floor(Math.random() * 80000) + 5000;
-  const transmission = (item as any).transmission || "Automatic";
-  const fuel = (item as any).fuelType || "Petrol";
-  const location = (item as any).location || "Nairobi Showroom";
-
+/* -------------------------------------------------------------------------- */
+/* Skeleton Card Component */
+/* -------------------------------------------------------------------------- */
+function VehicleCardSkeleton() {
   return (
-    <Link href={`/automotive/listings/${item.id}`} passHref legacyBehavior>
-      <motion.a
-        whileHover={{ y: -8 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="group relative block h-full bg-white dark:bg-gray-800 rounded-[2rem] shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col"
-      >
-        {/* Image Area */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
-          <Image
-            src={
-              item.images?.[0] ||
-              "https://placehold.co/800x600/EEE/31343C?text=Vehicle"
-            }
-            alt={item.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-            loader={customLoader}
-          />
-          
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-
-          {/* Badge (Top Left) */}
-          <div className="absolute top-4 left-4">
-            {badge && (
-              <span
-                className={clsx(
-                  "px-3 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 shadow-lg backdrop-blur-md border border-white/20",
-                  badge === "New Arrival" ? "bg-emerald-500/90" :
-                  badge === "Hot Deal" ? "bg-rose-500/90" : "bg-indigo-500/90"
-                )}
-              >
-                {badge === "New Arrival" && <SparklesIcon className="w-3.5 h-3.5" />}
-                {badge === "Hot Deal" && <FireIcon className="w-3.5 h-3.5" />}
-                {badge === "Featured" && <TagIcon className="w-3.5 h-3.5" />}
-                {badge}
-              </span>
-            )}
-          </div>
-
-          {/* Price Capsule (Bottom Right - Floating Glass) */}
-          <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-900/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-xl border border-white/20">
-            <p className="text-sm font-extrabold text-gray-900 dark:text-white">
-              {formatCurrency(item.finalPrice)}
-            </p>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="p-5 flex-1 flex flex-col">
-          {/* Header */}
-          <div className="mb-5">
-            <div className="flex items-center text-xs text-gray-500 mb-1">
-              <MapPinIcon className="w-3.5 h-3.5 mr-1 text-gray-400" />
-              {location}
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              {item.name}
-            </h3>
-          </div>
-
-          {/* Tech Specs Grid */}
-          <div className="grid grid-cols-3 gap-2 mb-6">
-             <SpecItem icon={ScaleIcon} label="Mileage" value={`${(mileage/1000).toFixed(0)}k km`} />
-             <SpecItem icon={Cog6ToothIcon} label="Trans" value={transmission} />
-             <SpecItem icon={BeakerIcon} label="Fuel" value={fuel} />
-          </div>
-
-          {/* Footer / CTA */}
-          <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <span className="text-sm font-bold text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-              View Specs
-            </span>
-            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-              <ArrowRightIcon className="w-4 h-4" />
-            </div>
-          </div>
-        </div>
-      </motion.a>
-    </Link>
+    <div className="animate-pulse bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 rounded-3xl p-4 h-[420px] flex flex-col justify-between">
+      <div>
+        <div className="h-48 bg-slate-700/50 dark:bg-slate-800/80 rounded-2xl mb-4" />
+        <div className="h-4 bg-slate-700/50 dark:bg-slate-800/80 rounded w-3/4 mb-3" />
+        <div className="h-3 bg-slate-700/50 dark:bg-slate-800/80 rounded w-1/2 mb-6" />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="h-12 bg-slate-700/50 dark:bg-slate-800/80 rounded-xl" />
+        <div className="h-12 bg-slate-700/50 dark:bg-slate-800/80 rounded-xl" />
+        <div className="h-12 bg-slate-700/50 dark:bg-slate-800/80 rounded-xl" />
+      </div>
+    </div>
   );
-};
+}
 
-// --- Main Section ---
+/* -------------------------------------------------------------------------- */
+/* Component Interfaces */
+/* -------------------------------------------------------------------------- */
+interface PopularVehiclesSectionProps {
+  listings: MarketListingForm[];
+  isLoading?: boolean;
+  error?: any;
+  slug?: string;
+}
 
+/* -------------------------------------------------------------------------- */
+/* Main Component */
+/* -------------------------------------------------------------------------- */
 export default function PopularVehiclesSection({
   listings,
-  isLoading,
-  error,
-  slug
-}: {
-  listings: MarketListingForm[];
-  isLoading: boolean;
-  error: any;
-  slug: string;
-}) {
+  isLoading = false,
+  error = null,
+}: PopularVehiclesSectionProps) {
+  const displayListings = listings || [];
 
-  if (!listings || listings.length === 0) {
-    return (
-      <section className="py-20 bg-gray-50 dark:bg-gray-950 text-center">
-        <div className="inline-block p-4 rounded-full bg-gray-200 dark:bg-gray-800 mb-4">
-          <TagIcon className="w-8 h-8 text-gray-400" />
-        </div>
-        <p className="text-gray-500 font-medium">No featured vehicles available right now.</p>
-      </section>
-    );
-  }
-
-  // Animation variants
+  // Motion container variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
   };
 
   return (
-    <section id="listings" className="relative py-24 bg-gray-50 dark:bg-gray-950 overflow-hidden">
-      {/* Abstract Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
-      <div className="absolute -left-20 top-40 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -right-20 bottom-40 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+    <section id="listings" className="relative py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white border-t border-slate-800 overflow-hidden">
+      <GridPattern />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+      {/* Ambient Glow Effects */}
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-amber-500/5 blur-[150px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-10 left-0 w-96 h-96 bg-amber-600/5 blur-[150px] rounded-full pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-          <motion.div 
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6 border-b border-slate-800/80 pb-8">
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
             className="max-w-2xl"
           >
-             <div className="flex items-center gap-2 mb-3">
-               <span className="h-px w-8 bg-indigo-500"></span>
-               <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Premium Inventory</span>
-             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-              Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Arrivals</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
+              <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+              <span>Commercial Fleet</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+              Popular <span className="text-amber-500">Arrivals</span>
             </h2>
           </motion.div>
 
           <motion.div
-             initial={{ opacity: 0, x: 20 }}
-             whileInView={{ opacity: 1, x: 0 }}
-             viewport={{ once: true }}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
           >
-             <Link href={`/automotive/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
-                View Full Catalog <ArrowRightIcon className="w-4 h-4" />
-             </Link>
+            <Link
+              href="/automotive/listings"
+              className="hidden md:inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400 hover:text-amber-400 transition-colors group"
+            >
+              <span>Explore Full Catalog</span>
+              <ArrowRightIcon className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </motion.div>
         </div>
 
-        {/* Grid */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {listings.map((item, index) => (
-            <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+        {/* Dynamic Display Area */}
+        <div className="min-h-[400px]">
+          <AnimatePresence mode="wait">
+            
+            {/* Loading State */}
+            {isLoading ? (
+              <motion.div
+                key="loading-popular"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
               >
-                <AutomotiveCard item={item} />
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <VehicleCardSkeleton key={`skeleton-pop-${i}`} />
+                ))}
               </motion.div>
-          ))}
-        </motion.div>
+            ) : error ? (
+
+              /* Error State */
+              <motion.div
+                key="error-popular"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col items-center justify-center py-20 text-center bg-slate-800/30 border border-slate-800 rounded-3xl p-8"
+              >
+                <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 mb-4">
+                  <ExclamationTriangleIcon className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold uppercase text-white tracking-wide">
+                  Failed to load popular vehicles
+                </h3>
+                <p className="text-slate-400 text-xs mt-1">
+                  We encountered an issue retrieving popular arrivals. Please try again shortly.
+                </p>
+              </motion.div>
+            ) : displayListings.length === 0 ? (
+
+              /* Empty State */
+              <motion.div
+                key="empty-popular"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col items-center justify-center py-20 text-center bg-slate-800/30 border border-slate-800 rounded-3xl p-8"
+              >
+                <div className="p-4 rounded-2xl bg-slate-800 border border-slate-700 text-slate-400 mb-4">
+                  <TagIcon className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold uppercase text-white tracking-wide">
+                  No Popular Listings Available
+                </h3>
+                <p className="text-slate-400 text-xs mt-1 max-w-sm">
+                  We currently do not have vehicles matching this showcase section. Check back soon for updated arrivals.
+                </p>
+              </motion.div>
+            ) : (
+
+              /* Listings Grid */
+              <motion.div
+                key="grid-popular"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+              >
+                {displayListings.map((item) => (
+                  <motion.div key={item.id} variants={itemVariants}>
+                    <AutomotiveCard item={item} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
 
         {/* Mobile View All Button */}
-        <div className="mt-12 text-center md:hidden">
-            <Link href={`/listings`} className="inline-flex items-center justify-center w-full px-6 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-font-bold text-gray-900 dark:text-white shadow-sm">
-               View Full Catalog
+        {!isLoading && !error && displayListings.length > 0 && (
+          <div className="mt-12 text-center md:hidden">
+            <Link
+              href="/automotive/listings"
+              className="inline-flex items-center justify-center w-full px-6 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700/80 rounded-2xl font-extrabold text-xs uppercase tracking-wider text-white shadow-lg transition-colors"
+            >
+              <span>View Full Catalog</span>
+              <ArrowRightIcon className="w-4 h-4 ml-2 text-amber-500" />
             </Link>
-        </div>
+          </div>
+        )}
 
       </div>
     </section>
