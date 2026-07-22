@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, EyeIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { useInView } from 'react-intersection-observer';
-import { useStoreContext } from '@/contexts/StoreContext';
 import { IBlog } from '@/types/typings';
 
 // Optimized institutional asset image loader
@@ -23,10 +22,6 @@ const formatIntelDate = (isoString: string | null | undefined) => {
   } catch (error) {
     return "Intel Active";
   }
-};
-
-const mockRouterPush = (path: string) => {
-  console.log(`Navigating to intelligence hub: ${path}`);
 };
 
 const fallbackIntelBriefs: IBlog[] = [
@@ -138,35 +133,35 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function NewsSection({pagedata}: {pagedata: any}) {
-  // const { storeFormData } = useStoreContext();
+export default function NewsSection({ pagedata }: { pagedata: any }) {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const intelToRender = pagedata?.blogs && Array.isArray(pagedata?.blogs) && pagedata.blogs.length > 0
     ? pagedata.blogs
     : fallbackIntelBriefs;
-  const organizationSlug = pagedata?.slug || 'grey-trading';
 
   return (
-    <section id="news" className="py-24 md:py-36 bg-zinc-950 text-white font-sans relative overflow-hidden">
+    <section id="news" className="py-24 md:py-36 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans relative overflow-hidden transition-colors duration-300">
       
       {/* Structural Accent Top-Line Border */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-zinc-900" />
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-zinc-200 dark:bg-zinc-900 transition-colors" />
       
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Upper Dashboard Tracking Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-16 pb-8 border-b border-zinc-900">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-16 pb-8 border-b border-zinc-200 dark:border-zinc-900 transition-colors">
           <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">Operational Intelligence</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
+            <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-600 dark:text-amber-500 mb-3">
+              Operational Intelligence
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight uppercase leading-none transition-colors">
               Market Updates & Analysis
             </h2>
-            <p className="mt-4 text-sm text-zinc-400 font-light leading-relaxed">
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400 font-light leading-relaxed transition-colors">
               Real-time dispatches, asset performance adjustments, and regulatory audits compiled straight from our global node terminals.
             </p>
           </div>
-          <div className="mt-6 md:mt-0 font-mono text-[10px] tracking-widest text-zinc-600 hidden sm:block">
+          <div className="mt-6 md:mt-0 font-mono text-[10px] tracking-widest text-zinc-400 dark:text-zinc-600 hidden sm:block">
             // LIVE_LEDGER_FEED_ENGAGED
           </div>
         </div>
@@ -183,21 +178,21 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
             <motion.div
               key={brief.id}
               variants={itemVariants}
-              className="bg-zinc-900/10 border border-zinc-900 rounded-xl overflow-hidden group flex flex-col justify-between transition-all duration-500 hover:bg-zinc-900/30 hover:border-zinc-800 shadow-xl"
+              className="bg-white/80 dark:bg-zinc-900/10 border border-zinc-200/80 dark:border-zinc-900 rounded-xl overflow-hidden group flex flex-col justify-between transition-all duration-500 hover:bg-white dark:hover:bg-zinc-900/30 hover:border-zinc-300 dark:hover:border-zinc-800 shadow-sm dark:shadow-xl"
             >
               <div>
                 {/* Image Window Architecture */}
-                <div className="relative h-52 w-full overflow-hidden bg-zinc-950 border-b border-zinc-900">
+                <div className="relative h-52 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200/80 dark:border-zinc-900 transition-colors">
                   <Image
                     src={brief.coverImage || "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=128"}
                     alt={brief.title || 'INTEL REPORT COVER'}
                     loader={loader}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover opacity-60 transition-transform duration-700 ease-out group-hover:scale-102 group-hover:opacity-75"
+                    className="object-cover opacity-85 dark:opacity-60 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100 dark:group-hover:opacity-75"
                   />
                   {/* Category Micro Tag */}
-                  <div className="absolute top-4 left-4 z-10 bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-mono tracking-wider uppercase text-zinc-400 px-2.5 py-1 rounded-md">
+                  <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-zinc-950/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 text-[10px] font-mono tracking-wider uppercase text-zinc-700 dark:text-zinc-400 px-2.5 py-1 rounded-md shadow-sm">
                     {brief.category || "General Brief"}
                   </div>
                 </div>
@@ -206,25 +201,25 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
                 <div className="p-6 md:p-8 space-y-4">
                   
                   {/* Meta Information Bar */}
-                  <div className="flex items-center gap-4 text-[11px] font-mono text-zinc-500 select-none">
+                  <div className="flex items-center gap-4 text-[11px] font-mono text-zinc-500 dark:text-zinc-500 select-none">
                     <span className="flex items-center gap-1.5">
-                      <CalendarDaysIcon className="w-3.5 h-3.5 text-zinc-600" />
+                      <CalendarDaysIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600" />
                       {formatIntelDate(brief.publishDate || brief.publishedAt)}
                     </span>
-                    <span className="w-1 h-1 bg-zinc-800 rounded-full" />
+                    <span className="w-1 h-1 bg-zinc-300 dark:bg-zinc-800 rounded-full" />
                     <span className="flex items-center gap-1.5">
-                      <EyeIcon className="w-3.5 h-3.5 text-zinc-600" />
+                      <EyeIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600" />
                       {brief.views || 240} views
                     </span>
                   </div>
 
                   {/* Clean Non-Overlapping Heading Scale */}
-                  <h3 className="font-extrabold text-lg sm:text-xl text-zinc-100 tracking-tight leading-snug line-clamp-2 group-hover:text-amber-500 transition-colors duration-300">
+                  <h3 className="font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-zinc-100 tracking-tight leading-snug line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors duration-300">
                     {brief.title}
                   </h3>
                   
                   {/* Text Body Block */}
-                  <p className="text-zinc-400 text-xs md:text-sm font-light leading-relaxed line-clamp-3 text-justify">
+                  <p className="text-zinc-600 dark:text-zinc-400 text-xs md:text-sm font-light leading-relaxed line-clamp-3 text-justify transition-colors">
                     {brief.excerpt || 'No supplementary abstract available for selected terminal logs.'}
                   </p>
                 </div>
@@ -234,14 +229,10 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
               <div className="px-6 md:px-8 pb-6 pt-2">
                 <Link 
                   href={`/companyprofile/blog/${brief.slug}`} 
-                  // onClick={(e) => { 
-                  //   e.preventDefault(); 
-                  //   mockRouterPush(`/${organizationSlug}/blog/${brief.slug}`); 
-                  // }} 
-                  className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-zinc-300 hover:text-white transition-colors group/link"
+                  className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-zinc-700 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-white transition-colors group/link"
                 >
                   Access Intelligence
-                  <ArrowRightIcon className="w-3.5 h-3.5 text-zinc-500 group-hover/link:translate-x-1 group-hover/link:text-amber-500 transition-all" />
+                  <ArrowRightIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 group-hover/link:translate-x-1 group-hover/link:text-amber-600 dark:group-hover/link:text-amber-500 transition-all" />
                 </Link>
               </div>
 
@@ -253,7 +244,7 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
         <div className="mt-16 flex justify-center">
           <Link 
             href={`/companyprofile/blog`} 
-            className="inline-flex items-center gap-3 border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-900/50 hover:border-zinc-700 text-zinc-200 hover:text-white font-bold py-3.5 px-8 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 shadow-lg"
+            className="inline-flex items-center gap-3 border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 hover:border-zinc-400 dark:hover:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white font-bold py-3.5 px-8 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 shadow-sm dark:shadow-lg"
           >
             Review Full Intelligence Hub
             <ArrowRightIcon className="w-4 h-4 text-zinc-500" />

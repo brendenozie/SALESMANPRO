@@ -56,25 +56,25 @@ const MetricCard = ({ metric }: { metric: any }) => {
   return (
     <motion.div
       variants={metricItemVariants}
-      className="group relative bg-zinc-900/30 border border-zinc-900/80 rounded-2xl p-6 flex flex-col justify-between transition-all duration-500 hover:bg-zinc-900/60 hover:border-zinc-800"
+      className="group relative bg-white/80 dark:bg-zinc-900/30 border border-zinc-200/80 dark:border-zinc-900/80 rounded-2xl p-6 flex flex-col justify-between shadow-sm dark:shadow-none transition-all duration-500 hover:bg-white dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-800"
     >
       {/* Absolute Micro Ambient Light Flare on hover */}
-      <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 dark:bg-amber-500/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full pointer-events-none" />
       
       <div className="flex items-start justify-between">
-        <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-500 group-hover:text-amber-500 transition-colors duration-300">
+        <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 text-zinc-500 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors duration-300">
           <IconComponent className="w-5 h-5" />
         </div>
-        <span className="text-[10px] font-mono tracking-widest text-zinc-600 group-hover:text-zinc-500 transition-colors">
+        <span className="text-[10px] font-mono tracking-widest text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-500 transition-colors">
           [0{metric.order}]
         </span>
       </div>
 
       <div className="mt-8">
-        <h3 className="text-3xl font-bold text-zinc-100 tracking-tight leading-none">
+        <h3 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none transition-colors">
           {metric.value}
         </h3>
-        <p className="text-xs font-medium tracking-wide text-zinc-400 mt-2">
+        <p className="text-xs font-medium tracking-wide text-zinc-600 dark:text-zinc-400 mt-2 transition-colors">
           {metric.label}
         </p>
       </div>
@@ -83,19 +83,19 @@ const MetricCard = ({ metric }: { metric: any }) => {
 };
 
 // --- MAIN PROFILE COMPONENT ---
-export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
+export default function CorporateProfileSection({ pagedata }: { pagedata: any }) {
 
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
   
   const metricsToRender = enterpriseData.metrics;
 
   return (
-    <section id="corporate-profile" className="py-24 md:py-36 bg-zinc-950 text-white font-sans overflow-hidden relative">
+    <section id="corporate-profile" className="py-24 md:py-36 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans overflow-hidden relative transition-colors duration-300">
       
       {/* Structural Framing Grid Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-        <div className="absolute inset-y-0 left-1/2 w-[1px] bg-zinc-800" />
-        <div className="absolute inset-x-0 top-1/3 h-[1px] bg-zinc-900" />
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40 dark:opacity-20">
+        <div className="absolute inset-y-0 left-1/2 w-[1px] bg-zinc-200 dark:bg-zinc-800" />
+        <div className="absolute inset-x-0 top-1/3 h-[1px] bg-zinc-200 dark:bg-zinc-900" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
@@ -109,23 +109,23 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             className="lg:col-span-5 relative h-[380px] md:h-[520px] w-full"
           >
             {/* Fine Outer Tech Border Layout */}
-            <div className="absolute -inset-3 border border-zinc-900 rounded-2xl pointer-events-none" />
+            <div className="absolute -inset-3 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl pointer-events-none" />
             
-            <div className="absolute inset-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xl dark:shadow-2xl">
               <Image
-                src={pagedata.bannerUrl || enterpriseData.profileImageUrl}
+                src={pagedata?.bannerUrl || enterpriseData.profileImageUrl}
                 alt="Institutional trading desk operations tracking bulk commodities markets"
                 fill
-                className="w-full h-full object-cover opacity-80 transform hover:scale-102 transition-transform duration-700"
+                className="w-full h-full object-cover opacity-90 dark:opacity-80 transform hover:scale-102 transition-transform duration-700"
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 priority
                 loader={({ src }) => `${src}?q=80&w=800&auto=format&fit=crop`}
               />
               {/* Internal Bottom Vignette Shield Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-50/80 via-transparent to-transparent dark:from-zinc-950 dark:via-transparent opacity-90 transition-colors duration-300" />
             </div>
 
-            {/* Micro Corner Highlight Markers instead of a large star accent */}
+            {/* Micro Corner Highlight Markers */}
             <div className="absolute top-0 left-0 w-2 h-[1px] bg-amber-500" />
             <div className="absolute top-0 left-0 h-2 w-[1px] bg-amber-500" />
           </motion.div>
@@ -137,33 +137,26 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="lg:col-span-7 flex flex-col justify-center"
           >
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-500 font-bold mb-3">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-600 dark:text-amber-500 font-bold mb-3">
               Corporate Infrastructure
             </p>
             
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-zinc-100 tracking-tight leading-[1.15] mb-6">
-              Connecting local resources to <span className="text-zinc-500 font-normal italic">global markets</span>.
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-[1.15] mb-6 transition-colors">
+              Connecting local resources to <span className="text-zinc-500 dark:text-zinc-500 font-normal italic">global markets</span>.
             </h2>
             
-            <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed mb-10 text-justify">
-              {pagedata.description || enterpriseData.profileNarrative}
+            <p className="text-zinc-600 dark:text-zinc-400 text-base md:text-lg font-light leading-relaxed mb-10 text-justify transition-colors">
+              {pagedata?.description || enterpriseData.profileNarrative}
             </p>
 
             <div className="flex flex-wrap gap-4">
               <a
                 href="#trade-desk"
-                className="inline-flex items-center gap-2.5 bg-zinc-100 text-zinc-950 font-bold py-3.5 px-7 rounded-xl shadow-lg text-xs tracking-wider uppercase hover:bg-white transition-all duration-300 transform hover:scale-[1.01]"
+                className="inline-flex items-center gap-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 font-bold py-3.5 px-7 rounded-xl shadow-md text-xs tracking-wider uppercase hover:bg-black dark:hover:bg-white transition-all duration-300 transform hover:scale-[1.01]"
               >
                 Inquire About Availability
-                <ArrowUpRightIcon className="w-4 h-4 text-zinc-950" />
+                <ArrowUpRightIcon className="w-4 h-4 text-white dark:text-zinc-950" />
               </a>
-              
-              {/* <a
-                href="#compliance-reports"
-                className="inline-flex items-center gap-2 border border-zinc-800 text-zinc-300 font-bold py-3.5 px-7 rounded-xl text-xs tracking-wider uppercase bg-zinc-900/20 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all duration-300"
-              >
-                Download Transparency Matrix
-              </a> */}
             </div>
           </motion.div>
         </div>
@@ -174,9 +167,9 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-24 pt-12 border-t border-zinc-900"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-24 pt-12 border-t border-zinc-200 dark:border-zinc-900 transition-colors duration-300"
         >
-          {metricsToRender.map((metric : any, index: number) => (
+          {metricsToRender.map((metric: any, index: number) => (
             <MetricCard key={`${metric.id}-${index}`} metric={metric} />
           ))}
         </motion.div>

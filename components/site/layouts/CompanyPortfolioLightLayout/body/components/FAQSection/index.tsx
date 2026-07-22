@@ -50,7 +50,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
   return (
     <motion.div
       layout="position"
-      className="border border-zinc-900 bg-zinc-900/10 rounded-xl p-5 md:p-6 transition-all duration-300 hover:bg-zinc-900/20 hover:border-zinc-800"
+      className="border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/10 rounded-xl p-5 md:p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:bg-zinc-50 dark:hover:bg-zinc-900/20 hover:border-zinc-300 dark:hover:border-zinc-800"
     >
       <button
         className="flex justify-between items-start w-full text-left focus:outline-none group"
@@ -61,18 +61,18 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
           {/* Monospaced Programmatic Step Identifier */}
           <span 
             className="font-mono text-xs font-bold tracking-wider mt-1 select-none transition-colors duration-300"
-            style={{ color: isOpen ? systemAccent : '#52525b' }}
+            style={{ color: isOpen ? systemAccent : '#71717a' }}
           >
             [{formatIndex(index)}]
           </span>
-          <h3 className="font-bold text-base md:text-lg text-zinc-200 tracking-tight leading-snug group-hover:text-zinc-100 transition-colors">
+          <h3 className="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-200 tracking-tight leading-snug group-hover:text-black dark:group-hover:text-zinc-100 transition-colors">
             {faq.question}
           </h3>
         </div>
         
         {/* Sleek Rotational Indicator Chevron */}
         <div 
-          className="ml-4 p-1 rounded-md border border-zinc-800 bg-zinc-950 text-zinc-500 transition-all duration-300 flex-shrink-0"
+          className="ml-4 p-1 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 text-zinc-500 transition-all duration-300 flex-shrink-0"
           style={{ 
             borderColor: isOpen ? systemAccent : '', 
             color: isOpen ? systemAccent : '' 
@@ -92,7 +92,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
             animate="visible"
             exit="exit"
             variants={answerVariants}
-            className="overflow-hidden text-sm text-zinc-400 font-light leading-relaxed border-t border-zinc-900/60 pt-4 text-justify pl-0 sm:pl-10"
+            className="overflow-hidden text-sm text-zinc-600 dark:text-zinc-400 font-light leading-relaxed border-t border-zinc-100 dark:border-zinc-900/60 pt-4 text-justify pl-0 sm:pl-10 transition-colors"
           >
             <p>{faq.answer}</p>
           </motion.div>
@@ -130,7 +130,7 @@ const fallbackIntelFaqs: FAQ[] = [
   },
 ];
 
-export default function FAQSection({pagedata}: {pagedata: any}) {
+export default function FAQSection({ pagedata }: { pagedata: any }) {
   // const { storeFormData } = useStoreContext();
 
   const systemAccent = pagedata?.themeSettings?.primaryColor || '#F59E0B'; // Amber Core Node
@@ -142,23 +142,19 @@ export default function FAQSection({pagedata}: {pagedata: any}) {
   return (
     <section 
       id="faq"
-      className="py-24 md:py-36 bg-zinc-950 text-white font-sans relative overflow-hidden"
+      className="py-24 md:py-36 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans relative overflow-hidden transition-colors duration-300"
     >
       {/* Structural Accent Top Boundary Layer Line */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-zinc-900" />
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-zinc-200 dark:bg-zinc-900 transition-colors" />
       
       <div className="max-w-4xl mx-auto px-6 lg:px-8 relative z-10">
         
         {/* Segment Monospace Tracking Header */}
         <div className="text-center mb-16 md:mb-24">
-          {/* <div className="inline-flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-400 mb-4 select-none">
-            <CommandLineIcon className="w-3.5 h-3.5 text-amber-500" />
-            Operational Protocols
-          </div> */}
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight uppercase transition-colors">
             Frequently Asked Questions
           </h2>
-          <div className="w-12 h-[1px] bg-zinc-900 mx-auto mt-6" />
+          <div className="w-12 h-[1px] bg-zinc-200 dark:bg-zinc-900 mx-auto mt-6 transition-colors" />
         </div>
 
         {/* Dynamic Accordion Matrix Stack */}

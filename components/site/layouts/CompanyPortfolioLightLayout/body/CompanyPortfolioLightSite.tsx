@@ -39,7 +39,7 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
   // const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
 
   return (
-      <main className="min-h-screen bg-gray-100 font-sans">
+      <main className="min-h-screen bg-gray-100 dark:bg-gray-900 font-sans">
         {/* Hero Section - Render immediately */}
         <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />
 

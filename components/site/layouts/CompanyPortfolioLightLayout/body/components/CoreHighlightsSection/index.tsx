@@ -42,12 +42,30 @@ const iconMap: Record<string, React.ElementType<React.SVGProps<SVGSVGElement>>> 
 
 // Cycle styles sequentially if custom ones aren't provided by dynamic data
 const colorThemes = [
-  { accent: 'text-amber-500 border-amber-500/30 group-hover:border-amber-400', glow: 'from-amber-500/10 to-transparent' },
-  { accent: 'text-orange-500 border-orange-500/30 group-hover:border-orange-400', glow: 'from-orange-500/10 to-transparent' },
-  { accent: 'text-zinc-400 border-zinc-700 group-hover:border-zinc-500', glow: 'from-zinc-500/10 to-transparent' },
-  { accent: 'text-emerald-500 border-emerald-500/30 group-hover:border-emerald-400', glow: 'from-emerald-500/10 to-transparent' },
-  { accent: 'text-blue-500 border-blue-500/30 group-hover:border-blue-400', glow: 'from-blue-500/10 to-transparent' },
-  { accent: 'text-indigo-500 border-indigo-500/30 group-hover:border-indigo-400', glow: 'from-indigo-500/10 to-transparent' },
+  { 
+    accent: 'text-amber-600 dark:text-amber-500 border-amber-500/30 group-hover:border-amber-500 dark:group-hover:border-amber-400', 
+    glow: 'from-amber-500/10 dark:from-amber-500/10 to-transparent' 
+  },
+  { 
+    accent: 'text-orange-600 dark:text-orange-500 border-orange-500/30 group-hover:border-orange-500 dark:group-hover:border-orange-400', 
+    glow: 'from-orange-500/10 dark:from-orange-500/10 to-transparent' 
+  },
+  { 
+    accent: 'text-zinc-700 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-400 dark:group-hover:border-zinc-500', 
+    glow: 'from-zinc-500/10 dark:from-zinc-500/10 to-transparent' 
+  },
+  { 
+    accent: 'text-emerald-600 dark:text-emerald-500 border-emerald-500/30 group-hover:border-emerald-500 dark:group-hover:border-emerald-400', 
+    glow: 'from-emerald-500/10 dark:from-emerald-500/10 to-transparent' 
+  },
+  { 
+    accent: 'text-blue-600 dark:text-blue-500 border-blue-500/30 group-hover:border-blue-500 dark:group-hover:border-blue-400', 
+    glow: 'from-blue-500/10 dark:from-blue-500/10 to-transparent' 
+  },
+  { 
+    accent: 'text-indigo-600 dark:text-indigo-500 border-indigo-500/30 group-hover:border-indigo-500 dark:group-hover:border-indigo-400', 
+    glow: 'from-indigo-500/10 dark:from-indigo-500/10 to-transparent' 
+  },
 ];
 
 // --- STATIC PILLARS CONFIGURATION (FALLBACK) ---
@@ -135,7 +153,7 @@ interface CorporatePillarsProps {
 export default function CorporatePillarsSection({ pagedata }: CorporatePillarsProps) {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
 
-  const companyName = pagedata?.sectionSubtitle || "Trading Limited &bull; Operational Architecture";
+  const companyName = pagedata?.sectionSubtitle || "Trading Limited • Operational Architecture";
   const companyDescription = pagedata?.sectionDescription || "We manage sophisticated trading channels for refined and industrial metals, combining regional sourcing access with institutional compliance, structural security, and cross-border execution precision.";
   const companyTagline = pagedata?.sectionTitle || "At the intersection of global demand and trusted supply.";
 
@@ -147,7 +165,6 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
           id: value.id || `dynamic-pillar-${idx}`,
           title: value.title,
           description: value.description || '',
-          // Match string to component or fall back to default GlobeAltIcon
           Icon: value.icon && iconMap[value.icon] ? iconMap[value.icon] : GlobeAltIcon, 
           accentClass: theme.accent,
           bgGlowClass: theme.glow,
@@ -158,19 +175,19 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
   return (
     <section
       id="operations"
-      className="py-24 md:py-36 bg-zinc-950 text-white relative overflow-hidden"
+      className="py-24 md:py-36 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white relative overflow-hidden transition-colors duration-300"
     >
       {/* Premium Ambient Background Pattern */}
-      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
+      <div className="absolute inset-0 z-0 opacity-40 dark:opacity-30 pointer-events-none">
         <div 
           className="absolute inset-0" 
           style={{ 
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)', 
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(161, 161, 170, 0.15) 1px, transparent 0)', 
             backgroundSize: '32px 32px' 
           }} 
         />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-amber-500/5 blur-[140px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[250px] bg-zinc-500/10 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-amber-500/10 dark:bg-amber-500/5 blur-[140px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[250px] bg-zinc-400/20 dark:bg-zinc-500/10 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
@@ -181,7 +198,7 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             initial={{ opacity: 0, x: -20 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-xs uppercase tracking-[0.25em] text-amber-500 font-bold mb-4"
+            className="text-xs uppercase tracking-[0.25em] text-amber-600 dark:text-amber-500 font-bold mb-4"
           >
             {companyName} 
           </motion.p>
@@ -190,7 +207,7 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-100 leading-[1.1]"
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 leading-[1.1] transition-colors"
           >
             {companyTagline}
           </motion.h2>
@@ -199,7 +216,7 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-3xl font-light leading-relaxed"
+            className="mt-6 text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl font-light leading-relaxed transition-colors"
           >
             {companyDescription}
           </motion.p>
@@ -219,29 +236,28 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
               <motion.div
                 key={pillar.id}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/40 backdrop-blur-sm border p-8 rounded-2xl transition-all duration-500 hover:bg-zinc-900/80 hover:-translate-y-1 flex flex-col justify-between h-full"
-                style={{ borderColor: 'rgba(63, 63, 70, 0.4)' }} 
+                className="group relative bg-white/80 dark:bg-zinc-900/40 backdrop-blur-sm border border-zinc-200/80 dark:border-zinc-800/60 p-8 rounded-2xl shadow-sm hover:shadow-md dark:shadow-none transition-all duration-500 hover:bg-white dark:hover:bg-zinc-900/80 hover:-translate-y-1 flex flex-col justify-between h-full"
               >
                 {/* Dynamic Metallic Glow Backing */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${pillar.bgGlowClass} opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl pointer-events-none`} />
 
                 <div>
                   {/* Icon Frame */}
-                  <div className={`w-12 h-12 mb-8 flex items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 transition-all duration-300 ${pillar.accentClass}`}>
+                  <div className={`w-12 h-12 mb-8 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all duration-300 ${pillar.accentClass}`}>
                     <IconComponent className="w-6 h-6 transition-transform duration-500 group-hover:scale-110" />
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-xl font-bold text-zinc-100 mb-3 tracking-tight group-hover:text-white transition-colors duration-300">
+                  <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-3 tracking-tight group-hover:text-black dark:group-hover:text-white transition-colors duration-300">
                     {pillar.title}
                   </h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed font-light group-hover:text-zinc-300 transition-colors duration-300">
+                  <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed font-light group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors duration-300">
                     {pillar.description}
                   </p>
                 </div>
 
                 {/* Subtle Action Link Indicator */}
-                <div className="mt-8 pt-4 border-t border-zinc-800/60 flex items-center text-xs font-semibold text-zinc-500 group-hover:text-amber-500 transition-colors duration-300">
+                <div className="mt-8 pt-4 border-t border-zinc-200/80 dark:border-zinc-800/60 flex items-center text-xs font-semibold text-zinc-400 dark:text-zinc-500 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors duration-300">
                   <span className="tracking-wider uppercase">Review Controls</span>
                   <ArrowRightIcon className="w-3 h-3 ml-2 transform group-hover:translate-x-1 transition-transform" />
                 </div>

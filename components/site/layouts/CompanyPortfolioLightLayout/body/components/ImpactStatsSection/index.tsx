@@ -101,26 +101,26 @@ const MetricTile = ({ metric }: { metric: UnifiedMetric }) => {
   return (
     <motion.div
       variants={metricTileVariants}
-      className="group relative bg-zinc-900/20 backdrop-blur-sm border border-zinc-900 rounded-xl p-6 md:p-8 flex flex-col justify-between overflow-hidden transition-all duration-500 hover:bg-zinc-900/40 hover:border-zinc-800 w-full"
+      className="group relative bg-white/80 dark:bg-zinc-900/20 backdrop-blur-sm border border-zinc-200/80 dark:border-zinc-900 rounded-xl p-6 md:p-8 flex flex-col justify-between overflow-hidden shadow-sm dark:shadow-none transition-all duration-500 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-800 w-full"
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/[0.03] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 dark:bg-amber-500/[0.03] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
       
       <div>
         <div className="flex items-center justify-between mb-8">
-          <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-900/80 text-zinc-500 group-hover:text-amber-500 transition-colors duration-300 shadow-inner">
+          <div className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900/80 text-zinc-500 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors duration-300 shadow-inner">
             <IconComponent className="w-5 h-5" />
           </div>
-          <span className="font-mono text-[10px] tracking-widest text-zinc-600 select-none">
+          <span className="font-mono text-[10px] tracking-widest text-zinc-400 dark:text-zinc-600 select-none">
             // {metric.order}
           </span>
         </div>
 
-        <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-zinc-100 tracking-tight leading-none break-words">
+        <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none break-words transition-colors">
           {metric.value}
         </h3>
       </div>
       
-      <p className="mt-4 text-xs font-medium tracking-wide text-zinc-400 border-t border-zinc-900 pt-4 group-hover:text-zinc-300 transition-colors">
+      <p className="mt-4 text-xs font-medium tracking-wide text-zinc-600 dark:text-zinc-400 border-t border-zinc-200 dark:border-zinc-900 pt-4 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">
         {metric.label}
       </p>
     </motion.div>
@@ -135,7 +135,6 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
   const firmName = pagedata?.name || "Trading Limited"; 
 
   // --- 1. NORMALIZATION & AGGREGATION PIPELINE ---
-  // Convert all distinct data types into a universally parsable format
   const normalizedMetrics = (pagedata?.metrics || []).map(m => ({
     id: m.id,
     value: `${m.value || ''}${m.unit || ''}`.trim(),
@@ -155,14 +154,12 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
   const normalizedAwards = (pagedata?.awards || []).map(a => ({
     id: a.id,
     value: a.name,
-    // Combine available contextual data for the sub-label
     label: [a.category, a.organization, a.year].filter(Boolean).join(' • ') || 'Industry Recognition',
     icon: 'TrophyIcon', 
     order: a.order ?? 99
   }));
 
   // --- 2. MERGE & CAP PIPELINE ---
-  // Pool them all together, sort by order, and take the top 4
   const pooledData = [...normalizedMetrics, ...normalizedStats, ...normalizedAwards]
     .sort((a, b) => a.order - b.order)
     .slice(0, 4);
@@ -183,14 +180,13 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
     : fallbackPerformanceMetrics;
 
   // --- 4. DYNAMIC GRID ARCHITECTURE ---
-  // If we only have 1 or 2 items TOTAL, scale the grid classes to fill the space cleanly
   const itemCount = finalMetrics.length;
   let dynamicGridClass = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"; // Default 4 items
   let containerWidth = "max-w-7xl";
 
   if (itemCount === 1) {
     dynamicGridClass = "grid-cols-1";
-    containerWidth = "max-w-3xl"; // Keeps a single item from looking awkwardly wide
+    containerWidth = "max-w-3xl";
   } else if (itemCount === 2) {
     dynamicGridClass = "grid-cols-1 sm:grid-cols-2";
     containerWidth = "max-w-4xl";
@@ -200,10 +196,10 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
   }
 
   return (
-    <section id="performance-ledger" className="py-24 md:py-32 bg-zinc-950 text-white font-sans relative overflow-hidden">
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-        <div className="absolute inset-x-0 bottom-1/4 h-[1px] bg-zinc-900" />
-        <div className="absolute left-1/4 inset-y-0 w-[1px] bg-zinc-900 hidden lg:block" />
+    <section id="performance-ledger" className="py-24 md:py-32 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans relative overflow-hidden transition-colors duration-300">
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40 dark:opacity-20">
+        <div className="absolute inset-x-0 bottom-1/4 h-[1px] bg-zinc-200 dark:bg-zinc-900" />
+        <div className="absolute left-1/4 inset-y-0 w-[1px] bg-zinc-200 dark:bg-zinc-900 hidden lg:block" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
@@ -211,16 +207,16 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
         {/* Header Block */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-start mb-20">
           <div className="lg:col-span-5">
-            <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">
+            <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-600 dark:text-amber-500 mb-3">
               Audited Capital & Performance
             </p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase leading-none">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight uppercase leading-none transition-colors">
               {sectionTitle}
             </h2>
           </div>
           
-          <div className="lg:col-span-7 lg:border-l lg:border-zinc-900 lg:pl-10">
-            <p className="text-zinc-400 text-sm md:text-base font-light leading-relaxed text-justify">
+          <div className="lg:col-span-7 lg:border-l lg:border-zinc-200 dark:lg:border-zinc-900 lg:pl-10 transition-colors">
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base font-light leading-relaxed text-justify transition-colors">
               The success of our network is built on a foundation of speed, safety, and accuracy. By using automated compliance checks and secure, high-tech vaults, we ensure that every transaction is verified and protected. These records provide a clear, transparent view of the reliable operations managed by {firmName}.
             </p>
           </div>
