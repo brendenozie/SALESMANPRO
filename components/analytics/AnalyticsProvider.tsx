@@ -2,46 +2,51 @@ import Script from "next/script";
 
 interface AnalyticsProviderProps {
   config?: {
-    googleTag?: string;
-    metaPixel?: string;
-    tiktokPixel?: string;
-    hotjarSiteId?: string;
-    facebookTag?: string;
+    googleAnalyticsId?: string | null;
+    googleAdsId?: string | null;
+    facebookPixelId?: string | null;
+    tiktokPixelId?: string | null;
+    hotjarSiteId?: string | null;
     isActive?: boolean;
   };
 }
 
 export default function AnalyticsProvider({ config }: AnalyticsProviderProps) {
-  if (!config) return null;
+  // Master killswitch: If config is missing or tracking is disabled, inject nothing.
+  if (!config || !config.isActive) return null;
 
-  // googleTag: raw.AnalyticsConfig.googleTag ?? null,
-  //     facebookTag: raw.AnalyticsConfig.facebookTag ?? null,
-  //     hotjarSiteId: raw.AnalyticsConfig.hotjarSiteId ?? null,
-  //     isActive: typeof raw.AnalyticsConfig.isActive === 'boolean' ? raw.AnalyticsConfig.isActive : false,
-  const { googleTag, metaPixel, tiktokPixel, hotjarSiteId, facebookTag, isActive } = config;
+  const { 
+    googleAnalyticsId, 
+    googleAdsId, 
+    facebookPixelId, 
+    tiktokPixelId, 
+    hotjarSiteId 
+  } = config;
 
   return (
     <>
-      {/* ================= GA4 ================= */}
-      {googleTag && (
+      {/* ================= Google Analytics & Google Ads ================= */}
+      {(googleAnalyticsId || googleAdsId) && (
         <>
+          {/* Initialize gtag with whichever ID exists first */}
           <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${googleTag}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId || googleAdsId}`}
             strategy="afterInteractive"
           />
-          <Script id="ga4" strategy="afterInteractive">
+          <Script id="google-analytics" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${googleTag}');
+              ${googleAnalyticsId ? `gtag('config', '${googleAnalyticsId}');` : ''}
+              ${googleAdsId ? `gtag('config', '${googleAdsId}');` : ''}
             `}
           </Script>
         </>
       )}
 
       {/* ================= META (Facebook Pixel) ================= */}
-      {metaPixel && (
+      {facebookPixelId && (
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
@@ -52,14 +57,14 @@ export default function AnalyticsProvider({ config }: AnalyticsProviderProps) {
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${metaPixel}');
+            fbq('init', '${facebookPixelId}');
             fbq('track', 'PageView');
           `}
         </Script>
       )}
 
       {/* ================= TikTok Pixel ================= */}
-      {tiktokPixel && (
+      {tiktokPixelId && (
         <Script id="tiktok-pixel" strategy="afterInteractive">
           {`
             !function (w, d, t) {
@@ -85,7 +90,7 @@ export default function AnalyticsProvider({ config }: AnalyticsProviderProps) {
                 var a=d.getElementsByTagName("script")[0];
                 a.parentNode.insertBefore(o,a)
               };
-              ttq.load('${tiktokPixel}');
+              ttq.load('${tiktokPixelId}');
               ttq.page();
             }(window, document, 'ttq');
           `}
@@ -104,24 +109,6 @@ export default function AnalyticsProvider({ config }: AnalyticsProviderProps) {
               r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
               a.appendChild(r);
             })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-          `}
-        </Script>
-      )}
-
-      {/* ================= Facebook Tag (if separate from Meta Pixel) ================= */}
-      {facebookTag && (
-        <Script id="facebook-tag" strategy="afterInteractive">
-          {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${facebookTag}');
-            fbq('track', 'PageView');
           `}
         </Script>
       )}

@@ -13,7 +13,14 @@ const socialLinkSchema = z.object({
 
 const policySchema = z.object({
   type: z
-    .enum(["SHIPPING", "RETURNS", "PRIVACY", "TERMS", "CANCELLATION","CONFIDENTIALITY"])
+    .enum([
+      "SHIPPING",
+      "RETURNS",
+      "PRIVACY",
+      "TERMS",
+      "CANCELLATION",
+      "CONFIDENTIALITY",
+    ])
     .default("PRIVACY")
     .nullable()
     .optional()
@@ -184,8 +191,12 @@ export const companySchema = z.object({
 
   analyticsConfig: z
     .object({
-      googleTag: z.string().nullable().optional(),
-      facebookTag: z.string().nullable().optional(),
+      // id: z.string().optional(),
+      // companyId: z.string().optional(),
+      googleAnalyticsId: z.string().nullable().optional(),
+      googleAdsId: z.string().nullable().optional(),
+      facebookPixelId: z.string().nullable().optional(),
+      tiktokPixelId: z.string().nullable().optional(),
       hotjarSiteId: z.string().nullable().optional(),
       isActive: z.boolean().default(false),
     })

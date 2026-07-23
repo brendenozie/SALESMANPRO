@@ -686,16 +686,21 @@ model Promotion {
 model AnalyticsConfig {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  googleTag   String?
-  facebookTag String?
+  // Google Tracking
+  googleAnalyticsId String?
+  googleAdsId       String?
 
+  // Social Pixels
+  facebookPixelId String?
+  tiktokPixelId   String?
+
+  // Behavioral & Heatmaps
   hotjarSiteId String?
 
   isActive Boolean @default(false)
 
+  // Relations
   company Company?
-
-  @@index([id])
 }
 
 model PaymentSettings {

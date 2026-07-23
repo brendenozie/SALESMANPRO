@@ -416,8 +416,11 @@ export const websiteSteps: StepConfig[] = [
       <SettingsAccordion
         analyticsConfig={{
           id: f.analyticsConfig?.id ?? '',
-          googleTag: f.analyticsConfig?.googleTag ?? null,
-          facebookTag: f.analyticsConfig?.facebookTag ?? null,
+          companyId: f.analyticsConfig?.companyId ?? '',
+          googleAnalyticsId: f.analyticsConfig?.googleAnalyticsId ?? null,
+          googleAdsId: f.analyticsConfig?.googleAdsId ?? null,
+          facebookPixelId: f.analyticsConfig?.facebookPixelId ?? null,
+          tiktokPixelId: f.analyticsConfig?.tiktokPixelId ?? null,
           hotjarSiteId: f.analyticsConfig?.hotjarSiteId ?? null,
           isActive: f.analyticsConfig?.isActive ?? false,
         }}
@@ -425,8 +428,11 @@ export const websiteSteps: StepConfig[] = [
           h.onChangeSettings({
             analyticsConfig: {
               id: upd.id ?? '',
-              googleTag: upd.googleTag ?? null,
-              facebookTag: upd.facebookTag ?? null,
+              companyId: upd.companyId ?? '',
+              googleAnalyticsId: upd.googleAnalyticsId ?? null,
+              googleAdsId: upd.googleAdsId ?? null,
+              facebookPixelId: upd.facebookPixelId ?? null,
+              tiktokPixelId: upd.tiktokPixelId ?? null,
               hotjarSiteId: upd.hotjarSiteId ?? null,
               isActive: upd.isActive ?? false,
             },

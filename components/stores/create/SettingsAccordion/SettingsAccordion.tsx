@@ -17,10 +17,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 export interface AnalyticsConfig {
   id?: string;
   companyId?: string;
-  googleTag?: string | null;
-  facebookTag?: string | null;
+
+  // Google
+  googleAnalyticsId?: string | null;   // G-XXXXXXXXXX
+  googleAdsId?: string | null;         // AW-XXXXXXXXXX
+
+  // Meta
+  facebookPixelId?: string | null;
+
+  // TikTok
+  tiktokPixelId?: string | null;
+
+  // Hotjar
   hotjarSiteId?: string | null;
-  isActive?: boolean | undefined; 
+
+  isActive?: boolean;
 }
 
 /**
@@ -38,12 +49,19 @@ export default function SettingsAccordion({
   const [isOpen, setIsOpen] = useState(true);
 
   const isGloballyActive = analyticsConfig?.isActive ?? false;
-  const googleTagValue = analyticsConfig?.googleTag || '';
-  const facebookTagValue = analyticsConfig?.facebookTag || '';
+
+  // Safe fallback extractions matching the AnalyticsConfig schema
+  const googleAnalyticsIdValue = analyticsConfig?.googleAnalyticsId || '';
+  const googleAdsIdValue = analyticsConfig?.googleAdsId || '';
+  const facebookPixelIdValue = analyticsConfig?.facebookPixelId || '';
+  const tiktokPixelIdValue = analyticsConfig?.tiktokPixelId || '';
   const hotjarSiteIdValue = analyticsConfig?.hotjarSiteId || '';
 
-  const updateField = (key: keyof AnalyticsConfig, value: any) => {
-    onChange({ ...analyticsConfig, [key]: value });
+  const updateField = <K extends keyof AnalyticsConfig>(key: K, value: AnalyticsConfig[K]) => {
+    onChange({ 
+      ...analyticsConfig, 
+      [key]: value 
+    });
   };
 
   return (
@@ -60,7 +78,7 @@ export default function SettingsAccordion({
           </div>
           <div>
             <h2 className="text-lg font-bold text-zinc-950 dark:text-white">Telemetry & Analytics Engines</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Deploy third-party behavioral pixels, site triggers, and indexing tags.</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Deploy third-party behavioral pixels, site triggers, and tracking IDs.</p>
           </div>
         </div>
 
@@ -74,7 +92,7 @@ export default function SettingsAccordion({
             <span className={`w-1.5 h-1.5 rounded-full ${isGloballyActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
             {isGloballyActive ? 'Live Sync' : 'Disabled'}
           </span>
-          <button className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500">
+          <button type="button" className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500">
             {isOpen ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
           </button>
         </div>
@@ -118,71 +136,131 @@ export default function SettingsAccordion({
               </div>
 
               {/* Main Script Token Input Fields Layout */}
-              <div className={`grid grid-cols-1 md:grid-cols-3 gap-5 transition-opacity duration-300 ${
+              <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 transition-opacity duration-300 ${
                 isGloballyActive ? 'opacity-100' : 'opacity-40 pointer-events-none select-none'
               }`}>
                 
-                {/* Google Analytics Integration Configuration */}
+                {/* Google Analytics Integration */}
                 <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between space-y-4">
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label htmlFor="googleTag" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <label htmlFor="googleAnalyticsId" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#4285F4]" />
-                        Google Tag ID
+                        Google Analytics ID
                       </label>
-                      {googleTagValue ? (
+                      {googleAnalyticsIdValue ? (
                         <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
                       ) : (
                         <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded">Standby</span>
                       )}
                     </div>
                     <input
-                      id="googleTag"
+                      id="googleAnalyticsId"
                       type="text"
                       disabled={!isGloballyActive}
-                      value={googleTagValue}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('googleTag', e.target.value)}
+                      value={googleAnalyticsIdValue}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('googleAnalyticsId', e.target.value)}
                       placeholder="G-XXXXXXXXXX"
                       className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-hidden transition shadow-2xs"
                     />
                   </div>
                   <div className="flex items-start gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 leading-normal pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
-                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 flex-shrink-0 mt-0.5" />
-                    <span>Handles GA4 architecture events tracking streams effortlessly.</span>
+                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 shrink-0 mt-0.5" />
+                    <span>Handles GA4 architecture events and traffic streams.</span>
                   </div>
                 </div>
 
-                {/* Facebook / Meta Pixel Integration Configuration */}
+                {/* Google Ads Integration */}
                 <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between space-y-4">
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label htmlFor="facebookTag" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#1877F2]" />
-                        Meta Pixel ID
+                      <label htmlFor="googleAdsId" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#34A853]" />
+                        Google Ads ID
                       </label>
-                      {facebookTagValue ? (
+                      {googleAdsIdValue ? (
                         <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
                       ) : (
                         <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded">Standby</span>
                       )}
                     </div>
                     <input
-                      id="facebookTag"
+                      id="googleAdsId"
                       type="text"
                       disabled={!isGloballyActive}
-                      value={facebookTagValue}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('facebookTag', e.target.value)}
+                      value={googleAdsIdValue}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('googleAdsId', e.target.value)}
+                      placeholder="AW-XXXXXXXXXX"
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-hidden transition shadow-2xs"
+                    />
+                  </div>
+                  <div className="flex items-start gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 leading-normal pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
+                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 shrink-0 mt-0.5" />
+                    <span>Tracks Google Ads conversion tags and remarketing lists.</span>
+                  </div>
+                </div>
+
+                {/* Meta Pixel Integration */}
+                <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label htmlFor="facebookPixelId" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1877F2]" />
+                        Meta Pixel ID
+                      </label>
+                      {facebookPixelIdValue ? (
+                        <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                      ) : (
+                        <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded">Standby</span>
+                      )}
+                    </div>
+                    <input
+                      id="facebookPixelId"
+                      type="text"
+                      disabled={!isGloballyActive}
+                      value={facebookPixelIdValue}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('facebookPixelId', e.target.value)}
                       placeholder="1234567890"
                       className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-hidden transition shadow-2xs"
                     />
                   </div>
                   <div className="flex items-start gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 leading-normal pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
-                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 flex-shrink-0 mt-0.5" />
-                    <span>Feeds customized retargeting signals directly into Ads Manager.</span>
+                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 shrink-0 mt-0.5" />
+                    <span>Feeds customized retargeting signals to Ads Manager.</span>
                   </div>
                 </div>
 
-                {/* Hotjar Heatmap Integration Configuration */}
+                {/* TikTok Pixel Integration */}
+                <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label htmlFor="tiktokPixelId" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00F2FE]" />
+                        TikTok Pixel ID
+                      </label>
+                      {tiktokPixelIdValue ? (
+                        <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                      ) : (
+                        <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded">Standby</span>
+                      )}
+                    </div>
+                    <input
+                      id="tiktokPixelId"
+                      type="text"
+                      disabled={!isGloballyActive}
+                      value={tiktokPixelIdValue}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => updateField('tiktokPixelId', e.target.value)}
+                      placeholder="CXXXXXXXXXXXXXXXXX"
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-hidden transition shadow-2xs"
+                    />
+                  </div>
+                  <div className="flex items-start gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 leading-normal pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
+                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 shrink-0 mt-0.5" />
+                    <span>Measures event conversions and web traffic from TikTok.</span>
+                  </div>
+                </div>
+
+                {/* Hotjar Heatmap Integration */}
                 <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between space-y-4">
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
@@ -207,17 +285,17 @@ export default function SettingsAccordion({
                     />
                   </div>
                   <div className="flex items-start gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 leading-normal pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
-                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 flex-shrink-0 mt-0.5" />
+                    <InformationCircleIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 shrink-0 mt-0.5" />
                     <span>Aggregates live recording visual heatmaps and scroll-maps.</span>
                   </div>
                 </div>
 
               </div>
 
-              {/* Warning/Status Callout Banner if Engines are Closed down */}
+              {/* Warning Callout Banner when deactivated */}
               {!isGloballyActive && (
-                <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800/80 flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400 animate-fadeIn">
-                  <ExclamationCircleIcon className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800/80 flex items-center gap-2.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  <ExclamationCircleIcon className="w-4 h-4 text-zinc-400 shrink-0" />
                   <span>Tracking properties are safely localized. Toggle <strong>Global Tracker Synchronization</strong> back on to reconnect code pipelines.</span>
                 </div>
               )}

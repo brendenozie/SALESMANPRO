@@ -11,6 +11,8 @@ import { SITE_CATEGORIES } from '@/utils/sitedata';
 import { findCompanyCached } from '@/lib/company-fetcher';
 import WhatsAppBubble from '@/components/WhatsAppBubble';
 
+import siteMetadata from '@/data/siteMetadata';
+import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
 
 // ISR Activation: Allows caching static pages on the edge for 60 seconds
 export const revalidate = 60;
@@ -18,6 +20,28 @@ export const revalidate = 60;
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+// --- HELPER FUNCTIONS ---
+
+function normalize(raw: string) {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9&() ]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+// Safely extract SEO regardless of Prisma casing quirks
+function extractSEO(company: any) {
+  return company?.SEO ?? company?.sEO ?? {};
+}
+
+// Ensure no double slashes when joining URLs
+function getCleanSiteUrl() {
+  return siteMetadata.siteUrl.replace(/\/$/, '');
+}
+
+// --- METADATA ---
 
 export async function generateMetadata(
   { params }: Props,
@@ -35,26 +59,29 @@ export async function generateMetadata(
     };
   }
 
-  const seo = (company as any).SEO ?? (company as any).sEO;
-  const title = seo?.title || company.name;// || 'Ghuba';
-  const description = seo?.description || 'Discover our exclusive collection.';
+  const seo = extractSEO(company);
+  const title = seo.title || company.name;
+  const description = seo.description || 'Discover our exclusive collection.';
 
   // Safely fallback to the root layout's social banner if the store has no logo
   const previousImages = (await parent).openGraph?.images || [];
   const images = company.logoUrl ? [company.logoUrl] : previousImages;
+  
+  const cleanBaseUrl = getCleanSiteUrl();
+  const canonicalUrl = `${cleanBaseUrl}/${slug}`;
 
   return {
     title,
     description,
     icons: company.logoUrl ? { icon: company.logoUrl, apple: company.logoUrl } : undefined,
-    keywords: seo?.keywords || 'ecommerce, ghuba, shops, marketplace',
+    keywords: seo.keywords || 'ecommerce, ghuba, shops, marketplace',
     alternates: {
-      canonical: `/${slug}`, // Prevents duplicate content penalties
+      canonical: canonicalUrl, 
     },
     openGraph: {
       title,
       description,
-      url: `/${slug}`, // Ensures social shares link directly to the profile
+      url: canonicalUrl, 
       images,
     },
     twitter: {
@@ -66,37 +93,7 @@ export async function generateMetadata(
   };
 }
 
-// export async function generateMetadata({ params }: Props): Promise<Metadata> {
-//   const { slug } = await params;
-
-//   // Blazing fast cache read using only the parsed param string
-//   const company = await findCompanyCached(slug, 'lean');
-
-//   if (!company) {
-//     return { title: 'Store not found' };
-//   }
-
-//   const seo = (company as any).SEO ?? (company as any).sEO;
-//   const title = seo?.title || company.name || 'Ghuba';
-//   const description = seo?.description || 'Discover our exclusive collection.';
-
-//   return {
-//     title,
-//     description,
-//     keywords: seo?.keywords || 'ecommerce, ghuba, shops, marketplace',
-//     openGraph: {
-//       title,
-//       description,
-//       images: [company.logoUrl || ''],
-//     },
-//     twitter: {
-//       card: 'summary_large_image',
-//       title,
-//       description,
-//       images: [company.logoUrl || ''],
-//     },
-//   };
-// }
+// --- LAYOUT ---
 
 interface StoreLayoutProps {
   params: Promise<{ slug: string }>;
@@ -106,43 +103,23 @@ interface StoreLayoutProps {
 export default async function StoreLayout({ params, children }: StoreLayoutProps) {
   const { slug } = await params;
 
-  // React dedupes this call automatically. It will hit the unstable_cache, not your database.
+  // React dedupes this call automatically
   const raw = await findCompanyCached(slug, 'lean');
   
   if (!raw) {
     notFound();
   }
 
+  // NOTE: Ensure your `transformCompanyToStoreForm` utility handles the 
+  // "ghuba" domain/slug overrides internally to keep this layout clean.
   const storeFormData = transformCompanyToStoreForm(raw);
-  // const category = normalize(storeFormData.category || 'other');
-  // const variant = normalize(storeFormData.variant || '');
 
-  // const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
-  
-  // let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]
-  //   || (() => {
-  //     const matchedCategory = categoryMap.get(category)
-  //     if (matchedCategory?.variants?.length) {
-  //       const firstVariant = normalize(matchedCategory.variants[0].name);
-  //       return categoryHeaderFooterLayoutMap[firstVariant];
-  //     }
-  //   })()
-  //   || categoryHeaderFooterLayoutMap['default'];
+  const category = normalize(storeFormData.category || 'other');
+  const variant = normalize(storeFormData.variant || '');
 
-  // 1. Normalize the inputs
-  const categoryInput = storeFormData.category || 'other';
-  const variantInput = storeFormData.variant || '';
-
-  // 2. Apply your "ghuba" override logic
-  const isGhuba = storeFormData.domain === 'ghuba' || storeFormData.slug === 'ghuba';
-
-  const category = isGhuba ? 'other' : normalize(categoryInput);
-  const variant = isGhuba ? 'ghuba' : normalize(variantInput);
-
-  // 3. Map setup
   const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
 
-  // 4. Determine the Layout Component
+  // Determine the Layout Component dynamically
   let LayoutComponent = categoryHeaderFooterLayoutMap[variant] 
   || categoryHeaderFooterLayoutMap[category]
   || (() => {
@@ -156,25 +133,49 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
 
   const userId = ''; // Replace with session data when needed
 
+  // Build the JSON-LD object safely
+  const seo = extractSEO(raw);
+  const cleanBaseUrl = getCleanSiteUrl();
+  
+  const jsonLd: any = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: raw.name,
+    url: `${cleanBaseUrl}/${slug}`,
+    description: seo.description || 'Discover our exclusive collection.',
+  };
+
+  if (raw.logoUrl) {
+    jsonLd.image = raw.logoUrl;
+    jsonLd.logo = raw.logoUrl;
+  }
+
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
       <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100">
         <LayoutComponent params={{ storeFormData }}>
-          {/* Suspense handles streaming UI cleanly while the lower page data mounts */}
+          
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+          
+          {/* 
+            Keeping Suspense here for safety, but consider moving this LoadingSpinner 
+            into an `app/site/[tenantSlug]/loading.tsx` file to utilize native Next.js router suspense.
+          */}
           <Suspense fallback={<LoadingSpinner />}>
             {children}
           </Suspense>
+          
+          {/* Ensure WhatsAppBubble's interface marks productName as optional, or pass undefined */}
           <WhatsAppBubble productName={''} />
+          
+          {/* Analytics integration */}
+          <AnalyticsProvider config={raw.AnalyticsConfig} />
+          
         </LayoutComponent>
       </div>
     </StoreContextProvider>
   );
-}
-
-function normalize(raw: string) {
-  return raw
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9&() ]/g, '')
-    .replace(/\s+/g, ' ');
 }

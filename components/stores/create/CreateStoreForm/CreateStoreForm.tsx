@@ -227,8 +227,10 @@ export default function CreateStoreForm({
     analyticsConfig: {
       id: "",
       // companyId: "",
-      googleTag: null,
-      facebookTag: null,
+      googleAnalyticsId: null,
+      googleAdsId: null,
+      facebookPixelId: null,
+      tiktokPixelId: null,
       hotjarSiteId: null,
       isActive: false
     },

@@ -20,6 +20,9 @@ function safeDateToString(
 }
 
 export function transformCompanyToStoreForm(raw: any): StoreForm {
+
+  const isGhuba = raw.domain === 'ghuba' || raw.slug === 'ghuba';
+
   return {
     id: raw.id,
     name: raw.name,
@@ -28,8 +31,8 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     domain: raw.domain ?? "",
     tagline: raw.tagline ?? "",
     description: raw.description ?? "",
-    category: raw.category,
-    variant: raw.variant ?? "",
+    category: isGhuba ? 'other' : raw.category,
+    variant: isGhuba ? 'ghuba' : raw.variant,
     logoUrl: raw.logoUrl ?? "",
     bannerUrl: raw.bannerUrl ?? "",
     videoUrl: raw.videoUrl ?? "",
@@ -111,17 +114,19 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
         }
       : null,
     analyticsConfig: raw.AnalyticsConfig
-      ? {
-          id: String(raw.AnalyticsConfig.id),
-          googleTag: raw.AnalyticsConfig.googleTag ?? "G-JQJSSHQD25",
-          facebookTag: raw.AnalyticsConfig.facebookTag ?? null,
-          hotjarSiteId: raw.AnalyticsConfig.hotjarSiteId ?? null,
-          isActive:
-            typeof raw.AnalyticsConfig.isActive === "boolean"
-              ? raw.AnalyticsConfig.isActive
-              : false,
-        }
-      : null,
+    ? {
+        id: String(raw.AnalyticsConfig.id),
+        googleAnalyticsId: raw.AnalyticsConfig.googleAnalyticsId ?? "G-JQJSSHQD25",
+        googleAdsId: raw.AnalyticsConfig.googleAdsId ?? null,
+        facebookPixelId: raw.AnalyticsConfig.facebookPixelId ?? null,
+        tiktokPixelId: raw.AnalyticsConfig.tiktokPixelId ?? null,
+        hotjarSiteId: raw.AnalyticsConfig.hotjarSiteId ?? null,
+        isActive:
+          typeof raw.AnalyticsConfig.isActive === "boolean"
+            ? raw.AnalyticsConfig.isActive
+            : false,
+      }
+    : null,
     paymentSettings: raw.PaymentSettings
       ? ({
           id: String(raw.PaymentSettings.id),
