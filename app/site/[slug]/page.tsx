@@ -1,5 +1,3 @@
-// app/site/[slug]/page.tsx
-
 import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
 import { BodyComponentMap } from '@/components/site/BodyComponentMap';
@@ -12,20 +10,21 @@ interface StorePageProps {
 
 export default async function StorePage({ params }: StorePageProps) {
   const { slug } = await params;
-  const { componentName, pageData, raw } = await loadStore(slug);
+  
+  // Extract ghubaData alongside the rest
+  const { componentName, pageData, raw, ghubaData } = await loadStore(slug);
 
   const BodyComponent = BodyComponentMap[componentName] || BodyComponentMap['DefaultSite'];
   const enabledPaymentMethods = getEnabledPaymentMethods(raw.PaymentSettings);
 
   return (
     <main className="bg-black dark:bg-gray-800 text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto">
-      
       <BodyComponent 
         pageData={pageData} 
         companyId={raw.id} 
         paymentMethods={enabledPaymentMethods}
+        ghubaData={ghubaData} // <-- Pass the pre-fetched data
       />
-
     </main>
   );
 }

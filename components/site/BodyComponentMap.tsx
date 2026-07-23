@@ -59,7 +59,7 @@ import EcommerceAccessoriesSite from './layouts/EcommerceAccessoriesLayout/body/
 import CompanyPortfolioLightSite from './layouts/CompanyPortfolioLightLayout/body/CompanyPortfolioLightSite';
 
 // A single, clean map from component name to the component itself.
-export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[] }>> = {
+export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[]; ghubaData?: any }>> = {
   'GhubaSite': GhubaSite,
   'PublicSpeakingSite': PublicSpeakingSite,
   'AutomotiveSite': AutomotiveSite,

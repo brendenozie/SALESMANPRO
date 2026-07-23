@@ -31,10 +31,10 @@ const listingSelect = {
 };
 
 const listingWhere = {
-  // status: "ACTIVE",
-  // isAvailable: true,
-  // ghubaAdminApproved: true,
-  // ghubaStatus: "APPROVED",
+  status: "ACTIVE",
+  isAvailable: true,
+  ghubaAdminApproved: true,
+  ghubaStatus: "APPROVED",
 };
 
 async function getHandler() {
@@ -95,7 +95,7 @@ async function getHandler() {
     ] = await Promise.all([
       prisma.marketplaceListings.findMany({
         where: {
-          // ...listingWhere,
+          ...listingWhere,
           isFlashDeal: true,
         },
         take: 12,

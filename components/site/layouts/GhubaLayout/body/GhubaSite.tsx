@@ -59,164 +59,93 @@ const DynamicShop = dynamic(() => import('./components/shops').then(m => (props:
 const DynamicAnnocument = dynamic(() => import('./components/annocument/Annocument'), { ssr: false });
 const DynamicWrapper = dynamic(() => import('./components/wrapper/Wrapper'), { ssr: false });
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const HomePage = ({ pageData, ghubaData, companyId }: { pageData: StoreForm , ghubaData?: any , companyId: string }) => {
+  // 1. Pull server-injected data synchronously (No API fetching needed!)
+  // const ghubaData = .ghubaData || {};
+  const categories = ghubaData.categories || [];
+  const sections = ghubaData.sections || {};
 
-const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: string }) => {
-  const [homeData, setHomeData] = useState<any>({
-    categories: [],
-    flashDeals: [],
-    newArrivals: [],
-    discounts: [],
-    featured: [],
-    featuredCategory: null,
-    productsByCategory: {},
-    featuredCategoryProducts: []
-  });
-  
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  const featuredCategory = ghubaData.featuredCategory ?? categories.find((c: any) => c.isFeatured) ?? categories[0] ?? null;
+  const flashDeals = sections.flashDeals || [];
+  const newArrivals = sections.newArrivals || [];
+  const discounts = sections.discounts || [];
+  const featuredCategoryProducts = sections.featuredCategoryProducts || [];
+
   // Track exactly which dynamic chunks have completed rendering in the DOM
   const [mountedComponents, setMountedComponents] = useState<Record<string, boolean>>({});
-
   const { addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-
-  useEffect(() => {
-    const fetchHomepage = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${apiBaseUrl}/shop/homepage`);
-
-        if (!response.ok) {
-          throw new Error("Failed to load homepage");
-        }
-
-        const data = await response.json();
-        const featuredCat = data.featuredCategory ?? data.categories.find((c: any) => c.isFeatured) ?? data.categories[0];
-
-        setHomeData({
-          categories: data.categories ?? [],
-          flashDeals: data.sections?.flashDeals ?? [],
-          newArrivals: data.sections?.newArrivals ?? [],
-          discounts: data.sections?.discounts ?? [],
-          featured: data.sections?.featured ?? [],
-          featuredCategory: featuredCat,
-          productsByCategory: { [featuredCat?.name ?? "featured"]: data.sections?.featuredCategoryProducts ?? [] },
-          featuredCategoryProducts: data.sections?.featuredCategoryProducts ?? []
-        });
-
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHomepage();
-  }, []);
-
-  if (error) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-xl font-semibold text-red-500">Error: {error}</p>
-      </div>
-    );
-  }
-
-  const { categories, flashDeals, newArrivals, discounts, featuredCategory, featuredCategoryProducts } = homeData;
 
   // Determine exactly which components are expected to display based on the API data payload
   const expectedKeys: string[] = [];
-  if (categories?.length > 0) {
-    expectedKeys.push("banner", "topCate");
-  }
+  if (categories?.length > 0) expectedKeys.push("banner", "topCate");
   if (flashDeals?.length > 0) expectedKeys.push("flashDeals");
   if (newArrivals?.length > 0) expectedKeys.push("newArrivals");
   if (discounts?.length > 0) expectedKeys.push("discounts");
   if (featuredCategory && featuredCategoryProducts.length > 0) expectedKeys.push("shop");
 
-  // Bottom components can only show when loading is finished AND every expected component has mounted
-  const allTopComponentsReady = !loading && expectedKeys.every(key => mountedComponents[key]);
+  // Bottom components can only show when every expected component has mounted
+  const allTopComponentsReady = expectedKeys.length > 0 && expectedKeys.every(key => mountedComponents[key]);
 
   const handleComponentMount = (key: string) => {
     setMountedComponents(prev => ({ ...prev, [key]: true }));
   };
 
+  // 2. Primary Display Zones (Skeletons are now handled natively by next/dynamic 'loading' option)
   return (
     <>
-      {/* 1. Base API Skeleton Layout Safeguard */}
-      {loading && (
-        <div className="container mx-auto px-6 py-8 space-y-16 max-w-7xl animate-pulse">
-          <div className="w-full h-[400px] bg-gray-200 dark:bg-zinc-800 rounded-3xl" />
-          <div className="space-y-4">
-            <div className="h-6 w-48 bg-gray-200 dark:bg-zinc-800 rounded-md" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-64 bg-gray-200 dark:bg-zinc-800 rounded-2xl" />
-              ))}
-            </div>
-          </div>
-        </div>
+      {categories?.length > 0 && (
+        <DynamicBannerSlider 
+          categories={categories} 
+          onMount={() => handleComponentMount("banner")} 
+        />
       )}
-
-      {/* 2. Primary Display Zones */}
-      {!loading && (
-        <>
-          {categories?.length > 0 && (
-            <DynamicBannerSlider 
-              categories={categories} 
-              onMount={() => handleComponentMount("banner")} 
-            />
-          )}
-          
-          {flashDeals?.length > 0 && (
-            <DynamicFlashDeals
-              productItems={flashDeals}
-              addToCart={addToCart}
-              decreaseQuantity={decreaseQuantity}
-              removeFromCart={removeFromCart}
-              onMount={() => handleComponentMount("flashDeals")}
-            />
-          )}
-          
-          {categories?.length > 0 && (
-            <DynamicTopCate 
-              categories={categories} 
-              onMount={() => handleComponentMount("topCate")} 
-            />
-          )}
-          
-          {newArrivals?.length > 0 && (
-            <DynamicNewArrivals
-              productItems={newArrivals}
-              addToCart={addToCart}
-              decreaseQuantity={decreaseQuantity}
-              removeFromCart={removeFromCart}
-              onMount={() => handleComponentMount("newArrivals")}
-            />
-          )}
-          
-          {discounts?.length > 0 && (
-            <DynamicDiscount
-              productItems={discounts}
-              addToCart={addToCart}
-              decreaseQuantity={decreaseQuantity}
-              removeFromCart={removeFromCart}
-              onMount={() => handleComponentMount("discounts")}
-            />
-          )}
-          
-          {featuredCategory && featuredCategoryProducts.length > 0 && (
-            <DynamicShop
-              category={featuredCategory}
-              shopItems={featuredCategoryProducts}
-              addToCart={addToCart}
-              decreaseQuantity={decreaseQuantity}
-              removeFromCart={removeFromCart}
-              onMount={() => handleComponentMount("shop")}
-            />
-          )}
-        </>
+      
+      {flashDeals?.length > 0 && (
+        <DynamicFlashDeals
+          productItems={flashDeals}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+          onMount={() => handleComponentMount("flashDeals")}
+        />
+      )}
+      
+      {categories?.length > 0 && (
+        <DynamicTopCate 
+          categories={categories} 
+          onMount={() => handleComponentMount("topCate")} 
+        />
+      )}
+      
+      {newArrivals?.length > 0 && (
+        <DynamicNewArrivals
+          productItems={newArrivals}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+          onMount={() => handleComponentMount("newArrivals")}
+        />
+      )}
+      
+      {discounts?.length > 0 && (
+        <DynamicDiscount
+          productItems={discounts}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+          onMount={() => handleComponentMount("discounts")}
+        />
+      )}
+      
+      {featuredCategory && featuredCategoryProducts.length > 0 && (
+        <DynamicShop
+          category={featuredCategory}
+          shopItems={featuredCategoryProducts}
+          addToCart={addToCart}
+          decreaseQuantity={decreaseQuantity}
+          removeFromCart={removeFromCart}
+          onMount={() => handleComponentMount("shop")}
+        />
       )}
       
       {/* 3. Subordinated Bottom Components Gate */}
@@ -231,6 +160,239 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
 };
 
 export default HomePage;
+// "use client";
+
+// import React, { useState, useEffect } from "react";
+// import dynamic from 'next/dynamic';
+// import { useStateContext } from '@/contexts/ContextProvider';
+// import { StoreForm } from '@/types/typings';
+// import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
+
+// // Intercepting dynamic loads to catch exact client-side mounting events
+// const DynamicBannerSlider = dynamic(() => import('./components/BannerSlider/BannerSlider').then(m => (props: any) => {
+//   useEffect(() => { props.onMount?.(); }, []);
+//   return <m.default {...props} />;
+// }), { 
+//   loading: () => <div className="h-[400px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />, 
+//   ssr: false 
+// });
+
+// const DynamicFlashDeals = dynamic(() => import('./components/flashDeals/FlashDeals').then(m => (props: any) => {
+//   useEffect(() => { props.onMount?.(); }, []);
+//   return <m.default {...props} />;
+// }), { 
+//   loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
+//   ssr: false 
+// });
+
+// const DynamicTopCate = dynamic(() => import('./components/top').then(m => (props: any) => {
+//   useEffect(() => { props.onMount?.(); }, []);
+//   return <m.default {...props} />;
+// }), { 
+//   loading: () => <div className="h-40 bg-zinc-100 dark:bg-zinc-800 rounded-xl animate-pulse" />, 
+//   ssr: false 
+// });
+
+// const DynamicNewArrivals = dynamic(() => import('./components/newarrivals').then(m => (props: any) => {
+//   useEffect(() => { props.onMount?.(); }, []);
+//   return <m.default {...props} />;
+// }), { 
+//   loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
+//   ssr: false 
+// });
+
+// const DynamicDiscount = dynamic(() => import('./components/discount').then(m => (props: any) => {
+//   useEffect(() => { props.onMount?.(); }, []);
+//   return <m.default {...props} />;
+// }), { 
+//   loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
+//   ssr: false 
+// });
+
+// const DynamicShop = dynamic(() => import('./components/shops').then(m => (props: any) => {
+//   useEffect(() => { props.onMount?.(); }, []);
+//   return <m.default {...props} />;
+// }), { 
+//   loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
+//   ssr: false 
+// });
+
+// // Bottom components don't need interceptors since they wait at the end of the line
+// const DynamicAnnocument = dynamic(() => import('./components/annocument/Annocument'), { ssr: false });
+// const DynamicWrapper = dynamic(() => import('./components/wrapper/Wrapper'), { ssr: false });
+
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: string }) => {
+//   const [homeData, setHomeData] = useState<any>({
+//     categories: [],
+//     flashDeals: [],
+//     newArrivals: [],
+//     discounts: [],
+//     featured: [],
+//     featuredCategory: null,
+//     productsByCategory: {},
+//     featuredCategoryProducts: []
+//   });
+  
+//   const [loading, setLoading] = useState<boolean>(true);
+//   const [error, setError] = useState<string | null>(null);
+  
+//   // Track exactly which dynamic chunks have completed rendering in the DOM
+//   const [mountedComponents, setMountedComponents] = useState<Record<string, boolean>>({});
+
+//   const { addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+
+//   useEffect(() => {
+//     const fetchHomepage = async () => {
+//       try {
+//         setLoading(true);
+//         const response = await fetch(`${apiBaseUrl}/shop/homepage`);
+
+//         if (!response.ok) {
+//           throw new Error("Failed to load homepage");
+//         }
+
+//         const data = await response.json();
+//         const featuredCat = data.featuredCategory ?? data.categories.find((c: any) => c.isFeatured) ?? data.categories[0];
+
+//         setHomeData({
+//           categories: data.categories ?? [],
+//           flashDeals: data.sections?.flashDeals ?? [],
+//           newArrivals: data.sections?.newArrivals ?? [],
+//           discounts: data.sections?.discounts ?? [],
+//           featured: data.sections?.featured ?? [],
+//           featuredCategory: featuredCat,
+//           productsByCategory: { [featuredCat?.name ?? "featured"]: data.sections?.featuredCategoryProducts ?? [] },
+//           featuredCategoryProducts: data.sections?.featuredCategoryProducts ?? []
+//         });
+
+//       } catch (err: any) {
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchHomepage();
+//   }, []);
+
+//   if (error) {
+//     return (
+//       <div className="flex h-screen items-center justify-center">
+//         <p className="text-xl font-semibold text-red-500">Error: {error}</p>
+//       </div>
+//     );
+//   }
+
+//   const { categories, flashDeals, newArrivals, discounts, featuredCategory, featuredCategoryProducts } = homeData;
+
+//   // Determine exactly which components are expected to display based on the API data payload
+//   const expectedKeys: string[] = [];
+//   if (categories?.length > 0) {
+//     expectedKeys.push("banner", "topCate");
+//   }
+//   if (flashDeals?.length > 0) expectedKeys.push("flashDeals");
+//   if (newArrivals?.length > 0) expectedKeys.push("newArrivals");
+//   if (discounts?.length > 0) expectedKeys.push("discounts");
+//   if (featuredCategory && featuredCategoryProducts.length > 0) expectedKeys.push("shop");
+
+//   // Bottom components can only show when loading is finished AND every expected component has mounted
+//   const allTopComponentsReady = !loading && expectedKeys.every(key => mountedComponents[key]);
+
+//   const handleComponentMount = (key: string) => {
+//     setMountedComponents(prev => ({ ...prev, [key]: true }));
+//   };
+
+//   return (
+//     <>
+//       {/* 1. Base API Skeleton Layout Safeguard */}
+//       {loading && (
+//         <div className="container mx-auto px-6 py-8 space-y-16 max-w-7xl animate-pulse">
+//           <div className="w-full h-[400px] bg-gray-200 dark:bg-zinc-800 rounded-3xl" />
+//           <div className="space-y-4">
+//             <div className="h-6 w-48 bg-gray-200 dark:bg-zinc-800 rounded-md" />
+//             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+//               {[...Array(4)].map((_, i) => (
+//                 <div key={i} className="h-64 bg-gray-200 dark:bg-zinc-800 rounded-2xl" />
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* 2. Primary Display Zones */}
+//       {!loading && (
+//         <>
+//           {categories?.length > 0 && (
+//             <DynamicBannerSlider 
+//               categories={categories} 
+//               onMount={() => handleComponentMount("banner")} 
+//             />
+//           )}
+          
+//           {flashDeals?.length > 0 && (
+//             <DynamicFlashDeals
+//               productItems={flashDeals}
+//               addToCart={addToCart}
+//               decreaseQuantity={decreaseQuantity}
+//               removeFromCart={removeFromCart}
+//               onMount={() => handleComponentMount("flashDeals")}
+//             />
+//           )}
+          
+//           {categories?.length > 0 && (
+//             <DynamicTopCate 
+//               categories={categories} 
+//               onMount={() => handleComponentMount("topCate")} 
+//             />
+//           )}
+          
+//           {newArrivals?.length > 0 && (
+//             <DynamicNewArrivals
+//               productItems={newArrivals}
+//               addToCart={addToCart}
+//               decreaseQuantity={decreaseQuantity}
+//               removeFromCart={removeFromCart}
+//               onMount={() => handleComponentMount("newArrivals")}
+//             />
+//           )}
+          
+//           {discounts?.length > 0 && (
+//             <DynamicDiscount
+//               productItems={discounts}
+//               addToCart={addToCart}
+//               decreaseQuantity={decreaseQuantity}
+//               removeFromCart={removeFromCart}
+//               onMount={() => handleComponentMount("discounts")}
+//             />
+//           )}
+          
+//           {featuredCategory && featuredCategoryProducts.length > 0 && (
+//             <DynamicShop
+//               category={featuredCategory}
+//               shopItems={featuredCategoryProducts}
+//               addToCart={addToCart}
+//               decreaseQuantity={decreaseQuantity}
+//               removeFromCart={removeFromCart}
+//               onMount={() => handleComponentMount("shop")}
+//             />
+//           )}
+//         </>
+//       )}
+      
+//       {/* 3. Subordinated Bottom Components Gate */}
+//       {allTopComponentsReady && (
+//         <>
+//           <DynamicAnnocument />
+//           <DynamicWrapper />
+//         </>
+//       )}
+//     </>
+//   );
+// };
+
+// export default HomePage;
 // "use client";
 
 // import React, { useState, useEffect } from "react";
