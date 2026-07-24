@@ -1,160 +1,84 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import dynamic from 'next/dynamic';
+import React from "react";
 import { useStateContext } from '@/contexts/ContextProvider';
 import { StoreForm } from '@/types/typings';
-import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
-// Intercepting dynamic loads to catch exact client-side mounting events
-const DynamicBannerSlider = dynamic(() => import('./components/BannerSlider/BannerSlider').then(m => (props: any) => {
-  useEffect(() => { props.onMount?.(); }, []);
-  return <m.default {...props} />;
-}), { 
-  loading: () => <div className="h-[400px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />, 
-  ssr: false 
-});
+// 1. Standard imports (Next.js will SSR these automatically, even inside a "use client" boundary)
+import BannerSlider from './components/BannerSlider/BannerSlider';
+import FlashDeals from './components/flashDeals/FlashDeals';
+import TopCate from './components/top';
+import NewArrivals from './components/newarrivals';
+import Discount from './components/discount';
+import Shop from './components/shops';
+import Annocument from './components/annocument/Annocument';
+import Wrapper from './components/wrapper/Wrapper';
 
-const DynamicFlashDeals = dynamic(() => import('./components/flashDeals/FlashDeals').then(m => (props: any) => {
-  useEffect(() => { props.onMount?.(); }, []);
-  return <m.default {...props} />;
-}), { 
-  loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
-  ssr: false 
-});
+const HomePage = ({ pageData, ghubaData, companyId }: { pageData: StoreForm, ghubaData?: any, companyId: string }) => {
+  // 2. Pull server-injected data synchronously
+  const categories = ghubaData?.categories || [];
+  const sections = ghubaData?.sections || {};
 
-const DynamicTopCate = dynamic(() => import('./components/top').then(m => (props: any) => {
-  useEffect(() => { props.onMount?.(); }, []);
-  return <m.default {...props} />;
-}), { 
-  loading: () => <div className="h-40 bg-zinc-100 dark:bg-zinc-800 rounded-xl animate-pulse" />, 
-  ssr: false 
-});
-
-const DynamicNewArrivals = dynamic(() => import('./components/newarrivals').then(m => (props: any) => {
-  useEffect(() => { props.onMount?.(); }, []);
-  return <m.default {...props} />;
-}), { 
-  loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
-  ssr: false 
-});
-
-const DynamicDiscount = dynamic(() => import('./components/discount').then(m => (props: any) => {
-  useEffect(() => { props.onMount?.(); }, []);
-  return <m.default {...props} />;
-}), { 
-  loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
-  ssr: false 
-});
-
-const DynamicShop = dynamic(() => import('./components/shops').then(m => (props: any) => {
-  useEffect(() => { props.onMount?.(); }, []);
-  return <m.default {...props} />;
-}), { 
-  loading: () => <div className="py-10"><SkeletonGrid count={4} /></div>, 
-  ssr: false 
-});
-
-// Bottom components don't need interceptors since they wait at the end of the line
-const DynamicAnnocument = dynamic(() => import('./components/annocument/Annocument'), { ssr: false });
-const DynamicWrapper = dynamic(() => import('./components/wrapper/Wrapper'), { ssr: false });
-
-const HomePage = ({ pageData, ghubaData, companyId }: { pageData: StoreForm , ghubaData?: any , companyId: string }) => {
-  // 1. Pull server-injected data synchronously (No API fetching needed!)
-  // const ghubaData = .ghubaData || {};
-  const categories = ghubaData.categories || [];
-  const sections = ghubaData.sections || {};
-
-  const featuredCategory = ghubaData.featuredCategory ?? categories.find((c: any) => c.isFeatured) ?? categories[0] ?? null;
+  const featuredCategory = ghubaData?.featuredCategory ?? categories.find((c: any) => c.isFeatured) ?? categories[0] ?? null;
   const flashDeals = sections.flashDeals || [];
   const newArrivals = sections.newArrivals || [];
   const discounts = sections.discounts || [];
   const featuredCategoryProducts = sections.featuredCategoryProducts || [];
 
-  // Track exactly which dynamic chunks have completed rendering in the DOM
-  const [mountedComponents, setMountedComponents] = useState<Record<string, boolean>>({});
   const { addToCart, decreaseQuantity, removeFromCart } = useStateContext();
 
-  // Determine exactly which components are expected to display based on the API data payload
-  const expectedKeys: string[] = [];
-  if (categories?.length > 0) expectedKeys.push("banner", "topCate");
-  if (flashDeals?.length > 0) expectedKeys.push("flashDeals");
-  if (newArrivals?.length > 0) expectedKeys.push("newArrivals");
-  if (discounts?.length > 0) expectedKeys.push("discounts");
-  if (featuredCategory && featuredCategoryProducts.length > 0) expectedKeys.push("shop");
-
-  // Bottom components can only show when every expected component has mounted
-  const allTopComponentsReady = expectedKeys.length > 0 && expectedKeys.every(key => mountedComponents[key]);
-
-  const handleComponentMount = (key: string) => {
-    setMountedComponents(prev => ({ ...prev, [key]: true }));
-  };
-
-  // 2. Primary Display Zones (Skeletons are now handled natively by next/dynamic 'loading' option)
   return (
     <>
+      {/* 3. Render directly based on data. The server handles all the initial HTML! */}
+      
       {categories?.length > 0 && (
-        <DynamicBannerSlider 
-          categories={categories} 
-          onMount={() => handleComponentMount("banner")} 
-        />
+        <BannerSlider categories={categories} />
       )}
       
       {flashDeals?.length > 0 && (
-        <DynamicFlashDeals
+        <FlashDeals
           productItems={flashDeals}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
-          onMount={() => handleComponentMount("flashDeals")}
         />
       )}
       
       {categories?.length > 0 && (
-        <DynamicTopCate 
-          categories={categories} 
-          onMount={() => handleComponentMount("topCate")} 
-        />
+        <TopCate categories={categories} />
       )}
       
       {newArrivals?.length > 0 && (
-        <DynamicNewArrivals
+        <NewArrivals
           productItems={newArrivals}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
-          onMount={() => handleComponentMount("newArrivals")}
         />
       )}
       
       {discounts?.length > 0 && (
-        <DynamicDiscount
+        <Discount
           productItems={discounts}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
-          onMount={() => handleComponentMount("discounts")}
         />
       )}
       
       {featuredCategory && featuredCategoryProducts.length > 0 && (
-        <DynamicShop
+        <Shop
           category={featuredCategory}
           shopItems={featuredCategoryProducts}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
-          onMount={() => handleComponentMount("shop")}
         />
       )}
       
-      {/* 3. Subordinated Bottom Components Gate */}
-      {allTopComponentsReady && (
-        <>
-          <DynamicAnnocument />
-          <DynamicWrapper />
-        </>
-      )}
+      {/* These will naturally render at the bottom of the tree without needing manual gates */}
+      <Annocument />
+      <Wrapper />
     </>
   );
 };
