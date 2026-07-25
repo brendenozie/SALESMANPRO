@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import Slider from "react-slick";
+// import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import {
@@ -14,6 +14,20 @@ import {
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
+import dynamic from "next/dynamic";
+
+// 1. Dynamically import Slider (Lazy Loading) to drastically reduce initial JS payload
+const Slider = dynamic(() => import("react-slick"), { 
+  ssr: false,
+  loading: () => (
+    // Skeleton loader while the slider script downloads
+    <div className="flex gap-4 overflow-hidden px-2 md:px-4 py-6">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="w-full md:w-1/4 h-[350px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />
+      ))}
+    </div>
+  )
+});
 
 // --- REFINED ARROWS ---
 const CustomPrevArrow = ({ onClick }: { onClick: () => void }) => (
