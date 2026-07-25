@@ -1,21 +1,27 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { useStateContext } from '@/contexts/ContextProvider';
 import { StoreForm } from '@/types/typings';
 
-// 1. Standard imports (Next.js will SSR these automatically, even inside a "use client" boundary)
+// 1. ABOVE-THE-FOLD (Priority): Keep standard import for the hero section.
+// This ensures it is bundled in the initial payload for the fastest possible Largest Contentful Paint (LCP).
 import BannerSlider from './components/BannerSlider/BannerSlider';
-import FlashDeals from './components/flashDeals/FlashDeals';
-import TopCate from './components/top';
-import NewArrivals from './components/newarrivals';
-import Discount from './components/discount';
-import Shop from './components/shops';
-import Annocument from './components/annocument/Annocument';
-import Wrapper from './components/wrapper/Wrapper';
+
+// 2. BELOW-THE-FOLD (Lazy Loaded): Dynamically import the rest.
+// Next.js will still Server-Side Render (SSR) the HTML for SEO, but the heavy JavaScript 
+// for these sections will be split into separate chunks and loaded in the background.
+const FlashDeals = dynamic(() => import('./components/flashDeals/FlashDeals'));
+const TopCate = dynamic(() => import('./components/top'));
+const NewArrivals = dynamic(() => import('./components/newarrivals'));
+const Discount = dynamic(() => import('./components/discount'));
+const Shop = dynamic(() => import('./components/shops'));
+const Annocument = dynamic(() => import('./components/annocument/Annocument'));
+const Wrapper = dynamic(() => import('./components/wrapper/Wrapper'));
 
 const HomePage = ({ pageData, ghubaData, companyId }: { pageData: StoreForm, ghubaData?: any, companyId: string }) => {
-  // 2. Pull server-injected data synchronously
+  // Pull server-injected data synchronously
   const categories = ghubaData?.categories || [];
   const sections = ghubaData?.sections || {};
 
@@ -29,12 +35,12 @@ const HomePage = ({ pageData, ghubaData, companyId }: { pageData: StoreForm, ghu
 
   return (
     <>
-      {/* 3. Render directly based on data. The server handles all the initial HTML! */}
-      
+      {/* Priority Render */}
       {categories?.length > 0 && (
-        <BannerSlider categories={categories} />
+        <BannerSlider categories={categories} pageData={pageData} />
       )}
       
+      {/* Deferred Hydration Renders */}
       {flashDeals?.length > 0 && (
         <FlashDeals
           productItems={flashDeals}
@@ -76,9 +82,9 @@ const HomePage = ({ pageData, ghubaData, companyId }: { pageData: StoreForm, ghu
         />
       )}
       
-      {/* These will naturally render at the bottom of the tree without needing manual gates */}
-      <Annocument />
-      <Wrapper />
+      {/* Static Footer Elements */}
+      <Annocument pageData={pageData} />
+      <Wrapper pageData={pageData} />
     </>
   );
 };

@@ -15,46 +15,49 @@ import Image from "next/image";
 import load from "@/assets/load.png";
 import Link from "next/link";
 
-const loaderProp = ({ src, width, quality }: any) => {
+const loaderProp = ({ src, width, quality } : { src: string; width: number; quality: number }) => {
   return `${src}?w=${width || 800}&q=${quality || 75}`;
 };
 
 // --- MODERN GLASS ARROWS ---
-const CustomPrevArrow = ({ onClick }: any) => (
+const CustomPrevArrow = ({ onClick } : { onClick: () => void }) => (
   <button
     onClick={onClick}
+    aria-label="Previous categories"
     className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-2xl hover:bg-amber-500 hover:text-white transition-all group hidden lg:block"
   >
     <ChevronLeftIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
   </button>
 );
 
-const CustomNextArrow = ({ onClick }: any) => (
+const CustomNextArrow = ({ onClick } : { onClick: () => void }) => (
   <button
     onClick={onClick}
+    aria-label="Next categories"
     className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-2xl hover:bg-amber-500 hover:text-white transition-all group hidden lg:block"
   >
     <ChevronRightIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
   </button>
 );
 
-const TopCate = ({ categories }: { categories: any[] }) => {
+const TopCate = ({ categories = [] }) => {
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: categories.length > 3,
     slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 4000,
     speed: 1000,
+    lazyLoad: "ondemand", // Critical for network performance
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
-    cssEase: "cubic-bezier(0.23, 1, 0.32, 1)", // Smoother exponential ease
+    cssEase: "cubic-bezier(0.23, 1, 0.32, 1)", 
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: 2 } },
       { breakpoint: 640, settings: { slidesToShow: 1 } },
     ],
-    appendDots: (dots: any) => (
+    appendDots: (dots) => (
       <div className="mt-12">
         <ul className="flex justify-center items-center gap-3">{dots}</ul>
       </div>
@@ -63,6 +66,8 @@ const TopCate = ({ categories }: { categories: any[] }) => {
       <div className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700 hover:bg-amber-500 transition-all duration-300" />
     ),
   };
+
+  if (!categories.length) return null;
 
   return (
     <section className="relative py-24 bg-white dark:bg-[#080808] transition-colors duration-500 overflow-hidden">
@@ -95,7 +100,7 @@ const TopCate = ({ categories }: { categories: any[] }) => {
         <div className="relative">
           <Slider {...settings}>
             {categories.map((value, index) => (
-              <div key={index} className="px-4">
+              <div key={value.id || index} className="px-4">
                 <CategoryCard value={value} />
               </div>
             ))}
@@ -106,55 +111,57 @@ const TopCate = ({ categories }: { categories: any[] }) => {
   );
 };
 
-function CategoryCard({ value }: { value: any }) {
+function CategoryCard({ value } : { value: { id: string; name: string; image: string; tags?: string[] } }) {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <Link href={`/ghuba/productlist?categoryId=${value.id}`} className="relative group cursor-pointer h-[500px] w-full overflow-hidden rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-lg">
-      <div className="relative group cursor-pointer h-[500px] w-full overflow-hidden rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-lg">
-        {/* Main Image */}
-        <Image
-          fill
-          loader={loaderProp}
-          src={imageError ? load.src : value.image}
-          alt={value.name}
-          className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
-          onError={() => setImageError(true)}
-        />
+    <Link 
+      href={`/ghuba/productlist?categoryId=${value.id}`} 
+      className="relative group cursor-pointer h-[500px] w-full overflow-hidden rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-lg block"
+    >
+      {/* Main Image */}
+      <Image
+        fill
+        loader={loaderProp}
+        src={imageError ? load.src : value.image}
+        alt={value.name}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+        onError={() => setImageError(true)}
+      />
 
-        {/* Dynamic Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        {/* Content Cockpit */}
-        <div className="absolute inset-x-0 bottom-0 p-8 space-y-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-          <div className="flex flex-wrap gap-2">
-            {value.tags?.slice(0, 2).map((tag: string, idx: number) => (
-              <span
-                key={idx}
-                className="text-[9px] font-black uppercase tracking-widest text-white bg-amber-500/80 backdrop-blur-md px-3 py-1 rounded-lg"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="text-amber-500 text-[10px] font-bold uppercase tracking-widest mb-1">Explore</p>
-              <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">
-                {value.name}
-              </h3>
-            </div>
-            
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
-              <ArrowUpRightIcon className="w-6 h-6 text-white" />
-            </div>
-          </div>
+      {/* Dynamic Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      {/* Content Cockpit */}
+      <div className="absolute inset-x-0 bottom-0 p-8 space-y-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+        <div className="flex flex-wrap gap-2">
+          {value.tags?.slice(0, 2).map((tag, idx) => (
+            <span
+              key={idx}
+              className="text-[9px] font-black uppercase tracking-widest text-white bg-amber-500/80 backdrop-blur-md px-3 py-1 rounded-lg"
+            >
+              {tag}
+            </span>
+          ))}
         </div>
 
-        {/* Subtle border shine on hover */}
-        <div className="absolute inset-0 border-2 border-amber-500/0 group-hover:border-amber-500/50 rounded-[2.5rem] transition-all duration-500 pointer-events-none" />
+        <div className="flex justify-between items-end">
+          <div>
+            <p className="text-amber-500 text-[10px] font-bold uppercase tracking-widest mb-1">Explore</p>
+            <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">
+              {value.name}
+            </h3>
+          </div>
+          
+          <div className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+            <ArrowUpRightIcon className="w-6 h-6 text-white" />
+          </div>
+        </div>
       </div>
+
+      {/* Subtle border shine on hover */}
+      <div className="absolute inset-0 border-2 border-amber-500/0 group-hover:border-amber-500/50 rounded-[2.5rem] transition-all duration-500 pointer-events-none" />
     </Link>
   );
 }

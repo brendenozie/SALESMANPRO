@@ -1,7 +1,7 @@
 import React from "react";
 import { TruckIcon, CreditCardIcon, ShieldCheckIcon, UsersIcon } from "@heroicons/react/24/outline";
 
-const Wrapper = () => {
+const Wrapper = ({ pageData }: { pageData: any }) => {
   const data = [
     {
       icon: <TruckIcon className="h-10 w-10 text-yellow-500" />,

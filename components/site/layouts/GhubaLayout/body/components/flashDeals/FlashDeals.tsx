@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -15,34 +15,37 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
 
-// --- REFINED ARROWS (Hidden on mobile for better UX) ---
-const CustomPrevArrow = ({ onClick }: any) => (
+// --- REFINED ARROWS ---
+const CustomPrevArrow = ({ onClick }: { onClick: () => void }) => (
   <button
     onClick={onClick}
+    aria-label="Previous deals"
     className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-4 rounded-2xl shadow-xl hover:bg-amber-500 hover:text-white transition-all group hidden lg:block"
   >
     <ChevronLeftIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
   </button>
 );
 
-const CustomNextArrow = ({ onClick }: any) => (
+const CustomNextArrow = ({ onClick }: { onClick: () => void }) => (
   <button
     onClick={onClick}
+    aria-label="Next deals"
     className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-4 rounded-2xl shadow-xl hover:bg-amber-500 hover:text-white transition-all group hidden lg:block"
   >
     <ChevronRightIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
   </button>
 );
 
-const FlashCardSlider = ({ productItems, addToCart }: any) => {
-  const [likedItems, setLikedItems] = useState<any>({});
+const FlashCardSlider = ({ productItems = [], addToCart }: { productItems: any[]; addToCart: (product: any) => void   }) => {
+  const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
   
-  const toggleLike = (id: any) => {
-    setLikedItems((prev: any) => ({
+  // Memoize to prevent re-rendering every product card when one is liked
+  const toggleLike = useCallback((id : string) => {
+    setLikedItems((prev : Record<string, boolean>) => ({
       ...prev,
       [id]: !prev[id],
     }));
-  };
+  }, []);
 
   const settings = {
     dots: false,
@@ -56,19 +59,15 @@ const FlashCardSlider = ({ productItems, addToCart }: any) => {
     prevArrow: <CustomPrevArrow />,
     swipeToSlide: true,
     touchThreshold: 10,
-
+    lazyLoad: "ondemand", // Critical performance fix
     responsive: [
       {
         breakpoint: 1280,
-        settings: {
-          slidesToShow: 3,
-        },
+        settings: { slidesToShow: 3 },
       },
       {
         breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-        },
+        settings: { slidesToShow: 2 },
       },
       {
         breakpoint: 640,
@@ -82,11 +81,13 @@ const FlashCardSlider = ({ productItems, addToCart }: any) => {
     ],
   };
 
+  if (!productItems.length) return null;
+
   return (
     <div className="relative">
       <Slider {...settings}>
-        {productItems.map((product: any, index: number) => (
-          <div key={index} className="px-2 md:px-3 py-4">
+        {productItems.map((product, index) => (
+          <div key={product.id || index} className="px-2 md:px-3 py-4">
             <GhubaProductCard 
               product={product} 
               toggleLike={toggleLike} 
@@ -100,17 +101,27 @@ const FlashCardSlider = ({ productItems, addToCart }: any) => {
   );
 };
 
-const FlashDeals = ({ productItems, addToCart }: any) => {
+// Extracted CSS to prevent recreation on re-renders
+const SLIDER_STYLES = `
+  .slick-dots { bottom: -30px; }
+  .slick-dots li button:before { font-size: 10px; color: #cbd5e1; opacity: 1; }
+  .slick-dots li.slick-active button:before { color: #fbbf24; }
+  .slick-list { padding: 12px 0 !important; }
+  .slick-track { display: flex !important; }
+  .slick-slide { height: inherit !important; }
+  .slick-slide > div { height: 100%; }
+`;
+
+const FlashDeals = ({ productItems, addToCart }: { productItems: any[]; addToCart: (product: any) => void }) => {
   const router = useRouter();
 
   return (
     <>
-
       <section className="py-12 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-500">
         <div className="max-w-[1600px] mx-auto px-4 md:px-6">
           
-          {/* Header - Adjusted for Mobile Stack */}
-          <div className="flex flex-col md:flex-row justify-between items-center md:items-end  mb-8 md:mb-10 gap-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 md:mb-10 gap-6">
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left">
               <motion.div
                 className="w-14 h-14 md:w-16 md:h-16 bg-amber-500 flex items-center justify-center rounded-2xl md:rounded-3xl shadow-2xl shadow-amber-500/20"
@@ -145,7 +156,7 @@ const FlashDeals = ({ productItems, addToCart }: any) => {
             </motion.button>
           </div>
 
-          {/* Content Container - Reduced padding on mobile */}
+          {/* Content Container */}
           <div className="relative p-2 md:p-8">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] dark:opacity-[0.05] pointer-events-none">
               <BoltIcon className="w-[300px] h-[300px] md:w-[500px] md:h-[500px] text-amber-500" />
@@ -153,43 +164,10 @@ const FlashDeals = ({ productItems, addToCart }: any) => {
             
             <FlashCardSlider productItems={productItems} addToCart={addToCart} />
           </div>
-
         </div>
       </section>
 
-      {/* // add custom style  */}
-      <style>{`
-        /* Custom styles for slick dots */
-        .slick-dots {
-          bottom: -30px;
-        }
-        .slick-dots li button:before {
-          font-size: 10px;
-          color: #cbd5e1; /* Tailwind's zinc-400 */
-          opacity: 1;
-        }
-        .slick-dots li.slick-active button:before {
-          color: #fbbf24; /* Tailwind's amber-500 */
-        }
-
-        .slick-list {
-          padding: 12px 0 !important;
-        }
-
-        .slick-track {
-          display: flex !important;
-        }
-
-        .slick-slide {
-          height: inherit !important;
-        }
-
-        .slick-slide > div {
-          height: 100%;
-        }
-      `}
-      </style>
-
+      <style>{SLIDER_STYLES}</style>
     </>
   );
 };
