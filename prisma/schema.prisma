@@ -258,13 +258,14 @@ model Company {
 
   contactEmail String
   contactPhone String?
-  site         String? @default("default")
+  site         String?          @default("default")
   address      String?
+  addresses    CompanyAddress[] @relation("CompanyAddresses")
   geoLocation  Json? // { lat: number, lng: number }
   openingHours Json? // { mon: "9–5", tue: "...", … }
-  domain       String? @unique
-  currency     String  @default("KES")
-  locale       String  @default("en-US")
+  domain       String?          @unique
+  currency     String           @default("KES")
+  locale       String           @default("en-US")
 
   lat     Float? // Office Latitude
   lng     Float? // Office Longitude
@@ -490,6 +491,36 @@ model Company {
   @@index([deletedAt])
   @@index([createdAt])
   @@index([deletedAt, slug])
+}
+
+model CompanyAddress {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Link back to the Company
+  companyId String  @db.ObjectId
+  company   Company @relation("CompanyAddresses", fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Address Status
+  isMain Boolean @default(false) // Marks if this is the primary selected address
+
+  // Location Data
+  address String?
+  lat     Float?
+  lng     Float?
+
+  // Contact info specific to this location
+  contactName  String?
+  contactPhone String?
+  contactEmail String?
+
+  // Additional helpful metadata
+  label        String? // e.g., "Headquarters", "Warehouse", "Nairobi Branch"
+  instructions String? // e.g., "Use the back entrance"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 //Etims Configuration
@@ -4183,7 +4214,7 @@ enum TicketCheckInStatus {
 // Class Schedule Model (for educator's classes/lectures and school timetabling)
 model ClassSchedule {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  
+
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
 
@@ -5300,7 +5331,7 @@ enum EmploymentStatus {
 // NEW: StaffProfile Model
 // Represents a non-medical staff member within a company, linked to a User profile.
 model StaffProfile {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
   userId String? @unique @db.ObjectId // One-to-one link to the User model
   user   User?   @relation("StaffProfile", fields: [userId], references: [id])
 

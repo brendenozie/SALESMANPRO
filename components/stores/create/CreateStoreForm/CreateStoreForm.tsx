@@ -20,7 +20,8 @@ import {
   IStoreCategory,
   ILocation,
   IProductCategory,
-  IPromotion
+  IPromotion,
+  CompanyAddress
 } from "@/types/typings";
 
 import {
@@ -201,6 +202,7 @@ export default function CreateStoreForm({
     events: [], // For company/school events
     Announcement: [], // For site announcements
 
+    addresses: [], // For multiple company addresses (locations)
 
     // --- JSON fields ---
     awards: [],
@@ -1261,6 +1263,54 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onRemoveArray(field as keyof StoreForm, index);
   };
 
+  // --- Company Address Handlers ---
+
+  // Handle selecting or switching the active/main location view
+  const handleLocationSelect = (newLocation: CompanyAddress) => {
+    // If you store the selected ID in form state or separate state:
+    // onChangeSettings({ selectedLocationId: newLocation.id });
+  };
+
+  // Handle saving a new address or updating an existing one
+  const handleLocationSave = (updatedLocation: CompanyAddress) => {
+    const currentLocations = form.addresses || [];
+    const exists = currentLocations.some((loc) => loc.id === updatedLocation.id);
+
+    let updatedList: CompanyAddress[];
+
+    if (exists) {
+      // Update existing
+      updatedList = currentLocations.map((loc) =>
+        loc.id === updatedLocation.id ? updatedLocation : loc
+      );
+    } else {
+      // Add new
+      updatedList = [...currentLocations, updatedLocation];
+    }
+
+    // If this address is marked as main, ensure others are set to false
+    if (updatedLocation.isMain) {
+      updatedList = updatedList.map((loc) =>
+        loc.id === updatedLocation.id ? loc : { ...loc, isMain: false }
+      );
+    }
+
+    onChangeSettings({ addresses: updatedList });
+  };
+
+  // Handle deleting a location by ID
+  const handleLocationDelete = (locationId: string) => {
+    const currentLocations = form.addresses || [];
+    const updatedList = currentLocations.filter((loc) => loc.id !== locationId);
+    
+    onChangeSettings({ addresses: updatedList });
+
+    // If the deleted location was the selected one, clear selection
+    // if (form.selectedLocationId === locationId) {
+    //   onChangeSettings({ selectedLocationId: null });
+    // }
+  };
+
   const handlers: Handlers = {
     onUpdatePaymentSettings, // You'll need to update your Handlers type definition
     handleChange,
@@ -1269,14 +1319,19 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onRemoveArray,
 
     setAddress,
+
+    handleLocationSelect,
+    handleLocationSave,
+    handleLocationDelete,
+
     onChangeSettings,
-    
+
     onToggleDay,
-    // Add these:
+    
     handleArrayChange,
     addItem,
     removeItem,
-    
+
     categoryDispatch: dispatch,
 
     onUpdateHeroSlide,
@@ -1304,8 +1359,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     handleMediaRemove,
 
     onToggleLocation,
-    onBulkToggleLocations
-
+    onBulkToggleLocations,
   };
 
   const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));

@@ -1,396 +1,299 @@
 // components/locations/LocationPicker.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import {
-  GlobeAltIcon,
   MapPinIcon,
-  BuildingLibraryIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-  CheckCircleIcon,
+  UserIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  TagIcon,
+  DocumentTextIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
-import { ILocation } from '@/types/typings';
+import { CompanyAddress } from '@/types/typings';
 
-// --- Types (matching your Prisma Location model) ---
-// export interface Location {
-//   id: string;
-//   name: string;
-//   slug: string;
-//   description?: string;
-//   addressLine1?: string;
-//   addressLine2?: string;
-//   city?: string;
-//   state?: string;
-//   postalCode?: string;
-//   country?: string;
-//   latitude?: number;
-//   longitude?: number;
-//   seoTitle?: string;
-//   seoDescription?: string;
-//   metaKeywords: string[];
-//   sortOrder: number;
-//   visible: boolean;
-//   createdAt?: Date;
-//   updatedAt?: Date;
-//   createdBy?: string;
-//   updatedBy?: string;
-//   status: 'active' | 'inactive' | 'draft';
-//   parentId: string | null;
-//   children?: Location[]; // For client-side tree building
-//   localization?: any;
-//   attributes?: any;
+// Matches the Prisma CompanyAddress model
+// export interface CompanyAddress {
+//   id?: string;
+//   companyId?: string;
+//   isMain?: boolean;
+//   address: string | null;
+//   lat: number;
+//   lng: number;
+//   contactName?: string | null;
+//   contactPhone?: string | null;
+//   contactEmail?: string | null;
+//   label?: string | null;
+//   instructions?: string | null;
 // }
 
-// Type for the selected location in the form data
-export interface SelectedLocationPath {
-  id: string;
-  name: string;
-  path: { id: string; name: string; type: 'country' | 'city' | 'venue' | 'other' }[];
-}
-
 interface LocationPickerProps {
-  // The currently selected location ID (from form data)
-  selectedLocationId: string | null;
-  // All available locations (flat list from API)
-  availableLocations: ILocation[];
-  // Callback when a location is selected/deselected
-  onLocationSelect: (locationId: string | null, locationDetails?: ILocation | null) => void;
+  onAddressSave: (location: CompanyAddress) => void;
 }
 
-// --- Helper Functions ---
-
-// Builds a hierarchical tree from a flat list of locations
-const buildLocationTree = (locations: ILocation[] = []): ILocation[] => {
-  if (!Array.isArray(locations)) {
-    console.error("Expected locations to be an array:", locations);
-    return [];
-  }
-
-  const locationMap: Record<string, ILocation> = {};
-  const tree: ILocation[] = [];
-
-  locations.forEach((location) => {
-    locationMap[location.id] = {
-      ...location,
-      children: [],
-    };
+export default function LocationPicker({ onAddressSave }: LocationPickerProps) {
+  const [isLocating, setIsLocating] = useState(false);
+  const [formData, setFormData] = useState({
+    id: null,
+    address: '',
+    label: '',
+    contactName: '',
+    contactPhone: '',
+    contactEmail: '',
+    instructions: '',
+    isMain: false,
+    lat: '',
+    lng: '',
+    // companyId: '', // Optional: Set if you have a companyId context
   });
 
-  locations.forEach((location) => {
-    if (location.parentId && locationMap[location.parentId]) {
-      locationMap[location.parentId].children?.push(
-        locationMap[location.id]
-      );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      setFormData((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
-      locationMap[location.parentId].children?.sort((a, b) =>
-        a.name.localeCompare(b.name)
+  const handleGetLocation = () => {
+    setIsLocating(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData((prev) => ({
+            ...prev,
+            lat: position.coords.latitude.toFixed(6),
+            lng: position.coords.longitude.toFixed(6),
+          }));
+          setIsLocating(false);
+        },
+        (error) => {
+          console.error('Error getting location', error);
+          alert('Unable to retrieve your location. Please check browser permissions.');
+          setIsLocating(false);
+        }
       );
     } else {
-      tree.push(locationMap[location.id]);
+      alert('Geolocation is not supported by your browser.');
+      setIsLocating(false);
     }
-  });
-
-  tree.sort((a, b) => a.name.localeCompare(b.name));
-
-  return tree;
-};
-
-// Finds a location by ID in a flat list
-const findLocationById = (id: string, locations: ILocation[]): ILocation | undefined => {
-  return locations.find(loc => loc.id === id);
-};
-
-// Builds the path from root to a specific location
-const buildPathToLocation = (
-  locationId: string,
-  allLocations: ILocation[]
-): { id: string; name: string; type: 'country' | 'city' | 'venue' | 'other' }[] => {
-  const path: { id: string; name: string; type: 'country' | 'city' | 'venue' | 'other' }[] = [];
-  let currentLoc = findLocationById(locationId, allLocations);
-
-  while (currentLoc) {
-    let type: 'country' | 'city' | 'venue' | 'other' = 'other';
-    if (!currentLoc.parentId && currentLoc.country) type = 'country';
-    else if (currentLoc.city) type = 'city';
-    else if (currentLoc.addressLine1) type = 'venue';
-
-    path.unshift({ id: currentLoc.id, name: currentLoc.name, type });
-    currentLoc = currentLoc.parentId ? findLocationById(currentLoc.parentId, allLocations) : undefined;
-  }
-  return path;
-};
-
-// --- Pill Component for Selected Path ---
-const PathPill: React.FC<{
-  label: string;
-  type: 'country' | 'city' | 'venue' | 'other';
-  onClear?: () => void; // Optional for the last pill
-}> = ({ label, type, onClear }) => {
-  let bgColor = 'bg-gray-200';
-  let textColor = 'text-gray-800';
-  let icon = <MapPinIcon className="h-4 w-4 mr-1" />;
-
-  switch (type) {
-    case 'country':
-      bgColor = 'bg-blue-100';
-      textColor = 'text-blue-800';
-      icon = <GlobeAltIcon className="h-4 w-4 mr-1" />;
-      break;
-    case 'city':
-      bgColor = 'bg-green-100';
-      textColor = 'text-green-800';
-      icon = <MapPinIcon className="h-4 w-4 mr-1" />;
-      break;
-    case 'venue':
-      bgColor = 'bg-purple-100';
-      textColor = 'text-purple-800';
-      icon = <BuildingLibraryIcon className="h-4 w-4 mr-1" />;
-      break;
-    default:
-      // default is fine
-      break;
-  }
-
-  return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${bgColor} ${textColor} shadow-sm`}>
-      {icon}
-      {label}
-      {onClear && (
-        <button onClick={onClear} className="ml-1 -mr-1 p-0.5 rounded-full hover:bg-opacity-75 transition-opacity" aria-label="Clear selection">
-          <XMarkIcon className="h-3 w-3" />
-        </button>
-      )}
-    </span>
-  );
-};
-
-// --- LocationNode Component (for recursive tree rendering) ---
-interface LocationNodeProps {
-  node: ILocation;
-  level: number;
-  selectedLocationId: string | null;
-  onLocationSelect: (locationId: string, locationDetails: ILocation) => void;
-  isInitiallyExpanded: boolean;
-  filterTerm: string;
-}
-
-const LocationNode: React.FC<LocationNodeProps> = ({
-  node,
-  level,
-  selectedLocationId,
-  onLocationSelect,
-  isInitiallyExpanded,
-  filterTerm,
-}) => {
-  const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded);
-  const isSelected = selectedLocationId === node.id;
-  const hasChildren = node.children && node.children.length > 0;
-
-  useEffect(() => {
-    // If filter term changes and this node matches, expand it
-    if (filterTerm && (
-      node.name.toLowerCase().includes(filterTerm) ||
-      node.city?.toLowerCase().includes(filterTerm) ||
-      node.country?.toLowerCase().includes(filterTerm)
-    )) {
-      setIsExpanded(true);
-    } else if (!filterTerm && !isInitiallyExpanded) {
-      // Collapse if filter is cleared and it wasn't initially expanded
-      setIsExpanded(false);
-    }
-  }, [filterTerm, isInitiallyExpanded, node.name, node.city, node.country]);
-
-
-  const handleSelect = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent parent accordion from toggling
-    onLocationSelect(node.id, node);
   };
 
-  const toggleExpand = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
-
-  const getIcon = (lvl: number) => {
-    if (lvl === 0) return <GlobeAltIcon className='w-5 h-5 text-blue-500' />; // Continent/Country
-    if (lvl === 1) return <MapPinIcon className="w-5 h-5 text-green-500" />; // State/City
-    return <BuildingLibraryIcon className="w-5 h-5 text-purple-500" />; // Specific building/venue
-  };
-
-  return (
-    <div className="border-b border-gray-100 last:border-b-0">
-      <div
-        className={`flex items-center py-3 px-4 transition-colors duration-150 cursor-pointer
-          ${isSelected ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-gray-50'}
-          ${level > 0 ? 'pl-8' : ''}`} // Base padding for level 0
-        style={{ paddingLeft: `${16 + level * 24}px` }} // Dynamic indentation
-      >
-        {hasChildren ? (
-          <button onClick={toggleExpand} className="mr-2 p-1 rounded-full hover:bg-gray-200">
-            {isExpanded ? <ChevronDownIcon className="h-5 w-5 text-gray-500" /> : <ChevronRightIcon className="h-5 w-5 text-gray-500" />}
-          </button>
-        ) : (
-          <span className="w-7 h-5 mr-2"></span> // Placeholder for alignment
-        )}
-
-        {getIcon(level)}
-        <span className={`ml-2 font-medium ${isSelected ? 'text-indigo-800' : 'text-gray-800'}`}>
-          {node.name}
-          {node.city && <span className="text-sm text-gray-500 ml-2">({node.city})</span>}
-        </span>
-
-        <button
-          onClick={handleSelect}
-          className={`ml-auto px-3 py-1 rounded-md text-sm font-semibold transition-colors
-            ${isSelected ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700'}
-            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
-        >
-          {isSelected ? <CheckCircleIcon className="h-5 w-5 inline-block mr-1" /> : ''}
-          {isSelected ? 'Selected' : 'Select'}
-        </button>
-      </div>
-
-      {hasChildren && isExpanded && (
-        <div className="ml-4">
-          {node.children?.map(child => (
-            <LocationNode
-              key={child.id}
-              node={child}
-              level={level + 1}
-              selectedLocationId={selectedLocationId}
-              onLocationSelect={onLocationSelect}
-              isInitiallyExpanded={isInitiallyExpanded}
-              filterTerm={filterTerm}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-
-// --- Main LocationPicker Component ---
-const LocationPicker: React.FC<LocationPickerProps> = ({
-  selectedLocationId,
-  availableLocations,
-  onLocationSelect,
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const locationListRef = useRef<HTMLDivElement>(null);
-
-  // Memoize the location tree for efficiency
-  const locationTree = useMemo(() => buildLocationTree(availableLocations), [availableLocations]);
-
-  // Derive the path for the currently selected location
-  const selectedLocationPath = useMemo(() => {
-    if (!selectedLocationId) return [];
-    return buildPathToLocation(selectedLocationId, availableLocations);
-  }, [selectedLocationId, availableLocations]);
-
-  // Filter the tree based on search term
-  const filteredTree = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-    if (!q) return locationTree;
-
-    const filterNodes = (nodes: ILocation[]): ILocation[] => {
-      return nodes.reduce((acc: ILocation[], node) => {
-        const matches =
-          node.name.toLowerCase().includes(q) ||
-          node.city?.toLowerCase().includes(q) ||
-          node.country?.toLowerCase().includes(q) ||
-          node.slug.toLowerCase().includes(q);
-
-        const filteredChildren = node.children ? filterNodes(node.children) : [];
-
-        if (matches || filteredChildren.length > 0) {
-          // If a parent matches or has matching children, include it and its filtered children
-          acc.push({ ...node, children: filteredChildren });
-        }
-        return acc;
-      }, []);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Construct the final object matching the CompanyAddress interface
+    const newAddress: CompanyAddress = {
+      address: formData.address.trim() || null,
+      label: formData.label.trim() || null,
+      contactName: formData.contactName.trim() || null,
+      contactPhone: formData.contactPhone.trim() || null,
+      contactEmail: formData.contactEmail.trim() || null,
+      instructions: formData.instructions.trim() || null,
+      isMain: formData.isMain,
+      lat: parseFloat(formData.lat) || 0,
+      lng: parseFloat(formData.lng) || 0,
+      id: formData.id || null, // New address, so id is null
+      // companyId: formData.companyId || '', // Optional: Set if you have a companyId context''
     };
-    return filterNodes(locationTree);
-  }, [searchTerm, locationTree]);
 
-
-  const handleClearSelection = () => {
-    onLocationSelect(null); // Clear the selected location
+    onAddressSave(newAddress);
   };
 
   return (
-    <div className="w-full mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-6 border border-gray-100">
-      {/* Header & Step Indicator */}
-      <div className="pb-4 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center">
-          <MapPinIcon className="h-6 w-6 mr-2 text-indigo-600" /> Select Product Location
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">Choose the most specific location for your listing.</p>
-      </div>
+    <form onSubmit={handleSubmit} className="w-full mx-auto bg-white rounded-xl p-5 sm:p-6 space-y-6">
+      
+      {/* 1. Core Address Details */}
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+          <MapPinIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          Location Details
+        </h4>
+        
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address / Street</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPinIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="e.g., 123 Main St, Westlands"
+                  className="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  required
+                />
+              </div>
+            </div>
 
-      {/* Selected Location Pills */}
-      {selectedLocationPath.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200 shadow-inner">
-          <span className="text-sm font-medium text-blue-800 mr-1">Selected:</span>
-          {selectedLocationPath.map((pathItem, index) => (
-            <React.Fragment key={pathItem.id}>
-              <PathPill
-                label={pathItem.name}
-                type={pathItem.type}
-                onClear={index === selectedLocationPath.length - 1 ? handleClearSelection : undefined} // Only last pill clears
-              />
-              {index < selectedLocationPath.length - 1 && (
-                <ChevronRightIcon className="h-4 w-4 text-gray-400" />
-              )}
-            </React.Fragment>
-          ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location Label</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <TagIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="label"
+                  value={formData.label}
+                  onChange={handleChange}
+                  placeholder="e.g., Headquarters, Warehouse B"
+                  className="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Coordinates Section */}
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1 w-full grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Latitude</label>
+                <input
+                  type="text"
+                  name="lat"
+                  value={formData.lat}
+                  onChange={handleChange}
+                  placeholder="0.000000"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Longitude</label>
+                <input
+                  type="text"
+                  name="lng"
+                  value={formData.lng}
+                  onChange={handleChange}
+                  placeholder="0.000000"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleGetLocation}
+              disabled={isLocating}
+              className="mt-5 sm:mt-0 w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-indigo-200 text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+              {isLocating ? 'Locating...' : 'Pin Current Location'}
+            </button>
+          </div>
         </div>
-      )}
+      </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search for a location (e.g., Nairobi, Kenya, Westlands)..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+      <hr className="border-gray-100" />
+
+      {/* 2. Contact Information */}
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+          <UserIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          On-Site Contact
+        </h4>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <UserIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                name="contactName"
+                value={formData.contactName}
+                onChange={handleChange}
+                placeholder="John Doe"
+                className="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <PhoneIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="tel"
+                name="contactPhone"
+                value={formData.contactPhone}
+                onChange={handleChange}
+                placeholder="+254 700 000 000"
+                className="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="email"
+                name="contactEmail"
+                value={formData.contactEmail}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                className="pl-10 w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr className="border-gray-100" />
+
+      {/* 3. Delivery Instructions & Settings */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+          <DocumentTextIcon className="h-5 w-5 mr-1.5 text-indigo-600" />
+          Delivery Instructions
+        </label>
+        <textarea
+          name="instructions"
+          rows={3}
+          value={formData.instructions}
+          onChange={handleChange}
+          placeholder="e.g., Leave with security at the main gate..."
+          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
-        {searchTerm && (
-          <button
-            onClick={() => setSearchTerm('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Clear search"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        )}
+        
+        <div className="mt-4 flex items-center bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+          <input
+            type="checkbox"
+            id="isMain"
+            name="isMain"
+            checked={formData.isMain}
+            onChange={handleChange}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          />
+          <label htmlFor="isMain" className="ml-2 block text-sm font-medium text-gray-800">
+            Set as main delivery address
+          </label>
+          <InformationCircleIcon className="h-5 w-5 text-blue-400 ml-auto" title="Main addresses are prioritized during checkout" />
+        </div>
       </div>
 
-      {/* Location List */}
-      <div ref={locationListRef} className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50 shadow-inner">
-        {filteredTree.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 italic">No locations found matching your search.</div>
-        ) : (
-          filteredTree.map(node => (
-            <LocationNode
-              key={node.id}
-              node={node}
-              level={0}
-              selectedLocationId={selectedLocationId}
-              onLocationSelect={onLocationSelect}
-              isInitiallyExpanded={!!searchTerm} // Expand all if searching
-              filterTerm={searchTerm}
-            />
-          ))
-        )}
+      {/* Form Actions */}
+      <div className="pt-2">
+        <button
+          type="submit"
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+        >
+          Save New Address
+        </button>
       </div>
-    </div>
+
+    </form>
   );
-};
-
-export default LocationPicker;
+}

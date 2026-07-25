@@ -240,7 +240,7 @@ const SearchBar = () => {
               <li
                 key={item.id}
                 className={`px-5 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer text-sm text-zinc-700 dark:text-zinc-300 transition-colors ${i !== suggestions.length - 1 ? 'border-b border-zinc-100 dark:border-zinc-800' : ''}`}
-                onMouseDown={() => router.push(`/ghuba/product/${item.id}`)}
+                onMouseDown={() => router.push(`/ghuba/productlist/${item.id}`)}
               >
                 <span className="truncate pr-4">{item.title || item.name}</span>
                 <ArrowRightIcon className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />

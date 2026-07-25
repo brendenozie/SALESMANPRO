@@ -87,6 +87,7 @@ export default async function EditStorePage({ params }: PageProps) {
         galleries: true,
         StoreCategory: { include: { category: true } },
         CompanyLocation: { include: { location: true } },
+        addresses: true,
       },
     }),
     // Cached global lists
@@ -227,6 +228,12 @@ export default async function EditStorePage({ params }: PageProps) {
     packages: [],
     destinations: [],
     tourPackages: [],
+    addresses: store.addresses.map((addr) => ({
+      ...addr,
+      id: addr.id ?? null,
+      lat: addr.lat ?? 0,
+      lng: addr.lng ?? 0,
+    })),
 
     partnerLogos: (() => {
       const parsed = safeJsonParse(store.partnerLogos, []);

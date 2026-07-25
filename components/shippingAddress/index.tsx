@@ -24,7 +24,7 @@ const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr:
 const Circle = dynamic<any>(() => import("react-leaflet").then((m) => m.Circle), { ssr: false });
 
 const API_BASE = "https://nominatim.openstreetmap.org";
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { lat: number; lng: number }) => void }> = ({ onAddressSelect }) => {
   const { data: session, status } = useSession();
@@ -113,7 +113,7 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     if (!userId || !selectedLocation) return;
     try {
       const payload = { userId, latitude: selectedLocation.lat, longitude: selectedLocation.lng, address, description: address };
-      const response = await axios.post(`${API_ENDPOINT}/shop/setLocation`, payload);
+      const response = await axios.post(`/api/shop/setLocation`, payload);
       setSavedAddress(response.data.body || payload);
       showFeedback('success', 'Location saved successfully!');
     } catch (err) {
@@ -125,7 +125,7 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
   const handleDeleteAddress = async () => {
     if (!userId) return;
     try {
-      await axios.delete(`${API_ENDPOINT}/shop/deleteLocation`, { params: { userId } });
+      await axios.delete(`/api/shop/deleteLocation`, { params: { userId } });
       setSavedAddress(null);
       setSelectedLocation(null);
       setAddress("");
@@ -162,7 +162,7 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
   const fetchSavedAddress = async () => {
     if (!userId) return;
     try {
-      const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation`, { params: { userId }, headers: { "Credentials": "include" } });
+      const { data } = await axios.get(`/api/shop/getLocation`, { params: { userId }, headers: { "Credentials": "include" } });
       if (data.body && data.body.address) {
         const addr = data.body;
         setSavedAddress(addr);

@@ -244,7 +244,11 @@ export const websiteSteps: StepConfig[] = [
     key: 'location',
     title: 'Location',
     render: (f, h) => (
-      <LocationAccordion address={f.address} onAddressSelect={h.setAddress} />
+      <LocationAccordion
+        savedLocations={f.addresses}
+        onLocationSelect={h.handleLocationSelect}
+        onLocationSave={h.handleLocationSave}
+      />
     ),
   },
   {

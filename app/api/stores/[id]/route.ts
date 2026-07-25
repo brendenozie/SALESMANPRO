@@ -108,6 +108,7 @@ async function updateCompany(
     promotions,
     CompanyLocation,
     StoreCategory,
+    addresses,
     ...companyData
   } = parseResult.data;
 
@@ -299,6 +300,17 @@ async function updateCompany(
               categoryId: sc.categoryId,
               subcategories: sc.subcategories,
               allBrands: sc.allBrands,
+            })),
+          }
+        : undefined,
+
+      addresses: addresses
+        ? {
+            deleteMany: {},
+            create: addresses.map((addr) => ({
+              ...addr,
+              lat: addr.lat ?? null,
+              lng: addr.lng ?? null,
             })),
           }
         : undefined,

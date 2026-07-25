@@ -825,6 +825,33 @@ export interface ITourPackage {
 //## MAIN STORE FORM INTERFACE (Represents the Company model for forms)
 //################################################################################
 
+export interface CompanyAddress {
+  id: string | null;
+
+  // Link back to the Company
+  // companyId: string;
+  
+  // Address Status
+  isMain: boolean;
+
+  // Location Data
+  address: string | null;
+  lat: number;
+  lng: number;
+
+  // Contact info specific to this location
+  contactName?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+
+  // Additional helpful metadata
+  label?: string | null; // e.g., "Headquarters", "Warehouse", "Nairobi Branch"
+  instructions?: string | null; // e.g., "Use the back entrance"
+
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 // FIXED: This interface no longer extends `Company` to avoid type conflicts.
 // It manually defines the shape of the data for your store form.
 export interface StoreForm {
@@ -876,6 +903,7 @@ export interface StoreForm {
   sectionDescription?: string | null | undefined;
 
   galleries: IGallery[];
+  addresses: CompanyAddress[];
 
   // Relational arrays
   settings: CompanySettings | null;
@@ -1022,6 +1050,14 @@ export interface Handlers {
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
   setAddress: (address: string, geo: GeoLocation) => void;
+  
+  savedLocations?: CompanyAddress[];
+  selectedLocationId?: string | null;
+
+  handleLocationSelect: (newLocation: CompanyAddress) => void,
+  handleLocationSave: (updatedLocation: CompanyAddress) => void,
+  handleLocationDelete: (locationId: string) => void,
+
   onChangeSettings: (updated: Partial<StoreForm>) => void;
   onToggleDay: (dayKey: string) => void;
 

@@ -137,6 +137,20 @@ const storeCategorySchema = z.object({
   allBrands: z.any().optional(),
 });
 
+export const companyAddressSchema = z.object({
+  id: z.string().optional(),
+  companyId: z.string().optional(),
+  isMain: z.boolean().default(false),
+  address: z.string().optional(),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
+  contactName: z.string().min(1, 'Contact name is required').nullable().optional(),
+  contactPhone: z.string().min(1, 'Contact phone is required').nullable().optional(),
+  contactEmail: z.string().email('Invalid email address').nullable().optional(),
+  label: z.string().min(1, 'Label is required').nullable().optional(), // e.g., "Headquarters", "Warehouse"
+  instructions: z.string().nullable().optional(),
+});
+
 // --- Main Schema for Company Creation/Update ---
 export const companySchema = z.object({
   name: z.string().min(2, "Company name must be at least 2 characters"),
@@ -280,6 +294,8 @@ export const companySchema = z.object({
   // -- Many-to-Many through explicit join table --
   StoreCategory: z.array(storeCategorySchema).nullable().optional(),
   CompanyLocation: z.array(companyLocationSchema).nullable().optional(),
+
+  addresses: z.array(companyAddressSchema).nullable().optional(),
 
   founderName: z
     .string()
