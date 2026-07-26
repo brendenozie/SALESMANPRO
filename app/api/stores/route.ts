@@ -291,13 +291,18 @@ async function createCompany(req: Request, context: HandlerContext) {
         addresses: data.addresses
           ? {
               create: data.addresses.map((addr) => ({
-                ...addr,
+                isMain: addr.isMain ?? false,
+                address: addr.address ?? null,
                 lat: addr.lat ?? null,
                 lng: addr.lng ?? null,
+                contactName: addr.contactName ?? null,
+                contactPhone: addr.contactPhone ?? null,
+                contactEmail: addr.contactEmail ?? null,
+                label: addr.label ?? null,
+                instructions: addr.instructions ?? null,
               })),
             }
           : undefined,
-          
       },
     });
 

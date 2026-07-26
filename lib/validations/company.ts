@@ -138,16 +138,24 @@ const storeCategorySchema = z.object({
 });
 
 export const companyAddressSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().nullable().optional(),
   companyId: z.string().optional(),
   isMain: z.boolean().default(false),
   address: z.string().optional(),
   lat: z.number().nullable().optional(),
   lng: z.number().nullable().optional(),
-  contactName: z.string().min(1, 'Contact name is required').nullable().optional(),
-  contactPhone: z.string().min(1, 'Contact phone is required').nullable().optional(),
-  contactEmail: z.string().email('Invalid email address').nullable().optional(),
-  label: z.string().min(1, 'Label is required').nullable().optional(), // e.g., "Headquarters", "Warehouse"
+  contactName: z
+    .string()
+    .min(1, "Contact name is required")
+    .nullable()
+    .optional(),
+  contactPhone: z
+    .string()
+    .min(1, "Contact phone is required")
+    .nullable()
+    .optional(),
+  contactEmail: z.string().email("Invalid email address").nullable().optional(),
+  label: z.string().min(1, "Label is required").nullable().optional(), // e.g., "Headquarters", "Warehouse"
   instructions: z.string().nullable().optional(),
 });
 

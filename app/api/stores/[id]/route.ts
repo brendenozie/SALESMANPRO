@@ -304,16 +304,20 @@ async function updateCompany(
           }
         : undefined,
 
-      addresses: addresses
-        ? {
-            deleteMany: {},
-            create: addresses.map((addr) => ({
-              ...addr,
-              lat: addr.lat ?? null,
-              lng: addr.lng ?? null,
-            })),
-          }
-        : undefined,
+      addresses: {
+        deleteMany: {},
+        create: addresses?.map((addr) => ({
+          isMain: addr.isMain ?? false,
+          address: addr.address ?? null,
+          lat: addr.lat ?? null,
+          lng: addr.lng ?? null,
+          contactName: addr.contactName ?? null,
+          contactPhone: addr.contactPhone ?? null,
+          contactEmail: addr.contactEmail ?? null,
+          label: addr.label ?? null,
+          instructions: addr.instructions ?? null,
+        })),
+      },
     },
   });
 
