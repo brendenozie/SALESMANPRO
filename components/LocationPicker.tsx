@@ -1,7 +1,6 @@
-// components/locations/LocationPicker.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapPinIcon,
   UserIcon,
@@ -13,29 +12,18 @@ import {
 } from '@heroicons/react/24/outline';
 import { CompanyAddress } from '@/types/typings';
 
-// Matches the Prisma CompanyAddress model
-// export interface CompanyAddress {
-//   id?: string;
-//   companyId?: string;
-//   isMain?: boolean;
-//   address: string | null;
-//   lat: number;
-//   lng: number;
-//   contactName?: string | null;
-//   contactPhone?: string | null;
-//   contactEmail?: string | null;
-//   label?: string | null;
-//   instructions?: string | null;
-// }
-
 interface LocationPickerProps {
   onAddressSave: (location: CompanyAddress) => void;
+  initialData?: CompanyAddress | null; // Added initialData prop
 }
 
-export default function LocationPicker({ onAddressSave }: LocationPickerProps) {
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+export default function LocationPicker({ onAddressSave, initialData }: LocationPickerProps) {
   const [isLocating, setIsLocating] = useState(false);
+  
   const [formData, setFormData] = useState({
-    id: null,
+    id: generateId(),
     address: '',
     label: '',
     contactName: '',
@@ -45,8 +33,39 @@ export default function LocationPicker({ onAddressSave }: LocationPickerProps) {
     isMain: false,
     lat: '',
     lng: '',
-    // companyId: '', // Optional: Set if you have a companyId context
   });
+
+  // Sync form data when initialData changes (for switching between editing different cards or adding new)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        id: initialData.id || generateId(),
+        address: initialData.address || '',
+        label: initialData.label || '',
+        contactName: initialData.contactName || '',
+        contactPhone: initialData.contactPhone || '',
+        contactEmail: initialData.contactEmail || '',
+        instructions: initialData.instructions || '',
+        isMain: initialData.isMain || false,
+        lat: initialData.lat?.toString() || '',
+        lng: initialData.lng?.toString() || '',
+      });
+    } else {
+      // Reset form if switching back to "Add New"
+      setFormData({
+        id: generateId(),
+        address: '',
+        label: '',
+        contactName: '',
+        contactPhone: '',
+        contactEmail: '',
+        instructions: '',
+        isMain: false,
+        lat: '',
+        lng: '',
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -84,7 +103,6 @@ export default function LocationPicker({ onAddressSave }: LocationPickerProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Construct the final object matching the CompanyAddress interface
     const newAddress: CompanyAddress = {
       address: formData.address.trim() || null,
       label: formData.label.trim() || null,
@@ -95,8 +113,7 @@ export default function LocationPicker({ onAddressSave }: LocationPickerProps) {
       isMain: formData.isMain,
       lat: parseFloat(formData.lat) || 0,
       lng: parseFloat(formData.lng) || 0,
-      id: formData.id || null, // New address, so id is null
-      // companyId: formData.companyId || '', // Optional: Set if you have a companyId context''
+      id: formData.id, 
     };
 
     onAddressSave(newAddress);
@@ -290,7 +307,7 @@ export default function LocationPicker({ onAddressSave }: LocationPickerProps) {
           type="submit"
           className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
         >
-          Save New Address
+          {initialData ? 'Save Changes' : 'Save New Address'}
         </button>
       </div>
 

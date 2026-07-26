@@ -1298,6 +1298,14 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onChangeSettings({ addresses: updatedList });
   };
 
+  const handleLocationUpdate = (updatedLocation: CompanyAddress) => {
+    const currentLocations = form.addresses || [];
+    const updatedList = currentLocations.map((loc) =>
+      loc.id === updatedLocation.id ? updatedLocation : loc
+    );
+    onChangeSettings({ addresses: updatedList });
+  };
+
   // Handle deleting a location by ID
   const handleLocationDelete = (locationId: string) => {
     const currentLocations = form.addresses || [];
@@ -1322,7 +1330,9 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
     handleLocationSelect,
     handleLocationSave,
+    handleLocationUpdate,
     handleLocationDelete,
+
 
     onChangeSettings,
 

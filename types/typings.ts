@@ -826,18 +826,18 @@ export interface ITourPackage {
 //################################################################################
 
 export interface CompanyAddress {
-  id: string | null;
+  id?: string | null;
 
   // Link back to the Company
   // companyId: string;
   
   // Address Status
-  isMain: boolean;
+  isMain?: boolean | null; // Indicates if this is the primary address
 
   // Location Data
-  address: string | null;
-  lat: number;
-  lng: number;
+  address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 
   // Contact info specific to this location
   contactName?: string | null;
@@ -848,8 +848,8 @@ export interface CompanyAddress {
   label?: string | null; // e.g., "Headquarters", "Warehouse", "Nairobi Branch"
   instructions?: string | null; // e.g., "Use the back entrance"
 
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
 }
 
 // FIXED: This interface no longer extends `Company` to avoid type conflicts.
@@ -1056,6 +1056,7 @@ export interface Handlers {
 
   handleLocationSelect: (newLocation: CompanyAddress) => void,
   handleLocationSave: (updatedLocation: CompanyAddress) => void,
+  handleLocationUpdate: (updatedLocation: CompanyAddress) => void,
   handleLocationDelete: (locationId: string) => void,
 
   onChangeSettings: (updated: Partial<StoreForm>) => void;

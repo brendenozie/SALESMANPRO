@@ -83,7 +83,10 @@ export async function findCompanyCached(
     () => findCompanyFn(cleanIdentifier, strategy), // 👈 Arrow func keeps scope clean
     [key],
     {
-      tags: [`company:${cleanIdentifier}`, `company-details:${cleanIdentifier}:${strategy}`], // 👈 Safe primitive variables
+      tags: [
+        `company:${cleanIdentifier}`,
+        `company-details:${cleanIdentifier}:${strategy}`,
+      ], // 👈 Safe primitive variables
       revalidate: false, // Relies on manual revalidation from API routes
     },
   );
@@ -122,6 +125,7 @@ export function leanShellInclude() {
         location: true,
       },
     },
+    addresses: true, // Include the new addresses array for multi-location support
   };
 }
 
@@ -178,7 +182,7 @@ export function pageDataInclude() {
         isAvailable: true,
         isFeatured: true,
         category: true,
-        option: true, 
+        option: true,
       },
     },
     Writer: { where: { user: { isNot: null } }, include: { user: userSelect } },
@@ -204,6 +208,7 @@ export function pageDataInclude() {
     TourPackage: true,
     PaymentSettings: true,
     ShippingSettings: true,
+    addresses: true, // Include the new addresses array for multi-location support
   };
 }
 
@@ -220,7 +225,6 @@ export async function revalidateCompanyCache(identifier: string) {
   revalidateTag(`company-details:${identifier}:lean`);
   revalidateTag(`company-details:${identifier}:page`);
   revalidateTag(`company-details:${identifier}:full`);
-
 }
 
 // Invalidate specific data subsets for a tenant
@@ -414,8 +418,6 @@ export const revalidateStore = (companyId: string) => {
 //   revalidateTag(`testimonials-${companyId}`);
 //   // console.log(`✨ All caches purged for company: ${companyId}`);
 // };
-
-
 
 // -------------------------------- this is user the libcache  --------------------------------
 // app/api/admin/update-company/route.ts

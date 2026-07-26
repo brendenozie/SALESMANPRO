@@ -20,8 +20,7 @@ function safeDateToString(
 }
 
 export function transformCompanyToStoreForm(raw: any): StoreForm {
-
-  const isGhuba = raw.domain === 'ghuba' || raw.slug === 'ghuba';
+  const isGhuba = raw.domain === "ghuba" || raw.slug === "ghuba";
 
   return {
     id: raw.id,
@@ -31,14 +30,27 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     domain: raw.domain ?? "",
     tagline: raw.tagline ?? "",
     description: raw.description ?? "",
-    category: isGhuba ? 'other' : raw.category,
-    variant: isGhuba ? 'ghuba' : raw.variant,
+    category: isGhuba ? "other" : raw.category,
+    variant: isGhuba ? "ghuba" : raw.variant,
     logoUrl: raw.logoUrl ?? "",
     bannerUrl: raw.bannerUrl ?? "",
     videoUrl: raw.videoUrl ?? "",
     contactEmail: raw.contactEmail ?? "",
     contactPhone: raw.contactPhone ?? "",
     address: raw.address ?? "",
+    // Safely handle addresses whether it comes as a JSON string or an array
+    addresses:
+      typeof raw.addresses === "string"
+        ? (function () {
+            try {
+              return JSON.parse(raw.addresses);
+            } catch {
+              return [];
+            }
+          })()
+        : Array.isArray(raw.addresses)
+          ? raw.addresses
+          : [],
     geoLocation:
       typeof raw.geoLocation === "string"
         ? JSON.parse(raw.geoLocation)
@@ -114,19 +126,20 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
         }
       : null,
     analyticsConfig: raw.AnalyticsConfig
-    ? {
-        id: String(raw.AnalyticsConfig.id),
-        googleAnalyticsId: raw.AnalyticsConfig.googleAnalyticsId ?? "G-JQJSSHQD25",
-        googleAdsId: raw.AnalyticsConfig.googleAdsId ?? null,
-        facebookPixelId: raw.AnalyticsConfig.facebookPixelId ?? null,
-        tiktokPixelId: raw.AnalyticsConfig.tiktokPixelId ?? null,
-        hotjarSiteId: raw.AnalyticsConfig.hotjarSiteId ?? null,
-        isActive:
-          typeof raw.AnalyticsConfig.isActive === "boolean"
-            ? raw.AnalyticsConfig.isActive
-            : false,
-      }
-    : null,
+      ? {
+          id: String(raw.AnalyticsConfig.id),
+          googleAnalyticsId:
+            raw.AnalyticsConfig.googleAnalyticsId ?? "G-JQJSSHQD25",
+          googleAdsId: raw.AnalyticsConfig.googleAdsId ?? null,
+          facebookPixelId: raw.AnalyticsConfig.facebookPixelId ?? null,
+          tiktokPixelId: raw.AnalyticsConfig.tiktokPixelId ?? null,
+          hotjarSiteId: raw.AnalyticsConfig.hotjarSiteId ?? null,
+          isActive:
+            typeof raw.AnalyticsConfig.isActive === "boolean"
+              ? raw.AnalyticsConfig.isActive
+              : false,
+        }
+      : null,
     paymentSettings: raw.PaymentSettings
       ? ({
           id: String(raw.PaymentSettings.id),
@@ -491,6 +504,5 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
           items: Array.isArray(g.items) ? g.items : [],
         }))
       : [],
-
   };
 }

@@ -248,6 +248,7 @@ export const websiteSteps: StepConfig[] = [
         savedLocations={f.addresses}
         onLocationSelect={h.handleLocationSelect}
         onLocationSave={h.handleLocationSave}
+        onLocationUpdate={h.handleLocationUpdate}
       />
     ),
   },

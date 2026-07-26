@@ -8,40 +8,29 @@ import {
   ChevronDownIcon,
   XMarkIcon,
   EnvelopeIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  PencilIcon // Added PencilIcon for editing
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import LocationPicker from '@/components/LocationPicker';
 import { CompanyAddress } from '@/types/typings';
 
-// Updated to match the new Prisma CompanyAddress model
-// export interface CompanyAddress {
-//   id?: string;
-//   companyId?: string;
-//   isMain?: boolean;
-//   address: string | null;
-//   lat: number;
-//   lng: number;
-//   contactName?: string | null;
-//   contactPhone?: string | null;
-//   contactEmail?: string | null;
-//   label?: string | null;
-//   instructions?: string | null;
-// }
-
 export interface LocationAccordionProps {
   savedLocations?: CompanyAddress[];
   onLocationSelect: (location: CompanyAddress) => void;
   onLocationSave: (newLocation: CompanyAddress) => void;
+  onLocationUpdate?: (updatedLocation: CompanyAddress) => void; // Added update handler
 }
 
 export default function LocationAccordion({
   savedLocations = [],
   onLocationSelect,
   onLocationSave,
+  onLocationUpdate
 }: LocationAccordionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isAddingNew, setIsAddingNew] = useState(savedLocations.length === 0);
+  const [editingLocation, setEditingLocation] = useState<CompanyAddress | null>(null); // Track editing state
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
   // Automatically switch to add mode if no locations exist
@@ -51,7 +40,7 @@ export default function LocationAccordion({
     }
   }, [savedLocations]);
 
-  // set selected location from saved locations  is main check 
+  // Set selected location from saved locations if main
   useEffect(() => {
     const mainLocation = savedLocations.find(loc => loc.isMain);
     if (mainLocation) {
@@ -59,11 +48,24 @@ export default function LocationAccordion({
     }
   }, [savedLocations]);
 
-  const handleAddNewSuccess = (newLocation: CompanyAddress) => {
-    onLocationSave(newLocation);
-    onLocationSelect(newLocation);
-    setIsAddingNew(false);
+  const handleSaveSuccess = (location: CompanyAddress) => {
+    if (editingLocation) {
+      if (onLocationUpdate) onLocationUpdate(location);
+      else onLocationSave(location); // Fallback if update handler isn't provided
+      setEditingLocation(null);
+    } else {
+      onLocationSave(location);
+      setIsAddingNew(false);
+    }
+    onLocationSelect(location);
   };
+
+  const closeForm = () => {
+    setIsAddingNew(false);
+    setEditingLocation(null);
+  };
+
+  const showForm = isAddingNew || editingLocation !== null;
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6">
@@ -80,7 +82,6 @@ export default function LocationAccordion({
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Delivery Location</h2>
-              {/* Show brief preview of selected address when collapsed */}
               {!isOpen && selectedLocationId && (
                 <p className="text-sm text-gray-500 truncate max-w-[200px] sm:max-w-xs mt-0.5">
                   {savedLocations.find(l => l.id === selectedLocationId)?.address || 'Custom Pinned Location'}
@@ -105,7 +106,7 @@ export default function LocationAccordion({
             >
               <div className="p-5 sm:p-6">
                 
-                {/* View 1: Saved Locations Grid (ALWAYS VISIBLE) */}
+                {/* View 1: Saved Locations Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {savedLocations.map((loc, idx) => {
                     const isSelected = loc.id === selectedLocationId;
@@ -124,7 +125,6 @@ export default function LocationAccordion({
                         )}
                         
                         <div className="pr-8 mb-4">
-                          {/* Label & Main Badge */}
                           <div className="flex items-center gap-2 mb-1.5">
                             <span className={`font-semibold text-sm ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
                               {loc.label || 'Saved Address'}
@@ -140,14 +140,12 @@ export default function LocationAccordion({
                             {loc.address ? loc.address : 'Custom Pinned Location'}
                           </p>
                           
-                          {/* Show coordinates only if address is purely null */}
                           {!loc.address && (
                             <p className="text-xs text-gray-400 mt-1">
-                              {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}
+                              {loc?.lat?.toFixed(4)}, {loc?.lng?.toFixed(4)}
                             </p>
                           )}
 
-                          {/* Delivery Instructions */}
                           {loc.instructions && (
                             <div className="flex items-start mt-2 text-xs text-gray-500">
                               <InformationCircleIcon className="h-4 w-4 mr-1.5 mt-0.5 shrink-0" />
@@ -179,13 +177,29 @@ export default function LocationAccordion({
                             )}
                           </div>
                         )}
+
+                        {/* Edit Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingLocation(loc);
+                            setIsAddingNew(false);
+                          }}
+                          className="absolute bottom-4 right-4 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors z-10"
+                          title="Edit Location"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
                       </div>
                     );
                   })}
 
-                  {/* Add New Location Card Button - Always Visible */}
+                  {/* Add New Location Card Button */}
                   <button
-                    onClick={() => setIsAddingNew(true)}
+                    onClick={() => {
+                      setIsAddingNew(true);
+                      setEditingLocation(null);
+                    }}
                     className={`flex flex-col items-center justify-center min-h-[140px] p-5 rounded-xl border-2 border-dashed transition-all group outline-none
                       ${isAddingNew 
                         ? 'border-indigo-500 bg-indigo-50/50 text-indigo-600 shadow-inner' 
@@ -200,9 +214,9 @@ export default function LocationAccordion({
                   </button>
                 </div>
 
-                {/* View 2: Add New Location Picker (Slides down below the grid) */}
+                {/* View 2: Add/Edit Location Picker */}
                 <AnimatePresence>
-                  {isAddingNew && (
+                  {showForm && (
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
@@ -212,12 +226,16 @@ export default function LocationAccordion({
                       <div className="mt-6 pt-6 border-t border-gray-200 space-y-5">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900">Add Delivery Detail</h3>
-                            <p className="text-sm text-gray-500">Pinpoint your location and add contact info.</p>
+                            <h3 className="text-lg font-bold text-gray-900">
+                              {editingLocation ? 'Edit Delivery Detail' : 'Add Delivery Detail'}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {editingLocation ? 'Update your location or contact info.' : 'Pinpoint your location and add contact info.'}
+                            </p>
                           </div>
                           {savedLocations.length > 0 && (
                             <button 
-                              onClick={() => setIsAddingNew(false)}
+                              onClick={closeForm}
                               className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                               title="Close map form"
                             >
@@ -227,7 +245,10 @@ export default function LocationAccordion({
                         </div>
                         
                         <div className="bg-gray-50 rounded-2xl p-1 border border-gray-100">
-                          <LocationPicker onAddressSave={handleAddNewSuccess} />
+                          <LocationPicker 
+                            initialData={editingLocation}
+                            onAddressSave={handleSaveSuccess} 
+                          />
                         </div>
                       </div>
                     </motion.div>
