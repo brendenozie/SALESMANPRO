@@ -8,11 +8,22 @@ import {
   EnvelopeIcon, 
   PhoneIcon, 
   MapPinIcon, 
-  PaperAirplaneIcon,
   CommandLineIcon,
   ShieldCheckIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  ArrowUpRightIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/solid';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function CommandFooter() {
   const { storeFormData } = useStoreContext();
@@ -22,8 +33,22 @@ export default function CommandFooter() {
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
+    themeSettings = {},  
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters Node",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primary = themeSettings?.primaryColor || '#F59E0B'; // Tactical Amber
 
@@ -38,7 +63,7 @@ export default function CommandFooter() {
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 pt-40 pb-12 relative z-10">
         
         {/* Massive Kinetic Header */}
-        <div className="mb-40 overflow-hidden select-none pointer-events-none">
+        <div className="mb-32 overflow-hidden select-none pointer-events-none">
           <motion.h1 
             initial={{ x: '-10%' }}
             animate={{ x: '0%' }}
@@ -49,12 +74,12 @@ export default function CommandFooter() {
           </motion.h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 mb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 mb-24">
           {/* Brand & Dispatch */}
           <div className="lg:col-span-5 space-y-12">
             <div className="space-y-6">
                <div className="flex items-center gap-3">
-                 <CommandLineIcon className="w-8 h-8 text-amber-500" />
+                 <CommandLineIcon className="w-8 h-8" style={{ color: primary }} />
                  <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter">{name}</h3>
                </div>
                <p className="text-xl font-bold text-zinc-400 leading-tight uppercase tracking-tighter max-w-md">
@@ -63,16 +88,18 @@ export default function CommandFooter() {
             </div>
 
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500">Social Uplink</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: primary }}>Social Uplink</span>
               <div className="flex gap-4">
                 {socialLinks.map((s, idx) => (
                   <motion.a
                     key={idx}
                     whileHover={{ y: -5, color: '#FFF' }}
                     href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-14 h-14 bg-zinc-900 border-2 border-zinc-800 flex items-center justify-center transition-all group relative"
                   >
-                    <div className="absolute inset-0 bg-amber-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: primary }} />
                     {iconMapper[String(s.channel).toLowerCase()] || <GlobeAltIcon className="w-6 h-6" />}
                   </motion.a>
                 ))}
@@ -83,40 +110,126 @@ export default function CommandFooter() {
           {/* Navigation Matrix */}
           <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-12">
             <div className="space-y-8">
-              <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 border-amber-500 pl-4">Operations</h4>
+              <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 pl-4" style={{ borderColor: primary }}>Operations</h4>
               <ul className="space-y-4 text-xs font-black uppercase tracking-widest">
                 {['Direct API', 'Storefronts', 'Logistics', 'Procurement', 'Security'].map((item) => (
-                  <li key={item}><Link href={`/hardwareecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">{item}</Link></li>
+                  <li key={item}>
+                    <Link href={`/hardwareecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">
+                      {item}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
             <div className="space-y-8">
-              <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 border-amber-500 pl-4">Network</h4>
+              <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 pl-4" style={{ borderColor: primary }}>Network</h4>
               <ul className="space-y-4 text-xs font-black uppercase tracking-widest">
                 {['Documentation', 'Developer Hub', 'Regional Nodes', 'Cloud Status', 'Support'].map((item) => (
-                  <li key={item}><Link href={`/hardwareecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">{item}</Link></li>
+                  <li key={item}>
+                    <Link href={`/hardwareecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">
+                      {item}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
             <div className="col-span-2 md:col-span-1 space-y-8">
-              <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 border-amber-500 pl-4">HQ_Dispatch</h4>
+              <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 pl-4" style={{ borderColor: primary }}>HQ_Dispatch</h4>
               <div className="space-y-6 font-mono text-[11px] font-bold uppercase tracking-tighter">
                 <div className="flex items-start gap-3">
-                  <MapPinIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                  <p>Nairobi HQ<br/>Kenya Industrial Area</p>
+                  <MapPinIcon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: primary }} />
+                  <p className="text-zinc-300">
+                    {regionalAddresses[0]?.address || 'Nairobi Industrial HQ, Kenya'}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <EnvelopeIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                  <a href={`mailto:${contactEmail}`} className="hover:text-white transition-colors">{contactEmail}</a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <PhoneIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                  <a href={`tel:${contactPhone}`} className="hover:text-white transition-colors">{contactPhone}</a>
-                </div>
+                {contactEmail && (
+                  <div className="flex items-center gap-3">
+                    <EnvelopeIcon className="w-4 h-4 shrink-0" style={{ color: primary }} />
+                    <a href={`mailto:${contactEmail}`} className="hover:text-white transition-colors truncate">{contactEmail}</a>
+                  </div>
+                )}
+                {contactPhone && (
+                  <div className="flex items-center gap-3">
+                    <PhoneIcon className="w-4 h-4 shrink-0" style={{ color: primary }} />
+                    <a href={`tel:${contactPhone}`} className="hover:text-white transition-colors">{contactPhone}</a>
+                  </div>
+                )}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Regional Network Address Grid */}
+        <div className="mb-20 pt-12 border-t border-zinc-900">
+          <div className="flex items-center justify-between mb-8">
+            <h4 className="text-white font-black uppercase text-[10px] tracking-[0.4em] flex items-center gap-2">
+              <BuildingOfficeIcon className="w-4 h-4" style={{ color: primary }} />
+              Active Address Nodes ({regionalAddresses.length})
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const query = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-zinc-950 border border-zinc-900 p-6 rounded-none flex flex-col justify-between hover:border-zinc-700 transition-all group relative"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-black uppercase tracking-widest px-2.5 py-1 bg-zinc-900 text-zinc-300 border border-zinc-800">
+                        {loc.label || `NODE 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-emerald-500">PRIMARY NODE</span>
+                      )}
+                    </div>
+
+                    <p className="text-xs font-mono font-bold text-zinc-300 leading-relaxed uppercase">
+                      {loc.address || 'Address details classified'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-[10px] font-mono text-zinc-500 uppercase">
+                        {[loc.city, loc.country].filter(Boolean).join(' // ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-8 pt-4 border-t border-zinc-900 space-y-3 font-mono text-[10px]">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0 text-zinc-600" />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0 text-zinc-600" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    <a 
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 pt-2 text-[10px] font-black uppercase tracking-widest transition-transform group-hover:translate-x-1 duration-200"
+                      style={{ color: primary }}
+                    >
+                      <MapPinIcon className="w-3.5 h-3.5" />
+                      <span>GPS Coordinates</span>
+                      <ArrowUpRightIcon className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -135,7 +248,14 @@ export default function CommandFooter() {
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-700 italic">Developed by</span>
-              <a href="https://salesmanpro.site" className="text-[14px] font-black uppercase tracking-widest text-white hover:text-amber-500 transition-colors">SalesmanPro<span className="text-amber-500">.site</span></a>
+              <a 
+                href="https://salesmanpro.site" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[14px] font-black uppercase tracking-widest text-white hover:text-amber-500 transition-colors"
+              >
+                SalesmanPro<span style={{ color: primary }}>.site</span>
+              </a>
             </div>
             <div className="flex items-center gap-4 opacity-20 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
               <ShieldCheckIcon className="w-5 h-5" />

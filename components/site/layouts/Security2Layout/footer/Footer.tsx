@@ -9,11 +9,19 @@ import {
   MapPinIcon,
   PhoneIcon,
   ChevronRightIcon,
+  ArrowUpRightIcon,
 } from '@heroicons/react/24/solid';
 
 interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
+}
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  contactPhone?: string;
+  contactEmail?: string;
 }
 
 interface StoreFormData {
@@ -24,12 +32,8 @@ interface StoreFormData {
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
-  socialLinks?: {
-    facebook?: string;
-    twitter?: string;
-    linkedin?: string;
-    instagram?: string;
-  };
+  addresses?: AddressItem[];
+  socialLinks?: Array<{ channel?: string; url?: string }> | Record<string, string>;
 }
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -37,6 +41,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 export default function Footer() {
   const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
+
   const {
     name = 'CyberShield',
     slug = 'cybershield',
@@ -44,9 +49,24 @@ export default function Footer() {
     themeSettings = {},
     contactEmail,
     contactPhone,
-    address,
+    address: legacyAddress,
+    addresses = [],
     socialLinks,
-  } = storeFormData;
+  } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase.
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] =
+    addresses?.length > 0
+      ? addresses.slice(0, 3)
+      : [
+          {
+            label: 'Global Headquarters',
+            address: legacyAddress || 'Lusingeti Road, Number 31, Industrial Area, Nairobi',
+            contactPhone: contactPhone,
+            contactEmail: contactEmail,
+          },
+        ];
 
   const primaryColor = themeSettings.primaryColor || '#00A880';
 
@@ -57,7 +77,6 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-white text-gray-900 border-t border-gray-200 overflow-hidden">
-      
       {/* BACKGROUND TELEMETRY STRUCTURAL GRID */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
         {Array.from({ length: 12 }).map((_, i) => (
@@ -66,10 +85,8 @@ export default function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 pt-20 pb-12">
-        
         {/* CORE FLAT MATRIX LAYOUT */}
         <div className="grid grid-cols-1 md:grid-cols-12 border border-gray-200 bg-white">
-          
           {/* COLUMN 1: CORPORATE BOUNDARY RECORD (4/12 width) */}
           <div className="md:col-span-4 p-8 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col justify-between">
             <div className="space-y-6">
@@ -96,27 +113,40 @@ export default function Footer() {
             </div>
 
             {/* SOCIAL TELEMETRY MATRIX */}
-            {socialLinks && Array.isArray(socialLinks) && (
+            {socialLinks && (
               <div className="flex flex-wrap gap-2 pt-8 border-t border-gray-100 mt-8">
-                {socialLinks.map((link: any, index: number) => {
-                  // Handle either array of objects [{channel, url}] or protect against null formats
-                  const platform = link?.channel || `LINK_${index}`;
-                  const href = link?.url || '';
-                  
-                  if (!href) return null;
+                {Array.isArray(socialLinks)
+                  ? socialLinks.map((link: any, index: number) => {
+                      const platform = link?.channel || `LINK_${index}`;
+                      const href = link?.url || '';
+                      if (!href) return null;
 
-                  return (
-                    <a
-                      key={index}
-                      href={href.startsWith('http') ? href : `https://${href}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] font-mono font-bold uppercase border border-gray-200 px-2.5 py-1 text-gray-400 hover:text-gray-950 hover:border-gray-950 transition-colors"
-                    >
-                      {String(platform).slice(0, 3)}//
-                    </a>
-                  );
-                })}
+                      return (
+                        <a
+                          key={index}
+                          href={href.startsWith('http') ? href : `https://${href}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono font-bold uppercase border border-gray-200 px-2.5 py-1 text-gray-400 hover:text-gray-950 hover:border-gray-950 transition-colors"
+                        >
+                          {String(platform).slice(0, 3)}//
+                        </a>
+                      );
+                    })
+                  : Object.entries(socialLinks).map(([platform, href]) => {
+                      if (!href) return null;
+                      return (
+                        <a
+                          key={platform}
+                          href={String(href).startsWith('http') ? String(href) : `https://${href}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono font-bold uppercase border border-gray-200 px-2.5 py-1 text-gray-400 hover:text-gray-950 hover:border-gray-950 transition-colors"
+                        >
+                          {platform.slice(0, 3)}//
+                        </a>
+                      );
+                    })}
               </div>
             )}
           </div>
@@ -130,7 +160,7 @@ export default function Footer() {
                 { label: 'SERVICES', href: '#services' },
                 { label: 'CASE STUDIES', href: '#case-studies' },
                 { label: 'FAQS', href: '#security-faqs' },
-                { label: 'CONTACT', href: '#contact-routing' }
+                { label: 'CONTACT', href: '#contact-routing' },
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-xs font-mono font-bold text-gray-500 hover:text-gray-950 transition-colors uppercase block tracking-wider">
@@ -141,36 +171,28 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* COLUMN 3: DIRECT DATA CHANNELS (3/12 width) */}
+          {/* COLUMN 3: PRIMARY ENDPOINT & QUICK CONTACT (3/12 width) */}
           <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-200">
             <span className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-6">[SYS_ENDPOINT]</span>
             <ul className="space-y-4">
               {contactEmail && (
                 <li>
-                  <Link href={`mailto:${contactEmail}`} className="group flex items-start gap-2.5 text-gray-500 hover:text-gray-950 transition-colors">
-                    <EnvelopeIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-950" />
+                  <a href={`mailto:${contactEmail}`} className="group flex items-start gap-2.5 text-gray-500 hover:text-gray-950 transition-colors">
+                    <EnvelopeIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-950 flex-shrink-0" />
                     <span className="text-xs font-mono font-bold uppercase tracking-tight break-all">{contactEmail}</span>
-                  </Link>
+                  </a>
                 </li>
               )}
               {contactPhone && (
                 <li>
-                  <Link href={`tel:${contactPhone}`} className="group flex items-start gap-2.5 text-gray-500 hover:text-gray-950 transition-colors">
-                    <PhoneIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-950" />
+                  <a href={`tel:${contactPhone}`} className="group flex items-start gap-2.5 text-gray-500 hover:text-gray-950 transition-colors">
+                    <PhoneIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-950 flex-shrink-0" />
                     <span className="text-xs font-mono font-bold uppercase tracking-tight">{contactPhone}</span>
-                  </Link>
+                  </a>
                 </li>
               )}
-              {address && (
-                <li>
-                  <div className="flex items-start gap-2.5 text-gray-500">
-                    <MapPinIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 flex-shrink-0" />
-                    <span className="text-xs font-mono font-bold uppercase tracking-tight leading-tight">{address}</span>
-                  </div>
-                </li>
-              )}
-              {!contactEmail && !contactPhone && !address && (
-                <li className="text-xs font-mono text-gray-300 font-bold uppercase">// NO_ENDPOINT_DATA</li>
+              {!contactEmail && !contactPhone && (
+                <li className="text-xs font-mono text-gray-300 font-bold uppercase">// NO_DEFAULT_ENDPOINT</li>
               )}
             </ul>
           </div>
@@ -199,25 +221,97 @@ export default function Footer() {
               </button>
             </form>
           </div>
-
         </div>
 
+        {/* REGIONAL LOCATIONS SHOWCASE MATRIX */}
+        {regionalAddresses.length > 0 && (
+          <div className="mt-8 border border-gray-200 bg-white p-6 md:p-8">
+            <span className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-6">
+              [REGIONAL_NODES // LOCATION_TELEMETRY]
+            </span>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {regionalAddresses.map((loc, idx) => {
+                const mapsUrl = loc.address
+                  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address)}`
+                  : null;
+
+                return (
+                  <div
+                    key={idx}
+                    className="p-5 border border-gray-100 bg-gray-50/30 flex flex-col justify-between space-y-4 hover:border-gray-300 transition-colors"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPinIcon className="w-3.5 h-3.5 text-gray-900 flex-shrink-0" />
+                        <h6 className="text-xs font-mono font-black uppercase text-gray-900 tracking-wider">
+                          {loc.label || `NODE_0${idx + 1}`}
+                        </h6>
+                      </div>
+                      {loc.address && (
+                        <p className="text-[11px] font-mono text-gray-500 uppercase leading-normal tracking-tight pl-5">
+                          {loc.address}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 pt-3 border-t border-gray-100 font-mono text-[10px] font-bold">
+                      {loc.contactPhone && (
+                        <a
+                          href={`tel:${loc.contactPhone}`}
+                          className="flex items-center gap-2 text-gray-500 hover:text-gray-950 transition-colors uppercase"
+                        >
+                          <PhoneIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                          <span>{loc.contactPhone}</span>
+                        </a>
+                      )}
+
+                      {loc.contactEmail && (
+                        <a
+                          href={`mailto:${loc.contactEmail}`}
+                          className="flex items-center gap-2 text-gray-500 hover:text-gray-950 transition-colors uppercase truncate"
+                        >
+                          <EnvelopeIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{loc.contactEmail}</span>
+                        </a>
+                      )}
+
+                      {mapsUrl && (
+                        <a
+                          href={mapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-gray-900 hover:text-emerald-600 transition-colors uppercase pt-1 font-black"
+                        >
+                          <span>NAVIGATE_TO_NODE</span>
+                          <ArrowUpRightIcon className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* BOTTOM TERMINAL FOOTER LINE */}
-        <div className="mt-12 border-t border-gray-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[9px] font-mono font-bold tracking-widest text-gray-400 uppercase">
+        <div className="mt-8 border-t border-gray-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[9px] font-mono font-bold tracking-widest text-gray-400 uppercase">
           <div>
             © {new Date().getFullYear()} {name.toUpperCase()}. CORE_SYS_ALL_RIGHTS_RESERVED.
           </div>
           <div className="flex items-center gap-1.5 border border-gray-200 px-3 py-1 bg-gray-50">
             <span>POWERED_BY //</span>
-            <a 
-              href="https://salesmanpro.site" 
+            <a
+              href="https://salesmanpro.site"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-orange-600 hover:text-orange-700 font-black transition-colors"
             >
               SALESMANPRO.SITE
             </a>
           </div>
         </div>
-
       </div>
     </footer>
   );

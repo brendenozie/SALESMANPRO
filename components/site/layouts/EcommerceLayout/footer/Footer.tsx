@@ -9,22 +9,46 @@ import {
   EnvelopeIcon, 
   PhoneIcon, 
   MapPinIcon,
-  InformationCircleIcon
+  BuildingOfficeIcon,
+  ArrowUpRightIcon
 } from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
   const {
-    name,
+    name = "Store Name",
     description,
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
+    themeSettings = {},  
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
 
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
+
   const primary = themeSettings?.primaryColor || '#6366f1';
-  const secondary = themeSettings?.secondaryColor || '#a855f7';
 
   const iconMapper: Record<string, React.ReactNode> = {
     facebook: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.522-4.477-10-10-10S2 6.478 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54v-2.89h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z"/></svg>,
@@ -41,7 +65,7 @@ export default function Footer() {
       />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
           
           {/* Brand Info */}
           <div className="lg:col-span-4">
@@ -53,15 +77,15 @@ export default function Footer() {
             </p>
             <div className="space-y-4">
               {contactEmail && (
-                <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 text-sm font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <EnvelopeIcon className="w-4 h-4" />
-                  {contactEmail}
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                  <EnvelopeIcon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{contactEmail}</span>
                 </a>
               )}
               {contactPhone && (
-                <a href={`tel:${contactPhone}`} className="flex items-center gap-3 text-sm font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                  <PhoneIcon className="w-4 h-4" />
-                  {contactPhone}
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-3 text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                  <PhoneIcon className="w-4 h-4 shrink-0" />
+                  <span>{contactPhone}</span>
                 </a>
               )}
             </div>
@@ -116,9 +140,9 @@ export default function Footer() {
                     target="_blank"
                     rel="noreferrer"
                     className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 dark:bg-gray-900 border border-slate-100 dark:border-gray-800 text-slate-400 hover:text-white transition-all shadow-sm"
-                    style={{ '--hover-bg': primary } as any}
+                    style={{ '--hover-bg': primary } as React.CSSProperties}
                   >
-                    <span className="group-hover:text-white transition-colors">
+                    <span className="hover:text-slate-900 dark:hover:text-white transition-colors">
                       {icon}
                     </span>
                   </motion.a>
@@ -127,9 +151,86 @@ export default function Footer() {
             </div>
             
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-100 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Global Server: Active
             </div>
+          </div>
+        </div>
+
+        {/* Dynamic Regional Addresses Showcase */}
+        <div className="py-12 border-t border-slate-100 dark:border-gray-900">
+          <div className="flex items-center gap-2 mb-8">
+            <BuildingOfficeIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">
+              Our Locations ({regionalAddresses.length})
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const locationQuery = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
+
+              return (
+                <div 
+                  key={idx}
+                  className="p-6 rounded-2xl bg-slate-50/50 dark:bg-gray-900/40 border border-slate-100 dark:border-gray-800/80 flex flex-col justify-between hover:border-slate-300 dark:hover:border-gray-700 transition-all group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-800 dark:text-gray-200"
+                        style={{ color: loc.isPrimary ? primary : undefined }}
+                      >
+                        {loc.label || `Branch 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">
+                          Main Branch
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs font-semibold text-slate-700 dark:text-gray-300 leading-relaxed pt-1">
+                      {loc.address || 'Address information on file.'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-[11px] font-medium text-slate-400 dark:text-gray-500">
+                        {[loc.city, loc.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-gray-800 space-y-2 text-xs">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    <a 
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 pt-2 text-[10px] font-black uppercase tracking-widest hover:underline transition-all"
+                      style={{ color: primary }}
+                    >
+                      <MapPinIcon className="w-3.5 h-3.5" />
+                      <span>Get Directions</span>
+                      <ArrowUpRightIcon className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -146,11 +247,13 @@ export default function Footer() {
         </div>
 
         {/* SalesmanPro Attribution */}
-        <div className="mt-12 flex items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-all duration-500">
+        <div className="mt-12 flex items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-all duration-300">
           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Platform by</span>
           <a 
             href="https://salesmanpro.site" 
-            className="text-[14px] font-black uppercase tracking-[0.3em] text-orange-600"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12px] font-black uppercase tracking-[0.3em] text-orange-600 hover:text-orange-500 transition-colors"
           >
             SalesmanPro.site
           </a>

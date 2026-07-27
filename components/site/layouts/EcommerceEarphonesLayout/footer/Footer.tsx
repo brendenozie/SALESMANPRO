@@ -4,7 +4,25 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { FaceFrownIcon, GlobeAltIcon, CpuChipIcon } from '@heroicons/react/24/outline';
+import { 
+  FaceFrownIcon, 
+  GlobeAltIcon, 
+  CpuChipIcon, 
+  MapPinIcon, 
+  EnvelopeIcon, 
+  PhoneIcon, 
+  ArrowUpRightIcon 
+} from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -14,8 +32,22 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
+    themeSettings = {},  
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primary = themeSettings?.primaryColor || '#f97316';
 
@@ -35,7 +67,7 @@ export default function Footer() {
       />
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-16">
           
           {/* Brand & Mission */}
           <div className="lg:col-span-4 space-y-8">
@@ -121,12 +153,86 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Dynamic Regional Showcase Section */}
+        <div className="mb-16 pt-10 border-t border-black/5 dark:border-white/5">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] flex items-center gap-2 text-black/40 dark:text-white/40">
+              <MapPinIcon className="w-4 h-4" style={{ color: primary }} />
+              Locations & Hubs ({regionalAddresses.length})
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const query = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 rounded-2xl p-6 flex flex-col justify-between hover:border-black/15 dark:hover:border-white/15 transition-all group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5"
+                        style={{ color: primary }}
+                      >
+                        {loc.label || `Hub 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[9px] font-mono text-black/30 dark:text-white/30 uppercase tracking-widest">[Main HQ]</span>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-black/70 dark:text-white/70 leading-relaxed font-medium">
+                      {loc.address || 'Address provided upon dispatch request'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-xs text-black/40 dark:text-white/40 italic">
+                        {[loc.city, loc.country].filter(Boolean).join(' • ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/5 space-y-2 text-xs">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="font-mono text-[11px]">{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate text-[11px]">{loc.contactEmail}</span>
+                      </a>
+                    )}
+                    
+                    <a 
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 pt-2 text-[10px] font-bold uppercase tracking-widest hover:brightness-125 transition-all group-hover:translate-x-0.5 transition-transform"
+                      style={{ color: primary }}
+                    >
+                      Locate on Map
+                      <ArrowUpRightIcon className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Bottom Utility Bar */}
         <div className="pt-10 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
             <CpuChipIcon className="w-5 h-5 text-black/10 dark:text-white/10" />
             <p className="text-[10px] font-bold text-black/30 dark:text-white/20 uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} {name}. Built on v3.0 Protocol.
+              &copy; {new Date().getFullYear()} {name || 'Storefront'}. Built on v3.0 Protocol.
             </p>
           </div>
           
@@ -151,7 +257,10 @@ export default function Footer() {
         <span className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-slate-400">Powered by</span>
         <a 
           href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] font-black uppercase tracking-widest transition-colors"
+          style={{ color: primary }}
         >
           SalesmanPro.site
         </a>

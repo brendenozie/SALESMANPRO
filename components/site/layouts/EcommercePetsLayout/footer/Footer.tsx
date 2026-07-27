@@ -8,8 +8,20 @@ import {
   EnvelopeIcon, 
   PhoneIcon, 
   MapPinIcon,
-  HeartIcon
+  HeartIcon,
+  BuildingOfficeIcon,
+  ArrowUpRightIcon
 } from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -19,8 +31,22 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
+    themeSettings = {},  
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primary = themeSettings?.primaryColor || '#10B981';
   const secondary = themeSettings?.secondaryColor || '#3B82F6';
@@ -45,7 +71,7 @@ export default function Footer() {
       />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 lg:gap-8 mb-16">
           
           {/* Brand Identity Section */}
           <div className="lg:col-span-4">
@@ -60,26 +86,20 @@ export default function Footer() {
             <div className="space-y-4">
               {contactEmail && (
                 <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 text-sm hover:text-white transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors shrink-0">
                     <EnvelopeIcon className="w-4 h-4" style={{ color: primary }} />
                   </div>
-                  {contactEmail}
+                  <span className="truncate">{contactEmail}</span>
                 </a>
               )}
               {contactPhone && (
                 <a href={`tel:${contactPhone}`} className="flex items-center gap-3 text-sm hover:text-white transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors shrink-0">
                     <PhoneIcon className="w-4 h-4" style={{ color: secondary }} />
                   </div>
-                  {contactPhone}
+                  <span>{contactPhone}</span>
                 </a>
               )}
-              <div className="flex items-center gap-3 text-sm">
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                  <MapPinIcon className="w-4 h-4 text-zinc-500" />
-                </div>
-                Global Shipping Available
-              </div>
             </div>
           </div>
 
@@ -147,10 +167,87 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* --- Dynamic Locations & Stores Grid --- */}
+        <div className="py-12 border-t border-white/5">
+          <div className="flex items-center gap-3 mb-8">
+            <BuildingOfficeIcon className="w-4 h-4" style={{ color: primary }} />
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">
+              Our Physical Locations ({regionalAddresses.length})
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const locationQuery = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
+
+              return (
+                <div 
+                  key={idx}
+                  className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col justify-between hover:border-white/20 transition-all group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-zinc-900 border border-white/10"
+                        style={{ color: primary }}
+                      >
+                        {loc.label || `Location 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+                          Main Branch
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-zinc-300 leading-relaxed pt-1 font-medium">
+                      {loc.address || 'Address provided upon booking.'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-[11px] font-medium text-zinc-500">
+                        {[loc.city, loc.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-white/5 space-y-2 text-xs">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0" style={{ color: secondary }} />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" style={{ color: primary }} />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    <a 
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 pt-2 text-[10px] font-black uppercase tracking-widest hover:underline transition-all"
+                      style={{ color: primary }}
+                    >
+                      <MapPinIcon className="w-3.5 h-3.5" />
+                      <span>Get Directions</span>
+                      <ArrowUpRightIcon className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
-            &copy; {new Date().getFullYear()} {name}. Built for the love of pets.
+            &copy; {new Date().getFullYear()} {name || 'PetShop'}. Built for the love of pets.
           </p>
           
           <div className="flex items-center gap-8">
@@ -165,16 +262,18 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
+
+      <div className="flex items-center gap-1.5 px-4 py-2 mt-8 justify-center">
+        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Powered by</span>
         <a 
           href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors"
         >
           SalesmanPro.site
         </a>
-    </div>
-
+      </div>
     </footer>
   );
 }

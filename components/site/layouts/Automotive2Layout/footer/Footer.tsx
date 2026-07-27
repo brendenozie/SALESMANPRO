@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPinIcon,
   PhoneIcon,
@@ -12,6 +12,7 @@ import {
   TruckIcon,
   ShieldCheckIcon,
   BuildingStorefrontIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/solid";
 import { StoreForm } from "../../../../../types/typings";
 
@@ -43,9 +44,49 @@ const GridPattern = () => (
 /* -------------------------------------------------------------------------- */
 const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
   const currentYear = new Date().getFullYear();
-  const phone = storeFormData?.contactPhone || storeFormData?.phone || "+254 700 000 000";
-  const email = storeFormData?.contactEmail || storeFormData?.email || "info@commercialfleets.co.ke";
-  const address = storeFormData?.address || "Nairobi Showroom Yard, Kenya";
+
+  // Primary fallbacks
+  const globalPhone = storeFormData?.contactPhone || storeFormData?.phone || "+254 700 000 000";
+  const globalEmail = storeFormData?.contactEmail || storeFormData?.email || "info@commercialfleets.co.ke";
+  const legacyAddress = storeFormData?.address || storeFormData?.location || "Lusingeti Road, Number 31, Industrial Area, Nairobi";
+
+  // Destructure array of multi-addresses from store data
+  const { addresses = [] } = storeFormData || {};
+
+  // Extract regional addresses or construct fallback
+  const regionalAddresses = addresses.length > 0
+    ? addresses.slice(0, 3)
+    : [
+        {
+          label: "Global Headquarters",
+          address: legacyAddress,
+          contactPhone: globalPhone,
+          contactEmail: globalEmail,
+        },
+      ];
+
+  // Active location selection state for interactive tab toggle
+  const [activeLocation, setActiveLocation] = useState(0);
+
+  // Newsletter state
+  const [emailInput, setEmailInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput) return;
+    
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubscribed(true);
+      setEmailInput("");
+    }, 1000);
+  };
+
+  const selectedBranch = regionalAddresses[activeLocation] || regionalAddresses[0];
 
   return (
     <footer className="relative bg-slate-900 dark:bg-[#080B10] text-slate-300 border-t border-slate-800 overflow-hidden pt-16 pb-8">
@@ -91,11 +132,11 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
         </div>
 
         {/* Main Footer Links & Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 border-b border-slate-800 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-slate-800 pb-12">
 
           {/* Col 1: Store Branding & Description */}
-          <div className="lg:col-span-2">
-            <Link href="/automotive" className="inline-flex items-center gap-2 mb-4">
+          <div className="space-y-4">
+            <Link href="/automotive" className="inline-flex items-center gap-2">
               {storeFormData?.logo ? (
                 <Image
                   src={storeFormData.logo}
@@ -111,32 +152,34 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
               )}
             </Link>
 
-            <p className="text-xs leading-relaxed text-slate-400 mb-6 max-w-sm">
+            <p className="text-xs leading-relaxed text-slate-400">
               {storeFormData?.description ||
                 "Your trusted hub for heavy commercial vehicles, buses, trucks, and utility equipment. Quality fleets, flexible lease terms, and reliable financing solutions."}
             </p>
 
-            {/* Direct Contact Details */}
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center gap-2 text-slate-300">
-                <MapPinIcon className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <span>{address}</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-300">
+            {/* Quick Primary Contact */}
+            <div className="space-y-2 text-xs pt-2">
+              <a 
+                href={`tel:${globalPhone}`} 
+                className="flex items-center gap-2 text-slate-300 hover:text-amber-400 transition-colors"
+              >
                 <PhoneIcon className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <span>{phone}</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-300">
+                <span>{globalPhone}</span>
+              </a>
+              <a 
+                href={`mailto:${globalEmail}`} 
+                className="flex items-center gap-2 text-slate-300 hover:text-amber-400 transition-colors"
+              >
                 <EnvelopeIcon className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <span>{email}</span>
-              </div>
+                <span>{globalEmail}</span>
+              </a>
             </div>
           </div>
 
-          {/* Col 2: Quick Links */}
+          {/* Col 2: Quick Navigation */}
           <div>
             <h3 className="text-xs font-black uppercase tracking-wider text-amber-500 mb-4">
-              Quick Links
+              Navigation & Support
             </h3>
             <ul className="space-y-2.5 text-xs font-medium">
               <li>
@@ -150,6 +193,11 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
                 </Link>
               </li>
               <li>
+                <Link href="/automotive/financing" className="hover:text-amber-400 transition-colors">
+                  Asset Financing & Leasing
+                </Link>
+              </li>
+              <li>
                 <Link href="/automotive/contact" className="hover:text-amber-400 transition-colors">
                   Contact Showroom
                 </Link>
@@ -159,41 +207,72 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
                   Privacy Policy
                 </Link>
               </li>
-              <li>
-                <Link href="/automotive/terms" className="hover:text-amber-400 transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
             </ul>
           </div>
 
-          {/* Col 3: Customer Care */}
+          {/* Col 3: Interactive Regional Locations Showcase */}
           <div>
             <h3 className="text-xs font-black uppercase tracking-wider text-amber-500 mb-4">
-              Customer Support
+              Our Locations
             </h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              <li>
-                <Link href="/automotive/help" className="hover:text-amber-400 transition-colors">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/automotive/financing" className="hover:text-amber-400 transition-colors">
-                  Asset Financing
-                </Link>
-              </li>
-              <li>
-                <Link href="/automotive/inspections" className="hover:text-amber-400 transition-colors">
-                  Yard Inspections
-                </Link>
-              </li>
-              <li>
-                <Link href="/automotive/trade-in" className="hover:text-amber-400 transition-colors">
-                  Vehicle Trade-In
-                </Link>
-              </li>
-            </ul>
+
+            {/* Multi-address Switcher Tabs */}
+            {regionalAddresses.length > 1 && (
+              <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 scrollbar-none">
+                {regionalAddresses.map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveLocation(idx)}
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
+                      activeLocation === idx
+                        ? "bg-amber-500 text-slate-950"
+                        : "bg-slate-800 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {item.label || `Branch ${idx + 1}`}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Active Address Details Box */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeLocation}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
+                className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-2.5 text-xs"
+              >
+                <div className="flex items-start gap-2 text-slate-200">
+                  <MapPinIcon className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <span className="leading-snug">
+                    {selectedBranch?.address || selectedBranch?.location || legacyAddress}
+                  </span>
+                </div>
+
+                {(selectedBranch?.contactPhone || globalPhone) && (
+                  <a
+                    href={`tel:${selectedBranch?.contactPhone || globalPhone}`}
+                    className="flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-[11px]"
+                  >
+                    <PhoneIcon className="w-3.5 h-3.5 text-slate-500" />
+                    <span>{selectedBranch?.contactPhone || globalPhone}</span>
+                  </a>
+                )}
+
+                {(selectedBranch?.contactEmail || globalEmail) && (
+                  <a
+                    href={`mailto:${selectedBranch?.contactEmail || globalEmail}`}
+                    className="flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-[11px]"
+                  >
+                    <EnvelopeIcon className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="truncate">{selectedBranch?.contactEmail || globalEmail}</span>
+                  </a>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Col 4: Newsletter Inquiry */}
@@ -202,23 +281,39 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
               Fleet Arrivals
             </h3>
             <p className="text-[11px] text-slate-400 mb-3 leading-normal">
-              Subscribe to get instant alerts on newly listed commercial stock.
+              Subscribe to get instant alerts on newly listed commercial stock and clearance deals.
             </p>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-2">
-              <input
-                type="email"
-                placeholder="Enter email address"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-              />
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-1.5"
+
+            {isSubscribed ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-emerald-400 text-xs"
               >
-                <span>Subscribe</span>
-                <ArrowRightIcon className="w-3.5 h-3.5" />
-              </motion.button>
-            </form>
+                <CheckCircleIcon className="w-5 h-5 flex-shrink-0" />
+                <span>You are subscribed to stock alerts!</span>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <input
+                  type="email"
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="Enter email address"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>{isSubmitting ? "Submitting..." : "Subscribe"}</span>
+                  {!isSubmitting && <ArrowRightIcon className="w-3.5 h-3.5" />}
+                </motion.button>
+              </form>
+            )}
           </div>
 
         </div>

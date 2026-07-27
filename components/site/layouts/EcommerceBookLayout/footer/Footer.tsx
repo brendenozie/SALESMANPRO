@@ -7,8 +7,21 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { 
   ArrowUpRightIcon,
   GlobeAltIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  MapPinIcon,
+  EnvelopeIcon,
+  PhoneIcon
 } from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -18,7 +31,21 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks = [],
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const iconMapper: Record<string, React.ReactNode> = {
     facebook: 'FB',
@@ -43,7 +70,7 @@ export default function Footer() {
         </div>
 
         {/* MIDDLE: INFORMATION GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 mb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 mb-24">
           
           {/* Brand Manifesto */}
           <div className="lg:col-span-5 space-y-8">
@@ -54,17 +81,21 @@ export default function Footer() {
             <p className="text-2xl font-serif italic text-zinc-800 dark:text-zinc-200 leading-snug max-w-md">
               {description || 'Curating essentials for the next generation with a focus on architectural integrity and soft utility.'}
             </p>
-            <div className="flex gap-6 pt-4">
-              {socialLinks.map((s, idx) => (
-                <a 
-                  key={idx} 
-                  href={s.url} 
-                  className="font-mono text-[10px] uppercase tracking-widest border-b border-zinc-200 dark:border-zinc-800 pb-1 hover:border-zinc-900 dark:hover:border-white transition-all"
-                >
-                  {iconMapper[String(s.channel).toLowerCase()] || s.channel}
-                </a>
-              ))}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex gap-6 pt-4">
+                {socialLinks.map((s, idx) => (
+                  <a 
+                    key={idx} 
+                    href={s.url} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[10px] uppercase tracking-widest border-b border-zinc-200 dark:border-zinc-800 pb-1 hover:border-zinc-900 dark:hover:border-white transition-all"
+                  >
+                    {iconMapper[String(s.channel).toLowerCase()] || s.channel}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Navigation Sets - Asymmetric */}
@@ -99,15 +130,89 @@ export default function Footer() {
           <div className="lg:col-span-3 space-y-8">
             <h4 className="font-mono text-[9px] uppercase tracking-[0.5em] text-zinc-300 dark:text-zinc-700">Connectivity</h4>
             <div className="space-y-4 font-mono text-[10px] uppercase tracking-widest">
-              <a href={`mailto:${contactEmail}`} className="block hover:text-zinc-900 dark:hover:text-white transition-colors underline underline-offset-4 decoration-zinc-100 dark:decoration-zinc-900">
-                {contactEmail}
-              </a>
-              <p className="text-zinc-500">{contactPhone}</p>
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="block hover:text-zinc-900 dark:hover:text-white transition-colors underline underline-offset-4 decoration-zinc-100 dark:decoration-zinc-900 truncate">
+                  {contactEmail}
+                </a>
+              )}
+              {contactPhone && (
+                <a href={`tel:${contactPhone}`} className="block text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                  {contactPhone}
+                </a>
+              )}
               <div className="pt-4 flex items-center gap-3 text-zinc-300 dark:text-zinc-800">
                 <GlobeAltIcon className="w-4 h-4" />
-                <span>Nairobi HQ / Global Sync</span>
+                <span>Global Archive Network</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* --- REGIONAL ARCHIVE LOCATIONS & ADDRESSES SHOWCASE --- */}
+        <div className="mb-24 pt-12 border-t border-zinc-100 dark:border-zinc-900">
+          <h4 className="font-mono text-[9px] uppercase tracking-[0.5em] text-zinc-300 dark:text-zinc-700 mb-8 flex items-center gap-2">
+            <MapPinIcon className="w-3.5 h-3.5 text-zinc-400" />
+            Physical Studios & Spaces ({regionalAddresses.length})
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const query = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-100 dark:border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2.5 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-800">
+                        {loc.label || `Studio 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="font-mono text-[8px] text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">[Primary]</span>
+                      )}
+                    </div>
+                    
+                    <p className="font-mono text-xs text-zinc-800 dark:text-zinc-200 leading-snug">
+                      {loc.address || 'Address information pending'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                        {[loc.city, loc.country].filter(Boolean).join(' • ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800/60 space-y-2 font-mono text-[10px]">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                        <PhoneIcon className="w-3 h-3 text-zinc-400 shrink-0" />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3 h-3 text-zinc-400 shrink-0" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+                    
+                    <a 
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 pt-2 uppercase tracking-widest text-zinc-900 dark:text-white hover:opacity-70 transition-opacity group-hover:translate-x-0.5 transition-transform"
+                    >
+                      View Map
+                      <ArrowUpRightIcon className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -121,7 +226,7 @@ export default function Footer() {
               </p>
             </div>
             <p className="font-mono text-[8px] text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">
-              &copy; {name} &mdash; All protocols reserved.
+              &copy; {name || 'The Collective'} &mdash; All protocols reserved.
             </p>
           </div>
 
@@ -130,6 +235,8 @@ export default function Footer() {
             <span className="font-mono text-[7px] uppercase tracking-widest text-zinc-400">Infrastructure provided by</span>
             <a 
               href="https://salesmanpro.site" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="group flex items-center gap-3 bg-zinc-900 dark:bg-zinc-800 px-6 py-3 rounded-full hover:bg-orange-600 transition-all"
             >
               <span className="font-mono text-[9px] font-black uppercase tracking-[0.3em] text-white">SalesmanPro</span>

@@ -8,8 +8,9 @@ import {
   PhoneIcon,
   ArrowUpRightIcon,
   GlobeAltIcon,
-  UserGroupIcon,
   AcademicCapIcon,
+  MapPinIcon,
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 
 export default function MoriahFooter() {
@@ -19,13 +20,26 @@ export default function MoriahFooter() {
 
   const {
     name,
-    slug,
     description,
     contactEmail,
     contactPhone,
     socialLinks,
     StoreCategory,
-  } = storeFormData;
+    address: legacyAddress,
+    addresses = [],
+  } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isMain: true,
+      }];
 
   return (
     <footer className="bg-slate-950 text-slate-400 pt-24 pb-12 border-t border-white/5">
@@ -87,7 +101,7 @@ export default function MoriahFooter() {
                 <Link
                   key={cat.id}
                   href={`/courses/products?category=${cat.id}`}
-                  className="px-4 py-2 rounded-full border border-white/10 text-xs font-medium hover:bg-white/5 hover:border-white/30 transition-all"
+                  className="px-4 py-2 rounded-full border border-white/10 text-xs font-medium hover:bg-white/5 hover:border-white/30 transition-all text-slate-300"
                 >
                   {cat.displayName}
                 </Link>
@@ -95,31 +109,67 @@ export default function MoriahFooter() {
             </div>
           </div>
 
-          {/* --- Contact & Reach: 3/12 --- */}
+          {/* --- Dynamic Locations & Reach: 3/12 --- */}
           <div className="lg:col-span-3">
-            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-8">Support</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-8">Locations & Reach</h4>
             <div className="space-y-6">
-              <a href={`mailto:${contactEmail}`} className="flex items-center gap-4 group">
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-blue-600/20 transition-colors">
-                  <EnvelopeIcon className="w-5 h-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email Us</p>
-                  <p className="text-sm text-slate-200">{contactEmail}</p>
-                </div>
-              </a>
+              {regionalAddresses.map((loc: any, idx: number) => {
+                const label = loc?.label || (idx === 0 ? "Headquarters" : `Branch ${idx + 1}`);
+                const fullAddress = typeof loc === "string" ? loc : loc?.address;
+                const phone = loc?.contactPhone || contactPhone;
+                const emailAddr = loc?.contactEmail || contactEmail;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || "")}`;
 
-              <a href={`tel:${contactPhone}`} className="flex items-center gap-4 group">
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-blue-600/20 transition-colors">
-                  <PhoneIcon className="w-5 h-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Call Directly</p>
-                  <p className="text-sm text-slate-200">{contactPhone}</p>
-                </div>
-              </a>
+                return (
+                  <div key={idx} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] space-y-2 hover:border-blue-500/30 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                        {label}
+                        {(loc?.isMain || idx === 0) && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-600/20 text-blue-400 border border-blue-500/30">
+                            HQ
+                          </span>
+                        )}
+                      </span>
+                      {fullAddress && (
+                        <a 
+                          href={mapsUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-[10px] text-slate-500 hover:text-blue-400 flex items-center gap-1 transition-colors"
+                          title="View on Google Maps"
+                        >
+                          Map <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    {fullAddress && (
+                      <div className="flex items-start gap-2 text-xs text-slate-400">
+                        <MapPinIcon className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">{fullAddress}</span>
+                      </div>
+                    )}
+
+                    {phone && (
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <PhoneIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                        <a href={`tel:${phone}`} className="hover:text-blue-400 transition-colors truncate">{phone}</a>
+                      </div>
+                    )}
+
+                    {emailAddr && (
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <EnvelopeIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                        <a href={`mailto:${emailAddr}`} className="hover:text-blue-400 transition-colors truncate">{emailAddr}</a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
+
         </div>
 
         {/* --- Bottom Bar --- */}
@@ -133,6 +183,8 @@ export default function MoriahFooter() {
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Powered by</span>
                 <a 
                   href="https://salesmanpro.site" 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors border-b border-orange-600/20"
                 >
                   SalesmanPro.site

@@ -4,7 +4,24 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { FaceSmileIcon, MapPinIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { 
+  FaceSmileIcon, 
+  MapPinIcon, 
+  EnvelopeIcon, 
+  PhoneIcon, 
+  ArrowUpRightIcon,
+  BuildingStorefrontIcon 
+} from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -14,8 +31,22 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
+    themeSettings = {}, 
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Main Store Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primary = themeSettings?.primaryColor || '#10B981';
   const secondary = themeSettings?.secondaryColor || '#3B82F6';
@@ -32,17 +63,17 @@ export default function Footer() {
       <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-16">
           
           {/* Brand Column */}
           <div className="lg:col-span-4 space-y-8">
             <Link href="/" className="inline-block">
               <span className="text-3xl font-black tracking-tighter text-gray-900 italic">
-                {name?.split(' ')[0] || 'BRAND'}<span className="font-light text-gray-400">.</span>
+                {name?.split(' ')[0] || 'GROCERY'}<span className="font-light text-gray-400">.</span>
               </span>
             </Link>
             <p className="text-gray-500 text-lg leading-relaxed max-w-sm font-medium">
-              {description || 'Redefining the digital shopping experience through curated excellence and innovative design.'}
+              {description || 'Redefining the digital grocery shopping experience through fresh quality, curated selection, and reliable delivery.'}
             </p>
             <div className="flex gap-3">
               {socialLinks.map((s, idx) => (
@@ -50,8 +81,9 @@ export default function Footer() {
                   key={idx}
                   whileHover={{ y: -5, scale: 1.1 }}
                   href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gray-50 text-gray-400 hover:text-white transition-all border border-gray-100"
-                  style={{ '--hover-bg': primary } as any}
                   onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.backgroundColor = primary)}
                   onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.backgroundColor = '')}
                 >
@@ -76,7 +108,7 @@ export default function Footer() {
               </ul>
             </div>
             <div className="space-y-6">
-              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Experience</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Customer Care</h4>
               <ul className="space-y-4">
                 {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((item) => (
                   <li key={item}>
@@ -89,32 +121,108 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Contact Column */}
+          {/* Direct Support Column */}
           <div className="lg:col-span-3 space-y-6">
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Get in Touch</h4>
             <div className="space-y-4">
-              <a href={`mailto:${contactEmail}`} className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-50 hover:border-gray-200 transition-all bg-gray-50/30">
-                <EnvelopeIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900">{contactEmail}</span>
-              </a>
-              <a href={`tel:${contactPhone}`} className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-50 hover:border-gray-200 transition-all bg-gray-50/30">
-                <PhoneIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
-                <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900">{contactPhone}</span>
-              </a>
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all bg-gray-50/50">
+                  <EnvelopeIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900 shrink-0" />
+                  <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900 truncate">{contactEmail}</span>
+                </a>
+              )}
+              {contactPhone && (
+                <a href={`tel:${contactPhone}`} className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all bg-gray-50/50">
+                  <PhoneIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900 shrink-0" />
+                  <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900">{contactPhone}</span>
+                </a>
+              )}
             </div>
+          </div>
+        </div>
+
+        {/* Store Locations Showcase Grid */}
+        <div className="mb-16 pt-12 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gray-400 flex items-center gap-2">
+              <BuildingStorefrontIcon className="w-4 h-4" style={{ color: primary }} />
+              Our Store Locations ({regionalAddresses.length})
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const query = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-gray-50/70 border border-gray-100 p-6 rounded-3xl flex flex-col justify-between hover:border-gray-300 transition-all group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-white text-gray-800 border border-gray-100 shadow-sm">
+                        {loc.label || `Branch 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Main Hub</span>
+                      )}
+                    </div>
+                    
+                    <p className="text-sm font-semibold text-gray-700 leading-relaxed pt-1">
+                      {loc.address || 'Location details available on request'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-xs text-gray-500 font-medium">
+                        {[loc.city, loc.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-gray-200/60 space-y-2 text-xs">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+                    
+                    <a 
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 pt-2 text-xs font-black uppercase tracking-wider transition-colors group-hover:translate-x-1 duration-200"
+                      style={{ color: primary }}
+                    >
+                      <MapPinIcon className="w-4 h-4" />
+                      <span>Open in Maps</span>
+                      <ArrowUpRightIcon className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-            &copy; {new Date().getFullYear()} {name}. Built for the <span className="text-gray-900">Future</span>.
+            &copy; {new Date().getFullYear()} {name || 'Store'}. Built for the <span className="text-gray-900">Future</span>.
           </p>
           <div className="flex items-center gap-8">
-            <div className="flex gap-4">
+            <div className="flex gap-2">
               {/* Payment Icon Placeholders */}
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-8 h-5 bg-gray-100 rounded-sm" />
+                <div key={i} className="w-8 h-5 bg-gray-100 rounded-md border border-gray-200/50" />
               ))}
             </div>
             <Link href="/groceriesecommerce/sitemap.xml" className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest">
@@ -123,18 +231,19 @@ export default function Footer() {
           </div>
         </div>
 
-        
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-8 text-center mx-auto w-max">
-        <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">Powered by</span>
-        <a 
-          href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-        >
-          SalesmanPro.site
-        </a>
-    </div>
+        {/* Powered by SalesmanPro */}
+        <div className="flex items-center gap-1.5 px-4 py-2 mt-8 text-center mx-auto w-max">
+          <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">Powered by</span>
+          <a 
+            href="https://salesmanpro.site" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            SalesmanPro.site
+          </a>
+        </div>
       </div>
-
     </footer>
   );
 }

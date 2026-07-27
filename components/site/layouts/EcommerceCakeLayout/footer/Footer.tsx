@@ -9,8 +9,18 @@ import {
   PhoneIcon, 
   ArrowUpRightIcon,
   GlobeAltIcon,
-  ClockIcon
+  MapPinIcon
 } from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -21,7 +31,21 @@ export default function Footer() {
     contactPhone,
     socialLinks = [],
     themeSettings = {},
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primaryColor = themeSettings?.primaryColor || '#D97706';
 
@@ -52,23 +76,27 @@ export default function Footer() {
             
             {/* Quick Contact Info */}
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3.5 group">
-                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800 group-hover:border-stone-700 transition-all">
-                  <EnvelopeIcon className="w-4 h-4 transition-colors duration-300" style={{ color: primaryColor }} />
+              {contactEmail && (
+                <div className="flex items-center gap-3.5 group">
+                  <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800 group-hover:border-stone-700 transition-all">
+                    <EnvelopeIcon className="w-4 h-4 transition-colors duration-300" style={{ color: primaryColor }} />
+                  </div>
+                  <a href={`mailto:${contactEmail}`} className="text-sm font-medium text-stone-200 hover:text-white transition-colors py-1 truncate">
+                    {contactEmail}
+                  </a>
                 </div>
-                <a href={`mailto:${contactEmail}`} className="text-sm font-medium text-stone-200 hover:text-white transition-colors py-1">
-                  {contactEmail || 'hello@artisanbakery.com'}
-                </a>
-              </div>
+              )}
               
-              <div className="flex items-center gap-3.5 group">
-                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800 group-hover:border-stone-700 transition-all">
-                  <PhoneIcon className="w-4 h-4 transition-colors duration-300" style={{ color: primaryColor }} />
+              {contactPhone && (
+                <div className="flex items-center gap-3.5 group">
+                  <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800 group-hover:border-stone-700 transition-all">
+                    <PhoneIcon className="w-4 h-4 transition-colors duration-300" style={{ color: primaryColor }} />
+                  </div>
+                  <a href={`tel:${contactPhone}`} className="text-sm font-medium text-stone-200 hover:text-white transition-colors py-1">
+                    {contactPhone}
+                  </a>
                 </div>
-                <a href={`tel:${contactPhone}`} className="text-sm font-medium text-stone-200 hover:text-white transition-colors py-1">
-                  {contactPhone || '+254 700 000 000'}
-                </a>
-              </div>
+              )}
             </div>
           </div>
 
@@ -126,8 +154,9 @@ export default function Footer() {
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-11 h-11 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-stone-300 hover:text-white transition-colors"
-                    style={{ '--hover-bg': primaryColor } as React.CSSProperties}
                   >
                     {iconMapper[String(s.channel).toLowerCase()] || <GlobeAltIcon className="w-5 h-5" />}
                   </motion.a>
@@ -147,6 +176,80 @@ export default function Footer() {
               </div>
             </div>
 
+          </div>
+        </div>
+
+        {/* --- REGIONAL BAKERIES & ADDRESSES SHOWCASE --- */}
+        <div className="mb-16 pt-10 border-t border-stone-900">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-stone-300">
+              <MapPinIcon className="w-4 h-4" style={{ color: primaryColor }} />
+              Our Bakeries & Studios ({regionalAddresses.length})
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const query = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-stone-900/50 border border-stone-800/80 rounded-2xl p-6 flex flex-col justify-between hover:border-stone-700 transition-all group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-stone-900 border border-stone-800"
+                        style={{ color: primaryColor }}
+                      >
+                        {loc.label || `Kitchen 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[10px] font-mono text-stone-500 uppercase tracking-widest">[Main Studio]</span>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-stone-200 leading-relaxed font-medium">
+                      {loc.address || 'Address available upon order confirmation'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-xs text-stone-400 italic">
+                        {[loc.city, loc.country].filter(Boolean).join(' • ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-stone-800/60 space-y-2 text-xs">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="font-mono text-[11px]">{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate text-[11px]">{loc.contactEmail}</span>
+                      </a>
+                    )}
+                    
+                    <a 
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 pt-2 text-[10px] font-bold uppercase tracking-widest hover:brightness-125 transition-all group-hover:translate-x-0.5 transition-transform"
+                      style={{ color: primaryColor }}
+                    >
+                      Get Directions
+                      <ArrowUpRightIcon className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -171,6 +274,8 @@ export default function Footer() {
           <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">Powered by</span>
           <a 
             href="https://salesmanpro.site" 
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-[10px] font-extrabold uppercase tracking-widest hover:brightness-110 transition-all duration-300"
             style={{ color: primaryColor }}
           >

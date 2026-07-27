@@ -9,8 +9,20 @@ import {
   PhoneIcon, 
   EnvelopeIcon, 
   ArrowUpRightIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  MapPinIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -21,7 +33,21 @@ export default function Footer() {
     contactPhone,
     socialLinks = [],
     themeSettings = {},
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primary = themeSettings?.primaryColor || '#ef4444';
 
@@ -47,7 +73,7 @@ export default function Footer() {
           {/* Brand & Manifesto */}
           <div className="space-y-6">
             <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-900 dark:text-white">
-              {name}
+              {name || 'Storefront'}
             </h3>
             <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 leading-relaxed max-w-xs">
               {description || 'Redefining the pace of modern performance and street aesthetics. Join the evolution of elite footwear.'}
@@ -58,8 +84,9 @@ export default function Footer() {
                   key={idx}
                   whileHover={{ y: -3 }}
                   href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center text-gray-600 dark:text-zinc-400 hover:text-white transition-all shadow-sm"
-                  style={{ '--hover-bg': primary } as any}
                   onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.backgroundColor = primary)}
                   onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.backgroundColor = '')}
                 >
@@ -116,18 +143,22 @@ export default function Footer() {
               Get in Touch
             </h4>
             <div className="space-y-4">
-              <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 group">
-                <div className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 group-hover:bg-primary transition-colors">
-                  <EnvelopeIcon className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-bold text-gray-700 dark:text-zinc-300">{contactEmail}</span>
-              </a>
-              <a href={`tel:${contactPhone}`} className="flex items-center gap-3 group">
-                <div className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-900 text-gray-500 dark:text-zinc-400">
-                  <PhoneIcon className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-bold text-gray-700 dark:text-zinc-300">{contactPhone}</span>
-              </a>
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 group truncate">
+                  <div className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 shrink-0">
+                    <EnvelopeIcon className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-bold text-gray-700 dark:text-zinc-300 truncate">{contactEmail}</span>
+                </a>
+              )}
+              {contactPhone && (
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-3 group">
+                  <div className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 shrink-0">
+                    <PhoneIcon className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-bold text-gray-700 dark:text-zinc-300">{contactPhone}</span>
+                </a>
+              )}
               <div className="pt-4 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">All systems operational</span>
@@ -136,11 +167,88 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* --- Dynamic Regional Showcase Section --- */}
+        <div className="py-12 border-t border-gray-100 dark:border-zinc-900">
+          <div className="flex items-center gap-2 mb-8">
+            <BuildingOfficeIcon className="w-4 h-4" style={{ color: primary }} />
+            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500">
+              Locations & Outlets ({regionalAddresses.length})
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const locationQuery = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
+
+              return (
+                <div 
+                  key={idx}
+                  className="p-6 rounded-2xl bg-white dark:bg-zinc-900/50 border border-gray-200/80 dark:border-zinc-800 flex flex-col justify-between hover:border-gray-400 dark:hover:border-zinc-700 transition-all shadow-sm group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md bg-gray-100 dark:bg-zinc-800"
+                        style={{ color: primary }}
+                      >
+                        {loc.label || `Hub 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">
+                          Main Flagship
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs font-semibold text-gray-800 dark:text-zinc-200 leading-relaxed pt-1">
+                      {loc.address || 'Address details provided upon request.'}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-400">
+                        {[loc.city, loc.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800/80 space-y-2 text-xs">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    <a 
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 pt-2 text-[10px] font-black uppercase tracking-widest hover:underline transition-all"
+                      style={{ color: primary }}
+                    >
+                      <MapPinIcon className="w-3.5 h-3.5" />
+                      <span>Get Directions</span>
+                      <ArrowUpRightIcon className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Bottom Bar */}
         <div className="py-8 border-t border-gray-100 dark:border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-6">
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-              &copy; {new Date().getFullYear()} {name}
+              &copy; {new Date().getFullYear()} {name || 'STOREFRONT'}
             </p>
             <div className="hidden md:flex gap-4">
               <Link href="/privacy" className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white">Privacy</Link>
@@ -149,15 +257,15 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-1.5 grayscale opacity-50 hover:opacity-100 transition-opacity">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Powered by</span>
-                <a href="https://salesmanpro.site" className="text-[10px] font-black uppercase tracking-widest text-orange-600">SalesmanPro</a>
-             </div>
-             <div className="h-4 w-px bg-gray-200 dark:bg-zinc-800" />
-             <button className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1 group">
-               <QuestionMarkCircleIcon className="w-3 h-3" />
-               Support
-             </button>
+            <div className="flex items-center gap-1.5 grayscale opacity-60 hover:opacity-100 transition-opacity">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Powered by</span>
+              <a href="https://salesmanpro.site" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest text-orange-600">SalesmanPro</a>
+            </div>
+            <div className="h-4 w-px bg-gray-200 dark:bg-zinc-800" />
+            <Link href="/support" className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1 hover:text-gray-900 dark:hover:text-white">
+              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
+              Support
+            </Link>
           </div>
         </div>
       </div>

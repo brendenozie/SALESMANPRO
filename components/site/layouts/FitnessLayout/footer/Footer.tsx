@@ -6,9 +6,23 @@ import {
   CpuChipIcon, 
   GlobeAltIcon, 
   ShieldCheckIcon,
-  HashtagIcon
+  HashtagIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  ArrowUpRightIcon
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -17,6 +31,25 @@ export default function Footer() {
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
   const currentYear = new Date().getFullYear();
+    
+  const {
+    contactEmail,
+    contactPhone,
+    address: legacyAddress,
+    addresses = [],
+  } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   return (
     <footer className="relative bg-neutral-50 dark:bg-neutral-950 pt-20 pb-10 sm:pt-24 sm:pb-12 overflow-hidden border-t border-neutral-200/60 dark:border-neutral-900/40 transition-colors duration-500">
@@ -30,7 +63,7 @@ export default function Footer() {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 md:gap-16 mb-16 sm:mb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-12 md:gap-16 mb-16 sm:mb-20">
           
           {/* BRAND COLUMN: Identity & Interactive Status Deck */}
           <div className="md:col-span-4 space-y-6 text-center sm:text-left">
@@ -67,7 +100,7 @@ export default function Footer() {
           {/* NAVIGATION LINKS GRID MATRIX */}
           <div className="sm:col-span-2 md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-10">
             
-            {/* Array Hook: Core Protocol Modules */}
+            {/* Core Protocol Modules */}
             <div className="space-y-4 sm:space-y-5">
               <h5 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Protocols</h5>
               <ul className="space-y-3">
@@ -88,7 +121,7 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Array Hook: Social Network Uplinks */}
+            {/* Social Network Uplinks */}
             <div className="space-y-4 sm:space-y-5">
               <h5 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Network</h5>
               <div className="flex flex-col gap-3">
@@ -107,7 +140,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Array Hook: Legal Risk Compliance */}
+            {/* Legal Risk Compliance */}
             <div className="space-y-4 sm:space-y-5 col-span-2 sm:col-span-1">
               <h5 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Compliance</h5>
               <ul className="space-y-3 grid grid-cols-2 sm:grid-cols-1 gap-y-1">
@@ -118,6 +151,79 @@ export default function Footer() {
                 </Link></li>
               </ul>
             </div>
+          </div>
+        </div>
+
+        {/* REGIONAL LOCATIONS & MULTI-ADDRESS SHOWCASE */}
+        <div className="py-10 border-t border-neutral-200/60 dark:border-neutral-900/60">
+          <div className="flex items-center gap-2 mb-6">
+            <MapPinIcon className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+            <h5 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>
+              Locations & Facilities ({regionalAddresses.length})
+            </h5>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const fullQuery = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullQuery)}`;
+
+              return (
+                <div 
+                  key={idx}
+                  className="p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-900/80 bg-white/50 dark:bg-neutral-900/20 hover:bg-white dark:hover:bg-neutral-900/60 hover:border-neutral-300 dark:hover:border-neutral-800 transition-all duration-300 flex flex-col justify-between group shadow-sm"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800/80 text-neutral-700 dark:text-neutral-300">
+                        {loc.label || `Facility 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: primaryColor }}>
+                          Primary
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 leading-relaxed pt-1">
+                      {loc.address || "Location available upon request."}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                        {[loc.city, loc.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-900 space-y-2 text-xs font-medium">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                        <PhoneIcon className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                        <span className="truncate">{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    <a 
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 pt-2 text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-opacity"
+                      style={{ color: primaryColor }}
+                    >
+                      <span>Get Directions</span>
+                      <ArrowUpRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

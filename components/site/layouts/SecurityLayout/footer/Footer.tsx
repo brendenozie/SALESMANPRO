@@ -10,7 +10,8 @@ import {
   MapPinIcon,
   PhoneIcon,
   ArrowRightIcon,
-} from '@heroicons/react/24/outline';
+  ArrowUpRightIcon,
+} from '@heroicons/react/24/solid';
 
 interface ThemeSettings {
   primaryColor?: string;
@@ -18,6 +19,13 @@ interface ThemeSettings {
   footerBgColor?: string;
   footerTextColor?: string;
   footerHeadingColor?: string;
+}
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  contactPhone?: string;
+  contactEmail?: string;
 }
 
 interface StoreFormData {
@@ -28,12 +36,8 @@ interface StoreFormData {
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
-  socialLinks?: {
-    facebook?: string;
-    twitter?: string;
-    linkedin?: string;
-    instagram?: string;
-  };
+  addresses?: AddressItem[];
+  socialLinks?: Array<{ channel?: string; url?: string }> | Record<string, string>;
 }
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -41,6 +45,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 export default function Footer() {
   const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
+
   const {
     name = 'Your Company Name',
     slug = '/',
@@ -48,11 +53,26 @@ export default function Footer() {
     themeSettings = {},
     contactEmail,
     contactPhone,
-    address,
+    address: legacyAddress,
+    addresses = [],
     socialLinks,
-  } = storeFormData;
+  } = storeFormData || {};
 
-  const primaryColor = themeSettings.primaryColor || '#00A880'; 
+  // Extract up to 3 addresses for the regional showcase.
+  // Fallback to legacy address data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] =
+    addresses?.length > 0
+      ? addresses.slice(0, 3)
+      : [
+          {
+            label: 'Global Headquarters',
+            address: legacyAddress || 'Lusingeti Road, Number 31, Industrial Area, Nairobi',
+            contactPhone: contactPhone,
+            contactEmail: contactEmail,
+          },
+        ];
+
+  const primaryColor = themeSettings.primaryColor || '#00A880';
   const footerBgColor = themeSettings.footerBgColor || '#ffffff';
   const footerTextColor = themeSettings.footerTextColor || '#6b7280';
   const footerHeadingColor = themeSettings.footerHeadingColor || '#111827';
@@ -68,6 +88,11 @@ export default function Footer() {
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'linear' } },
+  };
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert('Subscription endpoint initialized successfully.');
   };
 
   return (
@@ -106,24 +131,41 @@ export default function Footer() {
           <p className="text-xs leading-relaxed font-mono max-w-sm text-gray-400">
             SYS_OPERATIONS // Distributed infrastructure delivering scalable transactional pipelines and precise local execution layers.
           </p>
-          
+
+          {/* SOCIAL LINKS */}
           {socialLinks && (
-            <div className="flex space-x-3 pt-2">
-              {Object.entries(socialLinks).map(([platform, url]) => {
-                if (!url) return null;
-                return (
-                  <Link
-                    key={platform}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={platform}
-                    className="w-7 h-7 flex items-center justify-center border border-gray-200 text-gray-400 hover:text-gray-900 hover:border-gray-900 transition-colors text-[10px] font-mono uppercase font-bold"
-                  >
-                    {platform.slice(0, 2)}
-                  </Link>
-                );
-              })}
+            <div className="flex flex-wrap gap-2 pt-2">
+              {Array.isArray(socialLinks)
+                ? socialLinks.map((link, index) => {
+                    const platform = link?.channel || `LINK_${index}`;
+                    const href = link?.url || '';
+                    if (!href) return null;
+                    return (
+                      <a
+                        key={index}
+                        href={href.startsWith('http') ? href : `https://${href}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 hover:text-gray-900 hover:border-gray-900 transition-colors text-[10px] font-mono uppercase font-bold"
+                      >
+                        {String(platform).slice(0, 2)}
+                      </a>
+                    );
+                  })
+                : Object.entries(socialLinks).map(([platform, url]) => {
+                    if (!url) return null;
+                    return (
+                      <a
+                        key={platform}
+                        href={String(url).startsWith('http') ? String(url) : `https://${String(url)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-8 h-8 flex items-center justify-center border border-gray-200 text-gray-400 hover:text-gray-900 hover:border-gray-900 transition-colors text-[10px] font-mono uppercase font-bold"
+                      >
+                        {platform.slice(0, 2)}
+                      </a>
+                    );
+                  })}
             </div>
           )}
         </motion.div>
@@ -142,7 +184,7 @@ export default function Footer() {
           </ul>
         </motion.div>
 
-        {/* PHYSICAL DIRECTORY TARGETS (3 Columns) */}
+        {/* PRIMARY DIRECTORY ENDPOINTS (3 Columns) */}
         <motion.div className="md:col-span-3 flex flex-col" variants={itemVariants}>
           <span className="text-[10px] font-mono font-black uppercase tracking-wider text-gray-400 mb-6 block">
             02 // DIRECT_NODES
@@ -150,24 +192,18 @@ export default function Footer() {
           <ul className="space-y-4 text-xs font-mono">
             {contactEmail && (
               <li>
-                <Link href={`mailto:${contactEmail}`} className="flex items-center gap-3 hover:text-gray-900 transition-colors group">
-                  <EnvelopeIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-900" />
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 hover:text-gray-900 transition-colors group">
+                  <EnvelopeIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-900 flex-shrink-0" />
                   <span className="break-all">{contactEmail}</span>
-                </Link>
+                </a>
               </li>
             )}
             {contactPhone && (
               <li>
-                <Link href={`tel:${contactPhone}`} className="flex items-center gap-3 hover:text-gray-900 transition-colors group">
-                  <PhoneIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-900" />
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-3 hover:text-gray-900 transition-colors group">
+                  <PhoneIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-900 flex-shrink-0" />
                   <span>{contactPhone}</span>
-                </Link>
-              </li>
-            )}
-            {address && (
-              <li className="flex items-start gap-3">
-                <MapPinIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                <span className="leading-tight text-gray-500">{address}</span>
+                </a>
               </li>
             )}
           </ul>
@@ -181,7 +217,7 @@ export default function Footer() {
           <p className="text-xs font-mono text-gray-400 mb-4 leading-relaxed">
             Register static endpoint to map incoming contextual dispatches.
           </p>
-          <form className="flex border border-gray-200 bg-white p-1 rounded-xl focus-within:border-gray-900 transition-colors">
+          <form onSubmit={handleSubscribe} className="flex border border-gray-200 bg-white p-1 rounded-xl focus-within:border-gray-900 transition-colors">
             <input
               type="email"
               placeholder="ADDR_STRING"
@@ -200,6 +236,78 @@ export default function Footer() {
         </motion.div>
       </div>
 
+      {/* REGIONAL NODES Showcase SECTION */}
+      {regionalAddresses.length > 0 && (
+        <motion.div className="max-w-7xl mx-auto pt-10 pb-10 border-b border-gray-100" variants={itemVariants}>
+          <span className="text-[10px] font-mono font-black uppercase tracking-wider text-gray-400 mb-6 block">
+            04 // REGIONAL_NODES // LOCATION_TELEMETRY
+          </span>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {regionalAddresses.map((loc, idx) => {
+              const mapsUrl = loc.address
+                ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address)}`
+                : null;
+
+              return (
+                <div
+                  key={idx}
+                  className="p-5 border border-gray-100 bg-gray-50/50 rounded-xl flex flex-col justify-between space-y-4 hover:border-gray-300 transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPinIcon className="w-4 h-4 text-gray-900 flex-shrink-0" />
+                      <h6 className="text-xs font-mono font-black uppercase text-gray-900 tracking-wider">
+                        {loc.label || `NODE_0${idx + 1}`}
+                      </h6>
+                    </div>
+                    {loc.address && (
+                      <p className="text-xs font-mono text-gray-500 leading-relaxed pl-6">
+                        {loc.address}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 pt-3 border-t border-gray-200/60 font-mono text-xs">
+                    {loc.contactPhone && (
+                      <a
+                        href={`tel:${loc.contactPhone}`}
+                        className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors uppercase"
+                      >
+                        <PhoneIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span>{loc.contactPhone}</span>
+                      </a>
+                    )}
+
+                    {loc.contactEmail && (
+                      <a
+                        href={`mailto:${loc.contactEmail}`}
+                        className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors uppercase truncate"
+                      >
+                        <EnvelopeIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    {mapsUrl && (
+                      <a
+                        href={mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-gray-900 hover:text-emerald-600 transition-colors uppercase pt-1 font-bold"
+                      >
+                        <span>NAVIGATE_TO_NODE</span>
+                        <ArrowUpRightIcon className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {/* METADATA SYSTEM ATTRIBUTION */}
       <div className="max-w-7xl mx-auto pt-10 flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] font-mono uppercase tracking-widest text-gray-400">
         <motion.div variants={itemVariants}>
@@ -210,6 +318,8 @@ export default function Footer() {
           <span className="font-bold text-gray-400">POWERED_BY //</span>
           <a 
             href="https://salesmanpro.site" 
+            target="_blank"
+            rel="noopener noreferrer"
             className="font-black hover:text-gray-900 transition-colors"
             style={{ color: primaryColor }}
           >

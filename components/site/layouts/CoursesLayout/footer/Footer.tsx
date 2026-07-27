@@ -7,8 +7,9 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   ChevronRightIcon,
-  GlobeAltIcon,
-} from "@heroicons/react/24/outline"; // Using Hero Icons as requested
+  MapPinIcon,
+  ArrowTopRightOnSquareIcon,
+} from "@heroicons/react/24/outline";
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -17,14 +18,27 @@ export default function Footer() {
 
   const {
     name,
-    slug,
     description,
     contactEmail,
     contactPhone,
     socialLinks,
     StoreCategory,
-    themeSettings
-  } = storeFormData;
+    themeSettings,
+    address: legacyAddress,
+    addresses = [],
+  } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isMain: true
+      }];
 
   const primaryColor = themeSettings?.primaryColor || '#1e3a8a';
 
@@ -57,7 +71,7 @@ export default function Footer() {
         </div>
 
         {/* ── Main Footer Grid ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 py-16">
           
           {/* Column 1: Navigation */}
           <div className="col-span-1">
@@ -94,42 +108,87 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Contact Details */}
-          <div className="col-span-2 lg:col-span-2">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Connect</h3>
-            <div className="space-y-6">
-              {contactEmail && (
-                <a href={`mailto:${contactEmail}`} className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center group-hover:bg-slate-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 transition-all">
-                    <EnvelopeIcon className="h-5 w-5" />
+          {/* Column 3 & 4: Regional Locations & Contact Hub */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-2">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Our Locations</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {regionalAddresses.map((loc: any, idx: number) => {
+                const label = loc?.label || (idx === 0 ? "Headquarters" : `Branch ${idx + 1}`);
+                const fullAddress = typeof loc === "string" ? loc : loc?.address;
+                const phone = loc?.contactPhone || contactPhone;
+                const emailAddr = loc?.contactEmail || contactEmail;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress || "")}`;
+
+                return (
+                  <div 
+                    key={idx} 
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                        {label}
+                        {(loc?.isMain || idx === 0) && (
+                          <span 
+                            className="px-1.5 py-0.5 rounded text-[9px] font-bold text-white uppercase"
+                            style={{ backgroundColor: primaryColor }}
+                          >
+                            HQ
+                          </span>
+                        )}
+                      </span>
+                      {fullAddress && (
+                        <a 
+                          href={mapsUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-[11px] text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1"
+                          title="View on Google Maps"
+                        >
+                          Map <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    {fullAddress && (
+                      <div className="flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <MapPinIcon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: primaryColor }} />
+                        <span className="line-clamp-2">{fullAddress}</span>
+                      </div>
+                    )}
+
+                    {phone && (
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <PhoneIcon className="w-3.5 h-3.5 shrink-0" style={{ color: primaryColor }} />
+                        <a href={`tel:${phone}`} className="hover:underline truncate">{phone}</a>
+                      </div>
+                    )}
+
+                    {emailAddr && (
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <EnvelopeIcon className="w-3.5 h-3.5 shrink-0" style={{ color: primaryColor }} />
+                        <a href={`mailto:${emailAddr}`} className="hover:underline truncate">{emailAddr}</a>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{contactEmail}</span>
-                </a>
-              )}
-              {contactPhone && (
-                <a href={`tel:${contactPhone}`} className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center group-hover:bg-slate-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 transition-all">
-                    <PhoneIcon className="h-5 w-5" />
-                  </div>
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{contactPhone}</span>
-                </a>
-              )}
+                );
+              })}
             </div>
           </div>
 
-          {/* Column 4: Newsletter/System Status (Bento Style) */}
-          <div className="col-span-2 lg:col-span-1">
-             <div className="p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Admissions Active</span>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4">Current response time for inquiries is under 24 hours.</p>
-                <Link href={`/courses/contact`} className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2" style={{ color: primaryColor }}>
-                  Apply Now <ChevronRightIcon className="w-3 h-3" />
-                </Link>
-             </div>
+          {/* Column 5: Bento Status Box */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-1">
+            <div className="p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Admissions Active</span>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed mb-4">Current response time for inquiries is under 24 hours.</p>
+              <Link href={`/courses/contact`} className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:underline" style={{ color: primaryColor }}>
+                Apply Now <ChevronRightIcon className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
+
         </div>
 
         {/* ── Sub-Footer ── */}
@@ -139,10 +198,12 @@ export default function Footer() {
           </p>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 rounded-full border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Platform</span>
               <a 
                 href="https://salesmanpro.site" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
               >
                 SalesmanPro

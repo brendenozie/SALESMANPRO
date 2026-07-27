@@ -4,18 +4,49 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { FaceSmileIcon } from '@heroicons/react/24/outline';
+import { 
+  FaceSmileIcon, 
+  MapPinIcon, 
+  PhoneIcon, 
+  EnvelopeIcon, 
+  ArrowUpRightIcon 
+} from '@heroicons/react/24/outline';
+
+interface AddressItem {
+  label?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isPrimary?: boolean;
+}
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
+  
   const {
     name,
     description,
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
+    themeSettings = {},  
+    address: legacyAddress,
+    addresses = [],
   } = storeFormData || {};
+
+  // Extract up to 3 addresses for the regional showcase. 
+  // Fallback to legacy data if the addresses array is empty.
+  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+    ? addresses.slice(0, 3) 
+    : [{
+        label: "Global Headquarters",
+        address: legacyAddress || "Lusingeti Road, Number 31, Industrial Area, Nairobi",
+        contactPhone: contactPhone,
+        contactEmail: contactEmail,
+        isPrimary: true
+      }];
 
   const primary = themeSettings?.primaryColor || '#18181b';
 
@@ -36,7 +67,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-[1700px] mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-20">
           
           {/* Column 1: The Brand Statement */}
           <div className="lg:col-span-4 space-y-8">
@@ -48,8 +79,16 @@ export default function Footer() {
             </p>
             <div className="space-y-2 pt-4">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 underline decoration-zinc-200 underline-offset-8">Inquiries</p>
-              <a href={`mailto:${contactEmail}`} className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-500 transition-colors">{contactEmail}</a>
-              <a href={`tel:${contactPhone}`} className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-500 transition-colors">{contactPhone}</a>
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-500 transition-colors">
+                  {contactEmail}
+                </a>
+              )}
+              {contactPhone && (
+                <a href={`tel:${contactPhone}`} className="block text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-500 transition-colors">
+                  {contactPhone}
+                </a>
+              )}
             </div>
           </div>
 
@@ -57,10 +96,10 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Navigation</h3>
             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest text-zinc-800 dark:text-zinc-300">
-              <li><Link href="/furnitureecommerce/about" className="hover:text-zinc-400 transition-colors transition-all duration-300">About the Studio</Link></li>
-              <li><Link href="/furnitureecommerce/contact" className="hover:text-zinc-400 transition-colors transition-all duration-300">Contact</Link></li>
-              <li><Link href="/furnitureecommerce/privacy" className="hover:text-zinc-400 transition-colors transition-all duration-300">Privacy Policy</Link></li>
-              <li><Link href="/furnitureecommerce/terms" className="hover:text-zinc-400 transition-colors transition-all duration-300">Terms</Link></li>
+              <li><Link href="/furnitureecommerce/about" className="hover:text-zinc-400 transition-colors duration-300">About the Studio</Link></li>
+              <li><Link href="/furnitureecommerce/contact" className="hover:text-zinc-400 transition-colors duration-300">Contact</Link></li>
+              <li><Link href="/furnitureecommerce/privacy" className="hover:text-zinc-400 transition-colors duration-300">Privacy Policy</Link></li>
+              <li><Link href="/furnitureecommerce/terms" className="hover:text-zinc-400 transition-colors duration-300">Terms</Link></li>
             </ul>
           </div>
 
@@ -68,38 +107,111 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Logistics</h3>
             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest text-zinc-800 dark:text-zinc-300">
-              <li><Link href="/furnitureecommerce/shipping" className="hover:text-zinc-400 transition-colors transition-all duration-300">White-Glove Shipping</Link></li>
-              <li><Link href="/furnitureecommerce/returns" className="hover:text-zinc-400 transition-colors transition-all duration-300">Return Policy</Link></li>
-              <li><Link href="/furnitureecommerce/track" className="hover:text-zinc-400 transition-colors transition-all duration-300">Track Shipment</Link></li>
-              <li><Link href="/furnitureecommerce/help" className="hover:text-zinc-400 transition-colors transition-all duration-300">Support Center</Link></li>
+              <li><Link href="/furnitureecommerce/shipping" className="hover:text-zinc-400 transition-colors duration-300">White-Glove Shipping</Link></li>
+              <li><Link href="/furnitureecommerce/returns" className="hover:text-zinc-400 transition-colors duration-300">Return Policy</Link></li>
+              <li><Link href="/furnitureecommerce/track" className="hover:text-zinc-400 transition-colors duration-300">Track Shipment</Link></li>
+              <li><Link href="/furnitureecommerce/help" className="hover:text-zinc-400 transition-colors duration-300">Support Center</Link></li>
             </ul>
           </div>
 
           {/* Column 4: Social & Region */}
           <div className="lg:col-span-4 space-y-8 lg:text-right flex flex-col lg:items-end">
-             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Connect</h3>
-             <div className="flex gap-4">
-                {socialLinks.map((s, idx) => {
-                  const channel = String(s.channel).toLowerCase();
-                  const icon = iconMapper[channel] || <FaceSmileIcon className="w-4 h-4" />;
-                  return (
-                    <motion.a
-                      key={idx}
-                      whileHover={{ y: -3 }}
-                      href={`${s.url}`}
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Connect</h3>
+            <div className="flex gap-4">
+              {socialLinks.map((s: { channel: string; url: string }, idx: number) => {
+                const channel = String(s.channel).toLowerCase();
+                const icon = iconMapper[channel] || <FaceSmileIcon className="w-4 h-4" />;
+                return (
+                  <motion.a
+                    key={idx}
+                    whileHover={{ y: -3 }}
+                    href={`${s.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center text-zinc-800 dark:text-zinc-300 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-500 rounded-full"
+                  >
+                    {icon}
+                  </motion.a>
+                );
+              })}
+            </div>
+            <div className="pt-8">
+              <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+                Local time: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} GMT
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Showrooms & Locations Showcase */}
+        <div className="py-12 border-t border-zinc-100 dark:border-zinc-900">
+          <div className="flex items-center gap-2 mb-8">
+            <MapPinIcon className="w-4 h-4 text-zinc-400" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+              Showrooms & Studios ({regionalAddresses.length})
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {regionalAddresses.map((loc, idx) => {
+              const fullQuery = [loc.address, loc.city, loc.country].filter(Boolean).join(', ');
+              const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullQuery)}`;
+
+              return (
+                <div 
+                  key={idx}
+                  className="p-6 rounded-2xl border border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900/60 hover:border-zinc-200 dark:hover:border-zinc-800 transition-all duration-300 flex flex-col justify-between group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-zinc-200/50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300">
+                        {loc.label || `Studio 0${idx + 1}`}
+                      </span>
+                      {loc.isPrimary && (
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400">
+                          Main Studio
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed pt-2">
+                      {loc.address || "Studio location available on appointment."}
+                    </p>
+
+                    {(loc.city || loc.country) && (
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                        {[loc.city, loc.country].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-8 pt-4 border-t border-zinc-200/60 dark:border-zinc-800/60 space-y-2.5 text-xs font-medium">
+                    {loc.contactPhone && (
+                      <a href={`tel:${loc.contactPhone}`} className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                        <PhoneIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{loc.contactPhone}</span>
+                      </a>
+                    )}
+                    {loc.contactEmail && (
+                      <a href={`mailto:${loc.contactEmail}`} className="flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors truncate">
+                        <EnvelopeIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{loc.contactEmail}</span>
+                      </a>
+                    )}
+
+                    <a 
+                      href={googleMapsUrl}
                       target="_blank"
-                      className="w-10 h-10 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center text-zinc-800 dark:text-zinc-300 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-500 rounded-full"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-white hover:text-zinc-500 transition-colors"
                     >
-                      {icon}
-                    </motion.a>
-                  );
-                })}
-             </div>
-             <div className="pt-8">
-                <p className="text-[10px] font-mono text-zinc-400 uppercase">
-                   Local time: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} GMT
-                </p>
-             </div>
+                      <span>Directions</span>
+                      <ArrowUpRightIcon className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -113,16 +225,20 @@ export default function Footer() {
             <Link href="/furnitureecommerce/sitemap.xml" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Sitemap</Link>
           </div>
         </div>
+
+        {/* System Credits */}
+        <div className="flex items-center gap-1.5 px-4 py-2 mt-6 justify-center">
+          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Powered by</span>
+          <a 
+            href="https://salesmanpro.site" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            SalesmanPro.site
+          </a>
+        </div>
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
-        <a 
-          href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-        >
-          SalesmanPro.site
-        </a>
-    </div>
 
     </footer>
   );
