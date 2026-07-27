@@ -1,181 +1,68 @@
-// app/site/[tenantSlug]/layout.tsx
-import { notFound } from 'next/navigation';
-import { ReactNode, Suspense } from 'react';
-import type { Metadata, ResolvingMetadata } from 'next';
+import React, { ReactNode } from "react";
+import { notFound, redirect } from "next/navigation";
+import AdminLayout from "@/components/AdminLayout";
+import { StoreContextProvider } from "@/contexts/StoreContext";
+import { transformCompanyToStoreForm } from "@/utils/transformPrismaToStoreForm";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
 
-import { StoreContextProvider } from '@/contexts/StoreContext';
-import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
-import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
-import LoadingSpinner from '@/components/site/LoadingSpinner';
-import { SITE_CATEGORIES } from '@/utils/sitedata';
-import { findCompanyCached } from '@/lib/company-fetcher';
-import WhatsAppBubble from '@/components/WhatsAppBubble';
+export const dynamic = "force-dynamic";
 
-import siteMetadata from '@/data/siteMetadata';
-import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
+// Allowed roles for dashboard access
+const ALLOWED_ADMIN_ROLES = new Set([
+  "ADMIN",
+  "USER",
+  "JUNIOR",
+  "SENIOR",
+  "STUDENT",
+  "EDUCATOR",
+  "SCHOOL_DRIVER",
+  "STORE_DRIVER",
+  "PARENT",
+  "CONSUMER",
+]);
 
-// ISR Activation: Allows caching static pages on the edge for 60 seconds
-export const revalidate = 60;
-
-type Props = {
-  params: Promise<{ slug: string }>;
-};
-
-// --- HELPER FUNCTIONS ---
-
-function normalize(raw: string) {
-  return raw
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9&() ]/g, '')
-    .replace(/\s+/g, ' ');
-}
-
-// Safely extract SEO regardless of Prisma casing quirks
-function extractSEO(company: any) {
-  return company?.SEO ?? company?.sEO ?? {};
-}
-
-// Ensure no double slashes when joining URLs
-function getCleanSiteUrl() {
-  return siteMetadata.siteUrl.replace(/\/$/, '');
-}
-
-// --- METADATA ---
-
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const { slug } = await params;
-
-  // Blazing fast cache read using only the parsed param string
-  const company = await findCompanyCached(slug, 'lean');
-
-  if (!company) {
-    return { 
-      title: 'Store not found',
-      description: 'The requested store could not be found on Ghuba.'
-    };
-  }
-
-  const seo = extractSEO(company);
-  const title = seo.title || company.name;
-  const description = seo.description || 'Discover our exclusive collection.';
-
-  // Safely fallback to the root layout's social banner if the store has no logo
-  const previousImages = (await parent).openGraph?.images || [];
-  const images = company.logoUrl ? [company.logoUrl] : previousImages;
-  
-  const cleanBaseUrl = getCleanSiteUrl();
-  const canonicalUrl = `${cleanBaseUrl}/${slug}`;
-
-  return {
-    title,
-    description,
-    icons: company.logoUrl ? { icon: company.logoUrl, apple: company.logoUrl } : undefined,
-    keywords: seo.keywords || 'ecommerce, ghuba, shops, marketplace',
-    alternates: {
-      canonical: canonicalUrl, 
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl, 
-      images,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images,
-    },
-  };
-}
-
-// --- LAYOUT ---
-
-interface StoreLayoutProps {
+interface Props {
   params: Promise<{ slug: string }>;
   children: ReactNode;
 }
 
-export default async function StoreLayout({ params, children }: StoreLayoutProps) {
+export default async function AdminStoreLayout({ params, children }: Props) {
   const { slug } = await params;
+  const session = await getAuthSession();
 
-  // React dedupes this call automatically
-  const raw = await findCompanyCached(slug, 'lean');
-  
-  if (!raw) {
+  // 1. Authentication check
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+
+  const userRole = session.user.role?.toUpperCase() || "OTHER";
+
+  // 2. Authorization check
+  if (!ALLOWED_ADMIN_ROLES.has(userRole)) {
     notFound();
   }
 
-  // NOTE: Ensure your `transformCompanyToStoreForm` utility handles the 
-  // "ghuba" domain/slug overrides internally to keep this layout clean.
-  const storeFormData = transformCompanyToStoreForm(raw);
+  // 3. Identifier resolution (Supports slug, ID, or fallback to user ID)
+  const identifier = slug || session.user.id;
 
-  const category = normalize(storeFormData.category || 'other');
-  const variant = normalize(storeFormData.variant || '');
+  // 4. Cached company fetch using the page strategy
+  const rawCompany = await findCompanyCached(identifier, "page");
 
-  const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
-
-  // Determine the Layout Component dynamically
-  let LayoutComponent = categoryHeaderFooterLayoutMap[variant] 
-  || categoryHeaderFooterLayoutMap[category]
-  || (() => {
-    const matchedCategory = categoryMap.get(category);
-    if (matchedCategory?.variants?.length) {
-      const firstVariant = normalize(matchedCategory.variants[0].name);
-      return categoryHeaderFooterLayoutMap[firstVariant];
-    }
-  })()
-  || categoryHeaderFooterLayoutMap['default'];
-
-  const userId = ''; // Replace with session data when needed
-
-  // Build the JSON-LD object safely
-  const seo = extractSEO(raw);
-  const cleanBaseUrl = getCleanSiteUrl();
-  
-  const jsonLd: any = {
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: raw.name,
-    url: `${cleanBaseUrl}/${slug}`,
-    description: seo.description || 'Discover our exclusive collection.',
-  };
-
-  if (raw.logoUrl) {
-    jsonLd.image = raw.logoUrl;
-    jsonLd.logo = raw.logoUrl;
+  if (!rawCompany) {
+    notFound();
   }
 
+  // 5. Transform raw Prisma data into StoreForm state
+  const storeFormData = transformCompanyToStoreForm(rawCompany);
+
   return (
-    <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-      <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100">
-        <LayoutComponent params={{ storeFormData }}>
-          
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-          
-          {/* 
-            Keeping Suspense here for safety, but consider moving this LoadingSpinner 
-            into an `app/site/[tenantSlug]/loading.tsx` file to utilize native Next.js router suspense.
-          */}
-          <Suspense fallback={<LoadingSpinner />}>
-            {children}
-          </Suspense>
-          
-          {/* Ensure WhatsAppBubble's interface marks productName as optional, or pass undefined */}
-          <WhatsAppBubble productName={''} />
-          
-          {/* Analytics integration */}
-          <AnalyticsProvider config={raw.AnalyticsConfig} />
-          
-        </LayoutComponent>
-      </div>
+    <StoreContextProvider
+      initialStore={storeFormData}
+      userRole={userRole}
+      userId={session.user.id}
+    >
+      <AdminLayout params={params}>{children}</AdminLayout>
     </StoreContextProvider>
   );
 }

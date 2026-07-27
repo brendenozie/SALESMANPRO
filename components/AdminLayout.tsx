@@ -1,14 +1,25 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { signOut } from "next-auth/react";
+import {
+  ChevronDownIcon,
+  Bars3Icon,
+  XMarkIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
+  ArrowLeftOnRectangleIcon,
+  BuildingStorefrontIcon,
+  UserCircleIcon,
+  SunIcon,
+  MoonIcon,
+} from "@heroicons/react/24/outline";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
 import { useStoreContext } from "@/contexts/StoreContext";
-import Link from "next/link";
-import { ChevronDownIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { signOut } from 'next-auth/react';
 
-// --- Helper types and functions (no changes needed here) ---
+// --- Helper types and functions ---
 interface MenuItem {
   label: string;
   href?: string;
@@ -16,242 +27,468 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
-type Role = 'STUDENT' | 'EDUCATOR' | 'PARENT' | 'SCHOOL_DRIVER' | string;
+type Role = "STUDENT" | "EDUCATOR" | "PARENT" | "SCHOOL_DRIVER" | string;
 type CategoryType = string;
 type MenuMap = Record<string, MenuItem[]>;
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-const principalCategories = ['Educational & Online Courses', 'Head Teacher', 'School Head'];
-const isPrincipalCategory = (cat?: CategoryType) => cat ? principalCategories.includes(cat) : false;
+const principalCategories = [
+  "Educational & Online Courses",
+  "Head Teacher",
+  "School Head",
+];
+const isPrincipalCategory = (cat?: CategoryType) =>
+  cat ? principalCategories.includes(cat) : false;
 
-const fallback = "Other";
-
-function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategoryMenus: MenuMap): MenuItem[] {
+function getMenuItemsFor(
+  userRole: Role,
+  categoryType: CategoryType,
+  allCategoryMenus: MenuMap
+): MenuItem[] {
   const defaultFallbackMenu = allCategoryMenus.Other || [];
-  // console.log("Determining menu for role:", userRole, "and category:", categoryType);
   switch (userRole) {
-    case 'JUNIOR':
-    case 'SENIOR':
-    case 'STUDENT':
+    case "JUNIOR":
+    case "SENIOR":
+    case "STUDENT":
       return allCategoryMenus.Student ?? defaultFallbackMenu;
-    case 'PARENT':
+    case "PARENT":
       return allCategoryMenus.Parent ?? defaultFallbackMenu;
-    case 'SCHOOL_DRIVER':
+    case "SCHOOL_DRIVER":
       return allCategoryMenus.SCHOOL_DRIVER ?? defaultFallbackMenu;
-    case 'STORE_DRIVER':
+    case "STORE_DRIVER":
       return allCategoryMenus.STORE_DRIVER ?? defaultFallbackMenu;
-    case 'EDUCATOR':
+    case "EDUCATOR":
       if (isPrincipalCategory(categoryType)) {
-        return allCategoryMenus.Principal ?? allCategoryMenus.Educator ?? defaultFallbackMenu;
+        return (
+          allCategoryMenus.Principal ??
+          allCategoryMenus.Educator ??
+          defaultFallbackMenu
+        );
       }
-      return allCategoryMenus.Educator ?? allCategoryMenus.Tutor ?? defaultFallbackMenu;
-    case 'TUTOR':
+      return (
+        allCategoryMenus.Educator ??
+        allCategoryMenus.Tutor ??
+        defaultFallbackMenu
+      );
+    case "TUTOR":
       return allCategoryMenus.Tutor ?? defaultFallbackMenu;
     default:
       return allCategoryMenus[categoryType] ?? defaultFallbackMenu;
   }
 }
 
-// --- Main AdminLayout Component ---
-export default function AdminLayout({ children, params }: {
-  children: React.ReactNode,
-  params:Promise<{ slug: string }>
+export default function AdminLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();
 
-  const handleSignOut = ()=> {
-    const returnTo = window.location.origin;
+  // Layout State
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openLabel, setOpenLabel] = useState<string | null>(null);
 
+  // Dark Mode State
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // 1. Dark Mode Sync Effect
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    if (storedTheme === "dark" || (!storedTheme && prefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  // 2. POS Navigation Check
+  const shouldHideNav = useMemo(() => {
+    const posRoutes = [
+      "/pos",
+      "/storepos",
+      "/service-pos",
+      "/fitness-pos",
+      "/health-pos",
+      "/company-pos",
+    ];
+    return posRoutes.some((route) => pathname.endsWith(route));
+  }, [pathname]);
+
+  // 3. Category & Menus Memoization
+  const companyId: string = storeFormData?.id || "6964daeff4ad17d959b72413";
+
+  const categoryType = useMemo(() => {
+    const category = storeFormData?.category;
+    if (!category) return "Other";
+    if (category.toLowerCase() === "automotive") {
+      return capitalize(storeFormData?.variant || "Other");
+    }
+    return capitalize(category);
+  }, [storeFormData?.category, storeFormData?.variant]);
+
+  const menus = useMemo(
+    () => getCategoryMenus(companyId, userRole),
+    [companyId, userRole]
+  );
+
+  const menuItems = useMemo(
+    () => getMenuItemsFor(userRole, categoryType, menus),
+    [userRole, categoryType, menus]
+  );
+
+  // 4. Auto-expand Active Category
+  useEffect(() => {
+    for (const item of menuItems) {
+      if (item.subItems?.some((sub) => pathname.startsWith(sub.href || ""))) {
+        setOpenLabel(item.label);
+        break;
+      }
+    }
+  }, [pathname, menuItems]);
+
+  // 5. Close Mobile Drawer on Route Transition
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // 6. Label Formatting
+  const formattedRole = useMemo(() => {
+    const roleLower = (userRole || "").toLowerCase();
+    if (roleLower === "consumer") return "Admin";
+    if (roleLower === "senior" || roleLower === "junior") return "Student";
+    return userRole;
+  }, [userRole]);
+
+  const companyDisplayName = useMemo(() => {
+    if (storeFormData?.name === "Teacher" || storeFormData?.name === "Students") {
+      return "";
+    }
+    return storeFormData?.name || "Company Portal";
+  }, [storeFormData?.name]);
+
+  const toggleDarkMode = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+      setIsDarkMode(false);
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      setIsDarkMode(true);
+    }
+  };
+
+  const handleSignOut = () => {
+    const returnTo = window.location.origin;
     signOut({
       redirect: true,
       callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
     });
   };
-  
-  // 1. This is the core logic.
-  // It checks if the current URL path ends with '/pos'.
-  const shouldHideNav = pathname.endsWith('/pos') || pathname.endsWith('/storepos') || pathname.endsWith('/service-pos') || pathname.endsWith('/fitness-pos') || pathname.endsWith('/health-pos') ||  pathname.endsWith('/company-pos');
 
-  // 2. If the navigation should be hidden, return a simplified layout.
-  // This renders only the main content area, making it take up the full screen.
+  // =========================================================================
+  // EARLY RETURNS (MUST BE AFTER ALL HOOKS)
+  // =========================================================================
+
+  // Full-Screen POS Layout Bypass
   if (shouldHideNav) {
     return (
-      <main className="w-screen h-screen overflow-auto">
+      <main className="w-screen h-screen overflow-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         {children}
       </main>
     );
   }
 
-  // This early return for specific roles might still be needed if they have a
-  // unique layout that is NOT the standard admin layout but also NOT the POS layout.
-  // If these roles should see the standard admin layout on non-POS pages, you can remove this block.
-  if (userRole === 'JUNIOR' || userRole === 'SCHOOL_DRIVER' || userRole === 'STORE_DRIVER') {
+  // Operational Roles Bypass
+  if (
+    userRole === "JUNIOR" ||
+    userRole === "SCHOOL_DRIVER" ||
+    userRole === "STORE_DRIVER"
+  ) {
     return (
-      <main className="flex-1 pt-20 lg:pt-0 overflow-auto">
+      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         {children}
       </main>
     );
   }
 
-  // --- All variables and state for the full layout (with navigation) ---
-  const companyId: string = storeFormData?.id || '6964daeff4ad17d959b72413';// 'default-company-id';
-
-  // const categoryType = storeFormData?.category ? capitalize(storeFormData.category) : "Other";
-  
-  const categoryType = useMemo(() => {
-  const category = storeFormData?.category;
-
-  if (!category) return "Other";
-
-  if (category.toLowerCase() === "automotive") {
-    return capitalize(storeFormData?.variant || "Other");
-  }
-
-  return capitalize(category);
-}, [storeFormData?.category, storeFormData?.variant]);
-
-  const menus = getCategoryMenus(companyId,userRole);
-  const menuItems = getMenuItemsFor(userRole, categoryType, menus);
-
-  const initialOpen = useMemo<string | null>(() => {
-    for (const item of menuItems) {
-      if (item.subItems?.some(sub => pathname.startsWith(sub.href || ''))) {
-        return item.label;
-      }
-    }
-    return null;
-  }, [pathname, menuItems]);
-
-  const [openLabel, setOpenLabel] = useState<string | null>(initialOpen);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // 3. If we've reached this point, it's not a POS page.
-  // Return the full layout with the sidebar and header.
+  // =========================================================================
+  // MAIN RENDER
+  // =========================================================================
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Mobile Header (visible on small screens) */}
-      <header className="lg:hidden fixed top-0 w-full bg-white flex items-center justify-between p-4 shadow-md z-30">
-        <button onClick={() => setMobileOpen(o => !o)} className="p-2 rounded-md text-sky-600 hover:bg-gray-100">
-          {mobileOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-        </button>
-        <span className="font-bold text-lg uppercase text-sky-800 truncate">
-          {userRole.toLowerCase() === 'consumer' ? 'ADMIN' : userRole || 'ADMIN'}
-        </span>
-      </header>
+    <div className="flex h-screen bg-gray-100 dark:bg-slate-950 overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200">
+      {/* MOBILE OVERLAY BACKDROP */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+        />
+      )}
 
-      {/* Sidebar (fixed on desktop, slides in on mobile) */}
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-sky-950 to-sky-900 text-white flex flex-col transition-transform duration-300 ease-in-out ${
-        mobileOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 z-50`}>
-        {/* User/Company Info */}
-        <div className="flex items-center space-x-3 p-4 bg-white/10 rounded-lg m-4 justify-between relative z-10">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-white/30 rounded-full flex items-center justify-center">
-              <span className="text-xl font-bold text-white">{(userRole || 'A').charAt(0)}</span>
+      {/* SIDEBAR */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-slate-900 dark:bg-slate-900 text-slate-100 transition-all duration-300 ease-in-out shadow-2xl ${
+          mobileOpen ? "translate-x-0 w-72" : "-translate-x-full"
+        } lg:translate-x-0 ${isCollapsed ? "lg:w-20" : "lg:w-64"}`}
+      >
+        {/* BRANDING / USER PROFILE HEADER */}
+        <div className="flex items-center justify-between p-4 border-b border-slate-800">
+          <div className="flex items-center space-x-3 overflow-hidden">
+            <div className="h-10 w-10 min-w-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-md">
+              {(formattedRole || "A").charAt(0).toUpperCase()}
             </div>
-            <div>
-              <p className="font-semibold capitalize">{userRole.toLowerCase() === 'consumer' ? 'Admin' : (userRole.toLowerCase() == 'senior'|| userRole.toLowerCase() === 'junior') ? 'Student' : userRole}</p>
-              <p className="text-xs text-white/70">{storeFormData?.name == 'Teacher' || storeFormData?.name == "Students" ? '' : storeFormData?.name || 'Company'}</p>
-            </div>   
-          </div>       
-          {/* show close button on mobile */}
-          {mobileOpen && (
-            <button onClick={() => setMobileOpen(false)} className="p-1 rounded-md text-sky-600 hover:bg-gray-100 ml-auto">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          )}
+            {(!isCollapsed || mobileOpen) && (
+              <div className="flex flex-col min-w-0 transition-opacity duration-300">
+                <span className="font-semibold text-sm text-white truncate capitalize">
+                  {formattedRole}
+                </span>
+                {companyDisplayName && (
+                  <span className="text-xs text-slate-400 truncate">
+                    {companyDisplayName}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 lg:hidden"
+            aria-label="Close sidebar"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         </div>
 
-        {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto px-2 custom-scrollbar">
-          <ul className="space-y-1">
-            {menuItems.map(item => {
-              const isActiveParent = item.subItems
-                ? item.subItems.some(sub => sub.href && pathname.startsWith(sub.href))
-                : (item.href && pathname.startsWith(item.href));
-              const isOpen = openLabel === item.label;
+        {/* NAVIGATION LINKS */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
+          {menuItems.map((item) => {
+            const isActiveParent = item.subItems
+              ? item.subItems.some(
+                  (sub) => sub.href && pathname.startsWith(sub.href)
+                )
+              : item.href && pathname.startsWith(item.href);
+            const isOpen = openLabel === item.label;
 
-              if (!item.subItems?.length) {
-                return (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href || '#'}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center space-x-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        isActiveParent ? 'bg-white/20' : 'hover:bg-white/10'
-                      }`}
-                    >
-                      {item.icon && React.createElement(item.icon, { className: 'h-5 w-5 text-white/80' })}
-                      <span className="text-white truncate">{item.label}</span>
-                    </Link>
-                  </li>
-                );
-              }
+            if (!item.subItems?.length) {
               return (
-                <li key={item.label} className="rounded-lg">
-                  <button
-                    onClick={() => setOpenLabel(prev => (prev === item.label ? null : item.label))}
-                    className={`w-full flex items-center justify-between px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isActiveParent || isOpen ? 'bg-white/20' : 'hover:bg-white/10'
+                <div key={item.label} className="relative group">
+                  <Link
+                    href={item.href || "#"}
+                    className={`flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActiveParent
+                        ? "bg-sky-600 text-white shadow-lg shadow-sky-600/30"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    } ${isCollapsed && !mobileOpen ? "justify-center" : "space-x-3"}`}
+                  >
+                    {item.icon ? (
+                      <item.icon className="h-5 w-5 shrink-0" />
+                    ) : (
+                      <BuildingStorefrontIcon className="h-5 w-5 shrink-0" />
+                    )}
+                    {(!isCollapsed || mobileOpen) && (
+                      <span className="truncate">{item.label}</span>
+                    )}
+                  </Link>
+
+                  {isCollapsed && !mobileOpen && (
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                      {item.label}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div key={item.label} className="relative group">
+                <button
+                  onClick={() => {
+                    if (isCollapsed && !mobileOpen) {
+                      setIsCollapsed(false);
+                      setOpenLabel(item.label);
+                    } else {
+                      setOpenLabel((prev) =>
+                        prev === item.label ? null : item.label
+                      );
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    isActiveParent || isOpen
+                      ? "bg-slate-800 text-white"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  } ${isCollapsed && !mobileOpen ? "justify-center" : ""}`}
+                >
+                  <div
+                    className={`flex items-center ${
+                      isCollapsed && !mobileOpen ? "" : "space-x-3 truncate"
                     }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      {item.icon && React.createElement(item.icon, { className: 'h-5 w-5 text-white/80' })}
-                      <span className="text-white truncate">{item.label}</span>
-                    </div>
-                    <ChevronDownIcon className={`h-4 w-4 text-white/80 transform transition-transform ${
-                      isOpen ? 'rotate-180' : ''
-                    }`} />
-                  </button>
-                  {isOpen && (
-                    <ul className="mt-1 space-y-1 pl-12">
-                      {item.subItems.map(sub => {
-                        const isActiveSub = sub.href ? pathname.startsWith(sub.href) : false;
-                        return (
-                          <li key={sub.label}>
-                            <Link
-                              href={sub.href || '#'}
-                              onClick={() => setMobileOpen(false)}
-                              className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
-                                isActiveSub ? 'bg-white/30 text-white font-semibold' : 'hover:bg-white/10 text-white/80'
-                              }`}
-                            >
-                              {sub.label}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                    {item.icon ? (
+                      <item.icon className="h-5 w-5 shrink-0" />
+                    ) : (
+                      <BuildingStorefrontIcon className="h-5 w-5 shrink-0" />
+                    )}
+                    {(!isCollapsed || mobileOpen) && (
+                      <span className="truncate">{item.label}</span>
+                    )}
+                  </div>
+                  {(!isCollapsed || mobileOpen) && (
+                    <ChevronDownIcon
+                      className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-sky-400" : "text-slate-400"
+                      }`}
+                    />
                   )}
-                </li>
-              );
-            })}
-          </ul>
+                </button>
+
+                {isOpen && (!isCollapsed || mobileOpen) && (
+                  <div className="mt-1 ml-4 pl-3 border-l border-slate-700/60 space-y-1">
+                    {item.subItems.map((sub) => {
+                      const isActiveSub = sub.href
+                        ? pathname.startsWith(sub.href)
+                        : false;
+                      return (
+                        <Link
+                          key={sub.label}
+                          href={sub.href || "#"}
+                          className={`block px-3 py-2 text-xs font-medium rounded-lg transition-all duration-150 ${
+                            isActiveSub
+                              ? "bg-sky-600/20 text-sky-400 font-semibold"
+                              : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {isCollapsed && !mobileOpen && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                    {item.label}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-4 border-t border-white/20">
+        {/* SIDEBAR FOOTER */}
+        <div className="p-3 border-t border-slate-800 space-y-1">
           <button
-            onClick={() => handleSignOut()}
-            className="w-full flex items-center justify-center px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            className="hidden lg:flex w-full items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            <span className="text-sm text-white">Logout</span>
+            {isCollapsed ? (
+              <ChevronDoubleRightIcon className="h-5 w-5" />
+            ) : (
+              <div className="flex items-center space-x-2 w-full px-2">
+                <ChevronDoubleLeftIcon className="h-5 w-5 shrink-0" />
+                <span className="text-xs font-medium text-slate-400">
+                  Collapse Navigation
+                </span>
+              </div>
+            )}
+          </button>
+
+          <button
+            onClick={handleSignOut}
+            className={`w-full flex items-center p-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors ${
+              isCollapsed && !mobileOpen
+                ? "justify-center"
+                : "space-x-3 px-3"
+            }`}
+            title="Logout"
+          >
+            <ArrowLeftOnRectangleIcon className="h-5 w-5 shrink-0" />
+            {(!isCollapsed || mobileOpen) && (
+              <span className="text-sm font-medium">Logout</span>
+            )}
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 lg:pl-64 pt-20 lg:pt-0 overflow-auto">
-        {children}
-      </main>
+      {/* MAIN VIEWPORT */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "lg:pl-20" : "lg:pl-64"
+        }`}
+      >
+        <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 sm:px-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800/80 shadow-sm transition-colors duration-200">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+              aria-label="Open navigation menu"
+            >
+              <Bars3Icon className="h-6 w-6" />
+            </button>
 
-      {/* Scrollbar Styling */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+            <div className="flex items-center space-x-2">
+              <span className="font-bold text-base sm:text-lg text-slate-900 dark:text-white truncate">
+                {companyDisplayName || "Dashboard"}
+              </span>
+              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 capitalize">
+                {formattedRole}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Toggle light and dark mode"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDarkMode ? (
+                <SunIcon className="h-5 w-5 text-amber-400" />
+              ) : (
+                <MoonIcon className="h-5 w-5 text-slate-600" />
+              )}
+            </button>
+
+            <div className="h-5 w-px bg-slate-200 dark:bg-slate-800" />
+
+            <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
+              <UserCircleIcon className="h-7 w-7 text-slate-400 dark:text-slate-500" />
+              <span className="hidden md:inline-block text-sm font-medium text-slate-700 dark:text-slate-200">
+                User #{userId ? userId.slice(-4) : "Admin"}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+          {children}
+        </main>
+      </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
       `}</style>
     </div>
   );
