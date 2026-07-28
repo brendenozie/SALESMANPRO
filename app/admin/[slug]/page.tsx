@@ -33,6 +33,7 @@ import LogisticsDashboard from '@/components/admin/LogisticsDashboard';
 // zod for runtime validation
 import { z } from 'zod';
 import StoreDriverDashboard from '@/components/admin/StoreDriverDashboard';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -353,12 +354,16 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
     // Company fetch (simulate loading)
     isLoading = true;
-    const [company] = await Promise.all([
-      prisma.company.findUnique({
-        where: { id: companyId },
-        select: { category: true },
-      })
-    ]);
+    // const [company] = await Promise.all([
+    //   prisma.company.findUnique({
+    //     where: { id: companyId },
+    //     select: { category: true },
+    //   })
+    // ]);
+    
+    // 4. Cached company fetch using the page strategy
+    const company = await findCompanyCached(companyId, "page");
+    
     isLoading = false;
 
     if (
