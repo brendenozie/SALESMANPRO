@@ -97,6 +97,20 @@ const commonEcommerce = (adminSlug: string) => {
       ],
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Orders",
       icon: UsersIcon,
       subItems: [
@@ -259,6 +273,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Transport",
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
@@ -355,6 +383,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+      ],
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
       ],
     },
     {
@@ -463,6 +505,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Gallery",
       href: `/admin/${adminSlug}/gallery`,
       icon: PhotoIcon,
@@ -536,6 +592,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+      ],
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
       ],
     },
     {
@@ -644,6 +714,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
@@ -692,6 +776,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     {
       label: "Comments",
@@ -997,6 +1095,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Transport",
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
@@ -1061,6 +1173,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Transport",
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
@@ -1116,6 +1242,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     {
       label: "Transport",
@@ -1198,6 +1338,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Manage Events",
       href: `/admin/${adminSlug}/manage-events`,
       icon: TicketIcon,
@@ -1259,6 +1413,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     {
       label: "Sponsors",
@@ -1353,6 +1521,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -1450,6 +1632,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     {
       label: "Doctors",
@@ -1785,6 +1981,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Sponsors & Partnerships", // More descriptive
       href: `/admin/${adminSlug}/media-sponsors`,
       icon: BriefcaseIcon,
@@ -1817,6 +2027,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -1904,6 +2128,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
     // {
     //   label: "Clients",
     //   href: `/admin/${adminSlug}/clients`,
@@ -1959,6 +2197,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -2029,6 +2281,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     {
       label: "Listings",
@@ -2143,6 +2409,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -2287,6 +2567,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
     // {
     //   label: "Clients & Members",
     //   href: `/admin/${adminSlug}/fitness-clients`,
@@ -2352,6 +2646,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UserGroupIcon,
     },
     {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
       label: "Testimonials",
       href: `/admin/${adminSlug}/testimonials`,
       icon: ChatBubbleLeftRightIcon,
@@ -2389,6 +2697,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -2464,6 +2786,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserCircleIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -2554,6 +2890,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients",
@@ -2695,6 +3045,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
     // {
     //   label: "Clients",
     //   href: `/admin/${adminSlug}/logistics-clients`,
@@ -2768,6 +3132,20 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
     },
     // {
     //   label: "Clients & Accounts",

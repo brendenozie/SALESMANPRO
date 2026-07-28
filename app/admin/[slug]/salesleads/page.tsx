@@ -8,7 +8,7 @@ interface LeadsPageProps {
 export default async function LeadsPage({ params }: LeadsPageProps) {
   const cookieStore = (await cookies()).toString();
   const companyId = (await params).slug;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/leads?companyId=${companyId}`, {
+  const res = await fetch(`/admin/leads?companyId=${companyId}`, {
     cache: "no-store",
     headers: {
       Cookie: cookieStore,
