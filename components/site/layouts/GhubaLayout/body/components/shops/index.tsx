@@ -128,7 +128,7 @@ const Shop: React.FC<ShopProps> = ({ addToCart, category, shopItems = [] }) => {
                    - Replaced `w-full flex justify-center` with `flex flex-col items-stretch` so 
                      cards occupy equal width and height across rows without shrinking.
                 */
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-2 md:gap-2">
                   {shopItems.map((product) => (
                     <div key={product.id} className="flex flex-col items-stretch h-full w-full">
                       <GhubaProductCard 
