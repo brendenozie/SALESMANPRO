@@ -38,7 +38,7 @@ export default function AutomotiveFeaturedListingsWrapper({
   const transactionType =
     (params.get("transactionType") as "SALE" | "RENT") || "SALE";
 
-  /* 🔁 Persist tab selection in URL */
+  /* 🔁 Persist tab selection in URL without triggering full page re-renders */
   const setTransactionType = (type: "SALE" | "RENT") => {
     const next = new URLSearchParams(params.toString());
     next.set("transactionType", type);
@@ -82,13 +82,15 @@ export default function AutomotiveFeaturedListingsWrapper({
   const listings: MarketListingForm[] = data?.data ?? [];
 
   return (
-    <AutomotiveFeatured
-      listings={listings}
-      error={error}
-      isLoading={isLoading}
-      slug={companyId}
-      transactionType={transactionType}
-      onTransactionChange={setTransactionType}
-    />
+    <div className="w-full bg-slate-50 dark:bg-[#080B10] text-slate-900 dark:text-white transition-colors duration-300">
+      <AutomotiveFeatured
+        listings={listings}
+        error={error}
+        isLoading={isLoading}
+        slug={companyId}
+        transactionType={transactionType}
+        onTransactionChange={setTransactionType}
+      />
+    </div>
   );
 }

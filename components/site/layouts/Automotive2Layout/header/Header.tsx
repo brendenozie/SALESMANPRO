@@ -13,6 +13,8 @@ import {
   MapPinIcon,
   PhoneIcon,
   CheckBadgeIcon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -39,17 +41,46 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Sync initial theme mode preference
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isDark = document.documentElement.classList.contains("dark");
+      setIsDarkMode(isDark);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark");
+      setIsDarkMode(false);
+    } else {
+      document.documentElement.classList.add("dark");
+      setIsDarkMode(true);
+    }
+  };
 
   const { scrollY } = useScroll();
 
-  // Dynamic Transformations to match Hero dark backdrop
-  const bgOpacity = useTransform(scrollY, [0, 60], ["rgba(8, 11, 16, 0.75)", "rgba(8, 11, 16, 0.95)"]);
+  // Dynamic Transformations tailored for light and dark dynamic overlays
+  const bgOpacity = useTransform(
+    scrollY,
+    [0, 60],
+    [
+      isDarkMode ? "rgba(8, 11, 16, 0.75)" : "rgba(255, 255, 255, 0.8)",
+      isDarkMode ? "rgba(8, 11, 16, 0.95)" : "rgba(255, 255, 255, 0.95)",
+    ]
+  );
   const headerBlur = useTransform(scrollY, [0, 60], ["blur(12px)", "blur(24px)"]);
   const headerHeight = useTransform(scrollY, [0, 60], ["96px", "76px"]);
   const borderColor = useTransform(
     scrollY,
     [0, 60],
-    ["rgba(51, 65, 85, 0.3)", "rgba(245, 158, 11, 0.25)"]
+    [
+      isDarkMode ? "rgba(51, 65, 85, 0.3)" : "rgba(226, 232, 240, 0.8)",
+      isDarkMode ? "rgba(245, 158, 11, 0.25)" : "rgba(245, 158, 11, 0.4)",
+    ]
   );
 
   const phone = data?.contactPhone || data?.phone || "+254 732 771 353";
@@ -72,9 +103,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   return (
     <header className="fixed inset-x-0 top-0 z-[100] flex flex-col">
       {/* 1. TOP HERO UTILITY BAR */}
-      <div className="hidden sm:flex items-center justify-between px-4 sm:px-6 lg:px-8 py-1.5 bg-slate-950 border-b border-slate-800/80 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+      <div className="hidden sm:flex items-center justify-between px-4 sm:px-6 lg:px-8 py-1.5 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 text-[10px] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider transition-colors duration-300">
         <div className="flex items-center gap-5">
-          <div className="flex items-center gap-1.5 text-amber-500">
+          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -82,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
             <span>Live Inventory Yard</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-slate-300">
+          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
             <MapPinIcon className="w-3 h-3 text-rose-500" />
             <span>{address}</span>
           </div>
@@ -91,7 +122,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
         <div className="flex items-center gap-4">
           <a
             href={`tel:${phone}`}
-            className="flex items-center gap-1.5 hover:text-amber-400 transition-colors"
+            className="flex items-center gap-1.5 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
           >
             <PhoneIcon className="w-3 h-3 text-amber-500" />
             <span>{phone}</span>
@@ -119,7 +150,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
         }}
         className="relative w-full border-b transition-colors duration-300 flex items-center"
       >
-        {/* Hero-Matching Subtle Ambient Glow */}
+        {/* Ambient Glow */}
         <div className="absolute top-0 right-1/3 w-64 h-full bg-amber-500/5 blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -135,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     loader={({ src }) => src}
                     unoptimized
                     fill
-                    className="object-contain filter brightness-110"
+                    className="object-contain filter dark:brightness-110"
                   />
                 </div>
               ) : (
@@ -143,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   <div className="p-2 rounded-xl bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20">
                     <SparklesIcon className="w-5 h-5" />
                   </div>
-                  <span className="text-xl sm:text-2xl font-black tracking-tight text-white uppercase">
+                  <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
                     {data.name ? (
                       data.name
                     ) : (
@@ -163,7 +194,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="relative text-xs font-black uppercase tracking-wider text-slate-300 hover:text-amber-400 transition-colors group py-1.5"
+                  className="relative text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors group py-1.5"
                 >
                   {item.label}
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-amber-500 transition-all duration-300 group-hover:w-full" />
@@ -172,13 +203,13 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
             </nav>
           </div>
 
-          {/* Quick Search & User Actions */}
+          {/* Quick Search, Theme Toggle & User Actions */}
           <div className="flex items-center gap-3 sm:gap-4">
             
             {/* Search Pill */}
             <form
               onSubmit={handleSearchSubmit}
-              className="hidden md:flex items-center bg-slate-900/90 rounded-xl px-3.5 py-2 border border-slate-700/80 focus-within:border-amber-500/80 focus-within:ring-1 focus-within:ring-amber-500/40 transition-all"
+              className="hidden md:flex items-center bg-slate-100 dark:bg-slate-900/90 rounded-xl px-3.5 py-2 border border-slate-300 dark:border-slate-700/80 focus-within:border-amber-500/80 focus-within:ring-1 focus-within:ring-amber-500/40 transition-all"
             >
               <MagnifyingGlassIcon className="h-4 w-4 text-amber-500" />
               <input
@@ -186,15 +217,28 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search fleet stock..."
-                className="bg-transparent border-none outline-none ml-2 text-xs font-bold text-white placeholder:text-slate-500 w-36 focus:w-48 transition-all"
+                className="bg-transparent border-none outline-none ml-2 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 w-36 focus:w-48 transition-all"
               />
             </form>
 
             {/* Verification Badge Marker */}
-            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-300">
+            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
               <CheckBadgeIcon className="w-4 h-4 text-amber-500" />
               <span>Verified Fleet</span>
             </div>
+
+            {/* Light / Dark Mode Toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            >
+              {isDarkMode ? (
+                <SunIcon className="w-4 h-4 text-amber-400" />
+              ) : (
+                <MoonIcon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
 
             {/* User Auth Button */}
             <div className="hidden lg:flex items-center">
@@ -208,10 +252,10 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
               ) : (
                 <button
                   onClick={() => router.push("/automotive/profile")}
-                  className="group flex items-center gap-3 bg-slate-900 pl-3.5 pr-1.5 py-1.5 rounded-xl border border-slate-800 hover:border-amber-500/50 transition-all"
+                  className="group flex items-center gap-3 bg-slate-100 dark:bg-slate-900 pl-3.5 pr-1.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-amber-500/50 transition-all"
                 >
                   <div className="text-right">
-                    <p className="text-xs font-bold text-white uppercase tracking-tight line-clamp-1">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-tight line-clamp-1">
                       {user.name}
                     </p>
                     <p className="text-[9px] font-black text-amber-500 uppercase tracking-wider">
@@ -239,7 +283,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white hover:bg-slate-800 transition-colors"
+              className="lg:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Toggle Navigation Menu"
             >
@@ -257,29 +301,42 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[110] bg-slate-950/98 backdrop-blur-2xl flex flex-col p-6 text-white"
+            className="fixed inset-0 z-[110] bg-white/98 dark:bg-slate-950/98 backdrop-blur-2xl flex flex-col p-6 text-slate-900 dark:text-white"
           >
-            <div className="flex justify-between items-center pb-6 border-b border-slate-800 mb-8">
+            <div className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-800 mb-8">
               <span className="text-xs font-black uppercase tracking-widest text-amber-500">
                 Fleet Marketplace Navigation
               </span>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 bg-slate-900 rounded-xl text-white hover:bg-slate-800 transition-colors border border-slate-800"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={toggleTheme}
+                  aria-label="Toggle Theme"
+                  className="p-2 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors border border-slate-300 dark:border-slate-800"
+                >
+                  {isDarkMode ? (
+                    <SunIcon className="h-5 w-5 text-amber-400" />
+                  ) : (
+                    <MoonIcon className="h-5 w-5 text-slate-700" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors border border-slate-300 dark:border-slate-800"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
             </div>
 
             <form onSubmit={(e) => { handleSearchSubmit(e); setMobileMenuOpen(false); }} className="mb-8">
-              <div className="flex items-center bg-slate-900 rounded-xl px-4 py-3 border border-slate-800 focus-within:border-amber-500">
+              <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl px-4 py-3 border border-slate-300 dark:border-slate-800 focus-within:border-amber-500">
                 <MagnifyingGlassIcon className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search fleet stock..."
-                  className="bg-transparent border-none outline-none text-sm font-semibold text-white placeholder:text-slate-500 w-full"
+                  className="bg-transparent border-none outline-none text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 w-full"
                 />
               </div>
             </form>
@@ -294,7 +351,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 >
                   <Link
                     href={item.href}
-                    className="text-2xl font-black uppercase tracking-tight text-slate-200 hover:text-amber-400 transition-colors flex items-center justify-between"
+                    className="text-2xl font-black uppercase tracking-tight text-slate-800 dark:text-slate-200 hover:text-amber-500 dark:hover:text-amber-400 transition-colors flex items-center justify-between"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <span>{item.label}</span>
@@ -304,7 +361,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
               ))}
             </nav>
 
-            <div className="mt-auto pt-6 border-t border-slate-800 space-y-3">
+            <div className="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800 space-y-3">
               <a
                 href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}`}
                 target="_blank"
@@ -331,7 +388,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     setMobileMenuOpen(false);
                     router.push("/automotive/profile");
                   }}
-                  className="w-full py-4 bg-slate-900 border border-slate-800 rounded-xl text-white font-bold uppercase tracking-wider flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white font-bold uppercase tracking-wider flex items-center justify-center gap-3"
                 >
                   <UserIcon className="h-5 w-5 text-amber-500" />
                   <span>My Profile ({user.name})</span>

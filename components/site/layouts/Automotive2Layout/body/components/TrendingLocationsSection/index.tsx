@@ -83,8 +83,8 @@ const cardVariants = {
  * Technical Industrial Grid Pattern
  */
 const GridPattern = () => (
-  <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
-    <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+  <div className="absolute inset-0 z-0 opacity-[0.04] dark:opacity-[0.05] pointer-events-none">
+    <svg className="h-full w-full text-slate-900 dark:text-white" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="dot-grid-loc" width="32" height="32" patternUnits="userSpaceOnUse">
           <path d="M0 32L32 0H16L0 16M32 32V16L16 32" stroke="currentColor" strokeWidth="1" fill="none" />
@@ -105,27 +105,27 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
   return (
     <motion.div 
       variants={cardVariants}
-      className="group relative h-[400px] w-full rounded-3xl overflow-hidden cursor-pointer bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 hover:border-amber-500/50 shadow-xl transition-all duration-500"
+      className="group relative h-[400px] w-full rounded-3xl overflow-hidden cursor-pointer bg-white dark:bg-[#0F141C] border border-slate-200 dark:border-slate-800 hover:border-amber-500/60 dark:hover:border-amber-500/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-amber-500/10 transition-all duration-500"
     >
       <Link href={`/automotive/listings?location=${loc.id || loc.name}`} className="block h-full w-full">
         
-        {/* Background Image & Overlay */}
+        {/* Background Image & Multi-Stage Gradient Overlay */}
         <div className="absolute inset-0 bg-slate-900">
           <Image
             src={imageUrl}
             alt={loc.name}
             loader={customLoader}
             fill
-            className="object-cover transition-transform duration-700 opacity-70 group-hover:opacity-85 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 opacity-75 group-hover:opacity-90 group-hover:scale-105"
             onError={() => setImgError(true)}
           />
-          {/* Multi-stage gradient for dark theme contrast */}
+          {/* Multi-stage gradient ensures text legibility on light and dark mode */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
         </div>
 
         {/* Top Listing Count Badge */}
         <div className="absolute top-4 right-4 z-20">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-slate-200 text-xs font-bold shadow-md transition-transform duration-300 group-hover:-translate-y-0.5">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-slate-100 text-xs font-bold shadow-md transition-transform duration-300 group-hover:-translate-y-0.5">
             <BuildingOffice2Icon className="w-3.5 h-3.5 text-amber-400" />
             <span>{loc.vehicles?.toLocaleString() || "N/A"} Units</span>
           </div>
@@ -142,7 +142,7 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
 
             {/* Region / City Info */}
             <div className="flex items-center text-slate-300 text-xs font-semibold mb-4">
-              <MapPinIcon className="w-4 h-4 text-amber-500 mr-1 shrink-0" />
+              <MapPinIcon className="w-4 h-4 text-amber-400 mr-1 shrink-0" />
               <span>{loc.city ? `${loc.city}, ` : ''}{loc.country || "Region"}</span>
             </div>
 
@@ -185,11 +185,11 @@ export default function TrendingLocations({ locations = [], slug = "" }: Trendin
   const displayLocations = locations.length > 0 ? locations : DUMMY_LOCATIONS;
 
   return (
-    <section className="relative py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white border-t border-slate-800 overflow-hidden">
+    <section className="relative py-20 md:py-28 bg-slate-50 dark:bg-[#080B10] text-slate-900 dark:text-white border-t border-slate-200 dark:border-slate-800/80 overflow-hidden transition-colors duration-300">
       <GridPattern />
       
       {/* Ambient Radial Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-amber-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-amber-500/5 dark:bg-amber-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -203,7 +203,7 @@ export default function TrendingLocations({ locations = [], slug = "" }: Trendin
         >
           <motion.div 
             variants={cardVariants}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <GlobeAmericasIcon className="w-4 h-4" />
             <span>Key Regional Hubs</span>
@@ -211,14 +211,14 @@ export default function TrendingLocations({ locations = [], slug = "" }: Trendin
 
           <motion.h2 
             variants={cardVariants}
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
+            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
           >
-            Explore By <span className="text-amber-500">Region</span>
+            Explore By <span className="text-amber-500 dark:text-amber-400">Region</span>
           </motion.h2>
 
           <motion.p 
             variants={cardVariants}
-            className="text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
           >
             Find heavy-duty commercial equipment and transport fleets in active yards across primary commercial hubs.
           </motion.p>

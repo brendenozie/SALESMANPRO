@@ -73,9 +73,9 @@ export default function HowItWorks() {
   const currentSteps = activeTab === "BUY" ? buyerSteps : sellerSteps;
 
   return (
-    <section className="py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white relative overflow-hidden border-t border-slate-800">
+    <section className="py-20 md:py-28 bg-slate-50 dark:bg-[#080B10] text-slate-900 dark:text-white relative overflow-hidden border-t border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
       {/* Background Subtle Tech Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e125_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e125_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -85,7 +85,7 @@ export default function HowItWorks() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <SparklesIcon className="h-4 w-4" />
             <span>Seamless Fleet Procurement</span>
@@ -96,9 +96,9 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
+            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
           >
-            How <span className="text-amber-500">SalesmanPro</span> Works
+            How <span className="text-amber-500 dark:text-amber-400">SalesmanPro</span> Works
           </motion.h2>
 
           <motion.p
@@ -106,29 +106,29 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-slate-400 text-base md:text-lg font-medium mb-8"
+            className="text-slate-600 dark:text-slate-400 text-base md:text-lg font-medium mb-8"
           >
             Optimized commercial transactions whether you are scaling up your enterprise fleet or liquidating heavy assets.
           </motion.p>
 
           {/* Interactive Role Switcher */}
-          <div className="flex items-center bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/60 shadow-inner">
+          <div className="flex items-center bg-slate-200/70 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-300/80 dark:border-slate-700/60 shadow-inner">
             <button
               onClick={() => setActiveTab("BUY")}
-              className={`px-8 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
+              className={`px-6 sm:px-8 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
                 activeTab === "BUY"
-                  ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Buying / Renting Fleet
             </button>
             <button
               onClick={() => setActiveTab("SELL")}
-              className={`px-8 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
+              className={`px-6 sm:px-8 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
                 activeTab === "SELL"
-                  ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Selling / Listing Inventory
@@ -156,29 +156,29 @@ export default function HowItWorks() {
                   whileInView="visible"
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ delay: index * 0.15 }}
-                  className="relative group p-8 rounded-3xl bg-slate-800/40 dark:bg-[#0F141C] border border-slate-800 hover:border-amber-500/40 transition-all duration-300 shadow-xl flex flex-col justify-between"
+                  className="relative group p-8 rounded-3xl bg-white dark:bg-[#0F141C] border border-slate-200 dark:border-slate-800 hover:border-amber-500/50 dark:hover:border-amber-500/40 transition-all duration-300 shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col justify-between"
                 >
                   <div>
                     {/* Top Step Badge & Icon */}
                     <div className="flex items-center justify-between mb-8">
-                      <div className="p-4 rounded-2xl bg-slate-800 border border-slate-700/60 text-amber-400 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
+                      <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
                         <Icon className="h-8 w-8" />
                       </div>
-                      <span className="text-3xl font-black text-slate-700 dark:text-slate-800 group-hover:text-amber-500/30 transition-colors">
+                      <span className="text-3xl font-black text-slate-300 dark:text-slate-800 group-hover:text-amber-500/40 dark:group-hover:text-amber-500/30 transition-colors">
                         {stepItem.step}
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-white uppercase tracking-tight mb-3">
+                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-tight mb-3">
                       {stepItem.title}
                     </h3>
-                    <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm font-medium leading-relaxed">
                       {stepItem.description}
                     </p>
                   </div>
 
                   {/* Accent Line */}
-                  <div className="mt-8 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span>Step {stepItem.step} Workflow</span>
                     <ArrowRightIcon className="h-4 w-4" />
                   </div>
@@ -194,10 +194,10 @@ export default function HowItWorks() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6 }}
-          className="relative overflow-hidden p-8 md:p-12 rounded-3xl bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700/60 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8"
+          className="relative overflow-hidden p-8 md:p-12 rounded-3xl bg-slate-900 dark:bg-gradient-to-r dark:from-[#0F141C] dark:to-[#161D28] border border-slate-800 dark:border-slate-800/80 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 text-white"
         >
           {/* Subtle Ambient Glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
           <div className="text-center md:text-left relative z-10 max-w-xl">
             <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mb-3">

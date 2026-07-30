@@ -51,8 +51,8 @@ const itemVariants: Variants = {
  * Industrial Engineering Blueprint Grid
  */
 const GridPattern = () => (
-  <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
-    <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+  <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.04] dark:opacity-[0.05]">
+    <svg className="w-full h-full text-slate-900 dark:text-white" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="industrial-grid" width="32" height="32" patternUnits="userSpaceOnUse">
           <path d="M0 32L32 0H16L0 16M32 32V16L16 32" stroke="currentColor" strokeWidth="1" fill="none" />
@@ -73,14 +73,14 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
   return (
     <motion.div variants={itemVariants} className="h-full">
       <Link href={`/automotive/listings?subcategory=${subcat.name}`} passHref legacyBehavior>
-        <a className="group relative flex flex-col items-center justify-between h-48 w-full p-5 rounded-3xl transition-all duration-300 ease-out bg-slate-800/40 dark:bg-[#0F141C] border border-slate-700/60 dark:border-slate-800 hover:border-amber-500/50 shadow-lg hover:shadow-amber-500/5 active:scale-[0.98] overflow-hidden">
+        <a className="group relative flex flex-col items-center justify-between h-48 w-full p-5 rounded-3xl transition-all duration-300 ease-out bg-white dark:bg-[#0F141C] border border-slate-200 dark:border-slate-800 hover:border-amber-500/50 dark:hover:border-amber-500/40 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-amber-500/10 active:scale-[0.98] overflow-hidden">
           
           {/* Subtle Dynamic Ambient Glow */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_100%,rgba(245,158,11,0.12),transparent_70%)]" />
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_100%,rgba(245,158,11,0.12),transparent_70%)] pointer-events-none" />
 
           {/* Icon Stage */}
           <div className="relative z-10 flex-1 flex items-center justify-center w-full">
-            <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-800/80 dark:bg-slate-900 border border-slate-700/60 group-hover:scale-110 group-hover:border-amber-500/40 group-hover:bg-slate-800 transition-all duration-300">
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 group-hover:scale-110 group-hover:border-amber-500/40 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
               {hasImageIcon ? (
                 <img src={icon} alt={subcat.name} className="w-8 h-8 object-contain drop-shadow-sm" />
               ) : (
@@ -91,17 +91,17 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
 
           {/* Card Typography & Interaction */}
           <div className="relative z-10 w-full text-center">
-            <span className="block text-sm font-extrabold uppercase tracking-tight text-white group-hover:text-amber-400 transition-colors duration-300 line-clamp-1">
+            <span className="block text-sm font-extrabold uppercase tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300 line-clamp-1">
               {subcat.name}
             </span>
 
             {/* Slide Interaction */}
             <div className="h-4 overflow-hidden mt-1 relative">
               <div className="flex flex-col items-center w-full transition-transform duration-300 ease-out group-hover:-translate-y-4">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 h-4 flex items-center justify-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 h-4 flex items-center justify-center">
                   View Category
                 </span>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center justify-center gap-1 h-4">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1 h-4">
                   Explore <ArrowRightIcon className="w-3 h-3" />
                 </span>
               </div>
@@ -110,7 +110,7 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
 
           {/* Active Status Pulse */}
           <div className="absolute top-3.5 right-3.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-pulse" />
           </div>
         </a>
       </Link>
@@ -143,12 +143,12 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
   return (
     <section
       id="automotive-categories"
-      className="relative py-20 md:py-28 bg-slate-900 dark:bg-[#080B10] text-white border-t border-slate-800 overflow-hidden"
+      className="relative py-20 md:py-28 bg-slate-50 dark:bg-[#080B10] text-slate-900 dark:text-white border-t border-slate-200 dark:border-slate-800/80 overflow-hidden transition-colors duration-300"
     >
       <GridPattern />
 
       {/* Ambient Radial Background Glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 blur-[140px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 dark:bg-amber-500/5 blur-[140px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -158,24 +158,24 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
             initial={{ opacity: 0, y: -10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <SparklesIcon className="w-4 h-4" />
             <span>Industrial Equipment Classifications</span>
           </motion.div>
 
           <motion.h2
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
+            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Browse By <span className="text-amber-500">Category</span>
+            Browse By <span className="text-amber-500 dark:text-amber-400">Category</span>
           </motion.h2>
 
           <motion.p
-            className="text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
