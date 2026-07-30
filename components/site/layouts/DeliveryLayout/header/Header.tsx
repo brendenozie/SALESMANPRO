@@ -49,7 +49,7 @@ export default function Navbar() {
   const primaryColor = themeSettings?.primaryColor || '#f7941d';
 
   /* =========================
-      AUTH & SCROLL LOGIC
+     AUTH & SCROLL LOGIC
   ========================== */
   const handleGoogleSignIn = useCallback(() => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
@@ -110,10 +110,10 @@ export default function Navbar() {
       <nav className="bg-white border-b border-gray-100 h-20 lg:h-24 w-full">
         <div className="flex items-stretch justify-between h-full w-full">
           
-          {/* SLANTED BRANDING BOX */}
+          {/* SLANTED BRANDING BOX - Fixed for responsive shrinking */}
           <Link
             href="/"
-            className="relative flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-4 pr-12 sm:pl-6 sm:pr-16 lg:pl-10 lg:pr-24 text-white shrink-0 group overflow-hidden transition-all duration-500 ease-in-out select-none min-w-0"
+            className="relative flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-4 pr-10 sm:pl-6 sm:pr-16 lg:pl-10 lg:pr-24 text-white shrink min-w-0 max-w-[75%] md:max-w-[50%] lg:max-w-none group overflow-hidden transition-all duration-500 ease-in-out select-none"
             style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}
           >
             {/* Premium Hover Glow Effect */}
@@ -122,17 +122,17 @@ export default function Navbar() {
             {/* Animated Bottom Accent Line */}
             <div className="absolute bottom-0 left-0 h-[4px] w-0 bg-white group-hover:w-[75%] transition-all duration-500 ease-in-out" />
 
-            <div className="flex items-center gap-2 sm:gap-4 lg:gap-5 relative z-10 transform group-hover:scale-[1.01] transition-transform duration-300 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-4 lg:gap-5 relative z-10 transform group-hover:scale-[1.01] transition-transform duration-300 min-w-0 shrink">
               
               {/* Logo Icon Container */}
               {logoUrl && (
-                <div className="relative w-12 h-8 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 shrink-0 filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
+                <div className="relative w-10 h-8 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 shrink-0 filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
                   <Image 
                     src={logoUrl} 
                     alt={name || 'Logo'} 
                     fill 
                     priority
-                    sizes="(max-width: 640px) 48px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px"
+                    sizes="(max-width: 640px) 40px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px"
                     loader={imageLoader} 
                     className="object-contain" 
                   />
@@ -141,10 +141,10 @@ export default function Navbar() {
 
               {/* Typography Stack */}
               <div className="flex flex-col justify-center border-l border-white/20 pl-2 sm:pl-4 py-1 min-w-0">
-                <span className="text-sm sm:text-lg lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate">
+                <span className="text-sm sm:text-lg lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate block">
                   {name || 'Transportation'}
                 </span>
-                <span className="text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[15ch] sm:max-w-[28ch] truncate">
+                <span className="text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[12ch] sm:max-w-[28ch] truncate">
                   {tagline || 'Logistics & Delivery'}
                 </span>
               </div>
@@ -166,7 +166,7 @@ export default function Navbar() {
           </div>
 
           {/* ACTION ICONS */}
-          <div className="flex items-center gap-2 sm:gap-5 px-4 sm:px-6 shrink-0">
+          <div className="flex items-center justify-end gap-2 sm:gap-5 px-4 sm:px-6 shrink-0">
             <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 cursor-pointer hover:text-orange-500 hidden sm:block" />
             
             <div className="h-6 w-[1px] bg-gray-200 hidden sm:block" />
@@ -192,12 +192,12 @@ export default function Navbar() {
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm lg:hidden" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm lg:hidden z-[50]" />
             <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 200 }} className="fixed right-0 top-0 h-full w-[85%] max-w-xs bg-white z-[60] shadow-2xl flex flex-col">
               
               <div className="p-6 flex justify-between items-center bg-slate-50 border-b">
                 <div className="flex flex-col">
-                  <span className="text-xl font-black italic text-orange-500 uppercase leading-none">{name}</span>
+                  <span className="text-xl font-black italic text-orange-500 uppercase leading-none truncate max-w-[180px]">{name}</span>
                   <span className="text-[9px] font-bold text-slate-400 tracking-widest">MENU</span>
                 </div>
                 <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:rotate-90 transition-transform">
