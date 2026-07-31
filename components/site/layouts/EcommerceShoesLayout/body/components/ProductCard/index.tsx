@@ -155,7 +155,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
               loader={loader}
               fill
               sizes="(max-width: 640px) 50vw, 33vw"
-              className="object-contain p-4 transition-transform duration-500 md:group-hover:scale-105"
+              className="object-cover p-4 transition-transform duration-500 md:group-hover:scale-105"
               priority={product.isNewArrival}
             />
           </Link>

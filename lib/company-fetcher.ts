@@ -133,6 +133,7 @@ export function leanShellInclude() {
       },
     },
     addresses: true, // Include the new addresses array for multi-location support
+    ShippingSettings: true,
   };
 }
 
