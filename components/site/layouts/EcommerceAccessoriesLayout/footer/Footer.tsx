@@ -81,7 +81,7 @@ export default function CommandFooter() {
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
             className="text-[12vw] font-black text-white/5 uppercase italic leading-none whitespace-nowrap tracking-tighter inline-block"
           >
-            {name} • SalesmanPro OS • Regional Supply Network • {name} • Tactical Logistics •
+            {name} • {name} • Tactical Logistics •
           </motion.h1>
         </div>
 
