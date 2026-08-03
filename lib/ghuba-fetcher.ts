@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import prisma from "@/server/db/prismadb";
+import { ListingStatus } from "@prisma/client";
 
 const listingSelect = {
   id: true,
@@ -17,10 +18,10 @@ const listingSelect = {
 };
 
 const listingWhere = {
-  // status: "ACTIVE",
-  // isAvailable: true,
-  // ghubaAdminApproved: true,
-  // ghubaStatus: "APPROVED",
+  status: "ACTIVE" as ListingStatus,
+  isAvailable: true,
+  ghubaAdminApproved: true,
+  ghubaStatus: "APPROVED",
 };
 
 export const getGhubaHomepageCached = unstable_cache(

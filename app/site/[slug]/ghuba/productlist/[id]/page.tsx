@@ -1,7 +1,7 @@
 // ./app/site/[slug]/ghuba/productlist/[id]/page.jsx
 export const revalidate = 300; // 5 minutes
 
-import { PrismaClient } from "@prisma/client";
+import { ListingStatus, PrismaClient } from "@prisma/client";
 import ProductPageClient from "./ProductPageClient"; // We will create this next
 import prisma from '@/server/db/prismadb'; // This import is for server-side
 
@@ -33,6 +33,13 @@ interface PageProps {
   params: Promise<{ slug: string; id: string }>;
 }
 
+const listingWhere = {
+  status: "ACTIVE" as ListingStatus,
+  isAvailable: true,
+  ghubaAdminApproved: true,
+  ghubaStatus: "APPROVED",
+};
+
 export default async function Page({ params }: PageProps) {
   const { slug, id } = await params;
 
@@ -48,6 +55,7 @@ export default async function Page({ params }: PageProps) {
   // Fetch similar listings
   let similar = await prisma.marketplaceListings.findMany({
     where: {
+      ...listingWhere,
       productCategoryId: listing.productCategoryId,
       id: { not: id },
     },
@@ -57,7 +65,7 @@ export default async function Page({ params }: PageProps) {
 
   if (similar.length === 0) {
     similar = await prisma.marketplaceListings.findMany({
-      where: { id: { not: id } },
+      where: { ...listingWhere, id: { not: id } },
       include: { product: true },
       take: 4,
     });

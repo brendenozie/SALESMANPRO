@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import type { Prisma } from "@prisma/client";
+import type { ListingStatus, Prisma } from "@prisma/client";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
 const CORS_HEADERS = {
@@ -10,6 +10,13 @@ const CORS_HEADERS = {
 };
 
 const JSON_HEADER = { "Content-Type": "application/json", ...CORS_HEADERS };
+
+const listingWhere = {
+  status: "ACTIVE" as ListingStatus,
+  isAvailable: true,
+  ghubaAdminApproved: true,
+  ghubaStatus: "APPROVED",
+};
 
 export async function GET(req: Request) {
   try {
@@ -24,6 +31,9 @@ export async function GET(req: Request) {
     const maxPrice = parseFloat(searchParams.get("maxPrice") || "");
     const isAvailable = searchParams.get("availability") === "true";
     const sortParam = searchParams.get("sort") || "createdAt:desc";
+    const statusParam = searchParams.get("status") || "ACTIVE";
+    const ghubaAdminApprovedParam = searchParams.get("ghubaAdminApproved") === "true";
+    const ghubaStatusParam = searchParams.get("ghubaStatus") || "APPROVED";
 
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(
@@ -41,6 +51,9 @@ export async function GET(req: Request) {
       minPrice,
       maxPrice,
       isAvailable,
+      // statusParam,
+      // ghubaAdminApprovedParam,
+      // ghubaStatusParam,
       sortParam,
       page,
       limit,
@@ -73,6 +86,9 @@ export async function GET(req: Request) {
       }),
       ...(brands.length > 0 && { brand: { in: brands } }),
       ...(categories.length > 0 && { category: { in: categories } }),
+      ...(statusParam && { status: statusParam as ListingStatus }),
+      ...(ghubaAdminApprovedParam && { ghubaAdminApproved: true }),
+      ...(ghubaStatusParam && { ghubaStatus: ghubaStatusParam }),
     };
 
     // 3. Sorting Logic
