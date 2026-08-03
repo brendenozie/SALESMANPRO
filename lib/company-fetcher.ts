@@ -30,6 +30,36 @@ function getIncludeForCategory(category: string) {
   }
 }
 
+const latestSubscriptionInclude = {
+  subscriptionCompanies: {
+    where: {
+      status: {
+        in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+      },
+    },
+    orderBy: {
+      createdAt: "desc" as const,
+    },
+    take: 1,
+    select: {
+      id: true,
+      status: true,
+      renewalDate: true,
+      createdAt: true,
+      subscription: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          billingCycle: true,
+          price: true,
+          currency: true,
+        },
+      },
+    },
+  },
+};
+
 const INCLUDE_MAP = {
   lean: leanShellInclude(),
   page: pageDataInclude(),
@@ -65,7 +95,49 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
     });
   }
 
-  return company;
+  // const latestSubscription = company?.subscriptionCompanies?.[0];
+
+  // const subscriptionInfo = latestSubscription
+  //   ? {
+  //       status:
+  //         latestSubscription.renewalDate &&
+  //         latestSubscription.renewalDate > new Date()
+  //           ? "ACTIVE"
+  //           : "INACTIVE",
+
+  //       renewalDate: latestSubscription.renewalDate,
+  //       subscriptionStatus: latestSubscription.status,
+
+  //       plan: latestSubscription.subscription,
+  //     }
+  //   : {
+  //       status: "INACTIVE",
+  //       renewalDate: null,
+  //       subscriptionStatus: null,
+  //       plan: null,
+  //     };
+
+  const latestSubscription = company?.subscriptionCompanies?.[0] || null;
+
+  return {
+    ...company,
+    subscription: latestSubscription
+      ? {
+          isActive:
+            !!latestSubscription.renewalDate &&
+            latestSubscription.renewalDate > new Date(),
+
+          status: latestSubscription.status,
+          renewalDate: latestSubscription.renewalDate,
+          plan: latestSubscription.subscription,
+        }
+      : {
+          isActive: false,
+          status: "INACTIVE",
+          renewalDate: null,
+          plan: null,
+        },
+  };
 }
 
 /**
@@ -132,6 +204,9 @@ export function leanShellInclude() {
         location: true,
       },
     },
+
+    ...latestSubscriptionInclude,
+
     addresses: true, // Include the new addresses array for multi-location support
     ShippingSettings: true,
   };
@@ -150,6 +225,7 @@ export function pageDataInclude() {
   const orderedAsc = { orderBy: { order: "asc" as const } };
 
   return {
+    ...latestSubscriptionInclude,
     blogs: { orderBy: { publishedAt: "desc" as const } },
     faqs: orderedAsc,
     testimonials: orderedAsc,

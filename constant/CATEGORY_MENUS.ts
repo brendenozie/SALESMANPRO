@@ -63,9 +63,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { sub } from "date-fns";
 
+// Define hierarchy (Starter is 1, Pro is 4)
+const TIER_WEIGHTS: Record<string, number> = {
+  "Ghuba Starter": 1,
+  "Ghuba Basic": 2,
+  "Ghuba Growth": 3,
+  "Ghuba Pro": 4,
+};
+
 // Helper to inject dynamic adminSlug
 //accessLevel is the users different user roles that allows for users to access some paths or not
-const commonEcommerce = (adminSlug: string) => {
+const commonEcommerce = (
+  adminSlug: string,
+  accessLevel: string,
+  currentTier: string,
+) => {
   return [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
@@ -193,50 +205,183 @@ const commonEcommerce = (adminSlug: string) => {
   ];
 };
 
-export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
-  "E-commerce": commonEcommerce(adminSlug),
+export const getCategoryMenus = (
+  adminSlug: string,
+  accessLevel: string,
+  currentTier: string = "Ghuba Starter",
+) => ({
+  "E-commerce": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Agrovet Store": commonEcommerce(adminSlug),
+  "Agrovet Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Baby Store": commonEcommerce(adminSlug),
+  "Baby Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Bike Store": commonEcommerce(adminSlug),
+  "Bike Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Book Store": commonEcommerce(adminSlug),
+  "Book Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Cake Store": commonEcommerce(adminSlug),
+  "Cake Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Directory & Listings": commonEcommerce(adminSlug),
+  "Directory & Listings": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Earphones Store": commonEcommerce(adminSlug),
+  "Earphones Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Fashion Shop": commonEcommerce(adminSlug),
+  "Fashion Shop": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Flowers Store": commonEcommerce(adminSlug),
+  "Flowers Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Furniture Shop": commonEcommerce(adminSlug),
+  "Furniture Shop": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Gaming Store": commonEcommerce(adminSlug),
+  "Gaming Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Glasses Store": commonEcommerce(adminSlug),
+  "Glasses Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Groceries Store": commonEcommerce(adminSlug),
+  "Groceries Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Hardware Shop": commonEcommerce(adminSlug),
+  "Hardware Shop": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Honey Store": commonEcommerce(adminSlug),
+  "Honey Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Meat Store": commonEcommerce(adminSlug),
+  "Meat Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Motorcycle Store": commonEcommerce(adminSlug),
+  "Motorcycle Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Peanuts Store": commonEcommerce(adminSlug),
+  "Peanuts Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Pets Store": commonEcommerce(adminSlug),
+  "Pets Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Shoes Store": commonEcommerce(adminSlug),
+  "Shoes Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
-  "Watch Store": commonEcommerce(adminSlug),
+  "Watch Store": commonEcommerce(adminSlug, accessLevel, currentTier),
+
+  "Ghuba": [
+    ...commonEcommerce(adminSlug, accessLevel, currentTier),
+    
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/cated`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Site Categories",
+      href: `/admin/${adminSlug}/site-categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Locations",
+      href: `/admin/${adminSlug}/locat`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Users",
+      href: `/admin/${adminSlug}/saas-users`,
+      icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/salesleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
+        // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
+        // { label: "Lead Sources", href: `/admin/${adminSlug}/salesleadsources` },
+        // {
+        //   label: "Lead Statuses",
+        //   href: `/admin/${adminSlug}/salesleadstatuses`,
+        // },
+      ],
+    },
+    {
+      label: "Sample Listings Generator",
+      href: `/admin/${adminSlug}/samplelistingsgenerator`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Bulk Csv Upload For listings",
+      href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Sample Image Upload For listings",
+      href: `/admin/${adminSlug}/sync-images`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Backup And Restore",
+      href: `/admin/${adminSlug}/db-management`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Plans & Subscriptions",
+      href: `/admin/${adminSlug}/saas-plans`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "All Companies",
+      href: `/admin/${adminSlug}/companies-full-site`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Marketplace Listings",
+      href: `/admin/${adminSlug}/marketplace-gh`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Subscription Payments",
+      href: `/admin/${adminSlug}/subscriptionpayments`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Billing & Payments",
+      href: `/admin/${adminSlug}/saas-billing`,
+      icon: CreditCardIcon,
+    },
+    {
+      label: "General Settings",
+      href: `/admin/${adminSlug}/saas-settings`,
+      icon: Cog6ToothIcon,
+    },
+    {
+      label: "Analytics",
+      href: `/admin/${adminSlug}/saas-analytics`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/saas-reports`,
+      icon: DocumentChartBarIcon,
+    },
+    {
+      label: "Support Tickets",
+      href: `/admin/${adminSlug}/saas-support`,
+      icon: LifebuoyIcon,
+    },
+    {
+      label: "Announcements",
+      href: `/admin/${adminSlug}/saas-announcements`,
+      icon: MegaphoneIcon,
+    },
+    {
+      label: "Content (CMS)",
+      href: `/admin/${adminSlug}/saas-content`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "API Keys",
+      href: `/admin/${adminSlug}/saas-api-keys`,
+      icon: KeyIcon,
+    },
+    {
+      label: "Audit Log",
+      href: `/admin/${adminSlug}/saas-audit-log`,
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      label: "System Status",
+      href: `/admin/${adminSlug}/saas-status`,
+      icon: ServerStackIcon,
+    },
+  ],
 
   "Service Provider": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
@@ -2104,7 +2249,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     }, // General admin settings
   ],
 
-  "Automotive Store": commonEcommerce(adminSlug),
+  "Automotive Store": commonEcommerce(adminSlug, accessLevel, currentTier),
 
   Automotive: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
@@ -2759,7 +2904,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
   ],
 
-  Marketplace: commonEcommerce(adminSlug),
+  Marketplace: commonEcommerce(adminSlug, accessLevel, currentTier),
 
   "Consultant & Coach": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },

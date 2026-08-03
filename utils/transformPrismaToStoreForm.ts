@@ -504,5 +504,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
           items: Array.isArray(g.items) ? g.items : [],
         }))
       : [],
+
+    subscription: raw.subscription ?? null,
   };
 }

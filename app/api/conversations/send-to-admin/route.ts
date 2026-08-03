@@ -10,7 +10,11 @@ const CORS_HEADERS = {
     "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
 };
 
-function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+function withCors(
+  json: any,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+) {
   return new NextResponse(JSON.stringify(json), {
     status,
     headers: {
@@ -32,7 +36,7 @@ export async function POST(request: Request) {
   try {
     const session = await getAuthSession();
     const body = await request.json();
-    
+
     // We now accept name and email from the body for unauthenticated guest contacts
     const { companyId, content, email, name } = body;
 
@@ -48,7 +52,10 @@ export async function POST(request: Request) {
     } else {
       // If no session exists, we require an email to link the conversation
       if (!email || !email.trim()) {
-        return withCors({ message: "Authentication or email is required to send a message." }, 400);
+        return withCors(
+          { message: "Authentication or email is required to send a message." },
+          400,
+        );
       }
 
       const formattedEmail = email.trim().toLowerCase();
@@ -61,29 +68,45 @@ export async function POST(request: Request) {
           email: formattedEmail,
           name: name?.trim() || "Anonymous Lead",
           role: "USER", // Assign standard user or "LEAD" role if your schema supports it
-          // If your DB schema requires a password field, you can generate a random temporary hash here
         },
       });
 
       targetUserId = guestUser.id;
     }
 
-    // 2️⃣ Find the Admin for the company
+    // 2️⃣ Check for the Consumer profile; if it doesn't exist, create it
+    await prisma.consumer.upsert({
+      where: { userId: targetUserId },
+      update: {}, // Keep existing consumer data if they are already a consumer
+      create: {
+        userId: targetUserId,
+        companyId: companyId,
+        // Defaults from your schema (type: lead, stage: new, status: active, etc.) will automatically apply
+      },
+    });
+
+    // 3️⃣ Find the Admin for the company
     const admin = await prisma.user.findFirst({
       where: { role: "ADMIN" },
       select: { id: true },
     });
 
     if (!admin) {
-      return withCors({ message: "No administrator found to receive this message" }, 404);
+      return withCors(
+        { message: "No administrator found to receive this message" },
+        404,
+      );
     }
 
     // Prevent administrators from starting a conversation with themselves
     if (targetUserId === admin.id) {
-      return withCors({ message: "Administrators cannot send contact forms to themselves." }, 400);
+      return withCors(
+        { message: "Administrators cannot send contact forms to themselves." },
+        400,
+      );
     }
 
-    // 3️⃣ Find or Create the Conversation between the contact and the admin
+    // 4️⃣ Find or Create the Conversation between the contact and the admin
     const existingConversation = await prisma.conversation.findFirst({
       where: {
         companyId,
@@ -106,17 +129,14 @@ export async function POST(request: Request) {
           companyId,
           title: null,
           participants: {
-            create: [
-              { userId: targetUserId },
-              { userId: admin.id },
-            ],
+            create: [{ userId: targetUserId }, { userId: admin.id }],
           },
         },
       });
       conversationId = newConversation.id;
     }
 
-    // 4️⃣ Create and append the message
+    // 5️⃣ Create and append the message
     const message = await prisma.message.create({
       data: {
         content: content.trim(),
@@ -125,7 +145,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 5️⃣ Update the timestamp on the conversation for inbox sorting
+    // 6️⃣ Update the timestamp on the conversation for inbox sorting
     await prisma.conversation.update({
       where: { id: conversationId },
       data: { lastMessageAt: new Date() },
@@ -133,13 +153,16 @@ export async function POST(request: Request) {
 
     return withCors(
       { message: "Message sent successfully", conversationId },
-      201
+      201,
     );
   } catch (error) {
     console.error("Error sending message to admin:", error);
     return withCors(
-      { message: "An internal server error occurred while sending your message." },
-      500
+      {
+        message:
+          "An internal server error occurred while sending your message.",
+      },
+      500,
     );
   }
 }
@@ -179,7 +202,6 @@ export async function POST(request: Request) {
 //     headers: CORS_HEADERS,
 //   });
 // }
-
 
 // export async function POST(request: Request) {
 //   try {

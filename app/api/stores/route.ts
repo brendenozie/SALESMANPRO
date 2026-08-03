@@ -4,7 +4,6 @@ import { Prisma } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { VerifiedUser } from "@/lib/verifyAuth";
-import { sl } from "date-fns/locale";
 import { revalidateCompanyCache, revalidateStore } from "@/lib/company-fetcher"; // 👈 Imported revalidateStore
 import { encrypt } from "@/lib/crypto/aes";
 import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";

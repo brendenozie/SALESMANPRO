@@ -354,12 +354,6 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
     // Company fetch (simulate loading)
     isLoading = true;
-    // const [company] = await Promise.all([
-    //   prisma.company.findUnique({
-    //     where: { id: companyId },
-    //     select: { category: true },
-    //   })
-    // ]);
     
     // 4. Cached company fetch using the page strategy
     const company = await findCompanyCached(companyId, "page");
@@ -373,8 +367,6 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     }
 
     const categoryKey = normalizeCategory(company?.category || userRole);
-
-    // console.log("[AdminDashboardPage] Rendering dashboard for companyId:", companyId, "categoryKey:", categoryKey, "userRole:", userRole);
 
     const isPrincipalLike =
       ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey) ||

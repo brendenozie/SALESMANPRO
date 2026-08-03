@@ -356,7 +356,8 @@ export default function StoresPage() {
               />
             ) : (
               paginatedStores.map(store => {
-                const isActive = store.subscriptionStatus === 'ACTIVE' || store.subscriptionStatus === 'AWAITING_CONFIRMATION';
+                // For demonstration, we are treating all stores as active. Adjust logic as needed.
+                const isActive = true;// store.subscriptionStatus === 'ACTIVE' || store.subscriptionStatus === 'AWAITING_CONFIRMATION';
                 
                 return (
                   <motion.div

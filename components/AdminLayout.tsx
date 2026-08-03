@@ -123,7 +123,29 @@ export default function AdminLayout({
   }, [pathname]);
 
   // 3. Category & Menus Memoization
+  // const companyId: string = storeFormData?.id || "6964daeff4ad17d959b72413";
+
+  // const categoryType = useMemo(() => {
+  //   const category = storeFormData?.category;
+  //   if (!category) return "Other";
+  //   if (category.toLowerCase() === "automotive") {
+  //     return capitalize(storeFormData?.variant || "Other");
+  //   }
+  //   return capitalize(category);
+  // }, [storeFormData?.category, storeFormData?.variant]);
+
+  // const menus = useMemo(
+  //   () => getCategoryMenus(companyId, userRole),
+  //   [companyId, userRole]
+  // );
+
+  // Inside AdminLayout.tsx
+
+  // 3. Category & Menus Memoization
   const companyId: string = storeFormData?.id || "6964daeff4ad17d959b72413";
+  
+  // Extract the specific store's active subscription tier (Ensure this maps to your DB schema)
+  const currentTier = storeFormData?.subscription?.status || "INACTIVE";
 
   const categoryType = useMemo(() => {
     const category = storeFormData?.category;
@@ -134,9 +156,10 @@ export default function AdminLayout({
     return capitalize(category);
   }, [storeFormData?.category, storeFormData?.variant]);
 
+  // Pass the tier downward
   const menus = useMemo(
-    () => getCategoryMenus(companyId, userRole),
-    [companyId, userRole]
+    () => getCategoryMenus(companyId, userRole, currentTier),
+    [companyId, userRole, currentTier]
   );
 
   const menuItems = useMemo(

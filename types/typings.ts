@@ -956,6 +956,32 @@ export interface StoreForm {
   founderName?: string | null | undefined;
   founderQuote?: string | null | undefined;
   founderImage?: string | null | undefined; // Optional field for founder photo
+
+  // subscriptionTier?: string | null | undefined; // e.g., "Basic", "Pro", "Enterprise"
+
+  subscription: Subscription | null; // Optional subscription details
+}
+
+export interface Subscription {
+  id?: string | null;
+  companyId?: string | null;
+  tier?: string | null; // e.g., "Basic", "Pro", "Enterprise"
+  status?: "ACTIVE" | "CANCELLED" | "EXPIRED" | null;
+  startDate?: Date | null;
+  endDate?: Date | null ; // null if ongoing
+  autoRenew?: boolean | null;
+  paymentMethod?: string | null; // e.g., "Credit Card", "PayPal"
+  billingCycle?: "MONTHLY" | "ANNUAL" | null;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+  renewalDate?: Date | null; // Next renewal date if applicable
+  subscriptionStatus?: "ACTIVE" | "CANCELLED" | "EXPIRED" | "PAST_DUE" | "TRIAL" | "CANCELED" | "UNPAID" | "PAUSED" | "PENDING" | "COMPLETED" | "FAILED" | "INACTIVE" | "SUSPENDED" | "TERMINATED" | "REFUNDED" | "CHARGEBACK" | "ON_HOLD" | "RENEWAL_PENDING" | "RENEWAL_FAILED" | "RENEWAL_COMPLETED" | "RENEWAL_CANCELLED" | "RENEWAL_EXPIRED" | null;
+  plan?: {
+    id?: string | null;
+    name?: string | null; // e.g., "Basic", "Pro", "Enterprise"
+    price?: number | null; // Price in cents or smallest currency unit
+    features: string[] | null; // List of features included in the plan
+  } | null;
 }
 
 export interface IGalleryItem {

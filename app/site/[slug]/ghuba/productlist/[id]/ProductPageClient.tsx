@@ -137,46 +137,53 @@ export interface ProductPageProps {
 }
 
 // --- UTILITY & RESOLUTION FUNCTIONS ---
+// Updated to accurately map categories to product types based on system architecture[cite: 3]
 const resolveProductType = (listing: ListingItem): ProductType => {
   const cat = (listing.productCategory?.name || listing.category || "").toLowerCase();
 
-  if (
-    cat.includes("real estate") ||
-    cat.includes("property") ||
-    cat.includes("houses") ||
-    cat.includes("land") ||
-    cat.includes("commercial") ||
-    cat.includes("apartments") ||
-    Boolean(listing.bedrooms) ||
-    Boolean(listing.area)
-  ) {
+  const propertyKeywords = [
+    "real estate", "property", "houses", "land", "commercial", "apartments", 
+    "vacation rentals", "warehouses", "gated communities", "offices", 
+    "serviced apartments", "hostels", "shared housing", "shops", "farms", 
+    "hotels", "event spaces"
+  ];
+  
+  const autoKeywords = [
+    "automotive", "cars", "motorcycles", "electric vehicles", "luxury cars", 
+    "off-road vehicles", "classic & vintage cars", "used cars", "salvage vehicles", 
+    "new cars", "pickup trucks", "commercial vehicles", "sports cars", "vans", 
+    "delivery trucks", "buses"
+  ];
+  
+  const serviceKeywords = [
+    "services", "company services", "cleaning", "drycleaning", "plumbing", 
+    "electrical", "landscaping", "catering", "transportation", "it services", 
+    "beauty services", "barbershop", "tutoring", "event planning", "tutors", 
+    "travel & experiences", "tour packages", "consulting", "coaching", "consultant", 
+    "coach", "therapist", "security services", "fitness & wellness", "delivery & logistics", 
+    "logistics & delivery", "booking"
+  ];
+
+  // 1. Check for Property[cite: 3]
+  if (propertyKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.bedrooms) || Boolean(listing.area)) {
     return "PROPERTY";
   }
 
+  // 2. Check for Auto (Ensuring auto accessories fall back to ecommerce)[cite: 3]
   if (
-    (cat.includes("automotive") && !cat.includes("accessories")) ||
-    cat === "cars" ||
-    cat === "used cars" ||
-    cat === "new cars" ||
-    cat === "motorcycles" ||
-    cat.includes("electric vehicles") ||
+    autoKeywords.some(k => cat === k) || 
+    (cat.includes("automotive") && !cat.includes("accessories")) || 
     Boolean(listing.mileage)
   ) {
     return "AUTO";
   }
 
-  if (
-    cat.includes("service") ||
-    cat.includes("consulting") ||
-    cat.includes("repair") ||
-    cat.includes("booking") ||
-    cat.includes("coaching") ||
-    cat.includes("cleaning") ||
-    Boolean(listing.duration)
-  ) {
+  // 3. Check for Service[cite: 3]
+  if (serviceKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.duration)) {
     return "SERVICE";
   }
 
+  // 4. Default to Ecommerce (Electronics, Clothing, Groceries, Accessories, etc.)[cite: 3]
   return "ECOMMERCE";
 };
 
@@ -299,8 +306,9 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
   // Dynamic Options & Cart State
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
+  const [justAddedToCart, setJustAddedToCart] = useState(false);
 
-  // Auto-fill user information when session changes
+  // Auto-fill user information when session changes[cite: 1]
   useEffect(() => {
     if (session?.user) {
       setFormData((prev) => ({
@@ -317,7 +325,7 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
     setLikedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
-  // --- E-COMMERCE VARIANTS LOGIC ---
+  // --- E-COMMERCE VARIANTS LOGIC ---[cite: 1]
   const normalizedOptions = useMemo<OptionItem[]>(() => {
     if (!product.capabilities.canAddToCart || !listing.option) return [];
     try {
@@ -384,6 +392,10 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
       cartItemId: currentCartItemId,
       selectedOptions: { ...selectedOptions },
     });
+    
+    // Interactive feedback
+    setJustAddedToCart(true);
+    setTimeout(() => setJustAddedToCart(false), 1500);
   };
 
   const handleDecreaseQuantity = () => {
@@ -467,7 +479,7 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
     }
   };
 
-  // Image Array Resolution
+  // Image Array Resolution[cite: 1]
   const rawImages = listing.images && listing.images.length > 0 ? listing.images : [];
   const images = useMemo(() => {
     if (!rawImages.length) return ["https://placehold.co/1200x800?text=No+Image+Available"];
@@ -614,9 +626,21 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAddToCart}
-                className="w-full py-5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase text-sm tracking-widest shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 transition-all"
+                className={`w-full py-5 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl flex items-center justify-center gap-3 transition-all ${
+                  justAddedToCart 
+                    ? "bg-green-600 shadow-green-600/20 text-white scale-[0.98]" 
+                    : "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20"
+                }`}
               >
-                <ShoppingBagIcon className="w-5 h-5" /> Add to Cart
+                {justAddedToCart ? (
+                  <>
+                    <CheckCircleIcon className="w-5 h-5" /> Added to Cart!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBagIcon className="w-5 h-5" /> Add to Cart
+                  </>
+                )}
               </motion.button>
             )}
           </div>

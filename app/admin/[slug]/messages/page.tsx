@@ -23,78 +23,78 @@ const generateSampleMessageData = (companyId: string, currentUserId: string): {
   sampleAllUsers: UserData[];
 } => {
   const sampleUsers: UserData[] = [
-    { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
-    { id: 'USR002', name: 'Jane Wanjiru', email: 'jane.w@school.com' },
-    { id: 'USR003', name: 'Mr. Alex Smith', email: 'alex.s@school.com' },
-    { id: 'USR004', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
-    { id: 'USR005', name: 'Principal\'s Office', email: 'principal@school.com' },
+    // { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+    // { id: 'USR002', name: 'Jane Wanjiru', email: 'jane.w@school.com' },
+    // { id: 'USR003', name: 'Mr. Alex Smith', email: 'alex.s@school.com' },
+    // { id: 'USR004', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
+    // { id: 'USR005', name: 'Principal\'s Office', email: 'principal@school.com' },
   ];
 
   const sampleConversations: ConversationData[] = [
-    {
-      id: 'CONV001',
-      title: null, // Direct chat
-      companyId: companyId,
-      createdAt: new Date('2025-06-25T14:00:00Z').toISOString(),
-      updatedAt: new Date('2025-06-25T14:30:00Z').toISOString(),
-      lastMessageAt: new Date('2025-06-25T14:30:00Z').toISOString(),
-      isArchived: false,
-      isDeleted: false,
-      unreadCount: 0,
-      participants: [
-        { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
-        { id: 'USR002', name: 'Jane Wanjiru', email: 'jane.w@school.com' },
-      ],
-      lastMessage: {
-        id: 'MSG001',
-        content: 'Hi, I had a question about problem 5 on Assignment 3.',
-        createdAt: new Date('2025-06-25T14:30:00Z').toISOString(),
-        senderName: 'Jane Wanjiru',
-      },
-    },
-    {
-      id: 'CONV002',
-      title: null, // Direct chat
-      companyId: companyId,
-      createdAt: new Date('2025-06-24T09:00:00Z').toISOString(),
-      updatedAt: new Date('2025-06-24T10:30:00Z').toISOString(),
-      lastMessageAt: new Date('2025-06-24T10:30:00Z').toISOString(),
-      isArchived: false,
-      isDeleted: false,
-      unreadCount: 0,
-      participants: [
-        { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
-        { id: 'USR003', name: 'Mr. Alex Smith', email: 'alex.s@school.com' },
-      ],
-      lastMessage: {
-        id: 'MSG002',
-        content: 'Good morning Mr. Smith, I am available on Tuesday or Thursday afternoon.',
-        createdAt: new Date('2025-06-24T10:30:00Z').toISOString(),
-        senderName: 'Current User (You)',
-      },
-    },
-    {
-      id: 'CONV003',
-      title: 'English Department Meeting', // Group chat
-      companyId: companyId,
-      createdAt: new Date('2025-06-23T09:00:00Z').toISOString(),
-      updatedAt: new Date('2025-06-23T09:15:00Z').toISOString(),
-      lastMessageAt: new Date('2025-06-23T09:15:00Z').toISOString(),
-      isArchived: false,
-      isDeleted: false,
-      unreadCount: 1, // Example unread
-      participants: [
-        { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
-        { id: 'USR004', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
-        { id: 'USR005', name: 'Principal\'s Office', email: 'principal@school.com' },
-      ],
-      lastMessage: {
-        id: 'MSG003',
-        content: 'Hi John, the new English curriculum materials are now uploaded to the shared drive.',
-        createdAt: new Date('2025-06-23T09:15:00Z').toISOString(),
-        senderName: 'Mrs. Jane Smith',
-      },
-    },
+    // {
+    //   id: 'CONV001',
+    //   title: null, // Direct chat
+    //   companyId: companyId,
+    //   createdAt: new Date('2025-06-25T14:00:00Z').toISOString(),
+    //   updatedAt: new Date('2025-06-25T14:30:00Z').toISOString(),
+    //   lastMessageAt: new Date('2025-06-25T14:30:00Z').toISOString(),
+    //   isArchived: false,
+    //   isDeleted: false,
+    //   unreadCount: 0,
+    //   participants: [
+    //     { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+    //     { id: 'USR002', name: 'Jane Wanjiru', email: 'jane.w@school.com' },
+    //   ],
+    //   lastMessage: {
+    //     id: 'MSG001',
+    //     content: 'Hi, I had a question about problem 5 on Assignment 3.',
+    //     createdAt: new Date('2025-06-25T14:30:00Z').toISOString(),
+    //     senderName: 'Jane Wanjiru',
+    //   },
+    // },
+    // {
+    //   id: 'CONV002',
+    //   title: null, // Direct chat
+    //   companyId: companyId,
+    //   createdAt: new Date('2025-06-24T09:00:00Z').toISOString(),
+    //   updatedAt: new Date('2025-06-24T10:30:00Z').toISOString(),
+    //   lastMessageAt: new Date('2025-06-24T10:30:00Z').toISOString(),
+    //   isArchived: false,
+    //   isDeleted: false,
+    //   unreadCount: 0,
+    //   participants: [
+    //     { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+    //     { id: 'USR003', name: 'Mr. Alex Smith', email: 'alex.s@school.com' },
+    //   ],
+    //   lastMessage: {
+    //     id: 'MSG002',
+    //     content: 'Good morning Mr. Smith, I am available on Tuesday or Thursday afternoon.',
+    //     createdAt: new Date('2025-06-24T10:30:00Z').toISOString(),
+    //     senderName: 'Current User (You)',
+    //   },
+    // },
+    // {
+    //   id: 'CONV003',
+    //   title: 'English Department Meeting', // Group chat
+    //   companyId: companyId,
+    //   createdAt: new Date('2025-06-23T09:00:00Z').toISOString(),
+    //   updatedAt: new Date('2025-06-23T09:15:00Z').toISOString(),
+    //   lastMessageAt: new Date('2025-06-23T09:15:00Z').toISOString(),
+    //   isArchived: false,
+    //   isDeleted: false,
+    //   unreadCount: 1, // Example unread
+    //   participants: [
+    //     { id: currentUserId, name: 'Current User (You)', email: 'current.user@example.com' },
+    //     { id: 'USR004', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
+    //     { id: 'USR005', name: 'Principal\'s Office', email: 'principal@school.com' },
+    //   ],
+    //   lastMessage: {
+    //     id: 'MSG003',
+    //     content: 'Hi John, the new English curriculum materials are now uploaded to the shared drive.',
+    //     createdAt: new Date('2025-06-23T09:15:00Z').toISOString(),
+    //     senderName: 'Mrs. Jane Smith',
+    //   },
+    // },
   ];
 
   return {

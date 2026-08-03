@@ -1,5 +1,5 @@
+// Removed unused cacheDel import
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -39,87 +39,99 @@ async function handleGet(request: Request) {
   const companyId = searchParams.get("companyId");
   const includeArchived = searchParams.get("includeArchived") === "true";
 
-  if (!userId || !companyId) {
+  if (!companyId) {
     return NextResponse.json(
       { message: "User ID and Company ID are required." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const cacheKey = `admin:conversations:${companyId || 'global'}:all`;
+  // FIX 1: Make cache key unique per user, company, and archive status
+  const cacheKey = `admin:conversations:${companyId}:user:${userId}:archived:${includeArchived}`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  
-  const participantEntries =
-    await prisma.conversationParticipant.findMany({
-      where: {
-        userId,
-        isDeleted: false,
-        ...(includeArchived ? {} : { isArchived: false }),
-        conversation: { companyId },
-      },
-      orderBy: {
-        conversation: { lastMessageAt: "desc" },
-      },
-      select: {
-        isArchived: true,
-        isDeleted: true,
-        unreadCount: true,
-        conversation: {
-          select: {
-            id: true,
-            title: true,
-            companyId: true,
-            createdAt: true,
-            updatedAt: true,
-            lastMessageAt: true,
-            participants: {
-              select: {
-                user: {
-                  select: { id: true, name: true, email: true },
-                },
+  } catch (e) {
+    console.error("Cache get error:", e);
+  }
+
+  const participantEntries = await prisma.conversationParticipant.findMany({
+    where: {
+      isDeleted: false,
+      ...(includeArchived ? {} : { isArchived: false }),
+      ...(userId ? { userId } : {}), // Only filter by userId if provided
+      conversation: { companyId },
+    },
+    orderBy: {
+      conversation: { lastMessageAt: "desc" },
+    },
+    select: {
+      isArchived: true,
+      isDeleted: true,
+      unreadCount: true,
+      conversation: {
+        select: {
+          id: true,
+          title: true,
+          companyId: true,
+          createdAt: true,
+          updatedAt: true,
+          lastMessageAt: true,
+          participants: {
+            select: {
+              user: {
+                select: { id: true, name: true, email: true },
               },
             },
-            messages: {
-              take: 1,
-              orderBy: { createdAt: "desc" },
-              select: {
-                id: true,
-                content: true,
-                createdAt: true,
-                sender: { select: { name: true } },
-              },
+          },
+          messages: {
+            take: 1,
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              content: true,
+              createdAt: true,
+              sender: { select: { name: true } },
             },
           },
         },
       },
-    });
+    },
+  });
+
+  // FIX 2: Serialize the data BEFORE caching it
+  const serializedData = participantEntries.map(serializeConversation);
 
   try {
-    if (participantEntries) {
-      await cacheSet(cacheKey, participantEntries, 60);
+    // Only cache if we successfully retrieved an array
+    if (serializedData) {
+      await cacheSet(cacheKey, serializedData, 60);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error("Cache set error:", e);
+  }
 
-  return formatResponse(true, participantEntries.map(serializeConversation), "Fetched", 200);
+  return formatResponse(true, serializedData, "Fetched", 200);
 }
 
 export const GET = withApiHandler(handleGet);
-
 
 async function handlePost(request: Request) {
   const body = await request.json();
   const { companyId, participantIds, title = null } = body;
 
   if (!companyId || !Array.isArray(participantIds) || !participantIds.length) {
-    return formatResponse(false, null, "Company ID and at least one participant ID are required.", 400);
+    return formatResponse(
+      false,
+      null,
+      "Company ID and at least one participant ID are required.",
+      400,
+    );
   }
 
   // Remove duplicates safely
-  const uniqueParticipantIds = [...new Set(participantIds)];
+  const uniqueParticipantIds = [...new Set(participantIds)] as string[];
 
   // Validate users
   const validUsers = await prisma.user.findMany({
@@ -128,7 +140,12 @@ async function handlePost(request: Request) {
   });
 
   if (validUsers.length !== uniqueParticipantIds.length) {
-    return formatResponse(false, null, "One or more participant IDs are invalid.", 400);
+    return formatResponse(
+      false,
+      null,
+      "One or more participant IDs are invalid.",
+      400,
+    );
   }
 
   if (uniqueParticipantIds.length === 2 && !title) {
@@ -146,10 +163,15 @@ async function handlePost(request: Request) {
     });
 
     if (existing) {
-      return formatResponse(false, null, "Direct conversation already exists.", 409);
+      return formatResponse(
+        false,
+        null,
+        "Direct conversation already exists.",
+        409,
+      );
     }
   }
-  
+
   const conversation = await prisma.conversation.create({
     data: {
       companyId,
@@ -178,10 +200,20 @@ async function handlePost(request: Request) {
     },
   });
 
-  try { await cacheDel(`admin:conversations:${companyId || 'global'}:*`); } catch (e) {}
+  // FIX: Precisely target and invalidate the updated cache keys for all participants
+  try {
+    const keysToDelete = uniqueParticipantIds.flatMap((userId: string) => [
+      `admin:conversations:${companyId}:user:${userId}:archived:false`,
+      `admin:conversations:${companyId}:user:${userId}:archived:true`,
+    ]);
+
+    // Fire off cache deletions in parallel
+    await Promise.all(keysToDelete.map((key) => cacheDel(key)));
+  } catch (e) {
+    console.error("Cache deletion error:", e);
+  }
 
   return formatResponse(true, conversation, "Conversation created", 201);
-  
 }
 
 export const POST = withApiHandler(handlePost);
@@ -245,7 +277,7 @@ export const POST = withApiHandler(handlePost);
 //   return NextResponse.json(formatted);
 // }
 
-// 
+//
 // async function handlePost(request: Request) {
 //   const { companyId, participantIds, title } = await request.json();
 
@@ -268,9 +300,9 @@ export const POST = withApiHandler(handlePost);
 //     });
 
 //     if (existing) {
-//       return NextResponse.json({ 
-//         message: "DM already exists", 
-//         conversationId: existing.id 
+//       return NextResponse.json({
+//         message: "DM already exists",
+//         conversationId: existing.id
 //       }, { status: 409 });
 //     }
 //   }
@@ -299,7 +331,6 @@ export const POST = withApiHandler(handlePost);
 // export const GET = withApiHandler(handleGet);
 // export const POST = withApiHandler(handlePost);
 // import { NextResponse } from "next/server";
-
 
 //   const conversations = participantEntries.map((entry) => {
 //     const conv = entry.conversation;
