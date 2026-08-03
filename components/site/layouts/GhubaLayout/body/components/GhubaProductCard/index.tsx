@@ -9,10 +9,11 @@ import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
 
-// Icons (Strictly Heroicons)
+// Icons (Strictly Heroicons - No Lucide)
 import { 
   HeartIcon, StarIcon, BoltIcon, TrashIcon, MinusIcon, PlusIcon, 
-  ShoppingBagIcon, XMarkIcon, HomeIcon, BeakerIcon, KeyIcon
+  ShoppingBagIcon, XMarkIcon, HomeIcon, BeakerIcon, KeyIcon,
+  CalendarDaysIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/solid';
 import { 
   Square2StackIcon, MapPinIcon, CalendarIcon 
@@ -43,8 +44,17 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
   // --- DYNAMIC TYPE DETECTION ---
   const itemType = useMemo(() => {
     const cat = (product.category || "").toLowerCase();
-    if (cat.includes("property") || cat.includes("real estate") || product.bedrooms) return "PROPERTY";
-    if (cat.includes("auto") || cat.includes("cars") || cat.includes("vehicle") || product.mileage) return "AUTO";
+    
+    // Property Listings
+    if (cat.includes("property") || cat.includes("real estate") || cat.includes("land") || cat.includes("apartments") || product.bedrooms) return "PROPERTY";
+    
+    // Automotive
+    if (cat.includes("auto") || cat.includes("cars") || cat.includes("vehicle") || cat.includes("motorcycle") || product.mileage) return "AUTO";
+    
+    // Services & Booking
+    if (cat.includes("service") || cat.includes("consulting") || cat.includes("cleaning") || cat.includes("plumbing") || cat.includes("tutoring") || cat.includes("coaching") || product.duration) return "SERVICE";
+    
+    // Default to Standard E-Commerce
     return "ECOMMERCE";
   }, [product]);
 
@@ -62,13 +72,16 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
     return matchId === product.id || matchId === currentItemSignature;
   })?.quantity || 0;
 
-  const handleAddToCartClick = (e: React.MouseEvent) => {
+  const handleActionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Route non-buyable types directly to the detail view for inquiries/booking
     if (itemType !== "ECOMMERCE") {
       router.push(`/ghuba/productlist/${product.id}`);
       return;
     }
 
+    // Handle Ecommerce flows
     if (hasOptions) {
       const initialOptions: Record<string, string> = {};
       product.options.forEach((opt: any) => {
@@ -116,6 +129,13 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
         </div>
       );
     }
+    if (itemType === "SERVICE") {
+      return (
+        <div className="absolute top-2 sm:top-4 left-0 z-20 bg-emerald-600 text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg uppercase tracking-widest">
+          Service
+        </div>
+      );
+    }
     if (product.discount > 0) {
       return (
         <div className="absolute top-2 sm:top-4 left-0 z-20 bg-[#E63946] text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg">
@@ -146,6 +166,14 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
         </div>
       );
     }
+    if (itemType === "SERVICE") {
+      return (
+        <div className="flex items-center gap-3 text-[10px] sm:text-xs text-zinc-500 font-bold">
+          <span className="flex items-center gap-1"><CalendarDaysIcon className="w-3 h-3" /> {product.duration || 'Flexible'}</span>
+          <span className="flex items-center gap-1"><MapPinIcon className="w-3 h-3" /> {product.location || 'Local'}</span>
+        </div>
+      );
+    }
     // ECOMMERCE Default
     return (
       <div className="flex items-center space-x-0.5">
@@ -156,6 +184,22 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
       </div>
     );
   };
+
+  const getActionConfig = () => {
+    switch (itemType) {
+      case "PROPERTY":
+        return { icon: <HomeIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: "Details" };
+      case "AUTO":
+        return { icon: <MagnifyingGlassIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: "Inspect" };
+      case "SERVICE":
+        return { icon: <CalendarDaysIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: "Book" };
+      case "ECOMMERCE":
+      default:
+        return { icon: <ShoppingBagIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: hasOptions ? "Options" : "Add" };
+    }
+  };
+
+  const actionConfig = getActionConfig();
 
   return (
     <>
@@ -186,7 +230,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
 
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[1px]">
                <span className="bg-white text-black font-black text-[8px] sm:text-[10px] uppercase tracking-widest px-4 py-2 sm:px-6 sm:py-3 rounded-full translate-y-2 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
-                 View Specs
+                 View Details
                </span>
             </div>
 
@@ -254,17 +298,11 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
                       key="add-btn"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={handleAddToCartClick}
+                      onClick={handleActionClick}
                       className={`w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 text-black dark:text-white border border-zinc-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition-all duration-300 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 ${itemType !== 'ECOMMERCE' && 'bg-zinc-900 text-white dark:bg-white dark:text-black border-transparent'}`}
                     >
-                      {itemType === "ECOMMERCE" ? (
-                        <>
-                          <ShoppingBagIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {hasOptions ? 'Options' : 'Add'}
-                        </>
-                      ) : (
-                        itemType === "PROPERTY" ? "Details" : "Inspect"
-                      )}
+                      {actionConfig.icon}
+                      {actionConfig.text}
                     </motion.button>
                   )}
                 </AnimatePresence>

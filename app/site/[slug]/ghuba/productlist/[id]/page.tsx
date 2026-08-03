@@ -57,12 +57,11 @@ export default async function Page({ params }: PageProps) {
 
   if (similar.length === 0) {
     similar = await prisma.marketplaceListings.findMany({
-      where: { id: { not: slug } },
+      where: { id: { not: id } },
       include: { product: true },
       take: 4,
     });
-  }
-  
+  }  
 
   const serializedSimilar = similar.map(serialize);
 
