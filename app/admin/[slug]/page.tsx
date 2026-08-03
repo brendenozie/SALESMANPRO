@@ -335,36 +335,37 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
   let error: string | null = null;
   let isLoading = false;
 
+  const session = await getAuthSession();
+  const cookiesHeader = (await cookies()).toString();
+  const { slug } = await params;
+
+  if (!session) redirect('/signin');
+
+  const userRole = session.user?.role?.toUpperCase() || 'ADMIN';
+
+  if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
+
+  const companyId =
+    ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
+      ? session.user.id
+      : slug;
+  const currentUserId = session.user.id;
+
+  // Company fetch (simulate loading)
+  isLoading = true;
+  
+  // 4. Cached company fetch using the page strategy
+  const company = await findCompanyCached(companyId, "page");
+  
+  isLoading = false;
+
+  if (
+    userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
+  ) {
+    redirect('/dashboards');
+  }
+
   try {
-    const session = await getAuthSession();
-    const cookiesHeader = (await cookies()).toString();
-    const { slug } = await params;
-
-    if (!session) redirect('/login');
-
-    const userRole = session.user?.role?.toUpperCase() || 'ADMIN';
-
-    if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
-
-    const companyId =
-      ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
-        ? session.user.id
-        : slug;
-    const currentUserId = session.user.id;
-
-    // Company fetch (simulate loading)
-    isLoading = true;
-    
-    // 4. Cached company fetch using the page strategy
-    const company = await findCompanyCached(companyId, "page");
-    
-    isLoading = false;
-
-    if (
-      userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
-    ) {
-      redirect('/dashboard');
-    }
 
     const categoryKey = normalizeCategory(company?.category || userRole);
 
