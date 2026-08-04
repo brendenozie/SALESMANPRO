@@ -189,7 +189,7 @@ model ProductCategory {
   Company             Company?              @relation(fields: [companyId], references: [id])
   companyId           String?               @db.ObjectId
   Podcast             Podcast[]
-  // @@index([slug])
+  
   events              Event[]
 
   @@index([name])

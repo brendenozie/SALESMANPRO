@@ -45,6 +45,7 @@ import { UserIcon } from "@heroicons/react/24/outline";
 
 import { useStateContext } from "@/contexts/ContextProvider";
 import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
+import { MarketListingForm } from "@/types/typings";
 
 const DynamicGhubaProductCard = dynamic(
   () => import("@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard"),
@@ -83,42 +84,7 @@ export interface ImageObject {
   url?: string;
 }
 
-export interface ListingItem {
-  id: string;
-  _id?: string;
-  title?: string;
-  name?: string;
-  description?: string;
-  category?: string;
-  productCategory?: { name?: string };
-  sellingPrice?: number;
-  finalPrice?: number;
-  oldPrice?: number;
-  status?: string;
-  images?: (string | ImageObject)[];
-  bedrooms?: BedroomUnit[] | number;
-  bathrooms?: number;
-  area?: number;
-  make?: string;
-  model?: string;
-  engineSize?: string | number;
-  engineType?: string;
-  transmission?: string;
-  fuelType?: string;
-  mileage?: number;
-  duration?: string;
-  location?: LocationInfo;
-  locationName?: string;
-  providerRating?: number | string;
-  amenities?: string[];
-  option?: string | OptionItem[];
-  contactName?: string;
-  contact?: string;
-  email?: string;
-  companyId?: string;
-  agentId?: string;
-  userId?: string;
-}
+
 
 export interface ProductCapabilities {
   canAddToCart: boolean;
@@ -127,19 +93,19 @@ export interface ProductCapabilities {
   isPhysicalAsset: boolean;
 }
 
-export interface ProductWithCapabilities extends ListingItem {
+export interface ProductWithCapabilities extends MarketListingForm {
   capabilities: ProductCapabilities;
 }
 
 export interface ProductPageProps {
-  listing: ListingItem;
-  related?: ListingItem[];
+  listing: MarketListingForm;
+  related?: MarketListingForm[];
 }
 
 // --- UTILITY & RESOLUTION FUNCTIONS ---
 // Updated to accurately map categories to product types based on system architecture[cite: 3]
-const resolveProductType = (listing: ListingItem): ProductType => {
-  const cat = (listing.productCategory?.name || listing.category || "").toLowerCase();
+const resolveProductType = (listing: MarketListingForm): ProductType => {
+  const cat = (listing.category?.toLowerCase() === "cars" || listing.productCategory?.name?.toLowerCase() === "cars")? (listing.subCategoryName || listing.subCategory.name || listing.subCategory.displayName || listing.productCategory?.name) : (listing.productCategory?.name || listing.category || "").toLowerCase();
 
   const propertyKeywords = [
     "real estate", "property", "houses", "land", "commercial", "apartments", 
@@ -187,7 +153,7 @@ const resolveProductType = (listing: ListingItem): ProductType => {
   return "ECOMMERCE";
 };
 
-const withCapabilities = (listing: ListingItem, type: ProductType): ProductWithCapabilities => ({
+const withCapabilities = (listing: MarketListingForm, type: ProductType): ProductWithCapabilities => ({
   ...listing,
   capabilities: {
     canAddToCart: type === "ECOMMERCE",
@@ -366,8 +332,8 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
     return extra;
   }, [selectedOptions, normalizedOptions, product.capabilities.canAddToCart]);
 
-  const liveFinalPrice = (listing.finalPrice || listing.sellingPrice || 0) + livePriceSurcharge;
-  const liveSellingPrice = (listing.sellingPrice || listing.oldPrice || 0) + livePriceSurcharge;
+  const liveFinalPrice = (listing.finalPrice || listing.sellingPrice || listing.buyingPrice || 0) + livePriceSurcharge;
+  const liveSellingPrice = (listing.finalPrice || listing.sellingPrice || listing.buyingPrice || 0) + livePriceSurcharge;
   const hasDiscount = liveSellingPrice > liveFinalPrice;
 
   const currentCartItemId = useMemo(() => {
@@ -843,7 +809,7 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
               )}
             </div>
 
-            {(listing.location?.name || listing.locationName) && (
+            {(listing.location?.name || listing.locationName || listing.location?.address) && (
               <div className="flex items-center gap-1.5">
                 <MapPinIcon className="w-5 h-5 text-emerald-500" />
                 <span>
