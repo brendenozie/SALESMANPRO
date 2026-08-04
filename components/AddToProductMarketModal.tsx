@@ -31,6 +31,7 @@ import PricingDetails from "./PricingDetails";
 import LocationPicker from "./LocationPicker";
 import ImageUploader, { UnifiedMediaItem } from "./ImageUploader";
 import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/types/typings";
+import ProductVariants from "./ProductVariants";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -482,11 +483,13 @@ function useMarketListingForm(
 ////////////////////////////////////////////////////////////////////////////////
 // Fast Mode Section Types
 ////////////////////////////////////////////////////////////////////////////////
-type FastModeSection = "core" | "pricing" | "media" | "location" | "review";
+type FastModeSection = "core" | "details" | "pricing" | "variants" | "media" | "location" | "review";
 
 const FAST_MODE_SECTIONS: { id: FastModeSection; label: string; icon: React.ElementType }[] = [
   { id: "core", label: "Core Details", icon: TagIcon },
+  { id: "details", label: "Details", icon: Cog6ToothIcon },
   { id: "pricing", label: "Pricing", icon: CurrencyDollarIcon },
+  { id: "variants", label: "Variants", icon: PhotoIcon },
   { id: "media", label: "Media", icon: PhotoIcon },
   { id: "location", label: "Location", icon: MapPinIcon },
   { id: "review", label: "Review", icon: DocumentMagnifyingGlassIcon },
@@ -1026,17 +1029,22 @@ export default function ProductMarketModal({
       case "core":
         return (
           <div className="space-y-6">
-            {/* Category Picker */}
+            {/* Category Picker - reuses existing component */}
             <CategoryPicker
               formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
               categories={categories}
               filteredBrands={categoryWithBrands?.allBrands || []}
               onCategoryChange={handleCategoryChange}
               onSubCategoryChange={handleSubCategoryChange}
-              onBrandChange={(b) => updateField("brand", b as MarketListingForm["brand"])}
+              onBrandChange={(b) => updateField("brand", b as any)}
             />
-            
-            {/* Inline Product Name Input for Fast Mode (doesn't require full ProductDetails) */}
+          </div>
+        );
+
+      case "details":
+        return (
+        <div className="space-y-6">            
+            {/* Inline Product Name Input for Fast Mode */}
             <div className="bg-white rounded-lg border p-4 shadow-sm">
               <label htmlFor="fast-name" className="block text-sm font-medium text-gray-700 mb-2">
                 Product Name <span className="text-red-500">*</span>
@@ -1050,7 +1058,7 @@ export default function ProductMarketModal({
                 placeholder="Enter product name..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
-              <p className="text-xs text-gray-500 mt-1">This will be the main title of your listing.</p>
+              <p className="text-xs text-gray-500 mt-1">This will be the main title of your product.</p>
             </div>
 
             {/* Optional: Description field */}
@@ -1070,7 +1078,7 @@ export default function ProductMarketModal({
             </div>
           </div>
         );
-      
+            
       case "pricing":
         return (
           // PRICING DERIVATION: finalPrice and profitMargin are derived values computed in useEffect
@@ -1085,6 +1093,15 @@ export default function ProductMarketModal({
             marginField="profitMargin"
           />
         );
+        
+      case "variants":
+        return (
+          // VARIANTS: Reuses VariantsManager component for sizes, colors, materials, etc.
+          <ProductVariants
+            formData={formData}
+            setFormData={updateField as any}
+          />
+        );        
       
       case "media":
         return (

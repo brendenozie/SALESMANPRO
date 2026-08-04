@@ -19,6 +19,7 @@ import {
 import Stepper from './Stepper';
 import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
+import ProductVariants from "@/components/ProductVariants";
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
 import PricingDetails from './PricingDetails';
@@ -33,11 +34,13 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api
 // Fast Mode Section Types
 // These define the minimal sections for Fast Mode workflow
 ////////////////////////////////////////////////////////////////////////////////
-type FastModeSection = "core" | "pricing" | "media" | "location" | "review";
+type FastModeSection = "core" | "details" | "pricing" | "variants" | "media" | "location" | "review";
 
 const FAST_MODE_SECTIONS: { id: FastModeSection; label: string; icon: React.ElementType }[] = [
   { id: "core", label: "Core Details", icon: TagIcon },
+  { id: "details", label: "Details", icon: Cog6ToothIcon },
   { id: "pricing", label: "Pricing", icon: CurrencyDollarIcon },
+  { id: "variants", label: "Variants", icon: PhotoIcon },
   { id: "media", label: "Media", icon: PhotoIcon },
   { id: "location", label: "Location", icon: MapPinIcon },
   { id: "review", label: "Review", icon: DocumentMagnifyingGlassIcon },
@@ -190,45 +193,6 @@ export async function uploadFiles(
 
   return Promise.all(uploads);
 }
-
-
-// async function uploadFiles(files: File[], type: "image" | "video" | "book") {
-//   console.log("Uploading files:", files);
-  
-//   console.log("Starting upload for : ", type);
-
-//   if (!files?.length) return [];
-//   console.log("Starting upload for : ", type);
-
-//   const uploads = files.map(async (file, index) => {
-//     // 1. Request signed URL from your backend
-//     // const res = await fetch(
-//     //   `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
-//     // );
-
-//     const res = await fetch(
-//       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-//     );
-
-//     if (!res.ok) throw new Error("Failed to get signed URL");
-//     const { uploadUrl, publicUrl } = await res.json();
-
-//     // 2. Upload directly to S3 via PUT request
-//     const uploadRes = await fetch(uploadUrl, {
-//       method: "PUT",
-//       body: file,
-//     });
-//     if (!uploadRes.ok) throw new Error("Upload failed");
-
-//     // 3. Return the public CloudFront/S3 URL
-//     return {
-//       // The original index is not needed here as we will re-index later
-//       url: publicUrl,
-//     };
-//   });
-
-//   return Promise.all(uploads);
-// }
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -847,7 +811,12 @@ export default function AddProductModal({
               onSubCategoryChange={handleSubCategoryChange}
               onBrandChange={(b) => updateField("brand", b as any)}
             />
-            
+          </div>
+        );
+
+      case "details":
+        return (
+        <div className="space-y-6">            
             {/* Inline Product Name Input for Fast Mode */}
             <div className="bg-white rounded-lg border p-4 shadow-sm">
               <label htmlFor="fast-name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -897,7 +866,16 @@ export default function AddProductModal({
             marginField="profitMargin"
           />
         );
-      
+
+      case "variants":
+        return (
+          // VARIANTS: Reuses VariantsManager component for sizes, colors, materials, etc.
+          <ProductVariants
+            formData={formData}
+            setFormData={updateField as any}
+          />
+        );
+
       case "media":
         return (
           // MEDIA UPLOADS: Reuses ImageUploader component for images/videos/books

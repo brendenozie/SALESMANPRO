@@ -326,59 +326,65 @@ const Filters = ({ filters, setFilters }) => {
       {/* Mobile View */}
       {/* Mobile View */}
       <div className="block md:hidden">
+        {/* Floating Action Button */}
         <button
-          className="fixed bottom-24 left-6 bg-amber-500 text-white p-4 rounded-full shadow-2xl z-[60] flex items-center gap-2 font-bold"
+          className="fixed bottom-24 left-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-4 rounded-full shadow-2xl shadow-black/20 z-[60] flex items-center gap-2 font-black tracking-wide transition-transform active:scale-95"
           onClick={() => setIsMobileOpen(true)}
         >
           <AdjustmentsHorizontalIcon className="h-6 w-6" />
-          <span>Filters</span>
+          <span>FILTERS</span>
         </button>
 
         <AnimatePresence>
           {isMobileOpen && (
             <>
-              {/* Overlay */}
+              {/* Overlay with Glassmorphism */}
               <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }}
                 onClick={() => setIsMobileOpen(false)}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70]"
               />
-              {/* Drawer */}
+              
+              {/* Premium Drawer */}
               <motion.div
-                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                initial={{ y: "100%" }} 
+                animate={{ y: 0 }} 
+                exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem] shadow-2xl flex flex-col"
+                className="fixed bottom-0 left-0 w-full h-[85vh] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl z-[80] rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col border-t border-white/20 dark:border-zinc-700/50"
               >
-                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center shrink-0">
-                  <h2 className="text-xl font-black uppercase dark:text-white">Refine Search</h2>
-                  <button onClick={() => setIsMobileOpen(false)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-full">
-                    <XMarkIcon className="h-6 w-6" />
+                {/* Sticky Header */}
+                <div className="p-6 border-b border-zinc-200/50 dark:border-zinc-800/50 flex justify-between items-center shrink-0">
+                  <h2 className="text-2xl font-black tracking-tighter dark:text-white">Refine Search</h2>
+                  <button 
+                    onClick={() => setIsMobileOpen(false)} 
+                    className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors rounded-full"
+                    aria-label="Close filters"
+                  >
+                    <XMarkIcon className="h-6 w-6 text-zinc-900 dark:text-white" />
                   </button>
                 </div>
 
-                
-                {isMobileOpen && (
-                    <motion.div
-                      initial={{ y: "100%" }} 
-                      animate={{ y: 0 }} 
-                      exit={{ y: "100%" }}
-                      className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem]"
-                    >
-                      <div className="p-6 overflow-y-auto h-full pb-32">
-                        {renderFilterList()}
-                      </div>
-                    </motion.div>
-                  )}
+                {/* Scrollable Filter Content */}
+                <div className="p-6 overflow-y-auto flex-grow pb-32 space-y-6 custom-scrollbar">
+                  {renderFilterList()}
+                </div>
 
-                <div className="absolute bottom-0 left-0 w-full p-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex gap-4">
-                  <button onClick={clearFilters} className="flex-1 py-4 font-bold text-zinc-500 dark:text-zinc-400 uppercase text-xs tracking-widest">
-                    Reset
+                {/* Sticky Footer */}
+                <div className="absolute bottom-0 left-0 w-full p-6 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-zinc-200/50 dark:border-zinc-800/50 flex gap-4 items-center justify-between">
+                  <button 
+                    onClick={clearFilters} 
+                    className="flex-1 py-4 font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors uppercase text-xs tracking-widest"
+                  >
+                    Reset All
                   </button>
                   <button 
                     onClick={() => setIsMobileOpen(false)}
-                    className="flex-[2] py-4 bg-amber-500 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/20 uppercase text-xs tracking-widest"
+                    className="flex-[2] py-4 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all uppercase text-xs tracking-widest"
                   >
-                    Apply Filters
+                    Show Results
                   </button>
                 </div>
               </motion.div>
@@ -386,31 +392,6 @@ const Filters = ({ filters, setFilters }) => {
           )}
         </AnimatePresence>
       </div>
-
-      {/* <div className="block md:hidden">
-        <div className="flex items-center justify-between mb-4">
-             <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
-               <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
-             </h3>
-             <button onClick={() => setIsMobileOpen(!isMobileOpen)}>
-               <ChevronDoubleDownIcon className={`w-6 h-6 transform transition-transform ${isMobileOpen ? "rotate-180" : ""}`} />
-             </button>
-          </div>
-        <AnimatePresence>
-          {isMobileOpen && (
-            <motion.div
-              initial={{ y: "100%" }} 
-              animate={{ y: 0 }} 
-              exit={{ y: "100%" }}
-              className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem]"
-            >
-               <div className="p-6 overflow-y-auto h-full pb-32">
-                 {renderFilterList()}
-               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div> */}
     </>
   );
 };
