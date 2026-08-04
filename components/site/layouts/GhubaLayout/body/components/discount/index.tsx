@@ -1,212 +1,182 @@
 "use client";
 
-import React, { useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useState, useCallback } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { 
-  TagIcon, 
   ChevronLeftIcon, 
   ChevronRightIcon, 
   ArrowRightIcon,
-  PercentBadgeIcon 
+  TagIcon,
+  PercentBadgeIcon
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
+import dynamic from "next/dynamic";
 
-// 1. Dynamically import Slider (Lazy Loading) to drastically reduce initial JS payload
+// --- TYPES ---
+interface Product {
+  id: string | number;
+  [key: string]: any;
+}
+
+interface DiscountProps {
+  productItems?: Product[];
+  addToCart: (product: Product) => void;
+}
+
+// Dynamically import Slider ONLY for desktop viewpoints to save initial bundle size
 const Slider = dynamic(() => import("react-slick"), { 
   ssr: false,
   loading: () => (
-    // Skeleton loader while the slider script downloads
-    <div className="flex gap-4 overflow-hidden px-2 md:px-4 py-6">
+    <div className="flex gap-4 overflow-hidden py-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="w-full md:w-1/4 h-[350px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />
+        <div key={i} className="min-w-[260px] md:w-1/4 h-[350px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />
       ))}
     </div>
   )
 });
 
-// --- NAVIGATION ARROWS (Desktop Only) ---
-const CustomPrevArrow = ({ onClick }: any) => (
+// --- MODERN GLASS ARROWS FOR DESKTOP ---
+const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
     onClick={onClick}
-    aria-label="Previous slide"
-    className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-4 rounded-2xl shadow-xl hover:bg-rose-500 hover:text-white transition-all group hidden lg:block"
+    aria-label="Previous discounts"
+    className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl hover:bg-rose-600 hover:text-white transition-all group hidden lg:block"
   >
-    <ChevronLeftIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
+    <ChevronLeftIcon className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
   </button>
 );
 
-const CustomNextArrow = ({ onClick }: any) => (
+const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
     onClick={onClick}
-    aria-label="Next slide"
-    className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-4 rounded-2xl shadow-xl hover:bg-rose-500 hover:text-white transition-all group hidden lg:block"
+    aria-label="Next discounts"
+    className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl hover:bg-rose-600 hover:text-white transition-all group hidden lg:block"
   >
-    <ChevronRightIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
+    <ChevronRightIcon className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
   </button>
 );
 
-const DiscountSlider = ({ productItems, addToCart }: any) => {
-  const [likedItems, setLikedItems] = useState<any>({});
-  
-  const toggleLike = (id: any) => {
-    setLikedItems((prev: any) => ({ ...prev, [id]: !prev[id] }));
-  };
+const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => {
+  const router = useRouter();
+  const [likedItems, setLikedItems] = useState<Record<string | number, boolean>>({});
 
-  const settings = {
+  const isLoading = !productItems || productItems.length === 0;
+
+  const toggleLike = useCallback((id: string | number) => {
+    setLikedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  }, []);
+
+  const sliderSettings = {
     dots: false,
     infinite: productItems.length > 4,
-    speed: 600,
+    speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 3500,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
     swipeToSlide: true,
-    touchThreshold: 10,
     responsive: [
-      {
-        breakpoint: 1280,
-        settings: {
-          slidesToShow: 3,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: 1.05,
-          slidesToScroll: 1,
-          arrows: false,
-          infinite: false,
-        },
-      },
+      { breakpoint: 1280, settings: { slidesToShow: 3 } },
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
     ],
   };
 
   return (
-    <div className="relative">
-      <Slider {...settings}>
-        {productItems.map((product: any, index: number) => (
-          <div key={index} className="px-2 md:px-4 py-6">
-            <GhubaProductCard 
-              key={product.id}
-              product={product} 
-              toggleLike={toggleLike} 
-              likedItems={likedItems} 
-              addToCart={addToCart} 
-            />
-          </div>
-        ))}
-      </Slider>
-    </div>
-  );
-};
+    <section className="relative py-8 md:py-16 bg-white dark:bg-[#080808] transition-colors duration-300 overflow-hidden">
+      
+      {/* Decorative Gradient Accents */}
+      <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-rose-500/5 to-transparent pointer-events-none hidden sm:block" />
+      <div className="absolute -top-24 left-[-10%] w-[350px] h-[350px] bg-rose-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-const Discount = ({ productItems, addToCart }: any) => {
-  const router = useRouter();
-
-  return (
-    <>
-      <section className="relative py-16 md:py-24 bg-white dark:bg-[#080808] transition-colors duration-500 overflow-hidden">
-        {/* Decorative Background Element */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] dark:opacity-[0.07] pointer-events-none">
-          <div className="absolute top-[-10%] left-[-5%] w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-rose-500 rounded-full blur-[80px] md:blur-[120px]" />
-        </div>
-
-        <div className="max-w-[1600px] mx-auto px-4 md:px-6">
-          
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-8">
-            <div className="space-y-4 w-full">
-              <div className="flex items-center gap-3">
-                <div className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 rounded-full">
-                  <span className="text-rose-600 dark:text-rose-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest">
-                    Limited Time
-                  </span>
-                </div>
-                <span className="h-[1px] flex-grow md:flex-none md:w-12 bg-zinc-200 dark:bg-zinc-800" />
-              </div>
-              
-              <div className="flex items-center gap-4 md:gap-6">
-                 {/* 2. Replaced framer-motion with pure CSS custom animation class */}
-                 <div className="animate-float-slow flex w-12 h-12 md:w-16 md:h-16 bg-zinc-900 dark:bg-white items-center justify-center rounded-2xl md:rounded-[2rem] shadow-2xl shrink-0">
-                  <TagIcon className="text-white dark:text-zinc-900 h-6 w-6 md:h-8 md:w-8" />
-                </div>
-                <h2 className="text-4xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none">
-                  Big <span className="text-rose-600 italic">Discounts</span>
-                </h2>
-              </div>
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8 relative z-10">
+        
+        {/* HEADER SECTION */}
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <div className="flex items-center gap-3 md:gap-4">
+            
+            {/* Icon Header Accent */}
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/20 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <TagIcon className="w-5 h-5 md:w-6 md:h-6 text-rose-600 dark:text-rose-500" />
             </div>
 
-            {/* 3. Replaced framer-motion button with Tailwind scale transition */}
-            <button
-              onClick={() => router.push('/ghuba/discounts')}
-              className="group w-full md:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black uppercase tracking-widest text-xs rounded-2xl transition-all duration-300 shadow-xl hover:scale-105 active:scale-95"
-            >
-              <span>View All</span>
-              <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="text-rose-600 dark:text-rose-500 text-[10px] md:text-xs font-black uppercase tracking-wider">
+                  Limited Time Offers
+                </span>
+                <PercentBadgeIcon className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+              </div>
+              <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
+                Big <span className="text-rose-600 italic">Discounts</span>
+              </h2>
+            </div>
           </div>
 
-          {/* Content Section */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-rose-500/5 rounded-[2rem] md:rounded-[4rem] scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-700 pointer-events-none hidden md:block" />
-            
-            <DiscountSlider productItems={productItems} addToCart={addToCart} />
-          </div>
-
+          {/* Action Button */}
+          <button
+            onClick={() => router.push('/ghuba/discounts')}
+            className="group flex items-center gap-1.5 md:gap-2 px-4 py-2.5 md:px-6 md:py-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold uppercase tracking-wider text-[11px] md:text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-rose-500/50 transition-all active:scale-95 shrink-0"
+          >
+            <span>View All</span>
+            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-rose-600 dark:text-rose-500" />
+          </button>
         </div>
-      </section>
 
-      <style>{`
-        /* Custom Keyframe replacing framer-motion array interpolation */
-        @keyframes floatSlow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-        .animate-float-slow {
-          animation: floatSlow 4s ease-in-out infinite;
-        }
+        {/* CONTENT AREA */}
+        {isLoading ? (
+          /* SKELETON LOADING STATE */
+          <div className="flex gap-4 overflow-hidden py-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={`skeleton-${index}`} className="min-w-[80vw] sm:min-w-[280px] md:w-1/4 space-y-4 shrink-0">
+                <div className="w-full h-[300px] md:h-[350px] bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-2xl" />
+                <div className="h-4 w-2/3 bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-full" />
+                <div className="h-4 w-1/3 bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="relative">
+            {/* MOBILE VIEW: Hardware-Accelerated CSS Native Scroll Snap */}
+            <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 scrollbar-none scroll-smooth">
+              {productItems.map((product: Product, index: number) => (
+                <div key={product?.id || index} className="snap-start min-w-[80vw] sm:min-w-[300px] shrink-0">
+                  <GhubaProductCard 
+                    product={product} 
+                    toggleLike={toggleLike} 
+                    likedItems={likedItems} 
+                    addToCart={addToCart} 
+                  />
+                </div>
+              ))}
+            </div>
 
-        /* Custom styles for slick dots */
-        .slick-dots {
-          bottom: -30px;
-        }
-        .slick-dots li button:before {
-          font-size: 10px;
-          color: #cbd5e1;
-          opacity: 1;
-        }
-        .slick-dots li.slick-active button:before {
-          color: #fbbf24;
-        }
+            {/* DESKTOP VIEW: Loaded via react-slick */}
+            <div className="hidden md:block">
+              <Slider {...sliderSettings}>
+                {productItems.map((product: Product, index: number) => (
+                  <div key={product?.id || index} className="px-3 py-2">
+                    <GhubaProductCard 
+                      product={product} 
+                      toggleLike={toggleLike} 
+                      likedItems={likedItems} 
+                      addToCart={addToCart} 
+                    />
+                  </div>
+                ))}
+              </Slider>
+            </div>
+          </div>
+        )}
 
-        .slick-list {
-          padding: 12px 0 !important;
-        }
-
-        .slick-track {
-          display: flex !important;
-        }
-
-        .slick-slide {
-          height: inherit !important;
-        }
-
-        .slick-slide > div {
-          height: 100%;
-        }
-      `}</style>
-    </>
+      </div>
+    </section>
   );
 };
 

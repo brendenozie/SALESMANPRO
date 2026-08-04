@@ -103,10 +103,41 @@ export interface ProductPageProps {
 }
 
 // --- UTILITY & RESOLUTION FUNCTIONS ---
-// Updated to accurately map categories to product types based on system architecture[cite: 3]
 const resolveProductType = (listing: MarketListingForm): ProductType => {
-  const cat = (listing.category?.toLowerCase() === "cars" || listing.productCategory?.name?.toLowerCase() === "cars")? (listing.subCategoryName || listing.subCategory.name || listing.subCategory.displayName || listing.productCategory?.name) : (listing.productCategory?.name || listing.category || "").toLowerCase();
+  const cat = (listing.category?.toLowerCase() === "cars" || listing.productCategory?.name?.toLowerCase() === "cars")
+    ? (listing.subCategoryName || listing.subCategory.name || listing.subCategory.displayName || listing.productCategory?.name || "").toLowerCase()
+    : (listing.productCategory?.name || listing.category || "").toLowerCase();
 
+  // 1. EXPLICIT E-COMMERCE OVERRIDES
+  // Forces agricultural items, farm inputs, and specific brands to always show "Add to Cart"
+  const explicitEcommerceKeywords = [
+    "seeds", "fertilizers", "animal feeds", "veterinary", "farm tools", "equipment",
+    "pest control", "irrigation", "greenhouse", "agricultural", "livestock", "medicine",
+    "farm machinery", "agribusiness", "farming", "agroforestry", "hydroponics",
+    "aquaponics", "agro-processing", "agro-inputs", "ppe", "agro"
+  ];
+  
+  const isExplicitEcommerce = explicitEcommerceKeywords.some(k => cat.includes(k));
+
+  // Auto accessories override
+  const autoAccessoryKeywords = [
+    "accessories", "performance parts", "car care", "charging stations", "tires", "wheels",
+    "audio", "navigation", "interior", "exterior", "safety", "emergency", "fluids", "oils",
+    "batteries", "power systems", "lighting", "bulbs", "dash cams", "cameras", "security",
+    "tracking", "diagnostic", "electronics", "tools", "parts", "camper", "sunroof", "wipers",
+    "washers", "steering", "pedals", "seat covers", "mats", "wraps", "decals", "towing", 
+    "trailers", "exhaust", "mufflers", "transmission", "drivetrain", "cooling", "radiators", 
+    "suspension", "engine"
+  ];
+  
+  const isAutoAccessory = autoAccessoryKeywords.some(k => cat.includes(k));
+
+  // Priority Interception: If it's an accessory or explicitly agriculture/ecommerce, return immediately
+  if (isExplicitEcommerce || isAutoAccessory) {
+    return "ECOMMERCE";
+  }
+
+  // 2. STANDARD CATEGORY KEYWORDS
   const propertyKeywords = [
     "real estate", "property", "houses", "land", "commercial", "apartments", 
     "vacation rentals", "warehouses", "gated communities", "offices", 
@@ -130,26 +161,27 @@ const resolveProductType = (listing: MarketListingForm): ProductType => {
     "logistics & delivery", "booking"
   ];
 
-  // 1. Check for Property[cite: 3]
-  if (propertyKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.bedrooms) || Boolean(listing.area)) {
+  // 3. Check for Property (Refined area check to prevent coverage metrics from triggering property)
+  if (propertyKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.bedrooms)) {
     return "PROPERTY";
   }
 
-  // 2. Check for Auto (Ensuring auto accessories fall back to ecommerce)[cite: 3]
+  // 4. Check for Auto
   if (
-    autoKeywords.some(k => cat === k) || 
-    (cat.includes("automotive") && !cat.includes("accessories")) || 
-    Boolean(listing.mileage)
+    autoKeywords.some(k => cat === k || cat.includes(k)) || 
+    (cat.includes("automotive")) || 
+    Boolean(listing.vin) || 
+    Boolean(listing.logbookStatus)
   ) {
     return "AUTO";
   }
 
-  // 3. Check for Service[cite: 3]
+  // 5. Check for Service
   if (serviceKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.duration)) {
     return "SERVICE";
   }
 
-  // 4. Default to Ecommerce (Electronics, Clothing, Groceries, Accessories, etc.)[cite: 3]
+  // 6. Default to Ecommerce
   return "ECOMMERCE";
 };
 

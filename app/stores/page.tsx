@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -13,18 +13,18 @@ import {
   XMarkIcon,
   PlusIcon
 } from "@heroicons/react/24/outline";
+
+// Assuming these are imported from your components directory
 import PricingSection from './PricingSection';
 import StoreCard from '@/components/stores/StoreCard';
 
 // --- Fetcher Definition ---
-const fetcher = (url: string) => fetch(url, { credentials: 'include' })
-  .then(async res => {
-    if (!res.ok) {
-      throw new Error('Network response was not ok');
-    }
-    let resJson = await res.json();
-    return resJson.data;
-  });
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { credentials: 'include' });
+  if (!res.ok) throw new Error('Network response was not ok');
+  const resJson = await res.json();
+  return resJson.data;
+};
 
 // --- Store Interface ---
 interface Store {
@@ -33,7 +33,7 @@ interface Store {
   slug: string;
   domain: string;
   companyId: string;
-  subscriptionStatus: string; // 'ACTIVE', 'INACTIVE', 'AWAITING_CONFIRMATION', etc.
+  subscriptionStatus: string;
   description?: string;
   bannerUrl?: string;
   contactEmail?: string;
@@ -42,10 +42,24 @@ interface Store {
 }
 
 // ------------------------------------------------------------------
-// --- 1. REUSABLE SUB-COMPONENTS (MODERNIZED REARCHITECTURE) ---
+// --- 1. REUSABLE SUB-COMPONENTS ---
 // ------------------------------------------------------------------
 
-const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }: { isOpen: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; }) => {
+const ConfirmationModal = ({ 
+  isOpen, 
+  title, 
+  message, 
+  onConfirm, 
+  onCancel, 
+  isProcessing 
+}: { 
+  isOpen: boolean; 
+  title: string; 
+  message: string; 
+  onConfirm: () => void; 
+  onCancel: () => void;
+  isProcessing: boolean;
+}) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
@@ -60,11 +74,31 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }: { is
         <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{title}</h3>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
         <div className="mt-6 flex justify-center space-x-3">
-          <button type="button" onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm transition-all">
+          <button 
+            type="button" 
+            onClick={onCancel} 
+            disabled={isProcessing}
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm transition-all disabled:opacity-50"
+          >
             Cancel
           </button>
-          <button type="button" onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 font-semibold text-white shadow-md shadow-rose-600/10 text-sm transition-all">
-            Delete
+          <button 
+            type="button" 
+            onClick={onConfirm}
+            disabled={isProcessing}
+            className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 font-semibold text-white shadow-md shadow-rose-600/10 text-sm transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+          >
+            {isProcessing ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
           </button>
         </div>
       </motion.div>
@@ -132,14 +166,8 @@ const PaginationControls = ({ page, totalPages, onPageChange } : {
 );
 
 // ------------------------------------------------------------------
-// --- 3. PRICING MODAL CONTAINER (DARK & ACCESSIBILITY READY) ---
+// --- 2. PRICING MODAL CONTAINER ---
 // ------------------------------------------------------------------
-
-declare global {
-  interface Window { 
-    PaystackPop: any; 
-  }
-}
 
 const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscriptionSuccess }: { 
   isOpen: boolean, 
@@ -187,13 +215,12 @@ const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscript
 };
 
 // ------------------------------------------------------------------
-// --- 4. MAIN STORES DASHBOARD ENGINE ---
+// --- 3. MAIN STORES DASHBOARD ENGINE ---
 // ------------------------------------------------------------------
 
 export default function StoresPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { data: session, status } = useSession();
   const [storeToDelete, setStoreToDelete] = useState<Store | null>(null);
   
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
@@ -203,8 +230,24 @@ export default function StoresPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
+  // --- STATE PRESERVATION: Handle pagination memory ---
+  const pageParam = searchParams.get('page');
+  const page = parseInt(pageParam || '1', 10);
+
+  useEffect(() => {
+    // If the user navigates here without a page parameter, check if they had one previously
+    if (!pageParam) {
+      const savedPage = sessionStorage.getItem('storesLastPage');
+      if (savedPage && savedPage !== '1') {
+        router.replace(`${pathname}?page=${savedPage}`);
+      }
+    } else {
+      // Always save the current valid page state
+      sessionStorage.setItem('storesLastPage', pageParam);
+    }
+  }, [pageParam, pathname, router]);
 
   // --- SWR Data Fetching Engine ---
   const { 
@@ -216,22 +259,40 @@ export default function StoresPage() {
     fetcher
   );
 
-  // --- Pagination Realignment ---
+  // --- Restore Scroll Position after Data Load ---
+  useLayoutEffect(() => {
+    if (!isStoresLoading && stores.length > 0) {
+      const savedScroll = sessionStorage.getItem('storesScrollY');
+      if (savedScroll) {
+        window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' });
+        sessionStorage.removeItem('storesScrollY'); // Clear it after use
+      }
+    }
+  }, [isStoresLoading, stores.length]);
+
+  // --- Pagination Logic ---
   const pageSize = 12;
-  const totalPages = useMemo(() => Math.ceil(stores.length / pageSize), [stores, pageSize]);
+  const totalPages = useMemo(() => Math.ceil(stores.length / pageSize) || 1, [stores.length, pageSize]);
   const paginatedStores = useMemo(() => {
     const start = (page - 1) * pageSize;
-    return stores.length > 0 ? stores.slice(start, start + pageSize) : [];
+    return stores.slice(start, start + pageSize);
   }, [stores, page, pageSize]);
 
-  // --- Handle Core Interface Methods ---
+  // --- Core Actions ---
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(newPage));
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const handleEdit = (id: string) => router.push(`/stores/${id}/edit`);
+  const handleEdit = (id: string) => {
+    // Save exactly where the user is physically looking before they leave
+    sessionStorage.setItem('storesScrollY', window.scrollY.toString());
+    
+    // Construct a return URL so the edit page knows where to send them back
+    const currentUrl = encodeURIComponent(`${pathname}?${searchParams.toString()}`);
+    router.push(`/stores/${id}/edit?returnUrl=${currentUrl}`);
+  };
 
   const handleDeleteClick = (store: Store) => {
     setStoreToDelete(store);
@@ -251,25 +312,35 @@ export default function StoresPage() {
 
   const confirmDelete = async () => {
     if (!storeToDelete) return;
-    setIsDeleteModalOpen(false);
     setIsDeleting(true);
     try {
       await fetch(`/api/stores/${storeToDelete.id}`, { method: 'DELETE' });
-      mutate(`/api/stores?userId=${session?.user?.id}`);
+      await mutate(`/api/stores?userId=${session?.user?.id}`);
+      
+      // Edge case: If they delete the last item on a page, drop them back a page
+      if (paginatedStores.length === 1 && page > 1) {
+        handlePageChange(page - 1);
+      }
     } catch (err) {
       console.error('Failed to delete store:', err);
     } finally {
       setIsDeleting(false);
+      setIsDeleteModalOpen(false);
       setStoreToDelete(null);
     }
   };
 
   const handleCreate = () => router.push(`/stores/create`);
   
-  const isAuthLoading = status === 'loading';
-  const isLoading = isAuthLoading || isStoresLoading;
+  // --- Auth & Loading Pipeline ---
+  if (status === 'unauthenticated') {
+    // Client-side redirect as a fallback, though middleware is preferred
+    router.push(`/signin?callbackUrl=${encodeURIComponent(pathname + '?' + searchParams.toString())}`);
+    return null;
+  }
 
-  // --- Conditional Pipeline Views ---
+  const isLoading = status === 'loading' || isStoresLoading;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-10 transition-colors duration-300">
@@ -287,19 +358,6 @@ export default function StoresPage() {
     );
   }
 
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
-        <div className="max-w-sm p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-3">Access Portal Locked</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-            Please authenticate via security session channels to access and manage digital branch deployment nodes.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   if (storesError) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
@@ -307,7 +365,7 @@ export default function StoresPage() {
           <ExclamationTriangleIcon className="h-12 w-12 text-rose-500 mx-auto mb-4" />
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Synchronization Failed</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            We encountered a data retrieval fault while processing your branches. Please reinitialize connection patterns.
+            We encountered a data retrieval fault while processing your branches. Please refresh the page or try again later.
           </p>
         </div>
       </div>
@@ -356,8 +414,7 @@ export default function StoresPage() {
               />
             ) : (
               paginatedStores.map(store => {
-                // For demonstration, we are treating all stores as active. Adjust logic as needed.
-                const isActive = true;// store.subscriptionStatus === 'ACTIVE' || store.subscriptionStatus === 'AWAITING_CONFIRMATION';
+                const isActive = true; // Replace with actual status logic
                 
                 return (
                   <motion.div
@@ -370,7 +427,7 @@ export default function StoresPage() {
                     <StoreCard
                       {...store}
                       isActive={isActive}
-                      onEdit={isActive ? handleEdit : undefined}
+                      onEdit={isActive ? () => handleEdit(store.id) : undefined}
                       onDelete={isActive ? () => handleDeleteClick(store) : undefined}
                       onManageSubscription={!isActive ? () => handleManageSubscription(store.id, store.category || '') : undefined}
                     />
@@ -398,6 +455,7 @@ export default function StoresPage() {
         message={`Are you certain you want to destroy "${storeToDelete?.name}"? All associated persistent application assets will clear.`}
         onConfirm={confirmDelete}
         onCancel={() => setIsDeleteModalOpen(false)}
+        isProcessing={isDeleting}
       />
 
       {/* Subscription Checkout Gateway Modal Overlay */}
@@ -405,7 +463,7 @@ export default function StoresPage() {
         isOpen={isPricingModalOpen}
         onClose={() => setIsPricingModalOpen(false)}
         companyId={selectedCompanyId}
-        email={session.user?.email || ''}
+        email={session?.user?.email || ''}
         category={selectedCategory}
         onSubscriptionSuccess={handleSubscriptionSuccess}
       />

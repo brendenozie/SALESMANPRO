@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-// import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import {
@@ -11,178 +10,147 @@ import {
   ArrowRightIcon,
   ClockIcon
 } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
 import dynamic from "next/dynamic";
 
-// 1. Dynamically import Slider (Lazy Loading) to drastically reduce initial JS payload
+// Dynamically import Slider ONLY for desktop viewpoints to save initial bundle size
 const Slider = dynamic(() => import("react-slick"), { 
   ssr: false,
   loading: () => (
-    // Skeleton loader while the slider script downloads
-    <div className="flex gap-4 overflow-hidden px-2 md:px-4 py-6">
+    <div className="flex gap-4 overflow-hidden py-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="w-full md:w-1/4 h-[350px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />
+        <div key={i} className="min-w-[260px] md:w-1/4 h-[350px] bg-zinc-200 dark:bg-zinc-800 rounded-2xl animate-pulse" />
       ))}
     </div>
   )
 });
 
-// --- REFINED ARROWS ---
-const CustomPrevArrow = ({ onClick }: { onClick: () => void }) => (
+const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
     onClick={onClick}
     aria-label="Previous deals"
-    className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-4 rounded-2xl shadow-xl hover:bg-amber-500 hover:text-white transition-all group hidden lg:block"
+    className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-3.5 rounded-2xl shadow-xl hover:bg-amber-500 hover:text-white transition-all group hidden md:block"
   >
-    <ChevronLeftIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
+    <ChevronLeftIcon className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
   </button>
 );
 
-const CustomNextArrow = ({ onClick }: { onClick: () => void }) => (
+const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
     onClick={onClick}
     aria-label="Next deals"
-    className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-4 rounded-2xl shadow-xl hover:bg-amber-500 hover:text-white transition-all group hidden lg:block"
+    className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 p-3.5 rounded-2xl shadow-xl hover:bg-amber-500 hover:text-white transition-all group hidden md:block"
   >
-    <ChevronRightIcon className="h-6 w-6 transition-transform group-hover:scale-110" />
+    <ChevronRightIcon className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
   </button>
 );
 
-const FlashCardSlider = ({ productItems = [], addToCart }: { productItems: any[]; addToCart: (product: any) => void   }) => {
+const FlashDeals = ({ productItems = [], addToCart }: { productItems: any[]; addToCart: (product: any) => void }) => {
+  const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
-  
-  // Memoize to prevent re-rendering every product card when one is liked
-  const toggleLike = useCallback((id : string) => {
-    setLikedItems((prev : Record<string, boolean>) => ({
+
+  const toggleLike = useCallback((id: string) => {
+    setLikedItems((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
   }, []);
 
-  const settings = {
+  const sliderSettings = {
     dots: false,
     infinite: productItems.length > 4,
-    speed: 600,
+    speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 4000,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
     swipeToSlide: true,
-    touchThreshold: 10,
-    lazyLoad: "ondemand", // Critical performance fix
     responsive: [
-      {
-        breakpoint: 1280,
-        settings: { slidesToShow: 3 },
-      },
-      {
-        breakpoint: 1024,
-        settings: { slidesToShow: 2 },
-      },
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: 1.05,
-          slidesToScroll: 1,
-          arrows: false,
-          infinite: false,
-        },
-      },
+      { breakpoint: 1280, settings: { slidesToShow: 3 } },
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
     ],
   };
 
   if (!productItems.length) return null;
 
   return (
-    <div className="relative">
-      <Slider {...settings}>
-        {productItems.map((product, index) => (
-          <div key={product.id || index} className="px-2 md:px-3 py-4">
-            <GhubaProductCard 
-              product={product} 
-              toggleLike={toggleLike} 
-              likedItems={likedItems} 
-              addToCart={addToCart} 
-            />
-          </div>
-        ))}
-      </Slider>
-    </div>
-  );
-};
+    <section className="py-8 md:py-16 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8">
+        
+        {/* HEADER SECTION: Clean flex arrangement on mobile */}
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <div className="flex items-center gap-3 md:gap-5">
+            {/* Animated Icon (Pure CSS animation to save CPU cycles) */}
+            <div className="w-11 h-11 md:w-14 md:h-14 bg-amber-500 flex items-center justify-center rounded-xl md:rounded-2xl shadow-lg shadow-amber-500/25 shrink-0 animate-pulse">
+              <BoltIcon className="text-white h-6 w-6 md:h-8 md:w-8" />
+            </div>
 
-// Extracted CSS to prevent recreation on re-renders
-const SLIDER_STYLES = `
-  .slick-dots { bottom: -30px; }
-  .slick-dots li button:before { font-size: 10px; color: #cbd5e1; opacity: 1; }
-  .slick-dots li.slick-active button:before { color: #fbbf24; }
-  .slick-list { padding: 12px 0 !important; }
-  .slick-track { display: flex !important; }
-  .slick-slide { height: inherit !important; }
-  .slick-slide > div { height: 100%; }
-`;
-
-const FlashDeals = ({ productItems, addToCart }: { productItems: any[]; addToCart: (product: any) => void }) => {
-  const router = useRouter();
-
-  return (
-    <>
-      <section className="py-12 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-500">
-        <div className="max-w-[1600px] mx-auto px-4 md:px-6">
-          
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 md:mb-10 gap-6">
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left">
-              <motion.div
-                className="w-14 h-14 md:w-16 md:h-16 bg-amber-500 flex items-center justify-center rounded-2xl md:rounded-3xl shadow-2xl shadow-amber-500/20"
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  rotate: [0, 5, -5, 0] 
-                }}
-                transition={{ repeat: Infinity, duration: 3 }}
-              >
-                <BoltIcon className="text-white h-7 w-7 md:h-9 md:w-9" />
-              </motion.div>
+            <div className="flex flex-col">
+              <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
+                Flash <span className="text-amber-500 italic">Deals</span>
+              </h2>
               
-              <div className="space-y-1">
-                <h2 className="text-3xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">
-                  Flash <span className="text-amber-500 italic">Deals</span>
-                </h2>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest text-[9px] md:text-[10px]">
-                  <ClockIcon className="w-4 h-4 text-amber-500" />
-                  <span>Ends in: 12h : 45m : 02s</span>
-                </div>
+              {/* Countdown badge */}
+              <div className="flex items-center gap-1.5 mt-1 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[10px] md:text-xs">
+                <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>Ends: <strong className="text-zinc-800 dark:text-zinc-200">12h 45m 02s</strong></span>
               </div>
             </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/ghuba/deals')}
-              className="group w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-amber-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all"
-            >
-              <span>View All</span>
-              <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
           </div>
 
-          {/* Content Container */}
-          <div className="relative p-2 md:p-8">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] dark:opacity-[0.05] pointer-events-none">
-              <BoltIcon className="w-[300px] h-[300px] md:w-[500px] md:h-[500px] text-amber-500" />
-            </div>
-            
-            <FlashCardSlider productItems={productItems} addToCart={addToCart} />
+          {/* Action button */}
+          <button
+            onClick={() => router.push('/ghuba/deals')}
+            className="group flex items-center gap-1.5 md:gap-2 px-4 py-2.5 md:px-6 md:py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold uppercase tracking-wider text-[11px] md:text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all shrink-0"
+          >
+            <span>View All</span>
+            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+
+        {/* CONTENT CONTAINER */}
+        <div className="relative">
+          {/* BACKGROUND DECORATION */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+            <BoltIcon className="w-[280px] h-[280px] md:w-[450px] md:h-[450px] text-amber-500" />
+          </div>
+
+          {/* MOBILE VIEW: Hardware-accelerated CSS Scroll Snap (Zero JS overhead) */}
+          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 scrollbar-none scroll-smooth">
+            {productItems.map((product, index) => (
+              <div key={product.id || index} className="snap-start min-w-[80vw] sm:min-w-[300px] shrink-0">
+                <GhubaProductCard
+                  product={product}
+                  toggleLike={toggleLike}
+                  likedItems={likedItems}
+                  addToCart={addToCart}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* DESKTOP VIEW: Loaded via react-slick */}
+          <div className="hidden md:block">
+            <Slider {...sliderSettings}>
+              {productItems.map((product, index) => (
+                <div key={product.id || index} className="px-3 py-2">
+                  <GhubaProductCard
+                    product={product}
+                    toggleLike={toggleLike}
+                    likedItems={likedItems}
+                    addToCart={addToCart}
+                  />
+                </div>
+              ))}
+            </Slider>
           </div>
         </div>
-      </section>
 
-      <style>{SLIDER_STYLES}</style>
-    </>
+      </div>
+    </section>
   );
 };
 

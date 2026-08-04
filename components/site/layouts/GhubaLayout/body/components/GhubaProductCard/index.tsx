@@ -43,18 +43,51 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
 
   // --- DYNAMIC TYPE DETECTION ---
   const itemType = useMemo(() => {
-    const cat = (product.category || "").toLowerCase();
+    // Flatten category data for comprehensive checking
+    const cat = [
+      product.category, 
+      product.productCategory?.name, 
+      product.subCategoryName, 
+      product.subCategory?.name
+    ].filter(Boolean).join(" ").toLowerCase();
     
-    // Property Listings
-    if (cat.includes("property") || cat.includes("real estate") || cat.includes("land") || cat.includes("apartments") || product.bedrooms) return "PROPERTY";
+    // 1. EXPLICIT E-COMMERCE OVERRIDES (Intercepts Agricultural, Tools, Brands, etc.)
+    const explicitEcommerceKeywords = [
+      "seeds", "fertilizers", "animal feeds", "veterinary", "farm tools", "equipment",
+      "pest control", "irrigation", "greenhouse", "agricultural", "livestock", "medicine",
+      "farm machinery", "agribusiness", "farming", "agroforestry", "hydroponics",
+      "aquaponics", "agro-processing", "agro-inputs", "ppe", "agro"
+    ];
     
-    // Automotive
-    if (cat.includes("auto") || cat.includes("cars") || cat.includes("vehicle") || cat.includes("motorcycle") || product.mileage) return "AUTO";
+    const isExplicitEcommerce = explicitEcommerceKeywords.some(k => cat.includes(k));
+
+    // 2. AUTO ACCESSORY OVERRIDES (Intercepts Parts, Care, etc.)
+    const autoAccessoryKeywords = [
+      "accessories", "performance parts", "car care", "charging stations", "tires", "wheels",
+      "audio", "navigation", "interior", "exterior", "safety", "emergency", "fluids", "oils",
+      "batteries", "power systems", "lighting", "bulbs", "dash cams", "cameras", "security",
+      "tracking", "diagnostic", "electronics", "tools", "parts", "camper", "sunroof", "wipers",
+      "washers", "steering", "pedals", "seat covers", "mats", "wraps", "decals", "towing", 
+      "trailers", "exhaust", "mufflers", "transmission", "drivetrain", "cooling", "radiators", 
+      "suspension", "engine"
+    ];
     
-    // Services & Booking
-    if (cat.includes("service") || cat.includes("consulting") || cat.includes("cleaning") || cat.includes("plumbing") || cat.includes("tutoring") || cat.includes("coaching") || product.duration) return "SERVICE";
+    const isAutoAccessory = autoAccessoryKeywords.some(k => cat.includes(k));
+
+    if (isExplicitEcommerce || isAutoAccessory) {
+      return "ECOMMERCE";
+    }
+
+    // 3. Property Listings
+    if (cat.includes("property") || cat.includes("real estate") || cat.includes("land") || cat.includes("apartments") || Boolean(product.bedrooms)) return "PROPERTY";
     
-    // Default to Standard E-Commerce
+    // 4. Automotive (Stricter physical vehicle check, removed generic mileage)
+    if (cat.includes("auto") || cat.includes("cars") || cat.includes("vehicle") || cat.includes("motorcycle") || Boolean(product.vin) || Boolean(product.logbookStatus)) return "AUTO";
+    
+    // 5. Services & Booking
+    if (cat.includes("service") || cat.includes("consulting") || cat.includes("cleaning") || cat.includes("plumbing") || cat.includes("tutoring") || cat.includes("coaching") || Boolean(product.duration)) return "SERVICE";
+    
+    // 6. Default to Standard E-Commerce
     return "ECOMMERCE";
   }, [product]);
 
