@@ -23,7 +23,7 @@ export default async function MessagesManagerPage({ params }: Props) {
   
   // 2. Enforce Authentication
   const session = await getAuthSession();
-  const currentUserId = session?.user?.id || '';
+  const currentUserId = session?.user?.role?.toLowerCase() === "admin" ? session?.user?.id : '';
   
   // const router = useRouter();
   // const pathname = usePathname();
