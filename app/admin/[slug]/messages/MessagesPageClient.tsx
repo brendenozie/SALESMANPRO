@@ -366,7 +366,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
             My Messages <span className="ml-2">💬</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Your central hub for school communications.</p>
+          <p className="text-sm text-gray-500 mt-1">Your central hub for message communications.</p>
         </div>
         <div className="bg-white px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium flex items-center gap-2 shadow-sm">
           <CalendarDaysIcon className="h-5 w-5 text-gray-400" />

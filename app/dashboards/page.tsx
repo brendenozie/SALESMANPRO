@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from 'next/navigation';
 import {
   BuildingStorefrontIcon,
   ArrowRightIcon,
@@ -121,6 +122,21 @@ export default function WelcomePage() {
   const [greeting, setGreeting] = useState("Welcome");
 
   const userName = session?.user?.name?.split(" ")[0] || "Operator";
+
+  const pathname = usePathname();
+  
+  // --- Auth & Loading Pipeline ---
+  if (status === 'unauthenticated') {
+    if (typeof window !== 'undefined') {
+      const callbackUrl = `${window.location.origin}${pathname}`;
+      
+      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      authUrl.searchParams.set("callbackUrl", callbackUrl);
+      
+      window.location.href = authUrl.toString();
+    }
+    return null;
+  }
 
   useEffect(() => {
     const hour = new Date().getHours();
