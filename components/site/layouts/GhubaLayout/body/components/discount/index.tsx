@@ -1,18 +1,22 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
   ArrowRightIcon,
   TagIcon,
-  PercentBadgeIcon
+  PercentBadgeIcon,
+  SparklesIcon
 } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import GhubaProductCard from "../GhubaProductCard";
 import dynamic from "next/dynamic";
+import GhubaProductCard from "../GhubaProductCard";
+
+// CSS Styles for Slick Slider
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 // --- TYPES ---
 interface Product {
@@ -25,13 +29,16 @@ interface DiscountProps {
   addToCart: (product: Product) => void;
 }
 
-// Dynamically import Slider ONLY for desktop viewpoints to save initial bundle size
+// Dynamically import Slider to reduce initial JavaScript bundle size on mobile
 const Slider = dynamic(() => import("react-slick"), { 
   ssr: false,
   loading: () => (
     <div className="flex gap-4 overflow-hidden py-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="min-w-[260px] md:w-1/4 h-[350px] bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse" />
+        <div 
+          key={i} 
+          className="w-full md:w-1/4 h-[380px] bg-zinc-100 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0" 
+        />
       ))}
     </div>
   )
@@ -41,8 +48,9 @@ const Slider = dynamic(() => import("react-slick"), {
 const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
     onClick={onClick}
+    type="button"
     aria-label="Previous discounts"
-    className="absolute top-1/2 -left-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl hover:bg-rose-600 hover:text-white transition-all group hidden lg:block"
+    className="absolute top-1/2 -left-5 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 p-3.5 rounded-2xl shadow-2xl hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 transition-all group hidden lg:block active:scale-95"
   >
     <ChevronLeftIcon className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
   </button>
@@ -51,8 +59,9 @@ const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
 const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
     onClick={onClick}
+    type="button"
     aria-label="Next discounts"
-    className="absolute top-1/2 -right-4 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 p-3.5 rounded-2xl shadow-xl hover:bg-rose-600 hover:text-white transition-all group hidden lg:block"
+    className="absolute top-1/2 -right-5 z-20 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800 p-3.5 rounded-2xl shadow-2xl hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 transition-all group hidden lg:block active:scale-95"
   >
     <ChevronRightIcon className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
   </button>
@@ -89,79 +98,99 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
   };
 
   return (
-    <section className="relative py-8 md:py-16 bg-white dark:bg-[#080808] transition-colors duration-300 overflow-hidden">
-      
-      {/* Decorative Gradient Accents */}
-      <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-rose-500/5 to-transparent pointer-events-none hidden sm:block" />
-      <div className="absolute -top-24 left-[-10%] w-[350px] h-[350px] bg-rose-500/10 rounded-full blur-[100px] pointer-events-none" />
+    <motion.section
+      className="relative py-10 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-500 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      {/* Decorative Ambient Lighting Orbs */}
+      <div className="absolute top-1/3 -left-32 w-96 h-96 bg-rose-500/10 dark:bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 -right-32 w-96 h-96 bg-pink-500/10 dark:bg-pink-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-[1600px] mx-auto px-4 md:px-8 relative z-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
         
         {/* HEADER SECTION */}
-        <div className="flex items-center justify-between mb-6 md:mb-8">
-          <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 md:mb-12 gap-5">
+          <div className="flex items-center gap-3 sm:gap-4">
             
-            {/* Icon Header Accent */}
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/20 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
-              <TagIcon className="w-5 h-5 md:w-6 md:h-6 text-rose-600 dark:text-rose-500" />
+            {/* Header Icon Badge */}
+            <div className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/20 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-rose-500/10">
+              <TagIcon className="w-5 h-5 sm:w-6 sm:h-6 text-rose-600 dark:text-rose-500" />
             </div>
 
             <div className="flex flex-col">
+              {/* Status Badge */}
               <div className="flex items-center gap-1.5">
-                <span className="text-rose-600 dark:text-rose-500 text-[10px] md:text-xs font-black uppercase tracking-wider">
+                <span className="text-rose-600 dark:text-rose-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]">
                   Limited Time Offers
                 </span>
-                <PercentBadgeIcon className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+                <PercentBadgeIcon className="w-4 h-4 text-rose-500 animate-pulse" />
               </div>
-              <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
-                Big <span className="text-rose-600 italic">Discounts</span>
+              
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none mt-1">
+                Big <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 italic">Discounts</span>
               </h2>
             </div>
           </div>
 
           {/* Action Button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => router.push('/ghuba/discounts')}
-            className="group flex items-center gap-1.5 md:gap-2 px-4 py-2.5 md:px-6 md:py-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold uppercase tracking-wider text-[11px] md:text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-rose-500/50 transition-all active:scale-95 shrink-0"
+            className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-2xl shadow-xl shadow-zinc-900/10 dark:shadow-white/5 hover:bg-rose-600 dark:hover:bg-rose-600 dark:hover:text-white transition-all text-xs sm:text-sm tracking-wider uppercase shrink-0"
           >
-            <span>View All</span>
-            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-rose-600 dark:text-rose-500" />
-          </button>
+            <span>View All Discounts</span>
+            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
         </div>
 
         {/* CONTENT AREA */}
         {isLoading ? (
           /* SKELETON LOADING STATE */
-          <div className="flex gap-4 overflow-hidden py-2">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={`skeleton-${index}`} className="min-w-[80vw] sm:min-w-[280px] md:w-1/4 space-y-4 shrink-0">
-                <div className="w-full h-[300px] md:h-[350px] bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-2xl" />
-                <div className="h-4 w-2/3 bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-full" />
-                <div className="h-4 w-1/3 bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-full" />
+              <div key={`skeleton-${index}`} className="space-y-3">
+                <div className="w-full h-[260px] sm:h-[320px] bg-zinc-100 dark:bg-zinc-800/60 animate-pulse rounded-3xl" />
+                <div className="h-4 w-3/4 bg-zinc-100 dark:bg-zinc-800/60 animate-pulse rounded-full" />
+                <div className="h-4 w-1/2 bg-zinc-100 dark:bg-zinc-800/60 animate-pulse rounded-full" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="relative">
-            {/* MOBILE VIEW: Hardware-Accelerated CSS Native Scroll Snap */}
-            <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 scrollbar-none scroll-smooth">
+          <div>
+            {/* MOBILE VIEW: Hardware-Accelerated CSS Scroll Snap Container */}
+            <div 
+              className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-6 pt-1 -mx-4 px-4 sm:-mx-6 sm:px-6 touch-pan-x overscroll-x-contain"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
               {productItems.map((product: Product, index: number) => (
-                <div key={product?.id || index} className="snap-start min-w-[80vw] sm:min-w-[300px] shrink-0">
-                  <GhubaProductCard 
-                    product={product} 
-                    toggleLike={toggleLike} 
-                    likedItems={likedItems} 
-                    addToCart={addToCart} 
-                  />
+                <div 
+                  key={product?.id || index} 
+                  className="snap-start w-[240px] xs:w-[260px] sm:w-[280px] shrink-0 flex flex-col"
+                >
+                  <div className="h-full">
+                    <GhubaProductCard 
+                      product={product} 
+                      toggleLike={toggleLike} 
+                      likedItems={likedItems} 
+                      addToCart={addToCart} 
+                    />
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* DESKTOP VIEW: Loaded via react-slick */}
-            <div className="hidden md:block">
+            <div className="hidden md:block relative">
               <Slider {...sliderSettings}>
                 {productItems.map((product: Product, index: number) => (
-                  <div key={product?.id || index} className="px-3 py-2">
+                  <div key={product?.id || index} className="px-2.5 py-3">
                     <GhubaProductCard 
                       product={product} 
                       toggleLike={toggleLike} 
@@ -176,7 +205,21 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
         )}
 
       </div>
-    </section>
+
+      {/* Scoped CSS overrides for desktop slider track height equality */}
+      <style jsx global>{`
+        .slick-track {
+          display: flex !important;
+          align-items: stretch !important;
+        }
+        .slick-slide {
+          height: auto !important;
+        }
+        .slick-slide > div {
+          height: 100%;
+        }
+      `}</style>
+    </motion.section>
   );
 };
 
