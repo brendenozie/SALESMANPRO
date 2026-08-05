@@ -25,7 +25,9 @@ import {
 } from "@/types/typings";
 
 import {
-  storeSteps,
+  storeCategorySelectionSteps,
+  storeCategoryVariantSelectionSteps,
+  storeProfileSteps,
   pricingSteps,
   websiteSteps,
   locationsSteps,
@@ -204,6 +206,7 @@ export default function CreateStoreForm({
 
     addresses: [], // For multiple company addresses (locations)
 
+
     // --- JSON fields ---
     awards: [],
     metrics: [],
@@ -246,6 +249,8 @@ export default function CreateStoreForm({
       isPaystackEnabled: false, // New: Default to false
       isGhubaEnabled: false, // New: Default to false
 
+
+
       // --- Configuration Keys ---
       // Stripe
       stripePublishableKey: null,
@@ -263,6 +268,7 @@ export default function CreateStoreForm({
       // --- Paystack Keys ---
       paystackPublicKey: null, // New: Paystack Public Key
       paystackSecretKey: null, // New: Paystack Secret Key
+
 
 
       // Ghuba (NEW FIELDS)
@@ -337,7 +343,8 @@ export default function CreateStoreForm({
       fontFamily: "Inter, sans-serif",
       layoutStyle: "default",
     },
-    galleries: []
+    galleries: [],
+    subscription: null
   };
 
 
@@ -463,13 +470,19 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
 
   const allSteps = useMemo<StepConfig[]>(() => {
     // 1) always start with your store steps
-    const list = [...storeSteps];
+    const list = [...storeCategorySelectionSteps];
+
+    if (form.hasWebsite) {
+      list.push(...storeCategoryVariantSelectionSteps);
+    }
+
+    list.push(...storeProfileSteps);
 
     // 2) if they've opted for a website, add payment steps...
     if (form.hasWebsite) {
       // 3) ...and, for certain categories, add pricing
       const cat = form.category?.toLowerCase().trim() || "";
-
+      
       if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         list.push(...pricingSteps);
       }
@@ -1317,6 +1330,16 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     // }
   };
 
+  const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));
+  const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
+
+  const goToStep = (stepKey: string) => {
+    const stepIndex = allSteps.findIndex((s) => s.key === stepKey);
+    if (stepIndex !== -1) {
+      setStepIndex(stepIndex);
+    }
+  };
+
   const handlers: Handlers = {
     onUpdatePaymentSettings, // You'll need to update your Handlers type definition
     handleChange,
@@ -1330,7 +1353,6 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     handleLocationSave,
     handleLocationUpdate,
     handleLocationDelete,
-
 
     onChangeSettings,
 
@@ -1368,10 +1390,12 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
     onToggleLocation,
     onBulkToggleLocations,
-  };
 
-  const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));
-  const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
+    next,
+    prev,
+    goToStep,
+    totalSteps
+  };
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);

@@ -9,10 +9,9 @@ import {
   ArrowRightIcon,
   ArrowLeftIcon,
   ExclamationTriangleIcon,
-  XMarkIcon,
   CloudArrowUpIcon,
   ArrowPathIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 
 /* ==========================================================================
@@ -60,7 +59,6 @@ export default function SetupWizardLayout({
   handleSubmit,
   setStepIndex,
 }: SetupWizardLayoutProps) {
-  
   const [copied, setCopied] = useState(false);
 
   const copyErrorToClipboard = async () => {
@@ -74,8 +72,8 @@ export default function SetupWizardLayout({
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 flex flex-col md:flex-row relative font-sans antialiased selection:bg-indigo-500/30 transition-colors duration-300">
       
       {/* ====================================================================
-         1. SUBMISSION / TRANSACTIONAL OVERLAY MODAL
-         ==================================================================== */}
+          1. SUBMISSION / TRANSACTIONAL OVERLAY MODAL
+          ==================================================================== */}
       <AnimatePresence>
         {(isSubmitting || submissionError) && (
           <motion.div
@@ -91,35 +89,36 @@ export default function SetupWizardLayout({
               transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
               className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/80 p-6 sm:p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-md w-full text-center relative overflow-hidden"
             >
-              {/* Premium Top Multi-Color Trim Bar */}
-              <div className={clsx(
-                "absolute top-0 left-0 right-0 h-1.5",
-                submissionError 
-                  ? "bg-rose-500" 
-                  : "bg-gradient-to-r from-violet-600 via-indigo-500 to-emerald-500 animate-gradient-xy"
-              )} />
+              {/* Top Accent Bar */}
+              <div
+                className={clsx(
+                  "absolute top-0 left-0 right-0 h-1.5",
+                  submissionError
+                    ? "bg-rose-500"
+                    : "bg-gradient-to-r from-violet-600 via-indigo-500 to-emerald-500 animate-gradient-xy"
+                )}
+              />
 
               {!submissionError ? (
-                /* --- LOADING STATE COMPONENTS --- */
+                /* --- LOADING STATE --- */
                 <>
                   <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
-                    {/* Concentric Cosmic Spinners */}
                     <div className="absolute inset-0 border-4 border-violet-500/20 border-t-violet-600 rounded-full animate-spin" />
                     <div className="absolute inset-2 border-4 border-indigo-500/10 border-r-indigo-500 rounded-full animate-spin [animation-duration:1.5s] reversed" />
                     <div className="absolute inset-4 border-4 border-emerald-500/10 border-b-emerald-400 rounded-full animate-spin [animation-duration:0.8s]" />
                     <CloudArrowUpIcon className="w-8 h-8 text-indigo-500 dark:text-indigo-400 animate-pulse" />
                   </div>
-                  
+
                   <h3 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 mb-2">
-                    Syncing Store Assets
+                    Setting Up Your Shop
                   </h3>
                   <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 px-2 leading-relaxed">
-                    We are uploading encrypted records, mapping secure routes, and initializing configurations. Please preserve this sequence active.
+                    We’re saving your details, connecting everything securely, and polishing up your store. Hang tight for just a moment!
                   </p>
                 </>
               ) : (
-                /* --- COMPREHENSIVE ERROR DIAGNOSTIC VIEW --- */
-                <motion.div 
+                /* --- ERROR VIEW --- */
+                <motion.div
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="w-full max-h-[80vh] flex flex-col text-left"
@@ -130,13 +129,15 @@ export default function SetupWizardLayout({
                     </div>
                     <div>
                       <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-50 tracking-tight">
-                        Pipeline Synchronization Fault
+                        Hit a Bump in the Road
                       </h3>
-                      <p className="text-xs text-zinc-400 font-medium">Validation failed at destination node</p>
+                      <p className="text-xs text-zinc-400 font-medium">
+                        Something went sideways while saving your details
+                      </p>
                     </div>
                   </div>
 
-                  {/* Interactive Error Code Viewport */}
+                  {/* Interactive Error Viewport */}
                   <div className="relative group bg-zinc-950 rounded-xl p-4 mb-6 border border-zinc-800 shadow-inner">
                     <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
@@ -144,7 +145,7 @@ export default function SetupWizardLayout({
                         onClick={copyErrorToClipboard}
                         className="px-2 py-1 text-[10px] uppercase font-bold tracking-wider rounded bg-zinc-800 text-zinc-400 hover:text-white transition"
                       >
-                        {copied ? "Copied" : "Copy Trace"}
+                        {copied ? "Copied!" : "Copy Details"}
                       </button>
                     </div>
                     <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
@@ -154,14 +155,14 @@ export default function SetupWizardLayout({
                     </div>
                   </div>
 
-                  {/* Modeless Action Decks */}
+                  {/* Action Buttons */}
                   <div className="flex flex-col gap-2.5 w-full">
                     <button
                       type="button"
                       onClick={() => setSubmissionError(null)}
                       className="w-full py-3 px-4 bg-zinc-900 dark:bg-zinc-50 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 rounded-xl font-bold text-sm tracking-wide transition shadow-sm active:scale-[0.99]"
                     >
-                      Refine Parameters & Retry
+                      Give It Another Shot
                     </button>
                     <button
                       type="button"
@@ -171,7 +172,7 @@ export default function SetupWizardLayout({
                       }}
                       className="text-xs font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 py-2 transition text-center"
                     >
-                      Dismiss Operational Stack
+                      Close & Fix Info
                     </button>
                   </div>
                 </motion.div>
@@ -182,8 +183,8 @@ export default function SetupWizardLayout({
       </AnimatePresence>
 
       {/* ====================================================================
-         2. CORE ARTIFICIAL INTELLIGENCE EMULATION OVERLAY
-         ==================================================================== */}
+          2. ARTIFICIAL INTELLIGENCE OVERLAY
+          ==================================================================== */}
       <AnimatePresence>
         {isAiProcessing && (
           <motion.div
@@ -199,7 +200,6 @@ export default function SetupWizardLayout({
               transition={{ type: "spring", stiffness: 140, damping: 20 }}
               className="p-8 sm:p-10 max-w-md w-full text-center flex flex-col items-center"
             >
-              {/* Dynamic Aura Gradient Behind Sparkle Core */}
               <div className="relative mb-8">
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full blur-xl opacity-60 animate-pulse" />
                 <motion.div
@@ -212,9 +212,9 @@ export default function SetupWizardLayout({
               </div>
 
               <h3 className="text-2xl font-black text-white tracking-tight mb-2">
-                AI Pipeline Synthesizing
+                AI Magic in Progress
               </h3>
-              
+
               <AnimatePresence mode="wait">
                 <motion.p
                   key={aiStatus}
@@ -228,10 +228,10 @@ export default function SetupWizardLayout({
               </AnimatePresence>
 
               <p className="text-xs text-zinc-400 max-w-xs mt-3 leading-relaxed">
-                Assembling content matrix, executing layout optimizations, and indexing parameters.
+                Cooking up tailored layouts, organizing your content, and getting everything tailored to your vibe.
               </p>
 
-              {/* Laser Loading Metrics Indicators */}
+              {/* Pulsing Dots */}
               <div className="flex items-center gap-2 mt-8 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
                 {[0, 1, 2].map((i) => (
                   <motion.div
@@ -256,12 +256,12 @@ export default function SetupWizardLayout({
       </AnimatePresence>
 
       {/* ====================================================================
-         3. MOBILE PERSISTENT TOP UTILITY BAR
-         ==================================================================== */}
+          3. MOBILE PERSISTENT TOP UTILITY BAR
+          ==================================================================== */}
       <div className="md:hidden bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 py-3.5 px-5 flex justify-between items-center shadow-sm sticky top-0 z-30 backdrop-blur-md bg-white/90 dark:bg-zinc-900/90">
         <div className="flex flex-col">
           <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-            Progress Tracking
+            Your Progress
           </span>
           <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
             Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
@@ -275,8 +275,8 @@ export default function SetupWizardLayout({
       </div>
 
       {/* ====================================================================
-         4. DESKTOP WIZARD NAVIGATION SIDEBAR
-         ==================================================================== */}
+          4. DESKTOP WIZARD NAVIGATION SIDEBAR
+          ==================================================================== */}
       <motion.aside
         className="hidden md:flex flex-col bg-white dark:bg-zinc-900/70 border-r border-zinc-200/50 dark:border-zinc-800/60 p-0 sticky top-0 h-screen z-10 overflow-hidden backdrop-blur-xl"
         initial={false}
@@ -295,9 +295,9 @@ export default function SetupWizardLayout({
               </div>
               <div>
                 <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">
-                  Store Deployer
+                  Store Builder
                 </h2>
-                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Configuration Engine</p>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Setup Guide</p>
               </div>
             </div>
 
@@ -306,7 +306,7 @@ export default function SetupWizardLayout({
               {allSteps.map((s, i) => {
                 const isCompleted = i < stepIndex;
                 const isActive = i === stepIndex;
-                
+
                 return (
                   <button
                     key={s.key}
@@ -314,14 +314,14 @@ export default function SetupWizardLayout({
                     onClick={() => setStepIndex(i)}
                     className={clsx(
                       "group flex items-center gap-3.5 p-3 rounded-2xl transition-all duration-200 text-left relative outline-none focus:ring-1 focus:ring-indigo-500/30",
-                      isActive 
-                        ? "bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-white shadow-sm font-semibold" 
+                      isActive
+                        ? "bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-white shadow-sm font-semibold"
                         : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30"
                     )}
                   >
-                    {/* Active Track Highlight Tab Indicator */}
+                    {/* Active Track Indicator */}
                     {isActive && (
-                      <motion.div 
+                      <motion.div
                         layoutId="activeIndicator"
                         className="absolute left-0 top-3 bottom-3 w-1 bg-indigo-600 rounded-full"
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -340,7 +340,7 @@ export default function SetupWizardLayout({
                     >
                       {isCompleted ? <CheckCircleIcon className="w-5 h-5 stroke-[2.5]" /> : i + 1}
                     </span>
-                    
+
                     <span className="text-xs tracking-tight font-medium truncate">
                       {s.title}
                     </span>
@@ -348,7 +348,7 @@ export default function SetupWizardLayout({
                 );
               })}
 
-              {/* Terminal Review Matrix Button */}
+              {/* Final Review Step */}
               <button
                 type="button"
                 onClick={() => setStepIndex(allSteps.length)}
@@ -359,30 +359,32 @@ export default function SetupWizardLayout({
                     : "border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-600 dark:hover:text-zinc-200"
                 )}
               >
-                <span className={clsx(
-                  "w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black transition",
-                  stepIndex === allSteps.length 
-                    ? "bg-indigo-600 text-white" 
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
-                )}>
+                <span
+                  className={clsx(
+                    "w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black transition",
+                    stepIndex === allSteps.length
+                      ? "bg-indigo-600 text-white"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+                  )}
+                >
                   ★
                 </span>
-                <span className="text-xs tracking-tight font-medium">Global Summary</span>
+                <span className="text-xs tracking-tight font-medium">Final Review</span>
               </button>
             </nav>
           </div>
 
-          {/* Infrastructure Health Stat Footer inside Sidebar */}
+          {/* Sidebar Status Footer */}
           <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-100 dark:border-zinc-800 text-[10px] font-bold text-zinc-400 tracking-wider uppercase flex items-center justify-between">
-            <span>Core Core Stack: Active</span>
+            <span>System Ready</span>
             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
           </div>
         </div>
       </motion.aside>
 
       {/* ====================================================================
-         5. MAIN WORKSPACE CONTAINER WINDOW
-         ==================================================================== */}
+          5. MAIN WORKSPACE CONTAINER WINDOW
+          ==================================================================== */}
       <main className="flex-1 flex flex-col py-4 sm:py-6 relative max-w-6xl mx-auto w-full px-0 sm:px-4 lg:px-4">
         
         {/* Progress Bar & Desktop Step Header Wrapper */}
@@ -395,7 +397,7 @@ export default function SetupWizardLayout({
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          {/* Laser-Glow Segmented Progress Module */}
+          {/* Segmented Progress Bar */}
           <div className="relative mb-6 pt-2">
             <div className="h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden relative">
               <div
@@ -403,8 +405,8 @@ export default function SetupWizardLayout({
                 style={{ width: `${percent}%` }}
               />
             </div>
-            
-            {/* Interactive Dynamic Milestone Anchor Nodes */}
+
+            {/* Milestone Dots */}
             <div className="absolute inset-x-0 top-1.5 flex justify-between items-center px-0.5 pointer-events-none">
               {Array.from({ length: totalSteps }).map((_, i) => (
                 <div
@@ -420,10 +422,10 @@ export default function SetupWizardLayout({
             </div>
           </div>
 
-          {/* Desktop Subheader Metrics */}
+          {/* Desktop Header */}
           <div className="hidden md:flex justify-between items-center mb-6 pb-4 border-b border-zinc-200/50 dark:border-zinc-800/60 text-xs text-zinc-400 font-bold uppercase tracking-wider">
             <div className="flex items-center space-x-2">
-              <span className="text-zinc-500">Current Scope:</span>
+              <span className="text-zinc-500">You are on:</span>
               <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                 Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
               </span>
@@ -435,8 +437,8 @@ export default function SetupWizardLayout({
         </motion.div>
 
         {/* ====================================================================
-           6. VIEWPORT CONTENT WINDOW (Step Content Injection)
-           ==================================================================== */}
+            6. VIEWPORT CONTENT WINDOW
+            ==================================================================== */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/80 rounded-3xl flex-1 overflow-y-auto min-h-[55vh] shadow-sm transition-colors duration-300">
           <AnimatePresence mode="wait">
             <motion.div
@@ -453,11 +455,11 @@ export default function SetupWizardLayout({
         </div>
 
         {/* ====================================================================
-           7. PERSISTENT LOWER EXECUTION CONTROL CONSOLE BAR
-           ==================================================================== */}
+            7. LOWER CONTROL BAR
+            ==================================================================== */}
         <div className="sticky bottom-0 md:static bg-white dark:bg-zinc-950 border-t md:border-t-0 border-zinc-100 dark:border-zinc-800/60 pt-4 mt-6 flex justify-between items-center px-4 md:px-0 py-3 z-20 backdrop-blur-md bg-white/95 dark:bg-zinc-950/95">
           
-          {/* Reverse Logic Navigation Anchor */}
+          {/* Back Button */}
           <button
             type="button"
             disabled={stepIndex === 0}
@@ -473,7 +475,7 @@ export default function SetupWizardLayout({
             <span>Back</span>
           </button>
 
-          {/* Forward Logic Execution Anchors */}
+          {/* Next / Submit Button */}
           {stepIndex < allSteps.length ? (
             <button
               type="button"
@@ -493,11 +495,11 @@ export default function SetupWizardLayout({
               {isSubmitting ? (
                 <>
                   <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                  <span>Configuring Pipeline...</span>
+                  <span>Launching Store...</span>
                 </>
               ) : (
                 <>
-                  <span>Commit & Deploy Store</span>
+                  <span>Launch My Store</span>
                   <ArrowRightIcon className="w-4 h-4 stroke-[2.5]" />
                 </>
               )}

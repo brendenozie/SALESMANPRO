@@ -235,6 +235,20 @@ export default function StoresPage() {
   // --- STATE PRESERVATION: Handle pagination memory ---
   const pageParam = searchParams.get('page');
   const page = parseInt(pageParam || '1', 10);
+    
+  // --- Auth & Loading Pipeline ---
+  if (status === 'unauthenticated') {
+    if (typeof window !== 'undefined') {
+      const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
+      const callbackUrl = `${window.location.origin}${pathname}${queryString}`;
+      
+      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      authUrl.searchParams.set("callbackUrl", callbackUrl);
+      
+      window.location.href = authUrl.toString();
+    }
+    return null;
+  }
 
   useEffect(() => {
     // If the user navigates here without a page parameter, check if they had one previously
@@ -331,13 +345,6 @@ export default function StoresPage() {
   };
 
   const handleCreate = () => router.push(`/stores/create`);
-  
-  // --- Auth & Loading Pipeline ---
-  if (status === 'unauthenticated') {
-    // Client-side redirect as a fallback, though middleware is preferred
-    router.push(`/signin?callbackUrl=${encodeURIComponent(pathname + '?' + searchParams.toString())}`);
-    return null;
-  }
 
   const isLoading = status === 'loading' || isStoresLoading;
 

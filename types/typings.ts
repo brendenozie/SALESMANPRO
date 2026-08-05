@@ -1163,6 +1163,11 @@ export interface Handlers {
   ) => void;
   addItem: (field: "partnerLogos") => void;
   removeItem: (field: "partnerLogos", index: number) => void;
+
+  prev: () => void;
+  next: () => void;
+  goToStep: (stepKey: string) => void;
+  totalSteps: number;
 }
 // export interface Handlers {
 //   handleChange: (

@@ -20,16 +20,22 @@ import { AwardsAccordion } from '../components/stores/create/AwardsAccordion/Awa
 import { MetricsAccordion } from '../components/stores/create/MetricsAccordion/MetricsAccordion';
 import { StatsAccordion } from '../components/stores/create/StatsAccordion/StatsAccordion';
 import ProductPricingAndTiers  from '../components/stores/create/PricingTiers/PricingTiers';
-import CategorySelect from '../components/stores/create/CategorySelect/CategorySelect';
+import MainCategorySelect from '../components/stores/create/MainCategorySelect/MainCategorySelect';
 import LocationSelectionAccordion from '@/components/stores/create/LocationSelectionAccordion/LocationSelectionAccordion';
 import { StepConfig } from '@/types/typings';
+import MainCategoryVariantSelect from '@/components/stores/create/MainCategoryVariantSelect/MainCategoryVariantSelect';
 
 // Interfaces
-export const storeSteps: StepConfig[] = [
+export const storeCategorySelectionSteps: StepConfig[] = [
   {
     key: 'businesscategory',
     title: 'Business Category',
-    render: (f, h, siteCategories) => <CategorySelect {...f} handleChange={h.handleChange} siteCategories={siteCategories} />,
+    render: (f, h, siteCategories) => <MainCategorySelect 
+                                          {...f} 
+                                          handleChange={h.handleChange} 
+                                          siteCategories={siteCategories}
+                                          next={h.next}
+                                        />,
   },
   {
     key: 'basic',
@@ -44,6 +50,17 @@ export const storeSteps: StepConfig[] = [
       domain={f.domain}
       handleChange={h.handleChange} />,
   },
+];
+
+export const storeCategoryVariantSelectionSteps: StepConfig[] = [
+  {
+    key: 'businesscategoryvariant',
+    title: 'Business Category Variant',
+    render: (f, h, siteCategories) => <MainCategoryVariantSelect {...f} handleChange={h.handleChange} siteCategories={siteCategories}/>,
+  },
+];
+
+export const storeProfileSteps: StepConfig[] = [
   {
     key: 'storeProfile',
     title: 'Store Profile',

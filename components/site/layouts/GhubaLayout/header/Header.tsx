@@ -262,6 +262,15 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
 
   return (
     <div className="flex items-center space-x-1 sm:space-x-3">
+      {/* Desktop "Start Selling" Button positioned next to the profile for high visibility */}
+      <button
+        onClick={() => router.push("/stores")}
+        className="hidden lg:flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-full text-sm font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+      >
+        <BuildingLibraryIcon className="w-4 h-4" />
+        Start Selling
+      </button>
+
       {user && (
         <button 
           onClick={() => router.push("/ghuba/profile")} 
@@ -300,7 +309,11 @@ const DesktopMenu = () => (
         <li key={name}>
           <a 
             href={link} 
-            className="flex items-center px-4 py-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400 transition-all gap-2"
+            className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 ${
+              name === "Start Selling" 
+                ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10" 
+                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
+            }`}
           >
             <span className="opacity-70">{icon}</span> {name}
           </a>
@@ -350,9 +363,12 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
 
 const BottomNav = ({ path }: { path: string }) => {
   const router = useRouter();
+  
+  // Added "Sell" into the mobile bottom navigation for guaranteed visibility
   const items = [
     { name: "Home", icon: HomeIcon, link: "/" },
     { name: "Explore", icon: MagnifyingGlassIcon, link: "/ghuba/productlist" },
+    { name: "Sell", icon: BuildingLibraryIcon, link: "/stores" }, 
     { name: "Deals", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
     { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
   ];
@@ -366,7 +382,11 @@ const BottomNav = ({ path }: { path: string }) => {
             key={name} 
             onClick={() => router.push(link)} 
             className={`flex flex-col items-center p-2 rounded-xl transition-all ${
-              isActive ? "text-amber-500" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              isActive 
+                ? "text-amber-500" 
+                : name === "Sell" 
+                  ? "text-zinc-800 dark:text-zinc-100 hover:text-amber-500" 
+                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
             }`}
           >
             <Icon className={`w-6 h-6 ${isActive ? "fill-amber-500/10 stroke-2" : "stroke-[1.5]"}`} />
@@ -538,11 +558,12 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
   );
 };
 
+// Updated Menu Label to "Start Selling" 
 const menuItems = [
   { name: "Home", icon: <HomeIcon className="w-5 h-5" />, link: "/" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
-  { name: "My Shop", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "/stores" },
+  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "/stores" }, 
   { name: "Track Order", icon: <TruckIcon className="w-5 h-5" />, link: "/ghuba/orderTracking" },
 ];
 

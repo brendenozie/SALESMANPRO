@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     const isAvailable = searchParams.get("availability") === "true";
     const sortParam = searchParams.get("sort") || "createdAt:desc";
     const statusParam = searchParams.get("status") || "ACTIVE";
-    const ghubaAdminApprovedParam =  searchParams.get("ghubaAdminApproved") === "true";
+    const ghubaAdminApprovedParam =  searchParams.get("ghubaAdminApproved") ? searchParams.get("ghubaAdminApproved") === "true" : true;
     const ghubaStatusParam = searchParams.get("ghubaStatus") || "APPROVED";
     const cursor = searchParams.get("cursor");
 

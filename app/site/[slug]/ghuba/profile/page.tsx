@@ -27,9 +27,10 @@ import SecurityOverview from '@/components/security';
 import CommunicationSupport from '@/components/communicationSupport';
 import AchievementsBadges from '@/components/AchievementsBadges';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { useSearchParams } from 'react-router-dom';
 
 const tabs = [
   { name: 'Overview', icon: HomeIcon, key: 'overview' },
@@ -57,6 +58,19 @@ const ProfilePage: React.FC = () => {
   const { isDarkMode, setMode } = useStateContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const userId = session?.user?.id;
+    
+  // --- Auth & Loading Pipeline ---
+  if (status === 'unauthenticated') {
+    if (typeof window !== 'undefined') {
+      const callbackUrl = `${window.location.origin}`;
+      
+      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      authUrl.searchParams.set("callbackUrl", callbackUrl);
+      
+      window.location.href = authUrl.toString();
+    }
+    return null;
+  }
 
   // Summary stats state
   const [stats, setStats] = useState({ orders: 0, points: 0, visits: 0 });
@@ -69,6 +83,7 @@ const ProfilePage: React.FC = () => {
     }
   }, [status, userId]);
 
+  
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row transition-colors duration-300">
       {/* Sidebar */}
