@@ -190,6 +190,20 @@ async function createCompany(req: Request, context: HandlerContext) {
   }
 
   try {
+    // 1. Fetch the default Trial Plan (adjust query if your plan identifier differs)
+    const trialPlan = await prisma.plan.findFirst({
+      where: {
+        OR: [
+          { name: { contains: "Trial", mode: "insensitive" } },
+          { name: { contains: "Free", mode: "insensitive" } },
+        ],
+      },
+    });
+
+    
+    const now = new Date();
+    const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+
     const newCompany = await prisma.company.create({
       data: {
         // Direct fields
@@ -219,6 +233,26 @@ async function createCompany(req: Request, context: HandlerContext) {
 
         // User link - using the user ID from the handler's context
         user: { connect: { id: user.id } },
+
+        // Automatically create 10-Day Trial Subscription if trialPlan exists
+        subscriptions: trialPlan
+          ? {
+              create: {
+                userId: user.id,
+                planId: trialPlan.id,
+                status: "ACTIVE",
+                billingCycle: "TRIAL",
+                amountPaid: 0,
+                currency: data.currency || "KES",
+                startedAt: now,
+                renewalDate: tenDaysFromNow,
+                meta: {
+                  isTrial: true,
+                  trialEndsAt: tenDaysFromNow.toISOString(),
+                },
+              },
+            }
+          : undefined,
 
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,

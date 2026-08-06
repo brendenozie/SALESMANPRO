@@ -12,19 +12,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const {
-      companyId,
-      planId,
-      phone,
-      reference,
-      amount,
-      billingPeriod,
-    } = await req.json();
+    const { companyId, planId, phone, reference, amount, billingPeriod } =
+      await req.json();
 
     if (!companyId || !planId || !phone) {
       return NextResponse.json(
         { message: "companyId, planId and phone are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -34,7 +28,10 @@ export async function POST(req: Request) {
     });
 
     if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Company not found" },
+        { status: 404 },
+      );
     }
 
     // ✅ Validate plan
@@ -75,12 +72,17 @@ export async function POST(req: Request) {
     if (existing) {
       return NextResponse.json(
         { message: "You already have a pending subscription" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // ✅ Temp reference (real mpesa ref comes from SMS)
     // const tempRef = `TILL-${Date.now()}`;
+    // Calculate renewal duration based on billing period
+    const durationDays = billingPeriod === "ANNUALLY" ? 365 : 30;
+    const renewalDate = new Date(
+      Date.now() + durationDays * 24 * 60 * 60 * 1000,
+    );
 
     // ✅ Create subscription + payment
     const subscription = await prisma.subscriptionCompany.create({
@@ -96,7 +98,7 @@ export async function POST(req: Request) {
         startedAt: new Date(),
         status: "AWAITING_CONFIRMATION",
         //give a day for testing purposes
-        renewalDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        renewalDate: renewalDate,
         meta: {
           phone,
           // monthsPaidFor,
