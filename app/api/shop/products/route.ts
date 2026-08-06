@@ -102,8 +102,10 @@ export async function GET(req: Request) {
         images: true,
         brand: true,
         category: true,
+        subCategoryName: true,
         isAvailable: true,
         createdAt: true,
+        productCategoryId: true,
       },
     });
 

@@ -61,12 +61,15 @@ import {
   MapIcon,
 } from "@heroicons/react/24/outline";
 
-// Define hierarchy (Starter is 1, Pro is 4)
+// Define hierarchy of tiers with weights for comparison
 const TIER_WEIGHTS: Record<string, number> = {
-  "Ghuba Starter": 1,
-  "Ghuba Basic": 2,
-  "Ghuba Growth": 3,
-  "Ghuba Pro": 4,
+  "Ghuba Engage": 0,
+  "Ghuba Free": 1,
+  "Ghuba Starter": 2,
+  "Ghuba Basic": 3,
+  "Ghuba Growth": 4,
+  "Ghuba Pro": 5,  
+  "Ghuba Trial": 6,
 };
 
 export interface SubMenuItem {
@@ -99,8 +102,8 @@ const evaluateMenuItemsAccess = (
 
   return items.map((item) => {
     // 1. Lock if subscription is inactive, or if the tier requirement isn't met
-    let itemLocked = !isSubscriptionActive; 
-    
+    let itemLocked = !isSubscriptionActive;
+
     if (item.minTier) {
       const requiredWeight = TIER_WEIGHTS[item.minTier] ?? 1; //[cite: 2]
       if (currentWeight < requiredWeight) {
@@ -111,7 +114,7 @@ const evaluateMenuItemsAccess = (
     // 2. Evaluate sub-items using the same logic
     const updatedSubItems = item.subItems?.map((sub) => {
       let subLocked = !isSubscriptionActive;
-      
+
       if (sub.minTier) {
         const requiredWeight = TIER_WEIGHTS[sub.minTier] ?? 1; //[cite: 2]
         if (currentWeight < requiredWeight) {
@@ -134,7 +137,7 @@ const commonEcommerce = (
   adminSlug: string,
   accessLevel: string,
   currentTier: string,
-  isSubscriptionActive: boolean
+  isSubscriptionActive: boolean,
 ): MenuItem[] => {
   const rawItems: MenuItem[] = [
     {
@@ -142,21 +145,25 @@ const commonEcommerce = (
       href: `/admin/${adminSlug}`,
       icon: HomeIcon,
       minTier: "Ghuba Starter",
-      isLocked: false
+      isLocked: false,
     },
     {
       label: "POS",
       href: `/admin/${adminSlug}/storepos`,
       icon: ClipboardDocumentListIcon,
       minTier: "Ghuba Basic",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"]
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
     },
     {
       label: "Categories",
       href: `/admin/${adminSlug}/categories`,
       icon: ClipboardDocumentListIcon,
       minTier: "Ghuba Starter",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
     },
     {
       label: "Products",
@@ -167,13 +174,17 @@ const commonEcommerce = (
           label: "Browse Catalog",
           href: `/admin/${adminSlug}/inventory`,
           minTier: "Ghuba Starter",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
         },
         {
           label: "Market List",
           href: `/admin/${adminSlug}/mymarketplace`,
           minTier: "Ghuba Basic",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
         },
       ],
     },
@@ -186,13 +197,17 @@ const commonEcommerce = (
           label: "Sales Agents",
           href: `/admin/${adminSlug}/agents`,
           minTier: "Ghuba Growth",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"],
         },
         {
           label: "Clients",
           href: `/admin/${adminSlug}/consumers`,
           minTier: "Ghuba Basic",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
         },
       ],
     },
@@ -205,7 +220,9 @@ const commonEcommerce = (
           label: "All Leads",
           href: `/admin/${adminSlug}/salesleads`,
           minTier: "Ghuba Growth",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"],
         },
       ],
     },
@@ -218,19 +235,33 @@ const commonEcommerce = (
           label: "Agent Orders",
           href: `/admin/${adminSlug}/agentorders`,
           minTier: "Ghuba Growth",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"],
         },
         {
           label: "Marketplace",
           href: `/admin/${adminSlug}/customerorders`,
           minTier: "Ghuba Basic",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
         },
         {
           label: "Delivery",
           href: `/admin/${adminSlug}/deliveries`,
           minTier: "Ghuba Growth",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"],
+        },
+        {
+          label: "Payments",
+          href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+          minTier: "Ghuba Starter",
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
         },
       ],
     },
@@ -244,49 +275,65 @@ const commonEcommerce = (
           label: "Vehicles",
           href: `/admin/${adminSlug}/store-transport-vehicles`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Routes",
           href: `/admin/${adminSlug}/store-transport-routes`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Drivers",
           href: `/admin/${adminSlug}/store-transport-drivers`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Schedules",
           href: `/admin/${adminSlug}/store-transport-schedules`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Maintenance Records",
           href: `/admin/${adminSlug}/store-transport-maintenance-records`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
         {
           label: "Reports",
           href: `/admin/${adminSlug}/store-transport-reports`,
           minTier: "Ghuba Pro",
-          isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"]
+          isLocked:
+            !isSubscriptionActive ||
+            TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
         },
       ],
     },
@@ -294,49 +341,70 @@ const commonEcommerce = (
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
       icon: ChartBarIcon,
-      minTier: "Ghuba Growth",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Growth"]
+      minTier: "Ghuba Starter",
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
     },
     {
       label: "Blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: DocumentTextIcon,
       minTier: "Ghuba Starter",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
     },
     {
       label: "gallery",
       href: `/admin/${adminSlug}/gallery`,
       icon: PhotoIcon,
       minTier: "Ghuba Starter",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
     },
     {
       label: "Messages",
       href: `/admin/${adminSlug}/messages`,
       icon: ChatBubbleBottomCenterTextIcon,
       minTier: "Ghuba Basic",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"]
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
     },
     {
       label: "Settings",
       href: `/admin/${adminSlug}/settings`,
       icon: Cog6ToothIcon,
       minTier: "Ghuba Starter",
-      isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+      isLocked:
+        !isSubscriptionActive ||
+        TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
     },
   ];
 
-  return evaluateMenuItemsAccess(rawItems, currentTier, isSubscriptionActive, accessLevel);
+  return evaluateMenuItemsAccess(
+    rawItems,
+    currentTier,
+    isSubscriptionActive,
+    accessLevel,
+  );
 };
 
 export const getCategoryMenus = (
   adminSlug: string,
   accessLevel: string,
   currentTier: string = "Ghuba Starter",
-  isSubscriptionActive: boolean = false
+  isSubscriptionActive: boolean = false,
 ) => {
-  const filterTiers = (items: MenuItem[]) => evaluateMenuItemsAccess(items, currentTier, isSubscriptionActive, accessLevel);
+  const filterTiers = (items: MenuItem[]) =>
+    evaluateMenuItemsAccess(
+      items,
+      currentTier,
+      isSubscriptionActive,
+      accessLevel,
+    );
 
   return {
     "E-commerce": commonEcommerce(
@@ -787,6 +855,14 @@ export const getCategoryMenus = (
               !isSubscriptionActive ||
               TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
           },
+          {
+            label: "Payments",
+            href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
         ],
       },
       {
@@ -990,6 +1066,14 @@ export const getCategoryMenus = (
               !isSubscriptionActive ||
               TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Basic"],
           },
+          {
+            label: "Payments",
+            href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
         ],
       },
       {
@@ -1140,6 +1224,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
       },
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: CreditCardIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "Blogs",
         icon: DocumentTextIcon,
         subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
@@ -1281,6 +1374,15 @@ export const getCategoryMenus = (
               TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Pro"],
           },
         ],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        minTier: "Ghuba Starter",
+        icon: CreditCardIcon,
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "blogs",
@@ -1474,7 +1576,14 @@ export const getCategoryMenus = (
               !isSubscriptionActive ||
               TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
-
+          {
+            label: "Payments",
+            href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         ],
       },
@@ -1710,6 +1819,14 @@ export const getCategoryMenus = (
               !isSubscriptionActive ||
               TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
+          {
+            label: "Payments",
+            href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         ],
       },
@@ -1912,6 +2029,14 @@ export const getCategoryMenus = (
               !isSubscriptionActive ||
               TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
+          {
+            label: "Payments",
+            href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         ],
       },
@@ -2072,6 +2197,15 @@ export const getCategoryMenus = (
         label: "Analytics",
         href: `/admin/${adminSlug}/analytics`,
         icon: ChartBarIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: CreditCardIcon,
         minTier: "Ghuba Starter",
         isLocked:
           !isSubscriptionActive ||
@@ -2965,6 +3099,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
@@ -3069,6 +3212,15 @@ export const getCategoryMenus = (
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
         minTier: "Ghuba Starter",
         isLocked:
           !isSubscriptionActive ||
@@ -3278,6 +3430,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "Delivery",
         href: `/admin/${adminSlug}/delivery`,
         icon: GlobeAltIcon,
@@ -3416,6 +3577,15 @@ export const getCategoryMenus = (
           !isSubscriptionActive ||
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Added Orders for transaction tracking
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       {
         label: "Check-in",
         href: `/admin/${adminSlug}/manage-check-in`,
@@ -4013,6 +4183,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
@@ -4208,6 +4387,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "Analytics", // For insights
         href: `/admin/${adminSlug}/media-analytics`,
         icon: ChartBarIcon,
@@ -4318,6 +4506,15 @@ export const getCategoryMenus = (
           !isSubscriptionActive ||
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // For scheduling consultations
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
@@ -4492,6 +4689,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage offers, sales agreements, and contracts
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
@@ -4585,6 +4791,15 @@ export const getCategoryMenus = (
           !isSubscriptionActive ||
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // vehicle-manage Manage all property listings (add, edit, delete, status)
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/inquiries`,
@@ -4734,6 +4949,15 @@ export const getCategoryMenus = (
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage offers, sales agreements, and contracts
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
@@ -4787,6 +5011,15 @@ export const getCategoryMenus = (
         label: "Packages & Tours",
         href: `/admin/${adminSlug}/travel-packages`,
         icon: BriefcaseIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
         minTier: "Ghuba Starter",
         isLocked:
           !isSubscriptionActive ||
@@ -5075,7 +5308,14 @@ export const getCategoryMenus = (
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5104,36 +5344,79 @@ export const getCategoryMenus = (
         // href: `/admin/${adminSlug}/hostel`,
         icon: HomeIcon,
         subItems: [
-          { label: "Blocks", href: `/admin/${adminSlug}/property-blocks`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
-          { label: "Rooms", href: `/admin/${adminSlug}/property-rooms`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "Blocks",
+            href: `/admin/${adminSlug}/property-blocks`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+          {
+            label: "Rooms",
+            href: `/admin/${adminSlug}/property-rooms`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           {
             label: "Residents",
             href: `/admin/${adminSlug}/property-residents`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Room Assignments",
             href: `/admin/${adminSlug}/property-room-assignments`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Maintenance Requests",
             href: `/admin/${adminSlug}/property-maintenance-requests`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
-          { label: "Visitors", href: `/admin/${adminSlug}/property-visitors`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "Visitors",
+            href: `/admin/${adminSlug}/property-visitors`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           {
             label: "Fee Management",
             href: `/admin/${adminSlug}/property-fee-management`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           // { label: "Inventory", href: `/admin/${adminSlug}/property-inventory` },
-          { label: "Staff", href: `/admin/${adminSlug}/property-staff`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
-          { label: "Reports", href: `/admin/${adminSlug}/property-reports`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "Staff",
+            href: `/admin/${adminSlug}/property-staff`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+          {
+            label: "Reports",
+            href: `/admin/${adminSlug}/property-reports`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
         ],
       }, // Manage all property listings (add, edit, delete, status)
       {
@@ -5163,6 +5446,15 @@ export const getCategoryMenus = (
           !isSubscriptionActive ||
           TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       // Manage offers, sales agreements, and contracts
       //   Properties
       //   ├─ All Properties
@@ -5186,113 +5478,151 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/properties-virtual-tours`,
         icon: PlayCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage virtual tour content for listings
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/properties-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage client testimonials for properties
       {
         label: "Promotions & Deals",
         href: `/admin/${adminSlug}/properties-promotions`,
         icon: TagIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Create and manage discounts, special offers for listings
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/properties-faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage frequently asked questions related to properties
       {
         label: "Media Library",
         href: `/admin/${adminSlug}/properties-media`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Central place for property images, videos, and virtual tour media
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/properties-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Generate various reports (sales, agent performance, market trends)
       {
         label: "Settings",
         href: `/admin/${adminSlug}/properties-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // General administrative settings
     ]),
 
     "Fitness & Wellness": filterTiers([
-      { label: "Dashboard", 
-        href: `/admin/${adminSlug}`, 
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
-       }, // Overview of gym activity
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      }, // Overview of gym activity
       {
         label: "POS & Sales",
         href: `/admin/${adminSlug}/fitness-pos`,
         icon: CurrencyDollarIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Point of Sale and transaction management
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Programs",
         href: `/admin/${adminSlug}/fitness-listings`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage fitness programs, classes, schedules
       {
         label: "Classes",
         href: `/admin/${adminSlug}/fitness-classes`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage fitness programs, classes, schedules
       {
         label: "Trainers & Staff",
         href: `/admin/${adminSlug}/fitness-trainers`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage trainer profiles, availability
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5312,56 +5642,81 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/fitness-locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage physical gym locations, equipment, rooms
       {
         label: "Bookings & Schedule",
         href: `/admin/${adminSlug}/fitness-bookings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage class and personal training bookings
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       {
         label: "Notifications & Comms",
         href: `/admin/${adminSlug}/fitness-notifications`,
         icon: BellIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Send announcements, newsletters, client messages
       {
         label: "Virtual Tours",
         href: `/admin/${adminSlug}/fitness-virtual-tours`,
         icon: PlayCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Reports & Analytics",
         href: `/admin/${adminSlug}/fitness-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // View performance metrics, sales reports
       {
         label: "Settings",
         href: `/admin/${adminSlug}/fitness-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // General administrative settings, user roles
     ]),
 
@@ -5372,27 +5727,40 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/content`,
         icon: PencilSquareIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Blog posts, articles, website content
       {
         label: "Promotions & Deals",
         href: `/admin/${adminSlug}/promotions`,
         icon: TagIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Create and manage discounts, special offers
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5403,18 +5771,31 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
         label: "Testimonials",
         href: `/admin/${adminSlug}/testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage client testimonials
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage frequently asked questions
     ]),
 
@@ -5424,38 +5805,61 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/invoices`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/payments`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Refunds",
         href: `/admin/${adminSlug}/refunds`,
         icon: ArrowUturnLeftIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
     ]),
 
     "Consultant & Coach": filterTiers([
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] }, // Overview of key metrics
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      }, // Overview of key metrics
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5482,11 +5886,27 @@ export const getCategoryMenus = (
             label: "Categories",
             href: `/admin/${adminSlug}/categories`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
             // icon: ClipboardDocumentListIcon,
           },
-          { label: "Ebooks", href: `/admin/${adminSlug}/ebooks`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
-          { label: "Programs", href: `/admin/${adminSlug}/programs`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "Ebooks",
+            href: `/admin/${adminSlug}/ebooks`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+          {
+            label: "Programs",
+            href: `/admin/${adminSlug}/programs`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
           // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
           // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
@@ -5497,9 +5917,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/appointments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
-
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
       // {
       //   label: "Payments & Invoicing",
@@ -5515,52 +5945,79 @@ export const getCategoryMenus = (
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Reports & Analytics",
         href: `/admin/${adminSlug}/analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Icon for charts/graphs
       {
         label: "Messaging",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Icon for chat/messages
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Icon for gear/settings
     ]),
 
     "Public Speaking": filterTiers([
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] }, // Overview of key metrics
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      }, // Overview of key metrics
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5587,16 +6044,34 @@ export const getCategoryMenus = (
             label: "Categories",
             href: `/admin/${adminSlug}/categories`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
-          { label: "Ebooks", href: `/admin/${adminSlug}/ebooks`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
-          { label: "Programs", href: `/admin/${adminSlug}/programs`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "Ebooks",
+            href: `/admin/${adminSlug}/ebooks`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+          {
+            label: "Programs",
+            href: `/admin/${adminSlug}/programs`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           {
             label: "blogs",
             href: `/admin/${adminSlug}/blogs`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
-          
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+
             // icon: WrenchScrewdriverIcon,
           },
           // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
@@ -5609,9 +6084,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/appointments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
-
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
       // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
       // {
       //   label: "Payments & Invoicing",
@@ -5629,21 +6114,27 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Messaging",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Icon for chat/messages
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Icon for gear/settings
     ]),
 
@@ -5661,26 +6152,45 @@ export const getCategoryMenus = (
     // ],
 
     Security: filterTiers([
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] }, // Overview of key metrics
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      }, // Overview of key metrics
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5700,7 +6210,9 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/finance-team`,
         icon: ShieldCheckIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage experts/advisors
       // { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
       {
@@ -5708,86 +6220,134 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/finance-documents`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/finance-appointments`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // For scheduling consultations
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/finance-invoices`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // More explicit name
       {
         label: "Packages & Pricing",
         href: `/admin/${adminSlug}/finance-packages`,
         icon: TagIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage consultation packages
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/finance-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage client feedback
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/finance-faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // Manage frequently asked questions
       {
         label: "Blogs",
         icon: DocumentTextIcon,
-        subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] }],
+        subItems: [
+          {
+            label: "All Blogs",
+            href: `/admin/${adminSlug}/blogs`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+        ],
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/finance-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       }, // General admin settings
     ]),
 
     "Delivery & Logistics": filterTiers([
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] }, // Overview of key metrics
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      }, // Overview of key metrics
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Services",
         icon: ClipboardDocumentListIcon,
         href: `/admin/${adminSlug}/services`,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       // {
       //   label: "Bookings",
@@ -5800,8 +6360,30 @@ export const getCategoryMenus = (
         subItems: [
           // { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
           // { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-          { label: "Marketplace", href: `/admin/${adminSlug}/customerorders`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
-          { label: "Delivery", href: `/admin/${adminSlug}/deliveries`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "Marketplace",
+            href: `/admin/${adminSlug}/customerorders`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+          {
+            label: "Delivery",
+            href: `/admin/${adminSlug}/deliveries`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
+          {
+            label: "Payments",
+            href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
         ],
       },
       {
@@ -5813,37 +6395,49 @@ export const getCategoryMenus = (
             label: "Vehicles",
             href: `/admin/${adminSlug}/store-transport-vehicles`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/store-transport-routes`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/store-transport-drivers`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/store-transport-schedules`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/store-transport-maintenance-records`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/store-transport-fuel-logs`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           // {
           //   label: "Assignments",
@@ -5853,13 +6447,17 @@ export const getCategoryMenus = (
             label: "Incidents",
             href: `/admin/${adminSlug}/store-transport-incidents`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/store-transport-reports`,
             minTier: "Ghuba Starter",
-            isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
           },
         ],
       },
@@ -5873,13 +6471,22 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -5909,63 +6516,81 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Shipments & Orders",
         href: `/admin/${adminSlug}/logistics-shipments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Tracking & Status",
         href: `/admin/${adminSlug}/logistics-tracking`,
         icon: EyeIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/logistics-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Reports & Analytics",
         href: `/admin/${adminSlug}/logistics-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
     ]),
 
@@ -5976,20 +6601,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "leads",
         icon: UsersIcon,
         subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads`, minTier: "Ghuba Starter", isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"] },
+          {
+            label: "All Leads",
+            href: `/admin/${adminSlug}/salesleads`,
+            minTier: "Ghuba Starter",
+            isLocked:
+              !isSubscriptionActive ||
+              TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -6009,42 +6645,63 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/social-calendar`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Post Management",
         href: `/admin/${adminSlug}/social-posts`,
         icon: PencilSquareIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Analytics & Reports",
         href: `/admin/${adminSlug}/social-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Messages & Engagement",
         href: `/admin/${adminSlug}/social-messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/social-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: !isSubscriptionActive || TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"]
+        isLocked:
+          !isSubscriptionActive ||
+          TIER_WEIGHTS[currentTier] < TIER_WEIGHTS["Ghuba Starter"],
       },
     ]),
 

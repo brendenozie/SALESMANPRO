@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowRightIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -25,7 +30,10 @@ const Slider = dynamic(() => import("react-slick"), {
   loading: () => (
     <div className="flex gap-4 overflow-hidden py-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="w-full md:w-1/4 h-[380px] bg-zinc-100 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0" />
+        <div
+          key={i}
+          className="w-full md:w-1/4 h-[380px] bg-zinc-100 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0"
+        />
       ))}
     </div>
   ),
@@ -53,7 +61,10 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-const NewArrivals: React.FC<NewArrivalsProps> = ({ productItems = [], addToCart }) => {
+const NewArrivals: React.FC<NewArrivalsProps> = ({
+  productItems = [],
+  addToCart,
+}) => {
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
 
@@ -78,12 +89,14 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({ productItems = [], addToCart 
     ],
   };
 
+  if (!productItems.length) return null;
+
   return (
     <motion.section
       className="relative py-10 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-500 overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, amount: 0.1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
@@ -97,7 +110,10 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({ productItems = [], addToCart 
             </div>
 
             <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
-              Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 italic">Arrivals</span>
+              Latest{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 italic">
+                Arrivals
+              </span>
             </h2>
           </div>
 
@@ -113,9 +129,13 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({ productItems = [], addToCart 
         </div>
 
         <div>
-          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-6 pt-1 -mx-4 px-4 scrollbar-none">
+          {/* Mobile Hardware-Accelerated Snap Slider */}
+          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-6 pt-1 -mx-4 px-4 scrollbar-none touch-pan-x touch-pan-y">
             {productItems.map((product, index) => (
-              <div key={product?.id || index} className="snap-start w-[260px] shrink-0">
+              <div
+                key={product?.id || index}
+                className="snap-start w-[260px] sm:w-[280px] shrink-0"
+              >
                 <GhubaProductCard
                   product={product}
                   toggleLike={toggleLike}
@@ -126,6 +146,7 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({ productItems = [], addToCart 
             ))}
           </div>
 
+          {/* Desktop Slick Carousel */}
           <div className="hidden md:block relative">
             <Slider {...sliderSettings}>
               {productItems.map((product, index) => (

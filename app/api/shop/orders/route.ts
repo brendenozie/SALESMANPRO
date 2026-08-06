@@ -81,7 +81,8 @@ const orderSchema = z.object({
   shippingMethod: z.string().optional(),
   companyId: z.string().min(1, "Company ID is required"),
   paymentData: z.record(z.string(), z.any()).optional(),
-  callbainitialUrlckUrl: z.string().url().optional(),
+  // callbainitialUrlckUrl: z.string().url().optional(),
+  callbackUrl: z.string().url().optional(), // Optional callback URL for payment gateways that support it
   idempotencyKey: z.string().uuid().optional(),
 });
 

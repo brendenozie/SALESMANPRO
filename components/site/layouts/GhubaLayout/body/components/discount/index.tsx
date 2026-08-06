@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon, TagIcon, PercentBadgeIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowRightIcon,
+  TagIcon,
+  PercentBadgeIcon,
+} from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -25,7 +31,10 @@ const Slider = dynamic(() => import("react-slick"), {
   loading: () => (
     <div className="flex gap-4 overflow-hidden py-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="w-full md:w-1/4 h-[380px] bg-zinc-100 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0" />
+        <div
+          key={i}
+          className="w-full md:w-1/4 h-[380px] bg-zinc-100 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0"
+        />
       ))}
     </div>
   ),
@@ -53,7 +62,10 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => {
+const Discount: React.FC<DiscountProps> = ({
+  productItems = [],
+  addToCart,
+}) => {
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string | number, boolean>>({});
 
@@ -78,12 +90,14 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
     ],
   };
 
+  if (!productItems.length) return null;
+
   return (
     <motion.section
       className="relative py-10 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-500 overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, amount: 0.1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
@@ -102,7 +116,10 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
               </div>
 
               <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none mt-1">
-                Big <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 italic">Discounts</span>
+                Big{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 italic">
+                  Discounts
+                </span>
               </h2>
             </div>
           </div>
@@ -110,7 +127,7 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => router.push("/ghuba/discounts")}
+            onClick={() => router.push("/ghuba/productlist")}
             className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-2xl shadow-xl hover:bg-rose-600 dark:hover:bg-rose-600 dark:hover:text-white transition-all text-xs tracking-wider uppercase"
           >
             <span>View All Discounts</span>
@@ -119,9 +136,13 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
         </div>
 
         <div>
-          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-6 pt-1 -mx-4 px-4 scrollbar-none">
+          {/* Mobile Hardware-Accelerated Touch Snap Container */}
+          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-6 pt-1 -mx-4 px-4 scrollbar-none touch-pan-x touch-pan-y">
             {productItems.map((product: Product, index: number) => (
-              <div key={product?.id || index} className="snap-start w-[260px] shrink-0">
+              <div
+                key={product?.id || index}
+                className="snap-start w-[260px] sm:w-[280px] shrink-0"
+              >
                 <GhubaProductCard
                   product={product}
                   toggleLike={toggleLike}
@@ -132,6 +153,7 @@ const Discount: React.FC<DiscountProps> = ({ productItems = [], addToCart }) => 
             ))}
           </div>
 
+          {/* Desktop Slick Carousel */}
           <div className="hidden md:block relative">
             <Slider {...sliderSettings}>
               {productItems.map((product: Product, index: number) => (

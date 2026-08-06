@@ -3,7 +3,13 @@
 import React, { useState, useCallback } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { BoltIcon, ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon, ClockIcon } from "@heroicons/react/24/outline";
+import {
+  BoltIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowRightIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
 import dynamic from "next/dynamic";
@@ -23,7 +29,10 @@ const Slider = dynamic(() => import("react-slick"), {
   loading: () => (
     <div className="flex gap-4 overflow-hidden py-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="w-full md:w-1/4 h-[380px] bg-zinc-200 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0" />
+        <div
+          key={i}
+          className="w-full md:w-1/4 h-[380px] bg-zinc-200 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0"
+        />
       ))}
     </div>
   ),
@@ -51,7 +60,10 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-const FlashDeals: React.FC<FlashDealsProps> = ({ productItems = [], addToCart }) => {
+const FlashDeals: React.FC<FlashDealsProps> = ({
+  productItems = [],
+  addToCart,
+}) => {
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
 
@@ -93,14 +105,19 @@ const FlashDeals: React.FC<FlashDealsProps> = ({ productItems = [], addToCart })
               </h2>
               <div className="flex items-center gap-1.5 mt-1 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
                 <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>Ends in: <strong className="text-zinc-900 dark:text-zinc-200">12h 45m 02s</strong></span>
+                <span>
+                  Ends in:{" "}
+                  <strong className="text-zinc-900 dark:text-zinc-200">
+                    12h 45m 02s
+                  </strong>
+                </span>
               </div>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => router.push("/ghuba/deals")}
+            onClick={() => router.push("/ghuba/productlist")}
             className="group flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0"
           >
             <span>View All</span>
@@ -110,9 +127,12 @@ const FlashDeals: React.FC<FlashDealsProps> = ({ productItems = [], addToCart })
 
         <div className="relative">
           {/* Mobile Hardware-Accelerated Native Snap Carousel */}
-          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-4 pt-1 -mx-4 px-4 scrollbar-none touch-pan-x">
+          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-4 pb-4 pt-1 -mx-4 px-4 scrollbar-none touch-pan-x touch-pan-y">
             {productItems.map((product, index) => (
-              <div key={product.id || index} className="snap-start w-[260px] shrink-0">
+              <div
+                key={product.id || index}
+                className="snap-start w-[260px] shrink-0"
+              >
                 <GhubaProductCard
                   product={product}
                   toggleLike={toggleLike}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { cacheGet, cacheSet } from "@/lib/cache";
+import { ListingStatus } from "@prisma/client";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -26,12 +27,14 @@ const listingSelect = {
   isFlashDeal: true,
   isDiscounted: true,
   isNewArrival: true,
+  category: true,
+  subCategoryName: true,
   brand: true,
   productCategoryId: true,
 };
 
 const listingWhere = {
-  status: "ACTIVE",
+  status: "ACTIVE" as ListingStatus,
   isAvailable: true,
   ghubaAdminApproved: true,
   ghubaStatus: "APPROVED",
@@ -107,7 +110,7 @@ async function getHandler() {
 
       prisma.marketplaceListings.findMany({
         where: {
-          // ...listingWhere,
+          ...listingWhere,
           isNewArrival: true,
         },
         take: 12,
@@ -119,7 +122,7 @@ async function getHandler() {
 
       prisma.marketplaceListings.findMany({
         where: {
-          // ...listingWhere,
+          ...listingWhere,
           isDiscounted: true,
         },
         take: 12,
@@ -131,7 +134,7 @@ async function getHandler() {
 
       prisma.marketplaceListings.findMany({
         where: {
-          // ...listingWhere,
+          ...listingWhere,
           isFeatured: true,
         },
         take: 12,
@@ -144,7 +147,7 @@ async function getHandler() {
       featuredCategory
         ? prisma.marketplaceListings.findMany({
             where: {
-              // ...listingWhere,
+              ...listingWhere,
               productCategoryId: featuredCategory.id,
             },
             take: 12,

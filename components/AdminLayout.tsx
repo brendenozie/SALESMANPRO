@@ -221,8 +221,12 @@ export default function AdminLayout({
   const currentTierStatus = storeFormData?.subscription?.status || "INACTIVE";
 
   const categoryType = useMemo(() => {
-    const category = storeFormData?.category;
+
+    const category = storeFormData?.name === "Ghuba" ? storeFormData?.name : storeFormData?.category;
+
     if (!category) return "Other";
+
+    //this is so that you can seperate automotive and automotive parts, but still show the same category name in the sidebar
     if (category.toLowerCase() === "automotive") {
       return capitalize(storeFormData?.variant || "Other");
     }
