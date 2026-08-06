@@ -167,6 +167,7 @@ const CheckoutClient: React.FC = () => {
             quantity: i.quantity,
             price: i.finalPrice,
             totalPrice: i.finalPrice * i.quantity,
+            subtotal: i.subtotal,
             selectedOptions: i.selectedOptions
               ? Object.entries(i.selectedOptions).map(([category, name]) => ({
                   category,
@@ -174,11 +175,28 @@ const CheckoutClient: React.FC = () => {
                 }))
               : [],
           })),
-          shippingAddress: formData.shippingAddress,
-          shippingMethod: formData.shippingMethod,
-          delivery: formData.paymentMethod === "pickupatshop",
-          paymentOption: formData.paymentMethod,
-          totalPrice: parseFloat(total.toFixed(2)),
+          // shippingAddress: formData.shippingAddress,
+          shippingAddress: {
+            display_name: formData.shippingAddress?.display_name,
+            lat: formData.shippingAddress?.lat,
+            lng: formData.shippingAddress?.lng,
+          },
+            shippingMethod: formData.shippingMethod,
+            delivery: formData.paymentMethod === "pickupatshop",
+            paymentOption: formData.paymentMethod,
+            totalPrice: parseFloat(total.toFixed(2)),
+
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          promoCode: formData.promoCode,
+          
+          paymentData: {
+            cardNumber: (formData.cardNumber || '').replace(/\s/g, ''),
+            cardExpiry: formData.expiry,
+            cvv: formData.cvv,
+            mpesaPhone: formData.phone,
+          },
         };
 
         const res = await fetch(`/api/shop/orders`, {
