@@ -1,65 +1,75 @@
+
+import dynamic from 'next/dynamic';
 import { StoreForm } from '@/types/typings';
+import { PublicPaymentMethod } from '@/utils/payment-utils';
+import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
+
+// Type definition for standardizing component props
+type BodyComponentType = React.ComponentType<{ 
+  pageData: StoreForm; 
+  companyId: string; 
+  paymentMethods: PublicPaymentMethod[]; 
+  ghubaData?: any 
+}>;
 
 // Import all components
-import GhubaSite from '@/components/site/layouts/GhubaLayout/body/GhubaSite';
-import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
-import AutomotiveSite from './layouts/AutomotiveLayout/body/AutomotiveSite';
-import Automotive2Site from './layouts/Automotive2Layout/body/Automotive2Site';
-import BlogSite from './layouts/BlogLayout/body/BlogSite';
-import BookingsSite from './layouts/BookingsLayout/body/BookingsSite';
-import ConsultancyLayout from './layouts/ConsultancyLayout/body/ConsultancySite';
-import CoursesSite from './layouts/CoursesLayout/body/CoursesSite';
-import CoursesSite2 from './layouts/CoursesLayout2/body/CoursesSite2';
-import CoursesSite3 from './layouts/CoursesLayout3/body/CoursesSite3';
-import DirectorySite from './layouts/DirectoryLayout/body/DirectorySite';
-import EcommerceSite from './layouts/EcommerceLayout/body/EcommerceSite';
-import EcommerceShoesSite from './layouts/EcommerceShoesLayout/body/EcommerceShoesSite';
-import EcommerceGamingSite from './layouts/EcommerceGamingLayout/body/EcommerceGamingSite';
-import EcommerceEarphonesSite from './layouts/EcommerceEarphonesLayout/body/EcommerceEarphonesSite';
-import EcommerceGlassesSite from './layouts/EcommerceGlassesLayout/body/EcommerceGlassesSite';
-import EcommerceFlowersSite from './layouts/EcommerceFlowersLayout/body/EcommerceFlowersSite';
-import EcommerceHoneySite from './layouts/EcommerceHoneyLayout/body/EcommerceHoneySite';
-import EcommercePeanutsSite from './layouts/EcommercePeanutsLayout/body/EcommercePeanutsSite';
-import EcommerceWatchSite from './layouts/EcommerceWatchLayout/body/EcommerceWatchSite';
-import EcommerceBabySite from './layouts/EcommerceBabyLayout/body/EcommerceBabySite';
-import EcommerceCakeSite from './layouts/EcommerceCakeLayout/body/EcommerceCakeSite';
-import EcommercePetsSite from './layouts/EcommercePetsLayout/body/EcommercePetsSite';
-import EcommerceGroceriesSite from './/layouts/EcommerceGroceriesLayout/body/EcommerceGroceriesSite';
-import BarbershopBookingsSite from './layouts/BarbershopBookingsLayout/body/BarbershopBookingsSite';
-import EventsSite from './layouts/EventsLayout/body/EventsSite';
-import FinanceSite from './layouts/FinanceLayout/body/FinanceSite';
-import FitnessSite from './layouts/FitnessLayout/body/FitnessSite';
-import HealthCareSite from './layouts/HealthcareLayout/body/HealthCareSite';
-import MarketPlaceSite from './layouts/MarketplaceLayout/body/MarketPlaceSite';
-import MediaSite from './layouts/MediaLayout/body/MediaSite';
-import NonProfitSite from './layouts/NonprofitLayout/body/NonProfitSite';
-import PortfolioSite from './layouts/PortfolioLayout/body/PortfolioSite';
-import PublicSpeakingSite from './layouts/PublicSpeakingLayout/body/PublicSpeakingSite';
-import RealEstateSite from './layouts/RealEstateLayout/body/RealEstateSite';
-import RestaurentSite from './layouts/RestaurantLayout/body/RestaurentSite';
-import SaaSSite from './layouts/SaaSLayout/body/SaasSite';
-import ServiceSite from './layouts/ServicesLayout/body/ServiceSite';
-import TravelSite from './layouts/TravelLayout/body/TravelSite';
-import SecuritySite from './layouts/SecurityLayout/body/SecuritySite';
-import Security2Site from './layouts/Security2Layout/body/Security2Site';
-import FurnitureSite from './layouts/FurnitureLayout/body/FurnitureSite';
-import FashionSite from './layouts/FashionLayout/body/FashionSite';
-import { PublicPaymentMethod } from '@/utils/payment-utils';
-import EcommerceAgrovetSite from './layouts/EcommerceAgrovetLayout/body/EcommerceAgrovetSite';
-import DeliverySite from './layouts/DeliveryLayout/body/DeliverySite';
-import EcommerceBikeSite from './layouts/EcommerceBikeLayout/body/EcommerceBikeSite';
-import EcommerceMotorCycleSite from './layouts/EcommerceMotorCycleLayout/body/EcommerceMotorCycleSite';
-import EcommerceMeatSite from './layouts/EcommerceMeatLayout/body/EcommerceMeatSite';
-import EcommerceHardwareSite from './layouts/EcommerceHardwareLayout/body/EcommerceHardwareSite';
-import EcommerceBookSite from './layouts/EcommerceBookLayout/body/EcommerceBookSite';
-import DrycleaningBookingsSite from './layouts/DrycleaningBookingsLayout/body/DrycleaningBookingsSite';
-import PropertyManagementSite from './layouts/PropertyManagementLayout/body/PropertyManagementSite';
-import CompanyPortfolioSite from './layouts/CompanyPortfolioLayout/body/CompanyPortfolioSite';
-import EcommerceAccessoriesSite from './layouts/EcommerceAccessoriesLayout/body/EcommerceAccessoriesSite';
-import CompanyPortfolioLightSite from './layouts/CompanyPortfolioLightLayout/body/CompanyPortfolioLightSite';
+const GhubaSite = dynamic(() => import('@/components/site/layouts/GhubaLayout/body/GhubaSite'));
+const AutomotiveSite = dynamic(() => import('@/components/site/layouts/AutomotiveLayout/body/AutomotiveSite'));
+const Automotive2Site = dynamic(() => import('@/components/site/layouts/Automotive2Layout/body/Automotive2Site'));
+const BlogSite = dynamic(() => import('@/components/site/layouts/BlogLayout/body/BlogSite'));
+const BookingsSite = dynamic(() => import('@/components/site/layouts/BookingsLayout/body/BookingsSite'));
+const ConsultancySite = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/body/ConsultancySite'));
+const CoursesSite = dynamic(() => import('@/components/site/layouts/CoursesLayout/body/CoursesSite'));
+const CoursesSite2 = dynamic(() => import('@/components/site/layouts/CoursesLayout2/body/CoursesSite2'));
+const CoursesSite3 = dynamic(() => import('@/components/site/layouts/CoursesLayout3/body/CoursesSite3'));
+const DirectorySite = dynamic(() => import('@/components/site/layouts/DirectoryLayout/body/DirectorySite'));
+const EcommerceSite = dynamic(() => import('@/components/site/layouts/EcommerceLayout/body/EcommerceSite'));
+const EcommerceShoesSite = dynamic(() => import('@/components/site/layouts/EcommerceShoesLayout/body/EcommerceShoesSite'));
+const EcommerceGamingSite = dynamic(() => import('@/components/site/layouts/EcommerceGamingLayout/body/EcommerceGamingSite'));
+const EcommerceEarphonesSite = dynamic(() => import('@/components/site/layouts/EcommerceEarphonesLayout/body/EcommerceEarphonesSite'));
+const EcommerceGlassesSite = dynamic(() => import('@/components/site/layouts/EcommerceGlassesLayout/body/EcommerceGlassesSite'));
+const EcommerceFlowersSite = dynamic(() => import('@/components/site/layouts/EcommerceFlowersLayout/body/EcommerceFlowersSite'));
+const EcommerceHoneySite = dynamic(() => import('@/components/site/layouts/EcommerceHoneyLayout/body/EcommerceHoneySite'));
+const EcommercePeanutsSite = dynamic(() => import('@/components/site/layouts/EcommercePeanutsLayout/body/EcommercePeanutsSite'));
+const EcommerceWatchSite = dynamic(() => import('@/components/site/layouts/EcommerceWatchLayout/body/EcommerceWatchSite'));
+const EcommerceBabySite = dynamic(() => import('@/components/site/layouts/EcommerceBabyLayout/body/EcommerceBabySite'));
+const EcommerceCakeSite = dynamic(() => import('@/components/site/layouts/EcommerceCakeLayout/body/EcommerceCakeSite'));
+const EcommercePetsSite = dynamic(() => import('@/components/site/layouts/EcommercePetsLayout/body/EcommercePetsSite'));
+const EcommerceGroceriesSite = dynamic(() => import('@/components/site/layouts/EcommerceGroceriesLayout/body/EcommerceGroceriesSite'));
+const BarbershopBookingsSite = dynamic(() => import('@/components/site/layouts/BarbershopBookingsLayout/body/BarbershopBookingsSite'));
+const EventsSite = dynamic(() => import('@/components/site/layouts/EventsLayout/body/EventsSite'));
+const FinanceSite = dynamic(() => import('@/components/site/layouts/FinanceLayout/body/FinanceSite'));
+const FitnessSite = dynamic(() => import('@/components/site/layouts/FitnessLayout/body/FitnessSite'));
+const HealthCareSite = dynamic(() => import('@/components/site/layouts/HealthcareLayout/body/HealthCareSite'));
+const MarketPlaceSite = dynamic(() => import('@/components/site/layouts/MarketplaceLayout/body/MarketPlaceSite'));
+const MediaSite = dynamic(() => import('@/components/site/layouts/MediaLayout/body/MediaSite'));
+const NonProfitSite = dynamic(() => import('@/components/site/layouts/NonprofitLayout/body/NonProfitSite'));
+const PortfolioSite = dynamic(() => import('@/components/site/layouts/PortfolioLayout/body/PortfolioSite'));
+const PublicSpeakingSite = dynamic(() => import('@/components/site/layouts/PublicSpeakingLayout/body/PublicSpeakingSite'));
+const RealEstateSite = dynamic(() => import('@/components/site/layouts/RealEstateLayout/body/RealEstateSite'));
+const RestaurantSite = dynamic(() => import('@/components/site/layouts/RestaurantLayout/body/RestaurentSite'));
+const SaaSSite = dynamic(() => import('@/components/site/layouts/SaaSLayout/body/SaasSite'));
+const ServiceSite = dynamic(() => import('@/components/site/layouts/ServicesLayout/body/ServiceSite'));
+const TravelSite = dynamic(() => import('@/components/site/layouts/TravelLayout/body/TravelSite'));
+const SecuritySite = dynamic(() => import('@/components/site/layouts/SecurityLayout/body/SecuritySite'));
+const Security2Site = dynamic(() => import('@/components/site/layouts/Security2Layout/body/Security2Site'));
+const FurnitureSite = dynamic(() => import('@/components/site/layouts/FurnitureLayout/body/FurnitureSite'));
+const FashionSite = dynamic(() => import('@/components/site/layouts/FashionLayout/body/FashionSite'));
+const EcommerceAgrovetSite = dynamic(() => import('@/components/site/layouts/EcommerceAgrovetLayout/body/EcommerceAgrovetSite'));
+const DeliverySite = dynamic(() => import('@/components/site/layouts/DeliveryLayout/body/DeliverySite'));
+const EcommerceBikeSite = dynamic(() => import('@/components/site/layouts/EcommerceBikeLayout/body/EcommerceBikeSite'));
+const EcommerceMotorCycleSite = dynamic(() => import('@/components/site/layouts/EcommerceMotorCycleLayout/body/EcommerceMotorCycleSite'));
+const EcommerceMeatSite = dynamic(() => import('@/components/site/layouts/EcommerceMeatLayout/body/EcommerceMeatSite'));
+const EcommerceHardwareSite = dynamic(() => import('@/components/site/layouts/EcommerceHardwareLayout/body/EcommerceHardwareSite'));
+const EcommerceBookSite = dynamic(() => import('@/components/site/layouts/EcommerceBookLayout/body/EcommerceBookSite'));
+const DrycleaningBookingsSite = dynamic(() => import('@/components/site/layouts/DrycleaningBookingsLayout/body/DrycleaningBookingsSite'));
+const PropertyManagementSite = dynamic(() => import('@/components/site/layouts/PropertyManagementLayout/body/PropertyManagementSite'));
+const CompanyPortfolioSite = dynamic(() => import('@/components/site/layouts/CompanyPortfolioLayout/body/CompanyPortfolioSite'));
+const EcommerceAccessoriesSite = dynamic(() => import('@/components/site/layouts/EcommerceAccessoriesLayout/body/EcommerceAccessoriesSite'));
+const CompanyPortfolioLightSite = dynamic(() => import('@/components/site/layouts/CompanyPortfolioLightLayout/body/CompanyPortfolioLightSite'));
 
-// A single, clean map from component name to the component itself.
-export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[]; ghubaData?: any }>> = {
+// A single, clean map from component name to the component itself.4
+export const BodyComponentMap: Record<string, BodyComponentType> = {
   'GhubaSite': GhubaSite,
   'PublicSpeakingSite': PublicSpeakingSite,
   'AutomotiveSite': AutomotiveSite,
@@ -84,7 +94,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'EcommerceGroceriesSite': EcommerceGroceriesSite,
   'EcommerceBikeSite': EcommerceBikeSite,
   'EcommerceMotorCycleSite': EcommerceMotorCycleSite,
-  'ConsultancySite': ConsultancyLayout,
+  'ConsultancySite': ConsultancySite,
   'RealEstateSite': RealEstateSite,
   'PropertyManagementSite': PropertyManagementSite,
   'CompanyPortfolioSite': CompanyPortfolioSite,
@@ -108,7 +118,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'MediaSite': MediaSite,
   'TravelSite': TravelSite,
   'MarketPlaceSite': MarketPlaceSite,
-  'RestaurentSite': RestaurentSite,
+  'RestaurentSite': RestaurantSite,
   'SecuritySite': SecuritySite,
   'Security2Site': Security2Site,
   'FurnitureSite': FurnitureSite,

@@ -1,5 +1,12 @@
 // In a separate file (e.g. siteLayoutMap.ts)
 import dynamic from "next/dynamic";
+import { ReactNode } from "react";
+import { StoreForm } from "../../../types/typings";
+
+type LayoutHeaderFooterComponent = React.ComponentType<{
+  params: { storeFormData: StoreForm };
+  children: ReactNode;
+}>;
 
 const GhubaLayout = dynamic(
   () => import("@/components/site/layouts/GhubaLayout/GhubaLayout"),
@@ -201,18 +208,7 @@ const EcommerceAccessoriesLayout = dynamic(
     ),
 );
 
-import { ReactNode } from "react";
-import { StoreForm } from "../../../types/typings";
-
-type LayoutHeaderFooterComponent = React.ComponentType<{
-  params: { storeFormData: StoreForm };
-  children: ReactNode;
-}>;
-
-const categoryHeaderFooterLayoutMap: Record<
-  string,
-  LayoutHeaderFooterComponent
-> = {
+export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent> = {
   ghuba: GhubaLayout,
   ecommerce: EcommerceLayout,
   "public speaking": PublicSpeakingLayout,
