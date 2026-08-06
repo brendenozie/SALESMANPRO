@@ -17,11 +17,6 @@ const JSON_HEADER = {
 };
 
 const listingSelect = {
-  id: true,
-  name: true,
-  images: true,
-  finalPrice: true,
-  sellingPrice: true,
   discount: true,
   isFeatured: true,
   isFlashDeal: true,
@@ -31,6 +26,25 @@ const listingSelect = {
   subCategoryName: true,
   brand: true,
   productCategoryId: true,
+  id: true,
+  sellingPrice: true,
+  finalPrice: true,
+  createdAt: true,
+  // If you need flags:
+  name: true,
+  images: true,
+  isAvailable: true,
+  isOnOffer: true,
+  option: true,
+  // Nested selection instead of full 'include'
+  product: {
+    select: {
+      id: true,
+      // name: true,
+      // image: true,
+      // slug: true,
+    },
+  },
 };
 
 const listingWhere = {

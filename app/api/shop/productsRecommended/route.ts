@@ -32,16 +32,42 @@ export async function GET(req: Request) {
     // We only need specific fields to build the next query. Don't fetch the whole listing object.
     const recentActivity = await prisma.userActivity.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 10, // Hard limit history scan for speed
       select: {
         marketplaceListingId: true,
         marketplaceListings: {
           select: {
+            id: true,
+            sellingPrice: true,
+            finalPrice: true,
+            createdAt: true,
+            // If you need flags:
+            isFeatured: true,
+            name: true,
+            images: true,
+            isNewArrival: true,
+            isAvailable: true,
+            isOnOffer: true,
+            isFlashDeal: true,
+            isDiscounted: true,
+            category: true,
+            subCategoryName: true,
+            brand: true,
             productCategoryId: true,
+            option: true,
+            // Nested selection instead of full 'include'
+            product: {
+              select: {
+                id: true,
+                // name: true,
+                // image: true,
+                // slug: true,
+              },
+            },
             tags: true,
-          }
-        }
+          },
+        },
       },
     });
 

@@ -63,6 +63,10 @@ export async function GET(req: Request) {
           isOnOffer: true,
           isFlashDeal: true,
           isDiscounted: true,
+          category: true,
+          subCategoryName: true,
+          brand: true,
+          productCategoryId: true,
           option: true,
           // Nested selection instead of full 'include'
           product: {

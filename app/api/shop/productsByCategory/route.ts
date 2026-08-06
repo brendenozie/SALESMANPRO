@@ -55,14 +55,28 @@ export async function GET(req: Request) {
           id: true,
           sellingPrice: true,
           finalPrice: true,
-          images: true,
           createdAt: true,
+          // If you need flags:
+          isFeatured: true,
           name: true,
+          images: true,
+          isNewArrival: true,
+          isAvailable: true,
+          isOnOffer: true,
+          isFlashDeal: true,
+          isDiscounted: true,
+          category: true,
+          subCategoryName: true,
+          brand: true,
+          productCategoryId: true,
+          option: true,
+          // Nested selection instead of full 'include'
           product: {
             select: {
               id: true,
+              // name: true,
+              // image: true,
               // slug: true,
-              // Avoid selecting huge description strings here if not needed for the card view
             },
           },
         },

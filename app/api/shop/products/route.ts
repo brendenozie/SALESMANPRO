@@ -96,16 +96,32 @@ export async function GET(req: Request) {
       orderBy,
       select: {
         id: true,
-        name: true,
         sellingPrice: true,
         finalPrice: true,
+        createdAt: true,
+        // If you need flags:
+        isFeatured: true,
+        name: true,
         images: true,
-        brand: true,
+        isNewArrival: true,
+        isAvailable: true,
+        isOnOffer: true,
+        isFlashDeal: true,
+        isDiscounted: true,
         category: true,
         subCategoryName: true,
-        isAvailable: true,
-        createdAt: true,
+        brand: true,
         productCategoryId: true,
+        option: true,
+        // Nested selection instead of full 'include'
+        product: {
+          select: {
+            id: true,
+            // name: true,
+            // image: true,
+            // slug: true,
+          },
+        },
       },
     });
 
