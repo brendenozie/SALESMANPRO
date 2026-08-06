@@ -525,46 +525,74 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/cated`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Site Categories",
         href: `/admin/${adminSlug}/site-categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locat`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Users",
         href: `/admin/${adminSlug}/saas-users`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Lead Bulk",
             href: `/admin/${adminSlug}/salesleads/imports`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -573,126 +601,162 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/samplelistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Bulk Csv Upload For listings",
         href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Sample Image Upload For listings",
         href: `/admin/${adminSlug}/sync-images`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Backup And Restore",
         href: `/admin/${adminSlug}/db-management`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "All Companies",
         href: `/admin/${adminSlug}/companies-full-site`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Marketplace Listings",
         href: `/admin/${adminSlug}/marketplace-gh`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Subscription Payments",
         href: `/admin/${adminSlug}/subscriptionpayments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/saas-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/saas-reports`,
         icon: DocumentChartBarIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Support Tickets",
         href: `/admin/${adminSlug}/saas-support`,
         icon: LifebuoyIcon,
         minTier: "Ghuba Basic",
-        isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/saas-announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Basic",
-        isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Content (CMS)",
         href: `/admin/${adminSlug}/saas-content`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "API Keys",
         href: `/admin/${adminSlug}/saas-api-keys`,
         icon: KeyIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/saas-audit-log`,
         icon: ClipboardDocumentCheckIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "System Status",
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Basic",
-        isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -705,7 +769,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          (isSubscriptionActive = true),
         ),
       },
       {
@@ -716,7 +780,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Basic",
           currentTier,
-          isSubscriptionActive,
+          (isSubscriptionActive = true),
         ),
       },
       {
@@ -971,7 +1035,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          (isSubscriptionActive = true),
         ),
       },
       {
@@ -1126,7 +1190,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          (isSubscriptionActive = true),
         ),
       },
       {
@@ -1290,7 +1354,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          (isSubscriptionActive = true),
         ),
       },
       {
@@ -1320,74 +1384,118 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/health-patients`,
         icon: UsersIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/health-appointments`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Doctors",
         href: `/admin/${adminSlug}/health-doctors`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Staff",
         href: `/admin/${adminSlug}/health-staff`,
         icon: UserGroupIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Services",
         href: `/admin/${adminSlug}/health-services`,
         icon: HeartIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Prescriptions",
         href: `/admin/${adminSlug}/health-prescriptions`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/health-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Inventory",
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "Browse Catalog",
             href: `/admin/${adminSlug}/inventory`,
             minTier: "Ghuba Growth",
-            isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Market List",
             href: `/admin/${adminSlug}/mymarketplace`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1396,35 +1504,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/health-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/health-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -1434,42 +1562,66 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          (isSubscriptionActive = true),
+        ),
       },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Transport",
@@ -1482,49 +1634,81 @@ export const getCategoryMenus = (
             label: "Vehicles",
             href: `/admin/${adminSlug}/booking-transport-vehicles`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1532,25 +1716,41 @@ export const getCategoryMenus = (
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
             minTier: "Ghuba Basic",
-            isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Basic",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1558,13 +1758,21 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1573,28 +1781,44 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -1604,35 +1828,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          (isSubscriptionActive = true),
+        ),
       },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Transport",
@@ -1645,49 +1889,81 @@ export const getCategoryMenus = (
             label: "Vehicles",
             href: `/admin/${adminSlug}/booking-transport-vehicles`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1695,25 +1971,41 @@ export const getCategoryMenus = (
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
             minTier: "Ghuba Basic",
-            isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Basic",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1721,13 +2013,21 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1736,35 +2036,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -1774,42 +2094,66 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          (isSubscriptionActive = true),
+        ),
       },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Projects",
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Transport",
@@ -1822,49 +2166,81 @@ export const getCategoryMenus = (
             label: "Vehicles",
             href: `/admin/${adminSlug}/portfolio-transport-vehicles`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
             minTier: "Ghuba Pro",
-            isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1872,25 +2248,41 @@ export const getCategoryMenus = (
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
             minTier: "Ghuba Basic",
-            isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Basic",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1898,13 +2290,21 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1913,35 +2313,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/reports`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -1951,19 +2371,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          (isSubscriptionActive = true),
+        ),
       },
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "All Blogs",
             href: `/admin/${adminSlug}/blogs`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -1972,40 +2404,64 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/writers`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Podcast",
         href: `/admin/${adminSlug}/podcast`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Basic",
-        isLocked: checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Basic",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2014,21 +2470,33 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/comments`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        isLocked: checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive),
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -2048,7 +2516,11 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          (isSubscriptionActive = true),
+        ),
       },
       {
         label: "Management",
@@ -2058,68 +2530,112 @@ export const getCategoryMenus = (
             label: "Academic Years",
             href: `/admin/${adminSlug}/academic-years`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Terms/Semesters", href: `/admin/${adminSlug}/terms` },
           {
             label: "Departments",
             href: `/admin/${adminSlug}/departments`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Categories",
             href: `/admin/${adminSlug}/categories`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Academic Levels",
             href: `/admin/${adminSlug}/academic-levels`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Classrooms",
             href: `/admin/${adminSlug}/classrooms`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Teachers",
             href: `/admin/${adminSlug}/teachers`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Parents",
             href: `/admin/${adminSlug}/parents`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Students",
             href: `/admin/${adminSlug}/students`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Courses",
             href: `/admin/${adminSlug}/courses`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Course Materials",
             href: `/admin/${adminSlug}/course-materials`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "TimeTable",
             href: `/admin/${adminSlug}/lessons`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2131,7 +2647,11 @@ export const getCategoryMenus = (
             label: "All Assignments",
             href: `/admin/${adminSlug}/assignments`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Submissions", href: `/admin/${adminSlug}/assignments-submissions` },
         ],
@@ -2144,20 +2664,32 @@ export const getCategoryMenus = (
             label: "Exam Categories",
             href: `/admin/${adminSlug}/exam-categories`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Exams",
             href: `/admin/${adminSlug}/exams`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Results", href: `/admin/${adminSlug}/results` },
           {
             label: "Grades & Report Card",
             href: `/admin/${adminSlug}/grading-report-card`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2166,7 +2698,11 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/attendance`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Events",
@@ -2176,7 +2712,11 @@ export const getCategoryMenus = (
             label: "All Events",
             href: `/admin/${adminSlug}/school-events`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2185,7 +2725,11 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/schoolAnnouncements`,
         icon: AcademicCapIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Library",
@@ -2196,79 +2740,131 @@ export const getCategoryMenus = (
             label: "Categories",
             href: `/admin/${adminSlug}/library-books-categories`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Books",
             href: `/admin/${adminSlug}/library-books`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Members",
             href: `/admin/${adminSlug}/library-members`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Issuance Records",
             href: `/admin/${adminSlug}/library-issuance-records`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Returns",
             href: `/admin/${adminSlug}/library-returns`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Fines",
             href: `/admin/${adminSlug}/library-fines`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance",
             href: `/admin/${adminSlug}/library-maintenance`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reservations",
             href: `/admin/${adminSlug}/library-reservations`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Suppliers Categories",
             href: `/admin/${adminSlug}/library-suppliers-categories`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Suppliers",
             href: `/admin/${adminSlug}/library-suppliers`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Acquisitions",
             href: `/admin/${adminSlug}/library-acquisitions`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Inventory",
             href: `/admin/${adminSlug}/library-inventory`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/library-reports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2281,37 +2877,61 @@ export const getCategoryMenus = (
             label: "Vehicles",
             href: `/admin/${adminSlug}/transport-vehicles`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // {
           //   label: "Assignments",
@@ -2321,13 +2941,21 @@ export const getCategoryMenus = (
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2340,37 +2968,61 @@ export const getCategoryMenus = (
             label: "Blocks",
             href: `/admin/${adminSlug}/hostel-blocks`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Rooms",
             href: `/admin/${adminSlug}/hostel-rooms`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Residents",
             href: `/admin/${adminSlug}/hostel-residents`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Room Assignments",
             href: `/admin/${adminSlug}/hostel-room-assignments`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Requests",
             href: `/admin/${adminSlug}/hostel-maintenance-requests`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Visitors",
             href: `/admin/${adminSlug}/hostel-visitors`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Fee Management", href: `/admin/${adminSlug}/hostel-fee-management` },
           // { label: "Inventory", href: `/admin/${adminSlug}/hostel-inventory` },
@@ -2378,13 +3030,21 @@ export const getCategoryMenus = (
             label: "Staff",
             href: `/admin/${adminSlug}/hostel-staff`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/hostel-reports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2397,55 +3057,91 @@ export const getCategoryMenus = (
             label: "Departments",
             href: `/admin/${adminSlug}/staff-departments`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Roles",
             href: `/admin/${adminSlug}/staff-roles`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Staff Members",
             href: `/admin/${adminSlug}/staff-members`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Attendance",
             href: `/admin/${adminSlug}/staff-attendance`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Payroll",
             href: `/admin/${adminSlug}/staff-payroll`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Leave Management",
             href: `/admin/${adminSlug}/staff-leave-management`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Performance Reviews",
             href: `/admin/${adminSlug}/staff-performance-reviews`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Recruitment",
             href: `/admin/${adminSlug}/staff-recruitment`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/staff-reports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2459,13 +3155,21 @@ export const getCategoryMenus = (
             label: "FEE Structure",
             href: `/admin/${adminSlug}/fee-items`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive=true,
+            ),
           },
           {
             label: "FEE Transactions",
             href: `/admin/${adminSlug}/fee`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Transactions", href: `/admin/${adminSlug}/fee-transactions` },
           // { label: "Invoices", href: `/admin/${adminSlug}/fee-invoices` },
@@ -2473,13 +3177,21 @@ export const getCategoryMenus = (
             label: "Expenses",
             href: `/admin/${adminSlug}/fee-expenses`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Profit & Loss",
             href: `/admin/${adminSlug}/fee-profit-loss`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Payment Methods", href: `/admin/${adminSlug}/fee-payment-methods` },
           // { label: "Discounts", href: `/admin/${adminSlug}/fee-discounts` },
@@ -2494,73 +3206,121 @@ export const getCategoryMenus = (
             label: "Inventory Dashboard",
             href: `/admin/${adminSlug}/inventory-dashboard`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive=true,
+            ),
           },
           {
             label: "Assets Overview",
             href: `/admin/${adminSlug}/inventory-assets-overview`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Assets",
             href: `/admin/${adminSlug}/inventory-assets-list`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Asset Tracking",
             href: `/admin/${adminSlug}/asset-tracking`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Categories",
             href: `/admin/${adminSlug}/inventory-categories`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Inventory Items",
             href: `/admin/${adminSlug}/inventory-items`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Inventory Audits",
             href: `/admin/${adminSlug}/inventory-audits`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Suppliers",
             href: `/admin/${adminSlug}/inventory-suppliers`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Purchase Orders",
             href: `/admin/${adminSlug}/inventory-purchase-orders`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/inventory-maintenance-records`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Depreciation Schedules",
             href: `/admin/${adminSlug}/inventory-depreciation-schedules`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/inventory-reports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2569,28 +3329,44 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/school-reports`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -2600,49 +3376,77 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive=true,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Projects",
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Donations",
         href: `/admin/${adminSlug}/donations`,
         icon: HeartIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Campaigns",
         href: `/admin/${adminSlug}/campaigns`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Donors",
         href: `/admin/${adminSlug}/donors`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "leads",
@@ -2652,7 +3456,11 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
@@ -2672,37 +3480,61 @@ export const getCategoryMenus = (
             label: "Vehicles",
             href: `/admin/${adminSlug}/non-profit-transport-vehicles`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // {
           //   label: "Assignments",
@@ -2712,13 +3544,21 @@ export const getCategoryMenus = (
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
             minTier: "Ghuba Pro",
-            isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Pro",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
         ],
       },
@@ -2727,35 +3567,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/members`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Manage Events",
         href: `/admin/${adminSlug}/manage-events`,
         icon: TicketIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -2765,35 +3625,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive=true,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Projects",
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "leads",
@@ -2803,7 +3683,11 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
-            isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Growth",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
@@ -2819,49 +3703,73 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-        isLocked:checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked("Ghuba Pro", currentTier, isSubscriptionActive),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/reports`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        isLocked:checkIsLocked("Ghuba Growth", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Growth",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -2874,7 +3782,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -3116,7 +4024,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -3389,21 +4297,33 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/users`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Manage all platform users
       {
         label: "Roles & Permissions",
         href: `/admin/${adminSlug}/roles`,
         icon: KeyIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // If you have different admin/organizer roles
       {
         label: "Organizers",
         href: `/admin/${adminSlug}/organizers`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Manage event organizers (if distinct from general users)
     ]),
 
@@ -3413,28 +4333,44 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/payouts`,
         icon: BanknotesIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Track money paid out to organizers
       {
         label: "Transactions",
         href: `/admin/${adminSlug}/transactions`,
         icon: ReceiptPercentIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Detailed transaction logs
       {
         label: "Revenue Reports",
         href: `/admin/${adminSlug}/reports/revenue`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Sales Reports",
         href: `/admin/${adminSlug}/reports/sales`,
         icon: ChartPieIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -3444,28 +4380,44 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/settings/general`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Profile",
         href: `/admin/${adminSlug}/settings/profile`,
         icon: UserCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Admin user profile settings
       {
         label: "Integrations",
         href: `/admin/${adminSlug}/settings/integrations`,
         icon: PuzzlePieceIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // API keys, third-party connections
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/settings/audit-log`,
         icon: ListBulletIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Track admin actions
     ]),
 
@@ -3502,20 +4454,28 @@ export const getCategoryMenus = (
     // },
 
     "SaaS & Web Apps": filterTiers([
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon, minTier: "Ghuba Starter", isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive=true) },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Users",
         href: `/admin/${adminSlug}/saas-users`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "leads",
@@ -3525,13 +4485,21 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Lead Bulk",
             href: `/admin/${adminSlug}/salesleads/imports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3546,105 +4514,165 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/db-management`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "All Companies",
         href: `/admin/${adminSlug}/companies-full-site`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Subscription Payments",
         href: `/admin/${adminSlug}/subscriptionpayments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/saas-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/saas-reports`,
         icon: DocumentChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Support Tickets",
         href: `/admin/${adminSlug}/saas-support`,
         icon: LifebuoyIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/saas-announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Content (CMS)",
         href: `/admin/${adminSlug}/saas-content`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "API Keys",
         href: `/admin/${adminSlug}/saas-api-keys`,
         icon: KeyIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/saas-audit-log`,
         icon: ClipboardDocumentCheckIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "System Status",
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -3654,35 +4682,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive=true,
+        ),
       },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/cated`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Site Categories",
         href: `/admin/${adminSlug}/site-categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locat`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Users",
         href: `/admin/${adminSlug}/saas-users`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "leads",
@@ -3692,13 +4740,21 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           {
             label: "Lead Bulk",
             href: `/admin/${adminSlug}/salesleads/imports`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/salesleadsources` },
@@ -3713,133 +4769,209 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/samplelistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Bulk Csv Upload For listings",
         href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Sample Image Upload For listings",
         href: `/admin/${adminSlug}/sync-images`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Backup And Restore",
         href: `/admin/${adminSlug}/db-management`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "All Companies",
         href: `/admin/${adminSlug}/companies-full-site`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Marketplace Listings",
         href: `/admin/${adminSlug}/marketplace-gh`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Subscription Payments",
         href: `/admin/${adminSlug}/subscriptionpayments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/saas-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/saas-reports`,
         icon: DocumentChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Support Tickets",
         href: `/admin/${adminSlug}/saas-support`,
         icon: LifebuoyIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/saas-announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Content (CMS)",
         href: `/admin/${adminSlug}/saas-content`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "API Keys",
         href: `/admin/${adminSlug}/saas-api-keys`,
         icon: KeyIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/saas-audit-log`,
         icon: ClipboardDocumentCheckIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "System Status",
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -3852,7 +4984,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -4024,7 +5156,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -4203,7 +5335,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -4344,7 +5476,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -4485,7 +5617,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -4626,7 +5758,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       },
       {
@@ -4951,7 +6083,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       }, // Overall view of key metrics
       {
@@ -5265,7 +6397,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       }, // Overview of gym activity
       {
@@ -5462,21 +6594,33 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/content`,
         icon: PencilSquareIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Blog posts, articles, website content
       {
         label: "Promotions & Deals",
         href: `/admin/${adminSlug}/promotions`,
         icon: TagIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Create and manage discounts, special offers
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "leads",
@@ -5486,7 +6630,11 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Starter",
-            isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+            isLocked: checkIsLocked(
+              "Ghuba Starter",
+              currentTier,
+              isSubscriptionActive,
+            ),
           },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
@@ -5502,21 +6650,33 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Manage client testimonials
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       }, // Manage frequently asked questions
     ]),
 
@@ -5526,21 +6686,33 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/invoices`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/payments`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
       {
         label: "Refunds",
         href: `/admin/${adminSlug}/refunds`,
         icon: ArrowUturnLeftIcon,
         minTier: "Ghuba Starter",
-        isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+        isLocked: checkIsLocked(
+          "Ghuba Starter",
+          currentTier,
+          isSubscriptionActive,
+        ),
       },
     ]),
 
@@ -5553,7 +6725,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       }, // Overview of key metrics
       {
@@ -5729,7 +6901,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       }, // Overview of key metrics
       {
@@ -5906,7 +7078,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       }, // Overview of key metrics
       {
@@ -6100,7 +7272,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive=true,
         ),
       }, // Overview of key metrics
       {
@@ -6419,7 +7591,7 @@ export const getCategoryMenus = (
         isLocked: checkIsLocked(
           "Ghuba Starter",
           currentTier,
-          isSubscriptionActive,
+          isSubscriptionActive = true,
         ),
       },
       {
@@ -6544,7 +7716,7 @@ export const getCategoryMenus = (
     ]),
 
     SCHOOL_DRIVER: filterTiers([
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon, minTier: "Ghuba Starter", isLocked: checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive = true) },
 
       // Trips & Routes
       {
