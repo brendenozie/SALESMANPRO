@@ -11,10 +11,9 @@ import { cacheGet, cacheSet } from "@/lib/cache";
 
 /**
  * GET /api/plans
- * Fetch all plans with support for pagination and filtering by companyId.
+ * Fetch all paid plans (excluding Free and Trial) with support for pagination and filtering by companyId.
  */
 const getHandler = async (request: Request) => {
-  
   const { searchParams } = new URL(request.url);
 
   // Pagination params
@@ -24,10 +23,36 @@ const getHandler = async (request: Request) => {
 
   // Filters
   const companyId = searchParams.get("companyId");
+
+  // Base query filter
   const where: any = {};
   if (companyId) where.companyId = companyId;
 
-    const cacheKey = `plans:company:${companyId || 'all'}:page:${page}:perPage:${perPage}`;
+  // 🚫 Filter out Free and Trial plans
+  where.AND = [
+    {
+      name: {
+        not: {
+          contains: "Trial",
+          mode: "insensitive",
+        },
+      },
+    },
+    {
+      name: {
+        not: {
+          contains: "Free",
+          mode: "insensitive",
+        },
+      },
+    },
+    // Optional check: ensure price is greater than 0 if free plans have 0 price
+    {
+      OR: [{ priceMonthly: { gt: 0 } }, { price: { gt: 0 } }],
+    },
+  ];
+
+  const cacheKey = `plans:paid:company:${companyId || "all"}:page:${page}:perPage:${perPage}`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -39,27 +64,29 @@ const getHandler = async (request: Request) => {
     skip,
     take: perPage,
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: { priceMonthly: "asc" }, // Usually better to sort plans by price ascending for display
   });
 
   const totalPages = Math.ceil(totalItems / perPage);
 
+  const responseData = {
+    plans,
+    totalItems,
+    totalPages,
+    currentPage: page,
+    perPage,
+  };
+
   try {
-    await cacheSet(cacheKey, { plans, totalItems, totalPages, currentPage: page, perPage }, 60); // Cache for 1 minute
+    await cacheSet(cacheKey, responseData, 60); // Cache for 1 minute
   } catch (e) {
     console.error("Failed to cache plans data:", e);
   }
 
-  return NextResponse.json(
-    {
-      plans,
-      totalItems,
-      totalPages,
-      currentPage: page,
-      perPage,
-    },
-    { status: 200 }
-  );
+  return NextResponse.json(responseData, { status: 200 });
 };
 
-export const GET = withApiHandler(getHandler, {requireAuth: false, requireRateLimit: false });
+export const GET = withApiHandler(getHandler, {
+  requireAuth: false,
+  requireRateLimit: false,
+});

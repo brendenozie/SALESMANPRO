@@ -52,10 +52,11 @@ export async function generateMetadata(
   // Blazing fast cache read using only the parsed param string
   const company = await findCompanyCached(slug, 'lean');
 
-  if (!company) {
+  // 🛑 Generate 404 if the company doesn't exist OR subscription is inactive
+  if (!company || !company.subscription?.isActive) {
     return { 
       title: 'Store not found',
-      description: 'The requested store could not be found on Ghuba.'
+      description: 'The requested store could not be found or is currently inactive.'
     };
   }
 
@@ -106,7 +107,8 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   // React dedupes this call automatically
   const raw = await findCompanyCached(slug, 'lean');
   
-  if (!raw) {
+  // 🛑 Generate 404 page if company doesn't exist OR subscription is inactive
+  if (!raw || !raw.subscription?.isActive || raw.subscription?.status?.toLowerCase() !== 'active') {
     notFound();
   }
 
@@ -160,18 +162,12 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
           
-          {/* 
-            Keeping Suspense here for safety, but consider moving this LoadingSpinner 
-            into an `app/site/[tenantSlug]/loading.tsx` file to utilize native Next.js router suspense.
-          */}
           <Suspense fallback={<LoadingSpinner />}>
             {children}
           </Suspense>
           
-          {/* Ensure WhatsAppBubble's interface marks productName as optional, or pass undefined */}
           <WhatsAppBubble productName={''} />
           
-          {/* Analytics integration */}
           <AnalyticsProvider config={raw.AnalyticsConfig} />
           
         </LayoutComponent>
