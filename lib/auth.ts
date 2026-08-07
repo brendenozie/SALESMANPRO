@@ -195,46 +195,40 @@ export const authOptions = (reqHost?: string): NextAuthOptions => {
     },
 
     callbacks: {
+      // lib/auth.ts -> inside authOptions callbacks:
       async redirect({ url, baseUrl }) {
         const HUB_URL = "https://salesmanpro.site";
+        const AUTH_BROKER_URL = "https://auth.salesmanpro.site";
 
         if (url.includes("/logout") || url.includes("/api/auth/signout")) {
           return url.startsWith("/") ? `${baseUrl}${url}` : url;
         }
 
-        if (
-          url.includes("/api/auth/handover") ||
-          url.includes("/api/auth/exchange")
-        ) {
+        if (url.includes("/api/auth/handover") || url.includes("/api/auth/exchange")) {
           return url;
         }
 
-        let targetUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+        let targetUrl = url.startsWith("/") ? `${HUB_URL}${url}` : url;
         try {
           targetUrl = decodeURIComponent(targetUrl);
         } catch {}
 
         try {
           const parsedTarget = new URL(targetUrl);
-          const targetHost = parsedTarget.hostname
-            .toLowerCase()
-            .replace(/^www\./, "");
+          const targetHost = parsedTarget.hostname.toLowerCase().replace(/^www\./, "");
 
-          if (
-            targetHost === "auth.salesmanpro.site" &&
-            parsedTarget.pathname.startsWith("/api/auth")
-          ) {
+          if (targetHost === "auth.salesmanpro.site" && parsedTarget.pathname.startsWith("/api/auth")) {
             return targetUrl;
           }
 
-          const handoverUrl = new URL("/api/auth/handover", baseUrl);
+          // Always use explicit AUTH_BROKER_URL instead of relying solely on baseUrl
+          const handoverUrl = new URL("/api/auth/handover", AUTH_BROKER_URL);
           handoverUrl.searchParams.set("target", targetUrl);
           return handoverUrl.toString();
         } catch {
           return `${HUB_URL}/failure?reason=invalid_redirect`;
         }
       },
-
       async signIn({ user, account }) {
         if (!account || account.provider === "credentials") return true;
         if (!user.email || !user.id) return false;

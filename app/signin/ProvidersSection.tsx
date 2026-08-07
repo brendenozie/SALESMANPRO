@@ -138,12 +138,28 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     setLoadingProvider(null);
   };
 
+  // const handleSocialSignIn = async (providerId: string) => {
+  //   try {
+  //     setLoadingProvider(providerId);
+  //     setError(null);
+  //     localStorage.setItem("callbackUrl", callbackUrl);
+  //     await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl) });
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError("Sign-In failed. Please check your connection and try again.");
+  //     setLoadingProvider(null);
+  //   }
+  // };
+
+  // ✅ CORRECT
   const handleSocialSignIn = async (providerId: string) => {
     try {
       setLoadingProvider(providerId);
       setError(null);
       localStorage.setItem("callbackUrl", callbackUrl);
-      await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl) });
+      
+      // Pass callbackUrl directly without encodeURIComponent
+      await signIn(providerId, { redirect: true, callbackUrl });
     } catch (err) {
       console.error(err);
       setError("Sign-In failed. Please check your connection and try again.");
