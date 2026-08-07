@@ -1,16 +1,11 @@
-// // middleware.ts
-// middleware.ts
 import { getToken } from "next-auth/jwt";
-import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-import { getClientIp } from "./lib/readIP";
+import { NextRequest, NextResponse } from "next/server";
 
-// Your app’s main host
 const PRIMARY_HOST = "salesmanpro.site";
-const AUTH_DOMAIN = "auth.salesmanpro.site"; // Central auth domain
-const SECONDARY_HOSTS = ["519c-102-135-172-117.ngrok-free.app"]; // Add your custom domains here
+const AUTH_DOMAIN = "auth.salesmanpro.site";
+const SECONDARY_HOSTS = ["519c-102-135-172-117.ngrok-free.app"];
 
-// Protected paths that require authentication
-const protectedPaths = [
+const PROTECTED_PATHS = [
   "/admin",
   "/clients",
   "/agents",
@@ -19,290 +14,145 @@ const protectedPaths = [
   "/stores",
 ];
 
-// Middleware config
+const PUBLIC_EXEMPT_PATHS = [
+  "/signin",
+  "/signup",
+  "/desktop-login",
+  "/failure",
+  "/api/auth",
+];
+
 export const config = {
   matcher: [
-    "/((?!_next/|.*\\..*).*)", // all paths except _next/* and static assets
+    "/((?!_next/static|_next/image|favicon.ico|favicons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
 
-const LOCAL_IPS = [
-  "127.0.0.1",
-  "::1", // IPv6 localhost
-  "localhost",
-];
-
-const DEV_IP_RANGES = [
-  "192.168.", // LAN
-  "10.", // Private network
-  "172.16.",
-  "172.17.",
-  "172.18.",
-  "172.19.",
-  "172.20.",
-  "172.21.",
-  "172.22.",
-  "172.23.",
-  "172.24.",
-  "172.25.",
-  "172.26.",
-  "172.27.",
-  "172.28.",
-  "172.29.",
-  "172.30.",
-  "172.31.",
-];
-
-function isPrivateIp(ip: string | null) {
-  if (!ip) return false;
-
-  if (LOCAL_IPS.includes(ip)) return true;
-  return DEV_IP_RANGES.some((prefix) => ip.startsWith(prefix));
-}
-
-export default async function middleware(
-  request: NextRequest,
-  ev: NextFetchEvent,
-) {
-  const url = request.nextUrl.clone();
-  const { pathname } = url;
-  // const host = request.headers.get("host")?.split(":")[0] || "";
-  // const origin = request.headers.get("origin");
-
-  // const url = request.nextUrl.clone();
-  //   const { pathname } = url;
+export default async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const hostHeader = request.headers.get("host") || "";
+  const host = hostHeader.split(":")[0].toLowerCase();
   const userAgent = request.headers.get("user-agent") || "";
 
-  // 1. Detect if it's our Desktop App
   const isDesktop =
     userAgent.includes("SalesmanProDesktop") ||
     userAgent.includes("SalesmanProAndroid");
 
-  const clientIp = getClientIp(request);
-  // 2. Check for Next-Auth Session
-  // const session = await getToken({ req: request });
-  const isLocalNetwork = isPrivateIp(clientIp);
+  const isProd = process.env.NODE_ENV === "production";
+  const cookieName = isProd
+    ? "__Secure-next-auth.session-token"
+    : "next-auth.session-token";
 
-  // const urlToken = request.nextUrl.searchParams.get("auth_token");
-
-  // if (urlToken) {
-  //   try {
-  //     const decoded = await getToken({
-  //       token: urlToken,
-  //       secret: process.env.NEXTAUTH_SECRET!,
-  //     });
-
-  //     if (decoded) {
-  //       // Treat user as authenticated
-  //       return NextResponse.next();
-  //     }
-  //   } catch {
-  //     // ignore invalid token
-  //   }
-  // }
-
-  // We explicitly pass the secret and handle both secure and non-secure cookie names
-  // const session = await getToken({
-  //   req: request,
-  //   secret: process.env.NEXTAUTH_SECRET!,
-  //   // This ensures it works on both localhost (http) and production (https)
-  //   cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
-  // });
-  const session = await getToken({
+  const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
-    // secureCookie: true, // Force secure cookies in production, but allow non-secure in development
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
+    cookieName,
   });
 
-  // console.log("DEBUG: Is Desktop:", isDesktop);
-  // console.log("DEBUG: Session Found:", !!session);
-  // console.log("DEBUG: Cookies Present:", request.headers.get("cookie"));
+  const isPublicRoute = PUBLIC_EXEMPT_PATHS.some((path) =>
+    pathname.startsWith(path),
+  );
 
-  // 1. PREVENT REDIRECT LOOPS
-  // Only redirect to login if we are NOT already there and NOT in an auth API call
-  // const isAuthPage = pathname.startsWith("/desktop-login") || pathname.startsWith("/api/auth");
-  const isAuthPage =
-    pathname.startsWith("/desktop-login") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.includes("_next") || // Double check static assets
-    pathname.includes("favicon.ico");
+  const isProtectedRoute = PROTECTED_PATHS.some((path) =>
+    pathname.startsWith(path),
+  );
 
-  if (isDesktop && !session && !isAuthPage) {
-    return NextResponse.redirect(new URL("/desktop-login", request.url));
+  // 1. DESKTOP APP SPECIFIC ROUTING
+  if (isDesktop) {
+    if (!token && !isPublicRoute) {
+      return NextResponse.redirect(new URL("/desktop-login", request.url));
+    }
+    if (token && pathname === "/desktop-login") {
+      return NextResponse.redirect(new URL("/dashboards", request.url));
+    }
   }
 
-  // 2. ESCAPE FROM LOGIN PAGE
-  // If we are on the desktop, have a session, and are sitting on the login page -> Go to Dashboard
-  if (isDesktop && session && pathname === "/desktop-login") {
-    return NextResponse.redirect(new URL("/dashboards", request.url));
+  // 2. GENERAL WEB PROTECTED ROUTE ENFORCEMENT
+  if (!token && isProtectedRoute) {
+    const signInUrl = new URL("/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", request.url);
+    return NextResponse.redirect(signInUrl);
   }
-  // 3. DESKTOP REDIRECT LOGIC
-  // If user is on desktop, NOT logged in, and NOT already on the desktop-login page
-  // Only redirect if NOT already on the desktop-login page
-  // if (isDesktop && !session && pathname !== "/desktop-login") {
-  //   return NextResponse.redirect(new URL("/desktop-login", request.url));
-  // }
 
-  // // 🔥 FIX 2: If logged in on desktop, don't stay on the login page
-  // if (isDesktop && session && pathname === "/desktop-login") {
-  //   return NextResponse.redirect(new URL("/dashboards", request.url));
-  // }
+  // 3. WWW REDIRECT
+  if (host.startsWith("www.")) {
+    const cleanHost = host.replace(/^www\./, "");
+    return NextResponse.redirect(
+      `https://${cleanHost}${pathname}${request.nextUrl.search}`,
+    );
+  }
 
-  // ---- REST OF YOUR EXISTING MIDDLEWARE LOGIC ----
-  const host = request.headers.get("host")?.split(":")[0] || "";
-  const fullHost = request.headers.get("host") || "";
-
-  const isLocalHost =
-    host === "localhost" || host === "127.0.0.1" || fullHost.endsWith(":3000");
-
-  // ---- 1. API & CORS HANDLING ----
+  // 4. API ROUTE PASS-THROUGH
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  // if (pathname.startsWith("/api/")) {
-  //   const responseHeaders = new Headers();
-  //   if (origin) {
-  //     // Allow any subdomain of salesmanpro.site or any origin
-  //     responseHeaders.set("Access-Control-Allow-Origin", origin);
-  //   }
-  //   responseHeaders.set("Access-Control-Allow-Credentials", "true");
-  //   responseHeaders.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  //   responseHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  // 5. PRIMARY HOST & LOCALHOST HANDLING
+  const isLocalHost =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    hostHeader.endsWith(":3000");
 
-  //   // Preflight request
-  //   if (request.method === "OPTIONS") {
-  //     return new NextResponse(null, { status: 204, headers: responseHeaders });
-  //   }
-
-  //   // Attach headers to the final response
-  //   const res = NextResponse.next();
-  //   responseHeaders.forEach((value, key) => res.headers.set(key, value));
-  //   return res;
-  // }
-
-  // ---- 2. WWW REDIRECT ----
-  if (host.startsWith("www.")) {
-    return NextResponse.redirect(
-      `https://${host.replace("www.", "")}${pathname}`,
-    );
-  }
-
-  // ---- 3. PRIMARY HOST & LOCALHOST HANDLING ----
-  // Serve salesmanpro.site and localhost:3000 requests normally
-  // const host = request.headers.get("host")?.split(":")[0] || "";
-  // const fullHost = request.headers.get("host") || "";
-
-  // const isLocalHost =
-  //   host === "localhost" ||
-  //   host === "127.0.0.1" ||
-  //   fullHost.endsWith(":3000");
-
-  if (host === PRIMARY_HOST || isLocalHost) {
+  if (host === PRIMARY_HOST || isLocalHost || host === AUTH_DOMAIN) {
     return NextResponse.next();
   }
 
-  // if (
-  //   host === PRIMARY_HOST ||
-  //   host === "127.0.0.1" ||
-  //   host === "localhost"
-  // ) {
-  //   const fullHost = request.headers.get("host");
+  // Prepare request rewrite target
+  const rewriteUrl = request.nextUrl.clone();
 
-  //   // Local dev (localhost:3000) or Main app (salesmanpro.site)
-  //   if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000" || host === PRIMARY_HOST) {
-  //     return NextResponse.next();
-  //   }
-  // }
-
-  if (
-    pathname.startsWith("/signin") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/dashboards") ||
-    pathname.startsWith("/stores") ||
-    pathname.startsWith("/admin")
-  ) {
-    return NextResponse.next();
-  }
-
-  // ---- 4. AUTH DOMAIN HANDLING ----
-  // Allow auth.salesmanpro.site to resolve normally
-  if (host === AUTH_DOMAIN) {
-    return NextResponse.next();
-  }
-
-  // ---- 5. SUBDOMAIN HANDLING (slug.salesmanpro.site) ----
+  // 6. SUBDOMAIN TENANT HANDLING (*.salesmanpro.site)
   if (host.endsWith(".salesmanpro.site") || host.endsWith(".test")) {
     const subdomain = host
       .replace(".salesmanpro.site", "")
       .replace(".test", "");
 
     if (subdomain && subdomain !== "www") {
-      if (pathname === "/" || pathname === "") {
-        url.pathname = `/site/${subdomain}`;
-      } else {
-        url.pathname = `/site/${subdomain}${pathname}`;
-      }
+      rewriteUrl.pathname =
+        pathname === "/" || pathname === ""
+          ? `/site/${subdomain}`
+          : `/site/${subdomain}${pathname}`;
 
-      const res = NextResponse.rewrite(url);
+      const res = NextResponse.rewrite(rewriteUrl);
+      res.headers.set("x-tenant-domain", host);
       res.headers.set("x-requested-subdomain", subdomain);
       res.headers.set("x-original-path", pathname);
-      res.headers.set("x-requested-host", host);
       return res;
     }
   }
 
-  // ---- 6. CUSTOM DOMAIN TENANT HANDLING (flourishhub.co.ke) ----
-  // This is the correct logic for your custom domains.
+  // 7. CUSTOM DOMAIN TENANT HANDLING (e.g. company.co.ke)
   if (
     host &&
     host !== PRIMARY_HOST &&
     !host.endsWith(".salesmanpro.site") &&
-    // !host.startsWith("127.0.0.1") &&
-    !isLocalHost &&
-    !host.startsWith("localhost") &&
     !SECONDARY_HOSTS.includes(host)
   ) {
-    // Normalize host
     const normalizedHost = host.replace(/^www\./, "").toLowerCase();
 
-    // Derive tenant slug (first part before first dot)
-
-    const identifier = host; // e.g. "flourishhub.co.ke"
-
-    url.pathname =
+    rewriteUrl.pathname =
       pathname === "/" || pathname === ""
-        ? `/site/${identifier}`
-        : `/site/${identifier}${pathname}`;
+        ? `/site/${normalizedHost}`
+        : `/site/${normalizedHost}${pathname}`;
 
-    const res = NextResponse.rewrite(url);
+    const res = NextResponse.rewrite(rewriteUrl);
+    res.headers.set("x-tenant-domain", normalizedHost);
     res.headers.set("x-requested-host", host);
     res.headers.set("x-original-path", pathname);
-    res.headers.set("x-rewritten-slug", normalizedHost);
-
     return res;
   }
 
-  if (host && SECONDARY_HOSTS.includes(host)) {
-    // If the path is /site/duka-yangu, we don't want to rewrite it AGAIN
-    // because it's already pointing to the correct internal directory.
-
+  // 8. DEVELOPMENT TUNNELS (e.g. Ngrok)
+  if (SECONDARY_HOSTS.includes(host)) {
     if (pathname.startsWith("/site/")) {
       return NextResponse.next();
     }
-
-    // If you want to allow a "default" for the ngrok root, set it here
     const defaultSlug = "duka-yangu";
-    url.pathname = `/site/${defaultSlug}${pathname === "/" ? "" : pathname}`;
+    rewriteUrl.pathname = `/site/${defaultSlug}${pathname === "/" ? "" : pathname}`;
 
-    return NextResponse.rewrite(url);
+    const res = NextResponse.rewrite(rewriteUrl);
+    res.headers.set("x-tenant-domain", defaultSlug);
+    return res;
   }
 
-  // ---- 7. DEFAULT ----
-  // All other requests
   return NextResponse.next();
 }
