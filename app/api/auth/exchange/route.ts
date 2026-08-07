@@ -3,6 +3,9 @@ import prisma from "@/server/db/prismadb";
 import { encode } from "next-auth/jwt";
 import { getTenantInfo } from "@/lib/auth";
 
+// Add this to prevent Next.js from caching the missing_code redirect!
+export const dynamic = "force-dynamic";
+
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 function getPublicOrigin(req: NextRequest): string {
