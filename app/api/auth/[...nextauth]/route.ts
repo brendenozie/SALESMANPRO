@@ -3,14 +3,12 @@ import { authOptions } from "@/lib/auth";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 
-async function handler(
-  req: NextRequest,
-  ctx: { params: Promise<{ nextauth: string[] }> | { nextauth: string[] } },
-) {
-  const reqHeaders = await headers();
-  const host = reqHeaders.get("host") || "";
+async function handler(req: NextRequest, res: unknown) {
+  const headerList = await headers();
+  const host = headerList.get("host") || "";
 
-  return NextAuth(req, ctx as any, authOptions(host));
+  // @ts-ignore - NextAuth App Router dynamic wrapper compatibility
+  return await NextAuth(req, res, authOptions(host));
 }
 
 export { handler as GET, handler as POST };

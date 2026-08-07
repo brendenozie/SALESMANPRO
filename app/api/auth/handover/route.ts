@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const target = searchParams.get("target");
 
-    // 1. Validate Target Parameter
     if (!target) {
       return NextResponse.redirect(
         new URL("/failure?reason=missing_target", baseOrigin),
@@ -42,14 +41,12 @@ export async function GET(request: NextRequest) {
     const isProd = process.env.NODE_ENV === "production";
     const targetHost = targetUrl.hostname.toLowerCase().replace(/^www\./, "");
 
-    // 2. Prevent Localhost Targets in Production
     if (isProd && (targetHost === "localhost" || targetHost === "127.0.0.1")) {
       return NextResponse.redirect(
         new URL("/failure?reason=invalid_target_domain", baseOrigin),
       );
     }
 
-    // 3. Safe Tenant Validation
     const isMainDomain =
       MAIN_DOMAINS.includes(targetHost) ||
       targetHost.endsWith(".salesmanpro.site");
@@ -76,7 +73,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 4. Verify Active Session
     const session = await getAuthSession();
     if (!session || !session.user || !session.user.email) {
       const signInUrl = new URL("/signin", baseOrigin);
@@ -84,16 +80,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(signInUrl);
     }
 
-    // 5. Generate One-Time Exchange Token (OTET)
     const token = randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 1000 * 60 * 5); // 5 minutes valid
+    const expires = new Date(Date.now() + 1000 * 60 * 5); // Valid 5 minutes
 
-    // Clean up old tokens for this email first
     await prisma.verificationToken.deleteMany({
       where: { identifier: session.user.email },
     });
 
-    // Store guaranteed string identifier (email)
     await prisma.verificationToken.create({
       data: {
         identifier: session.user.email,
@@ -102,7 +95,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // 6. Construct Target Exchange Endpoint
     const exchangeUrl = new URL("/api/auth/exchange", targetUrl.origin);
     exchangeUrl.searchParams.set("code", token);
 

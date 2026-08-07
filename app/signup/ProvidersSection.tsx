@@ -148,7 +148,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       // Automatically sign in the user
       await signIn("credentials-email-password", {
         redirect: true,
-        callbackUrl: encodeURIComponent(callbackUrl),
+        callbackUrl: callbackUrl,
         email: data.email,
         password: data.password,
       });
@@ -164,7 +164,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       setError(null);
       setLoadingProvider(providerId);
       localStorage.setItem("callbackUrl", callbackUrl);
-      await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl) });
+      await signIn(providerId, { redirect: true, callbackUrl: callbackUrl });
     } catch (err) {
       console.error(err);
       setError("Sign-Up failed. Please check your connection and try again.");

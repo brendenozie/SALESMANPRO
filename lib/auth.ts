@@ -8,357 +8,262 @@ import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { decode } from "next-auth/jwt";
 
-const sharedSecret = process.env.NEXTAUTH_SECRET;
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-if (!sharedSecret) {
-  throw new Error("CRITICAL_ENV_MISSING: NEXTAUTH_SECRET is not configured.");
-}
+const aSharedSecret = process.env.NEXTAUTH_SECRET!;
+const googleClientId = process.env.GOOGLE_CLIENT_ID!;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;
 
 export const MAIN_DOMAINS = [
   "salesmanpro.site",
   "www.salesmanpro.site",
   "auth.salesmanpro.site",
   "localhost",
-  "127.0.0.1",
 ];
 
-export const HUB_URL = "https://salesmanpro.site";
-export const AUTH_BROKER_URL = "https://auth.salesmanpro.site";
+export const AUTH_BROKER_URL =
+  process.env.NEXTAUTH_URL || "https://auth.salesmanpro.site";
 
-export function parseHost(hostHeader: string) {
-  const cleanHost = hostHeader
+export function cleanHost(hostHeader: string | null): string {
+  if (!hostHeader) return "";
+  return hostHeader
     .split(":")[0]
     .toLowerCase()
     .replace(/^www\./, "");
-  const isHub =
-    cleanHost === "salesmanpro.site" ||
-    cleanHost === "localhost" ||
-    cleanHost === "127.0.0.1";
-  const isAuthBroker = cleanHost === "auth.salesmanpro.site";
-  const isMainApp = MAIN_DOMAINS.includes(cleanHost);
-
-  return { cleanHost, isHub, isAuthBroker, isMainApp };
 }
 
-async function findUserByLoginCode(loginCode: string) {
-  const [student, educator, consumer, salesAgent, driver, parent] =
-    await Promise.all([
-      prisma.student.findUnique({
-        where: { loginCode },
-        include: { user: true },
-      }),
-      prisma.educator.findUnique({
-        where: { loginCode },
-        include: { user: true },
-      }),
-      prisma.consumer.findUnique({
-        where: { loginCode },
-        include: { user: true },
-      }),
-      prisma.salesAgent.findUnique({
-        where: { loginCode },
-        include: { user: true },
-      }),
-      prisma.transportDriver.findUnique({
-        where: { loginCode },
-        include: { user: true },
-      }),
-      prisma.parent.findUnique({
-        where: { loginCode },
-        include: { user: true },
-      }),
-    ]);
+export function getTenantInfo(hostHeader: string) {
+  const host = cleanHost(hostHeader);
+  const isHub = host === "salesmanpro.site" || host === "localhost";
+  const isSystem = host === "auth.salesmanpro.site";
+  const isMainApp = isHub || isSystem;
 
-  if (student)
-    return { user: student.user, role: student.levelStatus || "STUDENT" };
-  if (educator) return { user: educator.user, role: "EDUCATOR" };
-  if (consumer) return { user: consumer.user, role: "CONSUMER" };
-  if (salesAgent) return { user: salesAgent.user, role: "SALES_AGENT" };
-  if (driver) return { user: driver.user, role: driver.user.role };
-  if (parent) return { user: parent.user, role: "PARENT" };
-
-  return null;
+  return { isMainApp, isHub, isSystem, tenantIdentifier: host };
 }
 
-export const authOptions = (reqHost?: string): NextAuthOptions => {
-  const hostInfo = parseHost(reqHost || "salesmanpro.site");
-  const isProd = process.env.NODE_ENV === "production";
-  const isPlatformDomain = hostInfo.cleanHost.endsWith("salesmanpro.site");
-
-  return {
-    adapter: PrismaAdapter(prisma),
-    providers: [
-      CredentialsProvider({
-        id: "token-signin",
-        name: "Token Sign-In",
-        credentials: { token: { label: "Token", type: "text" } },
-        async authorize(credentials) {
-          if (!credentials?.token) return null;
-          try {
-            const decodedToken = await decode({
-              token: credentials.token,
-              secret: sharedSecret,
-            });
-            if (!decodedToken || !decodedToken.email) return null;
-
-            return {
-              id: decodedToken.id as string,
-              name: decodedToken.name,
-              email: decodedToken.email,
-              image: decodedToken.image,
-              role: decodedToken.role,
-            };
-          } catch {
-            return null;
-          }
-        },
-      }),
-
-      CredentialsProvider({
-        id: "credentials-email-password",
-        name: "Email & Password",
-        credentials: {
-          email: { label: "Email", type: "email" },
-          password: { label: "Password", type: "password" },
-        },
-        async authorize(credentials) {
-          if (!credentials?.email || !credentials?.password) return null;
-
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email.toLowerCase() },
+export const authOptions = (reqHost?: string): NextAuthOptions => ({
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    CredentialsProvider({
+      id: "token-signin",
+      name: "Token Sign-In",
+      credentials: {
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token) return null;
+        try {
+          const decodedToken = await decode({
+            token: credentials.token,
+            secret: aSharedSecret,
           });
 
-          if (!user || !user.password) return null;
-
-          const isValid = await bcrypt.compare(
-            credentials.password,
-            user.password,
-          );
-          if (!isValid) return null;
+          if (!decodedToken || !decodedToken.email) return null;
 
           return {
-            id: user.id,
-            name: user.name ?? undefined,
-            email: user.email,
-            role: user.role || "USER",
-            phone: user.phone ?? undefined,
-            username: user.username ?? undefined,
-            bio: user.bio ?? undefined,
-            address: user.address ?? undefined,
-            profilePicture: user.profilePicture ?? user.image ?? undefined,
+            id: decodedToken.id as string,
+            name: decodedToken.name,
+            email: decodedToken.email,
+            image: decodedToken.image,
+            role: decodedToken.role,
           };
-        },
-      }),
-
-      CredentialsProvider({
-        id: "school-code-login",
-        name: "School Login Code",
-        credentials: {
-          loginCode: { label: "School Login Code", type: "text" },
-        },
-        async authorize(credentials) {
-          if (
-            !credentials?.loginCode ||
-            credentials.loginCode.length !== 6 ||
-            !/^\d+$/.test(credentials.loginCode)
-          ) {
-            return null;
-          }
-
-          const result = await findUserByLoginCode(credentials.loginCode);
-          if (!result || !result.user) return null;
-
-          const { user, role } = result;
-          return {
-            id: user.id,
-            name: user.name ?? undefined,
-            email: user.email,
-            role: role as any,
-            phone: user.phone ?? undefined,
-            username: user.username ?? undefined,
-            bio: user.bio ?? undefined,
-            address: user.address ?? undefined,
-            profilePicture: user.profilePicture ?? user.image ?? undefined,
-          };
-        },
-      }),
-
-      GoogleProvider({
-        clientId: googleClientId || "",
-        clientSecret: googleClientSecret || "",
-        allowDangerousEmailAccountLinking: true,
-        httpOptions: { timeout: 15000 },
-      }),
-    ],
-
-    session: {
-      strategy: "jwt",
-      maxAge: 30 * 24 * 60 * 60,
-      updateAge: 24 * 60 * 60,
-      generateSessionToken: () =>
-        randomUUID?.() ?? randomBytes(32).toString("hex"),
-    },
-
-    callbacks: {
-      async redirect({ url, baseUrl }) {
-        if (url.includes("/logout") || url.includes("/api/auth/signout")) {
-          return url.startsWith("/") ? `${baseUrl}${url}` : url;
+        } catch {
+          return null;
         }
+      },
+    }),
+
+    CredentialsProvider({
+      id: "credentials-email-password",
+      name: "Email & Password",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const userFound = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!userFound || !userFound.password) return null;
+
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          userFound.password,
+        );
+        if (!passwordMatch) return null;
+
+        return {
+          id: userFound.id,
+          name: userFound.name ?? undefined,
+          email: userFound.email,
+          role: userFound.role || "USER",
+          phone: userFound.phone ?? undefined,
+          username: userFound.username ?? undefined,
+          bio: userFound.bio ?? undefined,
+          address: userFound.address ?? undefined,
+          profilePicture:
+            userFound.profilePicture ?? userFound.image ?? undefined,
+        };
+      },
+    }),
+
+    GoogleProvider({
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
+      allowDangerousEmailAccountLinking: true,
+      httpOptions: {
+        timeout: 40000,
+      },
+    }),
+  ],
+
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
+    generateSessionToken: () =>
+      randomUUID?.() ?? randomBytes(32).toString("hex"),
+  },
+
+  callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.includes("/logout") || url.includes("/api/auth/signout")) {
+        return url.startsWith("/") ? `${baseUrl}${url}` : url;
+      }
+
+      if (url.includes("/api/auth/handover") || url.includes("/failure")) {
+        return url;
+      }
+
+      let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+
+      try {
+        finalRedirectUrl = decodeURIComponent(finalRedirectUrl);
+      } catch {
+        // Already decoded
+      }
+
+      try {
+        const targetUrlObj = new URL(finalRedirectUrl);
+        const targetHost = cleanHost(targetUrlObj.hostname);
 
         if (
-          url.includes("/api/auth/handover") ||
-          url.includes("/api/auth/exchange")
+          targetHost === cleanHost(new URL(baseUrl).hostname) &&
+          (targetUrlObj.pathname.startsWith("/api/auth") ||
+            targetUrlObj.pathname === "/signin")
         ) {
-          return url;
+          return finalRedirectUrl;
         }
 
-        let targetUrl = url.startsWith("/")
-          ? `${isProd ? HUB_URL : baseUrl}${url}`
-          : url;
+        const handoverUrl = new URL("/api/auth/handover", baseUrl);
+        handoverUrl.searchParams.set("target", finalRedirectUrl);
+        return handoverUrl.toString();
+      } catch (error) {
+        return `${baseUrl}/failure?reason=invalid_redirect&error=${encodeURIComponent(
+          error instanceof Error ? error.message : "unknown",
+        )}`;
+      }
+    },
 
-        try {
-          targetUrl = decodeURIComponent(targetUrl);
-        } catch {}
+    async signIn({ user, account }) {
+      if (!account || account.provider === "credentials") return true;
+      if (!user.email) return false;
 
-        try {
-          const parsedTarget = new URL(targetUrl);
-          const targetHost = parsedTarget.hostname
-            .toLowerCase()
-            .replace(/^www\./, "");
+      const host = reqHost || "";
+      const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
 
-          // Block localhost redirects in production
-          if (
-            isProd &&
-            (targetHost === "localhost" || targetHost === "127.0.0.1")
-          ) {
-            targetUrl = `${HUB_URL}/dashboards`;
-          }
+      if (!isMainApp) {
+        const company = await prisma.company.findFirst({
+          where: {
+            OR: [
+              { domain: tenantIdentifier },
+              { customDomain: tenantIdentifier },
+              { slug: tenantIdentifier.split(".")[0] },
+            ],
+          },
+        });
 
-          if (
-            targetHost === "auth.salesmanpro.site" &&
-            parsedTarget.pathname.startsWith("/api/auth")
-          ) {
-            return targetUrl;
-          }
-
-          const handoverUrl = new URL(
-            "/api/auth/handover",
-            isProd ? AUTH_BROKER_URL : baseUrl,
-          );
-          handoverUrl.searchParams.set("target", targetUrl);
-          return handoverUrl.toString();
-        } catch {
-          return `${isProd ? HUB_URL : baseUrl}/failure?reason=invalid_redirect`;
-        }
-      },
-
-      async signIn({ user, account }) {
-        if (!account || account.provider === "credentials") return true;
-        if (!user.email || !user.id) return false;
-
-        const { cleanHost, isMainApp } = parseHost(reqHost || "");
-
-        if (!isMainApp) {
-          const company = await prisma.company.findFirst({
+        if (company && user.id) {
+          await prisma.consumer.upsert({
             where: {
-              OR: [
-                { domain: cleanHost },
-                { customDomain: cleanHost },
-                { slug: cleanHost.split(".")[0] },
-              ],
+              userId_companyId: { userId: user.id, companyId: company.id },
+            },
+            update: {},
+            create: {
+              userId: user.id,
+              companyId: company.id,
             },
           });
-
-          if (company) {
-            await prisma.consumer.upsert({
-              where: {
-                userId_companyId: {
-                  userId: user.id,
-                  companyId: company.id,
-                },
-              },
-              update: {},
-              create: {
-                userId: user.id,
-                companyId: company.id,
-              },
-            });
-          }
         }
+      } else if (
+        isHub &&
+        user.id &&
+        (user as { role?: string }).role === "USER"
+      ) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+      }
 
-        return true;
-      },
-
-      async jwt({ token, user }) {
-        if (user) {
-          Object.assign(token, {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: (user as any).phone,
-            username: (user as any).username,
-            bio: (user as any).bio,
-            address: (user as any).address,
-            role: (user as any).role || "USER",
-            profilePicture: (user as any).profilePicture,
-          });
-        }
-        return token;
-      },
-
-      async session({ session, token }) {
-        if (session.user) {
-          Object.assign(session.user, {
-            id: token.id as string,
-            name: token.name,
-            email: token.email,
-            phone: token.phone,
-            username: token.username,
-            bio: token.bio,
-            address: token.address,
-            role: token.role,
-            profilePicture: token.profilePicture,
-          });
-        }
-        return session;
-      },
+      return true;
     },
 
-    secret: sharedSecret,
-    pages: {
-      signIn: "/signin",
-      error: "/failure",
+    async jwt({ token, user }) {
+      if (user) {
+        Object.assign(token, {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: (user as Record<string, unknown>).phone,
+          username: (user as Record<string, unknown>).username,
+          bio: (user as Record<string, unknown>).bio,
+          address: (user as Record<string, unknown>).address,
+          role: (user as Record<string, unknown>).role,
+          profilePicture: (user as Record<string, unknown>).profilePicture,
+        });
+      }
+      return token;
     },
-    cookies: {
-      sessionToken: {
-        name: isProd
+
+    async session({ session, token }) {
+      if (session.user) {
+        Object.assign(session.user, {
+          id: token.id as string,
+          name: token.name,
+          email: token.email,
+          phone: token.phone,
+          username: token.username,
+          bio: token.bio,
+          address: token.address,
+          role: token.role,
+          profilePicture: token.profilePicture,
+        });
+      }
+      return session;
+    },
+  },
+
+  secret: aSharedSecret,
+  pages: {
+    signIn: "/signin",
+  },
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
           ? "__Secure-next-auth.session-token"
           : "next-auth.session-token",
-        options: {
-          httpOnly: true,
-          sameSite: "lax",
-          path: "/",
-          secure: isProd,
-          domain: isProd && isPlatformDomain ? ".salesmanpro.site" : undefined,
-          maxAge: 30 * 24 * 60 * 60,
-        },
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60,
       },
     },
-  };
-};
+  },
+});
 
-export async function getAuthSession(hostOverride?: string) {
-  let host = hostOverride || "";
-  if (!host) {
-    try {
-      const { headers } = await import("next/headers");
-      const reqHeaders = await headers();
-      host = reqHeaders.get("host") || "";
-    } catch {
-      host = "";
-    }
-  }
-  return getServerSession(authOptions(host));
-}
+export const getAuthSession = () => getServerSession(authOptions());
