@@ -2,7 +2,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { PlanStatus } from "@prisma/client";
+
 
 // =================================================================================================
 // PLANS API ROUTES
@@ -92,3 +94,47 @@ export const GET = withApiHandler(getHandler, {
   requireAuth: false,
   requireRateLimit: false,
 });
+
+const postHandler = async (request: Request) => {
+  const data = await request.json();
+
+  const {
+    companyId,
+    name,
+    description,
+    priceMonthly,
+    priceAnnually,
+    features,
+    isPopular,
+    status,
+    siteTypePrices, // NEW FIELD
+  } = data;
+
+  if (!companyId || !name || !description || !features) {
+    return NextResponse.json(
+      { message: "Missing required fields for plan creation." },
+      { status: 400 }
+    );
+  }
+
+  const newPlan = await prisma.plan.create({
+    data: {
+      name,
+      description,
+      priceMonthly,
+      priceAnnually,
+      features,
+      isPopular,
+      status: status ?? PlanStatus.ACTIVE,
+      currency: "KES",
+      siteTypePrices: siteTypePrices ?? {}, // NEW
+      company: { connect: { id: companyId } },
+    },
+  });
+
+  
+    try { await cacheDel(`admin:plan:${companyId || 'global'}:*`); } catch (e) {}
+    return NextResponse.json(newPlan, { status: 201 });
+};
+
+export const POST = withApiHandler(postHandler);

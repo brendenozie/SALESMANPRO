@@ -18,6 +18,7 @@ import {
   SunIcon,
   MoonIcon,
   LockClosedIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
 import { useStoreContext } from "@/contexts/StoreContext";
@@ -56,7 +57,7 @@ const PricingModal = ({
   companyId,
   email,
   category,
-  upgradeToPlan,
+  currentTier,
   onSubscriptionSuccess,
 }: {
   isOpen: boolean;
@@ -64,7 +65,7 @@ const PricingModal = ({
   companyId: string | null;
   email: string;
   category: string;
-  upgradeToPlan?: string;
+  currentTier?: string;
   onSubscriptionSuccess: () => void;
 }) => {
   return (
@@ -94,7 +95,7 @@ const PricingModal = ({
                 companyId={companyId}
                 email={email}
                 category={category}
-                upgradeToPlan={upgradeToPlan}
+                currentTier={currentTier}
                 onSubscriptionSuccess={onSubscriptionSuccess}
               />
             </div>
@@ -173,7 +174,7 @@ export default function AdminLayout({
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isCurrentRouteLocked, setIsCurrentRouteLocked] = useState(false);
 
-  // NEW: Track the required tier for the locked route
+  // Track the required tier for the locked route
   const [requiredPlan, setRequiredPlan] = useState<string | null>(null);
 
   // Dark Mode State
@@ -210,12 +211,12 @@ export default function AdminLayout({
     setSelectedCompanyId(companyId);
     setSelectedCategory(category);
     setIsPricingModalOpen(true);    
-    setIsCollapsed(true); // Collapse the sidebar when opening the modal
+    setIsCollapsed(false); // Collapse the sidebar when opening the modal
   };
 
   const handleSubscriptionSuccess = () => {
     setIsPricingModalOpen(false);
-    setIsCollapsed(false);
+    setIsCollapsed(true);
     mutate(``); // Refresh the current route to reflect subscription changes
   };
 
@@ -227,19 +228,17 @@ export default function AdminLayout({
   const currentTierStatus = storeFormData?.subscription?.status || "INACTIVE";
 
   const categoryType = useMemo(() => {
-
     const category = storeFormData?.name === "Ghuba" ? storeFormData?.name : storeFormData?.category;
-
     if (!category) return "Other";
 
-    //this is so that you can seperate automotive and automotive parts, but still show the same category name in the sidebar
+    // Separate automotive and automotive parts, but show same category name in sidebar
     if (category.toLowerCase() === "automotive") {
       return capitalize(storeFormData?.variant || "Other");
     }
     return capitalize(category);
   }, [storeFormData?.category, storeFormData?.variant]);
 
-  // Pass the tier downward (Fixed syntax error here)
+  // Pass the tier downward
   const menus = useMemo(
     () => getCategoryMenus(companyId, userRole, currentTier, currentTierStatus === "ACTIVE"),
     [companyId, userRole, currentTier, currentTierStatus]
@@ -251,10 +250,9 @@ export default function AdminLayout({
   );
 
   // 4. Client-side Route Protection Effect
-  
   useEffect(() => {
     let locked = false;
-    let requiredTier: string | null = null; // NEW: temporarily hold the tier
+    let requiredTier: string | null = null;
 
     // Check if the current pathname matches a locked menu item
     for (const item of menuItems) {
@@ -267,7 +265,7 @@ export default function AdminLayout({
         for (const sub of item.subItems) {
           if (sub.href && pathname.startsWith(sub.href) && sub.isLocked) {
             locked = true;
-            requiredTier = sub.minTier || null; // Capture the sub-item's required tier
+            requiredTier = sub.minTier || null;
             break;
           }
         }
@@ -278,38 +276,11 @@ export default function AdminLayout({
     setIsCurrentRouteLocked(locked);
 
     if (locked) {
-      setRequiredPlan(requiredTier); // NEW: Save the required tier to state
+      setRequiredPlan(requiredTier); 
       setIsPricingModalOpen(true);
       setIsCollapsed(true);
     }
   }, [pathname, menuItems]);
-
-  // useEffect(() => {
-  //   let locked = false;
-
-  //   // Check if the current pathname matches a locked menu item
-  //   for (const item of menuItems) {
-  //     if (item.href && pathname.startsWith(item.href) && item.isLocked) {
-  //       locked = true;
-  //       break;
-  //     }
-  //     if (item.subItems) {
-  //       for (const sub of item.subItems) {
-  //         if (sub.href && pathname.startsWith(sub.href) && sub.isLocked) {
-  //           locked = true;
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   setIsCurrentRouteLocked(locked);
-
-  //   if (locked) {
-  //     setIsPricingModalOpen(true);
-  //     setIsCollapsed(true);
-  //   }
-  // }, [pathname, menuItems]);
 
   // 5. Auto-expand Active Category
   useEffect(() => {
@@ -365,21 +336,13 @@ export default function AdminLayout({
     if (item.isLocked) {
       e.preventDefault(); // Stop Next.js router from navigating
       setIsCollapsed(true); // Expand sidebar if collapsed
-      setRequiredPlan(item.minTier || null); // NEW: Set the specific required plan
-      setIsPricingModalOpen(true); // Trigger your modal state
+      setRequiredPlan(item.minTier || null); 
+      setIsPricingModalOpen(true); 
     }
   };
-  
-  // const handleNavigation = (e: React.MouseEvent, item: MenuItem | SubMenuItem) => {
-  //   if (item.isLocked) {
-  //     e.preventDefault(); // Stop Next.js router from navigating
-  //     setIsCollapsed(true); // Expand sidebar if collapsed
-  //     setIsPricingModalOpen(true); // Trigger your modal state
-  //   }
-  // };
 
   // =========================================================================
-  // EARLY RETURNS (MUST BE AFTER ALL HOOKS)
+  // EARLY RETURNS
   // =========================================================================
 
   // Full-Screen POS Layout Bypass
@@ -684,19 +647,40 @@ export default function AdminLayout({
           <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-200 relative">
             {isCurrentRouteLocked ? (
               <div className="flex items-center justify-center h-full min-h-[50vh] p-6">
-                <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-md w-full mx-auto">
-                  <LockClosedIcon className="h-14 w-14 mx-auto text-slate-400 mb-4" />
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Content Locked</h2>
-                  <p className="text-slate-500 mt-2 mb-6 text-sm">
-                    {
-                      `This section requires a ${requiredPlan || "higher"} subscription plan. Please upgrade to access this content.`
-                    }
+                <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-lg w-full mx-auto">
+                  <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                    <LockClosedIcon className="h-8 w-8 text-slate-400" />
+                  </div>
+                  
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Content Locked</h2>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">
+                    You need a higher subscription tier to access this section of the dashboard.
                   </p>
+
+                  {/* UI BENTO GRID: CURRENT VS REQUIRED TIER */}
+                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-8 border border-slate-100 dark:border-slate-700">
+                    <div className="flex flex-col text-left">
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Current Plan</span>
+                      <span className="text-lg font-bold text-slate-700 dark:text-slate-300 capitalize">
+                        {currentTier === "INACTIVE" ? "Free / Inactive" : currentTier}
+                      </span>
+                    </div>
+                    
+                    <ArrowRightIcon className="h-6 w-6 text-slate-300 dark:text-slate-600" />
+                    
+                    <div className="flex flex-col text-right">
+                      <span className="text-xs font-medium text-sky-500 uppercase tracking-wider mb-1">Required Plan</span>
+                      <span className="text-lg font-bold text-sky-600 dark:text-sky-400 capitalize">
+                        {requiredPlan || "To premium Tier"}
+                      </span>
+                    </div>
+                  </div>
+
                   <button
                     onClick={() => setIsPricingModalOpen(true)}
-                    className="w-full px-6 py-2.5 bg-sky-600 text-white font-medium rounded-xl hover:bg-sky-700 transition-colors shadow-lg shadow-sky-600/30"
+                    className="w-full px-6 py-3 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 transition-colors shadow-lg shadow-sky-600/30"
                   >
-                    View Plans
+                    View Upgrade Options
                   </button>
                 </div>
               </div>
@@ -728,27 +712,14 @@ export default function AdminLayout({
         isOpen={isPricingModalOpen}
         onClose={() => {
           setIsPricingModalOpen(false);
-          setIsCollapsed(false);
-          setRequiredPlan(null); // Optional: Reset on close
+          setIsCollapsed(true);
+          setRequiredPlan(null); // Reset on close
         }}
         companyId={selectedCompanyId || storeFormData?.id || null}
         email={session?.user?.email || ""}
         category={selectedCategory || storeFormData?.category || "Other"}
-        
-        // NEW: Pass the specifically requested tier down to highlight it
-        upgradeToPlan={requiredPlan || undefined} 
-        
+        currentTier={requiredPlan || undefined} 
         onSubscriptionSuccess={handleSubscriptionSuccess}
-        // isOpen={isPricingModalOpen}
-        // onClose={() => {
-        //   setIsPricingModalOpen(false);
-        //   setIsCollapsed(false);
-        // }}
-        // companyId={selectedCompanyId || storeFormData?.id || null}
-        // email={session?.user?.email || ""}
-        // category={selectedCategory || storeFormData?.category || "Other"}
-        // upgradeToPlan={isCurrentRouteLocked ? storeFormData?.subscription?.plan?.name || "INACTIVE" : undefined}
-        // onSubscriptionSuccess={handleSubscriptionSuccess}
       />
     </>
   );
