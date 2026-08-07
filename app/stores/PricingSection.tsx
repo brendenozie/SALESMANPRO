@@ -26,6 +26,7 @@ interface PricingSectionProps {
   companyId: string;
   email: string;
   category: string;
+  upgradeToPlan?: string;
   onSubscriptionSuccess: () => void;
 }
 
@@ -46,7 +47,7 @@ const GlobeIcon = () => (
   </svg>
 );
 
-export default function PricingSection({ companyId, email, category, onSubscriptionSuccess }: PricingSectionProps) {
+export default function PricingSection({ companyId, email, category, upgradeToPlan, onSubscriptionSuccess }: PricingSectionProps) {
   const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
 
   const [plans, setPlans] = useState<Plan[]>([]);

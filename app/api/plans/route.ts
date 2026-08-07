@@ -31,16 +31,16 @@ const getHandler = async (request: Request) => {
   // 🚫 Filter out Free and Trial plans
   where.AND = [
     {
-      name: {
-        not: {
+      NOT: {
+        name: {
           contains: "Trial",
           mode: "insensitive",
         },
       },
     },
     {
-      name: {
-        not: {
+      NOT: {
+        name: {
           contains: "Free",
           mode: "insensitive",
         },
@@ -57,7 +57,9 @@ const getHandler = async (request: Request) => {
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return NextResponse.json(cached, { status: 200 });
-  } catch (e) {}
+  } catch (e) {
+    // Silently ignore cache retrieval errors
+  }
 
   const totalItems = await prisma.plan.count({ where });
   const plans = await prisma.plan.findMany({

@@ -56,6 +56,7 @@ const PricingModal = ({
   companyId,
   email,
   category,
+  upgradeToPlan,
   onSubscriptionSuccess,
 }: {
   isOpen: boolean;
@@ -63,6 +64,7 @@ const PricingModal = ({
   companyId: string | null;
   email: string;
   category: string;
+  upgradeToPlan?: string;
   onSubscriptionSuccess: () => void;
 }) => {
   return (
@@ -92,6 +94,7 @@ const PricingModal = ({
                 companyId={companyId}
                 email={email}
                 category={category}
+                upgradeToPlan={upgradeToPlan}
                 onSubscriptionSuccess={onSubscriptionSuccess}
               />
             </div>
@@ -170,6 +173,9 @@ export default function AdminLayout({
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isCurrentRouteLocked, setIsCurrentRouteLocked] = useState(false);
 
+  // NEW: Track the required tier for the locked route
+  const [requiredPlan, setRequiredPlan] = useState<string | null>(null);
+
   // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -245,32 +251,65 @@ export default function AdminLayout({
   );
 
   // 4. Client-side Route Protection Effect
+  
   useEffect(() => {
     let locked = false;
+    let requiredTier: string | null = null; // NEW: temporarily hold the tier
 
     // Check if the current pathname matches a locked menu item
     for (const item of menuItems) {
       if (item.href && pathname.startsWith(item.href) && item.isLocked) {
         locked = true;
+        requiredTier = item.minTier || null;
         break;
       }
       if (item.subItems) {
         for (const sub of item.subItems) {
           if (sub.href && pathname.startsWith(sub.href) && sub.isLocked) {
             locked = true;
+            requiredTier = sub.minTier || null; // Capture the sub-item's required tier
             break;
           }
         }
       }
+      if (locked) break;
     }
 
     setIsCurrentRouteLocked(locked);
 
     if (locked) {
+      setRequiredPlan(requiredTier); // NEW: Save the required tier to state
       setIsPricingModalOpen(true);
       setIsCollapsed(true);
     }
   }, [pathname, menuItems]);
+
+  // useEffect(() => {
+  //   let locked = false;
+
+  //   // Check if the current pathname matches a locked menu item
+  //   for (const item of menuItems) {
+  //     if (item.href && pathname.startsWith(item.href) && item.isLocked) {
+  //       locked = true;
+  //       break;
+  //     }
+  //     if (item.subItems) {
+  //       for (const sub of item.subItems) {
+  //         if (sub.href && pathname.startsWith(sub.href) && sub.isLocked) {
+  //           locked = true;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   setIsCurrentRouteLocked(locked);
+
+  //   if (locked) {
+  //     setIsPricingModalOpen(true);
+  //     setIsCollapsed(true);
+  //   }
+  // }, [pathname, menuItems]);
 
   // 5. Auto-expand Active Category
   useEffect(() => {
@@ -326,9 +365,18 @@ export default function AdminLayout({
     if (item.isLocked) {
       e.preventDefault(); // Stop Next.js router from navigating
       setIsCollapsed(true); // Expand sidebar if collapsed
+      setRequiredPlan(item.minTier || null); // NEW: Set the specific required plan
       setIsPricingModalOpen(true); // Trigger your modal state
     }
   };
+  
+  // const handleNavigation = (e: React.MouseEvent, item: MenuItem | SubMenuItem) => {
+  //   if (item.isLocked) {
+  //     e.preventDefault(); // Stop Next.js router from navigating
+  //     setIsCollapsed(true); // Expand sidebar if collapsed
+  //     setIsPricingModalOpen(true); // Trigger your modal state
+  //   }
+  // };
 
   // =========================================================================
   // EARLY RETURNS (MUST BE AFTER ALL HOOKS)
@@ -640,7 +688,9 @@ export default function AdminLayout({
                   <LockClosedIcon className="h-14 w-14 mx-auto text-slate-400 mb-4" />
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white">Content Locked</h2>
                   <p className="text-slate-500 mt-2 mb-6 text-sm">
-                    You need an active subscription to view this page. Upgrade your plan to unlock full access to this feature.
+                    {
+                      `This section requires a ${requiredPlan || "higher"} subscription plan. Please upgrade to access this content.`
+                    }
                   </p>
                   <button
                     onClick={() => setIsPricingModalOpen(true)}
@@ -679,11 +729,26 @@ export default function AdminLayout({
         onClose={() => {
           setIsPricingModalOpen(false);
           setIsCollapsed(false);
+          setRequiredPlan(null); // Optional: Reset on close
         }}
         companyId={selectedCompanyId || storeFormData?.id || null}
         email={session?.user?.email || ""}
         category={selectedCategory || storeFormData?.category || "Other"}
+        
+        // NEW: Pass the specifically requested tier down to highlight it
+        upgradeToPlan={requiredPlan || undefined} 
+        
         onSubscriptionSuccess={handleSubscriptionSuccess}
+        // isOpen={isPricingModalOpen}
+        // onClose={() => {
+        //   setIsPricingModalOpen(false);
+        //   setIsCollapsed(false);
+        // }}
+        // companyId={selectedCompanyId || storeFormData?.id || null}
+        // email={session?.user?.email || ""}
+        // category={selectedCategory || storeFormData?.category || "Other"}
+        // upgradeToPlan={isCurrentRouteLocked ? storeFormData?.subscription?.plan?.name || "INACTIVE" : undefined}
+        // onSubscriptionSuccess={handleSubscriptionSuccess}
       />
     </>
   );
