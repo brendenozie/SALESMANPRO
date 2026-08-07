@@ -5,7 +5,8 @@ import { NextRequest } from "next/server";
 
 async function handler(req: NextRequest, res: unknown) {
   const headerList = await headers();
-  const host = headerList.get("host") || "";
+  const host =
+    headerList.get("x-forwarded-host") || headerList.get("host") || "";
 
   // @ts-ignore - NextAuth App Router dynamic wrapper compatibility
   return await NextAuth(req, res, authOptions(host));

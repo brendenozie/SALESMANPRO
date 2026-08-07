@@ -39,7 +39,6 @@ export function getTenantInfo(hostHeader: string) {
   return { isMainApp, isHub, isSystem, tenantIdentifier: host };
 }
 
-// ✅ Utility: find Student/Educator/Parent by login code (passwordless flow)
 async function findUserByLoginCode(loginCode: string) {
   const student = await prisma.student.findUnique({
     where: { loginCode },
@@ -84,7 +83,6 @@ async function findUserByLoginCode(loginCode: string) {
 export const authOptions = (reqHost?: string): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
   providers: [
-    // 1. Token Sign-In (For Handover)
     CredentialsProvider({
       id: "token-signin",
       name: "Token Sign-In",
@@ -114,7 +112,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       },
     }),
 
-    // 2. Email & Password (Restored Complex Role Detection)
     CredentialsProvider({
       id: "credentials-email-password",
       name: "Email & Password",
@@ -137,24 +134,21 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         );
         if (!passwordMatch) return null;
 
-        let determinedRole: string | undefined =
-          userFoundInDb.role || undefined;
+        let determinedRole: string = userFoundInDb.role || "USER";
 
-        const studentCheck = await prisma.student.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const educatorCheck = await prisma.educator.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const consumerCheck = await prisma.consumer.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const salesAgentCheck = await prisma.salesAgent.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const clientCheck = await prisma.client.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
+        const [
+          studentCheck,
+          educatorCheck,
+          consumerCheck,
+          salesAgentCheck,
+          clientCheck,
+        ] = await Promise.all([
+          prisma.student.findUnique({ where: { userId: userFoundInDb.id } }),
+          prisma.educator.findUnique({ where: { userId: userFoundInDb.id } }),
+          prisma.consumer.findUnique({ where: { userId: userFoundInDb.id } }),
+          prisma.salesAgent.findUnique({ where: { userId: userFoundInDb.id } }),
+          prisma.client.findUnique({ where: { userId: userFoundInDb.id } }),
+        ]);
 
         if (studentCheck) determinedRole = "STUDENT";
         else if (consumerCheck) determinedRole = "CONSUMER";
@@ -167,7 +161,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           id: userFoundInDb.id,
           name: userFoundInDb.name ?? undefined,
           email: userFoundInDb.email,
-          role: determinedRole as any,
+          role: determinedRole,
           phone: userFoundInDb.phone ?? undefined,
           username: userFoundInDb.username ?? undefined,
           bio: userFoundInDb.bio ?? undefined,
@@ -178,7 +172,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       },
     }),
 
-    // 3. Passwordless School Login Code (Restored)
     CredentialsProvider({
       id: "school-code-login",
       name: "School Login Code",
@@ -203,7 +196,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           id: user.id,
           name: user.name ?? undefined,
           email: user.email,
-          role: loginCodeResult.role as any,
+          role: loginCodeResult.role,
           phone: user.phone ?? undefined,
           username: user.username ?? undefined,
           bio: user.bio ?? undefined,
@@ -213,7 +206,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       },
     }),
 
-    // 4. OAuth Providers
     GoogleProvider({
       clientId: googleClientId,
       clientSecret: googleClientSecret,
@@ -255,7 +247,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const targetHost = cleanHost(targetUrlObj.hostname);
         const baseUrlHost = cleanHost(new URL(baseUrl).hostname);
 
-        // Allow internal auth routes
         if (
           targetHost === baseUrlHost &&
           (targetUrlObj.pathname.startsWith("/api/auth") ||
@@ -266,7 +257,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
         const handoverUrl = new URL("/api/auth/handover", baseUrl);
 
-        // Restored HUB Dashboard routing
         if (
           targetHost === "salesmanpro.site" ||
           targetHost === "www.salesmanpro.site"
@@ -329,7 +319,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     },
 
     async jwt({ token, user }) {
-      // 1. Map Global Profile Info on initial sign-in
       if (user) {
         Object.assign(token, {
           id: user.id,
@@ -339,12 +328,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           username: (user as Record<string, unknown>).username,
           bio: (user as Record<string, unknown>).bio,
           address: (user as Record<string, unknown>).address,
-          globalRole: (user as Record<string, unknown>).role,
+          globalRole: (user as Record<string, unknown>).role || "USER",
           profilePicture: (user as Record<string, unknown>).profilePicture,
         });
       }
 
-      // 2. Tenant-Isolated Store Role Logic
       const host = reqHost || "";
       const { isMainApp, tenantIdentifier } = getTenantInfo(host);
 
@@ -365,17 +353,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
           if (company) {
             token.storeId = company.id;
-            // If the user logging in owns THIS store, make them ADMIN for this session
-            if (company.userId === token.id) {
-              token.storeRole = "ADMIN";
-            } else {
-              // Otherwise, they are just a consumer here
-              token.storeRole = "USER";
-            }
+            token.storeRole = company.userId === token.id ? "ADMIN" : "USER";
           } else {
             token.storeRole = "USER";
           }
-        } catch (error) {
+        } catch {
           token.storeRole = "USER";
         }
       }
@@ -394,7 +376,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           bio: token.bio,
           address: token.address,
           globalRole: token.globalRole,
-          storeRole: token.storeRole, // Important: Client components use this for routing
+          storeRole: token.storeRole,
           storeId: token.storeId,
           profilePicture: token.profilePicture,
         });

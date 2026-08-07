@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { encode } from "next-auth/jwt";
+import { getTenantInfo } from "@/lib/auth";
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
@@ -16,6 +17,31 @@ function getPublicOrigin(req: NextRequest): string {
     : "http://localhost:3000";
 }
 
+function sanitizeDestination(
+  destinationParam: string | null,
+  baseOrigin: string,
+): URL {
+  const fallback = new URL("/dashboards", baseOrigin);
+  if (!destinationParam) return fallback;
+
+  try {
+    if (
+      destinationParam.startsWith("/") &&
+      !destinationParam.startsWith("//")
+    ) {
+      return new URL(destinationParam, baseOrigin);
+    }
+    const parsed = new URL(destinationParam);
+    if (parsed.origin === new URL(baseOrigin).origin) {
+      return parsed;
+    }
+  } catch {
+    // Ignore invalid target URL format
+  }
+
+  return fallback;
+}
+
 export async function GET(req: NextRequest) {
   const baseOrigin = getPublicOrigin(req);
   const code = req.nextUrl.searchParams.get("code");
@@ -28,23 +54,23 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const record = await prisma.verificationToken.findUnique({
-      where: { token: code },
-    });
+    // Atomic Single-Use Token Consumption
+    let record;
+    try {
+      record = await prisma.verificationToken.delete({
+        where: { token: code },
+      });
+    } catch {
+      return NextResponse.redirect(
+        new URL("/signin?error=invalid_or_expired_code", baseOrigin),
+      );
+    }
 
     if (!record || record.expires < new Date()) {
-      if (record) {
-        await prisma.verificationToken.delete({ where: { token: code } });
-      }
       return NextResponse.redirect(
         new URL("/signin?error=expired_code", baseOrigin),
       );
     }
-
-    // Single-use token deletion
-    await prisma.verificationToken.delete({
-      where: { token: code },
-    });
 
     const user = await prisma.user.findUnique({
       where: { email: record.identifier },
@@ -56,12 +82,47 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    let destination = destinationParam || "/dashboards";
+    const hostHeader =
+      req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+    const { isMainApp, tenantIdentifier } = getTenantInfo(hostHeader);
 
-    // Prevent open redirects
-    if (!destination.startsWith("/") || destination.startsWith("//")) {
-      destination = "/dashboards";
+    let storeRole = "USER";
+    let storeId: string | null = null;
+
+    if (!isMainApp) {
+      const company = await prisma.company.findFirst({
+        where: {
+          OR: [
+            { domain: tenantIdentifier },
+            { customDomain: tenantIdentifier },
+            { slug: tenantIdentifier.split(".")[0] },
+          ],
+        },
+      });
+
+      if (company) {
+        storeId = company.id;
+
+        await prisma.consumer.upsert({
+          where: {
+            userId_companyId: { userId: user.id, companyId: company.id },
+          },
+          update: {},
+          create: {
+            userId: user.id,
+            companyId: company.id,
+          },
+        });
+
+        if (company.userId === user.id) {
+          storeRole = "ADMIN";
+        }
+      }
+    } else {
+      storeRole = user.role || "USER";
     }
+
+    const redirectTarget = sanitizeDestination(destinationParam, baseOrigin);
 
     const tokenPayload = {
       id: user.id,
@@ -73,6 +134,9 @@ export async function GET(req: NextRequest) {
       bio: user.bio,
       address: user.address,
       role: user.role || "USER",
+      globalRole: user.role || "USER",
+      storeRole: storeRole,
+      storeId: storeId,
       profilePicture: user.profilePicture || user.image,
       image: user.image,
     };
@@ -88,7 +152,6 @@ export async function GET(req: NextRequest) {
       ? "__Secure-next-auth.session-token"
       : "next-auth.session-token";
 
-    const redirectTarget = new URL(destination, baseOrigin);
     const response = NextResponse.redirect(redirectTarget.toString());
 
     response.cookies.set(cookieName, sessionJwt, {
