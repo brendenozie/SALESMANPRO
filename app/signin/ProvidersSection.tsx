@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
-/* ================= HERO ICONS (INLINE SVG) ================= */
+/* ================= ICONS ================= */
 
 const MailIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -43,6 +43,8 @@ const ProviderIcons: Record<string, (props: React.SVGProps<SVGSVGElement>) => JS
 };
 
 export type Provider = { id: string; name: string };
+
+/* ================= CUSTOM COMPONENTS ================= */
 
 const InputField = ({
   label,
@@ -83,14 +85,11 @@ const InputField = ({
   </div>
 );
 
+/* ================= MAIN UI ================= */
+
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
-  const rawCallback = params.get("callbackUrl");
-
-  // Determine standard callback target without double encoding
-  const callbackUrl = rawCallback
-    ? decodeURIComponent(rawCallback)
-    : "https://salesmanpro.site/dashboards";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,9 +100,12 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   useEffect(() => {
     if (providers && providers.length > 0) {
       setCredentialProvider(
-        providers.find((p) => p.id === "credentials-email-password") || null
+        providers.find(p => p.id === "credentials-email-password") || null
       );
-      setGoogleProvider(providers.find((p) => p.id === "google") || null);
+      // Strictly isolating only Google
+      setGoogleProvider(
+        providers.find(p => p.id === "google") || null
+      );
     }
   }, [providers]);
 
@@ -125,7 +127,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     }
 
     localStorage.setItem("callbackUrl", callbackUrl);
-
+    
     await signIn("credentials-email-password", {
       email: data.email,
       password: data.password,
@@ -141,12 +143,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       setLoadingProvider(providerId);
       setError(null);
       localStorage.setItem("callbackUrl", callbackUrl);
-
-      // Pass callbackUrl directly without calling encodeURIComponent()
-      await signIn(providerId, {
-        redirect: true,
-        callbackUrl,
-      });
+      await signIn(providerId, { redirect: true, callbackUrl: callbackUrl });
     } catch (err) {
       console.error(err);
       setError("Sign-In failed. Please check your connection and try again.");
@@ -159,6 +156,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       <div className="absolute inset-0 bg-indigo-900/10 dark:bg-indigo-900/40 backdrop-blur-sm"></div>
 
       <div className="max-w-md w-full space-y-8 relative z-10 bg-white dark:bg-gray-800 p-10 sm:p-12 rounded-3xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] dark:shadow-[0_20px_50px_rgba(255,_255,_255,_0.1)] transition-all duration-300">
+        
         <div className="text-center">
           <div className="mx-auto w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mb-4 shadow-xl">
             <UserIcon className="h-6 w-6 text-white" />
@@ -171,6 +169,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           </p>
         </div>
 
+        {/* --- Single Google Provider Rendering --- */}
         {googleProvider && (
           <>
             <button
@@ -178,11 +177,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
               className={`w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
                         rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
                         transition duration-300 ease-in-out transform 
-                        ${
-                          loadingProvider !== null
-                            ? "opacity-60 cursor-not-allowed"
-                            : "hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600"
-                        }`}
+                        ${loadingProvider !== null ? "opacity-60 cursor-not-allowed" : "hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600"}`}
               onClick={() => handleSocialSignIn(googleProvider.id)}
             >
               {loadingProvider === googleProvider.id ? (
@@ -190,11 +185,9 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
               ) : (
                 <ProviderIcons.google className="mr-3 h-5 w-5" />
               )}
-              {loadingProvider === googleProvider.id
-                ? `Signing in with ${googleProvider.name}...`
-                : `Sign in with ${googleProvider.name}`}
+              {loadingProvider === googleProvider.id ? `Signing in with ${googleProvider.name}...` : `Sign in with ${googleProvider.name}`}
             </button>
-
+            
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300 dark:border-gray-700" />
@@ -208,6 +201,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           </>
         )}
 
+        {/* --- Error Handling --- */}
         {error && (
           <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl text-red-700 dark:text-red-300 text-sm font-medium">
             <AlertTriangle className="h-5 w-5 mr-3" />
@@ -215,6 +209,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           </div>
         )}
 
+        {/* --- Credentials Form --- */}
         {credentialProvider && (
           <form onSubmit={loginUser} className="space-y-6">
             <InputField
@@ -240,10 +235,9 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
               type="submit"
               disabled={loadingProvider !== null}
               className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white transition duration-300 ease-in-out transform hover:scale-[1.01]
-                ${
-                  loadingProvider === "credentials"
-                    ? "bg-yellow-400 cursor-wait opacity-80"
-                    : loadingProvider !== null
+                ${loadingProvider === "credentials"
+                  ? "bg-yellow-400 cursor-wait opacity-80"
+                  : loadingProvider !== null
                     ? "bg-yellow-500 opacity-60 cursor-not-allowed"
                     : "bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300 dark:focus:ring-yellow-700"
                 }`}
@@ -264,13 +258,12 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           <button
             onClick={handleRegister}
             disabled={loadingProvider !== null}
-            className={`font-medium text-yellow-500 hover:text-yellow-600 ${
-              loadingProvider !== null && "opacity-60 cursor-not-allowed"
-            }`}
+            className={`font-medium text-yellow-500 hover:text-yellow-600 ${loadingProvider !== null && "opacity-60 cursor-not-allowed"}`}
           >
             Sign Up
           </button>
         </div>
+        
       </div>
     </div>
   );

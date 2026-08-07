@@ -54,7 +54,7 @@ export default function CookieConsentBar({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
           transition={{ duration: 0.4 }}
-          className="fixed bottom-6 left-4 right-4 md:left-10 md:right-10 z-[9999] max-w-4xl mx-auto"
+          className="fixed bottom-6 left-4 right-4 md:left-10 md:right-10 z-[9800] max-w-4xl mx-auto"
         >
           <div className="bg-white/90 backdrop-blur-md border border-gray-200 shadow-xl rounded-2xl px-6 py-5">
             <div className="flex items-start gap-3 text-sm text-gray-700 mb-4">

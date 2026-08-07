@@ -39,9 +39,52 @@ export function getTenantInfo(hostHeader: string) {
   return { isMainApp, isHub, isSystem, tenantIdentifier: host };
 }
 
+// ✅ Utility: find Student/Educator/Parent by login code (passwordless flow)
+async function findUserByLoginCode(loginCode: string) {
+  const student = await prisma.student.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (student)
+    return { user: student.user, role: student.levelStatus || "STUDENT" };
+
+  const educator = await prisma.educator.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (educator) return { user: educator.user, role: "EDUCATOR" };
+
+  const consumer = await prisma.consumer.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (consumer) return { user: consumer.user, role: "CONSUMER" };
+
+  const salesAgent = await prisma.salesAgent.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (salesAgent) return { user: salesAgent.user, role: "SALES_AGENT" };
+
+  const driver = await prisma.transportDriver.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (driver) return { user: driver.user, role: driver.user.role };
+
+  const parent = await prisma.parent.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (parent) return { user: parent.user, role: "PARENT" };
+
+  return null;
+}
+
 export const authOptions = (reqHost?: string): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
   providers: [
+    // 1. Token Sign-In (For Handover)
     CredentialsProvider({
       id: "token-signin",
       name: "Token Sign-In",
@@ -71,6 +114,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       },
     }),
 
+    // 2. Email & Password (Restored Complex Role Detection)
     CredentialsProvider({
       id: "credentials-email-password",
       name: "Email & Password",
@@ -81,40 +125,100 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const userFound = await prisma.user.findUnique({
+        const userFoundInDb = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!userFound || !userFound.password) return null;
+        if (!userFoundInDb || !userFoundInDb.password) return null;
 
         const passwordMatch = await bcrypt.compare(
           credentials.password,
-          userFound.password,
+          userFoundInDb.password,
         );
         if (!passwordMatch) return null;
 
+        let determinedRole: string | undefined =
+          userFoundInDb.role || undefined;
+
+        const studentCheck = await prisma.student.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const educatorCheck = await prisma.educator.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const consumerCheck = await prisma.consumer.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const salesAgentCheck = await prisma.salesAgent.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const clientCheck = await prisma.client.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+
+        if (studentCheck) determinedRole = "STUDENT";
+        else if (consumerCheck) determinedRole = "CONSUMER";
+        else if (salesAgentCheck) determinedRole = "SALES_AGENT";
+        else if (clientCheck) determinedRole = "CLIENT";
+        else if (educatorCheck) determinedRole = "EDUCATOR";
+        else determinedRole = userFoundInDb.role || "ADMIN";
+
         return {
-          id: userFound.id,
-          name: userFound.name ?? undefined,
-          email: userFound.email,
-          role: userFound.role || "USER",
-          phone: userFound.phone ?? undefined,
-          username: userFound.username ?? undefined,
-          bio: userFound.bio ?? undefined,
-          address: userFound.address ?? undefined,
+          id: userFoundInDb.id,
+          name: userFoundInDb.name ?? undefined,
+          email: userFoundInDb.email,
+          role: determinedRole as any,
+          phone: userFoundInDb.phone ?? undefined,
+          username: userFoundInDb.username ?? undefined,
+          bio: userFoundInDb.bio ?? undefined,
+          address: userFoundInDb.address ?? undefined,
           profilePicture:
-            userFound.profilePicture ?? userFound.image ?? undefined,
+            userFoundInDb.profilePicture ?? userFoundInDb.image ?? undefined,
         };
       },
     }),
 
+    // 3. Passwordless School Login Code (Restored)
+    CredentialsProvider({
+      id: "school-code-login",
+      name: "School Login Code",
+      credentials: {
+        loginCode: { label: "School Login Code", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.loginCode) return null;
+        if (
+          credentials.loginCode.length !== 6 ||
+          !/^\d+$/.test(credentials.loginCode)
+        )
+          return null;
+
+        const loginCodeResult = await findUserByLoginCode(
+          credentials.loginCode,
+        );
+        if (!loginCodeResult || !loginCodeResult.user) return null;
+
+        const user = loginCodeResult.user;
+        return {
+          id: user.id,
+          name: user.name ?? undefined,
+          email: user.email,
+          role: loginCodeResult.role as any,
+          phone: user.phone ?? undefined,
+          username: user.username ?? undefined,
+          bio: user.bio ?? undefined,
+          address: user.address ?? undefined,
+          profilePicture: user.profilePicture ?? user.image ?? undefined,
+        };
+      },
+    }),
+
+    // 4. OAuth Providers
     GoogleProvider({
       clientId: googleClientId,
       clientSecret: googleClientSecret,
       allowDangerousEmailAccountLinking: true,
-      httpOptions: {
-        timeout: 40000,
-      },
+      httpOptions: { timeout: 40000 },
     }),
   ],
 
@@ -128,6 +232,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
   callbacks: {
     async redirect({ url, baseUrl }) {
+      const HUB_URL = "https://salesmanpro.site";
+
       if (url.includes("/logout") || url.includes("/api/auth/signout")) {
         return url.startsWith("/") ? `${baseUrl}${url}` : url;
       }
@@ -147,9 +253,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       try {
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = cleanHost(targetUrlObj.hostname);
+        const baseUrlHost = cleanHost(new URL(baseUrl).hostname);
 
+        // Allow internal auth routes
         if (
-          targetHost === cleanHost(new URL(baseUrl).hostname) &&
+          targetHost === baseUrlHost &&
           (targetUrlObj.pathname.startsWith("/api/auth") ||
             targetUrlObj.pathname === "/signin")
         ) {
@@ -157,7 +265,17 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         }
 
         const handoverUrl = new URL("/api/auth/handover", baseUrl);
-        handoverUrl.searchParams.set("target", finalRedirectUrl);
+
+        // Restored HUB Dashboard routing
+        if (
+          targetHost === "salesmanpro.site" ||
+          targetHost === "www.salesmanpro.site"
+        ) {
+          handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
+        } else {
+          handoverUrl.searchParams.set("target", finalRedirectUrl);
+        }
+
         return handoverUrl.toString();
       } catch (error) {
         return `${baseUrl}/failure?reason=invalid_redirect&error=${encodeURIComponent(
@@ -211,6 +329,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     },
 
     async jwt({ token, user }) {
+      // 1. Map Global Profile Info on initial sign-in
       if (user) {
         Object.assign(token, {
           id: user.id,
@@ -220,10 +339,47 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           username: (user as Record<string, unknown>).username,
           bio: (user as Record<string, unknown>).bio,
           address: (user as Record<string, unknown>).address,
-          role: (user as Record<string, unknown>).role,
+          globalRole: (user as Record<string, unknown>).role,
           profilePicture: (user as Record<string, unknown>).profilePicture,
         });
       }
+
+      // 2. Tenant-Isolated Store Role Logic
+      const host = reqHost || "";
+      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
+
+      if (isMainApp) {
+        token.storeRole = token.globalRole;
+      } else {
+        try {
+          const company = await prisma.company.findFirst({
+            where: {
+              OR: [
+                { domain: tenantIdentifier },
+                { customDomain: tenantIdentifier },
+                { slug: tenantIdentifier.split(".")[0] },
+              ],
+            },
+            select: { userId: true, id: true },
+          });
+
+          if (company) {
+            token.storeId = company.id;
+            // If the user logging in owns THIS store, make them ADMIN for this session
+            if (company.userId === token.id) {
+              token.storeRole = "ADMIN";
+            } else {
+              // Otherwise, they are just a consumer here
+              token.storeRole = "USER";
+            }
+          } else {
+            token.storeRole = "USER";
+          }
+        } catch (error) {
+          token.storeRole = "USER";
+        }
+      }
+
       return token;
     },
 
@@ -237,7 +393,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           username: token.username,
           bio: token.bio,
           address: token.address,
-          role: token.role,
+          globalRole: token.globalRole,
+          storeRole: token.storeRole, // Important: Client components use this for routing
+          storeId: token.storeId,
           profilePicture: token.profilePicture,
         });
       }

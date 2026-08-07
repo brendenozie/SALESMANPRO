@@ -246,8 +246,8 @@ const Footer = () => {
       
       <Cart />
       <LocationModal />
-      <SignInModal />
       <ClientCookieWrapper />
+      <SignInModal />
     </>
   );
 };
