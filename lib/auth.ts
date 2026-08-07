@@ -7,7 +7,6 @@ import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { decode } from "next-auth/jwt";
-import { headers } from "next/headers";
 
 const sharedSecret = process.env.NEXTAUTH_SECRET;
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
@@ -331,8 +330,16 @@ export const authOptions = (reqHost?: string): NextAuthOptions => {
   };
 };
 
-export async function getAuthSession() {
-  const reqHeaders = await headers();
-  const host = reqHeaders.get("host") || "";
+export async function getAuthSession(hostOverride?: string) {
+  let host = hostOverride || "";
+  if (!host) {
+    try {
+      const { headers } = await import("next/headers");
+      const reqHeaders = await headers();
+      host = reqHeaders.get("host") || "";
+    } catch {
+      host = "";
+    }
+  }
   return getServerSession(authOptions(host));
 }
