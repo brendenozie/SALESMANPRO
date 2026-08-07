@@ -21,14 +21,21 @@ export const MAIN_DOMAINS = [
   "www.salesmanpro.site",
   "auth.salesmanpro.site",
   "localhost",
+  "127.0.0.1",
 ];
+
+export const HUB_URL = "https://salesmanpro.site";
+export const AUTH_BROKER_URL = "https://auth.salesmanpro.site";
 
 export function parseHost(hostHeader: string) {
   const cleanHost = hostHeader
     .split(":")[0]
     .toLowerCase()
     .replace(/^www\./, "");
-  const isHub = cleanHost === "salesmanpro.site" || cleanHost === "localhost";
+  const isHub =
+    cleanHost === "salesmanpro.site" ||
+    cleanHost === "localhost" ||
+    cleanHost === "127.0.0.1";
   const isAuthBroker = cleanHost === "auth.salesmanpro.site";
   const isMainApp = MAIN_DOMAINS.includes(cleanHost);
 
@@ -195,40 +202,58 @@ export const authOptions = (reqHost?: string): NextAuthOptions => {
     },
 
     callbacks: {
-      // lib/auth.ts -> inside authOptions callbacks:
       async redirect({ url, baseUrl }) {
-        const HUB_URL = "https://salesmanpro.site";
-        const AUTH_BROKER_URL = "https://auth.salesmanpro.site";
-
         if (url.includes("/logout") || url.includes("/api/auth/signout")) {
           return url.startsWith("/") ? `${baseUrl}${url}` : url;
         }
 
-        if (url.includes("/api/auth/handover") || url.includes("/api/auth/exchange")) {
+        if (
+          url.includes("/api/auth/handover") ||
+          url.includes("/api/auth/exchange")
+        ) {
           return url;
         }
 
-        let targetUrl = url.startsWith("/") ? `${HUB_URL}${url}` : url;
+        let targetUrl = url.startsWith("/")
+          ? `${isProd ? HUB_URL : baseUrl}${url}`
+          : url;
+
         try {
           targetUrl = decodeURIComponent(targetUrl);
         } catch {}
 
         try {
           const parsedTarget = new URL(targetUrl);
-          const targetHost = parsedTarget.hostname.toLowerCase().replace(/^www\./, "");
+          const targetHost = parsedTarget.hostname
+            .toLowerCase()
+            .replace(/^www\./, "");
 
-          if (targetHost === "auth.salesmanpro.site" && parsedTarget.pathname.startsWith("/api/auth")) {
+          // Block localhost redirects in production
+          if (
+            isProd &&
+            (targetHost === "localhost" || targetHost === "127.0.0.1")
+          ) {
+            targetUrl = `${HUB_URL}/dashboards`;
+          }
+
+          if (
+            targetHost === "auth.salesmanpro.site" &&
+            parsedTarget.pathname.startsWith("/api/auth")
+          ) {
             return targetUrl;
           }
 
-          // Always use explicit AUTH_BROKER_URL instead of relying solely on baseUrl
-          const handoverUrl = new URL("/api/auth/handover", AUTH_BROKER_URL);
+          const handoverUrl = new URL(
+            "/api/auth/handover",
+            isProd ? AUTH_BROKER_URL : baseUrl,
+          );
           handoverUrl.searchParams.set("target", targetUrl);
           return handoverUrl.toString();
         } catch {
-          return `${HUB_URL}/failure?reason=invalid_redirect`;
+          return `${isProd ? HUB_URL : baseUrl}/failure?reason=invalid_redirect`;
         }
       },
+
       async signIn({ user, account }) {
         if (!account || account.provider === "credentials") return true;
         if (!user.email || !user.id) return false;

@@ -6,8 +6,13 @@ const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
-  const destination =
+  let destination =
     req.nextUrl.searchParams.get("destination") || "/dashboards";
+
+  // Sanitize destination to ensure it is relative (prevents open redirects)
+  if (!destination.startsWith("/") || destination.startsWith("//")) {
+    destination = "/dashboards";
+  }
 
   if (!code) {
     return NextResponse.redirect(
@@ -29,6 +34,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Single-use enforcement: Delete token immediately
     await prisma.verificationToken.delete({
       where: { token: code },
     });
@@ -43,12 +49,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Complete JWT session claims matching lib/auth.ts
     const tokenPayload = {
       id: user.id,
       sub: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      phone: user.phone,
+      username: user.username,
+      bio: user.bio,
+      address: user.address,
+      role: user.role || "USER",
+      profilePicture: user.profilePicture || user.image,
       image: user.image,
     };
 
