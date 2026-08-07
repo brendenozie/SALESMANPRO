@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
   let destination =
     req.nextUrl.searchParams.get("destination") || "/dashboards";
 
-  // Sanitize destination to ensure it is relative (prevents open redirects)
   if (!destination.startsWith("/") || destination.startsWith("//")) {
     destination = "/dashboards";
   }
@@ -34,13 +33,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Single-use enforcement: Delete token immediately
+    // Single-use token deletion
     await prisma.verificationToken.delete({
       where: { token: code },
     });
 
+    // Match query against record.identifier (Email)
     const user = await prisma.user.findUnique({
-      where: { id: record.identifier },
+      where: { email: record.identifier },
     });
 
     if (!user) {
@@ -49,7 +49,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Complete JWT session claims matching lib/auth.ts
     const tokenPayload = {
       id: user.id,
       sub: user.id,
@@ -88,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Exchange Token Error:", error);
+    console.error("EXCHANGE_TOKEN_ERROR:", error);
     return NextResponse.redirect(
       new URL("/signin?error=exchange_failed", req.url),
     );
