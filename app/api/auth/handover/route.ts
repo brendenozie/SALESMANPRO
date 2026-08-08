@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
     const target = searchParams.get("target");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (!target) {
       return NextResponse.redirect(
         new URL("/failure?reason=missing_target", baseOrigin),
@@ -113,6 +114,8 @@ export async function GET(request: NextRequest) {
     await prisma.verificationToken.deleteMany({
       where: { identifier: session.user.email },
 =======
+=======
+>>>>>>> 6d91d730edb73617407746adabe700533617e808
     if (!session || !session.user) {
       // Redirect unauthenticated handover requests back to signin with callback tracking
       const signInUrl = new URL("/signin", req.url);
@@ -128,7 +131,10 @@ export async function GET(request: NextRequest) {
       },
       secret: NEXTAUTH_SECRET,
       maxAge: 30 * 24 * 60 * 60,
+<<<<<<< HEAD
 >>>>>>> 6d91d730 (updated auth)
+=======
+>>>>>>> 6d91d730edb73617407746adabe700533617e808
     });
 
     await prisma.verificationToken.create({
