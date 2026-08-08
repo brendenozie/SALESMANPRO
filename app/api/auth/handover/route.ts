@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthSession, getTenantInfo, AUTH_BROKER_URL } from "@/lib/auth";
-import prisma from "@/server/db/prismadb";
-import { randomBytes } from "crypto";
+import { getAuthSession } from "@/lib/auth";
+import { encode } from "next-auth/jwt";
 
-function getPublicOrigin(request: NextRequest): string {
-  const host =
-    request.headers.get("x-forwarded-host") || request.headers.get("host");
-  const proto = request.headers.get("x-forwarded-proto") || "https";
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
-<<<<<<< HEAD
-  if (host && !host.includes("localhost") && !host.includes("127.0.0.1")) {
-    return `${proto}://${host}`;
-=======
 export async function GET(req: NextRequest) {
   const rawTarget =
     req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
@@ -25,97 +17,11 @@ export async function GET(req: NextRequest) {
 
   if (req.nextUrl.searchParams.get("auth") === "logout") {
     return NextResponse.redirect(target);
->>>>>>> 6d91d730 (updated auth)
   }
-  return process.env.NODE_ENV === "production"
-    ? AUTH_BROKER_URL
-    : "http://localhost:3000";
-}
-
-export async function GET(request: NextRequest) {
-  const baseOrigin = getPublicOrigin(request);
 
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const target = searchParams.get("target");
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-    if (!target) {
-      return NextResponse.redirect(
-        new URL("/failure?reason=missing_target", baseOrigin),
-      );
-    }
-
-    let targetUrl: URL;
-    try {
-      targetUrl = new URL(decodeURIComponent(target));
-    } catch {
-      return NextResponse.redirect(
-        new URL("/failure?reason=invalid_url", baseOrigin),
-      );
-    }
-
-    const isProd = process.env.NODE_ENV === "production";
-    const targetHost = targetUrl.hostname;
-
-    if (isProd && (targetHost === "localhost" || targetHost === "127.0.0.1")) {
-      return NextResponse.redirect(
-        new URL("/failure?reason=invalid_target_domain", baseOrigin),
-      );
-    }
-
-    // CRITICAL FIX 1: Prevent Self-Handover Loops
-    const AUTH_DOMAIN =
-      process.env.NEXT_PUBLIC_AUTH_DOMAIN || "auth.salesmanpro.site";
-    if (targetHost === AUTH_DOMAIN || targetHost === "salesmanpro.site") {
-      const fallbackDest =
-        targetUrl.pathname !== "/" ? targetUrl.pathname : "/dashboards";
-      return NextResponse.redirect(new URL(fallbackDest, baseOrigin));
-    }
-
-    const { isMainApp, tenantIdentifier } = getTenantInfo(targetHost);
-
-    if (!isMainApp) {
-      try {
-        const registeredCompany = await prisma.company.findFirst({
-          where: {
-            OR: [
-              { domain: tenantIdentifier },
-              { customDomain: tenantIdentifier },
-              { slug: tenantIdentifier.split(".")[0] },
-            ],
-          },
-        });
-
-        if (!registeredCompany) {
-          return NextResponse.redirect(
-            new URL("/failure?reason=unregistered_domain", baseOrigin),
-          );
-        }
-      } catch (dbErr) {
-        console.warn("HANDOVER_TENANT_CHECK_WARNING:", dbErr);
-      }
-    }
-
     const session = await getAuthSession();
-    if (!session || !session.user || !session.user.email) {
-      const signInUrl = new URL("/signin", baseOrigin);
 
-      // CRITICAL FIX 2: Resume Handover
-      // Must set callbackUrl to request.url (the handover API itself) so token generation resumes after login.
-      signInUrl.searchParams.set("callbackUrl", request.url);
-      return NextResponse.redirect(signInUrl);
-    }
-
-    const token = randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 1000 * 60 * 5);
-
-    await prisma.verificationToken.deleteMany({
-      where: { identifier: session.user.email },
-=======
-=======
->>>>>>> 6d91d730edb73617407746adabe700533617e808
     if (!session || !session.user) {
       // Redirect unauthenticated handover requests back to signin with callback tracking
       const signInUrl = new URL("/signin", req.url);
@@ -131,36 +37,12 @@ export async function GET(request: NextRequest) {
       },
       secret: NEXTAUTH_SECRET,
       maxAge: 30 * 24 * 60 * 60,
-<<<<<<< HEAD
->>>>>>> 6d91d730 (updated auth)
-=======
->>>>>>> 6d91d730edb73617407746adabe700533617e808
     });
 
-    await prisma.verificationToken.create({
-      data: {
-        identifier: session.user.email,
-        token: token,
-        expires: expires,
-      },
-    });
+    const destination = new URL(target);
+    destination.searchParams.set("auth_token", token);
+    destination.searchParams.set("auth", "success");
 
-<<<<<<< HEAD
-    const exchangeUrl = new URL("/api/auth/exchange", targetUrl.origin);
-    exchangeUrl.searchParams.set("code", token);
-
-    const destination = targetUrl.pathname + targetUrl.search;
-    if (destination && destination !== "/") {
-      exchangeUrl.searchParams.set("destination", destination);
-    }
-
-    return NextResponse.redirect(exchangeUrl);
-  } catch (error) {
-    console.error("HANDOVER_CRASH_DETAILS:", error);
-    return NextResponse.redirect(
-      new URL("/failure?reason=handover_crashed", baseOrigin),
-    );
-=======
     if (isDesktop) {
       destination.pathname = "/dashboards";
     }
@@ -169,6 +51,5 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Critical Handover Error:", err);
     return NextResponse.redirect(`${target}?auth=error`);
->>>>>>> 6d91d730 (updated auth)
   }
 }
