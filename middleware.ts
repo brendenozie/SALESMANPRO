@@ -20,14 +20,18 @@ export default async function middleware(
     userAgent.includes("SalesmanProDesktop") ||
     userAgent.includes("SalesmanProAndroid");
 
-  const session = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET!,
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
-  });
+  let session = null;
+
+  if (isDesktop) {
+    session = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET!,
+      cookieName:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+    });
+  }
 
   const isAuthPage =
     pathname.startsWith("/desktop-login") ||

@@ -279,7 +279,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       if (!user.email) return false;
 
       const host = reqHost || "";
-      const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
+      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
 
       if (!isMainApp) {
         const company = await prisma.company.findFirst({
@@ -304,21 +304,12 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
             },
           });
         }
-      } else if (
-        isHub &&
-        user.id &&
-        (user as { role?: string }).role === "USER"
-      ) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: "ADMIN" },
-        });
       }
 
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         Object.assign(token, {
           id: user.id,
@@ -333,32 +324,34 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         });
       }
 
-      const host = reqHost || "";
-      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
+      if (user || trigger === "signIn") {
+        const host = reqHost || "";
+        const { isMainApp, tenantIdentifier } = getTenantInfo(host);
 
-      if (isMainApp) {
-        token.storeRole = token.globalRole;
-      } else {
-        try {
-          const company = await prisma.company.findFirst({
-            where: {
-              OR: [
-                { domain: tenantIdentifier },
-                { customDomain: tenantIdentifier },
-                { slug: tenantIdentifier.split(".")[0] },
-              ],
-            },
-            select: { userId: true, id: true },
-          });
+        if (isMainApp) {
+          token.storeRole = token.globalRole;
+        } else {
+          try {
+            const company = await prisma.company.findFirst({
+              where: {
+                OR: [
+                  { domain: tenantIdentifier },
+                  { customDomain: tenantIdentifier },
+                  { slug: tenantIdentifier.split(".")[0] },
+                ],
+              },
+              select: { userId: true, id: true },
+            });
 
-          if (company) {
-            token.storeId = company.id;
-            token.storeRole = company.userId === token.id ? "ADMIN" : "USER";
-          } else {
+            if (company) {
+              token.storeId = company.id;
+              token.storeRole = company.userId === token.id ? "ADMIN" : "USER";
+            } else {
+              token.storeRole = "USER";
+            }
+          } catch {
             token.storeRole = "USER";
           }
-        } catch {
-          token.storeRole = "USER";
         }
       }
 
