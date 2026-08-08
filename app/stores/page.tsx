@@ -421,7 +421,7 @@ export default function StoresPage() {
               />
             ) : (
               paginatedStores.map(store => {
-                const isActive = true; // Replace with actual status logic
+                const isActive = store.subscriptionStatus === "ACTIVE";// || store.subscription?.isActive || store.subscription?.status?.toLowerCase() === 'active';
                 
                 return (
                   <motion.div
