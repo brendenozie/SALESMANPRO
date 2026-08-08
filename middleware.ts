@@ -14,36 +14,37 @@ export default async function middleware(
 ) {
   const url = request.nextUrl.clone();
   const { pathname } = url;
-  const userAgent = request.headers.get("user-agent") || "";
 
-  const isDesktop =
-    userAgent.includes("SalesmanProDesktop") ||
-    userAgent.includes("SalesmanProAndroid");
-
-  let session = null;
-
-  if (isDesktop) {
-    session = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET!,
-      cookieName:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token",
-    });
-  }
+  // UNIVERSAL SESSION CHECK: No longer restricted to SalesmanProDesktop/Android
+  const session = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET!,
+    cookieName:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+  });
 
   const isAuthPage =
     pathname.startsWith("/desktop-login") ||
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/signup") ||
     pathname.startsWith("/api/auth") ||
     pathname.includes("_next") ||
     pathname.includes("favicon.ico");
 
-  if (isDesktop && !session && !isAuthPage) {
-    return NextResponse.redirect(new URL("/desktop-login", request.url));
+  const isProtectedRoute =
+    pathname.startsWith("/dashboards") ||
+    pathname.startsWith("/stores") ||
+    pathname.startsWith("/admin");
+
+  // Protect internal routes universally
+  if (isProtectedRoute && !session) {
+    return NextResponse.redirect(new URL("/signin", request.url));
   }
 
-  if (isDesktop && session && pathname === "/desktop-login") {
+  // Redirect authenticated users away from login pages
+  if (session && (pathname === "/desktop-login" || pathname === "/signin")) {
     return NextResponse.redirect(new URL("/dashboards", request.url));
   }
 

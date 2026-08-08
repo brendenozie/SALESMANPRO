@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { encode } from "next-auth/jwt";
-import { getTenantInfo } from "@/lib/auth";
+import { getTenantInfo, buildBaseTokenPayload } from "@/lib/auth";
 
-// Add this to prevent Next.js from caching the missing_code redirect!
 export const dynamic = "force-dynamic";
 
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
@@ -57,7 +56,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Atomic Single-Use Token Consumption
     let record;
     try {
       record = await prisma.verificationToken.delete({
@@ -127,22 +125,8 @@ export async function GET(req: NextRequest) {
 
     const redirectTarget = sanitizeDestination(destinationParam, baseOrigin);
 
-    const tokenPayload = {
-      id: user.id,
-      sub: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      username: user.username,
-      bio: user.bio,
-      address: user.address,
-      role: user.role || "USER",
-      globalRole: user.role || "USER",
-      storeRole: storeRole,
-      storeId: storeId,
-      profilePicture: user.profilePicture || user.image,
-      image: user.image,
-    };
+    // UNIFIED PAYLOAD: Constructing token cleanly mapped to authOptions
+    const tokenPayload = buildBaseTokenPayload(user, storeRole, storeId);
 
     const sessionJwt = await encode({
       token: tokenPayload,

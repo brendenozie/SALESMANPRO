@@ -7,6 +7,7 @@ import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { decode } from "next-auth/jwt";
+import { unstable_cache } from "next/cache";
 
 const aSharedSecret = process.env.NEXTAUTH_SECRET!;
 const googleClientId = process.env.GOOGLE_CLIENT_ID!;
@@ -39,7 +40,50 @@ export function getTenantInfo(hostHeader: string) {
   return { isMainApp, isHub, isSystem, tenantIdentifier: host };
 }
 
+// Reusable payload builder to unify JWT structure across direct login and SSO handovers
+export function buildBaseTokenPayload(
+  user: any,
+  storeRole: string = "USER",
+  storeId: string | null = null,
+) {
+  return {
+    id: user.id,
+    sub: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    username: user.username,
+    bio: user.bio,
+    address: user.address,
+    role: user.role || "USER",
+    globalRole: user.role || "USER",
+    storeRole: storeRole,
+    storeId: storeId,
+    profilePicture: user.profilePicture || user.image,
+    image: user.image,
+  };
+}
+
+// Next.js Native Cache for tenant resolution to protect DB connections
+const getCachedCompany = unstable_cache(
+  async (tenantIdentifier: string) => {
+    return prisma.company.findFirst({
+      where: {
+        OR: [
+          { domain: tenantIdentifier },
+          { customDomain: tenantIdentifier },
+          { slug: tenantIdentifier.split(".")[0] },
+        ],
+      },
+      select: { userId: true, id: true },
+    });
+  },
+  ["company-tenant-lookup"],
+  { revalidate: 3600 }, // Cache for 1 hour
+);
+
 async function findUserByLoginCode(loginCode: string) {
+  // Can be optimized similarly with a more robust query, but kept separate for clarity based on existing logic
   const student = await prisma.student.findUnique({
     where: { loginCode },
     include: { user: true },
@@ -122,8 +166,16 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // SINGLE QUERY OPTIMIZATION: Fetch user and all relations at once
         const userFoundInDb = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: {
+            student: true,
+            educator: true,
+            consumer: true,
+            salesAgent: true,
+            client: true,
+          },
         });
 
         if (!userFoundInDb || !userFoundInDb.password) return null;
@@ -136,25 +188,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
         let determinedRole: string = userFoundInDb.role || "USER";
 
-        const [
-          studentCheck,
-          educatorCheck,
-          consumerCheck,
-          salesAgentCheck,
-          clientCheck,
-        ] = await Promise.all([
-          prisma.student.findUnique({ where: { userId: userFoundInDb.id } }),
-          prisma.educator.findUnique({ where: { userId: userFoundInDb.id } }),
-          prisma.consumer.findUnique({ where: { userId: userFoundInDb.id } }),
-          prisma.salesAgent.findUnique({ where: { userId: userFoundInDb.id } }),
-          prisma.client.findUnique({ where: { userId: userFoundInDb.id } }),
-        ]);
-
-        if (studentCheck) determinedRole = "STUDENT";
-        else if (consumerCheck) determinedRole = "CONSUMER";
-        else if (salesAgentCheck) determinedRole = "SALES_AGENT";
-        else if (clientCheck) determinedRole = "CLIENT";
-        else if (educatorCheck) determinedRole = "EDUCATOR";
+        if (userFoundInDb.student) determinedRole = "STUDENT";
+        else if (userFoundInDb.consumer) determinedRole = "CONSUMER";
+        else if (userFoundInDb.salesAgent) determinedRole = "SALES_AGENT";
+        else if (userFoundInDb.client) determinedRole = "CLIENT";
+        else if (userFoundInDb.educator) determinedRole = "EDUCATOR";
         else determinedRole = userFoundInDb.role || "ADMIN";
 
         return {
@@ -282,15 +320,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const { isMainApp, tenantIdentifier } = getTenantInfo(host);
 
       if (!isMainApp) {
-        const company = await prisma.company.findFirst({
-          where: {
-            OR: [
-              { domain: tenantIdentifier },
-              { customDomain: tenantIdentifier },
-              { slug: tenantIdentifier.split(".")[0] },
-            ],
-          },
-        });
+        // Use cached tenant lookup here as well
+        const company = await getCachedCompany(tenantIdentifier);
 
         if (company && user.id) {
           await prisma.consumer.upsert({
@@ -332,16 +363,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           token.storeRole = token.globalRole;
         } else {
           try {
-            const company = await prisma.company.findFirst({
-              where: {
-                OR: [
-                  { domain: tenantIdentifier },
-                  { customDomain: tenantIdentifier },
-                  { slug: tenantIdentifier.split(".")[0] },
-                ],
-              },
-              select: { userId: true, id: true },
-            });
+            // CACHE IMPLEMENTATION: Protect DB from heavy lookup loads during JWT callbacks
+            const company = await getCachedCompany(tenantIdentifier);
 
             if (company) {
               token.storeId = company.id;
