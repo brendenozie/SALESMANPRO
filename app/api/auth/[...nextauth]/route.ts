@@ -1,15 +1,42 @@
+// File: app/api/auth/[...nextauth].ts
+// import NextAuth from "next-auth";
+// import { authOptions } from "@/lib/auth";
+// import { headers } from "next/headers";
+// import { NextRequest } from "next/server";
+
+// async function handler(
+//   req: NextRequest,
+//   ctx: { params: { nextauth: string[] } },
+// ) {
+//   const host = (await headers()).get("host") || "";
+
+//   // We pass the host into our dynamic options function
+//   const options = authOptions(host);
+
+//   // @ts-ignore - NextAuth types can be finicky with the App Router handler wrapper
+//   return await NextAuth(req, ctx, options);
+// }
+
+// export { handler as GET, handler as POST };
+// File: app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 
-async function handler(req: NextRequest, ctx: { params: any }) {
+async function handler(req: NextRequest, res: any) {
   const headerList = await headers();
   const host = headerList.get("host") || "";
 
-  // Instantiate the auth handler dynamically with the host, then invoke with App Router arguments
-  const authHandler = NextAuth(authOptions(host));
-  return authHandler(req, ctx);
+  // 1. Generate the options dynamically based on the current host
+  // 2. We call NextAuth as a function and immediately invoke the returned handler
+  // @ts-ignore - NextAuth types can be finicky with the App Router handler wrapper
+  return await NextAuth(req, res, authOptions(host));
 }
 
 export { handler as GET, handler as POST };
+// import NextAuth from "next-auth/next";
+// import { authOptions } from "@/lib/auth";
+
+// const handler = NextAuth(authOptions);
+// export { handler as GET, handler as POST };

@@ -4,19 +4,8 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 const PRIMARY_HOST = "salesmanpro.site";
 const AUTH_DOMAIN = "auth.salesmanpro.site";
 
-const PROTECTED_PATHS = [
-  "/admin",
-  "/clients",
-  "/agents",
-  "/users",
-  "/dashboards",
-  "/stores",
-];
-
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|favicons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/((?!_next/|.*\\..*).*)"],
 };
 
 export default async function middleware(
@@ -25,31 +14,37 @@ export default async function middleware(
 ) {
   const url = request.nextUrl.clone();
   const { pathname } = url;
+  const userAgent = request.headers.get("user-agent") || "";
 
-  // CORRECTED: Let getToken resolve the cookie name dynamically to support NextAuth chunking
-  const session = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET!,
-    secureCookie: process.env.NODE_ENV === "production",
-  });
+  const isDesktop =
+    userAgent.includes("SalesmanProDesktop") ||
+    userAgent.includes("SalesmanProAndroid");
 
-  const isProtectedRoute = PROTECTED_PATHS.some((path) =>
-    pathname.startsWith(path),
-  );
+  let session = null;
 
-  if (isProtectedRoute && !session) {
-    const signInUrl = new URL("/signin", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.url);
-    return NextResponse.redirect(signInUrl);
+  if (isDesktop) {
+    session = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET!,
+      cookieName:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+    });
   }
 
-  if (session && (pathname === "/desktop-login" || pathname === "/signin")) {
-    const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
-    const targetUrl = callbackUrl
-      ? new URL(callbackUrl, request.url)
-      : new URL("/dashboards", request.url);
+  const isAuthPage =
+    pathname.startsWith("/desktop-login") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.includes("_next") ||
+    pathname.includes("favicon.ico");
 
-    return NextResponse.redirect(targetUrl);
+  if (isDesktop && !session && !isAuthPage) {
+    return NextResponse.redirect(new URL("/desktop-login", request.url));
+  }
+
+  if (isDesktop && session && pathname === "/desktop-login") {
+    return NextResponse.redirect(new URL("/dashboards", request.url));
   }
 
   const host = request.headers.get("host")?.split(":")[0] || "";
@@ -63,7 +58,7 @@ export default async function middleware(
 
   if (host.startsWith("www.")) {
     return NextResponse.redirect(
-      `https://${host.replace("www.", "")}${pathname}${request.nextUrl.search}`,
+      `https://${host.replace("www.", "")}${pathname}`,
     );
   }
 
@@ -72,13 +67,16 @@ export default async function middleware(
   }
 
   if (
-    isProtectedRoute ||
     pathname.startsWith("/signin") ||
-    pathname.startsWith("/signup")
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/dashboards") ||
+    pathname.startsWith("/stores") ||
+    pathname.startsWith("/admin")
   ) {
     return NextResponse.next();
   }
 
+  // Subdomain Routing (e.g. tenant.salesmanpro.site)
   if (host.endsWith(".salesmanpro.site")) {
     const subdomain = host.replace(".salesmanpro.site", "");
     if (subdomain && subdomain !== "www") {
@@ -88,13 +86,13 @@ export default async function middleware(
           : `/site/${subdomain}${pathname}`;
 
       const res = NextResponse.rewrite(url);
-      res.headers.set("x-tenant-domain", host);
       res.headers.set("x-requested-subdomain", subdomain);
-      res.headers.set("x-original-path", pathname);
+      res.headers.set("x-requested-host", host);
       return res;
     }
   }
 
+  // Custom Domain Tenant Routing (e.g. ghuba.shop)
   if (
     host &&
     host !== PRIMARY_HOST &&
@@ -109,9 +107,8 @@ export default async function middleware(
         : `/site/${normalizedHost}${pathname}`;
 
     const res = NextResponse.rewrite(url);
-    res.headers.set("x-tenant-domain", normalizedHost);
     res.headers.set("x-requested-host", host);
-    res.headers.set("x-original-path", pathname);
+    res.headers.set("x-rewritten-slug", normalizedHost);
     return res;
   }
 
