@@ -8,8 +8,24 @@ function getPublicOrigin(request: NextRequest): string {
     request.headers.get("x-forwarded-host") || request.headers.get("host");
   const proto = request.headers.get("x-forwarded-proto") || "https";
 
+<<<<<<< HEAD
   if (host && !host.includes("localhost") && !host.includes("127.0.0.1")) {
     return `${proto}://${host}`;
+=======
+export async function GET(req: NextRequest) {
+  const rawTarget =
+    req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+
+  const isDesktop =
+    req.headers.get("user-agent")?.includes("SalesmanProDesktop") ||
+    req.headers.get("user-agent")?.includes("SalesmanProAndroid") ||
+    false;
+
+  const target = decodeURIComponent(rawTarget);
+
+  if (req.nextUrl.searchParams.get("auth") === "logout") {
+    return NextResponse.redirect(target);
+>>>>>>> 6d91d730 (updated auth)
   }
   return process.env.NODE_ENV === "production"
     ? AUTH_BROKER_URL
@@ -23,6 +39,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const target = searchParams.get("target");
 
+<<<<<<< HEAD
+<<<<<<< HEAD
     if (!target) {
       return NextResponse.redirect(
         new URL("/failure?reason=missing_target", baseOrigin),
@@ -95,6 +113,28 @@ export async function GET(request: NextRequest) {
 
     await prisma.verificationToken.deleteMany({
       where: { identifier: session.user.email },
+=======
+=======
+>>>>>>> 6d91d730edb73617407746adabe700533617e808
+    if (!session || !session.user) {
+      // Redirect unauthenticated handover requests back to signin with callback tracking
+      const signInUrl = new URL("/signin", req.url);
+      signInUrl.searchParams.set("callbackUrl", req.url);
+      return NextResponse.redirect(signInUrl);
+    }
+
+    const token = await encode({
+      token: {
+        ...session.user,
+        id: (session.user as any).id,
+        sub: (session.user as any).id,
+      },
+      secret: NEXTAUTH_SECRET,
+      maxAge: 30 * 24 * 60 * 60,
+<<<<<<< HEAD
+>>>>>>> 6d91d730 (updated auth)
+=======
+>>>>>>> 6d91d730edb73617407746adabe700533617e808
     });
 
     await prisma.verificationToken.create({
@@ -105,6 +145,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
+<<<<<<< HEAD
     const exchangeUrl = new URL("/api/auth/exchange", targetUrl.origin);
     exchangeUrl.searchParams.set("code", token);
 
@@ -119,5 +160,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       new URL("/failure?reason=handover_crashed", baseOrigin),
     );
+=======
+    if (isDesktop) {
+      destination.pathname = "/dashboards";
+    }
+
+    return NextResponse.redirect(destination.toString());
+  } catch (err) {
+    console.error("Critical Handover Error:", err);
+    return NextResponse.redirect(`${target}?auth=error`);
+>>>>>>> 6d91d730 (updated auth)
   }
 }

@@ -423,3 +423,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 });
 
 export const getAuthSession = () => getServerSession(authOptions());
+
+// export const getAuthSession = async () => {
+//   const headerList = await headers();
+//   const host = headerList.get("host") || "";
+//   return getServerSession(authOptions(host));
+// };
