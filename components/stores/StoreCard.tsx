@@ -110,7 +110,7 @@ export default function StoreCard({
       whileHover={{ y: -8 }}
       transition={{ duration: 0.35 }}
       className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-white shadow-xl transition-all duration-500 dark:bg-slate-950 dark:border-slate-800/80 ${
-        !isActive ? "opacity-90" : ""
+        !isActive ? "opacity-95" : ""
       }`}
     >
       {/* Ambient Glow */}
@@ -150,23 +150,22 @@ export default function StoreCard({
           {getStatusBadge()}
         </div>
 
-        {isActive && (
-          <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-            <button
-              onClick={() => onEdit?.(id)}
-              className="rounded-full bg-white/95 p-2 text-slate-700 shadow-lg backdrop-blur-md hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <PencilIcon className="h-5 w-5" />
-            </button>
+        {/* Edit and Delete Icons (Now available regardless of Active state) */}
+        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+          <button
+            onClick={() => onEdit?.(id)}
+            className="rounded-full bg-white/95 p-2 text-slate-700 shadow-lg backdrop-blur-md hover:bg-orange-50 hover:text-orange-600 transition"
+          >
+            <PencilIcon className="h-5 w-5" />
+          </button>
 
-            <button
-              onClick={onDelete}
-              className="rounded-full bg-white/95 p-2 text-rose-600 shadow-lg backdrop-blur-md hover:bg-rose-50 transition"
-            >
-              <TrashIcon className="h-5 w-5" />
-            </button>
-          </div>
-        )}
+          <button
+            onClick={onDelete}
+            className="rounded-full bg-white/95 p-2 text-rose-600 shadow-lg backdrop-blur-md hover:bg-rose-50 transition"
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
+        </div>
 
         {/* Bottom Content */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -236,62 +235,55 @@ export default function StoreCard({
           </div>
         )}
 
-        {/* Actions */}
+        {/* Actions (Unified Structure) */}
         <div className="space-y-3">
-          {isActive ? (
-            <>
-              {/* Primary CTA */}
-              <motion.button
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.985 }}
-                onClick={() => navigate(`/admin/${id}`)}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-500 px-5 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/40"
-              >
-                Manage Store
-                <ArrowRightCircleIcon className="h-5 w-5" />
-              </motion.button>
-
-              {/* Secondary Actions */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={openDomain}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-                >
-                  <GlobeAltIcon className="h-4 w-4" />
-                  Live Site
-                </button>
-
-                <button
-                  onClick={() => onEdit?.(id)}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-                >
-                  <PencilIcon className="h-4 w-4" />
-                  Edit Site
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Subscription CTA */}
-              <motion.button
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.985 }}
-                onClick={onManageSubscription}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 px-5 py-4 text-sm font-bold text-white shadow-xl shadow-orange-500/20 transition-all hover:shadow-orange-500/40"
-              >
-                <CreditCardIcon className="h-5 w-5" />
-                Activate Subscription
-              </motion.button>
-
-              <button
-                onClick={() => navigate(`/site/${slug}`)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                <GlobeAltIcon className="h-4 w-4" />
-                Preview Store
-              </button>
-            </>
+          
+          {/* Subscription CTA - Injected at the top if Inactive */}
+          {!isActive && (
+            <motion.button
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={onManageSubscription}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 px-5 py-4 text-sm font-bold text-white shadow-xl shadow-orange-500/20 transition-all hover:shadow-orange-500/40"
+            >
+              <CreditCardIcon className="h-5 w-5" />
+              Activate Website
+            </motion.button>
           )}
+
+          {/* Manage Store (Always available, styling dims slightly if inactive) */}
+          <motion.button
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.985 }}
+            onClick={() => navigate(`/admin/${id}`)}
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-bold text-white transition-all ${
+              isActive 
+                ? "bg-gradient-to-r from-emerald-600 to-green-500 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40" 
+                : "bg-slate-800 hover:bg-slate-700 shadow-md dark:bg-slate-800 dark:hover:bg-slate-700"
+            }`}
+          >
+            Manage Store
+            <ArrowRightCircleIcon className="h-5 w-5" />
+          </motion.button>
+
+          {/* Secondary Actions: View & Edit (Always available) */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={openDomain}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <GlobeAltIcon className="h-4 w-4" />
+              {isActive ? "Live Site" : "Preview Store"}
+            </button>
+
+            <button
+              onClick={() => onEdit?.(id)}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <PencilIcon className="h-4 w-4" />
+              Edit Site
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
