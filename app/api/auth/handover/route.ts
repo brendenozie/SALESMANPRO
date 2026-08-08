@@ -41,6 +41,15 @@ export async function GET(request: NextRequest) {
     const isProd = process.env.NODE_ENV === "production";
     const targetHost = targetUrl.hostname;
 
+    // NEW: Prevent self-handover loops to the auth domain
+    const AUTH_DOMAIN = process.env.NEXT_PUBLIC_AUTH_DOMAIN || "auth.salesmanpro.site";
+    if (targetHost === AUTH_DOMAIN || targetHost === "salesmanpro.site") {
+      // If the target is the main domain, redirect directly to the destination without token exchange
+      const fallbackDest =
+        targetUrl.pathname !== "/" ? targetUrl.pathname : "/dashboards";
+      return NextResponse.redirect(new URL(fallbackDest, targetUrl));
+    }
+
     if (isProd && (targetHost === "localhost" || targetHost === "127.0.0.1")) {
       return NextResponse.redirect(
         new URL("/failure?reason=invalid_target_domain", baseOrigin),

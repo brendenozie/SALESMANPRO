@@ -28,14 +28,11 @@ export default async function middleware(
   const url = request.nextUrl.clone();
   const { pathname } = url;
 
-  // UNIVERSAL SESSION CHECK
+  // UNIVERSAL SESSION CHECK - Removed hardcoded cookieName to support NextAuth cookie chunking
   const session = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
+    secureCookie: process.env.NODE_ENV === "production",
   });
 
   const isProtectedRoute = PROTECTED_PATHS.some((path) =>
@@ -45,6 +42,14 @@ export default async function middleware(
   // 1. PRESERVE CALLBACK URL FOR UNAUTHENTICATED USERS
   if (isProtectedRoute && !session) {
     const signInUrl = new URL("/signin", request.url);
+
+  // const isProtectedRoute = PROTECTED_PATHS.some((path) =>
+  //   pathname.startsWith(path),
+  // );
+
+  // 1. PRESERVE CALLBACK URL FOR UNAUTHENTICATED USERS
+  // if (isProtectedRoute && !session) {
+    // const signInUrl = new URL("/signin", request.url);
     signInUrl.searchParams.set("callbackUrl", request.url); // Tracks original destination
     return NextResponse.redirect(signInUrl);
   }
