@@ -4,7 +4,6 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 const PRIMARY_HOST = "salesmanpro.site";
 const AUTH_DOMAIN = "auth.salesmanpro.site";
 
-// Restored the array for cleaner route management
 const PROTECTED_PATHS = [
   "/admin",
   "/clients",
@@ -15,7 +14,6 @@ const PROTECTED_PATHS = [
 ];
 
 export const config = {
-  // Restored your old matcher to properly ignore static assets and images
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|favicons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
@@ -28,7 +26,7 @@ export default async function middleware(
   const url = request.nextUrl.clone();
   const { pathname } = url;
 
-  // UNIVERSAL SESSION CHECK - Removed hardcoded cookieName to support NextAuth cookie chunking
+  // CORRECTED: Let getToken resolve the cookie name dynamically to support NextAuth chunking
   const session = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -39,27 +37,14 @@ export default async function middleware(
     pathname.startsWith(path),
   );
 
-  // 1. PRESERVE CALLBACK URL FOR UNAUTHENTICATED USERS
   if (isProtectedRoute && !session) {
     const signInUrl = new URL("/signin", request.url);
-
-  // const isProtectedRoute = PROTECTED_PATHS.some((path) =>
-  //   pathname.startsWith(path),
-  // );
-
-  // 1. PRESERVE CALLBACK URL FOR UNAUTHENTICATED USERS
-  // if (isProtectedRoute && !session) {
-    // const signInUrl = new URL("/signin", request.url);
-    signInUrl.searchParams.set("callbackUrl", request.url); // Tracks original destination
+    signInUrl.searchParams.set("callbackUrl", request.url);
     return NextResponse.redirect(signInUrl);
   }
 
-  // 2. DYNAMIC ROUTING FOR ALREADY LOGGED-IN USERS
   if (session && (pathname === "/desktop-login" || pathname === "/signin")) {
     const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
-
-    // If they have a destination waiting in the URL, send them there.
-    // Otherwise, default to dashboards.
     const targetUrl = callbackUrl
       ? new URL(callbackUrl, request.url)
       : new URL("/dashboards", request.url);
@@ -86,7 +71,6 @@ export default async function middleware(
     return NextResponse.next();
   }
 
-  // Bypass rewrites for core web app paths
   if (
     isProtectedRoute ||
     pathname.startsWith("/signin") ||
@@ -95,7 +79,6 @@ export default async function middleware(
     return NextResponse.next();
   }
 
-  // Subdomain Routing (e.g. tenant.salesmanpro.site)
   if (host.endsWith(".salesmanpro.site")) {
     const subdomain = host.replace(".salesmanpro.site", "");
     if (subdomain && subdomain !== "www") {
@@ -105,7 +88,6 @@ export default async function middleware(
           : `/site/${subdomain}${pathname}`;
 
       const res = NextResponse.rewrite(url);
-      // Restored your custom tenant headers for easier backend debugging
       res.headers.set("x-tenant-domain", host);
       res.headers.set("x-requested-subdomain", subdomain);
       res.headers.set("x-original-path", pathname);
@@ -113,7 +95,6 @@ export default async function middleware(
     }
   }
 
-  // Custom Domain Tenant Routing (e.g. ghuba.shop)
   if (
     host &&
     host !== PRIMARY_HOST &&
