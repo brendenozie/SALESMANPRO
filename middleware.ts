@@ -4,8 +4,21 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 const PRIMARY_HOST = "salesmanpro.site";
 const AUTH_DOMAIN = "auth.salesmanpro.site";
 
+// Restored the array for cleaner route management
+const PROTECTED_PATHS = [
+  "/admin",
+  "/clients",
+  "/agents",
+  "/users",
+  "/dashboards",
+  "/stores",
+];
+
 export const config = {
-  matcher: ["/((?!_next/|.*\\..*).*)"],
+  // Restored your old matcher to properly ignore static assets and images
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|favicons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
 
 export default async function middleware(
@@ -15,7 +28,7 @@ export default async function middleware(
   const url = request.nextUrl.clone();
   const { pathname } = url;
 
-  // UNIVERSAL SESSION CHECK: No longer restricted to SalesmanProDesktop/Android
+  // UNIVERSAL SESSION CHECK
   const session = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -25,27 +38,28 @@ export default async function middleware(
         : "next-auth.session-token",
   });
 
-  const isAuthPage =
-    pathname.startsWith("/desktop-login") ||
-    pathname.startsWith("/signin") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.includes("_next") ||
-    pathname.includes("favicon.ico");
+  const isProtectedRoute = PROTECTED_PATHS.some((path) =>
+    pathname.startsWith(path),
+  );
 
-  const isProtectedRoute =
-    pathname.startsWith("/dashboards") ||
-    pathname.startsWith("/stores") ||
-    pathname.startsWith("/admin");
-
-  // Protect internal routes universally
+  // 1. PRESERVE CALLBACK URL FOR UNAUTHENTICATED USERS
   if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL("/signin", request.url));
+    const signInUrl = new URL("/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", request.url); // Tracks original destination
+    return NextResponse.redirect(signInUrl);
   }
 
-  // Redirect authenticated users away from login pages
+  // 2. DYNAMIC ROUTING FOR ALREADY LOGGED-IN USERS
   if (session && (pathname === "/desktop-login" || pathname === "/signin")) {
-    return NextResponse.redirect(new URL("/dashboards", request.url));
+    const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
+
+    // If they have a destination waiting in the URL, send them there.
+    // Otherwise, default to dashboards.
+    const targetUrl = callbackUrl
+      ? new URL(callbackUrl, request.url)
+      : new URL("/dashboards", request.url);
+
+    return NextResponse.redirect(targetUrl);
   }
 
   const host = request.headers.get("host")?.split(":")[0] || "";
@@ -59,7 +73,7 @@ export default async function middleware(
 
   if (host.startsWith("www.")) {
     return NextResponse.redirect(
-      `https://${host.replace("www.", "")}${pathname}`,
+      `https://${host.replace("www.", "")}${pathname}${request.nextUrl.search}`,
     );
   }
 
@@ -67,12 +81,11 @@ export default async function middleware(
     return NextResponse.next();
   }
 
+  // Bypass rewrites for core web app paths
   if (
+    isProtectedRoute ||
     pathname.startsWith("/signin") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/dashboards") ||
-    pathname.startsWith("/stores") ||
-    pathname.startsWith("/admin")
+    pathname.startsWith("/signup")
   ) {
     return NextResponse.next();
   }
@@ -87,8 +100,10 @@ export default async function middleware(
           : `/site/${subdomain}${pathname}`;
 
       const res = NextResponse.rewrite(url);
+      // Restored your custom tenant headers for easier backend debugging
+      res.headers.set("x-tenant-domain", host);
       res.headers.set("x-requested-subdomain", subdomain);
-      res.headers.set("x-requested-host", host);
+      res.headers.set("x-original-path", pathname);
       return res;
     }
   }
@@ -108,8 +123,9 @@ export default async function middleware(
         : `/site/${normalizedHost}${pathname}`;
 
     const res = NextResponse.rewrite(url);
+    res.headers.set("x-tenant-domain", normalizedHost);
     res.headers.set("x-requested-host", host);
-    res.headers.set("x-rewritten-slug", normalizedHost);
+    res.headers.set("x-original-path", pathname);
     return res;
   }
 
