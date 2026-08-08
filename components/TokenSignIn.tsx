@@ -2,23 +2,17 @@
 
 import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 
 export default function TokenSignIn() {
-  const { status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  // Prevent double execution (React StrictMode safe)
   const hasRun = useRef(false);
 
   useEffect(() => {
-    if (hasRun.current) return;
-
     const token = searchParams.get("auth_token");
 
-    if (!token) return;
-    if (status !== "unauthenticated") return;
+    if (!token || hasRun.current) return;
 
     hasRun.current = true;
 
@@ -29,18 +23,21 @@ export default function TokenSignIn() {
       });
 
       if (result?.ok) {
-        // 1. Remove token from URL
-        router.replace(window.location.pathname, { scroll: false });
-
-        // 2. Force server components (RootLayout) to re-run
+        // Clean URL parameters
+        const url = new URL(window.location.href);
+        url.searchParams.delete("auth_token");
+        url.searchParams.delete("auth");
+        
+        router.replace(url.pathname + url.search, { scroll: false });
         router.refresh();
       } else {
         console.error("Token sign-in failed:", result?.error);
+        hasRun.current = false; // Allow retry on failure
       }
     };
 
     run();
-  }, [status, searchParams, router]);
+  }, [searchParams, router]);
 
   return null;
 }
