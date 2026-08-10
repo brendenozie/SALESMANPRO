@@ -1,4 +1,3 @@
-// app/site/[tenantSlug]/layout.tsx
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
 import type { Metadata, ResolvingMetadata } from 'next';
@@ -13,8 +12,8 @@ import WhatsAppBubble from '@/components/WhatsAppBubble';
 
 import siteMetadata from '@/data/siteMetadata';
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
+import { SubscriptionGraceBanner, SubscriptionInactiveView } from './SubscriptionGraceBanner';
 
-// ISR Activation: Allows caching static pages on the edge for 60 seconds
 export const revalidate = 60;
 
 type Props = {
@@ -31,12 +30,10 @@ function normalize(raw: string) {
     .replace(/\s+/g, ' ');
 }
 
-// Safely extract SEO regardless of Prisma casing quirks
 function extractSEO(company: any) {
   return company?.SEO ?? company?.sEO ?? {};
 }
 
-// Ensure no double slashes when joining URLs
 function getCleanSiteUrl() {
   return siteMetadata.siteUrl.replace(/\/$/, '');
 }
@@ -48,23 +45,34 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-
-  // Blazing fast cache read using only the parsed param string
   const company = await findCompanyCached(slug, 'lean');
 
-  // 🛑 Generate 404 if the company doesn't exist OR subscription is inactive
-  if (!company || !company.subscription?.isActive) {
-    return { 
-      title: 'Store not found',
-      description: 'The requested store could not be found or is currently inactive.'
+  // 🛑 1. If company strictly does NOT exist in DB, show 404 metadata
+  if (!company) {
+    return {
+      title: 'Store Not Found',
+      description: 'The requested store could not be found.',
+    };
+  }
+
+  const subStatus = company.subscription?.status?.toLowerCase() || 'inactive';
+  const isSubscriptionActive = company.subscription?.isActive || subStatus === 'active' || subStatus === 'past_due';
+
+  // 🛑 2. If subscription is fully expired, return temporary offline metadata + noindex
+  if (!isSubscriptionActive) {
+    return {
+      title: `${company.name} | Temporarily Offline`,
+      description: 'This store is currently undergoing brief maintenance. Please check back soon.',
+      robots: {
+        index: false, // Prevents search engines from de-indexing existing store links
+        follow: false,
+      },
     };
   }
 
   const seo = extractSEO(company);
   const title = seo.title || company.name;
   const description = seo.description || 'Discover our exclusive collection.';
-
-  // Safely fallback to the root layout's social banner if the store has no logo
   const previousImages = (await parent).openGraph?.images || [];
   const images = company.logoUrl ? [company.logoUrl] : previousImages;
   
@@ -77,12 +85,12 @@ export async function generateMetadata(
     icons: company.logoUrl ? { icon: company.logoUrl, apple: company.logoUrl } : undefined,
     keywords: seo.keywords || 'ecommerce, ghuba, shops, marketplace',
     alternates: {
-      canonical: canonicalUrl, 
+      canonical: canonicalUrl,
     },
     openGraph: {
       title,
       description,
-      url: canonicalUrl, 
+      url: canonicalUrl,
       images,
     },
     twitter: {
@@ -103,39 +111,52 @@ interface StoreLayoutProps {
 
 export default async function StoreLayout({ params, children }: StoreLayoutProps) {
   const { slug } = await params;
-
-  // React dedupes this call automatically
   const raw = await findCompanyCached(slug, 'lean');
-  
-  // 🛑 Generate 404 page if company doesn't exist OR subscription is inactive
-  if (!raw || !raw.subscription?.isActive || raw.subscription?.status?.toLowerCase() !== 'active') {
+
+  // 🛑 1. ONLY trigger true 404 if the company record does not exist in the database
+  if (!raw) {
     notFound();
   }
 
-  // NOTE: Ensure your `transformCompanyToStoreForm` utility handles the 
-  // "ghuba" domain/slug overrides internally to keep this layout clean.
-  const storeFormData = transformCompanyToStoreForm(raw);
+  const subStatus = raw.subscription?.status?.toLowerCase() || 'inactive';
+  const renewalDate = raw.subscription?.renewalDate || null;
+  const isActiveFlag = raw.subscription?.isActive ?? false;
+  
+  // Categorize subscription state
+  const isFullyActive = isActiveFlag && subStatus === 'active';
+  const isPastDueGracePeriod = subStatus === 'past_due' && renewalDate && new Date(renewalDate) > new Date(); 
+  const isSubscriptionValid = isFullyActive || isPastDueGracePeriod;
 
+  // 🛑 2. Soft Stop: If subscription is EXPIRED or INACTIVE, render a polite maintenance view
+  if (!isSubscriptionValid) {
+    return (
+      <SubscriptionInactiveView
+        storeName={raw.name}
+        logoUrl={raw.logoUrl || raw.bannerUrl}
+        contactEmail={raw.contactEmail}
+        contactPhone={raw.contactPhone}
+      />
+    );
+  }
+
+  const storeFormData = transformCompanyToStoreForm(raw);
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
-
   const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
 
-  // Determine the Layout Component dynamically
   let LayoutComponent = categoryHeaderFooterLayoutMap[variant] 
-  || categoryHeaderFooterLayoutMap[category]
-  || (() => {
-    const matchedCategory = categoryMap.get(category);
-    if (matchedCategory?.variants?.length) {
-      const firstVariant = normalize(matchedCategory.variants[0].name);
-      return categoryHeaderFooterLayoutMap[firstVariant];
-    }
-  })()
-  || categoryHeaderFooterLayoutMap['default'];
+    || categoryHeaderFooterLayoutMap[category]
+    || (() => {
+      const matchedCategory = categoryMap.get(category);
+      if (matchedCategory?.variants?.length) {
+        const firstVariant = normalize(matchedCategory.variants[0].name);
+        return categoryHeaderFooterLayoutMap[firstVariant];
+      }
+    })()
+    || categoryHeaderFooterLayoutMap['default'];
 
-  const userId = ''; // Replace with session data when needed
+  const userId = ''; 
 
-  // Build the JSON-LD object safely
   const seo = extractSEO(raw);
   const cleanBaseUrl = getCleanSiteUrl();
   
@@ -154,7 +175,13 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
 
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-      <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100">
+      <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
+        
+        {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
+        {isPastDueGracePeriod && (
+          <SubscriptionGraceBanner storeName={raw.name} daysLeft={3} />
+        )}
+
         <LayoutComponent params={{ storeFormData }}>
           
           <script
@@ -167,7 +194,6 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
           </Suspense>
           
           <WhatsAppBubble productName={''} />
-          
           <AnalyticsProvider config={raw.AnalyticsConfig} />
           
         </LayoutComponent>

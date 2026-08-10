@@ -179,13 +179,13 @@ const commonEcommerce = (
           label: "Browse Catalog",
           href: `/admin/${adminSlug}/inventory`,
           minTier: "Ghuba Starter",
-          isLocked:checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
+          isLocked: false //checkIsLocked("Ghuba Starter", currentTier, isSubscriptionActive)
         },
         {
           label: "Market List",
           href: `/admin/${adminSlug}/mymarketplace`,
           minTier: "Ghuba Basic",
-          isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+          isLocked: false //checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
         },
       ],
     },
@@ -236,7 +236,7 @@ const commonEcommerce = (
           label: "Marketplace",
           href: `/admin/${adminSlug}/customerorders`,
           minTier: "Ghuba Basic",
-          isLocked:checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
+          isLocked: false //checkIsLocked("Ghuba Basic", currentTier, isSubscriptionActive)
         },
         {
           label: "Delivery",
@@ -810,11 +810,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false //checkIsLocked( "Ghuba Starter",  currentTier,       isSubscriptionActive,      ),
       },
       {
         label: "Bookings",
@@ -1076,11 +1072,11 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false, //checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Bookings",
@@ -1264,11 +1260,11 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/properties`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false, //checkIsLocked(
+          // "Ghuba Starter",
+          // currentTier,
+          // isSubscriptionActive,
+        // ),
       },
       {
         label: "Inquiries",
@@ -1606,11 +1602,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false 
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Gallery",
@@ -1872,11 +1869,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Transport",
@@ -2149,11 +2147,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        //  checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Transport",
@@ -2391,11 +2390,11 @@ export const getCategoryMenus = (
             label: "All Blogs",
             href: `/admin/${adminSlug}/blogs`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false, //checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
         ],
       },
@@ -3398,11 +3397,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false, //
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Donations",
@@ -3647,11 +3647,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Projects",
@@ -3815,21 +3816,23 @@ export const getCategoryMenus = (
             label: "Browse Catalog",
             href: `/admin/${adminSlug}/inventory`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false,
+            // checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
           {
             label: "Market List",
             href: `/admin/${adminSlug}/mymarketplace`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false,
+            // checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
         ],
       },
@@ -4032,11 +4035,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/manage-events`,
         icon: TicketIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        //  checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Tickets",
@@ -5175,11 +5179,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Testimonials",
@@ -5354,11 +5359,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
@@ -5495,11 +5501,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
@@ -5636,11 +5643,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
@@ -5777,33 +5785,36 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/travel-destinations`,
         icon: GlobeAltIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Packages & Tours",
         href: `/admin/${adminSlug}/travel-packages`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Listings",
         href: `/admin/${adminSlug}/travel-experiences`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
@@ -6102,11 +6113,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/properties`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // Schedule and manage property viewings
       {
         label: "Inquiries",
@@ -6427,22 +6439,24 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/fitness-listings`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // Manage fitness programs, classes, schedules
       {
         label: "Classes",
         href: `/admin/${adminSlug}/fitness-classes`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       }, // Manage fitness programs, classes, schedules
       {
         label: "Trainers & Staff",
@@ -6747,21 +6761,23 @@ export const getCategoryMenus = (
             label: "Ebooks",
             href: `/admin/${adminSlug}/ebooks`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false,
+            // checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
           {
             label: "Programs",
             href: `/admin/${adminSlug}/programs`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false,
+            // checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
           // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
           // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
@@ -6922,21 +6938,23 @@ export const getCategoryMenus = (
             label: "Ebooks",
             href: `/admin/${adminSlug}/ebooks`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false,
+            // checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
           {
             label: "Programs",
             href: `/admin/${adminSlug}/programs`,
             minTier: "Ghuba Starter",
-            isLocked: checkIsLocked(
-              "Ghuba Starter",
-              currentTier,
-              isSubscriptionActive,
-            ),
+            isLocked: false,
+            // checkIsLocked(
+            //   "Ghuba Starter",
+            //   currentTier,
+            //   isSubscriptionActive,
+            // ),
           },
           {
             label: "blogs",
@@ -7166,11 +7184,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       {
         label: "Payments",
@@ -7291,11 +7310,12 @@ export const getCategoryMenus = (
         icon: ClipboardDocumentListIcon,
         href: `/admin/${adminSlug}/services`,
         minTier: "Ghuba Starter",
-        isLocked: checkIsLocked(
-          "Ghuba Starter",
-          currentTier,
-          isSubscriptionActive,
-        ),
+        isLocked: false,
+        // checkIsLocked(
+        //   "Ghuba Starter",
+        //   currentTier,
+        //   isSubscriptionActive,
+        // ),
       },
       // {
       //   label: "Bookings",

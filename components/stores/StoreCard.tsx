@@ -110,7 +110,7 @@ export default function StoreCard({
       whileHover={{ y: -8 }}
       transition={{ duration: 0.35 }}
       className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-white shadow-xl transition-all duration-500 dark:bg-slate-950 dark:border-slate-800/80 ${
-        !isActive ? "opacity-95" : ""
+        !isActive ? "opacity-95" : "" 
       }`}
     >
       {/* Ambient Glow */}
@@ -236,7 +236,7 @@ export default function StoreCard({
         )}
 
         {/* Actions (Unified Structure) */}
-        <div className="space-y-3">
+        <div className="space-y-3 min-h-[200px]">
           
           {/* Subscription CTA - Injected at the top if Inactive */}
           {!isActive && (
