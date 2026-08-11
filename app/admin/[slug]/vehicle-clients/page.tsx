@@ -1,7 +1,7 @@
 // app/admin/[adminSlug]/clients/page.tsx
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-import ClientsClient from './ClientsClient';
+import ClientsClient from './AdminClientsPage';
 
 interface ClientsPageProps {
   params: Promise<{ slug: string }>;
