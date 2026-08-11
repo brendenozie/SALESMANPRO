@@ -3,6 +3,8 @@
 import React from 'react';
 import { StaffManagerClient } from './StaffManagerClient'; // Import the Client Component
 import { cookies } from 'next/headers';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Define the Staff interface (can be moved to a shared types.ts)
 interface Staff {
@@ -71,10 +73,25 @@ interface Props {
 
 export default async function AdminStaffPage({ params }: Props) {
 
-  const { slug } = await params;
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // 1. Fetch data on the server
-  const initialStaff = await getInitialStaffData(slug, '', '');
+  const initialStaff = await getInitialStaffData(companyId, '', '');
 
   return (
     // Static layout and visual elements
@@ -88,7 +105,7 @@ export default async function AdminStaffPage({ params }: Props) {
         </p>
 
         {/* 2. Pass data and companyId to the Client Component for interactivity */}
-        <StaffManagerClient initialStaff={initialStaff} companyId={slug} />
+        <StaffManagerClient initialStaff={initialStaff} companyId={companyId} />
       </div>
     </div>
   );

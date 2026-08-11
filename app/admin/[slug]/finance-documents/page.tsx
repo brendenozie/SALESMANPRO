@@ -12,6 +12,8 @@ import {
   DocumentIcon,
 } from "@heroicons/react/24/solid";
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
@@ -53,13 +55,34 @@ const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-export default function DocumentsPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function DocumentsPage({ params }: PageProps) {
+  const { slug } = await params;
+
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
+
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchDocuments = async (): Promise<void> => {
     setLoading(true);

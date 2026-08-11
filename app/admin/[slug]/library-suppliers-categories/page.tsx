@@ -1,16 +1,35 @@
 import { cookies } from "next/headers";
 import CategoryManagerClient from "./CategoryManagerClient";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function LibrarySuppliersCategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug: schoolId } = await params;
+  
+  const { slug }  = await params;
+
   const cookieHeader = (await cookies()).toString();
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   let initialCategories = [];
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/suppliers-categories?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/library/suppliers-categories?companyId=${companyId}`,
       {
         headers: { cookie: cookieHeader },
         cache: 'no-store'
@@ -39,7 +58,7 @@ export default async function LibrarySuppliersCategoryPage({ params }: { params:
   return (
     <CategoryManagerClient 
       initialCategories={initialCategories} 
-      schoolId={schoolId} 
+      schoolId={companyId} 
     />
   );
 }

@@ -4,6 +4,8 @@
 import { notFound } from 'next/navigation';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { cookies } from 'next/headers';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Import the Type Definition from the new Client Component
 import ShowingsClientPage, { Showing, SelectOption } from './ShowingsClientPage';
@@ -121,6 +123,21 @@ export default async function ShowingsPage({ params }: ShowingsPageProps) {
         notFound();
     }
 
+      const session = await getAuthSession();
+    
+      // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+      const identifier = slug || session?.user?.id || '';
+    
+      // 2. Retrieve the memoized company data (no extra DB cost)
+      const company = await findCompanyCached(identifier, "page");
+    
+      if (!company) {
+        return <div>Company not found</div>;
+      }
+    
+      // Use the actual database ID for your API calls, ensuring consistency
+      const companyId = company.id;
+
     // --- 1. Fetch Showings, Properties, Clients, and Agents in parallel ---
     const [
         showingsResult,
@@ -128,10 +145,10 @@ export default async function ShowingsPage({ params }: ShowingsPageProps) {
         clientsResult,
         agentsResult,
     ] = await Promise.all([
-        fetchData<Showing[]>('admin/showings', slug, cookiesHeaders, generateSampleShowings),
-        fetchData<SelectOption[]>('admin/my-market-place', slug, cookiesHeaders, generateSampleProperties),
-        fetchData<SelectOption[]>('admin/properties-clients', slug, cookiesHeaders, generateSampleClients),
-        fetchData<SelectOption[]>('admin/sales-agents', slug, cookiesHeaders, generateSampleAgents),
+        fetchData<Showing[]>('admin/showings', companyId, cookiesHeaders, generateSampleShowings),
+        fetchData<SelectOption[]>('admin/my-market-place', companyId, cookiesHeaders, generateSampleProperties),
+        fetchData<SelectOption[]>('admin/properties-clients', companyId, cookiesHeaders, generateSampleClients),
+        fetchData<SelectOption[]>('admin/sales-agents', companyId, cookiesHeaders, generateSampleAgents),
     ]);
 
     // Consolidate data and error handling
@@ -168,7 +185,7 @@ export default async function ShowingsPage({ params }: ShowingsPageProps) {
 
             {/* 2. Render the Client Component with initial data */}
             <ShowingsClientPage
-                adminSlug={slug}
+                adminSlug={companyId}
                 initialShowings={initialShowings}
                 isInitialLoadSuccessful={initialLoadSuccessful}
                 serverLoadError={serverLoadError}

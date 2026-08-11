@@ -14,6 +14,8 @@ import {
   SquaresPlusIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/solid';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { DestinationFormModal, DeleteConfirmModal, Destination } from './DestinationFormModal';
 
@@ -50,9 +52,27 @@ const buildDestinationTree = (destinations: Destination[]): Destination[] => {
   return tree;
 };
 
-export default function DestinationManagementPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function DestinationManagementPage({ params }: PageProps) {
+  const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -71,8 +91,8 @@ export default function DestinationManagementPage() {
     setError(null);
     try {
       const [destinationsResponse, locationsResponse] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`, { credentials: 'include' }),
-        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`, { credentials: 'include' })
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${companyId}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${companyId}`, { credentials: 'include' })
       ]);
 
       if (!destinationsResponse.ok) {
@@ -94,7 +114,7 @@ export default function DestinationManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [companyId]);
 
   useEffect(() => {
     fetchData();

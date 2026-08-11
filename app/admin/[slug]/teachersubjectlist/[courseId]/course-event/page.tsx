@@ -1,8 +1,9 @@
 // app/admin/[slug]/teacher-classes/[courseId]/manage-events/page.tsx
 import React from "react";
 import ManageEventsPageClient from "./ManageEventsPageClient";
-import { getAuthSession } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -77,9 +78,25 @@ export default async function ManageEventsServerPage({ params, searchParams }: P
     const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
     // const companyId = params.slug;
   
-    const { slug: companyId, courseId } = params;
+    const { slug, courseId } = params;
     const { classroomId, scheduleId } = searchParams;
 
+      // const { slug } = await params;
+    
+      // const session = await getAuthSession();
+    
+      // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+      const identifier = slug || session?.user?.id || '';
+    
+      // 2. Retrieve the memoized company data (no extra DB cost)
+      const company = await findCompanyCached(identifier, "page");
+    
+      if (!company) {
+        return <div>Company not found</div>;
+      }
+    
+      // Use the actual database ID for your API calls, ensuring consistency
+      const companyId = company.id;
 
   let eventsPageData: ManageEventsPageData | null = null;
   let fetchError: string | null = null;

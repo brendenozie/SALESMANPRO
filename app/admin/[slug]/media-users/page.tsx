@@ -6,6 +6,8 @@ import AdminLayout from '@/components/AdminLayout'; // Adjust path as needed
 import { motion } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 const sampleUsers = [
   { id: "usr1", name: "Alice Smith", email: "alice.s@example.com", role: "Admin", status: "Active" },
   { id: "usr2", name: "Bob Johnson", email: "bob.j@example.com", role: "Editor", status: "Active" },
@@ -13,7 +15,29 @@ const sampleUsers = [
   { id: "usr4", name: "Diana Prince", email: "diana.p@example.com", role: "Viewer", status: "Active" },
 ];
 
-export default function UserManagementPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function UserManagementPage({ params }: PageProps) {
+  
+  const { slug } = await params;
+
+  const session = await getAuthSession();
+
+  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
+
+  // 2. Retrieve the memoized company data (no extra DB cost)
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  // Use the actual database ID for your API calls, ensuring consistency
+  const companyId = company.id;
+
   const handleEdit = (id: string) => alert(`Edit user ${id}`);
   const handleDelete = (id: string) => {
     if (confirm(`Are you sure you want to delete user ${id}?`)) {

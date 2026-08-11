@@ -12,6 +12,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { getReportsData, ReportSummary } from "@/constant/Data";
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 interface ReportsProps {
   params: Promise<{ slug: string }>;
 }
@@ -99,8 +101,26 @@ const ChartCard = ({ title }: { title: string }) => (
 /* ---------------- Page ---------------- */
 
 export default async function ReportsPage({ params }: ReportsProps) {
-  const { slug: adminSlug } = await params;
-  const reports: ReportSummary = getReportsData(adminSlug);
+    
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
+    
+  const reports: ReportSummary = getReportsData(companyId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black px-6 py-10 text-gray-100">

@@ -6,6 +6,8 @@ import AdminLayout from '@/components/AdminLayout'; // Adjust path as needed
 import { motion } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -17,7 +19,30 @@ const sampleArticles = [
   { id: "art4", title: "The Impact of Streaming on Traditional Cinema", author: "Lena Khan", status: "Published", date: "2025-06-20", imageUrl: "/images/articles/streaming.jpg" },
 ];
 
-export default function ArticleManagementPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function ArticleManagementPage({ params }: PageProps) {
+
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   const handleEdit = (id: string) => alert(`Edit article ${id}`);
   const handleDelete = (id: string) => {
     if (confirm(`Are you sure you want to delete article ${id}?`)) {

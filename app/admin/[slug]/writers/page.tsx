@@ -1,6 +1,8 @@
 // app/admin/[companyId]/writers/page.tsx
 import React from "react";
 import WritersClient from "./WritersClient"; // Make sure the path is correct
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { cookies } from "next/headers";
 
@@ -51,9 +53,26 @@ interface PageProps {
  * to the client component.
  */
 export default async function WritersPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
+
+  const { slug }  = await params;
+  
   let writersData: Writer[] = [];
   const cookieHeader = (await cookies()).toString();
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     const res = await fetch(`${apiBaseUrl}/admin/writers?companyId=${companyId}`, {

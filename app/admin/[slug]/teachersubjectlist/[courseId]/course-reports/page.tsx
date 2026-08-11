@@ -1,8 +1,9 @@
 import React from "react";
 import CourseEducatorDashboard from "./CourseReportsPageClient"; // Rename this to match your new client
-import { getAuthSession } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -49,13 +50,31 @@ export default async function CourseReportsServerPage({ params, searchParams }: 
   if (!session?.user?.id) return notFound();
 
   const educatorId = session.user.id;
-  const { slug: companyId } = params;
+  const { slug } = params;
   
   // These usually come from the URL query or a previous selection
   const { courseId, classroomId, scheduleId } = searchParams;
 
   let initialCourses = [];
   let fetchError: string | null = null;
+
+  
+    // const { slug } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // 1. Fetch available courses for this educator to populate selection dropdowns

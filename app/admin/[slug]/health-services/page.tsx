@@ -3,6 +3,8 @@
 import React from 'react';
 import { ServiceManagerClient } from './ServiceManagerClient'; // Import the Client Component
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 import { cookies } from 'next/headers';
 // Define the Service interface (move to a shared types.ts file for real app)
 interface Service {
@@ -59,8 +61,23 @@ interface Props {
 }
 
 export default async function AdminServicesPage({ params }: Props) {
-  const { slug : companyId } = await params;
   
+  const { slug }  = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
   // 1. Fetch data on the server
   const initialServices = await getInitialServiceData(companyId);
 

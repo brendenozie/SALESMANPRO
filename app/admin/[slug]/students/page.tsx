@@ -3,6 +3,10 @@
 import React from "react";
 import StudentsClient, { StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption, ClassRoomOption } from "./StudentsClient"; // Import StudentLevelStatusOption
 import { cookies } from "next/headers";
+
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
@@ -183,13 +187,28 @@ const generateSampleStudentsData = (companyId: string): {
  * then renders the Client Component below.
  */
 export default async function StudentsManagementPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
+  const { slug }  = await params;
     const cookieHeader = (await cookies()).toString();
 
   let initialStudents: StudentType[] = [];
   let allParents: ParentOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
   let allClassRooms: ClassRoomOption[] = [];
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // Define StudentLevelStatus options
   const allStudentLevelStatusOptions: StudentLevelStatusOption[] = [

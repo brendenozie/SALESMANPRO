@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import MaintenancePageClient from "./MaintenancePageClient";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -9,8 +11,23 @@ interface PageProps {
 
 // app/admin/hostel/maintenance/page.tsx
 export default async function MaintenancePage({ params }: PageProps) {
-  const { slug: schoolId } = await params;
+  const { slug }  = await params;
   const cookieHeader = (await cookies()).toString();
+
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   let initialTickets = [];
   let rooms = [];
@@ -18,10 +35,10 @@ export default async function MaintenancePage({ params }: PageProps) {
   try {
     // Parallel fetch for better performance
     const [tktRes, roomRes] = await Promise.all([
-      fetch(`${apiBaseUrl}/admin/property/maintenance?companyId=${schoolId}`, { 
+      fetch(`${apiBaseUrl}/admin/property/maintenance?companyId=${companyId}`, { 
         headers: { cookie: cookieHeader }, cache: 'no-store' 
       }),
-      fetch(`${apiBaseUrl}/admin/property/rooms?companyId=${schoolId}`, { 
+      fetch(`${apiBaseUrl}/admin/property/rooms?companyId=${companyId}`, { 
         headers: { cookie: cookieHeader }, cache: 'no-store' 
       })
     ]);
@@ -34,7 +51,7 @@ export default async function MaintenancePage({ params }: PageProps) {
     <MaintenancePageClient 
       initialTickets={initialTickets} 
       rooms={rooms} // Passing rooms to the client
-      schoolId={schoolId} 
+      companyId={companyId} 
     />
   );
 }

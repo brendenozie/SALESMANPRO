@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { LocationFormModal } from './LocationForm';
 import { DeleteConfirmModal } from './DeleteForm';
@@ -57,7 +59,10 @@ const buildLocationTree = (locationsInput: Location[] | any): Location[] => {
 
 
 // Main Enhanced Location Management Component
-export default function LocationManagementPage({ params }: PageProps) {
+export default async function LocationManagementPage({ params }: PageProps) {
+
+  const { slug }  =await params;
+  
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

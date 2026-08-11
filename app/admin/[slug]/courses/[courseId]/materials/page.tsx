@@ -3,6 +3,8 @@
 import React from "react";
 import MaterialsClient, { CourseMaterialType, CourseDetailsType, EducatorOption } from "./MaterialsClient";
 import { cookies } from "next/headers";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -115,13 +117,28 @@ const generateSampleMaterialsData = (companyId: string, courseId: string): {
  * then renders the Client Component below.
  */
 export default async function CourseMaterialsManagementPage({ params }: PageProps) {
-  const { slug: companyId, courseId } = await params;
+  const { slug, courseId } = await params;
   const cookieHeaders = (await cookies()).toString();
 
   let initialMaterials: CourseMaterialType[] = [];
   let courseDetails: CourseDetailsType | null = null;
   let allEducators: EducatorOption[] = [];
   let fetchError: boolean = false;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // Fetch course details

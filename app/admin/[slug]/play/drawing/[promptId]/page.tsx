@@ -4,6 +4,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
@@ -45,7 +47,12 @@ const sampleDrawingPromptsData = {
   },
 };
 
-export default function DrawingCanvasPage() {
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function DrawingCanvasPage() {
   const params = useParams();
   const router = useRouter();
   const promptSlug = Array.isArray(params.promptId) ? params.promptId[0] : params.promptId;
@@ -59,6 +66,23 @@ export default function DrawingCanvasPage() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushColor, setBrushColor] = useState('#000000'); // Default to black
   const [brushSize, setBrushSize] = useState(5); // Default brush size
+
+    // const { slug } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    // const identifier = params.slug || session?.user?.id || '';
+  
+    // // 2. Retrieve the memoized company data (no extra DB cost)
+    // const company = await findCompanyCached(identifier, "page");
+  
+    // if (!company) {
+    //   return <div>Company not found</div>;
+    // }
+  
+    // // Use the actual database ID for your API calls, ensuring consistency
+    // const companyId = company.id;
 
   // Fetch prompt data based on promptSlug (which maps to Course.code)
   useEffect(() => {

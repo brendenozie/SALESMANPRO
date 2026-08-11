@@ -16,6 +16,8 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { useParams } from "next/navigation";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
@@ -39,8 +41,8 @@ const formItemVariants = {
   },
 };
 
-export default function AdminPOS() {
-  const { slug : adminSlug } = useParams();
+export default async function AdminPOS() {
+  const { slug } = useParams();
 
   const [events, setEvents] = useState<any[]>([]); // Fetched events
   const [selectedEventId, setSelectedEventId] = useState('');
@@ -55,6 +57,21 @@ export default function AdminPOS() {
   const [isLoadingTickets, setIsLoadingTickets] = useState(false);
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // Fetch events on component mount
   useEffect(() => {
@@ -62,7 +79,7 @@ export default function AdminPOS() {
       setIsLoadingEvents(true);
       setError(null);
       try {
-        const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`);
+        const response = await fetch(`${apiBaseUrl}/admin/${companyId}/events?status=SCHEDULED&fields=id,title,startDateTime`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -77,10 +94,10 @@ export default function AdminPOS() {
       }
     };
 
-    if (adminSlug) {
+    if (companyId) {
       fetchEvents();
     }
-  }, [adminSlug]);
+  }, [companyId]);
 
   // Fetch tickets for selected event
   useEffect(() => {
@@ -94,7 +111,7 @@ export default function AdminPOS() {
       try {
         // This endpoint is hypothetical in the API definitions, would need to be implemented
         // GET /api/admin/{adminSlug}/events/{eventId}/tickets
-        const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/tickets?eventId=${selectedEventId}`);
+        const response = await fetch(`${apiBaseUrl}/admin/${companyId}/tickets?eventId=${selectedEventId}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -109,10 +126,10 @@ export default function AdminPOS() {
       }
     };
 
-    if (selectedEventId && adminSlug) {
+    if (selectedEventId && companyId) {
       fetchTickets();
     }
-  }, [selectedEventId, adminSlug]);
+  }, [selectedEventId, companyId]);
 
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
@@ -170,7 +187,7 @@ export default function AdminPOS() {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/pos/sale`, {
+      const response = await fetch(`${apiBaseUrl}/admin/${companyId}/pos/sale`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -200,8 +217,8 @@ export default function AdminPOS() {
       setPaymentMethod('');
       // Re-fetch events and tickets to update availability
       // Trigger re-fetch of events and tickets
-      if (adminSlug) {
-        const eventsResponse = await fetch(`${apiBaseUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`);
+      if (companyId) {
+        const eventsResponse = await fetch(`${apiBaseUrl}/admin/${companyId}/events?status=SCHEDULED&fields=id,title,startDateTime`);
         if (eventsResponse.ok) {
           const eventsData = await eventsResponse.json();
           setEvents(eventsData.events);

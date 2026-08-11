@@ -4,6 +4,8 @@
 import { notFound } from 'next/navigation';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { cookies } from 'next/headers';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Import Types and the Client Component
 import OffersClientPage, { OfferContract, SelectOption } from './OffersClientPage';
@@ -135,6 +137,21 @@ export default async function OffersPage({ params }: OffersPageProps) {
     if (!slug) {
         notFound();
     }
+    
+      const session = await getAuthSession();
+    
+      // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+      const identifier = slug || session?.user?.id || '';
+    
+      // 2. Retrieve the memoized company data (no extra DB cost)
+      const company = await findCompanyCached(identifier, "page");
+    
+      if (!company) {
+        return <div>Company not found</div>;
+      }
+    
+      // Use the actual database ID for your API calls, ensuring consistency
+      const companyId = company.id;
 
     // --- 1. Fetch Offers, Properties, Clients, and Agents in parallel ---
     const [

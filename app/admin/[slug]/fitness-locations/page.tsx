@@ -18,10 +18,12 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import LocationModal, { LocationData } from './LocationModal';
 import toast from 'react-hot-toast';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 interface LocationsPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -170,8 +172,9 @@ const LocationCardSkeleton = () => (
   </div>
 );
 
-export default function LocationsPage({ params }: LocationsPageProps) {
-  const { slug } = params;
+export default async function LocationsPage({ params }: LocationsPageProps) {
+  
+  const { slug } = await params;
 
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,6 +183,21 @@ export default function LocationsPage({ params }: LocationsPageProps) {
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState<LocationData | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchLocations = useCallback(async () => {
     setLoading(true);

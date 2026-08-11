@@ -4,6 +4,8 @@ import React from "react";
 import WeeklyTimetable, { TimetableEntry, CourseOption, EducatorOption, AcademicLevelOption } from "./WeeklyTimetable";
 import { cookies } from "next/headers";
 import { ClassroomOption } from "../teachers/page";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -190,9 +192,25 @@ const generateSampleTimetableData = (companyId: string): {
 
 
 export default async function TimetableManagerPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
-  const cookieHeader = (await cookies()).toString();
 
+  const { slug }  = await params;
+
+  const cookieHeader = (await cookies()).toString();
+    
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+
+    const companyId = company.id;
+  
   let initialTimetable: TimetableEntry[] = [];
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];

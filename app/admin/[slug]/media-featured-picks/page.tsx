@@ -11,6 +11,8 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // ------------------- Types -------------------
 export type VideoType = "Video" | "Article" | "Series" | "Interview";
@@ -330,13 +332,35 @@ const FeaturedPickCard: React.FC<{
   );
 };
 
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
 // --- Main Page ---
-export default function FeaturedPicksPage() {
+export default async function FeaturedPicksPage({ params }: PageProps) {
+  
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState<ToastData | null>(null);
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchVideos = async () => {
     setLoading(true);

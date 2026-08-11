@@ -16,6 +16,8 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 import { useParams } from "next/navigation";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
@@ -104,11 +106,14 @@ const AppointmentStatusBadge: React.FC<AppointmentStatusBadgeProps> = ({
   );
 };
 
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
 // ---------- Main Page ----------
-export default function AppointmentsPage() {
-  
-  const params = useParams();
-  const companyId = params.slug as string;
+export default async function AppointmentsPage({ params }: PageProps) {
+
+  const { slug } = await params;
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -128,6 +133,21 @@ export default function AppointmentsPage() {
 
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<Expert[]>([]);
+
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // ---------- API Fetch ----------
   const fetchAppointments = async () => {

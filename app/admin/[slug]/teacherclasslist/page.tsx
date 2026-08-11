@@ -6,6 +6,7 @@ import React from "react";
 import ClassTeacherAcademicLevelsPage from "./TeachersClassListPage";
 import { getAuthSession } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -183,10 +184,25 @@ const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLev
  */
 export default async function ClassTeacherAcademicLevelsPageServer({ params }: Props) {
   const { slug } = await params;
-  const session = await getAuthSession();
+    
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   const cookieStore = (await cookies()).toString();
 
-  const teacherId = session?.user?.id || slug || MOCK_CURRENT_TEACHER_USER_ID;
+  const teacherId = session?.user?.id || companyId || MOCK_CURRENT_TEACHER_USER_ID;
 
   let pageData: ClassTeacherAcademicLevelsPageData | null = null; // Changed type to ClassTeacherAcademicLevelsPageData
   let fetchError: boolean = false;

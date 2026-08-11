@@ -7,6 +7,8 @@ import {
   CheckCircleIcon 
 } from '@heroicons/react/24/outline';
 import AssignmentsClientPage from './AssignmentsClientPage';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 export interface Assignment {
   id: string;
@@ -32,6 +34,24 @@ const StatCard = ({ title, value, icon: Icon, color }: any) => (
 
 export default async function ParentAssignmentsPage({ params }: { params: Promise<{ adminSlug: string }> }) {
   const { adminSlug } = await params;
+
+
+    // const { slug } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    // const identifier = slug || session?.user?.id || '';
+  
+    // // 2. Retrieve the memoized company data (no extra DB cost)
+    // const company = await findCompanyCached(identifier, "page");
+  
+    // if (!company) {
+    //   return <div>Company not found</div>;
+    // }
+  
+    // // Use the actual database ID for your API calls, ensuring consistency
+    // const companyId = company.id;
 
   // Sample Data
   const initialAssignments: Assignment[] = [

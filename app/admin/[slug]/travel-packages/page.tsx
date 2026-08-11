@@ -10,6 +10,8 @@ import {
   XMarkIcon, CloudArrowUpIcon, PhotoIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -429,12 +431,30 @@ const TourPackageModal: React.FC<TourPackageModalProps> = ({ pkg, onSave, onClos
   );
 };
 
+interface PageProps {
+  params: { slug: string };
+}
+
 // =======================================================================
 // Main AdminPackages View Page
 // =======================================================================
-export default function AdminPackages() {
-  const params = useParams();
-  const slug = params.slug as string;
+export default async function AdminPackages({ params }: PageProps) {
+  const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -454,8 +474,8 @@ export default function AdminPackages() {
     setIsLoading(true);
     try {
       const [packagesRes, destinationsRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`, { credentials: 'include' }),
-        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${companyId}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${companyId}`, { credentials: 'include' }),
       ]);
 
       const packagesData = await packagesRes.json();
@@ -474,7 +494,7 @@ export default function AdminPackages() {
     } finally {
       setIsLoading(false);
     }
-  }, [slug]);
+  }, [companyId]);
 
   useEffect(() => {
     fetchData();
@@ -484,7 +504,7 @@ export default function AdminPackages() {
     setIsLoading(true);
     const isEditing = !!formData.id;
     const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `${apiBaseUrl}/admin/travel-packages/${formData.id}` : `${apiBaseUrl}/admin/travel-packages?companyId=${slug}`;
+    const url = isEditing ? `${apiBaseUrl}/admin/travel-packages/${formData.id}` : `${apiBaseUrl}/admin/travel-packages?companyId=${companyId}`;
     
     const toastId = toast.loading(attachedFile ? "Uploading image asset..." : "Saving catalog configuration...");
 

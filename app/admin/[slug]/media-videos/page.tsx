@@ -6,6 +6,8 @@ import { PlusIcon, PencilIcon, TrashIcon, FilmIcon, ArrowPathIcon, XMarkIcon } f
 import Image, { ImageLoaderProps } from 'next/image';
 import { useParams } from 'next/navigation';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -313,11 +315,15 @@ const ViewAlbumModal: React.FC<ViewAlbumModalProps> = ({ isOpen, onClose, album,
   );
 };
 
-// --- Main Page Component ---
-export default function VideoGalleryPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
-  const { slug } = useParams(); // Assuming useParams is available in your environment
-  
+// --- Main Page Component ---
+export default async function VideoGalleryPage({ params }: PageProps) {
+
+  const { slug } = await params;
+
   const [videoAlbums, setVideoAlbums] = useState<VideoAlbum[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -327,6 +333,21 @@ export default function VideoGalleryPage() {
   const [isVideoDeleteModalOpen, setIsVideoDeleteModalOpen] = useState<boolean>(false);
   const [selectedAlbum, setSelectedAlbum] = useState<VideoAlbum | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   useEffect(() => {
     fetchVideoAlbums();

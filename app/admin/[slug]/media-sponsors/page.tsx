@@ -16,6 +16,8 @@ import {
 } from '@heroicons/react/24/solid';
 import Image, { ImageLoaderProps } from 'next/image';
 import { useParams } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
@@ -349,12 +351,12 @@ const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onEdit, onDelete }) 
   );
 };
 
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
 // --- Main Page Component ---
-export default function SponsorsPage() {
-  
-    const params = useParams();
-    const companyId = params.slug as string;
+export default async function SponsorsPage({ params }: PageProps) {
 
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -363,6 +365,23 @@ export default function SponsorsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   useEffect(() => {
     fetchSponsors();

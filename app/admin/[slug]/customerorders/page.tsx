@@ -1,6 +1,8 @@
 // app/admin/products/page.tsx
 import { cookies } from "next/headers";
 import ProductsClient from "./ProductsClient";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -8,7 +10,7 @@ interface Props {
 }
 
 export default async function ProductsPage({ params, searchParams }: Props) {
-  const { slug: companyId } = await params;
+  const { slug } = await params;
   const { page = "1", search = "" } = await searchParams;
   const cookieStore = (await cookies()).toString();
 
@@ -18,6 +20,21 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   let riders = [];
   let pagination = { totalPages: 1, currentPage: 1, totalItems: 0 };
   let revenue = { total: 0, pending: 0, monthly: [] };
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     const [ordersRes, ridersRes] = await Promise.all([

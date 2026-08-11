@@ -1,10 +1,10 @@
 // app/(dashboard)/tasks/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { getAuthSession } from "@/lib/auth";
 import TaskDashboard from "./TaskDashboardClient";
 
 export default async function TasksPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
 
   const url = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   let tasksData = [];

@@ -9,6 +9,8 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { useParams } from "next/navigation";
 
@@ -52,9 +54,12 @@ interface FormState {
   status: CaseStatus;
 }
 
-export default function CasesPage() {
-  const params = useParams();
-  const companyId = params.slug as string;
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function CasesPage({ params }: PageProps) {
+  const { slug } = await params;
 
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,6 +77,21 @@ export default function CasesPage() {
     caseType: "FINANCE",
     status: "ACTIVE",
   });
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchCases = async () => {
     setLoading(true);

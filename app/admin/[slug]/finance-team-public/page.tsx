@@ -10,6 +10,8 @@ import {
   CheckCircleIcon,
   ArrowRightIcon,
 } from '@heroicons/react/24/solid';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Placeholder data for experts and testimonials
 // In a real application, this data would be fetched from your database via an API
@@ -132,7 +134,29 @@ const TestimonialCard = ({ testimonial }:any) => (
   </motion.div>
 );
 
-export default function ExpertPage() {
+interface Pageprops {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function ExpertPage({ params }: Pageprops) {
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 

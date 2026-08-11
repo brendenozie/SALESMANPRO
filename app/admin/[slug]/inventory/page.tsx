@@ -1,86 +1,71 @@
 // app/admin/[slug]/inventory/page.tsx
-
 import React from "react";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
 import AdminInventoryClient, { InventoryItem } from "./AdminInventoryClient";
 import { IStoreCategory } from "@/types/typings";
-import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-type Agent = {
-  id: string;
-  name: string;
-};
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
 export default async function AdminInventoryPage({ params }: Props) {
-  const { slug : companyId } = await params;
+  const { slug } = await params;
+  const session = await getAuthSession();
+  
+  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
+  
+  // 2. Retrieve the memoized company data (no extra DB cost)
+  const company = await findCompanyCached(identifier, "page");
+  
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  // Use the actual database ID for your API calls, ensuring consistency
+  const companyId = company.id;
 
   let productsData: InventoryItem[] = [];
   let categoriesData: IStoreCategory[] = [];
-  let agentsData: Agent[] = [];
+  let agentsData: any[] = [];
 
   try {
     const cookieHeader = (await cookies()).toString();
+    const fetchOptions = { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } };
 
-    // Fetch all products for this company
-    const productsRes = await fetch(`${apiBaseUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
-    );
+    // Fetch in parallel to speed up the page load
+    const [productsRes, categoriesRes, agentsRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
+      fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
+      fetch(`${apiBaseUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`, fetchOptions)
+    ]);
 
     if (productsRes.ok) {
-      let prodeuctR = (await productsRes.json());
-      // console.log("prodeuctR:", prodeuctR);
-      productsData = Array.isArray(prodeuctR.data.results) ? prodeuctR.data.results : [];
-
+      const prodData = await productsRes.json();
+      productsData = Array.isArray(prodData.data?.results) ? prodData.data.results : [];
     }
-
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
-      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
-    );
 
     if (categoriesRes.ok) {
-          const { data } = await categoriesRes.json() as { data: { results: IStoreCategory[] } };
-          categoriesData = Array.isArray(data.results) ? data.results : [];
+      const catData = await categoriesRes.json();
+      categoriesData = Array.isArray(catData.data?.results) ? catData.data.results : [];
     }
 
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiBaseUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
-    );
     if (agentsRes.ok) {
-      let agentsR= (await agentsRes.json());
-      agentsData = Array.isArray(agentsR.data) ? agentsR.data : [];
+      const agentData = await agentsRes.json();
+      agentsData = Array.isArray(agentData.data) ? agentData.data : [];
     }
 
-    // // Sanity check: ensure arrays
-    // if (!Array.isArray(productsData)) {
-    //   throw new Error("Products API response is not an array.");
-    // }
-    // if (!Array.isArray(categoriesData)) {
-    //   throw new Error("Categories API response is not an array.");
-    // }
-    // if (!Array.isArray(agentsData)) {
-    //   throw new Error("Agents API response is not an array.");
-    // }
   } catch (err: any) {
-    // console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    console.error("Inventory fetch error:", err.message);
   }
 
   return (
     <AdminInventoryClient
-      companyId={companyId}
+      companyId={companyId} // Passes the true DB ID
       productsData={productsData}
       categoriesData={categoriesData}
       agentsData={agentsData}

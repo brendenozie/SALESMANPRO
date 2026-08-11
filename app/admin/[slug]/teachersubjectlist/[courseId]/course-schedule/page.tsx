@@ -1,8 +1,10 @@
 // app/admin/[slug]/teacher-classes/[courseId]/class-schedule/page.tsx
 import React from "react";
 import ClassSchedulePageClient from "./ClassSchedulePageClient"; // Renamed client component
-import { getAuthSession } from "@/lib/auth";
+
 import { cookies } from "next/headers";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -61,14 +63,30 @@ export interface ClassSchedulePageData {
 
 export default async function ClassScheduleServerPage({ params, searchParams }: PageProps) {
 
-      
   const cookiesStore = (await cookies()).toString();
   const session = await getAuthSession();
   const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
   // const companyId = params.slug;
 
-  const { slug: companyId, courseId } = params;
+  const { slug, courseId } = params;
   const { classroomId, scheduleId } = searchParams;
+  
+    // const { slug } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // const { slug: companyId, courseId } = await params;
   // const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context

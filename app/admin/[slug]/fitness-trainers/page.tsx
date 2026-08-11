@@ -10,6 +10,8 @@ import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import TrainerModal, { TrainerData } from './TrainerModal';
 import toast from 'react-hot-toast';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -113,8 +115,12 @@ const TrainerCard = ({
   );
 };
 
-export default function TrainersPage() {
-  const { slug } = useParams();
+interface TrainersPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function TrainersPage({ params }: TrainersPageProps) {
+  const { slug } = await params;
   const [trainers, setTrainers] = useState<TrainerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,6 +128,21 @@ export default function TrainersPage() {
   const [currentTrainer, setCurrentTrainer] = useState<TrainerData | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [trainerToDelete, setTrainerToDelete] = useState<TrainerData | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchTrainers = useCallback(async () => {
     setLoading(true);

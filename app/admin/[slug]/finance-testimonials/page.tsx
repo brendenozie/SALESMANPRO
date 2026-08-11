@@ -14,6 +14,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { useParams } from "next/navigation";
 import { headers } from "next/headers";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 
@@ -32,10 +34,13 @@ interface Testimonial {
 
 type FormState = Omit<Testimonial, "id" | "companyId">;
 
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 // ---- Component ----
-const TestimonialsPage = () => {
+const TestimonialsPage = async ({ params }: PageProps) => {
   
-  const { slug : companyId } =  useParams();
+  const { slug } = await params;
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +55,21 @@ const TestimonialsPage = () => {
     status: "PENDING",
   };
   const [formState, setFormState] = useState<FormState>(initialForm);
+
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // ---- Fetch ----
   const fetchTestimonials = async () => {

@@ -10,6 +10,8 @@ import { cookies } from 'next/headers';
 
 // Import the Client Component and Type Definitions
 import ClientsClientPage, { ClientProfile } from './ClientsClientPage'; 
+import { findCompanyCached } from '@/lib/company-fetcher';
+import { getAuthSession } from '@/lib/auth';
 
 const apiBaseUrl = process.env.INTERNAL_API_URL || 'http://localhost:3000/api';
 
@@ -60,14 +62,29 @@ export default async function ClientsPage({ params }: ClientsPageProps) {
   if (!slug) {
     notFound(); 
   }
-
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+    
   // --- 1. Server-Side Data Fetching ---
   let initialClients: ClientProfile[] = [];
   let isInitialLoadSuccessful = true; 
   
   try {
     // In a production app, you would fetch data here:
-    const res = await fetch(`${apiBaseUrl}/admin/properties-clients?companyId=${slug}`, 
+    const res = await fetch(`${apiBaseUrl}/admin/properties-clients?companyId=${encodeURIComponent(companyId)}`, 
       { 
         cache: 'no-store', 
         headers: { Cookie: cookiesHeader } 

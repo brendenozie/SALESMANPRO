@@ -19,6 +19,8 @@ import toast from 'react-hot-toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import CommunicationModal, { CommunicationData } from './CommunicationModal';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 interface CommunicationsPageProps {
@@ -147,8 +149,7 @@ const CommunicationCard = ({
   );
 };
 
-export default function CommunicationsPage({ params }: CommunicationsPageProps) {
-  const slug = useParams()?.slug || (async () => (await params).slug)();
+export default async function CommunicationsPage({ params }: CommunicationsPageProps) {
 
   const [communications, setCommunications] = useState<CommunicationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,6 +157,23 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
   const [currentCommunication, setCurrentCommunication] = useState<CommunicationData | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [communicationToDelete, setCommunicationToDelete] = useState<CommunicationData | null>(null);
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchCommunications = useCallback(async () => {
     if (!slug) return;

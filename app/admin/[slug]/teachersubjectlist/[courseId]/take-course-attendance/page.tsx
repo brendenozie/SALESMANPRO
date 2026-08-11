@@ -1,7 +1,8 @@
 import React from "react";
 import TakeAttendancePageClient from "./TakeAttendancePageClient";
-import { getAuthSession } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c";
@@ -12,11 +13,28 @@ interface PageProps {
 }
 
 export default async function TakeAttendanceServerPage({ params, searchParams }: PageProps) {
-  const { courseId } = params;
+  const { slug, courseId } = params;
   const { classroomId, scheduleId } = searchParams;
   
+    const {  } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    // const company = await findCompanyCached(identifier, "page");
+  
+    // if (!company) {
+    //   return <div>Company not found</div>;
+    // }
+  
+    // // Use the actual database ID for your API calls, ensuring consistency
+    // const companyId = company.id;
+
   const cookiesStore = (await cookies()).toString();
-  const session = await getAuthSession();
+  // const session = await getAuthSession();
   const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
 
   let attendanceData = null;

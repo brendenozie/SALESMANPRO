@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DashboardMetrics, getDashboardData } from '@/constant/Data';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface DashboardProps {
   params: Promise<{
@@ -29,9 +31,26 @@ const listItemVariants = {
 };
 
 export default async function DashboardPage({ params }: DashboardProps) {
+    
+    const { slug } = await params;
   
-  const { slug: adminSlug } = await params;
-  const dashboardData: DashboardMetrics = getDashboardData(adminSlug);
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
+    
+  const dashboardData: DashboardMetrics = getDashboardData(companyId);
 
   return (
     <div>

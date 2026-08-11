@@ -21,6 +21,8 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Assuming these components are correctly implemented and styled with Tailwind
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
@@ -35,9 +37,8 @@ interface TravelExperiencesManagementPageProps {
   params:Promise<{ slug: string }>
 }
 
-export default function TravelExperiencesManagementPage() {
-  const { slug } = useParams();
-  const companyId = slug;
+export default async function TravelExperiencesManagementPage({ params }: TravelExperiencesManagementPageProps) {
+  const { slug } = await params;
 
   const [travelExperiencess, setTravelExperiencess] = useState<MarketListingForm[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +53,21 @@ export default function TravelExperiencesManagementPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTravelExperiences, setSelectedTravelExperiences] = useState<MarketListingForm | null>(null);
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // --- Data Fetching for Categories ---
   const fetchCategories = useCallback(async () => {
@@ -522,8 +538,8 @@ export default function TravelExperiencesManagementPage() {
           categories={categories ?? []}
           companyId={companyId?.toString() ?? ''}
           locations={locations ?? []}
-          marketListItem={selectedTravelExperiences}
-          // onSave={handleSaveTravelExperiences}
+          marketListItem={selectedTravelExperiences} 
+          refreshInventory={fetchTravelExperiencess}          // onSave={handleSaveTravelExperiences}
         />
       )}
 

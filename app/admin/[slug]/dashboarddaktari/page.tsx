@@ -4,6 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { HomeIcon, UsersIcon, CalendarDaysIcon, CurrencyDollarIcon, ClipboardDocumentListIcon, SunIcon } from '@heroicons/react/24/solid';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface DashboardCardProps {
   icon: React.ElementType;
@@ -48,18 +50,38 @@ const fadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
 };
 
-export default function AdminDashboardPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminDashboardPage({ params }: PageProps) {
   
-  const { slug: adminSlug } = useParams();
+  const { slug } = await params;
 
   // Sample Data for Dashboard Cards
   const dashboardStats = [
-    { icon: UsersIcon, title: 'Total Patients', value: '1,245', bgColor: '#e0f7fa', textColor: '#00796b', link: `/admin/${adminSlug}/patients` },
-    { icon: CalendarDaysIcon, title: 'Upcoming Appointments', value: '78', bgColor: '#e3f2fd', textColor: '#1976d2', link: `/admin/${adminSlug}/appointments` },
-    { icon: CurrencyDollarIcon, title: 'Today\'s Revenue', value: '$1,520', bgColor: '#fbe9e7', textColor: '#d84315', link: `/admin/${adminSlug}/billing` },
-    { icon: SunIcon, title: 'Active Doctors', value: '12', bgColor: '#ede7f6', textColor: '#673ab7', link: `/admin/${adminSlug}/doctors` },
-    { icon: ClipboardDocumentListIcon, title: 'New Prescriptions', value: '35', bgColor: '#fff3e0', textColor: '#ef6c00', link: `/admin/${adminSlug}/prescriptions` },
+    { icon: UsersIcon, title: 'Total Patients', value: '1,245', bgColor: '#e0f7fa', textColor: '#00796b', link: `/admin/${slug}/patients` },
+    { icon: CalendarDaysIcon, title: 'Upcoming Appointments', value: '78', bgColor: '#e3f2fd', textColor: '#1976d2', link: `/admin/${slug}/appointments` },
+    { icon: CurrencyDollarIcon, title: 'Today\'s Revenue', value: '$1,520', bgColor: '#fbe9e7', textColor: '#d84315', link: `/admin/${slug}/billing` },
+    { icon: SunIcon, title: 'Active Doctors', value: '12', bgColor: '#ede7f6', textColor: '#673ab7', link: `/admin/${slug}/doctors` },
+    { icon: ClipboardDocumentListIcon, title: 'New Prescriptions', value: '35', bgColor: '#fff3e0', textColor: '#ef6c00', link: `/admin/${slug}/prescriptions` },
   ];
+
+    
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-8">

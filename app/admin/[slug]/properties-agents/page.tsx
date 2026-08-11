@@ -8,6 +8,8 @@ import {
   PlusCircleIcon,
 } from '@heroicons/react/24/outline';
 import { cookies } from 'next/headers';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Import the client component
 import AgentsClientPage from './AgentsClientPage'; 
@@ -61,13 +63,28 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
   if (!slug) {
     notFound(); 
   }
+    
+    const session = await getAuthSession();
   
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   let initialAgents: AgentProfile[] = [];
   let isInitialLoadSuccessful = true; // Assume success or handle error
   
   try {
 
-    const res = await fetch(`${apiBaseUrl}/admin/sales-agents?companyId=${slug}`, 
+    const res = await fetch(`${apiBaseUrl}/admin/sales-agents?companyId=${companyId}`, 
       { cache: 'no-store', headers: { cookie: cookiesHeader } });
     if (!res.ok) throw new Error('Failed to fetch agents');
     let intialRes = await res.json();
@@ -127,7 +144,7 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
       {/* 3. Render the Client Component */}
       {/* All interactivity, state, and CRUD operations are delegated here. */}
       <AgentsClientPage 
-        adminSlug={slug}
+        adminSlug={companyId}
         initialAgents={initialAgents} 
         isInitialLoadSuccessful={isInitialLoadSuccessful}
       />

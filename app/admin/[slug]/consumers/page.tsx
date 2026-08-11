@@ -7,6 +7,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { cookies } from 'next/headers';
 import ConsumersClientPage from './ConsumersClientPage';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.INTERNAL_API_URL || 'http://localhost:3000/api';
 
@@ -27,6 +29,21 @@ export default async function ConsumersPage({ params }: PageProps) {
   const cookieStore = await cookies();
 
   if (!slug) notFound();
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   let consumers = [];
   let isSuccess = true;

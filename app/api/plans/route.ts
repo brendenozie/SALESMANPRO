@@ -24,11 +24,11 @@ const getHandler = async (request: Request) => {
   const skip = (page - 1) * perPage;
 
   // Filters
-  const companyId = searchParams.get("companyId");
+  const slug = searchParams.get("slug");
 
   // Base query filter
   const where: any = {};
-  if (companyId) where.companyId = companyId;
+  if (slug) where.slug = slug;
 
   // 🚫 Filter out Free and Trial plans
   where.AND = [
@@ -54,7 +54,7 @@ const getHandler = async (request: Request) => {
     },
   ];
 
-  const cacheKey = `plans:paid:company:${companyId || "all"}:page:${page}:perPage:${perPage}`;
+  const cacheKey = `plans:paid:company:${slug || "all"}:page:${page}:perPage:${perPage}`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -99,7 +99,7 @@ const postHandler = async (request: Request) => {
   const data = await request.json();
 
   const {
-    companyId,
+    slug,
     name,
     description,
     priceMonthly,
@@ -110,7 +110,7 @@ const postHandler = async (request: Request) => {
     siteTypePrices, // NEW FIELD
   } = data;
 
-  if (!companyId || !name || !description || !features) {
+  if (!slug || !name || !description || !features) {
     return NextResponse.json(
       { message: "Missing required fields for plan creation." },
       { status: 400 }
@@ -128,12 +128,12 @@ const postHandler = async (request: Request) => {
       status: status ?? PlanStatus.ACTIVE,
       currency: "KES",
       siteTypePrices: siteTypePrices ?? {}, // NEW
-      company: { connect: { id: companyId } },
+      company: { connect: { slug: slug } },
     },
   });
 
   
-    try { await cacheDel(`admin:plan:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:plan:${slug || 'global'}:*`); } catch (e) {}
     return NextResponse.json(newPlan, { status: 201 });
 };
 

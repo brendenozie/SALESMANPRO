@@ -13,6 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon as CheckBadgeSolid } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // --- Types ---
 type Student = {
@@ -24,9 +26,32 @@ type Student = {
   notes?: string;
 };
 
-export default function BoardingScreen({ stopName, students: initialStudents, onComplete }: any) {
+interface BoardingScreenProps {
+  stopName: string;
+  students: Student[];
+  onComplete: () => void;
+}
+
+export default async function BoardingScreen({ stopName, students: initialStudents, onComplete }: any) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'boarded'>('all');
+  
+    // const { slug } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    // const identifier = slug || session?.user?.id || '';
+  
+    // // 2. Retrieve the memoized company data (no extra DB cost)
+    // const company = await findCompanyCached(identifier, "page");
+  
+    // if (!company) {
+    //   return <div>Company not found</div>;
+    // }
+  
+    // // Use the actual database ID for your API calls, ensuring consistency
+    // const companyId = company.id;
 
   const toggleStatus = (id: string) => {
     setStudents(prev => prev.map(s => {

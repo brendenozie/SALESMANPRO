@@ -2,6 +2,8 @@
 import React from "react";
 import BillingClient from "./BillingClient";
 import { useParams } from "next/navigation";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -48,7 +50,24 @@ interface PageProps {
 }
 
 export default async function BillingPage({ params, searchParams }: PageProps) {
-  const { slug: companyId } = await params;
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   const {
     page = "1",
     limit = "10",
@@ -244,7 +263,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
 
 
 // export default async function BillingPage({ params, searchParams }: PageProps) {
-//   const { slug : companyId } = await params;
+//   const { slug }  = await params;
 //   const page = parseInt(searchParams.page || "1");
 //   const limit = parseInt(searchParams.limit || "10");
 //   const transactionStatus = searchParams.transactionStatus || "";

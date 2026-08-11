@@ -1,9 +1,10 @@
 // AdminInventoryPage / page.tsx
 import React from "react";
 import StudentRosterPage from "./StudentRosterPage";
-import { getAuthSession } from "@/lib/auth";
 import prisma from "@/server/db/prismadb";
 import { notFound } from "next/navigation";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface PageProps {
   params: { slug: string; courseId: string }; // Assuming courseId is in the URL
@@ -12,14 +13,31 @@ interface PageProps {
 
 export default async function AdminInventoryPage({ params, searchParams }: PageProps) {
   const session = await getAuthSession();
+
   if (!session?.user?.email) return notFound();
+  
+   const { slug, courseId } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // Find the educator record for the logged-in user
   const educator = await prisma.educator.findUnique({
     where: { userId: session.user.id },
   });
 
-  const { slug: companyId, courseId } = params;
   const { scheduleId, date, classroomId } = searchParams;
 
   const pageContext = {

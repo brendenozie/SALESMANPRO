@@ -21,6 +21,8 @@ import {
 } from '@heroicons/react/24/outline';
 import toast, { Toaster } from 'react-hot-toast';
 import { useParams } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -269,11 +271,11 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpe
 );
 
 // --- Main VehiclesPage Component (with API Logic) ---
-// interface VehiclesPageProps { params: { companyId: string; }; }
+interface VehiclesPageProps { params: { slug: string; }; }
 
-export default function VehiclesPage() {
+export default async function VehiclesPage({ params }: VehiclesPageProps) {
 
-  const { slug : companyId } = useParams();
+  const { slug } = await params;
   
   // Data state
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -296,6 +298,12 @@ export default function VehiclesPage() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
 
+  // --- CRUD Handlers ---
+  const handleAddVehicle = () => { setEditingVehicle(null); setShowAddEditModal(true); };
+  const handleEditVehicle = (vehicle: Vehicle) => { setEditingVehicle(vehicle); setShowAddEditModal(true); };
+  const handleDeleteClick = (vehicle: Vehicle) => { setVehicleToDelete(vehicle); setShowDeleteConfirmModal(true); };
+
+  
   // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -304,6 +312,23 @@ export default function VehiclesPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+    
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
+    
 
   // --- Data Fetching ---
   const fetchVehiclesAndRiders = useCallback(async () => {
@@ -348,11 +373,7 @@ export default function VehiclesPage() {
   }, [fetchVehiclesAndRiders]);
 
   
-  // --- CRUD Handlers ---
-  const handleAddVehicle = () => { setEditingVehicle(null); setShowAddEditModal(true); };
-  const handleEditVehicle = (vehicle: Vehicle) => { setEditingVehicle(vehicle); setShowAddEditModal(true); };
-  const handleDeleteClick = (vehicle: Vehicle) => { setVehicleToDelete(vehicle); setShowDeleteConfirmModal(true); };
-
+  
   const handleSaveVehicle = async (formData: Partial<Vehicle>) => {
     setIsSubmitting(true);
     const isEdit = !!editingVehicle;
@@ -406,7 +427,7 @@ export default function VehiclesPage() {
         setIsSubmitting(false);
     }
   };
-
+  
   // --- Summary Calculations ---
   const filteredVehicles = vehicles; // Backend does the filtering now
   const totalVehicles = filteredVehicles.length;

@@ -9,6 +9,8 @@ import {
   CurrencyDollarIcon, ArrowTrendingUpIcon, WalletIcon
 } from '@heroicons/react/24/solid';
 import { VideoCameraSlashIcon } from '@heroicons/react/24/outline';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Dummy Data
 const getDashboardData = (adminSlug : any) => ({
@@ -61,10 +63,33 @@ const Card = ({ icon: Icon, title, value, description, bgColor } : any) => (
   </motion.div>
 );
 
-export default function AdminDashboardPage() {
-  const params = useParams();
-  const { adminSlug } = params;
-  const data = getDashboardData(adminSlug);
+interface DashboardMetrics {
+  storeName: string;
+  totalVehicles: number;
+}
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminDashboardPage({ params }: PageProps) {
+  const { slug } = await params;
+  const data = getDashboardData(slug);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-6 md:p-10">

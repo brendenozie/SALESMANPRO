@@ -45,11 +45,11 @@ const safeJsonParse = <T,>(value: any, fallback: T): T => {
 };
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function EditStorePage({ params }: PageProps) {
-  const { id } = await params;
+  const { id : slug } = await params;
 
   // --------------------
   // 1. Parallel Data Fetching
@@ -59,7 +59,7 @@ export default async function EditStorePage({ params }: PageProps) {
   const [store, categoriesRes, locationsRes, siteCategoriesRes] = await Promise.all([
     // Core store data
     prisma.company.findUnique({
-      where: { id },
+      where: { slug },
       include: {
         socialLinks: true,
         policies: true,
@@ -187,13 +187,13 @@ export default async function EditStorePage({ params }: PageProps) {
     events: store.events,
     courses: store.courses,
 
-    salesAgents: [], 
-    Writer: [], 
-    Doctor: [], 
+    salesAgents: [],
+    Writer: [],
+    Doctor: [],
 
     Podcast: store.Podcast,
     services: store.services,
-    marketplaceListings: [], 
+    marketplaceListings: [],
     Announcement: store.Announcement,
     settings: store.settings ?? null,
     seo: store.SEO ?? null,
@@ -252,7 +252,7 @@ export default async function EditStorePage({ params }: PageProps) {
           return null;
         })
         .filter((p): p is { src: string; alt: string; } => p !== null);
-    })(), 
+    })(),
     founderName: store.founderName || '',
     founderQuote: store.founderQuote || '',
     founderImage: store.founderImage || '',
@@ -263,7 +263,8 @@ export default async function EditStorePage({ params }: PageProps) {
     galleries: (store.galleries || []).map((g: any) => ({
       ...g,
       items: Array.isArray(g.items) ? g.items : [],
-    }))
+    })),
+    subscription: null
   };
   
   // --------------------

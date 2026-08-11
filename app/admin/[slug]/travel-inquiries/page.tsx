@@ -6,6 +6,8 @@ import {
   FunnelIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // --- Type Definitions ---
 interface Inquiry {
@@ -30,7 +32,29 @@ const initialInquiries: Inquiry[] = [
   { id: 'INQ003', name: 'Peter Jones', email: 'peter.j@example.com', type: 'Expert Consultation', message: 'I\'d like to speak with an expert about a safari trip.', status: 'Pending', date: '2025-07-12' },
 ];
 
-export default function AdminInquiries() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminInquiries({ params }: PageProps) {
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries);
   const [filterStatus, setFilterStatus] = useState<'All' | 'Pending' | 'Resolved'>('All');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

@@ -5,6 +5,8 @@ import { getSettingsData, GeneralSettings } from '@/constant/Data';
 import { motion } from 'framer-motion';
 import { BuildingLibraryIcon, CloudIcon, Cog6ToothIcon, GlobeAltIcon, SpeakerWaveIcon } from '@heroicons/react/24/outline';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface SettingsProps {
   params:Promise<{ slug: string }>
@@ -26,13 +28,29 @@ const formFieldVariants = {
 };
 
 export default async function SettingsPage({ params }: SettingsProps) {
-  
-  const { slug: adminSlug } = await params;
 
-  const settingsData: GeneralSettings = getSettingsData(adminSlug);
+  const [isSaving, setIsSaving] = React.useState(false);
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;    
+  
+  const settingsData: GeneralSettings = getSettingsData(companyId);
 
   const [currentSettings, setCurrentSettings] = React.useState(settingsData);
-  const [isSaving, setIsSaving] = React.useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentSettings({

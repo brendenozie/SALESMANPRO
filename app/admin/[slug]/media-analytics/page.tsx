@@ -14,6 +14,8 @@ import {
   SparklesIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 export interface DashboardCardProps {
   delay: number;
@@ -114,9 +116,30 @@ const analyticsOverview = [
   { title: "Top Content", value: "Cosmic Echo", icon: SparklesIcon, gradient: "from-purple-600 to-pink-700" },
 ];
 
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
 // --- Main Page ---
-export default function AnalyticsPage() {
+export default async function AnalyticsPage({ params }: PageProps) {
   const [selectedRange, setSelectedRange] = useState<number>(30);
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // Filter daily views based on selected range
   const filteredViews = useMemo(() => {

@@ -14,6 +14,8 @@ import {
   ClockIcon, 
   TagIcon 
 } from '@heroicons/react/24/outline';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import ConfirmationModal from '@/components/ConfirmationModal';
 import VirtualTourModal, { VirtualTourData } from './VirtualTourModal';
@@ -43,9 +45,12 @@ const itemVariants = {
   },
 };
 
-export default function AdminVirtualToursPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface AdminVirtualToursPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminVirtualToursPage({ params }: AdminVirtualToursPageProps) {
+  const { slug } = await params;
 
   const [virtualTours, setVirtualTours] = useState<VirtualTourData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +61,21 @@ export default function AdminVirtualToursPage() {
   const [tourToDelete, setTourToDelete] = useState<VirtualTourData | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [videoToPlay, setVideoToPlay] = useState<{ url: string; title: string } | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const fetchVirtualTours = useCallback(async () => {
     setLoading(true);

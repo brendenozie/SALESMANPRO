@@ -17,6 +17,8 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import ExpertModal, { ExpertData } from './ExpertModal';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -41,9 +43,27 @@ const cardVariants = {
   },
 };
 
-export default function AdminExpertsPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface pageProps{
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminExpertsPage({ params }: pageProps) {
+  const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const [experts, setExperts] = useState<ExpertData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +77,7 @@ export default function AdminExpertsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/experts?companyId=${slug}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
       });
@@ -69,7 +89,7 @@ export default function AdminExpertsPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [companyId]);
 
   useEffect(() => {
     fetchExperts();

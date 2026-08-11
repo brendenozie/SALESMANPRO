@@ -345,10 +345,13 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
   if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
 
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';  
+
   const companyId =
     ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
       ? session.user.id
-      : slug;
+      : identifier;
   const currentUserId = session.user.id;
 
   // Company fetch (simulate loading)

@@ -8,6 +8,8 @@ import {
   UserGroupIcon, UserPlusIcon, MagnifyingGlassIcon, PhoneIcon, EnvelopeIcon,
   ChevronLeftIcon, ChevronRightIcon,
 } from '@heroicons/react/24/solid';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Dummy Data
 const getClientsData = (adminSlug:any) => [
@@ -74,10 +76,29 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 },
 };
 
-export default function AdminClientsPage() {
-  const params = useParams();
-  const { adminSlug } = params;
-  const [clients, setClients] = useState(getClientsData(adminSlug));
+interface ClientsPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminClientsPage({ params }: ClientsPageProps) {
+  const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
+  const [clients, setClients] = useState(getClientsData(companyId));
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;

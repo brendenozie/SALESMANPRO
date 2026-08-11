@@ -14,6 +14,8 @@ import {
   NewspaperIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -43,10 +45,29 @@ interface AdminDashboardPageProps {
 }
 
 export default async function AdminDashboardPage({ params }: AdminDashboardPageProps) {
-  const { slug : adminSlug } = await params;
+  
+  const { slug } = await params;
+  
   const [dashboardData, setDashboardData] = useState<any>(null); // Use a more specific type in a real app
+  
   const [isLoading, setIsLoading] = useState(true);
+  
   const [error, setError] = useState<string | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   useEffect(() => {
     // In a real application, you'd fetch data from your API here:
@@ -73,7 +94,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       setIsLoading(false);
     }, 500); // Simulate network delay
     return () => clearTimeout(timer);
-  }, [adminSlug]);
+  }, [companyId]);
 
   if (isLoading) {
     return (
@@ -105,14 +126,14 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Welcome, Admin <span className="text-indigo-600">({adminSlug})</span> 👋
+            Welcome, Admin <span className="text-indigo-600"></span> 👋
           </h1>
           <p className="text-md text-gray-600 mt-1">
             Quick overview of your real estate operations.
           </p>
         </div>
         <Link
-          href={`/admin/${adminSlug}/properties/add-new`} // Example: Link to add new property
+          href={`/admin/${companyId}/properties/add-new`} // Example: Link to add new property
           className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
         >
           <BuildingOfficeIcon className="-ml-1 mr-3 h-5 w-5" aria-hidden="true" />

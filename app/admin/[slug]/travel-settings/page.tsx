@@ -7,6 +7,8 @@ import {
   TrashIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Dummy Data
 const initialAdminUsers = [
@@ -15,7 +17,29 @@ const initialAdminUsers = [
   { id: 'ADM003', name: 'Booking Manager', email: 'booking@admin.com', role: 'Booking Manager' },
 ];
 
-export default function AdminSettings() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminSettings({ params }: PageProps) {
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   const [siteName, setSiteName] = useState('TravelSitePro');
   const [contactEmail, setContactEmail] = useState('info@travelsite.com');
   const [adminUsers, setAdminUsers] = useState(initialAdminUsers);

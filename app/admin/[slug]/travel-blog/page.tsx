@@ -6,6 +6,8 @@ import {
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import { useParams } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // --- Type Definitions ---
 interface BlogPost {
@@ -37,9 +39,29 @@ const initialBlogPosts: BlogPost[] = [
   { id: 'BP003', title: 'Hidden Gems: Uncovering Asia\'s Best-Kept Secrets', author: 'Admin', date: '2024-06-28', status: 'Published' },
 ];
 
-export default function AdminBlog() {
-  const params = useParams();
-  const companyId = params.slug || 'default-slug'; // Fallback slug
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminBlog({ params }: PageProps) {
+  const { slug } = await params;
+  // const companyId = slug || 'default-slug'; // Fallback slug
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   // In a real app, you would fetch blog posts based on the slug (e.g., destination or category)
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

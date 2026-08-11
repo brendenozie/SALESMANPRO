@@ -1,4 +1,6 @@
 import { PlansClient } from "./PlansClient"; // Adjust this path as necessary
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -77,13 +79,28 @@ interface PlansClientProps {
 // This component fetches all necessary data on the server before rendering the client component.
 // =================================================================================================
 export default async function DashboardPage({params }: PlansClientProps) {
-  const { slug : companyId } = await params;
+  const { slug }  = await params;
 
   // In a real application, you would get this from the user's session or a URL parameter
   // const companyId = "60c84e1b5b4e5d1a2c8a2a01"; // Hardcoded for demonstration
 
   const subscriptionsPerPage = 10;
   const initialCurrentSubscriptionPage = 1;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // Fetch Plans from the API

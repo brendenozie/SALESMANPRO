@@ -6,6 +6,8 @@ import AdminLayout from '@/components/AdminLayout'; // Adjust path as needed
 import { motion } from 'framer-motion';
 import { UsersIcon, FilmIcon, NewspaperIcon, ChartBarIcon } from '@heroicons/react/24/solid';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 const dashboardStats = [
   { label: "Total Users", value: "12,450", icon: UsersIcon, color: "text-blue-400" },
   { label: "Videos Published", value: "875", icon: FilmIcon, color: "text-green-400" },
@@ -20,7 +22,29 @@ const recentActivities = [
   { id: 4, type: "Sponsor Added", description: "New partnership with 'TechCorp' established.", timestamp: "Last week" },
 ];
 
-export default function AdminDashboardPage() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminDashboardPage({ params }: PageProps) {
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   return (
     <div>
       <div className="space-y-10">

@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation'; // Useful if adminSlug is invalid
 import Link from 'next/link';
 import { HomeIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'; // Assuming you have Heroicons installed
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -32,7 +34,23 @@ interface CategoriesPageProps {
 }
 
 export default async function PropertiesCategoriesPage({ params }: CategoriesPageProps) {
-  const { slug: adminSlug } = await params;
+
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // In a real app, you'd fetch categories here:
   // const [categories, setCategories] = useState<Category[]>([]);
@@ -43,7 +61,7 @@ export default async function PropertiesCategoriesPage({ params }: CategoriesPag
   //   const fetchCategories = async () => {
   //     try {
   //       // Replace with your actual API endpoint
-  //       const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/categories`);
+  //       const response = await fetch(`${apiBaseUrl}/admin/${companyId}/categories`);
   //       if (!response.ok) {
   //         throw new Error('Failed to fetch categories');
   //       }

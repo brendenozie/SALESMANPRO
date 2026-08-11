@@ -3,6 +3,7 @@ import React from "react";
 import TeachersSubjectListPage from "./TeachersSubjectListPage";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Define shared types for the API and client component
 // In a real project, these would be in a separate `types.ts` file
@@ -250,6 +251,21 @@ export default async function TeachersSubjectPage({ params }: Props) {
 
   let pageData: TeacherClassesPageData | null = null;
   let fetchError: boolean = false;
+  
+    const { slug } = await params;
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // Call the new API route

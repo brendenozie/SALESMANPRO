@@ -13,6 +13,8 @@ import { format, parseISO, isValid } from "date-fns";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { StaticImageData } from "next/image";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 /**
  * Type Definitions
@@ -323,10 +325,14 @@ function formatDate(iso?: string) {
   return isValid(parsed) ? format(parsed, "MMM d, yyyy h:mm a") : iso;
 }
 
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
 /* Main page */
-export default function SchedulePage() {
-  const params = useParams();
-  const adminSlug = params?.slug as string ?? "";
+export default async function SchedulePage({ params }: PageProps) {
+  const { slug } = await params;
 
   const [scheduledContent, setScheduledContent] = useState<ScheduledContent[]>([]);
   const [photoAlbums, setPhotoAlbums] = useState<PhotoAlbum[]>([]);
@@ -336,19 +342,34 @@ export default function SchedulePage() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<ScheduledContent | null>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   useEffect(() => {
-    // only fetch when we have adminSlug available
-    if (adminSlug) {
+    // only fetch when we have companyId available
+    if (companyId) {
       fetchScheduledContent();
       fetchAlbums();
     }
-  }, [adminSlug]);
+  }, [companyId]);
 
   async function fetchScheduledContent() {
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${companyId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // include cookies for authentication
@@ -367,13 +388,13 @@ export default function SchedulePage() {
   async function fetchAlbums() {
     try {
       const [photoRes, videoRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/photos-albums?companyId=${adminSlug}`,
+        fetch(`${apiBaseUrl}/admin/photos-albums?companyId=${companyId}`,
           { method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include', // include cookies for authentication
           }
         ),
-        fetch(`${apiBaseUrl}/admin/videos-albums?companyId=${adminSlug}`,
+        fetch(`${apiBaseUrl}/admin/videos-albums?companyId=${companyId}`,
           { method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include', // include cookies for authentication
@@ -399,10 +420,10 @@ export default function SchedulePage() {
     setIsSubmitting(true);
     try {
       // POST with companyId in query to match other calls
-      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${companyId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Credentials": "include" },
-        body: JSON.stringify({ ...formData, companyId: adminSlug }),
+        body: JSON.stringify({ ...formData, companyId: companyId }),
       });
       if (!res.ok) throw new Error("Failed to add schedule item");
       const added: ScheduledContent = ( await res.json()).data;
@@ -424,7 +445,7 @@ export default function SchedulePage() {
     if (!selectedContent) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/content/${selectedContent.id}?companyId=${adminSlug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/content/${selectedContent.id}?companyId=${companyId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", "Credentials": "include" },
       });

@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import CompanyLocationForm from './CompanyLocationForm';
 import { useParams } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
@@ -43,11 +45,11 @@ interface CompanyLocation {
 // }
 
 // Main App component for Company Location Management
-export default function App() {
+export default async function App() {
   // Hardcoded company ID for demonstration.
   // In a real app, this would come from auth context or URL params.
   // const COMPANY_ID = params.slug || "60c72b2f9b1e8b001c8e4d1b"; // Replace with a valid Company ID from your DB
-  const { slug : COMPANY_ID } = useParams();
+  const { slug } = useParams();
   
   const [companyLocations, setCompanyLocations] = useState<CompanyLocation[]>([]);
   const [availableLocations, setAvailableLocations] = useState<any[]>([]); // All base locations for selection
@@ -78,13 +80,28 @@ export default function App() {
   });
 
   // --- Fetching Data ---
+    
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // Function to fetch all company locations for the current company
   const fetchCompanyLocations = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/company-locations?companyId=${COMPANY_ID}`
+      const response = await fetch(`${apiBaseUrl}/admin/company-locations?companyId=${companyId}`
         , { headers: { 'Credentials': 'include' } }
       );
       if (!response.ok) {
@@ -161,7 +178,7 @@ export default function App() {
 
     try {
       const payload = {
-        companyId: COMPANY_ID,
+        companyId: companyId,
         locationId: formData.locationId,
         displayName: formData.displayName || null, // Ensure empty strings become null
         addressLine1Override: formData.addressLine1Override || null,
@@ -351,7 +368,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Company Location Management</h1>
         <p className="text-gray-600 mb-6 border-b pb-4">
-          Managing locations for Company ID: <span className="font-semibold text-indigo-700">{COMPANY_ID}</span>
+          Managing locations
         </p>
 
         {error && (

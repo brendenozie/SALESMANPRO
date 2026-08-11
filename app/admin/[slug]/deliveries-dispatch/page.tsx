@@ -15,6 +15,8 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
 
 // ======================================================
 // VelocityHub Dispatch Center V2
@@ -81,11 +83,12 @@ const currency = (n: number) =>
 // ======================================================
 // COMPONENT
 // ======================================================
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
-export default function DispatchCenterV2() {
-  const { slug } = useParams();
-
-  const companyId = Array.isArray(slug) ? slug[0] : slug;
+export default async function DispatchCenterV2({ params }: PageProps) {
+  const { slug } = await params;
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
@@ -94,6 +97,21 @@ export default function DispatchCenterV2() {
   const [loading, setLoading] = useState(true);
   const [dispatching, setDispatching] = useState(false);
   const [search, setSearch] = useState("");
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // ======================================================
   // FETCH DATA

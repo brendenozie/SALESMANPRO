@@ -15,6 +15,8 @@ import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import PromotionModal, { PromotionData } from './PromotionModal';
 import toast from 'react-hot-toast';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -132,9 +134,27 @@ const PromotionCard: React.FC<{
   </motion.div>
 );
 
-export default function AdminPromotionsPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminPromotionsPage({ params }: PageProps) {
+  const { slug } = await params;
+
+  const session = await getAuthSession();
+
+  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const [promotions, setPromotions] = useState<PromotionData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +169,7 @@ export default function AdminPromotionsPage() {
     setError(null);
     try {
       const response = await fetch(
-        `${apiBaseUrl}/admin/promotion-discount?companyId=${slug}`,
+        `${apiBaseUrl}/admin/promotion-discount?companyId=${companyId}`,
         { method: 'GET', headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } }
       );
       if (!response.ok) {
@@ -163,7 +183,7 @@ export default function AdminPromotionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [companyId]);
 
   useEffect(() => {
     fetchPromotions();

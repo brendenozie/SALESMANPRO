@@ -6,6 +6,8 @@ import EventRegistrationsPage, {
   UserOption,
   StudentOption,
 } from "./EventRegistrationsPage";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -106,13 +108,28 @@ const generateSampleRegistrationData = (companyId: string, eventId: string): {
 
 
 export default async function EventRegistrationsOverviewPage({ params }: PageProps) {
-  const { slug: companyId, eventId } = await params;
+  const { slug, eventId } = await params;
 
   let initialEventDetails: EventDetailsForRegistrationPage | null = null;
   let initialRegistrations: EventRegistrationData[] = [];
   let allUsers: UserOption[] = [];
   let allStudents: StudentOption[] = [];
   let fetchError: boolean = false;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // Fetch event details

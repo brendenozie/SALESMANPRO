@@ -6,6 +6,8 @@ import {
   QuestionMarkCircleIcon, UsersIcon, CalendarDaysIcon, GlobeAltIcon, CurrencyDollarIcon, BriefcaseIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const adminSlug = 'your-admin-id'; // Replace with dynamic admin ID
 
@@ -24,7 +26,29 @@ const quickLinks = [
   { label: 'Manage Users', href: `/admin/${adminSlug}/users`, icon: UsersIcon },
 ];
 
-export default function AdminDashboard() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminDashboard({ params }: PageProps) {
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <motion.h1

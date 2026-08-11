@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircleIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 const fadeIn = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
@@ -26,8 +28,30 @@ const sampleInventory: InventoryItem[] = [
   { id: 'inv005', name: 'Antiseptic Wipes (Pack)', category: 'Disposables', stock: 40, minStock: 20, lastUpdated: '2023-07-09' },
 ];
 
-export default function AdminInventoryPage() {
+interface AdminInventoryPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function AdminInventoryPage({ params }: AdminInventoryPageProps) {
   
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+
+
   const [inventory, setInventory] = useState<InventoryItem[]>(sampleInventory);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');

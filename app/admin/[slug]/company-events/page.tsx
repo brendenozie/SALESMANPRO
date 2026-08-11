@@ -13,6 +13,8 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // Framer Motion variants
 const sectionVariants = {
@@ -51,8 +53,25 @@ const mockDashboardData = {
   ],
 };
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
   const { slug : adminSlug } = useParams(); // Replace with actual slug from params
+  
+    // const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = adminSlug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
   return (
     <div className="min-h-screen bg-gray-950 text-gray-200 p-8 sm:p-12 font-sans relative overflow-hidden">
       {/* Decorative Background Elements */}

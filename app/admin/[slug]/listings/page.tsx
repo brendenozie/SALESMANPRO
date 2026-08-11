@@ -3,6 +3,8 @@
 import React from "react";
 import ListingsClient from "./ListingsClient";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { cookies } from "next/headers";
 
@@ -70,11 +72,28 @@ interface PageProps {
  * then renders the ClientInventoryClient with those props.
  */
 export default async function ClientInventoryPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
+
+  const { slug }  = await params;
+
     const cookieHeader = (await cookies()).toString();
 
   let productsData: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     const res = await fetch(

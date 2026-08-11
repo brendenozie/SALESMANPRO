@@ -5,6 +5,8 @@ import DepartmentsPage from "./DepartmentsPage"; // Ensure this path is correct
 import { DepartmentData } from "./DepartmentsPage"; // Import the type
 import {cookies} from 'next/headers';
 import { EducatorType } from "../teachers/TeachersClient";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -22,9 +24,24 @@ export default async function DepartmentsManagerPage({ params}: PageProps) {
 
   let departmentsData: DepartmentData[] = [];
   let initialEducators: EducatorType[] = [];
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
-    const res = await fetch(`${apiBaseUrl}/admin/departments?companyId=${slug}`, { // Changed API endpoint
+    const res = await fetch(`${apiBaseUrl}/admin/departments?companyId=${companyId}`, { // Changed API endpoint
       next: { revalidate: 60 }, // SSR on every request
       headers: {
         "Content-Type": "application/json",
@@ -51,7 +68,7 @@ export default async function DepartmentsManagerPage({ params}: PageProps) {
 
   // Fetch all educators for this company
   const educatorsRes = await fetch(
-    `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(slug)}`, // Corrected API path
+    `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
     {
         next: { revalidate: 60 }  // equivalent to SSR on every request
       , headers: { cookie: cookieStore }
@@ -80,5 +97,5 @@ export default async function DepartmentsManagerPage({ params}: PageProps) {
   // ];
 
 
-  return <DepartmentsPage initialDepartments={departmentsData} possibleHeads={initialEducators} companyId={slug}/>;
+  return <DepartmentsPage initialDepartments={departmentsData} possibleHeads={initialEducators} companyId={companyId}/>;
 }

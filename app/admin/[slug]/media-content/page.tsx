@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { NewspaperIcon, VideoCameraIcon, } from '@heroicons/react/24/outline'; // Swapped to outline for a cleaner look
 import { useParams } from 'next/navigation';
 import { PhotoIcon } from '@heroicons/react/24/solid';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 // A more vibrant and cohesive color palette
 const COLORS = {
@@ -24,9 +26,28 @@ const contentCategories = [
   { label: "Image Library", hrefSuffix: "/images", icon: PhotoIcon, description: "Organize and manage your visual assets efficiently." },
 ];
 
-export default function ContentLibraryPage() {
-  const params = useParams();
-  const adminSlug = params.adminSlug as string;
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function ContentLibraryPage({ params }: PageProps) {
+  
+    const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   return (
     
@@ -63,7 +84,7 @@ export default function ContentLibraryPage() {
                 {/* Background gradient for visual depth */}
                 <div className="absolute inset-0 z-0 opacity-10 blur-xl pointer-events-none" style={{ background: 'radial-gradient(circle at top left, var(--tw-highlight) 0%, transparent 70%)' }} />
                 
-                <Link href={`/admin/${adminSlug}${category.hrefSuffix}`} passHref className="relative z-10 block">
+                <Link href={`/admin/${companyId}${category.hrefSuffix}`} passHref className="relative z-10 block">
                   <div className="flex flex-col items-center text-center">
                     <div className={`p-4 rounded-full bg-slate-700 mb-6 border border-slate-600`}>
                       <Icon className={`h-12 w-12 ${COLORS.highlight}`} />

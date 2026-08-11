@@ -14,11 +14,10 @@ import {
   ArrowsUpDownIcon,
 } from "@heroicons/react/24/solid";
 import { usePathname } from "next/navigation";
-
-
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
 
 interface GeneralSettings {
   name: string;
@@ -60,7 +59,13 @@ const getAdminSlug = (pathname: string) => {
   return parts[2];
 };
 
-const SettingsPage = () => {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+const SettingsPage = async ({ params }: PageProps) => {
+  const { slug } = await params;
+
   const pathname = usePathname();
   const adminSlug = getAdminSlug(pathname);
 
@@ -94,9 +99,21 @@ const SettingsPage = () => {
 
   const [activeTab, setActiveTab] = useState<"general" | "users" | "notifications">("general");
   const [saving, setSaving] = useState(false);
-
-  // Mock userId
-  const mockUserId = "65d1d6a8b792167d30f40d04";
+     
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // Fetching Data
   const fetchGeneralSettings = async () => {
@@ -132,7 +149,7 @@ const SettingsPage = () => {
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/settings/notifications/${mockUserId}`);
+      const res = await fetch(`${apiBaseUrl}/settings/notifications/${session?.user?.id}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -245,7 +262,7 @@ const SettingsPage = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch(`${apiBaseUrl}/settings/notifications/${mockUserId}`, {
+      await fetch(`${apiBaseUrl}/settings/notifications/${session?.user?.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notifications),

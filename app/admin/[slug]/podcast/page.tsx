@@ -1,6 +1,8 @@
 import React from "react";
 import PodcastsClient from "./PodcastsClient"; // Assuming PodcastsClient is in the same directory
 import { IStoreCategory } from "@/types/typings";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { cookies } from "next/headers";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -61,10 +63,25 @@ interface PageProps {
  * then renders the PodcastsClient with those props.
  */
 export default async function PodcastsAdminPage({ params }: PageProps) {
-  const { slug : companyId } = await params; // Using companyId as the slug for now, adjust as needed
+  const { slug }  = await params; // Using companyId as the slug for now, adjust as needed
   const cookieHeader = (await cookies()).toString();
   let podcastsData: Podcast[] = [];
   let categoriesData: IStoreCategory[] = [];
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // Fetch podcasts

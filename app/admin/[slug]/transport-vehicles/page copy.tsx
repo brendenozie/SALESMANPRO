@@ -8,7 +8,7 @@ interface PageProps {
 }
 
 export default async function TransportVehiclesPage({ params }: PageProps) {
-  const { slug: schoolId } = await params;
+  const { slug }  = await params;
   const cookieHeader = (await cookies()).toString();
 
   let initialVehicles = [];  

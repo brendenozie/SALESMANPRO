@@ -153,7 +153,7 @@ export default function StoreCard({
         {/* Edit and Delete Icons (Now available regardless of Active state) */}
         <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
           <button
-            onClick={() => onEdit?.(id)}
+            onClick={() => onEdit?.(slug)}
             className="rounded-full bg-white/95 p-2 text-slate-700 shadow-lg backdrop-blur-md hover:bg-orange-50 hover:text-orange-600 transition"
           >
             <PencilIcon className="h-5 w-5" />
@@ -255,7 +255,7 @@ export default function StoreCard({
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.985 }}
-            onClick={() => navigate(`/admin/${id}`)}
+            onClick={() => navigate(`/admin/${slug}`)}
             className={`flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-bold text-white transition-all ${
               isActive 
                 ? "bg-gradient-to-r from-emerald-600 to-green-500 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40" 
@@ -277,7 +277,7 @@ export default function StoreCard({
             </button>
 
             <button
-              onClick={() => onEdit?.(id)}
+              onClick={() => onEdit?.(slug)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <PencilIcon className="h-4 w-4" />

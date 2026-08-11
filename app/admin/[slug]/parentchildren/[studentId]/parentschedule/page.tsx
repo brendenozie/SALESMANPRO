@@ -1,6 +1,8 @@
 // app/admin/[adminSlug]/parentschedule/page.tsx
 import { CalendarIcon, ClockIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import ScheduleClientPage from './ScheduleClientPage';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 export interface ClassSession {
   id: string;
@@ -14,6 +16,23 @@ export interface ClassSession {
 
 export default async function ParentSchedulePage({ params }: { params: Promise<{ adminSlug: string }> }) {
   const { adminSlug } = await params;
+
+    // const { slug } = await params;
+  
+    // const session = await getAuthSession();
+  
+    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    // const identifier = slug || session?.user?.id || '';
+  
+    // // 2. Retrieve the memoized company data (no extra DB cost)
+    // const company = await findCompanyCached(identifier, "page");
+  
+    // if (!company) {
+    //   return <div>Company not found</div>;
+    // }
+  
+    // // Use the actual database ID for your API calls, ensuring consistency
+    // const companyId = company.id;
 
   // Sample Data for Today
   const todaySchedule: ClassSession[] = [

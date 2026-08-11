@@ -6,6 +6,7 @@ import MessagesPageClient, {
   ConversationData,
   UserData,
 } from "./MessagesPageClient";
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -19,7 +20,7 @@ interface Props {
  */
 export default async function MessagesManagerPage({ params }: Props) {
   // 1. Await params in Next.js 15+
-  const { slug: companyId } = await params;
+  const { slug } = await params;
   
   // 2. Enforce Authentication
   const session = await getAuthSession();
@@ -40,6 +41,19 @@ export default async function MessagesManagerPage({ params }: Props) {
 
   let initialConversations: ConversationData[] = [];
   let allUsers: UserData[] = [];
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   try {
     // 4. Fetch Data Concurrently for optimized load times

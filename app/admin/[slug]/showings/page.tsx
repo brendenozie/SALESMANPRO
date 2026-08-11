@@ -22,6 +22,8 @@ import { useParams } from 'next/navigation';
 import { ShowingFormModal } from './ShowingFormModal';
 import { ShowingDetailsModal } from './ShowingDetailsModal';
 
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions ---
@@ -104,8 +106,26 @@ interface ShowingsPageProps {
   params:Promise<{ slug: string }>
 }
 
-export default function ShowingsPage() {
-  const { slug: companyId } = useParams() as { slug: string }; // Get the company slug from URL params
+export default async function ShowingsPage() {
+
+  const { slug } = useParams() as { slug: string }; // Get the company slug from URL params
+
+    // const { slug } = await params;
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   const [showings, setShowings] = useState<Showing[]>([]);
   const [searchTerm, setSearchTerm] = useState('');

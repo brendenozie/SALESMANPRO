@@ -10,8 +10,16 @@ import {
   DocumentArrowDownIcon,
   CircleStackIcon,
 } from '@heroicons/react/24/outline';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
-export default function DatabaseManagement() {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function DatabaseManagement({ params }: PageProps) {
+  const { slug } = await params;
+
   // Loading States
   const [isRestoring, setIsRestoring] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -26,6 +34,21 @@ export default function DatabaseManagement() {
   const [status, setStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+    const session = await getAuthSession();
+  
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
 
   // ===============================
   // INITIAL LOAD

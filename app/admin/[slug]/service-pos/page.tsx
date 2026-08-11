@@ -4,7 +4,7 @@ import AdminPOSClient from "./AdminPOSClient"; // Import Product type
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
-
+import { findCompanyCached } from '@/lib/company-fetcher';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
@@ -16,9 +16,24 @@ interface PageProps {
  * Server Component: Fetches initial data for the POS.
  */
 export default async function PosPage({ params, searchParams }: PageProps) {
+
+  const { slug } = await params;
+
   const session = await getAuthSession();
   
-  const { slug : companyId } = await params;
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
+  
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
+  
+    if (!company) {
+      return <div>Company not found</div>;
+    }
+  
+    // Use the actual database ID for your API calls, ensuring consistency
+    const companyId = company.id;
+    
   const { page = "1", limit = "20" } = await searchParams; // Default values
   let totalPages = 1;
   
