@@ -1,16 +1,12 @@
+// app/admin/[adminSlug]/videos/VideoGalleryClient.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon, FilmIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image, { ImageLoaderProps } from 'next/image';
-import { useParams } from 'next/navigation';
 
-import { getAuthSession } from '@/lib/auth';
-import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- Type Definitions ---
 interface Video {
@@ -26,6 +22,10 @@ interface VideoAlbum {
   title: string;
   description: string;
   videos: Video[];
+}
+
+interface VideoGalleryClientProps {
+  companyId: string;
 }
 
 interface ModalProps {
@@ -66,7 +66,6 @@ interface ViewAlbumModalProps {
   onVideoDelete: (video: Video) => void;
 }
 
-// Placeholder for your AdminLayout component
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen bg-gray-950 text-gray-100 p-8 font-['Inter']">
     <div className="max-w-7xl mx-auto">
@@ -75,10 +74,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-// Custom loader for Next.js Image component
 const loader = ({ src, width, quality }: ImageLoaderProps) => `${src}?w=${width}&q=${quality || 75}`;
 
-// --- Reusable Modal Component ---
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
   if (!isOpen) return null;
   
@@ -109,7 +106,6 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
   );
 };
 
-// --- Video Album Form Component for Add/Edit ---
 const VideoAlbumForm: React.FC<VideoAlbumFormProps> = ({ album, onSubmit, onCancel, isSubmitting }) => {
   const [form, setForm] = useState<Omit<VideoAlbum, 'videos'>>(album || { title: '', description: '', id: '' });
   const [files, setFiles] = useState<File[]>([]);
@@ -146,7 +142,7 @@ const VideoAlbumForm: React.FC<VideoAlbumFormProps> = ({ album, onSubmit, onCanc
           value={form.title}
           onChange={handleChange}
           required
-          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 p-3 transition-colors"
         />
       </div>
       <div>
@@ -157,7 +153,7 @@ const VideoAlbumForm: React.FC<VideoAlbumFormProps> = ({ album, onSubmit, onCanc
           value={form.description}
           onChange={handleChange}
           rows={3}
-          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 p-3 transition-colors"
+          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-teal-500 focus:ring-teal-500 p-3 transition-colors"
         />
       </div>
       {!isEditing && (
@@ -168,9 +164,9 @@ const VideoAlbumForm: React.FC<VideoAlbumFormProps> = ({ album, onSubmit, onCanc
             id="files"
             name="files"
             onChange={handleFileChange}
-            multiple // Allow multiple file selection
+            multiple
             required
-            className="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 transition-colors"
+            className="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 transition-colors"
           />
         </div>
       )}
@@ -186,7 +182,7 @@ const VideoAlbumForm: React.FC<VideoAlbumFormProps> = ({ album, onSubmit, onCanc
           type="submit"
           disabled={isSubmitting || (!isEditing && files.length === 0)}
           className={`px-6 py-3 rounded-full font-semibold transition-colors ${
-            isSubmitting ? 'bg-purple-800 text-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white'
+            isSubmitting ? 'bg-teal-800 text-gray-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700 text-white'
           }`}
         >
           {isSubmitting ? 'Saving...' : 'Save'}
@@ -196,7 +192,6 @@ const VideoAlbumForm: React.FC<VideoAlbumFormProps> = ({ album, onSubmit, onCanc
   );
 };
 
-// --- Delete Confirmation Modal Component ---
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpen, onClose, onConfirm, item, isSubmitting, isAlbum }) => {
   if (!isOpen) return null;
 
@@ -205,8 +200,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpe
       <p className="text-gray-300 mb-6 text-lg">
         Are you sure you want to delete this {isAlbum ? 'album' : 'video'}{isAlbum ? ' and all its contents' : ''}? This action cannot be undone.
         <br />
-        <strong className="text-white mt-2 block">"{'Selected video'}"</strong>
-        {/* item?.title ||  */}
+        <strong className="text-white mt-2 block">"{item && 'title' in item ? item.title : 'Selected video'}"</strong>
       </p>
       <div className="flex justify-end space-x-4">
         <button
@@ -229,7 +223,6 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpe
   );
 };
 
-// --- Video Album Card Component for Grid View ---
 const VideoAlbumCard: React.FC<VideoAlbumCardProps> = ({ album, onEdit, onDelete, onViewAlbum }) => {
   const coverImage = album.videos?.[0]?.thumbnailUrl || 'https://placehold.co/800x600/1e293b/d1d5db?text=No+Videos';
   
@@ -251,11 +244,11 @@ const VideoAlbumCard: React.FC<VideoAlbumCardProps> = ({ album, onEdit, onDelete
           loader={loader}
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <span className="text-white text-lg font-bold">View Album ({album.videos.length})</span>
+          <span className="text-white text-lg font-bold">View Album ({album.videos?.length || 0})</span>
         </div>
         <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <motion.button
-            onClick={(e:any) => { e.stopPropagation(); onEdit(album); }}
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onEdit(album); }}
             className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-indigo-400 hover:bg-indigo-900/50 transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -264,7 +257,7 @@ const VideoAlbumCard: React.FC<VideoAlbumCardProps> = ({ album, onEdit, onDelete
             <PencilIcon className="h-5 w-5" />
           </motion.button>
           <motion.button
-            onClick={(e:any) => { e.stopPropagation(); onDelete(album); }}
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete(album); }}
             className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-red-400 hover:bg-red-900/50 transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -282,14 +275,13 @@ const VideoAlbumCard: React.FC<VideoAlbumCardProps> = ({ album, onEdit, onDelete
   );
 };
 
-// --- View Album Modal Component ---
 const ViewAlbumModal: React.FC<ViewAlbumModalProps> = ({ isOpen, onClose, album, onVideoDelete }) => {
   if (!isOpen || !album) return null;
   
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={album.title} size="lg">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {album.videos.map(video => (
+        {album.videos?.map(video => (
           <div key={video.id} className="relative group overflow-hidden rounded-xl border border-gray-800">
             <video
               src={video.url}
@@ -315,15 +307,7 @@ const ViewAlbumModal: React.FC<ViewAlbumModalProps> = ({ isOpen, onClose, album,
   );
 };
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-// --- Main Page Component ---
-export default async function VideoGalleryPage({ params }: PageProps) {
-
-  const { slug } = await params;
-
+export default function VideoGalleryClient({ companyId }: VideoGalleryClientProps) {
   const [videoAlbums, setVideoAlbums] = useState<VideoAlbum[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -333,48 +317,33 @@ export default async function VideoGalleryPage({ params }: PageProps) {
   const [isVideoDeleteModalOpen, setIsVideoDeleteModalOpen] = useState<boolean>(false);
   const [selectedAlbum, setSelectedAlbum] = useState<VideoAlbum | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
 
-  useEffect(() => {
-    fetchVideoAlbums();
-  }, []);
-
-  const fetchVideoAlbums = async () => {
+  const fetchVideoAlbums = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/video-albums`,
-        { method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // include cookies for authentication
-        }
-      );
+      const response = await fetch(`${apiBaseUrl}/admin/video-albums?companyId=${companyId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch video albums');
       }
       const fetchedAlbums: VideoAlbum[] = (await response.json()).data || [];
       setVideoAlbums(fetchedAlbums);
-    } catch (error) {
-      // console.error("Failed to fetch video albums:", error);
+    } catch {
+      setVideoAlbums([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [companyId]);
 
-  // Handlers for Albums
+  useEffect(() => {
+    if (companyId) {
+      fetchVideoAlbums();
+    }
+  }, [companyId, fetchVideoAlbums]);
+
   const handleUploadAlbum = () => {
     setSelectedAlbum(null);
     setIsUploadModalOpen(true);
@@ -384,29 +353,28 @@ export default async function VideoGalleryPage({ params }: PageProps) {
     if (!files || files.length === 0) return;
     setIsSubmitting(true);
     try {
-      // In a real application, you would upload files to a service like S3 first
-      // and get the URLs. This is a placeholder simulation.
-      const videoDetails = files.map((file) => ({
-        url: `https://placehold.co/800x450/1e293b/d1d5db?text=Video`,
-        thumbnailUrl: `https://placehold.co/800x450/1e293b/d1d5db?text=Video+Thumbnail`,
-        duration: '60', // Example duration
-        status: 'PROCESSING',
+      const videoDetails = files.map(() => ({
+        url: 'https://placehold.co/800x450/1e293b/d1d5db?text=Video',
+        thumbnailUrl: 'https://placehold.co/800x450/1e293b/d1d5db?text=Video+Thumbnail',
+        duration: '60',
+        status: 'PROCESSING' as const,
       }));
       
       const response = await fetch(`${apiBaseUrl}/admin/video-albums`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
-        body: JSON.stringify({ ...albumData, videoDetails, companyId: slug }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ...albumData, videoDetails, companyId }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to add video album');
       }
-      const addedAlbum: VideoAlbum = await response.json();
+      const addedAlbum: VideoAlbum = (await response.json()).data || await response.json();
       setVideoAlbums(prev => [...prev, addedAlbum]);
       setIsUploadModalOpen(false);
-    } catch (error) {
-      // console.error("Failed to add video album:", error);
+    } catch {
+      // Handle error
     } finally {
       setIsSubmitting(false);
     }
@@ -423,18 +391,19 @@ export default async function VideoGalleryPage({ params }: PageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/video-albums/${selectedAlbum.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Credentials': 'include'  },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(updatedAlbumData),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update video album');
       }
-      const updatedAlbum: VideoAlbum = (  await response.json()).data;
+      const updatedAlbum: VideoAlbum = (await response.json()).data;
       setVideoAlbums(prev => prev.map(a => a.id === updatedAlbum.id ? updatedAlbum : a));
       setIsEditModalOpen(false);
-    } catch (error) {
-      // console.error("Failed to update video album:", error);
+    } catch {
+      // Handle error
     } finally {
       setIsSubmitting(false);
     }
@@ -461,14 +430,13 @@ export default async function VideoGalleryPage({ params }: PageProps) {
       setVideoAlbums(prev => prev.filter(a => a.id !== selectedAlbum.id));
       setIsAlbumDeleteModalOpen(false);
       setSelectedAlbum(null);
-    } catch (error) {
-      // console.error("Failed to delete video album:", error);
+    } catch {
+      // Handle error
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handlers for Videos
   const handleViewAlbum = (album: VideoAlbum) => {
     setSelectedAlbum(album);
   };
@@ -495,7 +463,6 @@ export default async function VideoGalleryPage({ params }: PageProps) {
         throw new Error('Failed to delete video');
       }
 
-      // Update the state to remove the video from its album
       setVideoAlbums(prev =>
         prev.map(album => ({
           ...album,
@@ -504,8 +471,8 @@ export default async function VideoGalleryPage({ params }: PageProps) {
       );
       setIsVideoDeleteModalOpen(false);
       setSelectedVideo(null);
-    } catch (error) {
-      // console.error("Failed to delete video:", error);
+    } catch {
+      // Handle error
     } finally {
       setIsSubmitting(false);
     }
@@ -586,7 +553,7 @@ export default async function VideoGalleryPage({ params }: PageProps) {
           isAlbum={true}
         />
         <ViewAlbumModal 
-          isOpen={!!selectedAlbum} 
+          isOpen={!!selectedAlbum && !isEditModalOpen && !isAlbumDeleteModalOpen} 
           onClose={handleCloseViewAlbumModal} 
           album={selectedAlbum} 
           onVideoDelete={handleDeleteVideo}
