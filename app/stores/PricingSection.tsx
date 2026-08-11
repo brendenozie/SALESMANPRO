@@ -23,14 +23,14 @@ interface Plan {
 }
 
 interface PricingSectionProps {
-  slug: string;
+  companyId: string;
   email: string;
   category: string;
   currentTier?: string;
   onSubscriptionSuccess: () => void;
 }
 
-const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620067"; 
+const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; 
 const MPESA_TILL = "537214";
 
 // --- Clean SVG Icons ---
@@ -47,7 +47,7 @@ const GlobeIcon = () => (
   </svg>
 );
 
-export default function PricingSection({ slug, email, category, currentTier, onSubscriptionSuccess }: PricingSectionProps) {
+export default function PricingSection({ companyId, email, category, currentTier, onSubscriptionSuccess }: PricingSectionProps) {
   const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
 
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -106,7 +106,7 @@ export default function PricingSection({ slug, email, category, currentTier, onS
     const fetchPlans = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/plans?slug=${slug}&category=${category}`, { credentials: 'include' });
+        const res = await fetch(`/api/plans?companyId=${defaultCompanyId}&category=${category}`, { credentials: 'include' });
         if (!res.ok) throw new Error();
         const data = await res.json();
         const structuredPlans = data.plans?.length ? data.plans : [];
@@ -151,7 +151,7 @@ export default function PricingSection({ slug, email, category, currentTier, onS
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug,
+          companyId,
           planId,
           currency: "KES", // isOutsideKenya ? "USD" : "KES",
           amount: amountInKobo,
@@ -176,7 +176,7 @@ export default function PricingSection({ slug, email, category, currentTier, onS
         amount: amountInKobo,
         ref: data.data.data.reference,
         currency:  "KES",//isOutsideKenya ? "USD" : "KES",
-        metadata: { slug, planId },
+        metadata: { companyId, planId },
         callback: (response: any) => {
           window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
         },
@@ -206,7 +206,7 @@ export default function PricingSection({ slug, email, category, currentTier, onS
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug,
+          companyId,
           planId,
           phone: mpesaPhone,
           reference: mpesaRef,

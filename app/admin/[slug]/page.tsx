@@ -345,21 +345,18 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
   if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
 
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';  
-
-  const companyId =
-    ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
-      ? session.user.id
-      : identifier;
   const currentUserId = session.user.id;
 
   // Company fetch (simulate loading)
   isLoading = true;
   
   // 4. Cached company fetch using the page strategy
-  const company = await findCompanyCached(companyId, "page");
-  
+  const company = await findCompanyCached(slug, "page");
+
+  const companyId =  ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
+    ? session.user.id
+    : company?.id || '';
+      
   isLoading = false;
 
   if (
@@ -504,7 +501,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         return (
           <ParentDashboard
             rawApiData={parentDashboardData}
-            adminSlug={slug}
+            adminSlug={companyId}
             // {...parentDashboardData}
             // companyId={companyId}
             // currentUserId={currentUserId}

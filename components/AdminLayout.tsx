@@ -221,7 +221,8 @@ export default function AdminLayout({
   };
 
   // 3. Category & Menus Memoization
-  const companyId: string = storeFormData?.id || "6964daeff4ad17d959b72413";
+  const companyId: string = storeFormData?.id || "";
+  const slug: string = storeFormData?.slug || "";
 
   // Extract the specific store's active subscription tier
   const currentTier = storeFormData?.subscription?.plan?.name || "INACTIVE";
@@ -240,8 +241,8 @@ export default function AdminLayout({
 
   // Pass the tier downward
   const menus = useMemo(
-    () => getCategoryMenus(companyId, userRole, currentTier, currentTierStatus === "ACTIVE"),
-    [companyId, userRole, currentTier, currentTierStatus]
+    () => getCategoryMenus(slug, userRole, currentTier, currentTierStatus === "ACTIVE"),
+    [slug, userRole, currentTier, currentTierStatus]
   );
 
   const menuItems = useMemo(

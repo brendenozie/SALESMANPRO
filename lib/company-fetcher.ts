@@ -95,7 +95,7 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
 
   // 3️⃣ Fallback: Lookup by ID
   if (!company) {
-    // Note: If using strict UUIDs or ObjectIds, you might want to wrap this in a 
+    // Note: If using strict UUIDs or ObjectIds, you might want to wrap this in a
     // try/catch if cleanIdentifier isn't a valid format, as Prisma can throw here.
     try {
       company = await prisma.company.findFirst({
@@ -104,7 +104,7 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
       });
     } catch (error) {
       // Ignore format errors if it's not a valid ID
-      company = null; 
+      company = null;
     }
   }
 
@@ -123,7 +123,12 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
             !!latestSubscription.renewalDate &&
             latestSubscription.renewalDate > new Date(),
 
-          status: latestSubscription.status,
+          // status: latestSubscription.status,
+          status:
+            latestSubscription?.renewalDate &&
+            latestSubscription?.renewalDate > new Date()
+              ? "ACTIVE"
+              : "INACTIVE",
           renewalDate: latestSubscription.renewalDate,
           plan: latestSubscription.plan, // 👈 Changed from .subscription to .plan
           billingCycle: latestSubscription.billingCycle, // 👈 Pass the billing cycle here if you need it
