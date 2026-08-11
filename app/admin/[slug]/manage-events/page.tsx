@@ -41,9 +41,6 @@ export default async function AdminInventoryPage({ params }: Props) {
   let categoriesData: IStoreCategory[] = [];
   let allEvents: IEvent[] = [];
   let allOrganizers: Agent[] = [];
-
-  
-    const { slug } = await params;
   
     const session = await getAuthSession();
   

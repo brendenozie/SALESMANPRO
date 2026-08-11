@@ -11,9 +11,6 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 export default async function FeesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug }  = await params;
   const cookHeader = (await cookies()).toString();
-
-  
-    const { slug } = await params;
   
     const session = await getAuthSession();
   
@@ -41,11 +38,11 @@ export default async function FeesPage({ params }: { params: Promise<{ slug: str
 
   const [initialFeeRecords, initialStudents, initialFeeItems, allAcademicLevels, allClassrooms] = 
     await Promise.all([
-      fetchData(`/admin/student-fee-records?companyId=${schoolId}`),
-      fetchData(`/admin/students?companyId=${schoolId}`),
-      fetchData(`/admin/fee-items?companyId=${schoolId}`),
-      fetchData(`/admin/academic-levels?companyId=${schoolId}`),
-      fetchData(`/admin/classrooms?companyId=${schoolId}`),
+      fetchData(`/admin/student-fee-records?companyId=${companyId}`),
+      fetchData(`/admin/students?companyId=${companyId}`),
+      fetchData(`/admin/fee-items?companyId=${companyId}`),
+      fetchData(`/admin/academic-levels?companyId=${companyId}`),
+      fetchData(`/admin/classrooms?companyId=${companyId}`),
     ]);
   
   return (
@@ -55,7 +52,7 @@ export default async function FeesPage({ params }: { params: Promise<{ slug: str
       initialFeeItemsData={initialFeeItems}
       allAcademicLevels={allAcademicLevels}
       allClassrooms={allClassrooms}
-      schoolId={schoolId}
+      schoolId={companyId}
     />
   );
 }

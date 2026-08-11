@@ -18,16 +18,13 @@ interface Props {
 export default async function AdminTicketsPage({
   params,
 }: Props) {
-  const { slug: companyId } = await params;
+  const { slug } = await params;
 
   const cookiesHeader = (
     await cookies()
   ).toString();
 
   let events = [];
-
-  
-    const { slug } = await params;
   
     const session = await getAuthSession();
   
