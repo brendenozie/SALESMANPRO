@@ -13,8 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon as CheckBadgeSolid } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAuthSession } from '@/lib/auth';
-import { findCompanyCached } from '@/lib/company-fetcher';
+// import { getAuthSession } from '@/lib/auth';
+// import { findCompanyCached } from '@/lib/company-fetcher';
 
 // --- Types ---
 type Student = {

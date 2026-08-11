@@ -92,24 +92,21 @@ export default async function ParentsManagementPage({ params }: PageProps) {
 
   let initialParents: ParentType[] = [];
   let fetchError: boolean = false;
-
   
-    // const { slug } = await params;
+    const session = await getAuthSession();
   
-    // const session = await getAuthSession();
+    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+    const identifier = slug || session?.user?.id || '';
   
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
+    // 2. Retrieve the memoized company data (no extra DB cost)
+    const company = await findCompanyCached(identifier, "page");
   
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
+    if (!company) {
+      return <div>Company not found</div>;
+    }
   
     // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
+    const companyId = company.id;
 
   try {
     // Fetch all parents for this company

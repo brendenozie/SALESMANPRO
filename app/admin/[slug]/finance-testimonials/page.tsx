@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircleIcon,
@@ -12,15 +12,8 @@ import {
   PencilIcon,
   EyeIcon,
 } from "@heroicons/react/24/solid";
-import { useParams } from "next/navigation";
-import { headers } from "next/headers";
-import { getAuthSession } from '@/lib/auth';
-import { findCompanyCached } from '@/lib/company-fetcher';
 
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 // ---- Types ----
 interface Testimonial {
@@ -34,14 +27,11 @@ interface Testimonial {
 
 type FormState = Omit<Testimonial, "id" | "companyId">;
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
+interface TestimonialsClientProps {
+  companyId: string;
 }
-// ---- Component ----
-const TestimonialsPage = async ({ params }: PageProps) => {
-  
-  const { slug } = await params;
 
+export default function TestimonialsClient({ companyId }: TestimonialsClientProps) {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -56,43 +46,29 @@ const TestimonialsPage = async ({ params }: PageProps) => {
   };
   const [formState, setFormState] = useState<FormState>(initialForm);
 
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
-
   // ---- Fetch ----
-  const fetchTestimonials = async () => {
+  const fetchTestimonials = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `${apiBaseUrl}/admin/testimonials?companyId=${companyId}`, {
-        headers: { "Content-Type": "application/json", "Credentials": "include" },}
+        `${apiBaseUrl}/admin/testimonials?companyId=${companyId}`,
+        {
+          headers: { "Content-Type": "application/json", Credentials: "include" },
+        }
       );
       if (!res.ok) throw new Error("Failed to fetch testimonials");
       const data = (await res.json()).data;
-      // console.log(data);
       setTestimonials(data.testimonials);
     } catch (error) {
-      // console.error("Error fetching testimonials:", error);
+      // Handle error gracefully
     } finally {
       setLoading(false);
     }
-  };
+  }, [companyId]);
 
   useEffect(() => {
     fetchTestimonials();
-  }, []);
+  }, [fetchTestimonials]);
 
   // ---- Modal ----
   const handleOpenModal = (testimonial?: Testimonial) => {
@@ -132,9 +108,11 @@ const TestimonialsPage = async ({ params }: PageProps) => {
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {
-        method,        
-        headers: { 
-          "Content-Type": "application/json", "Credentials": "include" },
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Credentials: "include",
+        },
         body: JSON.stringify({ ...formState, companyId }),
       });
 
@@ -143,7 +121,7 @@ const TestimonialsPage = async ({ params }: PageProps) => {
       await fetchTestimonials();
       setShowModal(false);
     } catch (error) {
-      // console.error("Error saving testimonial:", error);
+      // Handle error gracefully
     } finally {
       setLoading(false);
     }
@@ -155,14 +133,16 @@ const TestimonialsPage = async ({ params }: PageProps) => {
     try {
       const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json", "Credentials": "include" },
+        headers: {
+          "Content-Type": "application/json",
+          Credentials: "include",
+        },
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error("Failed to update testimonial status");
       await fetchTestimonials();
     } catch (error) {
-      // console.error("Error updating testimonial status:", error);
+      // Handle error gracefully
     } finally {
       setLoading(false);
     }
@@ -172,13 +152,17 @@ const TestimonialsPage = async ({ params }: PageProps) => {
     if (window.confirm("Are you sure you want to delete this testimonial?")) {
       setLoading(true);
       try {
-        const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, { method: "DELETE",
-        headers: { 
-          "Content-Type": "application/json", "Credentials": "include" }, });
+        const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Credentials: "include",
+          },
+        });
         if (!res.ok) throw new Error("Failed to delete testimonial");
         await fetchTestimonials();
       } catch (error) {
-        // console.error("Error deleting testimonial:", error);
+        // Handle error gracefully
       } finally {
         setLoading(false);
       }
@@ -199,14 +183,17 @@ const TestimonialsPage = async ({ params }: PageProps) => {
     }
   };
 
-  // ---- Render ----
   return (
     <div className="p-6 md:p-10 bg-gray-900 min-h-screen text-gray-100 font-sans">
-      {/* header */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">Client Testimonials</h1>
-          <p className="text-gray-400">Review, approve, and manage client feedback and testimonials.</p>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">
+            Client Testimonials
+          </h1>
+          <p className="text-gray-400">
+            Review, approve, and manage client feedback and testimonials.
+          </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
@@ -216,7 +203,7 @@ const TestimonialsPage = async ({ params }: PageProps) => {
         </button>
       </div>
 
-      {/* content */}
+      {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center p-10 text-gray-400">
           <ArrowPathIcon className="h-8 w-8 animate-spin mr-3" />
@@ -331,7 +318,10 @@ const TestimonialsPage = async ({ params }: PageProps) => {
                 <h2 className="text-2xl font-bold text-blue-400">
                   {isEditing ? "Edit Testimonial" : "Create New Testimonial"}
                 </h2>
-                <button onClick={() => setShowModal(false)} className="p-1 rounded-full hover:bg-gray-700">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="p-1 rounded-full hover:bg-gray-700"
+                >
                   <XMarkIcon className="h-6 w-6 text-gray-400 hover:text-white" />
                 </button>
               </div>
@@ -416,6 +406,4 @@ const TestimonialsPage = async ({ params }: PageProps) => {
       </AnimatePresence>
     </div>
   );
-};
-
-export default TestimonialsPage;
+}

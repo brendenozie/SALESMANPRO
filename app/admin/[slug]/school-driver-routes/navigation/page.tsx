@@ -13,8 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { PlayIcon, SpeakerWaveIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAuthSession } from '@/lib/auth';
-import { findCompanyCached } from '@/lib/company-fetcher';
+// import { getAuthSession } from '@/lib/auth';
+// import { findCompanyCached } from '@/lib/company-fetcher';
 
 export default function StartDrivingMode({ route, onExit }: { route: any, onExit: () => void }) {
   const [currentStopIndex, setCurrentStopIndex] = useState(0);

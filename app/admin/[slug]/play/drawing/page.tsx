@@ -4,8 +4,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getAuthSession } from '@/lib/auth';
-import { findCompanyCached } from '@/lib/company-fetcher';
+// import { getAuthSession } from '@/lib/auth';
+// import { findCompanyCached } from '@/lib/company-fetcher';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
