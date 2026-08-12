@@ -37,10 +37,19 @@ export async function POST(req: Request) {
   try {
     const { companyId, planId, amount, currency, billingPeriod, monthsPaidFor, yearsPaidFor } = await req.json();
 
-    const company = await prisma.company.findUnique({
+    let company = null;
+
+    company = await prisma.company.findUnique({
       where: { id: companyId },
       include: { user: true }
     });
+
+    if (!company) {
+      company = await prisma.company.findUnique({
+        where: { slug: companyId },
+        include: { user: true }
+      });
+    }
 
     if (!company) return withCors({ error: "Company not found" }, 404);
 
