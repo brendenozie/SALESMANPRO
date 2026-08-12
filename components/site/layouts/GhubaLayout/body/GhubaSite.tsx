@@ -5,38 +5,43 @@ import dynamic from "next/dynamic";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { StoreForm } from "@/types/typings";
 import BannerSlider from "./components/BannerSlider/BannerSlider";
+import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
-// Below-the-fold Lazy Loaded Chunk Splitters
+// Reusable Loading Fallback
+const ComponentSkeleton = () => (
+  <div className="py-20 bg-gray-50 dark:bg-gray-900">
+    <SkeletonGrid count={8} />
+  </div>
+);
+
+// Corrected Dynamic Imports
 const FlashDeals = dynamic(() => import("./components/flashDeals/FlashDeals"), {
   ssr: true,
-  loading: () => <SectionSkeleton height="h-[480px]" />,
+  loading: ComponentSkeleton,
 });
+
 const TopCate = dynamic(() => import("./components/top"), {
   ssr: true,
-  loading: () => <SectionSkeleton height="h-[520px]" />,
+  loading: ComponentSkeleton,
 });
+
 const NewArrivals = dynamic(() => import("./components/newarrivals"), {
   ssr: true,
-  loading: () => <SectionSkeleton height="h-[500px]" />,
+  loading: ComponentSkeleton,
 });
+
 const Discount = dynamic(() => import("./components/discount"), {
   ssr: true,
-  loading: () => <SectionSkeleton height="h-[500px]" />,
+  loading: ComponentSkeleton,
 });
+
 const Shop = dynamic(() => import("./components/shops"), {
   ssr: true,
-  loading: () => <SectionSkeleton height="h-[600px]" />,
+  loading: ComponentSkeleton,
 });
+
 const Annocument = dynamic(() => import("./components/annocument/Annocument"));
 const Wrapper = dynamic(() => import("./components/wrapper/Wrapper"));
-
-function SectionSkeleton({ height }: { height: string }) {
-  return (
-    <div className={`w-full ${height} max-w-[1600px] mx-auto px-4 my-8`}>
-      <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900/60 rounded-[2.5rem] animate-pulse" />
-    </div>
-  );
-}
 
 interface HomePageProps {
   pageData: StoreForm;
@@ -53,13 +58,13 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
     categories.find((c: any) => c.isFeatured) ??
     categories[0] ??
     null;
-    
+
   const flashDeals = sections.flashDeals || [];
   const newArrivals = sections.newArrivals || [];
   const discounts = sections.discounts || [];
   const featuredCategoryProducts = sections.featuredCategoryProducts || [];
 
-  const { addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+  const { addToCart } = useStateContext();
 
   return (
     <main className="min-h-screen bg-white dark:bg-[#080808] text-zinc-900 dark:text-zinc-100 selection:bg-amber-500 selection:text-white transition-colors duration-500">
@@ -68,47 +73,28 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
         <BannerSlider categories={categories} pageData={pageData} />
       )}
 
-      {/* Streaming Lazy Hydration Renders */}
-      <Suspense fallback={<SectionSkeleton height="h-[480px]" />}>
-        {flashDeals.length > 0 && (
-          <FlashDeals
-            productItems={flashDeals}
-            addToCart={addToCart}
-          />
-        )}
-      </Suspense>
+      {/* Dynamic Sections with Standard Loading States */}
+      {flashDeals.length > 0 && (
+        <FlashDeals productItems={flashDeals} addToCart={addToCart} />
+      )}
 
-      <Suspense fallback={<SectionSkeleton height="h-[520px]" />}>
-        {categories.length > 0 && <TopCate categories={categories} />}
-      </Suspense>
+      {categories.length > 0 && <TopCate categories={categories} />}
 
-      <Suspense fallback={<SectionSkeleton height="h-[500px]" />}>
-        {newArrivals.length > 0 && (
-          <NewArrivals
-            productItems={newArrivals}
-            addToCart={addToCart}
-          />
-        )}
-      </Suspense>
+      {newArrivals.length > 0 && (
+        <NewArrivals productItems={newArrivals} addToCart={addToCart} />
+      )}
 
-      <Suspense fallback={<SectionSkeleton height="h-[500px]" />}>
-        {discounts.length > 0 && (
-          <Discount
-            productItems={discounts}
-            addToCart={addToCart}
-          />
-        )}
-      </Suspense>
+      {discounts.length > 0 && (
+        <Discount productItems={discounts} addToCart={addToCart} />
+      )}
 
-      <Suspense fallback={<SectionSkeleton height="h-[600px]" />}>
-        {featuredCategory && featuredCategoryProducts.length > 0 && (
-          <Shop
-            category={featuredCategory}
-            shopItems={featuredCategoryProducts}
-            addToCart={addToCart}
-          />
-        )}
-      </Suspense>
+      {featuredCategory && featuredCategoryProducts.length > 0 && (
+        <Shop
+          category={featuredCategory}
+          shopItems={featuredCategoryProducts}
+          addToCart={addToCart}
+        />
+      )}
 
       {/* Footer Content */}
       <Annocument pageData={pageData} />

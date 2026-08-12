@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Slider from "react-slick"; 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { ChevronLeftIcon, ChevronRightIcon, ArrowUpRightIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
@@ -9,16 +10,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
-const Slider = dynamic(() => import("react-slick"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex gap-4 overflow-hidden py-4">
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="min-w-[280px] md:w-1/3 h-[420px] bg-zinc-100 dark:bg-zinc-800 rounded-[2.5rem] animate-pulse" />
-      ))}
-    </div>
-  ),
-});
+// const Slider = dynamic(() => import("react-slick"), {
+//   ssr: false,
+//   loading: () => (
+//     <div className="flex gap-4 overflow-hidden py-4">
+//       {[...Array(3)].map((_, i) => (
+//         <div key={i} className="min-w-[280px] md:w-1/3 h-[420px] bg-zinc-100 dark:bg-zinc-800 rounded-[2.5rem] animate-pulse" />
+//       ))}
+//     </div>
+//   ),
+// });
 
 const loaderProp = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width || 800}&q=${quality || 75}`;
 

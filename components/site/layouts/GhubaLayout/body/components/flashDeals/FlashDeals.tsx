@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import Slider from "react-slick"; 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 
 interface Product {
   id: string | number;
@@ -24,19 +25,19 @@ interface FlashDealsProps {
   addToCart: (product: Product) => void;
 }
 
-const Slider = dynamic(() => import("react-slick"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex gap-4 overflow-hidden py-4">
-      {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className="w-full md:w-1/4 h-[380px] bg-zinc-200 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0"
-        />
-      ))}
-    </div>
-  ),
-});
+// const Slider = dynamic(() => import("react-slick"), {
+//   ssr: false,
+//   loading: () => (
+//     <div className="flex gap-4 overflow-hidden py-4">
+//       {[...Array(4)].map((_, i) => (
+//         <div
+//           key={i}
+//           className="w-full md:w-1/4 h-[380px] bg-zinc-200 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0"
+//         />
+//       ))}
+//     </div>
+//   ),
+// });
 
 const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
