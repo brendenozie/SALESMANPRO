@@ -169,17 +169,17 @@ const PaginationControls = ({ page, totalPages, onPageChange } : {
 // --- 2. PRICING MODAL CONTAINER ---
 // ------------------------------------------------------------------
 
-const PricingModal = ({ isOpen, onClose, slug, email, category, onSubscriptionSuccess }: { 
+const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscriptionSuccess }: { 
   isOpen: boolean, 
   onClose: () => void, 
-  slug: string | null,
+  companyId: string | null,
   email: string,
   category: string,
   onSubscriptionSuccess: () => void
 }) => {
   return (
     <AnimatePresence>
-      {isOpen && slug && (
+      {isOpen && companyId && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -201,7 +201,7 @@ const PricingModal = ({ isOpen, onClose, slug, email, category, onSubscriptionSu
             </button>
             <div className="overflow-y-auto h-full max-h-[calc(100vh-6rem)] rounded-2xl">
               <PricingSection 
-                slug={slug} 
+                companyId={companyId} 
                 email={email}
                 category={category}
                 onSubscriptionSuccess={onSubscriptionSuccess}
@@ -224,7 +224,7 @@ export default function StoresPage() {
   const [storeToDelete, setStoreToDelete] = useState<Store | null>(null);
   
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const router = useRouter();
@@ -313,8 +313,8 @@ export default function StoresPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleManageSubscription = (slug: string, category: string) => {
-    setSelectedSlug(slug);
+  const handleManageSubscription = (id: string, category: string) => {
+    setSelectedCompanyId(id);
     setSelectedCategory(category);
     setIsPricingModalOpen(true);
   };
@@ -436,7 +436,7 @@ export default function StoresPage() {
                       isActive={isActive}
                       onEdit={isActive ? () => handleEdit(store.slug) : undefined}
                       onDelete={isActive ? () => handleDeleteClick(store) : undefined}
-                      onManageSubscription={!isActive ? () => handleManageSubscription(store.slug, store.category || '') : undefined}
+                      onManageSubscription={!isActive ? () => handleManageSubscription(store.id || store.slug, store.category || '') : undefined}
                     />
                   </motion.div>
                 );
@@ -469,7 +469,7 @@ export default function StoresPage() {
       <PricingModal
         isOpen={isPricingModalOpen}
         onClose={() => setIsPricingModalOpen(false)}
-        slug={selectedSlug}
+        companyId={selectedCompanyId}
         email={session?.user?.email || ''}
         category={selectedCategory}
         onSubscriptionSuccess={handleSubscriptionSuccess}
