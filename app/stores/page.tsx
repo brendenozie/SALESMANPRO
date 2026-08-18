@@ -218,6 +218,9 @@ const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscript
 // --- 3. MAIN STORES DASHBOARD ENGINE ---
 // ------------------------------------------------------------------
 
+// --- 3. MAIN STORES DASHBOARD ENGINE ---
+// ------------------------------------------------------------------
+
 export default function StoresPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -236,8 +239,16 @@ export default function StoresPage() {
   const pageParam = searchParams.get('page');
   const page = parseInt(pageParam || '1', 10);
     
+  // Check if we are currently processing a token login
+  const isProcessingToken = searchParams.has('auth_token');
+
   // --- Auth & Loading Pipeline ---
-  if (status === 'unauthenticated') {
+  
+  // 1. If loading natively OR if we are unauthenticated but currently processing a token, show loading.
+  const isAuthLoading = status === 'loading' || (status === 'unauthenticated' && isProcessingToken);
+
+  // 2. Only redirect if genuinely unauthenticated AND no token is present
+  if (status === 'unauthenticated' && !isProcessingToken) {
     if (typeof window !== 'undefined') {
       const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
       const callbackUrl = `${window.location.origin}${pathname}${queryString}`;
@@ -264,6 +275,7 @@ export default function StoresPage() {
   }, [pageParam, pathname, router]);
 
   // --- SWR Data Fetching Engine ---
+  // Don't fetch if we don't have a user ID yet
   const { 
     data: stores = [], 
     error: storesError, 
@@ -346,7 +358,7 @@ export default function StoresPage() {
 
   const handleCreate = () => router.push(`/stores/create`);
 
-  const isLoading = status === 'loading' || isStoresLoading;
+  const isLoading = isAuthLoading || isStoresLoading;
 
   if (isLoading) {
     return (
@@ -421,7 +433,7 @@ export default function StoresPage() {
               />
             ) : (
               paginatedStores.map(store => {
-                const isActive = store.subscriptionStatus === "ACTIVE";// || store.subscription?.isActive || store.subscription?.status?.toLowerCase() === 'active';
+                const isActive = store.subscriptionStatus === "ACTIVE";
                 
                 return (
                   <motion.div
