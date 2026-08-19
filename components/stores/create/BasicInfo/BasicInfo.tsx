@@ -33,22 +33,17 @@ export interface BasicInfoProps {
   ) => void;
 }
 
-/* ============================
-   SIMPLE HOVER TOOLTIP
-============================ */
+/* Tooltip */
 const Tooltip = ({ content }: { content: string }) => (
   <div className="group relative ml-1.5 inline-block cursor-help">
-    <InformationCircleIcon className="h-4 w-4 text-zinc-400 dark:text-zinc-500 hover:text-indigo-500 transition-colors" />
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 p-3 bg-zinc-900/95 dark:bg-black/90 backdrop-blur-xl text-xs font-medium leading-relaxed text-zinc-200 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-30 border border-zinc-800">
-      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900/95 dark:border-t-black/90" />
+    <InformationCircleIcon className="h-4 w-4 text-zinc-400 hover:text-indigo-500 transition-colors" />
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 bg-zinc-900 text-xs font-normal text-zinc-200 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-30 border border-zinc-800">
       {content}
     </div>
   </div>
 );
 
-/* ============================
-   SMART INPUT WITH VALIDATION
-============================ */
+/* Smart Input Field */
 const InputWithStatus = ({
   id,
   name,
@@ -63,7 +58,6 @@ const InputWithStatus = ({
   applySuggestion,
   icon: StartIcon,
   prefix,
-  suffix,
 }: {
   id: string;
   name: string;
@@ -78,35 +72,34 @@ const InputWithStatus = ({
   applySuggestion: (field: "slug" | "domain", value: string) => void;
   icon: React.ElementType;
   prefix?: string;
-  suffix?: string;
 }) => {
-  let statusBorder = "border-zinc-200 dark:border-zinc-700/80 focus-within:border-indigo-500 dark:focus-within:border-indigo-400";
-  let statusBg = "bg-white/80 dark:bg-zinc-900/50";
+  let statusBorder = "border-zinc-200 dark:border-zinc-700/80 focus-within:border-indigo-500";
+  let statusBg = "bg-white dark:bg-zinc-900/50";
 
   if (checking) {
-    statusBorder = "border-indigo-400/70 focus-within:border-indigo-500";
+    statusBorder = "border-indigo-400";
   } else if (available === true) {
-    statusBorder = "border-emerald-500/60 dark:border-emerald-500/50 focus-within:border-emerald-500";
-    statusBg = "bg-emerald-50/[0.03] dark:bg-emerald-950/[0.1]";
+    statusBorder = "border-emerald-500";
+    statusBg = "bg-emerald-50/20 dark:bg-emerald-950/20";
   } else if (available === false) {
-    statusBorder = "border-rose-500/60 dark:border-rose-500/50 focus-within:border-rose-500";
-    statusBg = "bg-rose-50/[0.03] dark:bg-rose-950/[0.1]";
+    statusBorder = "border-rose-500";
+    statusBg = "bg-rose-50/20 dark:bg-rose-950/20";
   }
 
   return (
-    <div className="flex flex-col space-y-2 w-full group">
-      <label htmlFor={id} className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+    <div className="flex flex-col space-y-1.5 w-full">
+      <label htmlFor={id} className="flex items-center text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
         {label}
-        <Tooltip content={tooltip} />
+        {tooltip && <Tooltip content={tooltip} />}
       </label>
       
-      <div className={`relative flex items-center rounded-xl border ${statusBg} ${statusBorder} shadow-sm backdrop-blur-sm transition-all focus-within:ring-4 ${available === false ? 'focus-within:ring-rose-500/10' : 'focus-within:ring-indigo-500/10'}`}>
+      <div className={`relative flex items-center rounded-xl border ${statusBg} ${statusBorder} transition-all focus-within:ring-2 focus-within:ring-indigo-500/20`}>
         <div className="pl-3.5 pointer-events-none">
-          <StartIcon className="h-4 w-4 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
+          <StartIcon className="h-4 w-4 text-zinc-400" />
         </div>
         
         {prefix && (
-          <span className="text-xs sm:text-sm font-semibold text-zinc-400 pl-2 select-none">
+          <span className="text-xs font-medium text-zinc-400 pl-2 select-none">
             {prefix}
           </span>
         )}
@@ -118,56 +111,42 @@ const InputWithStatus = ({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full py-3.5 px-2 text-sm md:text-base bg-transparent outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400"
+          className="w-full py-3 px-2 text-sm bg-transparent outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400"
         />
-
-        {suffix && (
-          <span className="text-xs sm:text-sm font-semibold text-zinc-400 dark:text-zinc-500 pr-3 select-none">
-            {suffix}
-          </span>
-        )}
 
         <div className="pr-3.5 flex items-center pointer-events-none">
           <AnimatePresence mode="wait">
             {checking ? (
-              <motion.div key="checking" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}>
-                <ArrowPathIcon className="h-5 w-5 animate-spin text-indigo-500" />
-              </motion.div>
+              <ArrowPathIcon className="h-4 w-4 animate-spin text-indigo-500" />
             ) : available === true ? (
-              <motion.div key="available" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}>
-                <CheckCircleIcon className="h-5 w-5 text-emerald-500 stroke-[2.5]" />
-              </motion.div>
+              <CheckCircleIcon className="h-4 w-4 text-emerald-500" />
             ) : available === false ? (
-              <motion.div key="taken" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}>
-                <XCircleIcon className="h-5 w-5 text-rose-500 stroke-[2.5]" />
-              </motion.div>
+              <XCircleIcon className="h-4 w-4 text-rose-500" />
             ) : null}
           </AnimatePresence>
         </div>
       </div>
 
-      <div className="min-h-[1.5rem] px-1">
+      <div className="min-h-[1.25rem] px-1">
         <AnimatePresence mode="wait">
           {available === false && suggestion ? (
-            <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-xs md:text-sm text-rose-600 dark:text-rose-400 flex items-center flex-wrap gap-1.5">
-              <span>Taken. Try this instead:</span>
+            <div className="text-xs text-rose-500 flex items-center gap-1.5">
+              <span>Taken. Try this:</span>
               <button
                 onClick={() => applySuggestion(name as "slug" | "domain", suggestion)}
                 type="button"
-                className="inline-flex items-center gap-1 font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline active:scale-95 transition-all"
+                className="font-bold text-indigo-500 hover:underline inline-flex items-center gap-1"
               >
                 {suggestion}
-                <ArrowsRightLeftIcon className="h-3 w-3 stroke-[2.5]" />
+                <ArrowsRightLeftIcon className="h-3 w-3" />
               </button>
-            </motion.div>
+            </div>
           ) : available === true ? (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs md:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-              Awesome! This domain parameter is available.
-            </motion.p>
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              Great choice! This address is available.
+            </p>
           ) : checking ? (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs md:text-sm italic text-zinc-500 dark:text-zinc-400">
-              Checking availability...
-            </motion.p>
+            <p className="text-xs italic text-zinc-400">Checking availability...</p>
           ) : null}
         </AnimatePresence>
       </div>
@@ -175,9 +154,7 @@ const InputWithStatus = ({
   );
 };
 
-/* ============================
-   MAIN COMPONENT
-============================ */
+/* Main Component */
 export default function BasicInfo({
   name,
   slug,
@@ -218,8 +195,6 @@ export default function BasicInfo({
         setDomainSuggestion(data.domain?.suggestion || null);
       } catch (err) {
         console.error("Failed to check availability:", err);
-        setSlugAvailable(null);
-        setDomainAvailable(null);
       } finally {
         setChecking(false);
       }
@@ -245,258 +220,198 @@ export default function BasicInfo({
   };
 
   return (
-    <section className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8 relative">
-      {/* Visual Ambient Background */}
-      <div className="absolute top-0 left-1/4 -z-10 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
-      
-      {/* HEADER */}
-      <header className="mb-8 md:mb-10 pb-6 border-b border-zinc-200/80 dark:border-zinc-800/80">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-            <BuildingStorefrontIcon className="w-4 h-4" /> Store Setup
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-            Basic Information
-          </h1>
-          <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
-            Let's build your store identity. Set up your brand details and choose your preferred customer storefront channel.
-          </p>
+    <section className="max-w-5xl mx-auto p-4 sm:p-6">
+      {/* Header */}
+      <header className="mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+          <BuildingStorefrontIcon className="w-4 h-4" /> Step 1: Store Details
         </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white mt-1">
+          Tell us about your business
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          Set up your brand identity and choose how customers find your store.
+        </p>
       </header>
 
-      {/* BENTO GRID LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* LEFT COLUMN: BRAND DETAILS */}
-        <div className="lg:col-span-6 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-8">
-              <span className="p-2.5 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shadow-inner">
-                <SparklesIcon className="w-5 h-5" />
-              </span>
-              <div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Store Identity</h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Define how your brand appears to visitors</p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Store Name Input */}
-                <div className="flex flex-col space-y-2 group">
-                  <label htmlFor="name" className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
-                    Store Name
-                    <Tooltip content="The public name of your business. This is what customers will see first." />
-                  </label>
-                  <div className="relative">
-                    <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={name}
-                      onChange={handleChange}
-                      placeholder="e.g. Apex Apparel"
-                      className="w-full pl-11 pr-4 py-3.5 text-sm md:text-base bg-white/80 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700/80 rounded-xl outline-none focus:border-indigo-500 dark:focus:border-indigo-400 shadow-sm transition-all focus:ring-4 focus:ring-indigo-500/10 text-zinc-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Tagline Input */}
-                <div className="flex flex-col space-y-2 group">
-                  <label htmlFor="tagline" className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
-                    Slogan <span className="ml-1 text-[10px] text-zinc-400 lowercase font-normal">(Optional)</span>
-                    <Tooltip content="A short, catchy phrase about what makes your store special." />
-                  </label>
-                  <div className="relative">
-                    <SparklesIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
-                    <input
-                      id="tagline"
-                      name="tagline"
-                      type="text"
-                      value={tagline || ""}
-                      onChange={handleChange}
-                      placeholder="e.g. Style for everyday"
-                      className="w-full pl-11 pr-4 py-3.5 text-sm md:text-base bg-white/80 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700/80 rounded-xl outline-none focus:border-indigo-500 dark:focus:border-indigo-400 shadow-sm transition-all focus:ring-4 focus:ring-indigo-500/10 text-zinc-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Description Textarea */}
-              <div className="flex flex-col space-y-2 group">
-                <label htmlFor="description" className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
-                  About Your Store
-                  <Tooltip content="Tell customers what you sell and the story behind your business." />
-                </label>
-                <div className="relative">
-                  <DocumentTextIcon className="absolute left-3.5 top-4 h-5 w-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows={4}
-                    value={description || ""}
-                    onChange={handleChange}
-                    placeholder="We offer high-quality clothing for modern urban lifestyles..."
-                    className="w-full pl-11 pr-4 py-3.5 text-sm md:text-base bg-white/80 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700/80 rounded-xl outline-none focus:border-indigo-500 dark:focus:border-indigo-400 shadow-sm transition-all focus:ring-4 focus:ring-indigo-500/10 text-zinc-900 dark:text-white resize-none"
-                  />
-                </div>
-              </div>
-
-              {/* Shared Marketplace Slug Link */}
-              <div className="pt-2">
-                <InputWithStatus
-                  id="slug"
-                  name="slug"
-                  value={slug}
-                  onChange={handleChange as (e: ChangeEvent<HTMLInputElement>) => void}
-                  placeholder="apex-apparel"
-                  label="Marketplace Directory Handle"
-                  tooltip="Your unique identifier on the shared marketplace directory."
-                  available={slugAvailable}
-                  checking={checking}
-                  suggestion={slugSuggestion}
-                  applySuggestion={applySuggestion}
-                  icon={TagIcon}
-                  prefix="ghuba.salesmanpro.site/"
-                />
-              </div>
+        {/* Left Column: Brand Info */}
+        <div className="lg:col-span-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-5">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+              <SparklesIcon className="w-5 h-5" />
+            </span>
+            <div>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-white">Store Profile</h2>
+              <p className="text-xs text-zinc-500">Your basic store details</p>
             </div>
           </div>
+
+          {/* Store Name */}
+          <div className="flex flex-col space-y-1.5">
+            <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+              Store Name
+            </label>
+            <div className="relative">
+              <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={name}
+                onChange={handleChange}
+                placeholder="e.g. Apex Apparel"
+                className="w-full pl-10 pr-4 py-2.5 text-sm bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none focus:border-indigo-500 text-zinc-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          {/* Slogan */}
+          <div className="flex flex-col space-y-1.5">
+            <label htmlFor="tagline" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+              Slogan <span className="text-zinc-400 font-normal lowercase">(optional)</span>
+            </label>
+            <input
+              id="tagline"
+              name="tagline"
+              type="text"
+              value={tagline || ""}
+              onChange={handleChange}
+              placeholder="e.g. Quality clothing for everyday wear"
+              className="w-full px-3.5 py-2.5 text-sm bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none focus:border-indigo-500 text-zinc-900 dark:text-white"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="flex flex-col space-y-1.5">
+            <label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+              About Your Store
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows={3}
+              value={description || ""}
+              onChange={handleChange}
+              placeholder="Briefly describe what you sell..."
+              className="w-full p-3 text-sm bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none focus:border-indigo-500 text-zinc-900 dark:text-white resize-none"
+            />
+          </div>
+
+          {/* Directory Handle */}
+          <InputWithStatus
+            id="slug"
+            name="slug"
+            value={slug}
+            onChange={handleChange as (e: ChangeEvent<HTMLInputElement>) => void}
+            placeholder="apex-apparel"
+            label="Marketplace Profile Link"
+            tooltip="Your address inside the shared store directory."
+            available={slugAvailable}
+            checking={checking}
+            suggestion={slugSuggestion}
+            applySuggestion={applySuggestion}
+            icon={TagIcon}
+            prefix="salesmanpro.site/"
+          />
         </div>
 
-        {/* RIGHT COLUMN: WEB PRESENCE & DEDICATED STOREFRONT SELECTION */}
-        <div className="lg:col-span-6 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-6">
+        {/* Right Column: Web Store Choice */}
+        <div className="lg:col-span-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-inner">
+                <span className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
                   <GlobeAltIcon className="w-5 h-5" />
                 </span>
                 <div>
-                  <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Storefront Model</h2>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Choose how customers access your store online</p>
-                </div>
-              </div>
-              
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50">
-                <StarIcon className="w-3 h-3 fill-indigo-500" /> Recommendation
-              </span>
-            </div>
-
-            {/* INTERACTIVE STOREFRONT TYPE SELECTOR CARDS */}
-            <div className="grid grid-cols-1 gap-3.5 mb-6">
-              {/* Option 1: Marketplace Profile Only */}
-              <div
-                onClick={() => toggleHasWebsite(false)}
-                className={`relative p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-4 ${
-                  !hasWebsite
-                    ? "bg-white dark:bg-zinc-800/90 border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
-                    : "bg-zinc-50/50 dark:bg-zinc-900/30 border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                }`}
-              >
-                <div className={`mt-0.5 p-2 rounded-xl ${!hasWebsite ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400" : "bg-zinc-200/60 dark:bg-zinc-800 text-zinc-400"}`}>
-                  <BuildingStorefrontIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Marketplace Listing Only</h3>
-                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${!hasWebsite ? "border-indigo-600 bg-indigo-600 text-white" : "border-zinc-300 dark:border-zinc-600"}`}>
-                      {!hasWebsite && <CheckIcon className="w-3 h-3 stroke-[3]" />}
-                    </div>
-                  </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    Your store is listed inside the Ghuba discovery marketplace hub.
-                  </p>
-                </div>
-              </div>
-
-              {/* Option 2: Dedicated Custom Web Storefront */}
-              <div
-                onClick={() => toggleHasWebsite(true)}
-                className={`relative p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-4 ${
-                  hasWebsite
-                    ? "bg-gradient-to-br from-indigo-500/5 via-white to-emerald-500/5 dark:from-indigo-950/20 dark:via-zinc-900 dark:to-emerald-950/20 border-indigo-500 shadow-lg ring-2 ring-indigo-500/20"
-                    : "bg-zinc-50/50 dark:bg-zinc-900/30 border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                }`}
-              >
-                <div className={`mt-0.5 p-2 rounded-xl ${hasWebsite ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "bg-zinc-200/60 dark:bg-zinc-800 text-zinc-400"}`}>
-                  <RocketLaunchIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Standalone Custom Website</h3>
-                      <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-300/40">
-                        Pro
-                      </span>
-                    </div>
-                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${hasWebsite ? "border-indigo-600 bg-indigo-600 text-white" : "border-zinc-300 dark:border-zinc-600"}`}>
-                      {hasWebsite && <CheckIcon className="w-3 h-3 stroke-[3]" />}
-                    </div>
-                  </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
-                    Get a dedicated standalone online store at your own unique web address. Perfect for sharing on Instagram, WhatsApp, and social bios.
-                  </p>
-
-                  {/* Feature Value Pills */}
-                  <div className="flex items-center flex-wrap gap-2 mt-3 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 bg-white/80 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
-                      <CheckIcon className="w-3 h-3 text-emerald-500 stroke-[3]" /> Custom Subdomain
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 bg-white/80 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
-                      <CheckIcon className="w-3 h-3 text-emerald-500 stroke-[3]" /> Custom Branding
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 bg-white/80 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200 dark:border-zinc-700">
-                      <CheckIcon className="w-3 h-3 text-emerald-500 stroke-[3]" /> Direct Checkout
-                    </span>
-                  </div>
+                  <h2 className="text-base font-bold text-zinc-900 dark:text-white">Online Presence</h2>
+                  <p className="text-xs text-zinc-500">How customers visit your shop</p>
                 </div>
               </div>
             </div>
 
-            {/* ANIMATED EXPANDABLE CUSTOM SUBDOMAIN FIELD */}
-            <AnimatePresence initial={false}>
+            {/* Option 1 */}
+            <div
+              onClick={() => toggleHasWebsite(false)}
+              className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5 ${
+                !hasWebsite
+                  ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20 ring-1 ring-indigo-500"
+                  : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300"
+              }`}
+            >
+              <BuildingStorefrontIcon className="w-5 h-5 text-indigo-500 mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Directory Listing Only</h3>
+                  {!hasWebsite && <CheckIcon className="w-4 h-4 text-indigo-600" />}
+                </div>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Your products appear in the main marketplace search.
+                </p>
+              </div>
+            </div>
+
+            {/* Option 2 */}
+            <div
+              onClick={() => toggleHasWebsite(true)}
+              className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5 ${
+                hasWebsite
+                  ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20 ring-1 ring-indigo-500"
+                  : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300"
+              }`}
+            >
+              <RocketLaunchIcon className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Standalone Website</h3>
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded">Pro</span>
+                  </div>
+                  {hasWebsite && <CheckIcon className="w-4 h-4 text-indigo-600" />}
+                </div>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Get your own dedicated store link to share on WhatsApp, Instagram, or social bios.
+                </p>
+              </div>
+            </div>
+
+            {/* Subdomain Input */}
+            <AnimatePresence>
               {hasWebsite && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0, y: -10 }}
-                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -10 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="overflow-hidden origin-top"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden pt-2"
                 >
-                  <div className="p-4 rounded-2xl bg-indigo-500/[0.03] dark:bg-indigo-500/[0.05] border border-indigo-200/80 dark:border-indigo-800/50 space-y-4">
+                  <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 space-y-3">
                     <InputWithStatus
                       id="domain"
                       name="domain"
                       value={domain || ""}
                       onChange={handleChange as (e: ChangeEvent<HTMLInputElement>) => void}
                       placeholder="mybrand"
-                      label="Your Custom Subdomain"
-                      tooltip="Choose your web store address. For example, 'apex' creates 'apex.salesmanpro.site'."
+                      label="Your Store Subdomain"
+                      tooltip="Choose your store web address name."
                       available={domainAvailable}
                       checking={checking}
                       suggestion={domainSuggestion}
                       applySuggestion={applySuggestion}
                       icon={GlobeAltIcon}
-                      suffix=".salesmanpro.site"
                     />
 
-                    {/* LIVE INTERACTIVE PREVIEW CARD */}
-                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5 overflow-hidden">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    {/* Preview */}
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 truncate">
+                          https://{domain ? domain.toLowerCase().trim() : "yourbrand"}.salesmanpro.site
                         </span>
-                        <div className="flex flex-col truncate">
-                          <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Live URL Preview</span>
-                          <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 truncate">
-                            https://{domain ? domain.toLowerCase().trim() : "yourbrand"}.salesmanpro.site
-                          </span>
-                        </div>
                       </div>
-                      <DevicePhoneMobileIcon className="w-5 h-5 text-zinc-400 shrink-0" />
+                      <DevicePhoneMobileIcon className="w-4 h-4 text-zinc-400 shrink-0" />
                     </div>
                   </div>
                 </motion.div>
@@ -504,6 +419,7 @@ export default function BasicInfo({
             </AnimatePresence>
           </div>
         </div>
+
       </div>
     </section>
   );

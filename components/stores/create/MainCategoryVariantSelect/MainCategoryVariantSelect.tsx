@@ -8,7 +8,7 @@ import {
   MagnifyingGlassPlusIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import PreviewModal from "../PreviewModal/PreviewModal";
 
 interface CategoryVariant {
@@ -115,13 +115,16 @@ export default function MainCategoryVariantSelect({
           </div>
 
           {/* VARIANT FEED SUB-GRID */}
-          <motion.div
-            variants={listContainerVariants}
-            initial="hidden"
-            animate="show"
-            ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin dark:scrollbar-thumb-zinc-700 scrollbar-thumb-zinc-300 z-10"
-          >
+          {/* VARIANT FEED SUB-GRID */}
+          <LayoutGroup id="category-variant-list">
+            <motion.div
+              layoutScroll /* <--- Fixes layout calculation for scrolled containers */
+              variants={listContainerVariants}
+              initial="hidden"
+              animate="show"
+              ref={scrollContainerRef}
+              className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin dark:scrollbar-thumb-zinc-700 scrollbar-thumb-zinc-300 z-10"
+            >
             {selectedCategory.variants.map((v) => {
               const isSelected = v.name === variant;
               return (
@@ -139,7 +142,10 @@ export default function MainCategoryVariantSelect({
                 >
                   {isSelected && (
                     <motion.div
-                      layoutId="activeGlow"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
                       className="absolute inset-0 bg-indigo-50 dark:bg-indigo-500/10 pointer-events-none"
                     />
                   )}
@@ -174,6 +180,7 @@ export default function MainCategoryVariantSelect({
               );
             })}
           </motion.div>
+          </LayoutGroup>
 
           <button
             onClick={() => setIsModalOpen(true)}
