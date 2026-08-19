@@ -66,7 +66,7 @@ export default async function MessagesManagerPage({ params }: Props) {
         }
       ),
       fetch(
-        `${apiBaseUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`,
+        `${apiBaseUrl}/admin/messages-users?companyId=${encodeURIComponent(companyId)}`,
         { 
           cache: "no-store", 
           headers: { cookie: cookieHeader } 
@@ -77,6 +77,7 @@ export default async function MessagesManagerPage({ params }: Props) {
     // 5. Parse Data Safely
     if (conversationsRes.ok) {
       const dataConvers = await conversationsRes.json();
+      // console.log("[Messages] Fetched conversations:", dataConvers);
       // Handle potential API response wrappers (e.g., { data: [...] } vs [...])
       initialConversations = (dataConvers.data || dataConvers) as ConversationData[];
     } else {
@@ -85,7 +86,7 @@ export default async function MessagesManagerPage({ params }: Props) {
 
     if (usersRes.ok) {
       const dataUsers = await usersRes.json();
-      allUsers = (dataUsers.data || dataUsers) as UserData[];
+      allUsers = (dataUsers.data.users || dataUsers) as UserData[];
     } else {
       console.error(`[Messages] Failed to fetch users: ${usersRes.status}`);
     }

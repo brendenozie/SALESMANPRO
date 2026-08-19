@@ -49,7 +49,7 @@ export default async function ConsumersPage({ params }: PageProps) {
   let isSuccess = true;
 
   try {
-    const res = await fetch(`${apiBaseUrl}/admin/consumers?companyId=${slug}`, {
+    const res = await fetch(`${apiBaseUrl}/admin/consumers?companyId=${companyId}`, {
       cache: 'no-store',
       headers: { Cookie: cookieStore.toString() }
     });
@@ -94,7 +94,7 @@ export default async function ConsumersPage({ params }: PageProps) {
       </div>
 
       <ConsumersClientPage 
-        adminSlug={slug} 
+        adminSlug={companyId} 
         initialConsumers={consumers} 
       />
     </div>

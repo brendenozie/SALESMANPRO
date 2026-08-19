@@ -135,7 +135,7 @@ export default async function ClientsPage({ params }: ClientsPageProps) {
       
       {/* 3. Render the Client Component with initial data */}
       <ClientsClientPage 
-        adminSlug={slug}
+        adminSlug={companyId}
         initialClients={initialClients} 
         isInitialLoadSuccessful={isInitialLoadSuccessful}
       />

@@ -1,4 +1,3 @@
-// Removed unused cacheDel import
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -13,23 +12,53 @@ const serializeConversation = (entry: any) => {
     id: conv.id,
     title: conv.title,
     companyId: conv.companyId,
-    createdAt: conv.createdAt.toISOString(),
-    updatedAt: conv.updatedAt.toISOString(),
-    lastMessageAt: conv.lastMessageAt?.toISOString() ?? null,
+    createdAt: conv.createdAt ? conv.createdAt.toISOString() : null,
+    updatedAt: conv.updatedAt ? conv.updatedAt.toISOString() : null,
+    lastMessageAt: conv.lastMessageAt ? conv.lastMessageAt.toISOString() : null,
     isArchived: entry.isArchived,
     isDeleted: entry.isDeleted,
     unreadCount: entry.unreadCount,
-    participants: conv.participants.map((p: any) => ({
-      id: p.user.id,
-      name: p.user.name,
-      email: p.user.email,
-    })),
-    lastMessage: lastMessage && {
-      id: lastMessage.id,
-      content: lastMessage.content,
-      createdAt: lastMessage.createdAt.toISOString(),
-      senderName: lastMessage.sender?.name ?? "Unknown",
-    },
+    participants: conv.participants.map((p: any) => {
+      const consumerData =
+        Array.isArray(p.user?.consumerProfile) &&
+        p.user?.consumerProfile.length > 0
+          ? p.user.consumerProfile[0]
+          : (p.user?.consumerProfile ?? null);
+
+      return {
+        id: p.user?.id ?? p.userId,
+        name: p.user?.name ?? "Unknown User",
+        email: p.user?.email ?? "N/A",
+        consumer: consumerData
+          ? {
+              id: consumerData.id,
+              type: consumerData.type,
+              stage: consumerData.stage,
+              status: consumerData.status,
+              membershipStatus: consumerData.membershipStatus,
+              totalOrders: consumerData.totalOrders
+                ? Number(consumerData.totalOrders)
+                : 0,
+              totalSpent: consumerData.totalSpent
+                ? Number(consumerData.totalSpent)
+                : 0,
+              inquiryCount: consumerData.inquiryCount
+                ? Number(consumerData.inquiryCount)
+                : 0,
+            }
+          : null,
+      };
+    }),
+    lastMessage: lastMessage
+      ? {
+          id: lastMessage.id,
+          content: lastMessage.content,
+          createdAt: lastMessage.createdAt
+            ? lastMessage.createdAt.toISOString()
+            : null,
+          senderName: lastMessage.sender?.name ?? "Unknown",
+        }
+      : null,
   };
 };
 
@@ -41,13 +70,14 @@ async function handleGet(request: Request) {
 
   if (!companyId) {
     return NextResponse.json(
-      { message: "User ID and Company ID are required." },
+      { message: "Company ID is required." },
       { status: 400 },
     );
   }
 
-  // FIX 1: Make cache key unique per user, company, and archive status
-  const cacheKey = `admin:conversations:${companyId}:user:${userId}:archived:${includeArchived}`;
+  // 1️⃣ Normalize cache segment for company-wide vs user-specific views
+  const userSegment = userId || "all";
+  const cacheKey = `admin:conversations:${companyId}:user:${userSegment}:archived:${includeArchived}`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -60,7 +90,7 @@ async function handleGet(request: Request) {
     where: {
       isDeleted: false,
       ...(includeArchived ? {} : { isArchived: false }),
-      ...(userId ? { userId } : {}), // Only filter by userId if provided
+      ...(userId ? { userId } : {}),
       conversation: { companyId },
     },
     orderBy: {
@@ -80,8 +110,26 @@ async function handleGet(request: Request) {
           lastMessageAt: true,
           participants: {
             select: {
+              userId: true,
               user: {
-                select: { id: true, name: true, email: true },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  consumerProfile: {
+                    where: { companyId },
+                    select: {
+                      id: true,
+                      type: true,
+                      stage: true,
+                      status: true,
+                      membershipStatus: true,
+                      totalOrders: true,
+                      totalSpent: true,
+                      inquiryCount: true,
+                    },
+                  },
+                },
               },
             },
           },
@@ -100,11 +148,9 @@ async function handleGet(request: Request) {
     },
   });
 
-  // FIX 2: Serialize the data BEFORE caching it
   const serializedData = participantEntries.map(serializeConversation);
 
   try {
-    // Only cache if we successfully retrieved an array
     if (serializedData) {
       await cacheSet(cacheKey, serializedData, 60);
     }
@@ -130,16 +176,35 @@ async function handlePost(request: Request) {
     );
   }
 
-  // Remove duplicates safely
-  const uniqueParticipantIds = [...new Set(participantIds)] as string[];
+  const rawParticipantIds = [...new Set(participantIds)] as string[];
 
-  // Validate users
-  const validUsers = await prisma.user.findMany({
-    where: { id: { in: uniqueParticipantIds } },
+  // 2️⃣ Resolve IDs: Check User table first; fallback to Consumer userId if Consumer IDs were passed
+  const foundUsers = await prisma.user.findMany({
+    where: { id: { in: rawParticipantIds } },
     select: { id: true },
   });
 
-  if (validUsers.length !== uniqueParticipantIds.length) {
+  let resolvedUserIds = foundUsers.map((u) => u.id);
+
+  if (resolvedUserIds.length !== rawParticipantIds.length) {
+    const missingIds = rawParticipantIds.filter(
+      (id) => !resolvedUserIds.includes(id),
+    );
+
+    // Check if missing IDs belong to the Consumer table
+    const consumerRecords = await prisma.consumer.findMany({
+      where: { id: { in: missingIds }, companyId },
+      select: { userId: true },
+    });
+
+    const consumerUserIds = consumerRecords
+      .map((c) => c.userId)
+      .filter((uId): uId is string => Boolean(uId));
+
+    resolvedUserIds = [...new Set([...resolvedUserIds, ...consumerUserIds])];
+  }
+
+  if (resolvedUserIds.length < 1) {
     return formatResponse(
       false,
       null,
@@ -148,36 +213,43 @@ async function handlePost(request: Request) {
     );
   }
 
-  if (uniqueParticipantIds.length === 2 && !title) {
-    const [user1, user2] = [...uniqueParticipantIds].sort();
+  // 3️⃣ Precise 1-on-1 Direct Chat Existence Check
+  if (resolvedUserIds.length === 2 && !title) {
+    const [user1, user2] = resolvedUserIds;
 
     const existing = await prisma.conversation.findFirst({
       where: {
         companyId,
         title: null,
-        participants: {
-          every: { userId: { in: [user1, user2] } },
-        },
+        AND: [
+          { participants: { some: { userId: user1 } } },
+          { participants: { some: { userId: user2 } } },
+        ],
       },
-      select: { id: true },
+      select: {
+        id: true,
+        _count: { select: { participants: true } },
+      },
     });
 
-    if (existing) {
+    if (existing && existing._count.participants === 2) {
       return formatResponse(
         false,
-        null,
+        { conversationId: existing.id },
         "Direct conversation already exists.",
         409,
       );
     }
   }
 
+  // Create new conversation
   const conversation = await prisma.conversation.create({
     data: {
       companyId,
       title,
+      lastMessageAt: new Date(),
       participants: {
-        create: uniqueParticipantIds.map((userId: string) => ({
+        create: resolvedUserIds.map((userId: string) => ({
           userId,
           isArchived: false,
           isDeleted: false,
@@ -200,14 +272,17 @@ async function handlePost(request: Request) {
     },
   });
 
-  // FIX: Precisely target and invalidate the updated cache keys for all participants
+  // 4️⃣ Complete Cache Invalidation (Individual + Global Inbox)
   try {
-    const keysToDelete = uniqueParticipantIds.flatMap((userId: string) => [
-      `admin:conversations:${companyId}:user:${userId}:archived:false`,
-      `admin:conversations:${companyId}:user:${userId}:archived:true`,
-    ]);
+    const keysToDelete = [
+      ...resolvedUserIds.flatMap((userId: string) => [
+        `admin:conversations:${companyId}:user:${userId}:archived:false`,
+        `admin:conversations:${companyId}:user:${userId}:archived:true`,
+      ]),
+      `admin:conversations:${companyId}:user:all:archived:false`,
+      `admin:conversations:${companyId}:user:all:archived:true`,
+    ];
 
-    // Fire off cache deletions in parallel
     await Promise.all(keysToDelete.map((key) => cacheDel(key)));
   } catch (e) {
     console.error("Cache deletion error:", e);

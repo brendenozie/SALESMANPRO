@@ -1,9 +1,8 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-// // // app/api/conversations/[conversationId]/participants/route.ts
-// app/api/conversations/[conversationId]/participants/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { Prisma } from "@prisma/client";
 
 const mapParticipant = (p: any) => ({
   id: p.id,
@@ -14,428 +13,354 @@ const mapParticipant = (p: any) => ({
   isArchived: p.isArchived,
   isDeleted: p.isDeleted,
   unreadCount: p.unreadCount,
-  createdAt: p.createdAt?.toISOString(),
-  updatedAt: p.updatedAt?.toISOString(),
+  createdAt: p.createdAt ? p.createdAt.toISOString() : null,
+  updatedAt: p.updatedAt ? p.updatedAt.toISOString() : null,
 });
 
-export const PATCH = withApiHandler(async (request, { params }) => {
-  const { conversationId } = params;
-  const { userId, isArchived, isDeleted, unreadCount } =
-    await request.json();
-
-  if (!userId) {
-    return formatResponse(false, null, "User ID is required", 400);
-  }
-
-  const updateData: Record<string, any> = {};
-
-  if (typeof isArchived === "boolean") updateData.isArchived = isArchived;
-  if (typeof isDeleted === "boolean") updateData.isDeleted = isDeleted;
-  if (typeof unreadCount === "number" && unreadCount >= 0) {
-    updateData.unreadCount = unreadCount;
-  }
-
-  if (!Object.keys(updateData).length) {
-    return formatResponse(
-      false,
-      null,
-      "No valid fields provided for update",
-      400
-    );
-  }
-  const cacheKey = `admin:participants:${conversationId || 'global'}:all`;
+// Helper: Invalidate participant and conversation list caches
+async function invalidateParticipantCaches(
+  conversationId: string,
+  companyId: string,
+  userAuthorizedIds: string[],
+) {
   try {
-    const updated = await prisma.conversationParticipant.update({
-      where: {
-        conversationId_userId: { conversationId, userId },
-      },
-      data: updateData,
+    const keysToDelete = [
+      `admin:participants:${conversationId}:all`,
+      ...userAuthorizedIds.flatMap((userId) => [
+        `admin:conversations:${companyId}:user:${userId}:archived:false`,
+        `admin:conversations:${companyId}:user:${userId}:archived:true`,
+      ]),
+      `admin:conversations:${companyId}:user:all:archived:false`,
+      `admin:conversations:${companyId}:user:all:archived:true`,
+    ];
+
+    await Promise.all(keysToDelete.map((key) => cacheDel(key)));
+  } catch (e) {
+    console.error("Cache purge error in participant handler:", e);
+  }
+}
+
+// GET /api/conversations/[conversationId]/participants
+export const GET = withApiHandler(
+  async (
+    _request: Request,
+    context: {
+      params: { conversationId: string } | Promise<{ conversationId: string }>;
+    },
+  ) => {
+    const { conversationId } = await context.params;
+    const cacheKey = `admin:participants:${conversationId}:all`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached)
+        return formatResponse(
+          true,
+          cached,
+          "Fetched participants (Cached)",
+          200,
+        );
+    } catch (e) {
+      console.error("Cache read error:", e);
+    }
+
+    const participants = await prisma.conversationParticipant.findMany({
+      where: { conversationId, isDeleted: false },
       include: {
         user: { select: { id: true, name: true, email: true } },
       },
     });
 
-    
-    try { await cacheDel(cacheKey); } catch (e) {}
-    return formatResponse(true, mapParticipant(updated), null, 200);
-  } catch (error) {
-    return formatResponse(false, null, "Participant not found", 404);
-  }
-});
+    const mapped = participants.map(mapParticipant);
 
+    try {
+      await cacheSet(cacheKey, mapped, 60);
+    } catch (e) {
+      console.error("Cache write error:", e);
+    }
 
-export const POST = withApiHandler(async (request, { params }) => {
-  const { conversationId } = params;
-  const { newParticipantIds } = await request.json();
+    return formatResponse(true, mapped, "Fetched participants", 200);
+  },
+);
 
-  if (!Array.isArray(newParticipantIds) || !newParticipantIds.length) {
-    return formatResponse(
-      false,
-      null,
-      "An array of new participant IDs is required",
-      400
-    );
-  }
-
-  const cacheKey = `admin:participants:${conversationId || 'global'}:all`;
-    
-  // Validate users exist (single query)
-  const validUsers = await prisma.user.findMany({
-    where: { id: { in: newParticipantIds } },
-    select: { id: true },
-  });
-
-  if (validUsers.length !== newParticipantIds.length) {
-    return formatResponse(
-      false,
-      null,
-      "One or more participant IDs are invalid",
-      400
-    );
-  }
-
-  // Create participants (skip duplicates avoids extra read query)
-  await prisma.conversationParticipant.createMany({
-    data: newParticipantIds.map((userId: string) => ({
-      conversationId,
-      userId,
-      isArchived: false,
-      isDeleted: false,
-      unreadCount: 0,
-    })),
-    // skipDuplicates: true, // Note: Only works on Postgres/MySQL, not SQLite. If using SQLite, we need to handle duplicates manually.
-  });
-
-  // Fetch newly added participants
-  const participants = await prisma.conversationParticipant.findMany({
-    where: {
-      conversationId,
-      userId: { in: newParticipantIds },
+// PATCH /api/conversations/[conversationId]/participants
+export const PATCH = withApiHandler(
+  async (
+    request: Request,
+    context: {
+      params: { conversationId: string } | Promise<{ conversationId: string }>;
     },
-    include: {
-      user: { select: { id: true, name: true, email: true } },
+  ) => {
+    const { conversationId } = await context.params;
+    const body = await request.json();
+    const { userId, isArchived, isDeleted, unreadCount } = body;
+
+    if (!userId) {
+      return formatResponse(false, null, "User ID is required", 400);
+    }
+
+    const updateData: Record<string, any> = {};
+    if (typeof isArchived === "boolean") updateData.isArchived = isArchived;
+    if (typeof isDeleted === "boolean") updateData.isDeleted = isDeleted;
+    if (typeof unreadCount === "number" && unreadCount >= 0) {
+      updateData.unreadCount = unreadCount;
+    }
+
+    if (!Object.keys(updateData).length) {
+      return formatResponse(
+        false,
+        null,
+        "No valid fields provided for update",
+        400,
+      );
+    }
+
+    try {
+      // 1️⃣ Fetch participant with conversation to obtain companyId for cache invalidation
+      const existing = await prisma.conversationParticipant.findUnique({
+        where: { conversationId_userId: { conversationId, userId } },
+        select: {
+          id: true,
+          conversation: { select: { companyId: true } },
+        },
+      });
+
+      if (!existing) {
+        return formatResponse(false, null, "Participant not found", 404);
+      }
+
+      // 2️⃣ Perform update
+      const updated = await prisma.conversationParticipant.update({
+        where: { conversationId_userId: { conversationId, userId } },
+        data: {
+          ...updateData,
+          updatedAt: new Date(),
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      // 3️⃣ Purge targeted caches
+      await invalidateParticipantCaches(
+        conversationId,
+        existing.conversation.companyId,
+        [userId],
+      );
+
+      return formatResponse(
+        true,
+        mapParticipant(updated),
+        "Participant updated",
+        200,
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        return formatResponse(false, null, "Participant not found", 404);
+      }
+      throw error;
+    }
+  },
+);
+
+// POST /api/conversations/[conversationId]/participants
+export const POST = withApiHandler(
+  async (
+    request: Request,
+    context: {
+      params: { conversationId: string } | Promise<{ conversationId: string }>;
     },
-  });
+  ) => {
+    const { conversationId } = await context.params;
+    const body = await request.json();
+    const { newParticipantIds } = body;
 
-  try {
-    await cacheDel(cacheKey);
-  } catch (e) {}
+    if (!Array.isArray(newParticipantIds) || !newParticipantIds.length) {
+      return formatResponse(
+        false,
+        null,
+        "An array of new participant IDs is required",
+        400,
+      );
+    }
 
-  return formatResponse(
-    true,
-    { addedParticipants: participants.map(mapParticipant) },
-    null,
-    201
-  );
-});
-
-
-
-export const DELETE = withApiHandler(async (request, { params }) => {
-  const { conversationId } = params;
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId");
-
-  if (!userId) {
-    return formatResponse(false, null, "User ID is required", 400);
-  }
-
-  const cacheKey = `admin:participants:${conversationId || 'global'}:all`;
-  try {
-    const updated = await prisma.conversationParticipant.update({
-      where: {
-        conversationId_userId: { conversationId, userId },
+    // 1️⃣ Verify conversation existence
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        id: true,
+        companyId: true,
+        participants: { select: { userId: true } },
       },
-      data: {
-        isDeleted: true,
-        isArchived: true,
+    });
+
+    if (!conversation) {
+      return formatResponse(false, null, "Conversation not found", 404);
+    }
+
+    const rawIds = [...new Set(newParticipantIds)] as string[];
+
+    // 2️⃣ Resolve IDs: Check User table, fallback to Consumer table
+    const existingUsers = await prisma.user.findMany({
+      where: { id: { in: rawIds } },
+      select: { id: true },
+    });
+
+    let resolvedUserIds = existingUsers.map((u) => u.id);
+
+    if (resolvedUserIds.length !== rawIds.length) {
+      const missingIds = rawIds.filter((id) => !resolvedUserIds.includes(id));
+      const consumerRecords = await prisma.consumer.findMany({
+        where: { id: { in: missingIds }, companyId: conversation.companyId },
+        select: { userId: true },
+      });
+
+      const consumerUserIds = consumerRecords
+        .map((c) => c.userId)
+        .filter((uId): uId is string => Boolean(uId));
+
+      resolvedUserIds = [...new Set([...resolvedUserIds, ...consumerUserIds])];
+    }
+
+    if (!resolvedUserIds.length) {
+      return formatResponse(
+        false,
+        null,
+        "One or more participant IDs are invalid",
+        400,
+      );
+    }
+
+    // 3️⃣ Exclude already existing participants
+    const activeParticipantIds = new Set(
+      conversation.participants.map((p) => p.userId),
+    );
+    const targetUserIdsToCreate = resolvedUserIds.filter(
+      (id) => !activeParticipantIds.has(id),
+    );
+
+    if (!targetUserIdsToCreate.length) {
+      return formatResponse(
+        true,
+        { addedParticipants: [] },
+        "All provided users are already participants",
+        200,
+      );
+    }
+
+    // 4️⃣ Create participant entries
+    await prisma.conversationParticipant.createMany({
+      data: targetUserIdsToCreate.map((userId: string) => ({
+        conversationId,
+        userId,
+        isArchived: false,
+        isDeleted: false,
         unreadCount: 0,
+      })),
+    });
+
+    // 5️⃣ Fetch created participants with relations
+    const addedParticipants = await prisma.conversationParticipant.findMany({
+      where: {
+        conversationId,
+        userId: { in: targetUserIdsToCreate },
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
       },
     });
 
-    
-    try { await cacheDel(cacheKey); } catch (e) {}
-    
+    // 6️⃣ Invalidate cache for all participants (new + existing)
+    const allParticipantIds = [
+      ...activeParticipantIds,
+      ...targetUserIdsToCreate,
+    ];
+    await invalidateParticipantCaches(
+      conversationId,
+      conversation.companyId,
+      allParticipantIds,
+    );
+
     return formatResponse(
       true,
-      {
-        ...mapParticipant(updated),
-        message: "Participant soft-deleted successfully",
-      },
-      null,
-      200
+      { addedParticipants: addedParticipants.map(mapParticipant) },
+      "Participants added successfully",
+      201,
     );
-  } catch (error) {
-    return formatResponse(false, null, "Participant not found", 404);
-  }
-});
+  },
+);
 
-//  => {
-//   const { conversationId } = params;
-//   const { userId, isArchived, isDeleted, unreadCount } = await request.json();
+// DELETE /api/conversations/[conversationId]/participants
+export const DELETE = withApiHandler(
+  async (
+    request: Request,
+    context: {
+      params: { conversationId: string } | Promise<{ conversationId: string }>;
+    },
+  ) => {
+    const { conversationId } = await context.params;
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
 
-//   if (!userId) return formatResponse(false, null, "User ID is required", 400);
+    if (!userId) {
+      return formatResponse(false, null, "User ID is required", 400);
+    }
 
-//   try {
-//     const updated = await prisma.conversationParticipant.update({
-//       where: { conversationId_userId: { conversationId, userId } },
-//       data: {
-//         ...(isArchived !== undefined && { isArchived }),
-//         ...(isDeleted !== undefined && { isDeleted }),
-//         ...(typeof unreadCount === "number" && unreadCount >= 0 && { unreadCount }),
-//       },
-//       include: { user: { select: { id: true, name: true, email: true } } },
-//     });
+    try {
+      // 1️⃣ Fetch participant to retrieve companyId
+      const existing = await prisma.conversationParticipant.findUnique({
+        where: { conversationId_userId: { conversationId, userId } },
+        select: {
+          id: true,
+          conversation: { select: { companyId: true } },
+        },
+      });
 
-//     return formatResponse(true, updated);
-//   } catch (error) {
-//     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-//       return formatResponse(false, null, "Participant not found", 404);
-//     }
-//     throw error;
-//   }
-// });
+      if (!existing) {
+        return formatResponse(false, null, "Participant not found", 404);
+      }
 
-// 
-// export const POST = withApiHandler(async (request, { params }) => {
-//   const { conversationId } = params;
-//   const { newParticipantIds } = await request.json();
+      // 2️⃣ Soft delete participant
+      const updated = await prisma.conversationParticipant.update({
+        where: { conversationId_userId: { conversationId, userId } },
+        data: {
+          isDeleted: true,
+          isArchived: true,
+          unreadCount: 0,
+          updatedAt: new Date(),
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
 
-//   if (!Array.isArray(newParticipantIds) || newParticipantIds.length === 0) {
-//     return formatResponse(false, null, "Array of participant IDs required", 400);
-//   }
+      // 3️⃣ Clean caches
+      await invalidateParticipantCaches(
+        conversationId,
+        existing.conversation.companyId,
+        [userId],
+      );
 
-//   try {
-//     // 1. Atomic Create Many (skips duplicates automatically via skipDuplicates)
-//     // Note: skipDuplicates is supported on Postgres/MySQL
-//     await prisma.conversationParticipant.createMany({
-//       data: newParticipantIds.map((pId: string) => ({
-//         conversationId,
-//         userId: pId,
-//       })),
-//       skipDuplicates: true,
-//     });
-
-//     // 2. Fetch the current state of these specific participants
-//     const added = await prisma.conversationParticipant.findMany({
-//       where: { conversationId, userId: { in: newParticipantIds } },
-//       include: { user: { select: { id: true, name: true, email: true } } },
-//     });
-
-//     return formatResponse(true, { addedParticipants: added }, null, 201);
-//   } catch (error) {
-//     return formatResponse(false, null, "Failed to add participants", 500);
-//   }
-// });
-
-// 
-// export const DELETE = withApiHandler(async (request, { params }) => {
-//   const { conversationId } = params;
-//   const userId = new URL(request.url).searchParams.get("userId");
-
-//   if (!userId) return formatResponse(false, null, "User ID is required", 400);
-
-//   try {
-//     const softDeleted = await prisma.conversationParticipant.update({
-//       where: { conversationId_userId: { conversationId, userId } },
-//       data: { isDeleted: true, isArchived: true, unreadCount: 0 },
-//       include: { user: { select: { id: true, name: true, email: true } } },
-//     });
-
-//     return formatResponse(true, softDeleted, "Participant soft-deleted");
-//   } catch (error) {
-//     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-//       return formatResponse(false, null, "Participant not found", 404);
-//     }
-//     throw error;
-//   }
-// });
-//  => {
-//   const { conversationId } = params;
-//   const body = await request.json();
-//   const { userId, isArchived, isDeleted, unreadCount, ...rest } = body;
-
-//   if (!userId) {
-//     return formatResponse(false, null, "User ID is required", 400);
-//   }
-//   if (Object.keys(rest).length > 0) {
-//     console.warn("Unexpected fields in PATCH request:", rest);
-//   }
-
-//   const participant = await prisma.conversationParticipant.findUnique({
-//     where: {
-//       conversationId_userId: { conversationId, userId },
-//     },
-//   });
-
-//   if (!participant) {
-//     return formatResponse(false, null, "Participant not found", 404);
-//   }
-
-//   const updateData: Record<string, any> = {};
-//   if (isArchived !== undefined) updateData.isArchived = isArchived;
-//   if (isDeleted !== undefined) updateData.isDeleted = isDeleted;
-//   if (
-//     unreadCount !== undefined &&
-//     typeof unreadCount === "number" &&
-//     unreadCount >= 0
-//   ) {
-//     updateData.unreadCount = unreadCount;
-//   }
-
-//   if (Object.keys(updateData).length === 0) {
-//     return formatResponse(false, null, "No valid fields provided for update", 400);
-//   }
-
-//   const updatedParticipant = await prisma.conversationParticipant.update({
-//     where: { id: participant.id },
-//     data: updateData,
-//     include: {
-//       user: { select: { id: true, name: true, email: true } },
-//     },
-//   });
-
-//   const responseData = {
-//     id: updatedParticipant.id,
-//     conversationId: updatedParticipant.conversationId,
-//     userId: updatedParticipant.userId,
-//     userName: updatedParticipant.user?.name || "N/A",
-//     userEmail: updatedParticipant.user?.email || "N/A",
-//     isArchived: updatedParticipant.isArchived,
-//     isDeleted: updatedParticipant.isDeleted,
-//     unreadCount: updatedParticipant.unreadCount,
-//     createdAt: updatedParticipant.createdAt?.toISOString(),
-//     updatedAt: updatedParticipant.updatedAt?.toISOString(),
-//   };
-
-//   return formatResponse(true, responseData, null, 200);
-// });
-
-// 
-// export const POST = withApiHandler(async (request, { params }) => {
-//   const { conversationId } = params;
-//   const body = await request.json();
-//   const { newParticipantIds } = body;
-
-//   if (
-//     !newParticipantIds ||
-//     !Array.isArray(newParticipantIds) ||
-//     newParticipantIds.length === 0
-//   ) {
-//     return formatResponse(false, null, "An array of new participant IDs is required", 400);
-//   }
-
-//   const conversation = await prisma.conversation.findUnique({
-//     where: { id: conversationId },
-//     include: { participants: { select: { userId: true } } },
-//   });
-
-//   if (!conversation) {
-//     return formatResponse(false, null, "Conversation not found", 404);
-//   }
-
-//   const existingParticipantUserIds = new Set(
-//     conversation.participants.map((p) => p.userId)
-//   );
-
-//   const newParticipantsToCreate = newParticipantIds.filter(
-//     (pId: string) => !existingParticipantUserIds.has(pId)
-//   );
-
-//   if (newParticipantsToCreate.length === 0) {
-//     return formatResponse(
-//       true,
-//       { message: "All provided users are already participants" },
-//       null,
-//       200
-//     );
-//   }
-
-//   // Validate users exist
-//   const existingUsers = await prisma.user.findMany({
-//     where: { id: { in: newParticipantsToCreate } },
-//     select: { id: true },
-//   });
-
-//   if (existingUsers.length !== newParticipantsToCreate.length) {
-//     return formatResponse(
-//       false,
-//       null,
-//       "One or more participant IDs are invalid",
-//       400
-//     );
-//   }
-
-//   await prisma.conversationParticipant.createMany({
-//     data: newParticipantsToCreate.map((pId: string) => ({
-//       conversationId,
-//       userId: pId,
-//       isArchived: false,
-//       isDeleted: false,
-//       unreadCount: 0,
-//     })),
-//   });
-
-//   const addedParticipants = await prisma.conversationParticipant.findMany({
-//     where: { conversationId, userId: { in: newParticipantsToCreate } },
-//     include: { user: { select: { id: true, name: true, email: true } } },
-//   });
-
-//   const responseData = addedParticipants.map((p) => ({
-//     id: p.id,
-//     conversationId: p.conversationId,
-//     userId: p.userId,
-//     userName: p.user?.name || "N/A",
-//     userEmail: p.user?.email || "N/A",
-//     isArchived: p.isArchived,
-//     isDeleted: p.isDeleted,
-//     unreadCount: p.unreadCount,
-//     createdAt: p.createdAt?.toISOString(),
-//     updatedAt: p.updatedAt?.toISOString(),
-//   }));
-
-//   return formatResponse(true, { addedParticipants: responseData }, null, 201);
-// });
-
-// 
-// export const DELETE = withApiHandler(async (request, { params }) => {
-//   const { conversationId } = params;
-//   const { searchParams } = new URL(request.url);
-//   const userId = searchParams.get("userId");
-
-//   if (!userId) {
-//     return formatResponse(false, null, "User ID is required", 400);
-//   }
-
-//   const updatedParticipant = await prisma.conversationParticipant.update({
-//     where: { conversationId_userId: { conversationId, userId } },
-//     data: {
-//       isDeleted: true,
-//       isArchived: true,
-//       unreadCount: 0,
-//       updatedAt: new Date(),
-//     },
-//     include: {
-//       user: { select: { id: true, name: true, email: true } },
-//     },
-//   });
-
-//   const responseData = {
-//     id: updatedParticipant.id,
-//     conversationId: updatedParticipant.conversationId,
-//     userId: updatedParticipant.userId,
-//     userName: updatedParticipant.user?.name || "N/A",
-//     userEmail: updatedParticipant.user?.email || "N/A",
-//     isArchived: updatedParticipant.isArchived,
-//     isDeleted: updatedParticipant.isDeleted,
-//     unreadCount: updatedParticipant.unreadCount,
-//     createdAt: updatedParticipant.createdAt?.toISOString(),
-//     updatedAt: updatedParticipant.updatedAt?.toISOString(),
-//     message: "Participant soft-deleted successfully",
-//   };
-
-//   return formatResponse(true, responseData, null, 200);
-// });
+      return formatResponse(
+        true,
+        {
+          ...mapParticipant(updated),
+          message: "Participant soft-deleted successfully",
+        },
+        "Participant deleted",
+        200,
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        return formatResponse(false, null, "Participant not found", 404);
+      }
+      throw error;
+    }
+  },
+);

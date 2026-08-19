@@ -1,23 +1,138 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-// // app/api/conversations/[conversationId]/route.ts
-import { NextResponse } from "next/server";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 import { Prisma } from "@prisma/client";
 
+// Helper: Invalidate target inbox cache keys for all thread participants & company inbox
+async function invalidateConversationCache(
+  companyId: string,
+  participantUserIds: string[],
+) {
+  try {
+    const keysToDelete = [
+      ...participantUserIds.flatMap((userId) => [
+        `admin:conversations:${companyId}:user:${userId}:archived:false`,
+        `admin:conversations:${companyId}:user:${userId}:archived:true`,
+      ]),
+      `admin:conversations:${companyId}:user:all:archived:false`,
+      `admin:conversations:${companyId}:user:all:archived:true`,
+    ];
 
-async function handlePatch(request: Request, context: { params: { conversationId: string } }) {
-  const { conversationId } = context.params;
-  const { title } = await request.json();
+    await Promise.all(keysToDelete.map((key) => cacheDel(key)));
+  } catch (e) {
+    console.error("Cache invalidation error:", e);
+  }
+}
+
+// GET /api/conversations/[conversationId]
+async function handleGet(
+  _request: Request,
+  context: {
+    params: { conversationId: string } | Promise<{ conversationId: string }>;
+  },
+) {
+  const { conversationId } = await context.params;
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: {
+      id: true,
+      title: true,
+      companyId: true,
+      createdAt: true,
+      updatedAt: true,
+      lastMessageAt: true,
+      participants: {
+        select: {
+          userId: true,
+          isArchived: true,
+          unreadCount: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              consumers: {
+                select: {
+                  id: true,
+                  type: true,
+                  stage: true,
+                  status: true,
+                  totalOrders: true,
+                  totalSpent: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!conversation) {
+    return formatResponse(false, null, "Conversation not found", 404);
+  }
+
+  const formatted = {
+    ...conversation,
+    createdAt: conversation.createdAt
+      ? conversation.createdAt.toISOString()
+      : null,
+    updatedAt: conversation.updatedAt
+      ? conversation.updatedAt.toISOString()
+      : null,
+    lastMessageAt: conversation.lastMessageAt
+      ? conversation.lastMessageAt.toISOString()
+      : null,
+  };
+
+  return formatResponse(
+    true,
+    formatted,
+    "Fetched conversation successfully",
+    200,
+  );
+}
+
+// PATCH /api/conversations/[conversationId]
+async function handlePatch(
+  request: Request,
+  context: {
+    params: { conversationId: string } | Promise<{ conversationId: string }>;
+  },
+) {
+  const { conversationId } = await context.params;
+  const body = await request.json();
+  const { title } = body;
 
   if (title === undefined) {
-    return NextResponse.json({ message: "No valid fields provided for update." }, { status: 400 });
+    return formatResponse(
+      false,
+      null,
+      "No valid fields provided for update.",
+      400,
+    );
   }
 
   try {
+    // 1️⃣ Fetch existing record to extract companyId & participants for cache purging
+    const existing = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        companyId: true,
+        participants: { select: { userId: true } },
+      },
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Conversation not found", 404);
+    }
+
+    // 2️⃣ Apply update
     const updated = await prisma.conversation.update({
       where: { id: conversationId },
-      data: { 
+      data: {
         title,
         updatedAt: new Date(),
       },
@@ -28,112 +143,88 @@ async function handlePatch(request: Request, context: { params: { conversationId
         createdAt: true,
         updatedAt: true,
         lastMessageAt: true,
-      }
+      },
     });
 
-    try { await cacheDel(`admin:conversations:${conversationId || 'global'}:*`); } catch (e) {}
+    // 3️⃣ Invalidate exact participant and inbox cache keys
+    const participantUserIds = existing.participants.map((p) => p.userId);
+    await invalidateConversationCache(existing.companyId, participantUserIds);
 
-    return NextResponse.json(updated, { status: 200 });
+    const serialized = {
+      ...updated,
+      createdAt: updated.createdAt ? updated.createdAt.toISOString() : null,
+      updatedAt: updated.updatedAt ? updated.updatedAt.toISOString() : null,
+      lastMessageAt: updated.lastMessageAt
+        ? updated.lastMessageAt.toISOString()
+        : null,
+    };
+
+    return formatResponse(
+      true,
+      serialized,
+      "Conversation updated successfully",
+      200,
+    );
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return formatResponse(false, null, "Conversation not found", 404);
     }
     throw error;
   }
 }
 
-
-async function handleDelete(_request: Request, context: { params: { conversationId: string } }) {
-  const { conversationId } = context.params;
+// DELETE /api/conversations/[conversationId]
+async function handleDelete(
+  _request: Request,
+  context: {
+    params: { conversationId: string } | Promise<{ conversationId: string }>;
+  },
+) {
+  const { conversationId } = await context.params;
 
   try {
+    // 1️⃣ Fetch metadata prior to deletion for cache cleanup
+    const existing = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        companyId: true,
+        participants: { select: { userId: true } },
+      },
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Conversation not found", 404);
+    }
+
+    // 2️⃣ Execute deletion
     await prisma.conversation.delete({
       where: { id: conversationId },
     });
 
-    try { await cacheDel(`admin:conversations:${conversationId || 'global'}:*`); } catch (e) {}
-    
-    return NextResponse.json({
-      message: "Conversation deleted successfully",
-      deletedId: conversationId,
-    }, { status: 200 });
+    // 3️⃣ Clean up relevant caches
+    const participantUserIds = existing.participants.map((p) => p.userId);
+    await invalidateConversationCache(existing.companyId, participantUserIds);
+
+    return formatResponse(
+      true,
+      { deletedId: conversationId },
+      "Conversation deleted successfully",
+      200,
+    );
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return formatResponse(false, null, "Conversation not found", 404);
     }
     throw error;
   }
 }
 
+export const GET = withApiHandler(handleGet);
 export const PATCH = withApiHandler(handlePatch);
 export const DELETE = withApiHandler(handleDelete);
-// import { NextResponse } from "next/server";
-
-
-//   if (!existingConversation) {
-//     return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
-//   }
-
-//   const updateData: any = {};
-//   if (title !== undefined) updateData.title = title;
-
-//   if (Object.keys(updateData).length === 0) {
-//     return NextResponse.json(
-//       { message: "No fields provided for update." },
-//       { status: 400 }
-//     );
-//   }
-
-//   const updatedConversation = await prisma.conversation.update({
-//     where: { id: conversationId },
-//     data: {
-//       ...updateData,
-//       updatedAt: new Date(),
-//     },
-//   });
-
-//   const responseData = {
-//     id: updatedConversation.id,
-//     title: updatedConversation.title,
-//     companyId: updatedConversation.companyId,
-//     createdAt: updatedConversation.createdAt?.toISOString(),
-//     updatedAt: updatedConversation.updatedAt?.toISOString(),
-//     lastMessageAt: updatedConversation.lastMessageAt?.toISOString() || null,
-//   };
-
-//   return NextResponse.json(responseData, { status: 200 });
-// }
-
-// export const PATCH = withApiHandler(handlePatch);
-
-// // -------------------- DELETE --------------------
-// // DELETE /api/conversations/[conversationId]
-// // Deletes a conversation and its related entities.
-// async function handleDelete(
-//   _request: Request,
-//   context: HandlerContext
-// ): Promise<NextResponse> {
-//   const { conversationId } = context.params;
-
-//   const existingConversation = await prisma.conversation.findUnique({
-//     where: { id: conversationId },
-//   });
-
-//   if (!existingConversation) {
-//     return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
-//   }
-
-//   const deletedConversation = await prisma.conversation.delete({
-//     where: { id: conversationId },
-//   });
-
-//   return NextResponse.json(
-//     {
-//       message: "Conversation deleted successfully",
-//       deletedId: deletedConversation.id,
-//     },
-//     { status: 200 }
-//   );
-// }
-
-// export const DELETE = withApiHandler(handleDelete);
