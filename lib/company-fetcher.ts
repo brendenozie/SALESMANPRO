@@ -37,6 +37,7 @@ const latestSubscriptionInclude = {
         in: ["ACTIVE", "AWAITING_CONFIRMATION"],
       },
     },
+    // get the latest subscription by createdAt date
     orderBy: {
       createdAt: "desc" as const,
     },

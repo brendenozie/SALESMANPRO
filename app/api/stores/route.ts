@@ -235,7 +235,7 @@ async function createCompany(req: Request, context: HandlerContext) {
         user: { connect: { id: user.id } },
 
         // Automatically create 10-Day Trial Subscription if trialPlan exists
-        subscriptions: trialPlan
+        subscriptionCompanies: trialPlan
           ? {
               create: {
                 userId: user.id,

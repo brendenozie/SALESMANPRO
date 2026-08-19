@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -138,6 +139,28 @@ export async function GET(req: Request) {
         data: { hasWebsite: true },
       }),
     ]);
+
+    if (metadata.companyId) {
+        // Fetch lightweight company details to get slug and domain
+        const company = await prisma.company.findUnique({
+          where: { id: metadata.companyId },
+          select: { id: true, slug: true, domain: true },
+        });
+  
+        if (company) {
+          // Because Next.js `unstable_cache` keys rely on the identifier string the user navigated to,
+          // we must revalidate all possible identifiers (id, slug, and domain) to ensure the UI updates everywhere.
+          await revalidateCompanyCache(company.id);
+          if (company.slug) await revalidateCompanyCache(company.slug);
+          if (company.domain) await revalidateCompanyCache(company.domain);
+  
+          // Handle www. variations if your frontend might cache them differently
+          if (company.domain && !company.domain.startsWith("www.")) {
+            await revalidateCompanyCache(`www.${company.domain}`);
+          }
+        }
+      }
+
 
     // 8. Redirect on Success
     const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboards`);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 export async function POST(req: Request) {
   try {
@@ -119,6 +120,28 @@ export async function POST(req: Request) {
       },
       include: { payments: true },
     });
+
+     // 2. Clear Next.js App Router Cache for the specific company
+    if (companyId) {
+      // Fetch lightweight company details to get slug and domain
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { id: true, slug: true, domain: true },
+      });
+
+      if (company) {
+        // Because Next.js `unstable_cache` keys rely on the identifier string the user navigated to,
+        // we must revalidate all possible identifiers (id, slug, and domain) to ensure the UI updates everywhere.
+        await revalidateCompanyCache(company.id);
+        if (company.slug) await revalidateCompanyCache(company.slug);
+        if (company.domain) await revalidateCompanyCache(company.domain);
+
+        // Handle www. variations if your frontend might cache them differently
+        if (company.domain && !company.domain.startsWith("www.")) {
+          await revalidateCompanyCache(`www.${company.domain}`);
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
