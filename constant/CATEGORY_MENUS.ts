@@ -63,13 +63,13 @@ import {
 
 // Define hierarchy of tiers with weights for comparison
 const TIER_WEIGHTS: Record<string, number> = {
-  "Ghuba Engage": 0,
-  "Ghuba Free": 1,
-  "Ghuba Starter": 2,
-  "Ghuba Basic": 3,
-  "Ghuba Growth": 4,
-  "Ghuba Pro": 5,  
+  "Ghuba Basic": 2,
+  "Ghuba Starter": 3,
+  "Ghuba Pro": 4,
+  "Ghuba Growth": 5,
   "Ghuba Trial": 6,
+  "Ghuba Engage": 7,
+  "Ghuba Free": 8,
 };
 
 export interface SubMenuItem {
