@@ -281,7 +281,7 @@ export default function StoresPage() {
     error: storesError, 
     isLoading: isStoresLoading 
   } = useSWR<Store[]>(
-    session?.user?.id ? `/api/stores?userId=${session.user.id}` : null,
+    session?.user?.id ? `/api/stores` : null,
     fetcher
   );
 
@@ -333,7 +333,7 @@ export default function StoresPage() {
 
   const handleSubscriptionSuccess = () => {
     setIsPricingModalOpen(false);
-    mutate(`/api/stores?userId=${session?.user?.id}`);
+    mutate(`/api/stores`);
   };
 
   const confirmDelete = async () => {
@@ -341,7 +341,7 @@ export default function StoresPage() {
     setIsDeleting(true);
     try {
       await fetch(`/api/stores/${storeToDelete.id}`, { method: 'DELETE' });
-      await mutate(`/api/stores?userId=${session?.user?.id}`);
+      await mutate(`/api/stores`);
       
       // Edge case: If they delete the last item on a page, drop them back a page
       if (paginatedStores.length === 1 && page > 1) {

@@ -175,7 +175,7 @@ export default function PricingSection({ companyId, email, category, currentTier
         email: email,
         amount: amountInKobo,
         ref: data.data.data.reference,
-        currency:  "KES",//isOutsideKenya ? "USD" : "KES",
+        currency: "KES", // isOutsideKenya ? "USD" : "KES",
         metadata: { companyId, planId },
         callback: (response: any) => {
           window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
@@ -254,6 +254,15 @@ export default function PricingSection({ companyId, email, category, currentTier
     }
     return null;
   };
+
+  // Determine current active plan state and price baseline
+  const currentPlanObj = plans.find(
+    (p) => 
+      p.name.toLowerCase() === currentTier?.toLowerCase() || 
+      p.id === currentTier || 
+      p._id?.$oid === currentTier
+  );
+  const currentPlanMonthlyPrice = currentPlanObj ? getPlanPrice(currentPlanObj, "MONTHLY") : 0;
 
   return (
     <div className="w-full min-h-screen font-sans bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-300">
@@ -347,10 +356,12 @@ export default function PricingSection({ companyId, email, category, currentTier
             const isPopular = plan.isPopular;
             const isPlanSelected = selectedPlan === plan;
 
+            // Tier evaluation logic
+            const isCurrentTier = currentPlanObj === plan;
+            const planPriceMonthly = getPlanPrice(plan, "MONTHLY");
+            const isUpgrade = Boolean(currentTier && !isCurrentTier && planPriceMonthly > currentPlanMonthlyPrice);
+
             // CSS Layout Order logic assignments:
-            // Mobile (default): Recommended card is index 0 -> renders absolute 1st.
-            // Desktop (md:): index 0 has `md:order-2` (moves it to middle display slot).
-            // index 1 has `md:order-1`, index 2 (or any others) have `md:order-3`.
             let orderClass = "order-none";
             if (isPopular) {
               orderClass = "md:order-2"; 
@@ -368,12 +379,21 @@ export default function PricingSection({ companyId, email, category, currentTier
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
                 className={`relative flex flex-col p-6 md:p-8 rounded-3xl transition-all duration-300 ${orderClass} ${
-                  isPopular
+                  isCurrentTier
+                    ? "bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-300 dark:border-slate-700 z-0 opacity-80"
+                    : isPopular
                     ? "bg-white dark:bg-slate-900 shadow-xl ring-2 ring-orange-500 md:scale-[1.03] z-10"
                     : "bg-white dark:bg-slate-900 shadow-md border border-slate-100 dark:border-slate-800/60 hover:shadow-lg"
                 }`}
               >
-                {isPopular && (
+                {/* Badges */}
+                {isCurrentTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-700 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md">
+                    Current Plan
+                  </div>
+                )}
+
+                {isPopular && !isCurrentTier && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md">
                     Most Popular
                   </div>
@@ -406,33 +426,30 @@ export default function PricingSection({ companyId, email, category, currentTier
                       className="overflow-hidden mb-6 space-y-4"
                     >
                       {/* Interactive Checkout Engine */}
-                      {(//!isOutsideKenya && 
-                        <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/20">
-                          <button
-                            onClick={() => setPaymentMethod("PAYSTACK")}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                              paymentMethod === "PAYSTACK"
-                                ? "bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white"
-                                : "text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            Card / Bank 
-                            
-                          </button>
-                          <button
-                            onClick={() => setPaymentMethod("MPESA")}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                              paymentMethod === "MPESA"
-                                ? "bg-emerald-600 text-white shadow-sm"
-                                : "text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            M-Pesa Till
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/20">
+                        <button
+                          onClick={() => setPaymentMethod("PAYSTACK")}
+                          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            paymentMethod === "PAYSTACK"
+                              ? "bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white"
+                              : "text-slate-400 hover:text-slate-600"
+                          }`}
+                        >
+                          Card / Bank
+                        </button>
+                        <button
+                          onClick={() => setPaymentMethod("MPESA")}
+                          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            paymentMethod === "MPESA"
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "text-slate-400 hover:text-slate-600"
+                          }`}
+                        >
+                          M-Pesa Till
+                        </button>
+                      </div>
 
-                      {/* M-Pesa Interactive UI Segment  && !isOutsideKenya*/}
+                      {/* M-Pesa Interactive UI Segment */}
                       {paymentMethod === "MPESA" ? (
                         <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-3 text-xs">
                           <div className="flex justify-between items-center pb-2 border-b border-emerald-500/10">
@@ -505,22 +522,28 @@ export default function PricingSection({ companyId, email, category, currentTier
                       )}
                     </motion.div>
                   ) : (
-                    /* Entry Trigger Call To Action */
+                    /* Contextual Entry Call To Action */
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedPlan(plan);
-                        // setPaymentMethod("PAYSTACK");
-                        // if (isOutsideKenya) 
+                        if (!isCurrentTier) setSelectedPlan(plan);
                       }}
-                      disabled={loading}
+                      disabled={loading || isCurrentTier}
                       className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] mb-6 ${
-                        isPopular
+                        isCurrentTier
+                          ? "bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
+                          : isUpgrade
+                          ? "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-md"
+                          : isPopular
                           ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-500/10"
                           : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}
                     >
-                      Choose {plan.name}
+                      {isCurrentTier 
+                        ? "Active Plan" 
+                        : isUpgrade 
+                        ? `Upgrade to ${plan.name}` 
+                        : `Choose ${plan.name}`}
                     </button>
                   )}
                 </AnimatePresence>
