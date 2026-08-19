@@ -202,7 +202,9 @@ async function createCompany(req: Request, context: HandlerContext) {
 
     
     const now = new Date();
-    const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+    // const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+    //two days from now
+    const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
     const newCompany = await prisma.company.create({
       data: {
@@ -245,10 +247,10 @@ async function createCompany(req: Request, context: HandlerContext) {
                 amountPaid: 0,
                 currency: data.currency || "KES",
                 startedAt: now,
-                renewalDate: tenDaysFromNow,
+                renewalDate: twoDaysFromNow, // Set renewal date to 2 days from now tenDaysFromNow
                 meta: {
                   isTrial: true,
-                  trialEndsAt: tenDaysFromNow.toISOString(),
+                  trialEndsAt: twoDaysFromNow.toISOString(), //tenDaysFromNow.toISOString()
                 },
               },
             }
