@@ -59,7 +59,7 @@ export default async function MessagesManagerPage({ params }: Props) {
     // 4. Fetch Data Concurrently for optimized load times
     const [conversationsRes, usersRes] = await Promise.all([
       fetch(
-        `${apiBaseUrl}/admin/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
+        `${apiBaseUrl}/admin/conversations?companyId=${encodeURIComponent(companyId)}`,
         { 
           cache: "no-store", // Crucial for a messaging app to avoid stale inboxes
           headers: { cookie: cookieHeader } 
@@ -77,7 +77,7 @@ export default async function MessagesManagerPage({ params }: Props) {
     // 5. Parse Data Safely
     if (conversationsRes.ok) {
       const dataConvers = await conversationsRes.json();
-      // console.log("[Messages] Fetched conversations:", dataConvers);
+      console.log("[Messages] Fetched conversations:", dataConvers);
       // Handle potential API response wrappers (e.g., { data: [...] } vs [...])
       initialConversations = (dataConvers.data || dataConvers) as ConversationData[];
     } else {
@@ -86,6 +86,7 @@ export default async function MessagesManagerPage({ params }: Props) {
 
     if (usersRes.ok) {
       const dataUsers = await usersRes.json();
+      console.log("[Messages] Fetched users:", dataUsers);
       allUsers = (dataUsers.data.users || dataUsers) as UserData[];
     } else {
       console.error(`[Messages] Failed to fetch users: ${usersRes.status}`);

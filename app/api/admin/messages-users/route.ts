@@ -10,7 +10,7 @@ import { verifyAuth } from "@/lib/verifyAuth";
 async function handleGET(request: Request) {
   try {
     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    if (!auth.success) return formatResponse(false, {}, auth.error, 401);
 
     const { searchParams } = new URL(request.url);
 
@@ -26,7 +26,7 @@ async function handleGET(request: Request) {
     const filterRole = searchParams.get("role") as ROLES | null;
     const companyId = searchParams.get("companyId");
 
-    const cacheKey = `admin:users:${companyId || "global"}:p${page}:l${perPage}:s:${searchTerm}:${filterStatus || ""}:${filterRole || ""}`;
+    const cacheKey = `admin:merged:${companyId || "global"}:p${page}:l${perPage}:s:${searchTerm}:${filterStatus || ""}:${filterRole || ""}`;
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -35,114 +35,122 @@ async function handleGET(request: Request) {
       console.error("Cache read error:", e);
     }
 
-    let items: any[] = [];
-    let totalItems = 0;
-    let source: "users" | "consumers" = "users";
-
-    // 1️⃣ Primary attempt: Query User table
+    // 1️⃣ Build Independent Where Clauses
     const userWhere: any = {};
-    if (companyId) userWhere.companyId = companyId;
+    const consumerWhere: any = {};
+
+    if (companyId) {
+      userWhere.companyId = companyId;
+      consumerWhere.companyId = companyId;
+    }
 
     if (searchTerm) {
       userWhere.OR = [
         { name: { contains: searchTerm, mode: "insensitive" } },
         { email: { contains: searchTerm, mode: "insensitive" } },
       ];
+      // FIX: Query the relation for Consumer search
+      consumerWhere.OR = [
+        { user: { name: { contains: searchTerm, mode: "insensitive" } } },
+        { user: { email: { contains: searchTerm, mode: "insensitive" } } },
+        { user: { phone: { contains: searchTerm, mode: "insensitive" } } },
+      ];
     }
 
-    if (filterStatus) userWhere.status = filterStatus;
+    if (filterStatus) {
+      userWhere.status = filterStatus;
+      consumerWhere.status = filterStatus;
+    }
     if (filterPlan) userWhere.plan = filterPlan;
     if (filterRole) userWhere.role = filterRole;
 
-    let userCount = 0;
+    // 2️⃣ Schema Safety Check
+    let canQueryUsers = true;
     try {
-      userCount = await prisma.user.count({ where: userWhere });
+      if (companyId) {
+        await prisma.user.count({ where: { companyId } });
+      }
     } catch (err) {
-      // Catch schema mismatches (e.g., if companyId field doesn't exist on User)
-      userCount = 0;
+      canQueryUsers = false;
     }
 
-    if (userCount > 0) {
-      // Users found
-      totalItems = userCount;
-      const users = await prisma.user.findMany({
-        skip,
-        take: perPage,
-        where: userWhere,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          status: true,
-          emailVerified: true,
-          lastLogin: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      items = users.map((u) => ({ ...u, isConsumer: false }));
-    } else {
-      // 2️⃣ Fallback: User count is 0 -> Query Consumer table
-      source = "consumers";
-      const consumerWhere: any = {};
-      if (companyId) consumerWhere.companyId = companyId;
-
-      if (searchTerm) {
-        consumerWhere.OR = [
-          { name: { contains: searchTerm, mode: "insensitive" } },
-          { email: { contains: searchTerm, mode: "insensitive" } },
-          { phone: { contains: searchTerm, mode: "insensitive" } },
-        ];
-      }
-
-      if (filterStatus) consumerWhere.status = filterStatus;
-
-      totalItems = await prisma.consumer.count({ where: consumerWhere });
-
-      const consumers = await prisma.consumer.findMany({
-        skip,
-        take: perPage,
+    // 3️⃣ Fetch Both Concurrently
+    const [users, consumers] = await Promise.all([
+      canQueryUsers
+        ? prisma.user.findMany({
+            where: userWhere,
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              status: true,
+              emailVerified: true,
+              lastLogin: true,
+              createdAt: true,
+            },
+          })
+        : Promise.resolve([]),
+      prisma.consumer.findMany({
         where: consumerWhere,
         select: {
           id: true,
-          name: true,
-          email: true,
-          phone: true,
           status: true,
           type: true,
           stage: true,
           createdAt: true,
+          // FIX: Select the related user data
+          user: {
+            select: {
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
         },
-        orderBy: { createdAt: "desc" },
-      });
+      }),
+    ]);
 
-      // Normalize consumer schema into standard user shape
-      items = consumers.map((c) => ({
-        id: c.id,
-        name: c.name || "Anonymous Consumer",
-        email: c.email || "N/A",
-        phone: c.phone || null,
-        role: "CONSUMER",
-        status: c.status || "ACTIVE",
-        createdAt: c.createdAt,
-        isConsumer: true,
-        consumerProfile: {
-          type: c.type,
-          stage: c.stage,
-        },
-      }));
-    }
+    // 4️⃣ Normalize and Merge Data
+    const normalizedUsers = users.map((u) => ({ ...u, isConsumer: false }));
 
+    const normalizedConsumers = consumers.map((c) => ({
+      id: c.id,
+      // FIX: Map the nested user data correctly
+      name: c.user?.name || "Anonymous Consumer",
+      email: c.user?.email || "N/A",
+      phone: c.user?.phone || null,
+      role: "CONSUMER",
+      status: c.status || "ACTIVE",
+      createdAt: c.createdAt,
+      isConsumer: true,
+      consumerProfile: {
+        type: c.type,
+        stage: c.stage,
+      },
+    }));
+
+    const combinedItems = [...normalizedUsers, ...normalizedConsumers];
+
+    // 5️⃣ Sort by Date (Newest First)
+    combinedItems.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    // 6️⃣ In-Memory Pagination
+    const totalItems = combinedItems.length;
     const totalPages = Math.ceil(totalItems / perPage);
+    const paginatedItems = combinedItems.slice(skip, skip + perPage);
+
     const responsePayload = {
-      users: items,
+      users: paginatedItems,
       totalItems,
       totalPages,
       currentPage: page,
       perPage,
-      source,
+      source: "merged",
     };
 
     try {
@@ -151,12 +159,13 @@ async function handleGET(request: Request) {
       console.error("Cache set error:", e);
     }
 
-    return formatResponse(true, responsePayload, "Fetched", 200);
+    return formatResponse(true, responsePayload, "Fetched Merged Records", 200);
   } catch (error: any) {
-    console.error("Error fetching users/consumers:", error);
+    console.error("Error fetching merged users/consumers:", error);
+    // FIX: Replaced `null` with `{}` so the payload stringifier doesn't crash
     return formatResponse(
       false,
-      null,
+      {},
       error.message || "Failed to fetch records",
       500,
     );

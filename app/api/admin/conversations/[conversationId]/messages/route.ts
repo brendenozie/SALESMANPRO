@@ -2,6 +2,12 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { VerifiedUser } from "@/lib/verifyAuth";
+
+type HandlerContext = {
+  params: any;
+  user?: VerifiedUser;
+};
 
 const VALID_MESSAGE_TYPES = [
   "TEXT",
@@ -36,25 +42,30 @@ async function invalidateConversationListCache(
 
 // GET /api/conversations/[conversationId]/messages
 export const GET = withApiHandler(
-  async (
-    request: Request,
-    context: {
-      params: { conversationId: string } | Promise<{ conversationId: string }>;
-    },
-  ) => {
+  async (request: Request, context: HandlerContext) => {
+    // 1. Retrieve the authenticated user from the context
+    const currentUser = context.user;
+    if (!currentUser) {
+      return formatResponse(false, null, "Unauthorized", 401);
+    }
+
+    // 🚨 Check Admin Status
+    const isAdmin =
+      currentUser.role === "ADMIN" ||
+      currentUser.role?.toLowerCase() === "admin";
+
+    // Use the actual user ID to see if they are formally in the conversation
+    const userId = currentUser.id;
+
+    // Await params per Next.js 15+ routing rules
     const { conversationId } = await context.params;
     const { searchParams } = new URL(request.url);
 
-    const userId = searchParams.get("userId");
     const limit = Math.min(
       parseInt(searchParams.get("limit") || "50", 10),
       100,
     );
     const cursor = searchParams.get("cursor");
-
-    if (!userId) {
-      return formatResponse(false, null, "User ID is required", 400);
-    }
 
     // 1️⃣ Check Cache for Message History
     const cacheKey = `admin:messages:${conversationId}:cursor:${cursor || "initial"}:limit:${limit}`;
@@ -86,7 +97,8 @@ export const GET = withApiHandler(
       }),
     ]);
 
-    if (!participant) {
+    // 🚨 ADMIN UPDATE: Only deny access if they are NOT a participant AND NOT an admin
+    if (!participant && !isAdmin) {
       return formatResponse(
         false,
         null,
@@ -96,7 +108,9 @@ export const GET = withApiHandler(
     }
 
     // 3️⃣ Mark Unread Messages as Read & Invalidate Inbox Cache if Badges Change
+    // 🚨 ADMIN UPDATE: Only run this if `participant` exists (Admins snooping won't trigger this)
     if (
+      participant &&
       messages.length > 0 &&
       (participant.unreadCount > 0 ||
         participant.lastReadMessageId !== messages[0].id)

@@ -206,50 +206,59 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
   });
 
   const fetchConversations = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // FIX: Removed invalid Next.js client-side revalidate tag, replaced with no-store to ensure fresh data
-      const res = await fetch(`${apiBaseUrl}/admin/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`, {
-        cache: 'no-store'
-      });
-      if (res.ok) {
-        const data: ConversationData[] = await res.json();
-        console.log("Fetched conversations:", data);
-        setConversations(data.sort((a, b) => new Date(b.lastMessageAt || b.createdAt).getTime() - new Date(a.lastMessageAt || a.createdAt).getTime()));
-      } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch conversations.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Network error fetching conversations.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentUserId, companyId]);
+  setIsLoading(true);
+  setError(null);
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/admin/conversations?companyId=${encodeURIComponent(companyId)}`,
+      { cache: 'no-store' }
+    );
+    const json = await res.json();
 
-  const fetchMessages = useCallback(async (convId: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${apiBaseUrl}/admin/conversations/${convId}/messages?userId=${encodeURIComponent(currentUserId)}`, {
-        cache: 'no-store'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        console.log(`Fetched messages for conversation ${convId}:`, data);
-        setCurrentMessages(data.messages || []);
-        await fetchConversations(); 
-      } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch messages.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Network error fetching messages.");
-    } finally {
-      setIsLoading(false);
+    if (res.ok && json.success) {
+      // Extract array from json.data
+      const conversationList: ConversationData[] = Array.isArray(json.data) ? json.data : [];
+      
+      setConversations(
+        conversationList.sort(
+          (a, b) => new Date(b.lastMessageAt || b.createdAt).getTime() - new Date(a.lastMessageAt || a.createdAt).getTime()
+        )
+      );
+    } else {
+      setError(json.message || json.error || "Failed to fetch conversations.");
     }
-  }, [currentUserId, fetchConversations]);
+  } catch (err: any) {
+    setError(err.message || "Network error fetching conversations.");
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentUserId, companyId]);
+
+const fetchMessages = useCallback(async (convId: string) => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/admin/conversations/${convId}/messages?userId=${encodeURIComponent(currentUserId)}`,
+      { cache: 'no-store' }
+    );
+    const json = await res.json();
+
+    if (res.ok && json.success) {
+      // Extract array from json.data.messages
+      const messagesList = json.data?.messages || [];
+      setCurrentMessages(messagesList);
+      await fetchConversations();
+    } else {
+      setError(json.message || json.error || "Failed to fetch messages.");
+    }
+  } catch (err: any) {
+    setError(err.message || "Network error fetching messages.");
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentUserId, fetchConversations]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

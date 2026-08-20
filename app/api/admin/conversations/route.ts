@@ -62,9 +62,16 @@ const serializeConversation = (entry: any) => {
   };
 };
 
-async function handleGet(request: Request) {
+async function handleGet(request: Request, context: { user?: any }) {
+  
+  // 1. Retrieve the authenticated user from the context
+  const currentUser = context.user;
+  
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId");
+  
+  // 2. Safely access the user's ID
+  const userId = searchParams.get("userId") || currentUser?.id || null;
+
   const companyId = searchParams.get("companyId");
   const includeArchived = searchParams.get("includeArchived") === "true";
 
@@ -90,7 +97,7 @@ async function handleGet(request: Request) {
     where: {
       isDeleted: false,
       ...(includeArchived ? {} : { isArchived: false }),
-      ...(userId ? { userId } : {}),
+      ...(userId && currentUser?.role?.toLowerCase() !== "admin" ? { userId } : {}),
       conversation: { companyId },
     },
     orderBy: {
@@ -161,7 +168,7 @@ async function handleGet(request: Request) {
   return formatResponse(true, serializedData, "Fetched", 200);
 }
 
-export const GET = withApiHandler(handleGet);
+export const GET = withApiHandler(handleGet, { requireAuth: true });
 
 async function handlePost(request: Request) {
   const body = await request.json();

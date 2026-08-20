@@ -16,6 +16,7 @@ type HandlerFn = (
 interface ApiHandlerOptions {
   requireAuth?: boolean;
   requireRateLimit?: boolean;
+  allowedRoles?: string[]; // Optional: Restrict access to specific roles
 }
 
 /* -----------------------------------------
@@ -43,7 +44,7 @@ function applyCors(response: Response) {
 ------------------------------------------ */
 export function withApiHandler(
   handler: HandlerFn,
-  options: ApiHandlerOptions = { requireAuth: true, requireRateLimit: true },
+  options: ApiHandlerOptions = { requireAuth: true, requireRateLimit: true, allowedRoles: [] },
 ): HandlerFn {
   return async (request: Request, context: HandlerContext) => {
     try {
@@ -71,10 +72,53 @@ export function withApiHandler(
         if (limitResponse) return applyCors(limitResponse);
       }
 
-      // --- Run actual API handler ---
+      // --- Role-based Access Control ---
+      if (options.allowedRoles && options.allowedRoles.length > 0) {
+        const userRole = context.user?.role?.toLowerCase();
+        const allowedRolesLower = options.allowedRoles.map((role) =>
+          role.toLowerCase(),
+        );
+
+        if (!userRole || !allowedRolesLower.includes(userRole)) {
+          return applyCors(
+            formatResponse(false, null, "Forbidden: Insufficient role", 403),
+          );
+        }
+      }
+
+      // --- Contextual Params ---
+      if (!context.params) {
+        context.params = {};
+      }
+
+      // --- Ensure JSON Content-Type for non-GET requests ---
+      if (request.method !== "GET" && request.method !== "OPTIONS") {
+        const contentType = request.headers.get("Content-Type");
+        if (!contentType || !contentType.includes("application/json")) {
+          return applyCors(
+            formatResponse(
+              false,
+              null,
+              "Content-Type must be application/json",
+              415,
+            ),
+          );
+        }
+      }
+
+      // --- Handle Query Parameters
+      const url = new URL(request.url);
+      const queryParams: Record<string, string> = {};
+      url.searchParams.forEach((value, key) => {
+        queryParams[key] = value;
+      });
+      context.params = { ...context.params, ...queryParams };
+
+      // --- Call the actual handler ---
       const response = await handler(request, context);
 
       return applyCors(response);
+    
     } catch (error) {
       return applyCors(handlePrismaError(error));
     }
