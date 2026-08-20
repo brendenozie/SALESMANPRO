@@ -215,6 +215,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
       });
       if (res.ok) {
         const data: ConversationData[] = await res.json();
+        console.log("Fetched conversations:", data);
         setConversations(data.sort((a, b) => new Date(b.lastMessageAt || b.createdAt).getTime() - new Date(a.lastMessageAt || a.createdAt).getTime()));
       } else {
         const errorData = await res.json();
@@ -236,7 +237,8 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
       });
       if (res.ok) {
         const data = await res.json();
-        setCurrentMessages(data.messages);
+        console.log(`Fetched messages for conversation ${convId}:`, data);
+        setCurrentMessages(data.messages || []);
         await fetchConversations(); 
       } else {
         const errorData = await res.json();
