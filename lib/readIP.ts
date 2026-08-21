@@ -1,3 +1,5 @@
+import { NextRequest } from "next/server";
+
 export function getClientIp(request: NextRequest): string | null {
   const xForwardedFor = request.headers.get("x-forwarded-for");
   if (xForwardedFor) {

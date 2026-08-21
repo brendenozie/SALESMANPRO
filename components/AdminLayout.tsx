@@ -19,18 +19,22 @@ import {
   MoonIcon,
   LockClosedIcon,
   ArrowRightIcon,
+  SparklesIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
 import { useStoreContext } from "@/contexts/StoreContext";
 import PricingSection from "@/app/stores/PricingSection";
 
-// --- Helper types and functions ---
+// --- Types ---
 export interface SubMenuItem {
   label: string;
   href?: string;
   minTier?: string;
   accessLevel?: string[];
   isLocked?: boolean;
+  requiredTier?: string;
 }
 
 export interface MenuItem {
@@ -41,6 +45,7 @@ export interface MenuItem {
   accessLevel?: string[];
   subItems?: SubMenuItem[];
   isLocked?: boolean;
+  requiredTier?: string;
 }
 
 type Role = "STUDENT" | "EDUCATOR" | "PARENT" | "SCHOOL_DRIVER" | string;
@@ -58,6 +63,8 @@ const PricingModal = ({
   email,
   category,
   currentTier,
+  requiredTier,
+  featureName,
   onSubscriptionSuccess,
 }: {
   isOpen: boolean;
@@ -66,6 +73,8 @@ const PricingModal = ({
   email: string;
   category: string;
   currentTier?: string;
+  requiredTier: string;
+  featureName: string;
   onSubscriptionSuccess: () => void;
 }) => {
   return (
@@ -75,27 +84,30 @@ const PricingModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md overflow-y-auto h-full w-full flex justify-center z-40 p-3 sm:p-6"
+          className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md overflow-y-auto h-full w-full flex justify-center z-50 p-3 sm:p-6"
         >
           <motion.div
-            initial={{ y: "30px", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "30px", opacity: 0 }}
-            transition={{ type: "spring", duration: 0.4 }}
-            className="relative bg-slate-50 dark:bg-slate-950 rounded-2xl shadow-2xl w-full max-w-7xl my-auto border border-slate-200 dark:border-slate-800"
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ type: "spring", duration: 0.35 }}
+            className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-7xl my-auto border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 z-50 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 z-50 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors"
+              aria-label="Close modal"
             >
               <XMarkIcon className="h-5 w-5 stroke-[2.5]" />
             </button>
-            <div className="overflow-y-auto h-full max-h-[calc(100vh-6rem)] rounded-2xl">
+            <div className="overflow-y-auto h-full max-h-[calc(100vh-6rem)] rounded-2xl p-2 sm:p-4">
               <PricingSection
                 companyId={companyId}
                 email={email}
                 category={category}
                 currentTier={currentTier}
+                requiredTier={requiredTier}
+                featureName={featureName}
                 onSubscriptionSuccess={onSubscriptionSuccess}
               />
             </div>
@@ -167,20 +179,18 @@ export default function AdminLayout({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
-  
-  // Pricing & Modal State
+
+  // Pricing & Lock State
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isCurrentRouteLocked, setIsCurrentRouteLocked] = useState(false);
-
-  // Track the required tier for the locked route
   const [requiredPlan, setRequiredPlan] = useState<string | null>(null);
 
   // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // 1. Dark Mode Sync Effect
+  // 1. Theme Synchronization
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -193,6 +203,18 @@ export default function AdminLayout({
       document.documentElement.classList.remove("dark");
     }
   }, []);
+
+  const toggleDarkMode = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+      setIsDarkMode(false);
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      setIsDarkMode(true);
+    }
+  };
 
   // 2. POS Navigation Check
   const shouldHideNav = useMemo(() => {
@@ -207,42 +229,40 @@ export default function AdminLayout({
     return posRoutes.some((route) => pathname.endsWith(route));
   }, [pathname]);
 
-  const handleManageSubscription = (companyId: string, category: string) => {
-    setSelectedCompanyId(companyId);
-    setSelectedCategory(category);
-    setIsPricingModalOpen(true);    
-    setIsCollapsed(false); // Collapse the sidebar when opening the modal
-  };
-
   const handleSubscriptionSuccess = () => {
     setIsPricingModalOpen(false);
     setIsCollapsed(true);
-    mutate(``); // Refresh the current route to reflect subscription changes
+    mutate(``);
   };
 
-  // 3. Category & Menus Memoization
+  // 3. Subscription & Menu Derivations
   const companyId: string = storeFormData?.id || "";
   const slug: string = storeFormData?.slug || "";
 
-  // Extract the specific store's active subscription tier
   const currentTier = storeFormData?.subscription?.plan?.name || "INACTIVE";
   const currentTierStatus = storeFormData?.subscription?.status || "INACTIVE";
+  const isSubscriptionActive = currentTierStatus === "ACTIVE";
+
+  const hasUnlimitedPass =
+    isSubscriptionActive &&
+    (currentTier === "Ghuba Free" || currentTier === "Ghuba Trial");
 
   const categoryType = useMemo(() => {
-    const category = storeFormData?.name === "Ghuba" ? storeFormData?.name : storeFormData?.category;
+    const category =
+      storeFormData?.name === "Ghuba"
+        ? storeFormData?.name
+        : storeFormData?.category;
     if (!category) return "Other";
 
-    // Separate automotive and automotive parts, but show same category name in sidebar
     if (category.toLowerCase() === "automotive") {
       return capitalize(storeFormData?.variant || "Other");
     }
     return capitalize(category);
-  }, [storeFormData?.category, storeFormData?.variant]);
+  }, [storeFormData?.category, storeFormData?.variant, storeFormData?.name]);
 
-  // Pass the tier downward
   const menus = useMemo(
-    () => getCategoryMenus(slug, userRole, currentTier, currentTierStatus === "ACTIVE"),
-    [slug, userRole, currentTier, currentTierStatus]
+    () => getCategoryMenus(slug, userRole, currentTier, isSubscriptionActive),
+    [slug, userRole, currentTier, isSubscriptionActive]
   );
 
   const menuItems = useMemo(
@@ -255,33 +275,44 @@ export default function AdminLayout({
     let locked = false;
     let requiredTier: string | null = null;
 
-    // Check if the current pathname matches a locked menu item
+    const isMatch = (targetHref?: string) => {
+      if (!targetHref) return false;
+      if (pathname === targetHref) return true;
+      return targetHref !== `/admin/${slug}` && pathname.startsWith(`${targetHref}/`);
+    };
+
     for (const item of menuItems) {
-      if (item.href && pathname.startsWith(item.href) && item.isLocked) {
-        locked = true;
-        requiredTier = item.minTier || null;
-        break;
-      }
-      if (item.subItems) {
+      if (item.subItems?.length) {
         for (const sub of item.subItems) {
-          if (sub.href && pathname.startsWith(sub.href) && sub.isLocked) {
+          if (isMatch(sub.href) && sub.isLocked) {
             locked = true;
-            requiredTier = sub.minTier || null;
+            requiredTier =
+              sub.requiredTier ||
+              sub.minTier ||
+              item.requiredTier ||
+              item.minTier ||
+              "Ghuba Basic";
             break;
           }
         }
       }
       if (locked) break;
+
+      if (isMatch(item.href) && item.isLocked) {
+        locked = true;
+        requiredTier = item.requiredTier || item.minTier || "Ghuba Basic";
+        break;
+      }
     }
 
     setIsCurrentRouteLocked(locked);
 
     if (locked) {
-      setRequiredPlan(requiredTier); 
+      setRequiredPlan(requiredTier);
       setIsPricingModalOpen(true);
       setIsCollapsed(true);
     }
-  }, [pathname, menuItems]);
+  }, [pathname, menuItems, slug]);
 
   // 5. Auto-expand Active Category
   useEffect(() => {
@@ -313,18 +344,6 @@ export default function AdminLayout({
     return storeFormData?.name || "Company Portal";
   }, [storeFormData?.name]);
 
-  const toggleDarkMode = () => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setIsDarkMode(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setIsDarkMode(true);
-    }
-  };
-
   const handleSignOut = () => {
     const returnTo = window.location.origin;
     signOut({
@@ -333,48 +352,101 @@ export default function AdminLayout({
     });
   };
 
-  const handleNavigation = (e: React.MouseEvent, item: MenuItem | SubMenuItem) => {
+  const openSubscriptionModal = () => {
+    setSelectedCompanyId(companyId);
+    setSelectedCategory(storeFormData?.category || "Other");
+    setRequiredPlan(null);
+    setIsPricingModalOpen(true);
+  };
+
+  const handleNavigation = (
+    e: React.MouseEvent,
+    item: MenuItem | SubMenuItem,
+    parentItem?: MenuItem
+  ) => {
     if (item.isLocked) {
-      e.preventDefault(); // Stop Next.js router from navigating
-      setIsCollapsed(true); // Expand sidebar if collapsed
-      setRequiredPlan(item.minTier || null); 
-      setIsPricingModalOpen(true); 
+      e.preventDefault();
+      setIsCollapsed(true);
+
+      const resolvedTier =
+        item.requiredTier ||
+        item.minTier ||
+        parentItem?.requiredTier ||
+        parentItem?.minTier ||
+        "Ghuba Basic";
+
+      setRequiredPlan(resolvedTier);
+      setSelectedCompanyId(companyId);
+      setSelectedCategory(storeFormData?.category || "Other");
+      setIsPricingModalOpen(true);
     }
   };
 
-  // =========================================================================
-  // EARLY RETURNS
-  // =========================================================================
+  const renderTierBadge = () => {
+    if (hasUnlimitedPass) {
+      return (
+        <button
+          type="button"
+          onClick={openSubscriptionModal}
+          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 hover:bg-amber-200 dark:hover:bg-amber-900/80 transition-colors cursor-pointer"
+          title="Click to manage subscription"
+        >
+          <SparklesIcon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+          <span>{currentTier} (All Access)</span>
+        </button>
+      );
+    }
 
-  // Full-Screen POS Layout Bypass
+    if (isSubscriptionActive) {
+      return (
+        <button
+          type="button"
+          onClick={openSubscriptionModal}
+          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900/80 transition-colors cursor-pointer"
+          title="Click to manage subscription"
+        >
+          <CheckCircleIcon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>{currentTier}</span>
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={openSubscriptionModal}
+        className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800 hover:bg-rose-200 dark:hover:bg-rose-900/80 transition-colors cursor-pointer"
+        title="Click to upgrade subscription"
+      >
+        <ExclamationTriangleIcon className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+        <span>Inactive / Expired</span>
+      </button>
+    );
+  };
+
   if (shouldHideNav) {
     return (
-      <main className="w-screen h-screen overflow-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <main className="w-screen h-screen overflow-auto bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         {children}
       </main>
     );
   }
 
-  // Operational Roles Bypass
   if (
     userRole === "JUNIOR" ||
     userRole === "SCHOOL_DRIVER" ||
     userRole === "STORE_DRIVER"
   ) {
     return (
-      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         {children}
       </main>
     );
   }
 
-  // =========================================================================
-  // MAIN RENDER
-  // =========================================================================
   return (
     <>
-      <div className="flex h-screen bg-gray-100 dark:bg-slate-950 overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200">
-        {/* MOBILE OVERLAY BACKDROP */}
+      <div className="flex h-screen bg-slate-100 dark:bg-slate-950 overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200">
         {mobileOpen && (
           <div
             onClick={() => setMobileOpen(false)}
@@ -382,13 +454,11 @@ export default function AdminLayout({
           />
         )}
 
-        {/* SIDEBAR */}
         <aside
           className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-slate-900 dark:bg-slate-900 text-slate-100 transition-all duration-300 ease-in-out shadow-2xl ${
             mobileOpen ? "translate-x-0 w-72" : "-translate-x-full"
           } lg:translate-x-0 ${isCollapsed ? "lg:w-20" : "lg:w-64"}`}
         >
-          {/* BRANDING / USER PROFILE HEADER */}
           <div className="flex items-center justify-between p-4 border-b border-slate-800">
             <div className="flex items-center space-x-3 overflow-hidden">
               <div className="h-10 w-10 min-w-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-md">
@@ -404,6 +474,17 @@ export default function AdminLayout({
                       {companyDisplayName}
                     </span>
                   )}
+                  <div className="mt-1">
+                    <span
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                        isSubscriptionActive
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                      }`}
+                    >
+                      {currentTier}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -417,7 +498,6 @@ export default function AdminLayout({
             </button>
           </div>
 
-          {/* NAVIGATION LINKS */}
           <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
             {menuItems.map((item) => {
               const isActiveParent = item.subItems
@@ -439,7 +519,11 @@ export default function AdminLayout({
                           : isActiveParent
                           ? "bg-sky-600 text-white shadow-lg shadow-sky-600/30"
                           : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                      } ${isCollapsed && !mobileOpen ? "justify-center" : "space-x-3"}`}
+                      } ${
+                        isCollapsed && !mobileOpen
+                          ? "justify-center"
+                          : "space-x-3"
+                      }`}
                     >
                       {item.icon ? (
                         <item.icon className="h-5 w-5 shrink-0" />
@@ -459,7 +543,7 @@ export default function AdminLayout({
                     {isCollapsed && !mobileOpen && (
                       <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
                         {item.label}
-                        {item.isLocked && " (Locked)"}
+                        {item.isLocked && ` (${item.requiredTier || item.minTier || "Locked"})`}
                       </div>
                     )}
                   </div>
@@ -505,52 +589,55 @@ export default function AdminLayout({
                         <span className="truncate">{item.label}</span>
                       )}
                     </div>
-                    {(!isCollapsed || mobileOpen) && (
-                      item.isLocked ? (
+                    {(!isCollapsed || mobileOpen) &&
+                      (item.isLocked ? (
                         <LockClosedIcon className="h-4 w-4 shrink-0 opacity-70" />
                       ) : (
                         <ChevronDownIcon
                           className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-                            isOpen ? "rotate-180 text-sky-400" : "text-slate-400"
+                            isOpen
+                              ? "rotate-180 text-sky-400"
+                              : "text-slate-400"
                           }`}
                         />
-                      )
-                    )}
+                      ))}
                   </button>
 
-                  {isOpen && (!isCollapsed || mobileOpen) && !item.isLocked && (
-                    <div className="mt-1 ml-4 pl-3 border-l border-slate-700/60 space-y-1">
-                      {item.subItems.map((sub) => {
-                        const isActiveSub = sub.href
-                          ? pathname.startsWith(sub.href)
-                          : false;
-                        return (
-                          <Link
-                            key={sub.label}
-                            href={sub.href || "#"}
-                            onClick={(e) => handleNavigation(e, sub)}
-                            className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-all duration-150 ${
-                              sub.isLocked
-                                ? "text-slate-500 hover:bg-slate-800/50"
-                                : isActiveSub
-                                ? "bg-sky-600/20 text-sky-400 font-semibold"
-                                : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                            }`}
-                          >
-                            <span className="truncate">{sub.label}</span>
-                            {sub.isLocked && (
-                              <LockClosedIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {isOpen &&
+                    (!isCollapsed || mobileOpen) &&
+                    !item.isLocked && (
+                      <div className="mt-1 ml-4 pl-3 border-l border-slate-700/60 space-y-1">
+                        {item.subItems.map((sub) => {
+                          const isActiveSub = sub.href
+                            ? pathname.startsWith(sub.href)
+                            : false;
+                          return (
+                            <Link
+                              key={sub.label}
+                              href={sub.href || "#"}
+                              onClick={(e) => handleNavigation(e, sub, item)}
+                              className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-all duration-150 ${
+                                sub.isLocked
+                                  ? "text-slate-500 hover:bg-slate-800/50"
+                                  : isActiveSub
+                                  ? "bg-sky-600/20 text-sky-400 font-semibold"
+                                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                              }`}
+                            >
+                              <span className="truncate">{sub.label}</span>
+                              {sub.isLocked && (
+                                <LockClosedIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
 
                   {isCollapsed && !mobileOpen && (
                     <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
                       {item.label}
-                      {item.isLocked && " (Locked)"}
+                      {item.isLocked && ` (${item.minTier || "Locked"})`}
                     </div>
                   )}
                 </div>
@@ -558,7 +645,6 @@ export default function AdminLayout({
             })}
           </nav>
 
-          {/* SIDEBAR FOOTER */}
           <div className="p-3 border-t border-slate-800 space-y-1">
             <button
               onClick={() => setIsCollapsed((prev) => !prev)}
@@ -594,7 +680,6 @@ export default function AdminLayout({
           </div>
         </aside>
 
-        {/* MAIN VIEWPORT */}
         <div
           className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
             isCollapsed ? "lg:pl-20" : "lg:pl-64"
@@ -610,13 +695,12 @@ export default function AdminLayout({
                 <Bars3Icon className="h-6 w-6" />
               </button>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 <span className="font-bold text-base sm:text-lg text-slate-900 dark:text-white truncate">
                   {companyDisplayName || "Dashboard"}
                 </span>
-                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 capitalize">
-                  {formattedRole}
-                </span>
+
+                {renderTierBadge()}
               </div>
             </div>
 
@@ -625,7 +709,9 @@ export default function AdminLayout({
                 onClick={toggleDarkMode}
                 className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 aria-label="Toggle light and dark mode"
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                title={
+                  isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+                }
               >
                 {isDarkMode ? (
                   <SunIcon className="h-5 w-5 text-amber-400" />
@@ -647,39 +733,62 @@ export default function AdminLayout({
 
           <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-200 relative">
             {isCurrentRouteLocked ? (
-              <div className="flex items-center justify-center h-full min-h-[50vh] p-6">
-                <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-lg w-full mx-auto">
-                  <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                    <LockClosedIcon className="h-8 w-8 text-slate-400" />
+              <div className="flex items-center justify-center h-full min-h-[60vh] p-4 sm:p-6">
+                <div className="text-center p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 max-w-lg w-full mx-auto transition-colors">
+                  <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                    <LockClosedIcon className="h-8 w-8 text-sky-600 dark:text-sky-400" />
                   </div>
-                  
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Content Locked</h2>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">
-                    You need a higher subscription tier to access this section of the dashboard.
+
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                    Access Upgrade Required
+                  </h2>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
+                    This feature requires the{" "}
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {requiredPlan || "higher tier"}
+                    </span>{" "}
+                    plan or above.
                   </p>
 
-                  {/* UI BENTO GRID: CURRENT VS REQUIRED TIER */}
-                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-8 border border-slate-100 dark:border-slate-700">
+                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-6 border border-slate-200 dark:border-slate-700/60 shadow-sm">
                     <div className="flex flex-col text-left">
-                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Current Plan</span>
-                      <span className="text-lg font-bold text-slate-700 dark:text-slate-300 capitalize">
-                        {currentTier === "INACTIVE" ? "Free / Inactive" : currentTier}
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                        Current Access
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 capitalize">
+                        {currentTier === "INACTIVE"
+                          ? "Expired / None"
+                          : currentTier}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {isSubscriptionActive ? "Active Plan" : "Subscription Inactive"}
                       </span>
                     </div>
-                    
-                    <ArrowRightIcon className="h-6 w-6 text-slate-300 dark:text-slate-600" />
-                    
+
+                    <ArrowRightIcon className="h-6 w-6 text-slate-400 dark:text-slate-500 shrink-0 mx-2" />
+
                     <div className="flex flex-col text-right">
-                      <span className="text-xs font-medium text-sky-500 uppercase tracking-wider mb-1">Required Plan</span>
-                      <span className="text-lg font-bold text-sky-600 dark:text-sky-400 capitalize">
-                        {requiredPlan || "To premium Tier"}
+                      <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-1">
+                        Required Plan
+                      </span>
+                      <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 capitalize">
+                        {requiredPlan || "Upgrade Required"}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        Minimum Tier
                       </span>
                     </div>
                   </div>
 
+                  {hasUnlimitedPass && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-6 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-lg border border-amber-200 dark:border-amber-900/50">
+                      Note: You are currently on an active {currentTier} pass. If you are seeing this, contact support to sync your store permissions.
+                    </p>
+                  )}
+
                   <button
-                    onClick={() => setIsPricingModalOpen(true)}
-                    className="w-full px-6 py-3 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 transition-colors shadow-lg shadow-sky-600/30"
+                    onClick={openSubscriptionModal}
+                    className="w-full px-6 py-3.5 bg-sky-600 text-white font-semibold rounded-xl hover:bg-sky-700 transition-colors shadow-lg shadow-sky-600/25 active:scale-[0.98]"
                   >
                     View Upgrade Options
                   </button>
@@ -690,36 +799,17 @@ export default function AdminLayout({
             )}
           </main>
         </div>
-
-        <style jsx global>{`
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 9999px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-          }
-        `}</style>
       </div>
 
-      {/* Subscription Checkout Gateway Modal Overlay */}
       <PricingModal
         isOpen={isPricingModalOpen}
-        onClose={() => {
-          setIsPricingModalOpen(false);
-          setIsCollapsed(true);
-          setRequiredPlan(null); // Reset on close
-        }}
-        companyId={selectedCompanyId || storeFormData?.id || null}
+        onClose={() => setIsPricingModalOpen(false)}
+        companyId={selectedCompanyId}
         email={session?.user?.email || ""}
-        category={selectedCategory || storeFormData?.category || "Other"}
-        currentTier={requiredPlan || undefined} 
+        category={selectedCategory}
+        currentTier={currentTier}
+        requiredTier={requiredPlan || ""}
+        featureName={pathname}
         onSubscriptionSuccess={handleSubscriptionSuccess}
       />
     </>

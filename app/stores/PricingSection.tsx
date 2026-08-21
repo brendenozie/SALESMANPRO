@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
+import {
+  CheckIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  SparklesIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ArrowRightIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+import { convertKEStoUSD } from "@/lib/hooks/useUserCountry";
 
 // --- Types & Interfaces ---
 interface SiteTypePricing {
@@ -27,28 +36,25 @@ interface PricingSectionProps {
   email: string;
   category: string;
   currentTier?: string;
+  requiredTier?: string;
+  featureName?: string;
   onSubscriptionSuccess: () => void;
 }
 
-const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; 
+const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67";
 const MPESA_TILL = "537214";
 
-// --- Clean SVG Icons ---
-const CheckIcon = () => (
-  <svg className="w-4 h-4 flex-shrink-0 text-emerald-500 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg className="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8" />
-  </svg>
-);
-
-export default function PricingSection({ companyId, email, category, currentTier, onSubscriptionSuccess }: PricingSectionProps) {
-  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
+export default function PricingSection({
+  companyId,
+  email,
+  category,
+  currentTier = "Ghuba Basic",
+  requiredTier = "Premium Tier",
+  featureName,
+  onSubscriptionSuccess,
+}: PricingSectionProps) {
+  const paystackPublicKey =
+    process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,17 +69,6 @@ export default function PricingSection({ companyId, email, category, currentTier
   const [mpesaPhone, setMpesaPhone] = useState("");
   const [mpesaRef, setMpesaRef] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-
-  // Helper logic to cleanly structure structural plan arrays for mobile/desktop distribution priorities
-  const sortPlansWithPriority = (unsortedPlans: Plan[]): Plan[] => {
-    if (!unsortedPlans || unsortedPlans.length === 0) return [];
-    const popularIndex = unsortedPlans.findIndex(p => p.isPopular);
-    if (popularIndex <= 0) return unsortedPlans; // Already prioritized or not found
-
-    const workingCopy = [...unsortedPlans];
-    const [popularPlan] = workingCopy.splice(popularIndex, 1);
-    return [popularPlan, ...workingCopy];
-  };
 
   const getPlanPrice = (plan: Plan, period: "MONTHLY" | "ANNUALLY"): number => {
     let pricingNode: SiteTypePricing | undefined;
@@ -106,11 +101,11 @@ export default function PricingSection({ companyId, email, category, currentTier
     const fetchPlans = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/plans?companyId=${defaultCompanyId}&category=${category}`, { credentials: 'include' });
+        const res = await fetch(`/api/plans?companyId=${defaultCompanyId}&category=${category}`, { credentials: "include" });
         if (!res.ok) throw new Error();
         const data = await res.json();
-        const structuredPlans = data.plans?.length ? data.plans : [];
-        setPlans(sortPlansWithPriority(structuredPlans));
+        const structuredPlans: Plan[] = data.plans?.length ? data.plans : [];
+        setPlans(structuredPlans);
       } catch (err) {
         console.warn("Using mock plans due to fetch error");
         setPlans([]);
@@ -121,18 +116,51 @@ export default function PricingSection({ companyId, email, category, currentTier
     fetchPlans();
   }, [category]);
 
+  // --- Tier Filtering & Sorting Logic ---
+  const displayedPlans = useMemo(() => {
+    if (!plans || plans.length === 0) return [];
+
+    // Sort plans sequentially by monthly price
+    const sortedByPrice = [...plans].sort(
+      (a, b) => getPlanPrice(a, "MONTHLY") - getPlanPrice(b, "MONTHLY")
+    );
+
+    // Identify current plan object
+    const currentPlanIndex = sortedByPrice.findIndex(
+      (p) =>
+        p.name.toLowerCase() === currentTier?.toLowerCase() ||
+        p.id === currentTier ||
+        p._id?.$oid === currentTier
+    );
+
+    // If current plan found, filter out all tiers strictly below it
+    const filteredPlans =
+      currentPlanIndex !== -1 ? sortedByPrice.slice(currentPlanIndex) : sortedByPrice;
+
+    // Prioritize required/popular tier to front if present
+    const popularIndex = filteredPlans.findIndex(
+      (p) => p.isPopular || p.name.toLowerCase() === requiredTier.toLowerCase()
+    );
+
+    if (popularIndex <= 0) return filteredPlans;
+
+    const workingCopy = [...filteredPlans];
+    const [priorityPlan] = workingCopy.splice(popularIndex, 1);
+    return [priorityPlan, ...workingCopy];
+  }, [plans, currentTier, requiredTier, category]);
+
   useEffect(() => {
     const calcUsd = async () => {
       if (!isOutsideKenya) return;
       const prices: Record<string, number> = {};
-      for (const plan of plans) {
+      for (const plan of displayedPlans) {
         const cost = getPlanPrice(plan, billingPeriod);
         prices[plan.id || "unknown"] = await convertKEStoUSD(cost);
       }
       setUsdPrices(prices);
     };
     calcUsd();
-  }, [isOutsideKenya, plans, billingPeriod]);
+  }, [isOutsideKenya, displayedPlans, billingPeriod]);
 
   const handlePlanSelect = async (plan: Plan) => {
     setLoading(true);
@@ -141,11 +169,7 @@ export default function PricingSection({ companyId, email, category, currentTier
       const planId = plan.id || plan._id?.$oid;
       if (!price || !planId) throw new Error("Invalid plan configuration");
 
-      let chargeAmount = price;
-      // if (isOutsideKenya) {
-      //   chargeAmount = Math.round((await convertKEStoUSD(price)) * 100) / 100;
-      // }
-      const amountInKobo = Math.round(chargeAmount * 100);
+      const amountInKobo = Math.round(price * 100);
 
       const res = await fetch("/api/payments/subscribe", {
         method: "POST",
@@ -153,7 +177,7 @@ export default function PricingSection({ companyId, email, category, currentTier
         body: JSON.stringify({
           companyId,
           planId,
-          currency: "KES", // isOutsideKenya ? "USD" : "KES",
+          currency: "KES",
           amount: amountInKobo,
           billingPeriod,
           monthsPaidFor: billingPeriod === "MONTHLY" ? 1 : 0,
@@ -175,7 +199,7 @@ export default function PricingSection({ companyId, email, category, currentTier
         email: email,
         amount: amountInKobo,
         ref: data.data.data.reference,
-        currency: "KES", // isOutsideKenya ? "USD" : "KES",
+        currency: "KES",
         metadata: { companyId, planId },
         callback: (response: any) => {
           window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
@@ -255,18 +279,17 @@ export default function PricingSection({ companyId, email, category, currentTier
     return null;
   };
 
-  // Determine current active plan state and price baseline
   const currentPlanObj = plans.find(
-    (p) => 
-      p.name.toLowerCase() === currentTier?.toLowerCase() || 
-      p.id === currentTier || 
+    (p) =>
+      p.name.toLowerCase() === currentTier?.toLowerCase() ||
+      p.id === currentTier ||
       p._id?.$oid === currentTier
   );
   const currentPlanMonthlyPrice = currentPlanObj ? getPlanPrice(currentPlanObj, "MONTHLY") : 0;
 
   return (
     <div className="w-full min-h-screen font-sans bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-300">
-      {/* Toast System */}
+      {/* Toast Notification */}
       <AnimatePresence>
         {subscriptionStatus && (
           <motion.div
@@ -282,24 +305,60 @@ export default function PricingSection({ companyId, email, category, currentTier
         )}
       </AnimatePresence>
 
-      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto">
-        {/* Header Block */}
-        <div className="text-center mb-12">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <span className="text-sm font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest bg-orange-50 dark:bg-orange-950/40 px-3 py-1.5 rounded-full">
-              Flexible Subscriptions
-            </span>
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mt-4 mb-4">
-              Pricing for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">SalesmanPro</span>
-            </h2>
-            <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-              Select a scalable configuration calibrated to support your operations without complex contractual cycles.
-            </p>
+      <section className="py-12 md:py-16 px-4 max-w-7xl mx-auto">
+        {/* --- Access Lock Banner --- */}
+        {requiredTier && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-orange-950/40 to-slate-900 border border-orange-500/30 shadow-2xl text-white relative overflow-hidden"
+          >
+            <div className="absolute right-[-20px] top-[-20px] opacity-10 pointer-events-none">
+              <LockClosedIcon className="w-64 h-64 text-orange-500" />
+            </div>
+
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-semibold tracking-wide uppercase">
+                  <LockClosedIcon className="w-3.5 h-3.5" /> Access Upgrade Required
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  {/* if feature is path take the last segment of the path and use it as the feature name, otherwise use the featureName prop */}
+                  {featureName ? `Unlock ${featureName?.includes("/") ? featureName.split("/").pop() : featureName}` : "Upgrade to access this section"}
+                </h2>
+                <p className="text-slate-300 text-xs md:text-sm leading-relaxed">
+                  This feature requires higher plan capabilities than your current store tier. Select a plan below to gain instant access.
+                </p>
+              </div>
+
+              {/* Status Pill Matrix */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800 backdrop-blur-sm">
+                <div className="px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Current Access</p>
+                  <p className="text-xs font-bold text-slate-300">{currentTier}</p>
+                </div>
+                <ArrowRightIcon className="w-4 h-4 text-orange-400 hidden sm:block self-center" />
+                <div className="px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/30 text-center">
+                  <p className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Required Plan</p>
+                  <p className="text-xs font-bold text-orange-300">{requiredTier}</p>
+                </div>
+              </div>
+            </div>
           </motion.div>
+        )}
+
+        {/* Dynamic Controls Header */}
+        <div className="text-center mb-10">
+          <h3 className="text-3xl font-extrabold tracking-tight">
+            Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">SalesmanPro</span> Plan
+          </h3>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-lg mx-auto">
+            Upgrade or switch plans instantly. Payments are securely processed via M-Pesa or Card.
+          </p>
         </div>
 
         {/* Global Controls Grid */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           {/* Term Toggle */}
           <div className="bg-slate-200/60 dark:bg-slate-900 p-1 rounded-full inline-flex relative border border-slate-300/30">
             <motion.div
@@ -326,50 +385,37 @@ export default function PricingSection({ companyId, email, category, currentTier
               }`}
             >
               Annually
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-orange-500 text-white font-bold">
-                -20%
-              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-orange-500 text-white font-bold">-20%</span>
             </button>
           </div>
 
           {/* Location/Currency Switcher */}
           <button
-            onClick={() => {
-              setIsOutsideKenya(!isOutsideKenya);
-              // setPaymentMethod("PAYSTACK");
-            }}
+            onClick={() => setIsOutsideKenya(!isOutsideKenya)}
             className={`flex items-center text-xs font-semibold px-4 py-2.5 rounded-full border transition-all ${
               isOutsideKenya
                 ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 border-transparent shadow-sm"
                 : "bg-transparent text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900"
             }`}
           >
-            <GlobeIcon />
+            <GlobeAltIcon className="w-4 h-4 mr-2" />
             {isOutsideKenya ? "Viewing Global Rates (USD)" : "Viewing East Africa Rates (KES)"}
           </button>
         </div>
 
         {/* Dynamic Card Architecture */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-          {plans.map((plan, index) => {
+          {displayedPlans.map((plan, index) => {
             const planId = plan.id || plan._id?.$oid || `plan-${index}`;
-            const isPopular = plan.isPopular;
+            const isRequiredTarget = plan.name.toLowerCase() === requiredTier.toLowerCase();
             const isPlanSelected = selectedPlan === plan;
 
-            // Tier evaluation logic
-            const isCurrentTier = currentPlanObj === plan;
+            const isCurrentTier =
+              plan.name.toLowerCase() === currentTier?.toLowerCase() ||
+              plan.id === currentTier ||
+              plan._id?.$oid === currentTier;
             const planPriceMonthly = getPlanPrice(plan, "MONTHLY");
             const isUpgrade = Boolean(currentTier && !isCurrentTier && planPriceMonthly > currentPlanMonthlyPrice);
-
-            // CSS Layout Order logic assignments:
-            let orderClass = "order-none";
-            if (isPopular) {
-              orderClass = "md:order-2"; 
-            } else if (index === 1) {
-              orderClass = "md:order-1"; 
-            } else {
-              orderClass = "md:order-3"; 
-            }
 
             return (
               <motion.div
@@ -378,45 +424,39 @@ export default function PricingSection({ companyId, email, category, currentTier
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className={`relative flex flex-col p-6 md:p-8 rounded-3xl transition-all duration-300 ${orderClass} ${
+                className={`relative flex flex-col p-6 md:p-8 rounded-3xl transition-all duration-300 ${
                   isCurrentTier
-                    ? "bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-300 dark:border-slate-700 z-0 opacity-80"
-                    : isPopular
-                    ? "bg-white dark:bg-slate-900 shadow-xl ring-2 ring-orange-500 md:scale-[1.03] z-10"
+                    ? "bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-300 dark:border-slate-700 z-0 opacity-75"
+                    : isRequiredTarget
+                    ? "bg-white dark:bg-slate-900 shadow-2xl ring-2 ring-orange-500 md:scale-[1.03] z-10"
                     : "bg-white dark:bg-slate-900 shadow-md border border-slate-100 dark:border-slate-800/60 hover:shadow-lg"
                 }`}
               >
                 {/* Badges */}
                 {isCurrentTier && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-700 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md">
-                    Current Plan
+                    Current Active Plan
                   </div>
                 )}
 
-                {isPopular && !isCurrentTier && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md">
-                    Most Popular
+                {isRequiredTarget && !isCurrentTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
+                    <SparklesIcon className="w-3.5 h-3.5" /> Required Upgrade
                   </div>
                 )}
 
                 <div className="mb-4">
                   <h3 className="text-xl font-bold">{plan.name}</h3>
-                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 min-h-[32px]">
-                    {plan.tagline}
-                  </p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 min-h-[32px]">{plan.tagline}</p>
                 </div>
 
                 <div className="mb-6 flex items-baseline">
-                  <span className="text-4xl font-extrabold tracking-tight">
-                    {renderPrice(plan)}
-                  </span>
-                  <span className="text-slate-400 font-medium text-sm ml-2">
-                    /{billingPeriod === "MONTHLY" ? "mo" : "yr"}
-                  </span>
+                  <span className="text-4xl font-extrabold tracking-tight">{renderPrice(plan)}</span>
+                  <span className="text-slate-400 font-medium text-sm ml-2">/{billingPeriod === "MONTHLY" ? "mo" : "yr"}</span>
                   {billingPeriod === "ANNUALLY" && renderSavingsBadge(plan)}
                 </div>
 
-                {/* Conditional Sub-Card Layout for Selection Context */}
+                {/* Selection Checkout Interface */}
                 <AnimatePresence mode="wait">
                   {isPlanSelected ? (
                     <motion.div
@@ -425,7 +465,6 @@ export default function PricingSection({ companyId, email, category, currentTier
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden mb-6 space-y-4"
                     >
-                      {/* Interactive Checkout Engine */}
                       <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/20">
                         <button
                           onClick={() => setPaymentMethod("PAYSTACK")}
@@ -440,9 +479,7 @@ export default function PricingSection({ companyId, email, category, currentTier
                         <button
                           onClick={() => setPaymentMethod("MPESA")}
                           className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                            paymentMethod === "MPESA"
-                              ? "bg-emerald-600 text-white shadow-sm"
-                              : "text-slate-400 hover:text-slate-600"
+                            paymentMethod === "MPESA" ? "bg-emerald-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"
                           }`}
                         >
                           M-Pesa Till
@@ -453,17 +490,15 @@ export default function PricingSection({ companyId, email, category, currentTier
                       {paymentMethod === "MPESA" ? (
                         <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-3 text-xs">
                           <div className="flex justify-between items-center pb-2 border-b border-emerald-500/10">
-                            <span className="font-bold text-emerald-800 dark:text-emerald-400">
-                              Lipa Na M-Pesa Instruction
-                            </span>
-                            <span className="bg-emerald-600 text-white px-2 py-0.5 rounded font-mono font-bold">
-                              Till: {MPESA_TILL}
-                            </span>
+                            <span className="font-bold text-emerald-800 dark:text-emerald-400">Lipa Na M-Pesa Instruction</span>
+                            <span className="bg-emerald-600 text-white px-2 py-0.5 rounded font-mono font-bold">Till: {MPESA_TILL}</span>
                           </div>
                           <ol className="list-decimal pl-4 space-y-1 text-slate-600 dark:text-slate-400">
                             <li>Access your M-Pesa SIM tool or app.</li>
                             <li>Execute <b>Buy Goods and Services</b>.</li>
-                            <li>Input amount exact: <b className="text-slate-900 dark:text-slate-100">{renderPrice(plan)}</b></li>
+                            <li>
+                              Input amount exact: <b className="text-slate-900 dark:text-slate-100">{renderPrice(plan)}</b>
+                            </li>
                           </ol>
 
                           <div className="space-y-2 pt-2">
@@ -495,13 +530,12 @@ export default function PricingSection({ companyId, email, category, currentTier
                                 disabled={mpesaPaymentLoading || loading}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold transition-all disabled:opacity-50 text-center"
                               >
-                                {mpesaPaymentLoading ? "Validating Code..." : "Verify Settlement"}
+                                {mpesaPaymentLoading ? "Validating..." : "Verify Settlement"}
                               </button>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        /* Paystack Inline Framework Call Button */
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -522,35 +556,42 @@ export default function PricingSection({ companyId, email, category, currentTier
                       )}
                     </motion.div>
                   ) : (
-                    /* Contextual Entry Call To Action */
                     <button
                       type="button"
                       onClick={() => {
                         if (!isCurrentTier) setSelectedPlan(plan);
                       }}
                       disabled={loading || isCurrentTier}
-                      className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] mb-6 ${
+                      className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] mb-6 flex items-center justify-center gap-2 ${
                         isCurrentTier
                           ? "bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
+                          : isRequiredTarget
+                          ? "bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 shadow-md shadow-orange-500/20"
                           : isUpgrade
                           ? "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-md"
-                          : isPopular
-                          ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-500/10"
                           : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}
                     >
-                      {isCurrentTier 
-                        ? "Active Plan" 
-                        : isUpgrade 
-                        ? `Upgrade to ${plan.name}` 
-                        : `Choose ${plan.name}`}
+                      {isCurrentTier ? (
+                        <>
+                          <ShieldCheckIcon className="w-4 h-4" /> Active Plan
+                        </>
+                      ) : isRequiredTarget ? (
+                        <>
+                          <SparklesIcon className="w-4 h-4" /> Upgrade to {plan.name}
+                        </>
+                      ) : isUpgrade ? (
+                        `Upgrade to ${plan.name}`
+                      ) : (
+                        `Choose ${plan.name}`
+                      )}
                     </button>
                   )}
                 </AnimatePresence>
 
-                {/* Features Metadata Sub-block */}
+                {/* Capabilities Specs */}
                 <div className="pt-6 border-t border-slate-100 dark:border-slate-800 text-left space-y-3">
-                  <p className="font-bold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <p className="font-bold text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Capabilities Included:
                   </p>
 
@@ -559,8 +600,8 @@ export default function PricingSection({ companyId, email, category, currentTier
                       .slice(0, 3)
                       .map(([_, items]) =>
                         items.slice(0, 2).map((feature, i) => (
-                          <div key={i} className="flex items-start gap-3">
-                            <CheckIcon />
+                          <div key={i} className="flex items-start gap-2.5">
+                            <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                             <span className="text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-normal">
                               {feature}
                             </span>
@@ -569,13 +610,20 @@ export default function PricingSection({ companyId, email, category, currentTier
                       )}
                   </div>
 
-                  {/* Core Drawer Feature Extension */}
                   <button
                     type="button"
                     onClick={() => setIsFeaturesExpanded((prev) => ({ ...prev, [planId]: !prev[planId] }))}
-                    className="text-orange-600 dark:text-orange-400 text-xs font-semibold hover:underline flex items-center pt-2"
+                    className="text-orange-600 dark:text-orange-400 text-xs font-semibold hover:underline flex items-center gap-1 pt-2"
                   >
-                    {isFeaturesExpanded[planId] ? "Collapse feature list" : "View complete spec manifest →"}
+                    {isFeaturesExpanded[planId] ? (
+                      <>
+                        Collapse features <ChevronUpIcon className="w-3.5 h-3.5" />
+                      </>
+                    ) : (
+                      <>
+                        View full spec manifest <ChevronDownIcon className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
 
                   <motion.div
@@ -593,11 +641,9 @@ export default function PricingSection({ companyId, email, category, currentTier
                         </h4>
                         <div className="space-y-2">
                           {items.map((feature, i) => (
-                            <div key={i} className="flex items-start gap-3">
-                              <CheckIcon />
-                              <span className="text-xs text-slate-500 dark:text-slate-400">
-                                {feature}
-                              </span>
+                            <div key={i} className="flex items-start gap-2.5">
+                              <CheckIcon className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{feature}</span>
                             </div>
                           ))}
                         </div>
