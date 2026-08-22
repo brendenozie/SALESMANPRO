@@ -637,6 +637,104 @@ model WhatsAppContact {
 }
 
 model WhatsAppConversation {
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(
+    fields: [companyId],
+    references: [id]
+  )
+
+  /**
+   * WhatsApp/Meta phone identity.
+   */
+  phoneNumber String
+
+  /**
+   * WhatsApp user ID / wa_id where available.
+   */
+  waId String?
+
+  customerName String?
+  customerEmail String?
+
+  /**
+   * Current AI/customer conversation state.
+   *
+   * Examples:
+   * SHOPPING
+   * PRODUCT_SEARCH
+   * CHECKOUT
+   * ORDER_STATUS
+   * BOOKING
+   * SUPPORT
+   * HUMAN_HANDOFF
+   */
+  state String? @default("GENERAL")
+
+  interactionStatus OrderInteractionStatus @default(ACTIVE)
+
+  /**
+   * Whether AI is currently handling the conversation.
+   */
+  aiEnabled Boolean @default(true)
+
+  /**
+   * Whether a human agent has taken over.
+   */
+  humanHandoff Boolean @default(false)
+
+  assignedUserId String? @db.ObjectId
+
+  assignedUser User? @relation(
+    fields: [assignedUserId],
+    references: [id],
+    onDelete: NoAction,
+    onUpdate: NoAction
+  )
+
+  /**
+   * Conversation-level context for the AI.
+   */
+  context Json?
+
+  /**
+   * Temporary cart/checkout state.
+   */
+  cart Json?
+
+  /**
+   * Customer preferences inferred during the conversation.
+   */
+  customerProfile Json?
+
+  lastMessageAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages WhatsAppMessage[]
+
+  orders CustomerOrder[]
+
+  aiActions AIAction[]
+
+  @@index([companyId])
+
+  @@index([phoneNumber])
+
+  @@index([waId])
+
+  @@index([companyId, phoneNumber])
+
+  @@index([interactionStatus])
+
+  @@index([lastMessageAt])
+
+  @@unique([companyId, phoneNumber])
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   companyId String  @db.ObjectId
@@ -721,6 +819,94 @@ enum WhatsAppConversationMode {
 }
 
 model WhatsAppMessage {
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  conversationId String @db.ObjectId
+
+  conversation WhatsAppConversation @relation(
+    fields: [conversationId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(
+    fields: [companyId],
+    references: [id]
+  )
+
+  /**
+   * Meta/WhatsApp message ID.
+   */
+  externalMessageId String?
+
+  /**
+   * INBOUND = customer -> business
+   * OUTBOUND = business/AI -> customer
+   */
+  direction WhatsAppMessageDirection
+
+  type WhatsAppMessageType @default(TEXT)
+
+  /**
+   * Text content.
+   */
+  text String?
+
+  /**
+   * WhatsApp media identifier.
+   */
+  mediaId String?
+
+  mediaUrl String?
+
+  mimeType String?
+
+  caption String?
+
+  /**
+   * Structured WhatsApp payload.
+   *
+   * Buttons, interactive lists, location, order payloads, etc.
+   */
+  payload Json?
+
+  /**
+   * AI processing information.
+   */
+  processedByAI Boolean @default(false)
+
+  aiActionId String? @db.ObjectId
+
+  aiIntent String?
+
+  aiConfidence Float?
+
+  processingError String?
+
+  createdAt DateTime @default(now())
+
+  aiAction AIAction? @relation(
+    fields: [aiActionId],
+    references: [id]
+  )
+
+  @@index([conversationId, createdAt])
+
+  @@index([companyId])
+
+  @@index([externalMessageId])
+
+  @@index([direction])
+
+  @@index([processedByAI])
+
+  @@index([aiActionId])
+
+  @@unique([externalMessageId])
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   companyId String  @db.ObjectId
@@ -1363,6 +1549,112 @@ model WhatsAppAIAction {
   @@index([companyId])
   @@index([action])
   @@index([status])
+  
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(
+    fields: [companyId],
+    references: [id]
+  )
+
+  conversationId String? @db.ObjectId
+
+  conversation WhatsAppConversation? @relation(
+    fields: [conversationId],
+    references: [id]
+  )
+
+  /**
+   * Examples:
+   *
+   * SEARCH_PRODUCTS
+   * GET_PRODUCT
+   * CREATE_CART
+   * ADD_TO_CART
+   * REMOVE_FROM_CART
+   * CREATE_ORDER
+   * GET_ORDER_STATUS
+   * CANCEL_ORDER
+   * BOOK_SERVICE
+   * GET_AVAILABILITY
+   * CREATE_APPOINTMENT
+   * HUMAN_HANDOFF
+   */
+  action String
+
+  status AIActionStatus @default(PENDING)
+
+  /**
+   * Input supplied to the action handler.
+   */
+  input Json?
+
+  /**
+   * Result returned by the action handler.
+   */
+  output Json?
+
+  /**
+   * Validation errors.
+   */
+  error String?
+
+  /**
+   * Model/provider information.
+   */
+  provider String?
+
+  model String?
+
+  /**
+   * AI confidence.
+   */
+  confidence Float?
+
+  /**
+   * Links the action to a WhatsApp message.
+   */
+  messageId String? @db.ObjectId
+
+  message WhatsAppMessage[] 
+
+  /**
+   * Resulting order, if applicable.
+   */
+  orderId String? @db.ObjectId
+
+  order CustomerOrder? @relation(
+    fields: [orderId],
+    references: [id]
+  )
+
+  /**
+   * Idempotency.
+   */
+  idempotencyKey String?
+
+  startedAt DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+
+  @@index([conversationId])
+
+  @@index([status])
+
+  @@index([action])
+
+  @@index([orderId])
+
+  @@index([createdAt])
+
+  @@unique([idempotencyKey])
 }
 
 enum WhatsAppAIActionStatus {
@@ -3563,7 +3855,288 @@ enum PaymentMethodType {
   CARD
 }
 
+enum OrderChannel {
+  WEBSITE
+  MOBILE
+  WHATSAPP
+  FACEBOOK
+  INSTAGRAM
+  POS
+  API
+  AI
+}
+
+enum OrderActorType {
+  CUSTOMER
+  USER
+  STAFF
+  AI
+  SYSTEM
+}
+
+enum OrderInteractionStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ESCALATED
+}
+
+enum AIActionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REQUIRES_HUMAN
+  CANCELLED
+}
+
 model CustomerOrder {
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  consumerId String? @db.ObjectId
+
+  name  String?
+  email String?
+  phone String?
+
+  cardNumber String?
+  cardExpiry String?
+  cvv String?
+
+  mpesaPhone String?
+  promoCode String?
+
+  paymentOption String?
+
+  items OrderItem[]
+
+  paymentStatus PaymentStatus @default(PENDING)
+
+  paymentMethod String?
+  transactionId String?
+  transactionDate DateTime? @default(now())
+  transactionReference String?
+
+  emailReceiptSent Boolean? @default(false)
+
+  billingAddress Json?
+
+  notes String?
+  specialInstructions String?
+  giftMessage String?
+
+  isGift Boolean? @default(false)
+  giftWrap Boolean? @default(false)
+
+  deliveryDate DateTime?
+  deliveryTimeSlot String?
+  deliveryInstructions String?
+
+  deliveryFee Float?
+
+  orderSource OrderSource @default(WEBSITE)
+
+  status OrderStatus @default(PENDING)
+
+  delivery Boolean? @default(false)
+
+  trackingNumber String?
+  estimatedArrival DateTime?
+
+  deliveryStatus String?
+
+  deliveryPersonName String?
+  deliveryPersonContact String?
+
+  shippingAddress Json?
+  shippingMethod String?
+
+  humanReviewedById String? @db.ObjectId
+
+humanReviewedBy User? @relation(
+  "AIOrderReviewer",
+  fields: [humanReviewedById],
+  references: [id],
+  onDelete: NoAction,
+  onUpdate: NoAction
+)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  Payment Payment[]
+
+  idempotencyKey String?
+
+  Company Company? @relation(
+    fields: [companyId],
+    references: [id]
+  )
+
+  companyId String? @db.ObjectId
+
+  deliveryId String? @db.ObjectId
+
+  Delivery Delivery? @relation(
+    "DeliveryToOrders",
+    fields: [deliveryId],
+    references: [id]
+  )
+
+  totalPrice Float?
+  totalTax Float?
+  totalDiscount Float?
+  totalShipping Float?
+  totalFinalPrice Float?
+
+  DeliveryStop DeliveryStop[]
+
+  // ============================================================
+  // UNIFIED ORDER CHANNEL / AI METADATA
+  // ============================================================
+
+  /**
+   * Where the order originated.
+   *
+   * This is deliberately separate from the legacy `orderSource`
+   * so existing WEBSITE/MOBILE/IN_PERSON data remains compatible.
+   */
+  channel OrderChannel @default(WEBSITE)
+
+  /**
+   * Who/what actually initiated the order.
+   */
+  actorType OrderActorType @default(CUSTOMER)
+
+  /**
+   * External conversation/session identifier.
+   *
+   * For WhatsApp this can contain the WhatsApp conversation/session
+   * identifier used by your integration.
+   */
+  conversationId String?
+
+  /**
+   * External customer identifier.
+   *
+   * For WhatsApp this can be the WhatsApp/Meta phone identifier.
+   */
+  externalCustomerId String?
+
+  /**
+   * Phone number used by the messaging channel.
+   *
+   * Keep separate from `phone` because `phone` is the customer's
+   * business/contact number while this represents the channel identity.
+   */
+  channelPhone String?
+
+  /**
+   * AI-generated order flag.
+   */
+  createdByAI Boolean @default(false)
+
+  /**
+   * AI agent that created/modified the order.
+   */
+  aiAgentId String?
+
+  /**
+   * ID of the AI interaction that resulted in this order.
+   */
+  aiInteractionId String? @db.ObjectId
+
+  /**
+   * Human takeover/escalation.
+   */
+  requiresHumanReview Boolean @default(false)
+
+  humanReviewedAt DateTime?
+  humanReviewedById String? @db.ObjectId
+
+  /**
+   * Original inbound message that triggered order creation.
+   */
+  sourceMessageId String?
+
+  /**
+   * Arbitrary structured channel metadata.
+   *
+   * Example:
+   * {
+   *   "whatsappMessageId": "...",
+   *   "campaign": "...",
+   *   "utm": {...}
+   * }
+   */
+  channelMetadata Json?
+
+  /**
+   * AI-generated explanation/context for the order.
+   */
+  aiContext Json?
+
+  /**
+   * Raw customer intent extracted by AI.
+   */
+  customerIntent String?
+
+  /**
+   * AI confidence from 0-1.
+   */
+  aiConfidence Float?
+
+  /**
+   * Prevent duplicate processing of external messages/actions.
+   */
+  sourceEventId String?
+
+  /**
+   * Human-readable external reference.
+   */
+  externalReference String?
+
+  /**
+   * WhatsApp conversation relation.
+   */
+  whatsappConversation WhatsAppConversation? @relation(
+    fields: [conversationId],
+    references: [id]
+  )
+
+  // ============================================================
+  // INDEXES
+  // ============================================================
+
+  @@index([consumerId])
+  @@index([companyId])
+  @@index([status])
+  @@index([email])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([orderSource])
+  @@index([deliveryId])
+  @@index([idempotencyKey])
+
+  // New indexes
+
+  @@index([companyId, channel, createdAt])
+
+  @@index([companyId, createdByAI, createdAt])
+
+  @@index([companyId, conversationId])
+
+  @@index([externalCustomerId])
+
+  @@index([sourceEventId])
+
+  @@index([requiresHumanReview, status])
+
+  @@index([channelPhone])
+
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
   consumerId    String?     @db.ObjectId
   name          String?

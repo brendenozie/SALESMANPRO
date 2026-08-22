@@ -1,134 +1,105 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
-import { createUnifiedOrder } from "@/lib/orders/unifiedOrderService";
+import { unifiedOrderSchema } from "@/lib/orders/orderSchemas";
 
-import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+import { createOrder } from "@/lib/orders/createOrder";
 
-import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
-
-import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
-
-import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
-
-import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
-
-import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
+import { processOrderPayment } from "@/lib/orders/processOrderPayment";
 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
-import { formatResponse } from "@/lib/formatResponse";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
 
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+  "Access-Control-Allow-Headers": [
+    "Content-Type",
+    "Authorization",
+    "cache-control",
+    "x-api-key",
+    "X-Requested-With",
+    "Accept",
+    "Idempotency-Key",
+  ].join(", "),
+
+  "Access-Control-Max-Age": "86400",
 };
 
-export function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
+function response(body: unknown, status = 200) {
+  return NextResponse.json(body, {
+    status,
+
     headers: CORS_HEADERS,
   });
 }
 
-const orderItemSchema = z.object({
-  marketplaceListingId: z.string().min(1),
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
 
-  quantity: z.number().int().positive(),
-
-  /**
-   * Compatibility fields.
-   *
-   * They are intentionally NOT used
-   * for final pricing.
-   */
-  price: z.number().optional(),
-
-  totalPrice: z.number().optional(),
-
-  date: z.string().nullable().optional(),
-
-  timeSlot: z.string().nullable().optional(),
-
-  serviceNotes: z.string().nullable().optional(),
-
-  selectedOptions: z
-    .array(
-      z.object({
-        category: z.string().min(1),
-
-        name: z.string().min(1),
-
-        extraPrice: z.number().nonnegative().optional(),
-      }),
-    )
-    .optional(),
-});
-
-const orderSchema = z.object({
-  name: z.string().min(1),
-
-  email: z.string().email(),
-
-  phone: z.string().min(1),
-
-  mpesaPhone: z.string().optional(),
-
-  consumerId: z.string().optional().nullable(),
-
-  companyId: z.string().min(1),
-
-  paymentOption: z
-    .enum([
-      "cod",
-      "pickupatshop",
-      "mpesa",
-      "card",
-      "paystack",
-      "ghuba",
-      "stripe",
-      "paypal",
-      "cash",
-      "split",
-      "pending",
-    ])
-    .default("cod"),
-
-  items: z.array(orderItemSchema).min(1),
-
-  shippingAddress: z.record(z.string(), z.any()).optional(),
-
-  shippingMethod: z.string().optional(),
-
-  promoCode: z.string().optional(),
-
-  notes: z.string().optional(),
-
-  paymentData: z.record(z.string(), z.any()).optional(),
-
-  idempotencyKey: z.string().uuid().optional(),
-
-  callbackUrl: z.string().url().optional(),
-});
+    headers: CORS_HEADERS,
+  });
+}
 
 export const POST = withApiHandler(
   async (req) => {
     try {
-      const body = await req.json();
+      const incoming = await req.json();
 
-      const parsed = orderSchema.safeParse(body);
+      /**
+       * --------------------------------------------------
+       * NORMAL SHOP ORDER NORMALIZATION
+       * --------------------------------------------------
+       */
+
+      const normalized = {
+        ...incoming,
+
+        orderType: incoming.orderType ?? "PRODUCT",
+
+        source: incoming.source ?? "WEBSITE",
+
+        items: Array.isArray(incoming.items)
+          ? incoming.items.map((item: any) => ({
+              marketplaceListingId: item.marketplaceListingId ?? item.listingId,
+
+              quantity: item.quantity ?? 1,
+
+              /**
+               * Informational only.
+               * Server pricing overrides this.
+               */
+              price: item.price,
+
+              totalPrice: item.totalPrice ?? item.subtotal ?? item.subTotal,
+
+              selectedOptions: item.selectedOptions ?? item.variants ?? [],
+
+              date: item.date ?? null,
+
+              timeSlot: item.timeSlot ?? null,
+
+              serviceNotes: item.serviceNotes ?? null,
+
+              productId: item.productId,
+
+              appointmentId: item.appointmentId,
+            }))
+          : [],
+      };
+
+      const parsed = unifiedOrderSchema.safeParse(normalized);
 
       if (!parsed.success) {
-        return formatResponse(
-          false,
-          null,
-          parsed.error.issues
-            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-            .join(", "),
+        return response(
+          {
+            success: false,
+
+            error: "Validation failed",
+
+            details: parsed.error.flatten(),
+          },
           400,
         );
       }
@@ -136,15 +107,19 @@ export const POST = withApiHandler(
       const data = parsed.data;
 
       /**
-       * Create order using the unified
-       * server-side pricing engine.
+       * --------------------------------------------------
+       * CREATE ORDER
+       * --------------------------------------------------
        */
-      const result = await createUnifiedOrder({
-        orderType: "PRODUCT",
 
+      const result = await createOrder({
         companyId: data.companyId,
 
         consumerId: data.consumerId,
+
+        orderType: data.orderType,
+
+        source: data.source,
 
         name: data.name,
 
@@ -164,163 +139,75 @@ export const POST = withApiHandler(
 
         promoCode: data.promoCode,
 
-        notes: data.notes ?? data.paymentData?.notes,
+        notes: data.notes,
 
-        paymentData: data.paymentData,
+        trackingNumber: data.trackingNumber,
 
         idempotencyKey: data.idempotencyKey,
+
+        metadata: {
+          ...(data.metadata ?? {}),
+
+          channel: "SHOP",
+
+          paymentData: data.paymentData,
+        },
       });
 
-      const order = result.order;
-
-      let paymentResponse: any = null;
-
       /**
-       * Gateway payments.
+       * --------------------------------------------------
+       * PAYMENT
+       * --------------------------------------------------
        */
-      if (
-        ["mpesa", "paystack", "ghuba", "stripe", "paypal", "card"].includes(
-          data.paymentOption,
-        )
-      ) {
-        const cfg = await getCompanyPaymentConfig(data.companyId);
 
-        if (!cfg?.credentials) {
-          return formatResponse(
-            false,
-            null,
-            "Payment gateway configuration is missing for this store.",
-            500,
-          );
-        }
+      const payment = await processOrderPayment({
+        order: result.order,
 
-        switch (data.paymentOption) {
-          case "mpesa": {
-            const phone =
-              data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+        companyId: data.companyId,
 
-            paymentResponse = await initiateMpesaPayment(
-              order,
-              phone,
-              cfg.credentials,
-            );
+        paymentOption: data.paymentOption,
 
-            break;
-          }
+        email: data.email,
 
-          case "paystack":
-          case "card": {
-            paymentResponse = await initiatePaystackPayment(
-              order,
-              data.email,
-              cfg.credentials,
-              "",
-            );
+        phone: data.phone,
 
-            break;
-          }
+        mpesaPhone: data.mpesaPhone,
 
-          case "ghuba": {
-            paymentResponse = await initiateGhubaPayment(order, data.email);
+        paymentData: data.paymentData,
+      });
 
-            break;
-          }
-
-          case "stripe": {
-            paymentResponse = await initiateStripePaymentIntent(
-              order,
-              cfg.credentials,
-            );
-
-            break;
-          }
-
-          case "paypal": {
-            paymentResponse = await createPaypalOrder(order, cfg.credentials);
-
-            break;
-          }
-        }
-      }
-
-      /**
-       * POS / deferred payments.
-       */
-      if (["cash", "split"].includes(data.paymentOption)) {
-        paymentResponse = {
+      return response(
+        {
           success: true,
 
-          message: `POS payment via ${data.paymentOption} recorded.`,
-
-          breakdown: data.paymentData?.paymentBreakdown ?? [],
-        };
-      }
-
-      if (["cash", "split"].includes(data.paymentOption)) {
-        const prisma = (await import("@/server/db/prismadb")).default;
-
-        await prisma.customerOrder.update({
-          where: {
-            id: order.id,
-          },
+          message: result.alreadyExists
+            ? "Existing order returned."
+            : "Order created successfully.",
 
           data: {
-            paymentStatus: "COMPLETED",
+            order: result.order,
 
-            status: "PAID",
+            pricing: result.pricing,
+
+            trackingNumber: result.trackingNumber,
+
+            payment,
+
+            alreadyExists: result.alreadyExists,
           },
-        });
-      }
-
-      /**
-       * Deferred collection.
-       */
-      if (["pending", "cod", "pickupatshop"].includes(data.paymentOption)) {
-        paymentResponse = {
-          success: true,
-
-          message: "Order recorded for deferred payment.",
-        };
-      }
-
-      const authorizationUrl =
-        paymentResponse?.data?.authorization_url ??
-        paymentResponse?.authorization_url ??
-        null;
-
-      const response = formatResponse(
-        true,
-        {
-          order: result.order,
-
-          orderType: result.orderType,
-
-          pricing: result.pricing,
-
-          trackingNumber: result.trackingNumber,
-
-          paymentResponse,
-
-          authorizationUrl,
         },
 
-        "Order created successfully",
-
-        201,
+        result.alreadyExists ? 200 : 201,
       );
-
-      Object.entries(CORS_HEADERS).forEach(([key, value]) => {
-        response.headers.set(key, value);
-      });
-
-      return response;
     } catch (error: any) {
-      console.error("[UNIFIED_ORDER_API_ERROR]", error);
+      console.error("[SHOP_ORDER_ERROR]", error);
 
-      return formatResponse(
-        false,
-        null,
-        error?.message ?? "Failed to create order.",
+      return response(
+        {
+          success: false,
+
+          error: error?.message ?? "Failed to create order.",
+        },
         500,
       );
     }
@@ -328,6 +215,7 @@ export const POST = withApiHandler(
 
   {
     requireAuth: false,
+
     requireRateLimit: true,
   },
 );

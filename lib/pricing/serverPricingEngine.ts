@@ -91,3 +91,66 @@ export async function calculateOrderPricing(input: {
 }): Promise<PricingResult> {
   // Your server-side pricing implementation
 }
+
+export interface CalculateOrderPricingInput {
+  companyId?: string;
+
+  items: Array<{
+    marketplaceListingId: string;
+
+    quantity: number;
+
+    selectedOptions?: Array<{
+      category: string;
+      name: string;
+      extraPrice?: number;
+    }>;
+
+    date?: string;
+
+    timeSlot?: string;
+  }>;
+
+  promoCode?: string;
+
+  shippingMethod?: string;
+
+  metadata?: Record<string, unknown>;
+}
+
+export interface CalculatedOrderItem {
+  marketplaceListingId: string;
+
+  productId?: string;
+
+  quantity: number;
+
+  unitPrice: number;
+
+  lineTotal: number;
+
+  discount: number;
+
+  tax: number;
+}
+
+export interface CalculatedOrderPricing {
+  items: CalculatedOrderItem[];
+
+  subtotal: number;
+
+  discount: number;
+
+  tax: number;
+
+  shipping: number;
+
+  total: number;
+}
+
+export async function calculateOrderPricing(
+  input: CalculateOrderPricingInput,
+): Promise<CalculatedOrderPricing> {
+  // Your existing server-side pricing implementation.
+  throw new Error("calculateOrderPricing implementation required");
+}

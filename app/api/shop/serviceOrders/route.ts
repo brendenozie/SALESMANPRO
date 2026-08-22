@@ -1,384 +1,310 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
-import { createUnifiedOrder } from "@/lib/orders/unifiedOrderService";
+import { unifiedOrderSchema } from "@/lib/orders/orderSchemas";
 
-import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+import { createOrder } from "@/lib/orders/createOrder";
 
-import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
+import { processOrderPayment } from "@/lib/orders/processOrderPayment";
 
-import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
-
-import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
-
-import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
-
-import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
 
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+  "Access-Control-Allow-Headers": [
+    "Content-Type",
+    "Authorization",
+    "cache-control",
+    "x-api-key",
+    "X-Requested-With",
+    "Accept",
+    "Idempotency-Key",
+  ].join(", "),
+
+  "Access-Control-Max-Age": "86400",
 };
 
-function jsonResponse(data: unknown, status = 200) {
-  return new NextResponse(JSON.stringify(data), {
+function response(body: unknown, status = 200) {
+  return NextResponse.json(body, {
     status,
 
-    headers: {
-      "Content-Type": "application/json",
-
-      ...CORS_HEADERS,
-    },
+    headers: CORS_HEADERS,
   });
 }
 
 export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
+
     headers: CORS_HEADERS,
   });
 }
 
-const serviceItemSchema = z.object({
-  marketplaceListingId: z.string().min(1),
+export const POST = withApiHandler(
+  async (req) => {
+    try {
+      const incoming = await req.json();
 
-  listingId: z.string().optional(),
+      /**
+       * --------------------------------------------------
+       * SERVICE CHECKOUT NORMALIZATION
+       * --------------------------------------------------
+       *
+       * Supports your existing:
+       *
+       * billing
+       * appointment
+       * serviceName
+       * listingId
+       * variants
+       *
+       * payload structure.
+       */
 
-  quantity: z.number().int().positive(),
+      const billing = incoming.billing ?? {};
 
-  price: z.number().optional(),
+      const appointment = incoming.appointment ?? {};
 
-  totalPrice: z.number().optional(),
+      const rawItems = Array.isArray(incoming.items)
+        ? incoming.items
+        : [
+            {
+              marketplaceListingId:
+                incoming.listingId ?? incoming.marketplaceListingId,
 
-  date: z.string().nullable().optional(),
+              quantity: incoming.quantity ?? 1,
 
-  timeSlot: z.string().nullable().optional(),
+              price: incoming.price,
 
-  serviceNotes: z.string().nullable().optional(),
+              serviceNotes:
+                incoming.serviceNotes ?? incoming.serviceName ?? null,
 
-  selectedOptions: z
-    .array(
-      z.object({
-        category: z.string(),
+              date: incoming.date ?? appointment.date ?? null,
 
-        name: z.string(),
+              timeSlot: incoming.timeSlot ?? appointment.timeSlot ?? null,
 
-        extraPrice: z.number().nonnegative().optional(),
-      }),
-    )
-    .optional(),
+              selectedOptions:
+                incoming.selectedOptions ?? incoming.variants ?? [],
+            },
+          ];
 
-  variants: z
-    .array(
-      z.object({
-        category: z.string(),
+      const normalized = {
+        name: billing.name ?? incoming.name,
 
-        name: z.string(),
+        email: billing.email ?? incoming.email,
 
-        extraPrice: z.number().nonnegative().optional(),
-      }),
-    )
-    .optional(),
-});
+        phone: billing.phone ?? incoming.phone,
 
-const serviceSchema = z.object({
-  name: z.string().min(1),
+        mpesaPhone: incoming.mpesaPhone ?? billing.mpesaPhone ?? undefined,
 
-  email: z.string().email(),
+        consumerId: incoming.consumerId,
 
-  phone: z.string().min(1),
+        companyId: incoming.companyId ?? rawItems?.[0]?.companyId ?? undefined,
 
-  mpesaPhone: z.string().optional(),
+        orderType: "SERVICE",
 
-  consumerId: z.string().nullable().optional(),
+        source: incoming.source ?? "WEBSITE",
 
-  companyId: z.string().min(1),
+        paymentOption: incoming.paymentOption ?? "cod",
 
-  paymentOption: z
-    .enum([
-      "cod",
-      "pickupatshop",
-      "mpesa",
-      "card",
-      "paystack",
-      "ghuba",
-      "stripe",
-      "paypal",
-      "cash",
-      "split",
-      "pending",
-    ])
-    .default("cod"),
+        items: rawItems.map((item: any) => ({
+          marketplaceListingId: item.marketplaceListingId ?? item.listingId,
 
-  items: z.array(serviceItemSchema).min(1),
+          quantity: Number(item.quantity ?? 1),
 
-  appointment: z
-    .object({
-      date: z.string().optional(),
+          price: item.price != null ? Number(item.price) : undefined,
 
-      timeSlot: z.string().optional(),
+          totalPrice: item.totalPrice ?? item.subtotal ?? item.subTotal,
 
-      locationType: z.string().optional(),
+          date: item.date ?? appointment.date ?? null,
 
-      provider: z.string().optional(),
-    })
-    .optional(),
+          timeSlot: item.timeSlot ?? appointment.timeSlot ?? null,
 
-  serviceNotes: z.string().optional(),
+          selectedOptions: item.selectedOptions ?? item.variants ?? [],
 
-  notes: z.string().optional(),
+          serviceNotes:
+            item.serviceNotes ??
+            incoming.serviceNotes ??
+            incoming.serviceName ??
+            null,
 
-  promoCode: z.string().optional(),
+          appointmentId: item.appointmentId ?? incoming.appointmentId,
+        })),
 
-  shippingAddress: z.record(z.string(), z.any()).optional(),
+        shippingAddress: incoming.shippingAddress ?? incoming.address ?? null,
 
-  shippingMethod: z.string().optional(),
+        shippingMethod: incoming.shippingMethod ?? undefined,
 
-  paymentData: z.record(z.string(), z.any()).optional(),
+        promoCode: incoming.promoCode ?? undefined,
 
-  idempotencyKey: z.string().uuid().optional(),
-});
+        notes: incoming.notes ?? incoming.serviceNotes ?? undefined,
 
-export async function POST(req: Request) {
-  try {
-    const incoming = await req.json();
+        trackingNumber: incoming.trackingNumber ?? undefined,
 
-    const parsed = serviceSchema.safeParse(incoming);
+        idempotencyKey: incoming.idempotencyKey ?? undefined,
 
-    if (!parsed.success) {
-      return jsonResponse(
-        {
-          success: false,
+        paymentData: incoming.paymentData ?? {
+          locationType: appointment.locationType,
 
-          error: parsed.error.flatten(),
+          provider: appointment.provider,
+
+          serviceName: incoming.serviceName,
+
+          notes: incoming.serviceNotes,
         },
 
-        400,
-      );
-    }
+        metadata: {
+          appointment,
 
-    const data = parsed.data;
+          serviceName: incoming.serviceName,
 
-    /**
-     * Normalize service items.
-     *
-     * We deliberately do not use
-     * incoming price/totalPrice.
-     */
-    const items = data.items.map((item) => ({
-      marketplaceListingId: item.marketplaceListingId || item.listingId!,
+          channel: "SERVICE",
+        },
+      };
 
-      quantity: item.quantity,
+      /**
+       * --------------------------------------------------
+       * VALIDATE
+       * --------------------------------------------------
+       */
 
-      date: item.date ?? data.appointment?.date ?? null,
+      const parsed = unifiedOrderSchema.safeParse(normalized);
 
-      timeSlot: item.timeSlot ?? data.appointment?.timeSlot ?? null,
-
-      serviceNotes: item.serviceNotes ?? data.serviceNotes ?? null,
-
-      selectedOptions: item.selectedOptions ?? item.variants ?? [],
-    }));
-
-    /**
-     * Unified service order creation.
-     */
-    const result = await createUnifiedOrder({
-      orderType: "SERVICE",
-
-      companyId: data.companyId,
-
-      consumerId: data.consumerId,
-
-      name: data.name,
-
-      email: data.email,
-
-      phone: data.phone,
-
-      mpesaPhone: data.mpesaPhone,
-
-      paymentOption: data.paymentOption,
-
-      items,
-
-      shippingAddress: data.shippingAddress,
-
-      shippingMethod: data.shippingMethod,
-
-      promoCode: data.promoCode,
-
-      notes: data.notes ?? data.serviceNotes,
-
-      paymentData: {
-        ...(data.paymentData ?? {}),
-
-        locationType: data.appointment?.locationType,
-
-        provider: data.appointment?.provider,
-
-        appointmentDate: data.appointment?.date,
-
-        appointmentTime: data.appointment?.timeSlot,
-      },
-
-      idempotencyKey: data.idempotencyKey,
-
-      delivery: false,
-    });
-
-    let paymentResponse: any = null;
-
-    /**
-     * Payment gateway processing.
-     */
-    if (
-      ["mpesa", "paystack", "ghuba", "stripe", "paypal", "card"].includes(
-        data.paymentOption,
-      )
-    ) {
-      const cfg = await getCompanyPaymentConfig(data.companyId);
-
-      if (!cfg?.credentials) {
-        return jsonResponse(
+      if (!parsed.success) {
+        return response(
           {
             success: false,
 
-            error: "Payment gateway configuration is missing.",
-          },
+            error: "Service order validation failed",
 
-          500,
+            details: parsed.error.flatten(),
+          },
+          400,
         );
       }
 
-      switch (data.paymentOption) {
-        case "mpesa": {
-          const phone = data.mpesaPhone ?? data.phone;
+      const data = parsed.data;
 
-          paymentResponse = await initiateMpesaPayment(
-            result.order,
-            phone,
-            cfg.credentials,
-          );
+      /**
+       * --------------------------------------------------
+       * UNIFIED CREATE ORDER
+       * --------------------------------------------------
+       */
 
-          break;
-        }
+      const result = await createOrder({
+        companyId: data.companyId,
 
-        case "paystack":
-        case "card": {
-          paymentResponse = await initiatePaystackPayment(
-            result.order,
-            data.email,
-            cfg.credentials,
-            "",
-          );
+        consumerId: data.consumerId,
 
-          break;
-        }
+        orderType: "SERVICE",
 
-        case "ghuba": {
-          paymentResponse = await initiateGhubaPayment(
-            result.order,
-            data.email,
-          );
+        source: data.source,
 
-          break;
-        }
+        name: data.name,
 
-        case "stripe": {
-          paymentResponse = await initiateStripePaymentIntent(
-            result.order,
-            cfg.credentials,
-          );
+        email: data.email,
 
-          break;
-        }
+        phone: data.phone,
 
-        case "paypal": {
-          paymentResponse = await createPaypalOrder(
-            result.order,
-            cfg.credentials,
-          );
+        mpesaPhone: data.mpesaPhone,
 
-          break;
-        }
-      }
-    }
+        paymentOption: data.paymentOption,
 
-    /**
-     * Cash/POS.
-     */
-    if (["cash", "split"].includes(data.paymentOption)) {
-      const prisma = (await import("@/server/db/prismadb")).default;
+        items: data.items,
 
-      await prisma.customerOrder.update({
-        where: {
-          id: result.order.id,
-        },
+        shippingAddress: data.shippingAddress,
 
-        data: {
-          paymentStatus: "COMPLETED",
+        shippingMethod: data.shippingMethod,
 
-          status: "PAID",
+        promoCode: data.promoCode,
+
+        notes: data.notes,
+
+        trackingNumber: data.trackingNumber,
+
+        idempotencyKey: data.idempotencyKey,
+
+        metadata: {
+          ...(data.metadata ?? {}),
+
+          appointment,
+
+          paymentData: data.paymentData,
+
+          serviceName: incoming.serviceName,
+
+          channel: "SERVICE",
         },
       });
 
-      paymentResponse = {
-        success: true,
+      /**
+       * --------------------------------------------------
+       * PAYMENT
+       * --------------------------------------------------
+       */
 
-        message: "Service payment recorded.",
-      };
-    }
+      const payment = await processOrderPayment({
+        order: result.order,
 
-    /**
-     * Deferred payment.
-     */
-    if (["cod", "pending", "pickupatshop"].includes(data.paymentOption)) {
-      paymentResponse = {
-        success: true,
+        companyId: data.companyId,
 
-        message: "Service booking recorded with deferred payment.",
-      };
-    }
+        paymentOption: data.paymentOption,
 
-    return jsonResponse(
-      {
-        success: true,
+        email: data.email,
 
-        data: {
-          order: result.order,
+        phone: data.phone,
 
-          orderType: result.orderType,
+        mpesaPhone: data.mpesaPhone,
 
-          pricing: result.pricing,
+        paymentData: data.paymentData,
+      });
 
-          trackingNumber: result.trackingNumber,
+      return response(
+        {
+          success: true,
 
-          paymentResponse,
+          message: result.alreadyExists
+            ? "Existing service order returned."
+            : "Service order created successfully.",
 
-          authorizationUrl:
-            paymentResponse?.data?.authorization_url ??
-            paymentResponse?.authorization_url ??
-            null,
+          data: {
+            order: result.order,
+
+            pricing: result.pricing,
+
+            trackingNumber: result.trackingNumber,
+
+            payment,
+
+            appointment,
+
+            orderType: "SERVICE",
+
+            alreadyExists: result.alreadyExists,
+          },
         },
-      },
 
-      201,
-    );
-  } catch (error: any) {
-    console.error("[SERVICE_ORDER_API_ERROR]", error);
+        result.alreadyExists ? 200 : 201,
+      );
+    } catch (error: any) {
+      console.error("[SERVICE_ORDER_ERROR]", error);
 
-    return jsonResponse(
-      {
-        success: false,
+      return response(
+        {
+          success: false,
 
-        error: error?.message ?? "Failed to create service order.",
-      },
+          error: error?.message ?? "Failed to create service order.",
+        },
+        500,
+      );
+    }
+  },
 
-      500,
-    );
-  }
-}
+  {
+    requireAuth: false,
+
+    requireRateLimit: true,
+  },
+);
