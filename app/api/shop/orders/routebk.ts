@@ -1,703 +1,648 @@
-// // app/api/orders/route.ts
-import prisma from "@/server/db/prismadb";
+import { NextResponse } from "next/server";
 import { z } from "zod";
-import nodemailer from "nodemailer";
-import { formatResponse } from "@/lib/formatResponse";
+import crypto from "crypto";
+import prisma from "@/server/db/prismadb";
+import { createOrder as createOrderRecord } from "@/lib/orders/createOrder";
+import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
+import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
+import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack"; // Temporary Ghuba fallback
+import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
+import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-/* -------------------------------------------------------------------------- */
-/*                            PAYMENT INTEGRATIONS                            */
-/* -------------------------------------------------------------------------- */
-
-/** Initialize Paystack payment */
-async function initiatePaystackPayment(amount: number, email: string) {
-  try {
-    const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-    if (!PAYSTACK_SECRET_KEY) throw new Error("Missing Paystack secret key");
-
-    const response = await fetch("https://api.paystack.co/transaction/initialize", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        amount: Math.round(amount * 100), // Paystack expects kobo (NGN * 100)
-        currency: "KES", // Change to 'NGN' or your supported currency
-        callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/verify`,
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok || !data.status) {
-      console.error("Paystack init failed:", data);
-      throw new Error(data.message || "Failed to initialize Paystack payment");
-    }
-
-    return {
-      success: true,
-      authorizationUrl: data.data.authorization_url,
-      reference: data.data.reference,
-    };
-  } catch (error: any) {
-    console.error("Paystack error:", error);
-    // fallback for local testing
-    return {
-      success: true,
-      authorizationUrl: `https://mock-paystack-checkout.com/auth-${generateTrackingNumber()}?amount=${amount}&email=${email}`,
-    };
-  }
+// ---------------------------
+// CROSS-DOMAIN CORS PRE-FLIGHT
+// Essential for multi-tenant custom domains hitting this API
+// ---------------------------
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
 }
 
-/** Get M-Pesa OAuth Token */
-async function getMpesaAccessToken() {
-  const consumerKey = process.env.MPESA_CONSUMER_KEY;
-  const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-  if (!consumerKey || !consumerSecret) throw new Error("Missing M-Pesa credentials");
-
-  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
-  const response = await fetch(
-    "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
-    {
-      headers: { Authorization: `Basic ${auth}` },
-    }
-  );
-
-  const data = await response.json();
-  if (!data.access_token) throw new Error("Failed to get M-Pesa access token");
-  return data.access_token;
-}
-
-/** Initiate M-Pesa STK Push (Daraja) */
-async function initiateMpesaSTKPush(amount: number, phone: string, trackingNumber: string) {
-  try {
-    const token = await getMpesaAccessToken();
-    const shortCode = process.env.MPESA_SHORTCODE;
-    const passKey = process.env.MPESA_PASSKEY;
-    const callbackUrl = process.env.MPESA_CALLBACK_URL || `${process.env.NEXT_PUBLIC_BASE_URL}/api/mpesa/callback`;
-
-    if (!shortCode || !passKey) throw new Error("Missing M-Pesa credentials");
-
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[-T:.Z]/g, "")
-      .substring(0, 14);
-
-    const password = Buffer.from(`${shortCode}${passKey}${timestamp}`).toString("base64");
-
-    const response = await fetch("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        BusinessShortCode: shortCode,
-        Password: password,
-        Timestamp: timestamp,
-        TransactionType: "CustomerPayBillOnline",
-        Amount: amount,
-        PartyA: phone.replace(/^0/, "254"), // format to 254xxxxxxxxx
-        PartyB: shortCode,
-        PhoneNumber: phone.replace(/^0/, "254"),
-        CallBackURL: callbackUrl,
-        AccountReference: `ORDER-${trackingNumber}`,
-        TransactionDesc: "Ghuba Order Payment",
-      }),
-    });
-
-    const data = await response.json();
-    console.log("[M-Pesa STK Response]", data);
-
-    if (data.ResponseCode !== "0") {
-      throw new Error(data.errorMessage || "Failed to initiate STK Push");
-    }
-
-    return {
-      success: true,
-      checkoutRequestId: data.CheckoutRequestID,
-      merchantRequestId: data.MerchantRequestID,
-    };
-  } catch (error: any) {
-    console.error("M-Pesa STK error:", error);
-    // fallback for local testing
-    return {
-      success: true,
-      checkoutRequestId: `mock_checkout_${trackingNumber}`,
-    };
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                 VALIDATION                                 */
-/* -------------------------------------------------------------------------- */
-
-const orderSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
-  phone: z.string(),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cvv: z.string().optional(),
-  mpesaPhone: z.string().optional(),
-  promoCode: z.string().optional(),
-  consumerId: z.string(),
-  delivery: z.boolean().optional(),
-  paymentOption: z.enum(["cod", "pickupatshop", "mpesa", "card", "paystack"]).default("cod"),
-  items: z.array(
-    z.object({
-      marketplaceListingId: z.string(),
-      date: z.string().optional(),
-      timeSlot: z.string().optional(),
-      quantity: z.number().positive(),
-      price: z.number().positive(),
-    })
-  ),
+// ---------------------------
+// SCHEMA VALIDATION
+// ---------------------------
+const orderItemSchema = z.object({
+  marketplaceListingId: z.string().min(1),
+  date: z.string().optional(),
+  timeSlot: z.string().optional(),
+  quantity: z.number().int().positive(),
+  price: z.number().positive(),
   totalPrice: z.number().positive(),
-  shippingAddress: z
-    .object({
-      display_name: z.string(),
-      lat: z.number(),
-      lng: z.number(),
-    })
+  selectedOptions: z
+    .array(
+      z.object({
+        category: z.string().min(1),
+        name: z.string().min(1),
+        extraPrice: z.number().nonnegative().optional(),
+      }),
+    )
     .optional(),
-  shippingMethod: z.enum(["Standard", "Express", "AT SHOP"]).optional(),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                               HELPER FUNCTIONS                             */
-/* -------------------------------------------------------------------------- */
+const orderSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email format"),
+  phone: z.string().min(1, "Phone is required"),
+  mpesaPhone: z.string().optional(),
+  consumerId: z.string().min(1),
+  paymentOption: z
+    .enum([
+      "cod",
+      "pickupatshop",
+      "mpesa",
+      "card",
+      "paystack",
+      "ghuba",
+      "stripe",
+      "paypal",
+      "cash", // Added: Standard POS Counter Cash processing
+      "split", // Added: Multi-method balanced ledger payment
+      "pending", // Added: Direct business credit/unverified account book entries
+    ])
+    .default("cod"),
+  items: z
+    .array(orderItemSchema)
+    .min(1, "Order must contain at least one item"),
+  trackingNumber: z.string().optional(),
+  totalPrice: z.number().positive(),
+  totalFinalPrice: z.number().optional(),
+  shippingAddress: z.record(z.string(), z.any()).optional(),
+  shippingMethod: z.string().optional(),
+  companyId: z.string().min(1, "Company ID is required"),
+  paymentData: z.record(z.string(), z.any()).optional(),
+  // callbainitialUrlckUrl: z.string().url().optional(),
+  callbackUrl: z.string().url().optional(), // Optional callback URL for payment gateways that support it
+  idempotencyKey: z.string().uuid().optional(),
+});
 
+// ---------------------------
+// UTILS
+// ---------------------------
 function generateTrackingNumber() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  const datePart = new Date().toISOString().slice(2, 7).replace("-", "");
+  const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
+  return `TRK-${datePart}-${randomPart}`;
 }
 
-async function sendOrderEmail(email: string, orderStatus: string) {
-  const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
-  });
-  await transporter.sendMail({
-    from: `"ghuba Store" <${process.env.EMAIL}>`,
-    to: email,
-    subject: "Order Update",
-    text: `Your order status has been updated to: ${orderStatus}`,
-  });
-}
+// ---------------------------
+// ROUTE HANDLER
+// ---------------------------
+export const POST = withApiHandler(
+  async (req) => {
+    try {
+      const body = await req.json();
+      const parsed = orderSchema.safeParse(body);
 
-/* -------------------------------------------------------------------------- */
-/*                                ROUTE HANDLERS                              */
-/* -------------------------------------------------------------------------- */
+      if (!parsed.success) {
+        const errorMessages = parsed.error.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join(", ");
+        return formatResponse(
+          false,
+          null,
+          `Validation failed: ${errorMessages}`,
+          400,
+        );
+      }
 
-// POST /api/orders
-async function createOrder(req: Request) {
-  const body = await req.json();
-  const parsed = orderSchema.safeParse(body);
-  if (!parsed.success) {
-    return formatResponse(false, null, parsed.error.flatten(), 400);
-  }
+      if (parsed.data.idempotencyKey) {
+        const existingOrder = await prisma.customerOrder.findFirst({
+          where: { idempotencyKey: parsed.data.idempotencyKey },
+        });
 
-  const {
-    consumerId,
-    items,
-    totalPrice,
-    shippingAddress,
-    shippingMethod,
-    delivery,
-    paymentOption,
-    name,
-    email,
-    phone,
-    cardNumber,
-    cardExpiry,
-    cvv,
-    mpesaPhone,
-    promoCode,
-  } = parsed.data;
+        if (existingOrder) {
+          return formatResponse(
+            false,
+            null,
+            "Order with this idempotency key already exists",
+            409,
+          );
+        }
+      }
 
-  const trackingNumber = `TRK${generateTrackingNumber()}`;
-  let orderStatus = "PENDING";
-  let deliveryStatus = "Order Placed";
-  const responsePayload: Record<string, any> = {};
+      const data = parsed.data;
+      const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
 
-  try {
-    // --- PAYMENT LOGIC ---
-    if (paymentOption === "paystack") {
-      const paystack = await initiatePaystackPayment(totalPrice, email);
-      if (!paystack.success) throw new Error("Failed to initialize Paystack payment");
-      orderStatus = "WAITING_PAYMENT";
-      responsePayload.authorizationUrl = paystack.authorizationUrl;
-      responsePayload.reference = paystack.reference;
-    } else if (paymentOption === "mpesa") {
-      if (!mpesaPhone) throw new Error("M-Pesa phone number is required");
-      const mpesa = await initiateMpesaSTKPush(totalPrice, mpesaPhone, trackingNumber);
-      if (!mpesa.success) throw new Error("Failed to initiate M-Pesa STK Push");
-      orderStatus = "WAITING_PAYMENT";
-      responsePayload.checkoutRequestId = mpesa.checkoutRequestId;
-    } else if (paymentOption === "card") {
-      if (!cardNumber || !cardExpiry || !cvv) throw new Error("Card details are incomplete");
-      orderStatus = "PROCESSING"; // mock success
-    } else if (paymentOption === "cod" || paymentOption === "pickupatshop") {
-      orderStatus = "PROCESSING";
-    }
-
-    const order = await prisma.customerOrder.create({
-      data: {
-        consumerId,
-        name,
-        email,
-        phone,
-        mpesaPhone,
-        promoCode,
-        totalPrice,
-        shippingAddress,
-        shippingMethod,
-        status: "PENDING",
-        delivery,
-        paymentOption,
+      // 1. Create the base order record
+      const orderDb = await createOrderRecord({
+        consumerId: data.consumerId,
+        items: data.items,
+        totalPrice: data.totalPrice,
+        totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
+        mpesaPhone: data.mpesaPhone,
+        paymentOption: data.paymentOption,
+        shippingAddress: data.shippingAddress,
+        shippingMethod: data.shippingMethod,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        promoCode: data.paymentData?.promoCode ?? undefined,
         trackingNumber,
-        deliveryStatus,
-        items: { create: items },
-      },
-      include: { items: true },
-    });
-
-    return formatResponse(true, { ...order, ...responsePayload }, null, 200);
-  } catch (err: any) {
-    console.error("Error creating order:", err);
-    return formatResponse(false, null, err.message, 500);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                OTHER METHODS                               */
-/* -------------------------------------------------------------------------- */
-
-async function getOrders(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const skip = (page - 1) * limit;
-
-  try {
-    const [orders, total] = await Promise.all([
-      prisma.customerOrder.findMany({
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: { items: true },
-      }),
-      prisma.customerOrder.count(),
-    ]);
-    return formatResponse(true, { orders, totalPages: Math.ceil(total / limit) });
-  } catch (err: any) {
-    console.error("Error fetching orders:", err);
-    return formatResponse(false, null, err.message, 500);
-  }
-}
-
-async function updateOrder(req: Request) {
-  const body = await req.json();
-  const { id, status, deliveryStatus } = body;
-
-  if (!id || !status || !deliveryStatus) {
-    return formatResponse(false, null, "Missing id, status, or deliveryStatus", 400);
-  }
-
-  try {
-    const order = await prisma.customerOrder.update({
-      where: { id },
-      data: { status, deliveryStatus },
-    });
-
-    if (process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL) {
-      await fetch(process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: id, status, deliveryStatus }),
+        deliveryStatus: "Pending",
+        delivery: false,
+        notes: data.paymentData?.notes ?? undefined,
+        companyId: data.companyId,
+        idempotencyKey: data.idempotencyKey,
       });
+
+      let cfg = null;
+      // 2. Retrieve Tenant Payment Configurations
+      if(data.paymentOption !== "cash" && data.paymentOption !== "split" && data.paymentOption !== "pending" && data.paymentOption !== "cod" && data.paymentOption !== "pickupatshop") {
+      
+        cfg = await getCompanyPaymentConfig(data.companyId);
+        if (!cfg || !cfg.credentials) {
+          return formatResponse(
+            false,
+            null,
+            "Payment gateway configuration is missing for this store.",
+            500,
+          );
+        }
+      }
+
+      // 3. Route to specific payment processor
+      let paymentResponse: any = null;
+
+      switch (data.paymentOption) {
+        case "mpesa": {
+          const phoneNumber =
+            data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+          if (!phoneNumber)
+            return formatResponse(
+              false,
+              null,
+              "M-Pesa phone number required",
+              400,
+            );
+
+          paymentResponse = await initiateMpesaPayment(
+            orderDb,
+            phoneNumber,
+            cfg?.credentials || {},
+          );
+          break;
+        }
+        case "paystack": {
+          paymentResponse = await initiatePaystackPayment(
+            orderDb,
+            data.email,
+            cfg?.credentials || {},
+            "",
+          );
+          break;
+        }
+        case "ghuba": {
+          paymentResponse = await initiateGhubaPayment(orderDb, data.email);
+          break;
+        }
+        case "stripe": {
+          paymentResponse = await initiateStripePaymentIntent(
+            orderDb,
+            cfg?.credentials || {},
+          );
+          break;
+        }
+        case "paypal": {
+          paymentResponse = await createPaypalOrder(orderDb, cfg?.credentials || {});
+          break;
+        }
+
+        // --- POS COMPLETED TRANSACTIONS ---
+        case "cash":
+        case "split": {
+          paymentResponse = {
+            success: true,
+            message: `POS counter payment via ${data.paymentOption.toUpperCase()} verified and closed by agent.`,
+            breakdown: data.paymentData?.paymentBreakdown || [],
+          };
+
+          await prisma.customerOrder.update({
+            where: { id: orderDb.id },
+            data: { paymentStatus: "COMPLETED" }, // Cashier verified balances instantly clear order debt
+          });
+          break;
+        }
+
+        // --- UNPAID / DELAYED ACCRUALS ---
+        case "pending":
+        case "cod":
+        case "pickupatshop": {
+          paymentResponse = {
+            success: true,
+            message: `Order locked under pending collections status [Method: ${data.paymentOption}].`,
+          };
+          await prisma.customerOrder.update({
+            where: { id: orderDb.id },
+            data: { paymentStatus: "PENDING" },
+          });
+          break;
+        }
+        default:
+          return formatResponse(false, null, "Unsupported payment option", 400);
+      }
+
+      // 4. Return successful payload
+      const authorizationUrl =
+        paymentResponse?.data?.authorization_url ??
+        paymentResponse?.authorization_url ??
+        null;
+
+      const response = formatResponse(
+        true,
+        {
+          order: orderDb,
+          trackingNumber,
+          paymentResponse,
+          authorizationUrl,
+        },
+        "Order created successfully",
+        201,
+      );
+
+      response.headers.set("Access-Control-Allow-Origin", "*");
+      return response;
+    } catch (err: any) {
+      console.error("[ORDER_CREATION_ERROR]", err);
+      return formatResponse(
+        false,
+        null,
+        err.message || "Failed to process order checkout",
+        500,
+      );
     }
+  },
+  {
+    requireAuth: false,
+    requireRateLimit: true,
+  },
+);
 
-    const consumer = await prisma.consumer.findUnique({
-      where: { id: order.consumerId },
-      include: { user: { select: { email: true } } },
-    });
-    if (consumer?.user?.email) {
-      await sendOrderEmail(consumer.user.email, status);
-    }
-
-    return formatResponse(true, order);
-  } catch (err: any) {
-    console.error("Error updating order:", err);
-    return formatResponse(false, null, err.message, 500);
-  }
-}
-
-async function deleteOrder(req: Request) {
-  const { id } = await req.json();
-  if (!id) return formatResponse(false, null, "Missing order ID", 400);
-
-  try {
-    const existing = await prisma.customerOrder.findUnique({ where: { id, deletedAt: null } });
-    if (!existing || existing.status !== "PENDING") {
-      return formatResponse(false, null, "Only pending orders can be canceled", 400);
-    }
-
-    const canceled = await prisma.customerOrder.update({
-      where: { id },
-      data: { status: "CANCELLED", deliveryStatus: "Order Canceled", deletedAt: new Date() },
-    });
-
-    return formatResponse(true, canceled);
-  } catch (err: any) {
-    console.error("Error deleting order:", err);
-    return formatResponse(false, null, err.message, 500);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                 EXPORT HANDLERS                            */
-/* -------------------------------------------------------------------------- */
-
-export const POST = withApiHandler(createOrder);
-export const GET = withApiHandler(getOrders);
-export const PUT = withApiHandler(updateOrder);
-export const DELETE = withApiHandler(deleteOrder);
-
-// import prisma from "@/server/db/prismadb";
+// // app/api/shop/orders/route.ts
+// import { NextResponse } from "next/server";
 // import { z } from "zod";
-// import nodemailer from "nodemailer";
-// import { formatResponse } from "@/lib/formatResponse";
+// import crypto from "crypto";
+// import prisma from "@/server/db/prismadb";
+// import { createOrder as createOrderRecord } from "@/lib/orders/createOrder";
+// import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+// import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
+// import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
+// import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack"; // Temporary Ghuba fallback
+// import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
+// import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
+// import { formatResponse } from "@/lib/formatResponse";
 
-// // --- PAYMENT UTILITY FUNCTIONS (MOCK IMPLEMENTATIONS) ---
-
-// /**
-//  * Mocks the initiation of a Paystack transaction.
-//  * In a real scenario, this calls the Paystack Initialize Transaction API.
-//  * @returns An object containing the authorization URL for redirection.
-//  */
-// async function initiatePaystackPayment(amount: number, email: string) {
-//   // NOTE: In production, you would call the Paystack API here.
-//   console.log(`[Paystack Mock] Initiating payment for ${amount} from ${email}`);
-  
-//   // MOCK: Return a success and a mock authorization URL for the client to redirect to
-//   const mockAuthorizationUrl = `https://mock-paystack-checkout.com/auth-${generateTrackingNumber()}?amount=${amount}&email=${email}`;
-  
-//   return {
-//     success: true,
-//     authorizationUrl: mockAuthorizationUrl,
-//   };
+// // ---------------------------
+// // CROSS-DOMAIN CORS PRE-FLIGHT
+// // Essential for multi-tenant custom domains hitting this API
+// // ---------------------------
+// export async function OPTIONS() {
+//   return new NextResponse(null, {
+//     status: 204,
+//     headers: {
+//       "Access-Control-Allow-Origin": "*",
+//       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+//       "Access-Control-Allow-Headers":
+//         "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+//       "Access-Control-Max-Age": "86400",
+//     },
+//   });
 // }
 
-// /**
-//  * Mocks the initiation of an M-Pesa STK Push.
-//  * In a real scenario, this calls the M-Pesa C2B API.
-//  * @returns An object containing the M-Pesa Request ID.
-//  */
-// async function initiateMpesaSTKPush(amount: number, phone: string, trackingNumber: string) {
-//   // NOTE: In production, you would call the Safaricom Daraja API here.
-//   console.log(`[M-Pesa Mock] Initiating STK Push for ${amount} to ${phone}`);
-  
-//   // MOCK: Return a successful M-Pesa Request ID.
-//   const mockCheckoutRequestId = `ws_CO_123456_${trackingNumber}`;
-  
-//   return {
-//     success: true,
-//     checkoutRequestId: mockCheckoutRequestId,
-//   };
-// }
+// // ---------------------------
+// // SCHEMA VALIDATION
+// // ---------------------------
+// const orderItemSchema = z.object({
+//   marketplaceListingId: z.string().min(1),
+//   date: z.string().optional(),
+//   timeSlot: z.string().optional(),
+//   quantity: z.number().int().positive(),
+//   price: z.number().positive(),
+//   totalPrice: z.number().positive(),
+//   // selected options [{category: "color", name: "Red", extraPrice: 20}, {category: "size", name: "7", extraPrice: 50}]
+//   selectedOptions: z
+//     .array(
+//       z.object({
+//         category: z.string().min(1),
+//         name: z.string().min(1),
+//         extraPrice: z.number().nonnegative().optional(),
+//       }),
+//     )
+//     .optional(), // Optional selected options for the item
 
+//   // selectedOptions: z.record(z.string(), z.any()).optional(), // Optional selected options for the item
+// });
 
-// // Zod schema updated to include M-Pesa phone number
 // const orderSchema = z.object({
-//   name: z.string(),
-//   email: z.string(),
-//   phone: z.string(),
-  
-//   // Card Details
-//   cardNumber: z.string().optional(),
-//   cardExpiry: z.string().optional(),
-//   cvv: z.string().optional(),
-  
-//   // M-Pesa Details
+//   name: z.string().min(1, "Name is required"),
+//   email: z.string().email("Invalid email format"),
+//   phone: z.string().min(1, "Phone is required"),
 //   mpesaPhone: z.string().optional(),
-
-//   promoCode: z.string().optional(),
-//   consumerId: z.string(),
-//   delivery: z.boolean().optional(),
-//   paymentOption: z.string().default("cod"), // Default changed to 'cod'
-//   items: z.array(
-//     z.object({
-//       marketplaceListingId: z.string(),
-//       date: z.string().optional(),
-//       timeSlot: z.string().optional(),
-//       quantity: z.number().positive(),
-//       price: z.number().positive(),
-//     })
-//   ),
+//   consumerId: z.string().min(1),
+//   paymentOption: z
+//     .enum([
+//       "cod",
+//       "pickupatshop",
+//       "mpesa",
+//       "card",
+//       "paystack",
+//       "ghuba",
+//       "stripe",
+//       "paypal",
+//     ])
+//     .default("cod"),
+//   items: z
+//     .array(orderItemSchema)
+//     .min(1, "Order must contain at least one item"),
+//   trackingNumber: z.string().optional(),
 //   totalPrice: z.number().positive(),
-//   shippingAddress: z
-//     .object({
-//       display_name: z.string(),
-//       lat: z.number(),
-//       lng: z.number(),
-//     })
-//     .optional(),
-//   shippingMethod: z.enum(["Standard", "Express", "AT SHOP"]).optional(),
+//   totalFinalPrice: z.number().optional(),
+//   shippingAddress: z.record(z.string(), z.any()).optional(), // Hardened from z.any()
+//   shippingMethod: z.string().optional(),
+//   companyId: z.string().min(1, "Company ID is required"),
+//   paymentData: z.record(z.string(), z.any()).optional(),
+//   callbainitialUrlckUrl: z.string().url().optional(), // Optional callback URL for payment gateways that support it
+//   idempotencyKey: z.string().uuid().optional(),
 // });
 
-// async function sendOrderEmail(email: string, orderStatus: string) {
-//   const transporter = nodemailer.createTransport({
-//     service: "Gmail",
-//     auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
-//   });
-//   await transporter.sendMail({
-//     from: `"ghuba Store" <${process.env.EMAIL}>`,
-//     to: email,
-//     subject: "Order Update",
-//     text: `Your order status has been updated to: ${orderStatus}`,
-//   });
-// }
-
+// // ---------------------------
+// // UTILS
+// // ---------------------------
 // function generateTrackingNumber() {
-//   return Math.floor(100000 + Math.random() * 900000).toString();
+//   // Generates a collision-resistant ID like: TRK-2605-A8F9B2
+//   const datePart = new Date().toISOString().slice(2, 7).replace("-", "");
+//   const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
+//   return `TRK-${datePart}-${randomPart}`;
 // }
 
-// // POST /api/orders
-// async function createOrder(req: Request) {
+// // ---------------------------
+// // ROUTE HANDLER
+// // ---------------------------
+// export const POST = withApiHandler(
+//   async (req) => {
+//     try {
+//       const body = await req.json();
+//       const parsed = orderSchema.safeParse(body);
 
-//   const body = await req.json();
-//   const parsed = orderSchema.safeParse(body);
-//   if (!parsed.success) {
-//     return formatResponse(false, null, parsed.error.errors, 400);
-//   }
-
-//   const {
-//     consumerId,
-//     items,
-//     totalPrice,
-//     shippingAddress,
-//     shippingMethod,
-//     delivery,
-//     paymentOption,
-//     name,
-//     email,
-//     phone,
-//     cardNumber,
-//     cardExpiry,
-//     cvv,
-//     mpesaPhone, // NEW: M-Pesa phone number
-//     promoCode,
-//   } = parsed.data;
-
-//   // Initial order status based on payment option
-//   let orderStatus = "PENDING";
-//   let deliveryStatus = "Order Placed";
-//   let responsePayload: any = {};
-//   const trackingNumber = `TRK${generateTrackingNumber()}`;
-  
-//   try {
-//     // 1. PAYMENT INITIATION LOGIC
-//     if (paymentOption === 'paystack') {
-//       const paymentResult = await initiatePaystackPayment(totalPrice, email);
-      
-//       if (!paymentResult.success || !paymentResult.authorizationUrl) {
-//         throw new Error("Failed to initialize Paystack payment.");
+//       if (!parsed.success) {
+//         // Return explicit field errors to the frontend for better UI/UX mapping
+//         const errorMessages = parsed.error.issues
+//           .map((i) => `${i.path.join(".")}: ${i.message}`)
+//           .join(", ");
+//         return formatResponse(
+//           false,
+//           null,
+//           `Validation failed: ${errorMessages}`,
+//           400,
+//         );
 //       }
-//       // If Paystack init is successful, we set the order status to WAITING_PAYMENT
-//       orderStatus = "WAITING_PAYMENT"; 
-//       responsePayload.authorizationUrl = paymentResult.authorizationUrl;
 
-//     } else if (paymentOption === 'mpesa') {
-//       if (!mpesaPhone) throw new Error("M-Pesa phone number is required.");
+//       if (parsed.data.idempotencyKey) {
+//         const existingOrder = await prisma.customerOrder.findFirst({
+//           where: { idempotencyKey: parsed.data.idempotencyKey },
+//         });
 
-//       const paymentResult = await initiateMpesaSTKPush(totalPrice, mpesaPhone, trackingNumber);
-      
-//       if (!paymentResult.success) {
-//         throw new Error("Failed to initiate M-Pesa STK Push.");
+//         if (existingOrder) {
+//           return formatResponse(
+//             false,
+//             null,
+//             "Order with this idempotency key already exists",
+//             409,
+//           );
+//         }
 //       }
-//       // If M-Pesa init is successful, we set the order status to WAITING_PAYMENT
-//       orderStatus = "WAITING_PAYMENT"; 
-//       responsePayload.checkoutRequestId = paymentResult.checkoutRequestId;
-      
-//     } else if (paymentOption === 'card') {
-//       // MOCK: In a real system, you would try to charge the card now.
-//       // If successful: orderStatus = "PROCESSING";
-//       // If failed: throw new Error("Card charge failed.");
-      
-//       // Since this is a mock, we assume the backend handles the charge synchronously and it passed.
-//       if (!cardNumber || !cardExpiry || !cvv) throw new Error("Card details are incomplete.");
-//       orderStatus = "PROCESSING"; 
-      
-//     } else if (paymentOption === 'cod' || paymentOption === 'pickupatshop') {
-//       // Cash on Delivery/Pickup: Payment is deferred.
-//       orderStatus = "PROCESSING"; 
-//     } else {
-//       throw new Error(`Unsupported payment option: ${paymentOption}`);
+
+//       const data = parsed.data;
+//       const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
+
+//       // 1. Create the base order record
+//       const orderDb = await createOrderRecord({
+//         consumerId: data.consumerId,
+//         items: data.items,
+//         totalPrice: data.totalPrice,
+//         totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
+//         mpesaPhone: data.mpesaPhone,
+//         paymentOption: data.paymentOption,
+//         shippingAddress: data.shippingAddress,
+//         shippingMethod: data.shippingMethod,
+//         name: data.name,
+//         email: data.email,
+//         phone: data.phone,
+//         promoCode: data.paymentData?.promoCode ?? undefined,
+//         trackingNumber,
+//         deliveryStatus: "Pending",
+//         delivery: false,
+//         notes: data.paymentData?.notes ?? undefined,
+//         companyId: data.companyId,
+//         idempotencyKey: data.idempotencyKey,
+//       });
+
+//       // 2. Retrieve Tenant Payment Configurations
+//       const cfg = await getCompanyPaymentConfig(data.companyId);
+//       if (!cfg || !cfg.credentials) {
+//         return formatResponse(
+//           false,
+//           null,
+//           "Payment gateway configuration is missing for this store.",
+//           500,
+//         );
+//       }
+
+//       // 3. Route to specific payment processor
+//       let paymentResponse: any = null;
+
+//       switch (data.paymentOption) {
+//         case "mpesa": {
+//           const phoneNumber =
+//             data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+//           if (!phoneNumber)
+//             return formatResponse(
+//               false,
+//               null,
+//               "M-Pesa phone number required",
+//               400,
+//             );
+
+//           paymentResponse = await initiateMpesaPayment(
+//             orderDb,
+//             phoneNumber,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "paystack": {
+//           paymentResponse = await initiatePaystackPayment(
+//             orderDb,
+//             data.email,
+//             cfg.credentials,
+//             "",
+//           );
+//           break;
+//         }
+//         case "ghuba": {
+//           // FIXED: Passed cfg.credentials to the Paystack alias
+//           paymentResponse = await initiateGhubaPayment(orderDb, data.email);
+//           break;
+//         }
+//         case "stripe": {
+//           paymentResponse = await initiateStripePaymentIntent(
+//             orderDb,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "paypal": {
+//           paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
+//           break;
+//         }
+//         case "cod":
+//         case "pickupatshop": {
+//           paymentResponse = {
+//             message: "Payment on delivery or pickup confirmed.",
+//           };
+//           await prisma.customerOrder.update({
+//             where: { id: orderDb.id },
+//             data: { paymentStatus: "PENDING" },
+//           });
+//           break;
+//         }
+//         default:
+//           return formatResponse(false, null, "Unsupported payment option", 400);
+//       }
+
+//       // 4. Return successful payload
+//       const authorizationUrl =
+//         paymentResponse?.data?.authorization_url ??
+//         paymentResponse?.authorization_url ??
+//         null;
+
+//       const response = formatResponse(
+//         true,
+//         {
+//           order: orderDb,
+//           trackingNumber,
+//           paymentResponse,
+//           authorizationUrl,
+//         },
+//         "Order created successfully",
+//         201,
+//       );
+
+//       // Inject CORS headers onto the successful response just in case `withApiHandler` misses them
+//       response.headers.set("Access-Control-Allow-Origin", "*");
+//       return response;
+//     } catch (err: any) {
+//       console.error("[ORDER_CREATION_ERROR]", err);
+//       return formatResponse(
+//         false,
+//         null,
+//         err.message || "Failed to process order checkout",
+//         500,
+//       );
 //     }
-
-//     // 2. CREATE THE ORDER IN THE DATABASE
-//     const order = await prisma.customerOrder.create({
-//       data: {
-//         consumerId,
-//         name,
-//         email,
-//         phone,
-//         cardNumber, // Saving card details (temporarily) - NOT best practice in production!
-//         cardExpiry,
-//         cvv,
-//         mpesaPhone, // Saving M-Pesa phone number
-//         promoCode,
-//         totalPrice,
-//         shippingAddress,
-//         shippingMethod,
-//         status: "PENDING", // Use the dynamically set status
-//         delivery,
-//         paymentOption,
-//         trackingNumber: trackingNumber, // Use the generated tracking number
-//         deliveryStatus: deliveryStatus,
-//         items: { create: items },
-//       },
-//       include: { items: true },
-//     });
-    
-//     // 3. COMPILE FINAL RESPONSE
-//     const finalResponse = {
-//       ...order,
-//       ...responsePayload, // Add authorizationUrl or checkoutRequestId if present
-//     };
-
-//     // Return the response, which includes the tracking number and potentially a redirect URL
-//     return formatResponse(true, finalResponse);
-
-//   } catch (err: any) {
-//     console.error("Error creating order:", err);
-//     // If payment or creation fails, return a 400 or 500 error
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// // GET /api/orders
-// async function getOrders(req: Request) {
-//   const { searchParams } = new URL(req.url);
-//   const page = parseInt(searchParams.get("page") || "1", 10);
-//   const limit = parseInt(searchParams.get("limit") || "10", 10);
-//   if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
-//     return formatResponse(false, null, "Invalid pagination parameters.", 400);
-//   }
-//   const skip = (page - 1) * limit;
-
-//   try {
-//     const [orders, total] = await Promise.all([
-//       prisma.customerOrder.findMany({
-//         skip,
-//         take: limit,
-//         orderBy: { createdAt: "desc" },
-//         include: { items: true },
-//       }),
-//       prisma.customerOrder.count(),
-//     ]);
-//     const totalPages = Math.ceil(total / limit);
-
-//     return formatResponse(true, { orders, totalPages }, null, 200);
-//   } catch (err: any) {
-//     console.error("Error fetching orders:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// // PUT /api/orders
-// async function updateOrder(req: Request) {
-
-//   const body = await req.json();
-//   const { id, status, deliveryStatus } = body;
-//   if (!id || !status || !deliveryStatus) {
-//     return formatResponse(false, null, "Missing id, status or deliveryStatus", 400);
-//   }
-
-//   try {
-//     const order = await prisma.customerOrder.update({
-//       where: { id },
-//       data: { status, deliveryStatus },
-//     });
-
-//     // webhook
-//     await fetch(process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL!, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ orderId: id, status, deliveryStatus }),
-//     });
-
-//     const consumer = await prisma.consumer.findUnique({
-//       where: { id: order.consumerId },
-//       include: { user: { select: { email: true } } },
-//     });
-//     if (consumer) await sendOrderEmail(consumer.user.email, status);
-
-//     return formatResponse(true, order);
-//   } catch (err: any) {
-//     console.error("Error updating order:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// // DELETE /api/orders (soft delete)
-// async function deleteOrder(req: Request) {
-
-//   const { id } = await req.json();
-//   if (!id) {
-//     return formatResponse(false, null, "Missing order ID", 400);
-//   }
-
-//   try {
-//     const existing = await prisma.customerOrder.findUnique({
-//       where: { id, deletedAt: null },
-//     });
-//     if (!existing || existing.status !== "PENDING") {
-//       return formatResponse(false, null, "Only pending orders can be canceled", 400);
-//     }
-
-//     const canceled = await prisma.customerOrder.update({
-//       where: { id },
-//       data: {
-//         status: "CANCELLED",
-//         deliveryStatus: "Order Canceled",
-//         deletedAt: new Date(),
-//       },
-//     });
-
-//     return formatResponse(true, canceled);
-//   } catch (err: any) {
-//     console.error("Error soft-deleting order:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// export const POST = withApiHandler(createOrder);
-// export const GET = withApiHandler(getOrders);
-// export const PUT = withApiHandler(updateOrder);
-// export const DELETE = withApiHandler(deleteOrder);
-
-// import prisma from "@/server/db/prismadb";
+//   },
+//   {
+//     requireAuth: false, // Must remain false for public storefronts
+//     requireRateLimit: true, // HIGHLY RECOMMENDED: Prevent carding/spam attacks on your payment endpoints
+//   },
+// );
+// // app/api/shop/orders/route.ts
+// import { NextResponse } from "next/server";
 // import { z } from "zod";
-// import nodemailer from "nodemailer";
-// import { formatResponse } from "@/lib/formatResponse";
+// import prisma from "@/server/db/prismadb";
+// import { createOrder as createOrderRecord } from "@/lib/orders/createOrder"; // your createOrder helper path
+// import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+// import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
+// import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
+// // import { initiateGhubaPayment } from "@/lib/paymentsv2/ghuba"; defaulto paystack for ghuba temporarily
+// import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
+// import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
+// import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // Zod schema
+// import { formatResponse } from "@/lib/formatResponse";
+
+// // ---------------------------
+// // GLOBAL CORS HEADERS
+// // ---------------------------
+// // const CORS_HEADERS = {
+// //   "Access-Control-Allow-Origin": "*",
+// //   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+// //   "Access-Control-Allow-Headers":
+// //   "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+// // };
+// // const CORS_HEADERS = {
+// //   "Access-Control-Allow-Origin": "*", // Or your specific desktop app origin
+// //   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+// //   "Access-Control-Allow-Credentials": "true",
+// //   "Access-Control-Allow-Headers":
+// //     "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+// //   "Access-Control-Max-Age": "86400",
+// // };
+
+// // function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+// //   return new NextResponse(JSON.stringify(json), {
+// //     status,
+// //     headers: {
+// //       "Content-Type": "application/json",
+// //       ...CORS_HEADERS,
+// //       ...extraHeaders,
+// //     },
+// //   });
+// // }
+
+// // ---------------------------
+// // OPTIONS (PRE-FLIGHT)
+// // ---------------------------
+// // export function OPTIONS() {
+// //   return new NextResponse(null, {
+// //     status: 204,
+// //     headers: CORS_HEADERS,
+// //   });
+// // }
+
+// // export async function OPTIONS(request: Request) {
+// //   return new Response(null, {
+// //     status: 204, // 204 No Content is standard for preflight responses
+// //     headers: {
+// //       "Access-Control-Allow-Origin": "*", // Or '*' for testing
+// //       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+// //       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+// //       "Access-Control-Allow-Credentials": "true",
+// //     },
+// //   });
+// // }
+
+// /* Order schema - mirrors your existing schema (light validation) */
 // const orderSchema = z.object({
 //   name: z.string(),
-//   email: z.string(),
+//   email: z.string().email(),
 //   phone: z.string(),
-//   cardNumber: z.string().optional(),
-//   cardExpiry: z.string().optional(),
-//   cvv: z.string().optional(),
-//   promoCode: z.string().optional(),
+//   mpesaPhone: z.string().optional(),
 //   consumerId: z.string(),
-//   delivery: z.boolean().optional(),
-//   paymentOption: z.string().default("Cash"),
+//   paymentOption: z
+//     .enum([
+//       "cod",
+//       "pickupatshop",
+//       "mpesa",
+//       "card",
+//       "paystack",
+//       "ghuba",
+//       "stripe",
+//       "paypal",
+//     ])
+//     .default("cod"),
 //   items: z.array(
 //     z.object({
 //       marketplaceListingId: z.string(),
@@ -705,189 +650,153 @@ export const DELETE = withApiHandler(deleteOrder);
 //       timeSlot: z.string().optional(),
 //       quantity: z.number().positive(),
 //       price: z.number().positive(),
-//     })
+//     }),
 //   ),
+//   trackingNumber: z.string().optional(),
 //   totalPrice: z.number().positive(),
-//   shippingAddress: z
-//     .object({
-//       display_name: z.string(),
-//       lat: z.number(),
-//       lng: z.number(),
-//     })
-//     .optional(),
-//   shippingMethod: z.enum(["Standard", "Express", "AT SHOP"]).optional(),
+//   totalFinalPrice: z.number().optional(),
+//   shippingAddress: z.any().optional(),
+//   shippingMethod: z.string().optional(),
+//   companyId: z.string(),
+//   paymentData: z.any().optional(),
 // });
 
-// async function sendOrderEmail(email: string, orderStatus: string) {
-//   const transporter = nodemailer.createTransport({
-//     service: "Gmail",
-//     auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
-//   });
-//   await transporter.sendMail({
-//     from: `"ghuba Store" <${process.env.EMAIL}>`,
-//     to: email,
-//     subject: "Order Update",
-//     text: `Your order status has been updated to: ${orderStatus}`,
-//   });
-// }
-
 // function generateTrackingNumber() {
-//   return Math.floor(100000 + Math.random() * 900000).toString();
+//   return `TRK${Math.floor(100000 + Math.random() * 900000).toString()}`;
 // }
 
-// // POST /api/orders
-// async function createOrder(req: Request) {
+// // export async function POST(req: Request) {
+// export const POST = withApiHandler(
+//   async (req) => {
+//     try {
+//       // if (req.method === "OPTIONS") {
+//       //   return NextResponse.next();
+//       // }
 
-//   const body = await req.json();
-//   const parsed = orderSchema.safeParse(body);
-//   if (!parsed.success) {
-//     return formatResponse(false, null, parsed.error.errors, 400);
-//   }
+//       const body = await req.json();
+//       const parsed = orderSchema.safeParse(body);
 
-//   const {
-//     consumerId,
-//     items,
-//     totalPrice,
-//     shippingAddress,
-//     shippingMethod,
-//     delivery,
-//     paymentOption,
-//     name,
-//     email,
-//     phone,
-//     cardNumber,
-//     cardExpiry,
-//     cvv,
-//     promoCode,
-//   } = parsed.data;
+//       if (!parsed.success) {
+//         // return withCors({ success: false, error: parsed.error.flatten() }, 400);
+//         // return formatResponse({ success: false, error: parsed.error.flatten() }, 400);
+//         return formatResponse(false, null, "Invalid order data", 400);
+//       }
 
-//   try {
-//     const order = await prisma.customerOrder.create({
-//       data: {
-//         consumerId,
-//         name,
-//         email,
-//         phone,
-//         cardNumber,
-//         cardExpiry,
-//         cvv,
-//         promoCode,
-//         totalPrice,
-//         shippingAddress,
-//         shippingMethod,
-//         status: "PENDING",
-//         delivery,
-//         paymentOption,
-//         trackingNumber: `TRK${generateTrackingNumber()}`,
+//       const data = parsed.data;
+//       const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
+
+//       const orderDb = await createOrderRecord({
+//         consumerId: data.consumerId,
+//         items: data.items,
+//         totalPrice: data.totalPrice,
+//         totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
+//         mpesaPhone: data.mpesaPhone,
+//         paymentOption: data.paymentOption,
+//         shippingAddress: data.shippingAddress,
+//         shippingMethod: data.shippingMethod,
+//         name: data.name,
+//         email: data.email,
+//         phone: data.phone,
+//         promoCode: data.paymentData?.promoCode ?? undefined,
+//         trackingNumber,
 //         deliveryStatus: "Order Placed",
-//         items: { create: items },
-//       },
-//       include: { items: true },
-//     });
-//     return formatResponse(true, order);
-//   } catch (err: any) {
-//     console.error("Error creating order:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
+//         delivery: false,
+//         notes: data.paymentData?.notes ?? undefined,
+//         companyId: data.companyId,
+//       });
 
-// // GET /api/orders
-// async function getOrders(req: Request) {
-//   const { searchParams } = new URL(req.url);
-//   const page = parseInt(searchParams.get("page") || "1", 10);
-//   const limit = parseInt(searchParams.get("limit") || "10", 10);
-//   if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
-//     return formatResponse(false, null, "Invalid pagination parameters.", 400);
-//   }
-//   const skip = (page - 1) * limit;
+//       let paymentResponse = null;
+//       const cfg = await getCompanyPaymentConfig(data.companyId);
 
-//   try {
-//     const [orders, total] = await Promise.all([
-//       prisma.customerOrder.findMany({
-//         skip,
-//         take: limit,
-//         orderBy: { createdAt: "desc" },
-//         include: { items: true },
-//       }),
-//       prisma.customerOrder.count(),
-//     ]);
-//     const totalPages = Math.ceil(total / limit);
+//       switch (data.paymentOption) {
+//         case "mpesa": {
+//           const phoneNumber =
+//             data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+//           if (!phoneNumber)
+//             return formatResponse(false, null, "mpesaPhone required", 400);
+//           paymentResponse = await initiateMpesaPayment(
+//             orderDb,
+//             phoneNumber,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "paystack": {
+//           paymentResponse = await initiatePaystackPayment(
+//             orderDb,
+//             data.email,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "ghuba": {
+//           // paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
+//           paymentResponse = await initiateGhubaPayment(orderDb, body.email);
+//           break;
+//         }
+//         case "stripe": {
+//           paymentResponse = await initiateStripePaymentIntent(
+//             orderDb,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "paypal": {
+//           paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
+//           break;
+//         }
+//         case "cod":
+//         case "pickupatshop": {
+//           paymentResponse = {
+//             message: "Payment on delivery or pickup confirmed.",
+//           };
+//           // mark paymentStatus accordingly if you want
+//           await prisma.customerOrder.update({
+//             where: { id: orderDb.id },
+//             data: { paymentStatus: "PENDING" },
+//           });
+//           break;
+//         }
+//         default:
+//           paymentResponse = { message: "Unknown payment option" };
+//       }
 
-//     return formatResponse(true, { orders, totalPages }, null, 200);
-//   } catch (err: any) {
-//     console.error("Error fetching orders:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
+//       return formatResponse(
+//         true,
+//         {
+//           order: orderDb,
+//           trackingNumber,
+//           paymentResponse,
+//           authorizationUrl:
+//             paymentResponse?.data?.authorization_url ??
+//             paymentResponse?.authorization_url ??
+//             null,
+//         },
+//         "Order created successfully",
+//         201,
+//       );
 
-// // PUT /api/orders
-// async function updateOrder(req: Request) {
-
-//   const body = await req.json();
-//   const { id, status, deliveryStatus } = body;
-//   if (!id || !status || !deliveryStatus) {
-//     return formatResponse(false, null, "Missing id, status or deliveryStatus", 400);
-//   }
-
-//   try {
-//     const order = await prisma.customerOrder.update({
-//       where: { id },
-//       data: { status, deliveryStatus },
-//     });
-
-//     // webhook
-//     await fetch(process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL!, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ orderId: id, status, deliveryStatus }),
-//     });
-
-//     const consumer = await prisma.consumer.findUnique({
-//       where: { id: order.consumerId },
-//       include: { user: { select: { email: true } } },
-//     });
-//     if (consumer) await sendOrderEmail(consumer.user.email, status);
-
-//     return formatResponse(true, order);
-//   } catch (err: any) {
-//     console.error("Error updating order:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// // DELETE /api/orders (soft delete)
-// async function deleteOrder(req: Request) {
-
-//   const { id } = await req.json();
-//   if (!id) {
-//     return formatResponse(false, null, "Missing order ID", 400);
-//   }
-
-//   try {
-//     const existing = await prisma.customerOrder.findUnique({
-//       where: { id, deletedAt: null },
-//     });
-//     if (!existing || existing.status !== "PENDING") {
-//       return formatResponse(false, null, "Only pending orders can be canceled", 400);
+//       // return withCors({
+//       //   success: true,
+//       //   data: {
+//       //     order: orderDb,
+//       //     trackingNumber,
+//       //     paymentResponse,
+//       //     authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
+//       //   },
+//       // });
+//     } catch (err: any) {
+//       console.error("Order creation failed:", err);
+//       return formatResponse(
+//         false,
+//         null,
+//         err.message || "Internal Server Error",
+//         500,
+//       );
 //     }
-
-//     const canceled = await prisma.customerOrder.update({
-//       where: { id },
-//       data: {
-//         status: "CANCELLED",
-//         deliveryStatus: "Order Canceled",
-//         deletedAt: new Date(),
-//       },
-//     });
-
-//     return formatResponse(true, canceled);
-//   } catch (err: any) {
-//     console.error("Error soft-deleting order:", err);
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// export const POST = withApiHandler(createOrder);
-// export const GET = withApiHandler(getOrders);
-// export const PUT = withApiHandler(updateOrder);
-// export const DELETE = withApiHandler(deleteOrder);
+//   },
+//   {
+//     requireAuth: false, // ✅ VERY IMPORTANT
+//     requireRateLimit: false,
+//   },
+// );

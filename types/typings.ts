@@ -58,26 +58,6 @@ export enum UserStatus {
   SUSPENDED,
 }
 
-// export enum ListingStatus {
-//   ACTIVE,
-//   PENDING,
-//   SOLD,
-//   INACTIVE,
-//   DRAFT,
-//   REJECTED,
-//   BUY,
-//   RENT,
-//   RENTED,
-// }
-
-// export enum SocialChannel {
-//   TWITTER,
-//   INSTAGRAM,
-//   FACEBOOK,
-//   LINKEDIN,
-//   YOUTUBE,
-// }
-
 export enum SocialChannel {
   FACEBOOK = "FACEBOOK",
   TWITTER = "TWITTER",
@@ -228,27 +208,6 @@ export interface IPromotion {
   createdAt?: Date | string | null | undefined;
   updatedAt?: Date | string | null | undefined;
 }
-
-// export interface Award {
-//   name: string;
-//   iconUrl: string;
-//   order?: number;
-// }
-
-// export interface Metric {
-//   label: string;
-//   value: number;
-//   iconUrl?: string;
-//   order?: number;
-// }
-
-// export interface Stat {
-// label: string;
-// value: string;
-// iconUrl?: string;
-// order?: number;
-// }
-
 export interface PricingTier {
   name: string;
   frequency?: string;
@@ -263,7 +222,6 @@ export interface PricingTier {
 }
 
 export interface IPageSection extends PageSection {}
-
 export interface AppPromo {
   id?: string;
   headline: string;
@@ -456,7 +414,6 @@ export interface VariantOptionItem {
   name: string;
   extraPrice: number;
 }
-
 export interface ProductForm {
   // Manual definition matching Prisma's Product model
   id: string;
@@ -741,13 +698,11 @@ export interface CourseOption {
   academicLevels: { id: string; name: string }[];
   instructorName?: string;
 }
-
 export interface EducatorOption {
   id: string;
   name: string | null;
   email: string;
 }
-
 export interface AcademicLevelOption {
   id: string;
   name: string;
@@ -790,7 +745,6 @@ export interface SelectedLocation {
   name: string;
   children: SelectedLocation[];
 }
-
 export interface IDestination {
   id: string;
   name: string;
@@ -806,7 +760,6 @@ export interface IDestination {
   averageRating?: number | null;
   published: boolean;
 }
-
 export interface ITourPackage {
   id: string;
   name: string;
@@ -1032,21 +985,6 @@ export interface Educator {
   createdAt?: Date | null;
   updatedAt?: Date | null;
 
-  // Relations (optional if you need them in frontend types)
-  // classesScheduled?: ClassSchedule[];
-  // exams?: Exam[];
-  // courseMaterials?: CourseMaterial[];
-  // attendanceRecords?: AttendanceRecord[];
-  // createdDiscussionTopics?: DiscussionTopic[];
-  // uploadedMaterials?: CourseMaterial[];
-  // headedDepartments?: Department[];
-  // academicLevelAssignments?: EducatorAcademicLevelAssignment[];
-  // assignmentSubmissions?: AssignmentSubmission[];
-  // examSubmissions?: ExamSubmission[];
-  // grades?: Grade[];
-  // courseEducatorAssignments?: CourseEducatorAssignment[];
-  // courseAssignments?: CourseAssignment[];
-  // bookings?: Booking[];
 }
 
 //################################################################################
@@ -1087,12 +1025,6 @@ export interface Handlers {
 
   onChangeSettings: (updated: Partial<StoreForm>) => void;
   onToggleDay: (dayKey: string) => void;
-
-  // 🔥 REMOVED: Old category toggle functions
-  // onBulkToggle: (ids: string[], categoryContext: string) => void;
-  // onToggleParent: (cat: IProductCategory) => void;
-  // onToggleSub: (parentId: string, sub: ISubcategory) => void;
-  // onToggleBrand: (parentId: string, brand: any) => void;
 
   // ✨ ADDED: Reducer dispatch for all category actions
   categoryDispatch: React.Dispatch<CategoryAction>;
@@ -1169,54 +1101,50 @@ export interface Handlers {
   goToStep: (stepKey: string) => void;
   totalSteps: number;
 }
-// export interface Handlers {
-//   handleChange: (
-//     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-//   ) => void;
-//   onUpdateArray: <T>(
-//     key: keyof StoreForm,
-//     idx: number,
-//     field: keyof T,
-//     value: any
-//   ) => void;
-//   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
-//   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
-//   setAddress: (address: string, geo: GeoLocation) => void;
-//   onChangeSettings: (updated: Partial<StoreForm>) => void;
-//   onBulkToggle: (ids: string[], categoryContext: string) => void;
-//   onToggleDay: (dayKey: string) => void;
-//   onToggleParent: (cat: IProductCategory) => void;
-//   onToggleSub: (parentId: string, sub: ISubcategory) => void;
-//   onToggleBrand: (parentId: string, brand: any) => void;
 
-//   onUpdateHeroSlide: (
-//       index: number,
-//       field: keyof HeroSlide,
-//       value: string
-//     ) => void;
-//   onAddHeroSlide: () => void;
-//   onRemoveHeroSlide: (index: number) => void;
-//   handleSlideImageUpload: (
-//       index: number,
-//       file: File,
-//       field: keyof HeroSlide
-//     ) => void;
-//   onUpdatePromotion: (
-//       index: number,
-//       field: keyof Promotion,
-//       value: string
-//     ) => void;
-//   onAddPromotion: () => void;
-//   onRemovePromotion: (index: number) => void;
-//   onPromotionImageUpload: (index: number, file: File) => void;
+export interface WhatsAppAIResult {
+  reply: string;
 
-//   onToggleLocation: (location: Location, isSelected: boolean) => void;
-//   onBulkToggleLocations: (locationIds: string[]) => void;
+  intent:
+    | "GREETING"
+    | "SEARCH_PRODUCT"
+    | "PRODUCT_DETAILS"
+    | "CREATE_ORDER"
+    | "ORDER_STATUS"
+    | "BOOK_SERVICE"
+    | "CANCEL_ORDER"
+    | "SELLER_ONBOARDING"
+    | "LISTING_HELP"
+    | "FAQ"
+    | "PROMOTION"
+    | "HUMAN_HANDOFF"
+    | "UNKNOWN";
 
-//   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
-//   handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
+  confidence: number;
 
-// }
+  language: string;
+
+  requiresHuman: boolean;
+
+  leadDetected: boolean;
+
+  entities: {
+    productId?: string;
+    listingId?: string;
+    orderId?: string;
+    category?: string;
+    quantity?: number;
+    date?: string;
+    timeSlot?: string;
+    paymentOption?: string;
+    location?: string;
+  };
+
+  action?: {
+    type: string;
+    payload?: Record<string, unknown>;
+  };
+}
 
 export interface StepConfig {
   key: string;
@@ -1256,3 +1184,5 @@ export type CategoryAction =
       type: "BULK_UPDATE";
       payload: { ids: Set<string>; availableForContext: IProductCategory[] };
     };
+
+

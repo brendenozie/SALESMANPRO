@@ -189,8 +189,8 @@ model ProductCategory {
   Company             Company?              @relation(fields: [companyId], references: [id])
   companyId           String?               @db.ObjectId
   Podcast             Podcast[]
-  
-  events              Event[]
+
+  events Event[]
 
   @@index([name])
   @@index([createdAt])
@@ -485,12 +485,892 @@ model Company {
   socialIntegrations   SocialIntegration[]
   kraConfigurations    KraConfiguration[]
 
+  whatsappAccounts       WhatsAppAccount[]
+  whatsappContacts       WhatsAppContact[]
+  whatsappConversations  WhatsAppConversation[]
+  whatsappMessages       WhatsAppMessage[]
+  whatsappTemplates      WhatsAppTemplate[]
+  whatsappAutomations    WhatsAppAutomation[]
+  whatsappAiConfig       WhatsAppAIConfig?
+  whatsappAgents         WhatsAppAgent[]
+  whatsappKnowledgeBases WhatsAppKnowledgeBase[]
+  whatsappWebhookEvents  WhatsAppWebhookEvent[]
+  whatsappCampaigns      WhatsAppCampaign[]
+  whatsAppAIToolCalls    WhatsAppAIToolCall[]
+  whatsAppAIUsages       WhatsAppAIUsage[]
+
   @@index([userId])
   @@index([name])
   @@index([companyCategoryId])
   @@index([deletedAt])
   @@index([createdAt])
   @@index([deletedAt, slug])
+}
+
+model WhatsAppAccount {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Meta / WhatsApp identifiers
+  businessAccountId String?
+  phoneNumberId     String  @unique
+  phoneNumber       String?
+
+  displayName String?
+
+  // API credentials
+  accessTokenEncrypted String?
+  accessTokenIv        String?
+  accessTokenTag       String?
+
+  appId              String?
+  appSecretEncrypted String?
+  appSecretIv        String?
+  appSecretTag       String?
+
+  webhookVerifyTokenEncrypted String?
+  webhookVerifyTokenIv        String?
+  webhookVerifyTokenTag       String?
+
+  // Environment
+  environment WhatsAppEnvironment @default(PRODUCTION)
+
+  // Connection state
+  status WhatsAppAccountStatus @default(DISCONNECTED)
+
+  isActive Boolean @default(true)
+
+  lastConnectedAt DateTime?
+  lastWebhookAt   DateTime?
+  lastError       String?
+
+  // Default account for this company
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts      WhatsAppContact[]
+  conversations WhatsAppConversation[]
+  messages      WhatsAppMessage[]
+  templates     WhatsAppTemplate[]
+  webhookEvents WhatsAppWebhookEvent[]
+  campaigns     WhatsAppCampaign[]
+  // @@index([phoneNumberId])
+
+  @@index([companyId])
+  @@index([companyId, isActive])
+  @@index([businessAccountId])
+}
+
+enum WhatsAppEnvironment {
+  DEVELOPMENT
+  SANDBOX
+  PRODUCTION
+}
+
+enum WhatsAppAccountStatus {
+  CONNECTED
+  DISCONNECTED
+  CONNECTING
+  ERROR
+  SUSPENDED
+}
+
+model WhatsAppContact {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  accountId String?          @db.ObjectId
+  account   WhatsAppAccount? @relation(fields: [accountId], references: [id])
+
+  // WhatsApp identity
+  waId        String
+  phoneNumber String
+
+  name      String?
+  firstName String?
+  lastName  String?
+
+  profileName    String?
+  profilePicture String?
+
+  email String?
+
+  // Optional link to your existing User
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Customer preferences
+  language String? @default("en")
+
+  optedIn    Boolean   @default(false)
+  optedInAt  DateTime?
+  optedOutAt DateTime?
+
+  blocked   Boolean   @default(false)
+  blockedAt DateTime?
+
+  lastSeenAt    DateTime?
+  lastMessageAt DateTime?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversations WhatsAppConversation[]
+  messages      WhatsAppMessage[]
+  campaigns     WhatsAppCampaignRecipient[]
+  return        Return?                     @relation(fields: [returnId], references: [id])
+  returnId      String?                     @db.ObjectId
+
+  @@unique([companyId, waId])
+  @@index([companyId])
+  @@index([phoneNumber])
+  @@index([userId])
+  @@index([lastMessageAt])
+}
+
+model WhatsAppConversation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  accountId String          @db.ObjectId
+  account   WhatsAppAccount @relation(fields: [accountId], references: [id])
+
+  contactId String          @db.ObjectId
+  contact   WhatsAppContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  // Conversation state
+  status WhatsAppConversationStatus @default(OPEN)
+
+  mode WhatsAppConversationMode @default(AI)
+
+  subject String?
+
+  // WhatsApp 24-hour customer service window
+  lastCustomerMessageAt   DateTime?
+  lastBusinessMessageAt   DateTime?
+  customerWindowExpiresAt DateTime?
+
+  // Assignment
+  assignedAgentId String?        @db.ObjectId
+  assignedAgent   WhatsAppAgent? @relation(fields: [assignedAgentId], references: [id])
+
+  // AI state
+  aiEnabled Boolean @default(true)
+
+  aiPaused Boolean @default(false)
+
+  aiSummary String?
+
+  aiIntent String?
+
+  aiSentiment String?
+
+  aiConfidence Float?
+
+  // Useful for context
+  context Json?
+
+  metadata Json?
+
+  startedAt DateTime  @default(now())
+  closedAt  DateTime?
+
+  lastMessageAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages            WhatsAppMessage[]
+  whatsAppAIToolCalls WhatsAppAIToolCall[]
+  customerOrders      CustomerOrder[]
+  whatsAppAIActions   WhatsAppAIAction[]
+  appointments        Appointment[]
+
+  @@index([companyId])
+  @@index([contactId])
+  @@index([accountId])
+  @@index([status])
+  @@index([assignedAgentId])
+  @@index([lastMessageAt])
+  @@index([companyId, status])
+}
+
+enum WhatsAppConversationStatus {
+  OPEN
+  PENDING
+  WAITING_FOR_CUSTOMER
+  WAITING_FOR_AGENT
+  RESOLVED
+  CLOSED
+}
+
+enum WhatsAppConversationMode {
+  AI
+  HUMAN
+  HYBRID
+}
+
+model WhatsAppMessage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  accountId String          @db.ObjectId
+  account   WhatsAppAccount @relation(fields: [accountId], references: [id])
+
+  conversationId String               @db.ObjectId
+  conversation   WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  contactId String          @db.ObjectId
+  contact   WhatsAppContact @relation(fields: [contactId], references: [id])
+
+  // Meta message ID
+  whatsappMessageId String?
+
+  // Direction
+  direction WhatsAppMessageDirection
+
+  // Sender
+  senderType WhatsAppSenderType
+
+  senderUserId String? @db.ObjectId
+
+  // WhatsApp message type
+  type WhatsAppMessageType @default(TEXT)
+
+  text String?
+
+  // Media
+  mediaId       String?
+  mediaUrl      String?
+  mediaMimeType String?
+  mediaCaption  String?
+  mediaFilename String?
+
+  // Location
+  latitude        Float?
+  longitude       Float?
+  locationName    String?
+  locationAddress String?
+
+  // Interactive messages
+  interactiveType    String?
+  interactivePayload Json?
+
+  // Template
+  templateId String?           @db.ObjectId
+  template   WhatsAppTemplate? @relation(fields: [templateId], references: [id])
+
+  templateName String?
+
+  // AI
+  isAI Boolean @default(false)
+
+  aiModel String?
+
+  aiPromptTokens     Int?
+  aiCompletionTokens Int?
+  aiTotalTokens      Int?
+
+  aiConfidence Float?
+
+  aiIntent String?
+
+  aiToolUsed String?
+
+  // Delivery
+  status WhatsAppMessageStatus @default(QUEUED)
+
+  errorCode    String?
+  errorMessage String?
+
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+  failedAt    DateTime?
+
+  // Reply threading
+  replyToMessageId String?
+
+  metadata Json?
+
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  whatsAppAIToolCalls WhatsAppAIToolCall[]
+
+  @@unique([accountId, whatsappMessageId])
+  @@index([companyId])
+  @@index([conversationId, createdAt])
+  @@index([contactId])
+  @@index([status])
+  @@index([direction])
+  @@index([whatsappMessageId])
+  @@index([createdAt])
+}
+
+enum WhatsAppMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WhatsAppSenderType {
+  CUSTOMER
+  AI
+  AGENT
+  SYSTEM
+}
+
+enum WhatsAppMessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  STICKER
+  LOCATION
+  CONTACT
+  INTERACTIVE
+  BUTTON
+  LIST
+  TEMPLATE
+  REACTION
+  UNKNOWN
+}
+
+enum WhatsAppMessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  RECEIVED
+}
+
+model WhatsAppAIConfig {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @unique @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  enabled Boolean @default(true)
+
+  // AI provider
+  provider WhatsAppAIProvider @default(OPENAI)
+
+  model String @default("gpt-5.6")
+
+  systemPrompt String?
+
+  businessDescription String?
+
+  assistantName String?
+
+  tone String? @default("professional")
+
+  language String? @default("en")
+
+  // Behavior
+  autoReply Boolean @default(true)
+
+  humanHandoff Boolean @default(true)
+
+  handoffConfidenceThreshold Float @default(0.55)
+
+  maxConversationMessages Int @default(30)
+
+  temperature Float @default(0.3)
+
+  maxTokens Int @default(1000)
+
+  // Business hours
+  respectBusinessHours Boolean @default(false)
+
+  businessHours Json?
+
+  // Capabilities
+  canSearchProducts Boolean @default(true)
+
+  canSearchListings Boolean @default(true)
+
+  canCheckOrders Boolean @default(true)
+
+  canCreateOrders Boolean @default(false)
+
+  canCheckPayments Boolean @default(true)
+
+  canCreateAppointments Boolean @default(false)
+
+  canCancelOrders Boolean @default(false)
+
+  canCheckDelivery Boolean @default(true)
+
+  canTransferToAgent Boolean @default(true)
+
+  // Safety
+  requireConfirmationForOrders Boolean @default(true)
+
+  requireConfirmationForPayments Boolean @default(true)
+
+  // Fallback
+  fallbackMessage String?
+
+  handoffMessage String?
+
+  // API configuration
+  apiKeyEncrypted String?
+  apiKeyIv        String?
+  apiKeyTag       String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WhatsAppAIProvider {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  CUSTOM
+}
+
+model WhatsAppAgent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  displayName String?
+  department  String?
+
+  agentType WhatsAppAgentType @default(CONCIERGE)
+
+  isActive Boolean @default(true)
+
+  isOnline Boolean @default(false)
+
+  maxConcurrentChats Int @default(10)
+
+  lastSeenAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversations WhatsAppConversation[]
+  return        Return?                @relation(fields: [returnId], references: [id])
+  returnId      String?                @db.ObjectId
+
+  @@unique([companyId, userId])
+  @@index([companyId])
+  @@index([userId])
+  @@index([isOnline])
+}
+
+enum WhatsAppAgentType {
+  CONCIERGE
+  SALES
+  SUPPORT
+  ORDER
+  BOOKING
+  SELLER_ONBOARDING
+  MARKETING
+  GENERAL
+}
+
+model WhatsAppTemplate {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  accountId String?          @db.ObjectId
+  account   WhatsAppAccount? @relation(fields: [accountId], references: [id])
+
+  name String
+
+  language String @default("en")
+
+  category WhatsAppTemplateCategory
+
+  status WhatsAppTemplateStatus @default(PENDING)
+
+  metaTemplateId String?
+
+  body String?
+
+  header Json?
+
+  footer String?
+
+  buttons Json?
+
+  variables Json?
+
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages WhatsAppMessage[]
+
+  @@unique([companyId, name, language])
+  @@index([companyId])
+  @@index([status])
+}
+
+enum WhatsAppTemplateCategory {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+}
+
+enum WhatsAppTemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAUSED
+  DISABLED
+}
+
+model WhatsAppAutomation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name String
+
+  description String?
+
+  trigger WhatsAppAutomationTrigger
+
+  keywords String[]
+
+  conditions Json?
+
+  actions Json[]
+
+  isActive Boolean @default(true)
+
+  priority Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, isActive])
+  @@index([trigger])
+}
+
+enum WhatsAppAutomationTrigger {
+  MESSAGE_RECEIVED
+  KEYWORD
+  ORDER_CREATED
+  ORDER_PAID
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  APPOINTMENT_CREATED
+  APPOINTMENT_REMINDER
+  PAYMENT_FAILED
+  HUMAN_HANDOFF
+  CONVERSATION_STARTED
+  INACTIVITY
+}
+
+model WhatsAppAIToolCall {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  conversationId String               @db.ObjectId
+  conversation   WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  messageId String?          @db.ObjectId
+  message   WhatsAppMessage? @relation(fields: [messageId], references: [id])
+
+  toolName String
+
+  arguments Json?
+
+  result Json?
+
+  status WhatsAppAIToolCallStatus @default(PENDING)
+
+  error String?
+
+  executionTimeMs Int?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([companyId])
+  @@index([conversationId])
+  @@index([toolName])
+  @@index([status])
+}
+
+enum WhatsAppAIToolCallStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model WhatsAppKnowledgeBase {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name String
+
+  description String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents WhatsAppKnowledgeDocument[]
+
+  @@index([companyId])
+}
+
+model WhatsAppKnowledgeDocument {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  knowledgeBaseId String @db.ObjectId
+
+  knowledgeBase WhatsAppKnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  title String
+
+  content String
+
+  sourceType String?
+
+  sourceUrl String?
+
+  metadata Json?
+
+  // Keep this flexible because your vector DB may be
+  // Pinecone, Qdrant, pgvector, MongoDB Atlas Vector Search, etc.
+  embeddingId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([knowledgeBaseId])
+  @@index([embeddingId])
+}
+
+model WhatsAppWebhookEvent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  accountId String?          @db.ObjectId
+  account   WhatsAppAccount? @relation(fields: [accountId], references: [id])
+
+  eventId String?
+
+  eventType String?
+
+  payload Json
+
+  processed Boolean @default(false)
+
+  processingAttempts Int @default(0)
+
+  processingError String?
+
+  receivedAt DateTime @default(now())
+
+  processedAt DateTime?
+
+  @@index([companyId])
+  @@index([accountId])
+  @@index([eventId])
+  @@index([processed])
+  @@index([receivedAt])
+}
+
+model WhatsAppCampaign {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  accountId String?          @db.ObjectId
+  account   WhatsAppAccount? @relation(fields: [accountId], references: [id])
+
+  name String
+
+  description String?
+
+  templateId String? @db.ObjectId
+
+  audienceFilter Json?
+
+  status WhatsAppCampaignStatus @default(DRAFT)
+
+  scheduledAt DateTime?
+
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  totalRecipients Int @default(0)
+
+  sentCount Int @default(0)
+
+  deliveredCount Int @default(0)
+
+  readCount Int @default(0)
+
+  failedCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipients WhatsAppCampaignRecipient[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model WhatsAppCampaignRecipient {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  campaignId String           @db.ObjectId
+  campaign   WhatsAppCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  contactId String          @db.ObjectId
+  contact   WhatsAppContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  status WhatsAppCampaignRecipientStatus @default(PENDING)
+
+  whatsappMessageId String?
+
+  sentAt DateTime?
+
+  deliveredAt DateTime?
+
+  readAt DateTime?
+
+  failedAt DateTime?
+
+  errorMessage String?
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([contactId])
+  @@index([status])
+}
+
+enum WhatsAppCampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+enum WhatsAppCampaignRecipientStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  OPTED_OUT
+}
+
+model WhatsAppAIUsage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  conversationId String? @db.ObjectId
+
+  provider WhatsAppAIProvider
+
+  model String
+
+  inputTokens Int @default(0)
+
+  outputTokens Int @default(0)
+
+  totalTokens Int @default(0)
+
+  estimatedCost Float @default(0)
+
+  requestCount Int @default(1)
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([companyId, createdAt])
+}
+
+model WhatsAppAIAction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  conversationId String @db.ObjectId
+
+  conversation WhatsAppConversation @relation(fields: [conversationId], references: [id])
+
+  companyId String @db.ObjectId
+
+  action String
+
+  status WhatsAppAIActionStatus @default(PENDING)
+
+  input Json?
+
+  output Json?
+
+  error String?
+
+  entityType String?
+  entityId   String?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([conversationId])
+  @@index([companyId])
+  @@index([action])
+  @@index([status])
+}
+
+enum WhatsAppAIActionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REQUIRES_HUMAN
+  CANCELLED
 }
 
 model CompanyAddress {
@@ -786,6 +1666,13 @@ model PaymentSettings {
   ghubaSecret_encrypted String?
   ghubaSecret_iv        String?
   ghubaSecret_tag       String?
+
+  // WhatsApp payment behavior
+  whatsappPaymentsEnabled Boolean @default(false)
+
+  whatsappPaymentConfirmationRequired Boolean @default(true)
+
+  whatsappPaymentInstructions String?
 
   @@index([id])
 }
@@ -1127,7 +2014,7 @@ model Product {
   @@index([listingMarketStatus, active])
   @@index([listingSystemStatus])
   @@index([companyId, listingTransactionType, isFeatured, createdAt])
-  @@index([companyId, listingTransactionType, finalPrice])  
+  @@index([companyId, listingTransactionType, finalPrice])
   @@index([createdAt, id]) // Required for efficient Cursor-based pagination
   @@index([isFeatured, createdAt])
 }
@@ -1169,6 +2056,9 @@ model Appointment {
   status    AppointmentStatus
   createdAt DateTime?         @default(now())
   OrderItem OrderItem[]
+
+  whatsappConversationId String?               @db.ObjectId
+  whatsappConversation   WhatsAppConversation? @relation(fields: [whatsappConversationId], references: [id])
 
   // Company relation
   companyId String?  @db.ObjectId
@@ -1746,6 +2636,8 @@ model User {
   eventTicketPurchases    EventTicketPurchase[]
   userProgresses          UserProgress[]
   comments                Comment[]
+  whatsAppContacts        WhatsAppContact[]
+  whatsAppAgents          WhatsAppAgent[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -1805,6 +2697,9 @@ model Return {
   returnDate DateTime @default(now())
   reason     String?
   // status          ReturnStatus   @default(PENDING) // Enum: PENDING, APPROVED, REJECTED, COMPLETED
+
+  whatsappContacts WhatsAppContact[]
+  whatsappAgents   WhatsAppAgent[]
 
   @@index([orderItemId])
   @@index([inventoryItemId])
@@ -2276,6 +3171,16 @@ model marketplaceListings {
   listingTransactionType ListingTransactionType @default(SALE)
   hostelBlocks           HostelBlock[]
 
+  whatsappEnabled Boolean @default(true)
+
+  whatsappDescription String?
+
+  whatsappKeywords String[]
+
+  whatsappSearchable Boolean @default(true)
+
+  whatsappLastSyncedAt DateTime?
+
   // Indexes for performance
   @@index([name])
   @@index([finalPrice])
@@ -2310,6 +3215,8 @@ model marketplaceListings {
   @@index([companyId, listingTransactionType, finalPrice])
   @@index([createdAt, id]) // Required for efficient Cursor-based pagination
   @@index([isFeatured, createdAt])
+  @@index([companyId, whatsappSearchable, status])
+  @@index([whatsappEnabled, status])
 }
 
 model ProductReview {
@@ -2642,6 +3549,20 @@ model ConsumerInventoryLog {
   @@index([email])
 }
 
+enum PaymentMethodType {
+  COD
+  PICKUP
+  MPESA
+  PAYSTACK
+  GHUBA
+  STRIPE
+  PAYPAL
+  CASH
+  SPLIT
+  PENDING
+  CARD
+}
+
 model CustomerOrder {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
   consumerId    String?     @db.ObjectId
@@ -2656,12 +3577,20 @@ model CustomerOrder {
   paymentOption String?
   items         OrderItem[] // Relationship to multiple order items
 
-  paymentStatus        PaymentStatus @default(PENDING) // Enum: PENDING, COMPLETED, FAILED
-  paymentMethod        String? // e.g., "Credit Card", "PayPal", "Bank Transfer"
+  paymentProvider String?
+
+  paymentCustomerId String?
+
+  paymentIntentId String?
+
+  paymentMethodReference String?
+
+  paymentStatus        PaymentStatus      @default(PENDING) // Enum: PENDING, COMPLETED, FAILED
+  paymentMethod        PaymentMethodType? // Enum: COD, PICKUP, MPESA, PAYSTACK, GHUBA, STRIPE, PAYPAL, CASH, SPLIT, PENDING
   transactionId        String? // ID from payment gateway
-  transactionDate      DateTime?     @default(now())
+  transactionDate      DateTime?          @default(now())
   transactionReference String? // Reference number from payment gateway
-  emailReceiptSent     Boolean?      @default(false)
+  emailReceiptSent     Boolean?           @default(false)
   // Billing details
   billingAddress       Json? // Billing address details
 
@@ -2704,6 +3633,12 @@ model CustomerOrder {
   totalFinalPrice Float? // 💡 UPDATE: MUST be changed from Float to Float?
   DeliveryStop    DeliveryStop[]
 
+  whatsappConversationId String? @db.ObjectId
+
+  whatsappConversation WhatsAppConversation? @relation(fields: [whatsappConversationId], references: [id])
+
+  whatsappOrderReference String?
+
   @@index([consumerId])
   @@index([companyId])
   @@index([status])
@@ -2714,6 +3649,8 @@ model CustomerOrder {
   @@index([orderSource])
   @@index([deliveryId])
   @@index([idempotencyKey])
+  @@index([whatsappConversationId])
+  @@index([whatsappOrderReference])
 }
 
 model OrderItem {
@@ -2896,6 +3833,9 @@ enum OrderSource {
   WEBSITE
   IN_PERSON
   MOBILE
+  WHATSAPP
+  API
+  AI
 }
 
 model Banners {
