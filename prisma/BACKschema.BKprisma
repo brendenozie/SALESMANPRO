@@ -498,7 +498,6 @@ model Company {
   whatsappCampaigns      WhatsAppCampaign[]
   whatsAppAIToolCalls    WhatsAppAIToolCall[]
   whatsAppAIUsages       WhatsAppAIUsage[]
-  aiActions              AIAction[]
 
   @@index([userId])
   @@index([name])
@@ -561,12 +560,13 @@ enum WhatsAppMessageStatus {
   RECEIVED
 }
 
+
 model WhatsAppAccount {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   companyId String @db.ObjectId
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation( fields: [companyId],   references: [id],  onDelete: Cascade  )
 
   businessAccountId String?
 
@@ -577,18 +577,18 @@ model WhatsAppAccount {
   displayName String?
 
   accessTokenEncrypted String?
-  accessTokenIv        String?
-  accessTokenTag       String?
+  accessTokenIv String?
+  accessTokenTag String?
 
   appId String?
 
   appSecretEncrypted String?
-  appSecretIv        String?
-  appSecretTag       String?
+  appSecretIv String?
+  appSecretTag String?
 
   webhookVerifyTokenEncrypted String?
-  webhookVerifyTokenIv        String?
-  webhookVerifyTokenTag       String?
+  webhookVerifyTokenIv String?
+  webhookVerifyTokenTag String?
 
   environment WhatsAppEnvironment @default(PRODUCTION)
 
@@ -597,20 +597,20 @@ model WhatsAppAccount {
   isActive Boolean @default(true)
 
   lastConnectedAt DateTime?
-  lastWebhookAt   DateTime?
-  lastError       String?
+  lastWebhookAt DateTime?
+  lastError String?
 
   isDefault Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  contacts      WhatsAppContact[]
+  contacts WhatsAppContact[]
   conversations WhatsAppConversation[]
-  messages      WhatsAppMessage[]
-  templates     WhatsAppTemplate[]
+  messages WhatsAppMessage[]
+  templates WhatsAppTemplate[]
   webhookEvents WhatsAppWebhookEvent[]
-  campaigns     WhatsAppCampaign[]
+  campaigns WhatsAppCampaign[]
 
   @@index([companyId])
   @@index([companyId, isActive])
@@ -698,7 +698,7 @@ model WhatsAppConversation {
 
   companyId String? @db.ObjectId
 
-  company Company? @relation(fields: [companyId], references: [id])
+  company Company? @relation( fields: [companyId], references: [id] )
 
   // ============================================================
   // WHATSAPP IDENTITY
@@ -764,11 +764,11 @@ model WhatsAppConversation {
   // ============================================================
 
   assignedUserId String? @db.ObjectId
-  assignedUser   User?   @relation("WhatsAppConversationAssignee", fields: [assignedUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  assignedUser User? @relation(fields: [assignedUserId],  references: [id],  onDelete: NoAction,   onUpdate: NoAction )
 
   assignedAgentId String? @db.ObjectId
 
-  assignedAgent WhatsAppAgent? @relation(fields: [assignedAgentId], references: [id])
+  assignedAgent WhatsAppAgent? @relation( fields: [assignedAgentId], references: [id] )
 
   // ============================================================
   // TIMESTAMPS
@@ -801,16 +801,13 @@ model WhatsAppConversation {
   // ============================================================
   // INDEXES
   // ============================================================
-  WhatsAppAccount   WhatsAppAccount? @relation(fields: [whatsAppAccountId], references: [id])
-  whatsAppAccountId String?          @db.ObjectId
-  WhatsAppContact   WhatsAppContact? @relation(fields: [whatsAppContactId], references: [id])
-  whatsAppContactId String?          @db.ObjectId
 
   @@unique([companyId, phoneNumber])
+
   @@index([companyId])
   @@index([phoneNumber])
   @@index([waId])
-  // @@index([companyId, phoneNumber])
+  @@index([companyId, phoneNumber])
   @@index([interactionStatus])
   @@index([status])
   @@index([assignedUserId])
@@ -827,19 +824,19 @@ model WhatsAppMessage {
 
   conversationId String @db.ObjectId
 
-  conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade )
 
   companyId String? @db.ObjectId
 
-  company Company? @relation(fields: [companyId], references: [id])
+  company Company? @relation( fields: [companyId],  references: [id]  )
 
   accountId String? @db.ObjectId
 
-  account WhatsAppAccount? @relation(fields: [accountId], references: [id])
+  account WhatsAppAccount? @relation(  fields: [accountId], references: [id]  )
 
   contactId String? @db.ObjectId
 
-  contact WhatsAppContact? @relation(fields: [contactId], references: [id])
+  contact WhatsAppContact? @relation(  fields: [contactId],  references: [id]  )
 
   // ============================================================
   // META MESSAGE ID
@@ -901,7 +898,7 @@ model WhatsAppMessage {
 
   templateId String? @db.ObjectId
 
-  template WhatsAppTemplate? @relation(fields: [templateId], references: [id])
+  template WhatsAppTemplate? @relation( fields: [templateId], references: [id] )
 
   templateName String?
 
@@ -927,7 +924,9 @@ model WhatsAppMessage {
 
   processedByAI Boolean @default(false)
 
-  aiActions AIAction[]
+  aiActionId String? @db.ObjectId
+
+  aiAction AIAction? @relation( fields: [aiActionId], references: [id] )
 
   processingError String?
 
@@ -973,7 +972,6 @@ model WhatsAppMessage {
   // INDEXES
   // ============================================================
 
-  @@unique([accountId, whatsappMessageId])
   @@index([conversationId, createdAt])
   @@index([companyId])
   @@index([accountId])
@@ -983,8 +981,12 @@ model WhatsAppMessage {
   @@index([direction])
   @@index([status])
   @@index([processedByAI])
+  @@index([aiActionId])
   @@index([createdAt])
+
+  @@unique([accountId, whatsappMessageId])
 }
+
 
 model WhatsAppAIConfig {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -1466,17 +1468,25 @@ model WhatsAppAIUsage {
 model AIAction {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
+  // ============================================================
+  // TENANCY
+  // ============================================================
+
   companyId String? @db.ObjectId
 
-  company Company? @relation(fields: [companyId], references: [id])
+  company Company? @relation( fields: [companyId], references: [id])
+
+  // ============================================================
+  // CONVERSATION
+  // ============================================================
 
   conversationId String? @db.ObjectId
 
-  conversation WhatsAppConversation? @relation(fields: [conversationId], references: [id])
+  conversation WhatsAppConversation? @relation( fields: [conversationId], references: [id])
 
-  messageId String? @db.ObjectId
-
-  message WhatsAppMessage? @relation(fields: [messageId], references: [id])
+  // ============================================================
+  // ACTION
+  // ============================================================
 
   action String
 
@@ -1488,17 +1498,41 @@ model AIAction {
 
   error String?
 
+  // ============================================================
+  // AI METADATA
+  // ============================================================
+
   provider String?
 
   model String?
 
   confidence Float?
 
+  // ============================================================
+  // MESSAGE
+  // ============================================================
+
+  messageId String? @db.ObjectId
+
+  message WhatsAppMessage? @relation( fields: [messageId], references: [id])
+
+  // ============================================================
+  // ORDER
+  // ============================================================
+
   orderId String? @db.ObjectId
 
-  order CustomerOrder? @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  order CustomerOrder? @relation(fields: [orderId], references: [id] )
+
+  // ============================================================
+  // IDEMPOTENCY
+  // ============================================================
 
   idempotencyKey String?
+
+  // ============================================================
+  // EXECUTION
+  // ============================================================
 
   startedAt DateTime?
 
@@ -1508,14 +1542,19 @@ model AIAction {
 
   updatedAt DateTime @updatedAt
 
+  // ============================================================
+  // INDEXES
+  // ============================================================
+
   @@index([companyId])
   @@index([conversationId])
-  @@index([messageId])
   @@index([status])
   @@index([action])
   @@index([orderId])
+  @@index([messageId])
   @@index([createdAt])
 }
+
 
 model CompanyAddress {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -2733,9 +2772,7 @@ model User {
   BillingTransactions BillingTransaction[]
   PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
 
-  assignedDeliveries            Delivery[]             @relation("RiderDeliveries")
-  assignedWhatsAppConversations WhatsAppConversation[] @relation("WhatsAppConversationAssignee")
-  aiReviewedOrders              CustomerOrder[]        @relation("AIOrderReviewer")
+  assignedDeliveries Delivery[] @relation("RiderDeliveries")
 
   Video Video[]
 
@@ -3744,6 +3781,7 @@ enum OrderChannel {
   AI
 }
 
+
 model CustomerOrder {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -3812,9 +3850,9 @@ model CustomerOrder {
 
   delivery Boolean @default(false)
 
-  trackingNumber   String?
-  estimatedArrival DateTime?
-  deliveryStatus   String?
+  trackingNumber        String?
+  estimatedArrival      DateTime?
+  deliveryStatus        String?
 
   deliveryPersonName    String?
   deliveryPersonContact String?
@@ -3824,7 +3862,7 @@ model CustomerOrder {
 
   deliveryId String? @db.ObjectId
 
-  Delivery Delivery? @relation("DeliveryToOrders", fields: [deliveryId], references: [id])
+  Delivery Delivery? @relation( "DeliveryToOrders",  fields: [deliveryId], references: [id] )
 
   DeliveryStop DeliveryStop[]
 
@@ -3852,7 +3890,7 @@ model CustomerOrder {
 
   companyId String? @db.ObjectId
 
-  Company Company? @relation(fields: [companyId], references: [id])
+  Company Company? @relation( fields: [companyId], references: [id] )
 
   // ============================================================
   // AUDIT / LIFECYCLE
@@ -3884,14 +3922,15 @@ model CustomerOrder {
 
   aiAgentId String?
 
-  aiActions AIAction[]
+  aiInteractionId String? @db.ObjectId
+  aiInteraction AIAction? @relation(fields: [aiInteractionId], references: [id])
 
   requiresHumanReview Boolean @default(false)
 
   humanReviewedAt DateTime?
 
   humanReviewedById String? @db.ObjectId
-  humanReviewedBy   User?   @relation("AIOrderReviewer", fields: [humanReviewedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  humanReviewedBy User? @relation("AIOrderReviewer", fields: [humanReviewedById],  references: [id],   onDelete: NoAction,  onUpdate: NoAction )
 
   sourceMessageId String?
 
@@ -3921,6 +3960,7 @@ model CustomerOrder {
   @@index([orderSource])
   @@index([deliveryId])
   @@index([idempotencyKey])
+
   @@index([companyId, channel, createdAt])
   @@index([companyId, createdByAI, createdAt])
   @@index([companyId, conversationId])
