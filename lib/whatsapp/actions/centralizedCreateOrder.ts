@@ -1,8 +1,7 @@
+import { calculateOrderPricing } from "@/lib/pricing";
 import prisma from "@/server/db/prismadb";
 import { OrderSource, OrderStatus, PaymentStatus } from "@prisma/client";
 import crypto from "crypto";
-
-import { calculateOrderPricing } from "@/lib/pricing/serverPricingEngine";
 
 export type OrderPaymentOption =
   | "cod"

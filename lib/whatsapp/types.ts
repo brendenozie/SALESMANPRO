@@ -1,63 +1,14 @@
-export interface WhatsAppTextMessage {
-  from: string;
-  id: string;
-  timestamp: string;
-  type: "text";
-  text: {
-    body: string;
-  };
-}
+import { z } from "zod";
 
-export interface WhatsAppMessageValue {
-  messaging_product?: "whatsapp";
+/**
+ * ============================================================
+ * WHATSAPP DOMAIN TYPES
+ * ============================================================
+ */
 
-  metadata?: {
-    display_phone_number?: string;
-    phone_number_id?: string;
-  };
+export type WhatsAppMessageDirection = "INBOUND" | "OUTBOUND";
 
-  contacts?: Array<{
-    profile?: {
-      name?: string;
-    };
-    wa_id?: string;
-  }>;
-
-  messages?: WhatsAppTextMessage[];
-
-  statuses?: Array<{
-    id: string;
-    status: string;
-    timestamp?: string;
-    recipient_id?: string;
-  }>;
-}
-
-export interface WhatsAppWebhookEntry {
-  id: string;
-
-  changes?: Array<{
-    field: string;
-    value: WhatsAppMessageValue;
-  }>;
-}
-
-export interface WhatsAppWebhookPayload {
-  object?: string;
-  entry?: WhatsAppWebhookEntry[];
-}
-
-export interface WhatsAppIncomingMessage {
-  messageId: string;
-  waId: string;
-  phone: string;
-  name?: string;
-  text: string;
-  timestamp: Date;
-  phoneNumberId?: string;
-}
-
-// lib/whatsapp/types.ts
+export type WhatsAppSenderType = "CUSTOMER" | "AI" | "AGENT" | "SYSTEM";
 
 export type WhatsAppMessageType =
   | "TEXT"
@@ -65,89 +16,446 @@ export type WhatsAppMessageType =
   | "VIDEO"
   | "AUDIO"
   | "DOCUMENT"
+  | "STICKER"
   | "LOCATION"
+  | "CONTACT"
   | "INTERACTIVE"
   | "BUTTON"
+  | "LIST"
   | "TEMPLATE"
-  | "ORDER"
-  | "SYSTEM";
+  | "REACTION"
+  | "UNKNOWN";
 
-export type WhatsAppMessageDirection =
-  | "INBOUND"
-  | "OUTBOUND";
+export type WhatsAppMessageStatus =
+  | "QUEUED"
+  | "SENT"
+  | "DELIVERED"
+  | "READ"
+  | "FAILED"
+  | "RECEIVED";
 
-export type ConversationState =
-  | "GENERAL"
-  | "PRODUCT_SEARCH"
-  | "PRODUCT_DETAILS"
-  | "CART"
-  | "CHECKOUT"
-  | "PAYMENT"
-  | "ORDER_STATUS"
-  | "SERVICE_SEARCH"
-  | "SERVICE_BOOKING"
-  | "SUPPORT"
-  | "HUMAN_HANDOFF";
+export type WhatsAppConversationMode = "AI" | "HUMAN" | "HYBRID";
+
+export type WhatsAppConversationStatus =
+  | "OPEN"
+  | "PENDING"
+  | "WAITING_FOR_CUSTOMER"
+  | "WAITING_FOR_AGENT"
+  | "RESOLVED"
+  | "CLOSED";
+
+/**
+ * ============================================================
+ * NORMALIZED INBOUND MESSAGE
+ * ============================================================
+ */
 
 export interface NormalizedWhatsAppMessage {
-  externalMessageId: string;
+  provider: "META";
 
-  phoneNumber: string;
+  providerMessageId: string;
 
-  waId?: string;
+  accountId: string;
 
-  phoneNumberId?: string;
-
-  type: WhatsAppMessageType;
-
-  text?: string;
-
-  mediaId?: string;
-
-  mimeType?: string;
-
-  caption?: string;
-
-  latitude?: number;
-
-  longitude?: number;
-
-  payload?: Record<string, unknown>;
-
-  timestamp: Date;
-}
-
-export interface WhatsAppContext {
   companyId: string;
 
-  conversationId: string;
+  phoneNumberId: string;
+
+  waId: string;
 
   phoneNumber: string;
 
-  waId?: string;
+  displayName?: string | null;
 
-  customerName?: string;
+  messageType: WhatsAppMessageType;
 
-  customerEmail?: string;
+  text?: string | null;
 
-  state?: ConversationState;
+  media?: {
+    id?: string | null;
+    mimeType?: string | null;
+    caption?: string | null;
+    filename?: string | null;
+  } | null;
 
-  cart?: unknown;
+  location?: {
+    latitude: number;
+    longitude: number;
+    name?: string | null;
+    address?: string | null;
+  } | null;
 
-  customerProfile?: unknown;
+  interactive?: {
+    type?: string | null;
+    id?: string | null;
+    title?: string | null;
+    description?: string | null;
+    payload?: unknown;
+  } | null;
 
-  recentMessages: Array<{
-    direction: string;
-    type: string;
-    text?: string | null;
-    createdAt: Date;
+  timestamp: Date;
+
+  rawPayload: unknown;
+}
+
+/**
+ * ============================================================
+ * META WEBHOOK TYPES
+ * ============================================================
+ */
+
+export interface MetaWebhookRequest {
+  object?: string;
+
+  entry?: MetaWebhookEntry[];
+}
+
+export interface MetaWebhookEntry {
+  id?: string;
+
+  changes?: MetaWebhookChange[];
+}
+
+export interface MetaWebhookChange {
+  field?: string;
+
+  value?: MetaWebhookValue;
+}
+
+export interface MetaWebhookValue {
+  messaging_product?: string;
+
+  metadata?: {
+    display_phone_number?: string;
+    phone_number_id?: string;
+  };
+
+  contacts?: MetaWebhookContact[];
+
+  messages?: MetaWebhookMessage[];
+
+  statuses?: MetaWebhookStatus[];
+
+  errors?: MetaWebhookError[];
+}
+
+export interface MetaWebhookContact {
+  profile?: {
+    name?: string;
+  };
+
+  wa_id?: string;
+}
+
+export interface MetaWebhookMessage {
+  from?: string;
+
+  id?: string;
+
+  timestamp?: string;
+
+  type?: string;
+
+  text?: {
+    body?: string;
+  };
+
+  image?: {
+    id?: string;
+    mime_type?: string;
+    caption?: string;
+  };
+
+  video?: {
+    id?: string;
+    mime_type?: string;
+    caption?: string;
+  };
+
+  audio?: {
+    id?: string;
+    mime_type?: string;
+  };
+
+  document?: {
+    id?: string;
+    mime_type?: string;
+    filename?: string;
+    caption?: string;
+  };
+
+  sticker?: {
+    id?: string;
+    mime_type?: string;
+  };
+
+  location?: {
+    latitude?: number;
+    longitude?: number;
+    name?: string;
+    address?: string;
+  };
+
+  contacts?: unknown[];
+
+  interactive?: {
+    type?: string;
+
+    button_reply?: {
+      id?: string;
+      title?: string;
+    };
+
+    list_reply?: {
+      id?: string;
+      title?: string;
+      description?: string;
+    };
+  };
+
+  button?: {
+    text?: string;
+    payload?: string;
+  };
+
+  reaction?: {
+    message_id?: string;
+    emoji?: string;
+  };
+}
+
+export interface MetaWebhookStatus {
+  id?: string;
+
+  status?: "sent" | "delivered" | "read" | "failed";
+
+  timestamp?: string;
+
+  recipient_id?: string;
+
+  conversation?: {
+    id?: string;
+    origin?: {
+      type?: string;
+    };
+  };
+
+  pricing?: {
+    billable?: boolean;
+    pricing_model?: string;
+    category?: string;
+  };
+
+  errors?: Array<{
+    code?: number;
+    title?: string;
+    message?: string;
   }>;
 }
 
-export interface WhatsAppAIResult {
-  text: string;
+export interface MetaWebhookError {
+  code?: number;
 
-  state?: ConversationState;
+  title?: string;
 
-  actionResults?: unknown[];
+  message?: string;
+
+  error_data?: {
+    details?: string;
+  };
+}
+
+/**
+ * ============================================================
+ * AI ACTIONS
+ * ============================================================
+ */
+
+export const whatsappActionSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("search_products"),
+
+    arguments: z.object({
+      query: z.string().optional(),
+      maxPrice: z.number().positive().optional(),
+      minPrice: z.number().nonnegative().optional(),
+      quantity: z.number().int().positive().optional(),
+      brand: z.string().optional(),
+      category: z.string().optional(),
+      limit: z.number().int().positive().max(20).default(5),
+    }),
+  }),
+
+  z.object({
+    action: z.literal("calculate_checkout"),
+
+    arguments: z.object({
+      items: z.array(
+        z.object({
+          marketplaceListingId: z.string(),
+          quantity: z.number().int().positive(),
+          selectedOptions: z
+            .array(
+              z.object({
+                category: z.string(),
+                name: z.string(),
+                extraPrice: z.number().nonnegative().optional(),
+              }),
+            )
+            .optional(),
+          date: z.string().nullable().optional(),
+          timeSlot: z.string().nullable().optional(),
+          serviceNotes: z.string().nullable().optional(),
+        }),
+      ),
+      shippingAddress: z.record(z.string(), z.unknown()).optional(),
+      shippingMethod: z.string().optional(),
+      promoCode: z.string().optional(),
+      paymentOption: z
+        .enum([
+          "cod",
+          "pickupatshop",
+          "mpesa",
+          "card",
+          "paystack",
+          "ghuba",
+          "stripe",
+          "paypal",
+          "cash",
+          "split",
+          "pending",
+        ])
+        .default("cod"),
+    }),
+  }),
+
+  z.object({
+    action: z.literal("create_order"),
+
+    arguments: z.object({
+      confirmation: z.literal(true),
+
+      items: z.array(
+        z.object({
+          marketplaceListingId: z.string(),
+          quantity: z.number().int().positive(),
+          selectedOptions: z
+            .array(
+              z.object({
+                category: z.string(),
+                name: z.string(),
+                extraPrice: z.number().nonnegative().optional(),
+              }),
+            )
+            .optional(),
+          date: z.string().nullable().optional(),
+          timeSlot: z.string().nullable().optional(),
+          serviceNotes: z.string().nullable().optional(),
+        }),
+      ),
+
+      paymentOption: z
+        .enum([
+          "cod",
+          "pickupatshop",
+          "mpesa",
+          "card",
+          "paystack",
+          "ghuba",
+          "stripe",
+          "paypal",
+          "cash",
+          "split",
+          "pending",
+        ])
+        .default("cod"),
+
+      shippingAddress: z.record(z.string(), z.unknown()).optional(),
+
+      shippingMethod: z.string().optional(),
+
+      promoCode: z.string().optional(),
+
+      notes: z.string().optional(),
+
+      mpesaPhone: z.string().optional(),
+    }),
+  }),
+
+  z.object({
+    action: z.literal("initiate_mpesa"),
+
+    arguments: z.object({
+      orderId: z.string(),
+
+      phone: z.string().optional(),
+    }),
+  }),
+
+  z.object({
+    action: z.literal("get_order_status"),
+
+    arguments: z.object({
+      orderId: z.string().optional(),
+      trackingNumber: z.string().optional(),
+    }),
+  }),
+
+  z.object({
+    action: z.literal("escalate_to_human"),
+
+    arguments: z.object({
+      reason: z.string().min(1),
+    }),
+  }),
+]);
+
+export type WhatsAppAction = z.infer<typeof whatsappActionSchema>;
+
+/**
+ * ============================================================
+ * ACTION CONTEXT
+ * ============================================================
+ */
+
+export interface WhatsAppActionContext {
+  companyId: string;
+
+  accountId: string;
+
+  conversationId: string;
+
+  contactId: string;
+
+  waId: string;
+
+  phoneNumber: string;
+
+  customerName?: string | null;
+
+  customerEmail?: string | null;
+
+  messageId?: string;
+
+  correlationId: string;
+}
+
+/**
+ * ============================================================
+ * ACTION RESULT
+ * ============================================================
+ */
+
+export interface WhatsAppActionResult {
+  success: boolean;
+
+  action: WhatsAppAction["action"];
+
+  message: string;
+
+  data?: Record<string, unknown>;
+
+  shouldRespond?: boolean;
+
+  shouldEscalate?: boolean;
 }

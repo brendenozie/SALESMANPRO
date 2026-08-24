@@ -1,30 +1,19 @@
 import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
-
 import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
-
 import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
-
 import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
-
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
-
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
 import prisma from "@/server/db/prismadb";
 
 export type ProcessOrderPaymentInput = {
   order: any;
-
   companyId?: string | null;
-
   paymentOption: string;
-
   email: string;
-
   phone?: string;
-
   mpesaPhone?: string | null;
-
   paymentData?: Record<string, any>;
 };
 
@@ -50,25 +39,18 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       where: {
         id: order.id,
       },
-
       data: {
         paymentStatus: "COMPLETED",
-
         status: "PAID",
-
         paymentMethod: paymentOption.toUpperCase(),
-
         deliveryStatus: "Processing",
       },
     });
 
     return {
       success: true,
-
       status: "COMPLETED",
-
       message: "Counter payment verified and completed.",
-
       method: paymentOption,
     };
   }
@@ -88,14 +70,10 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       where: {
         id: order.id,
       },
-
       data: {
         paymentStatus: "PENDING",
-
         status: "PENDING",
-
         paymentMethod: paymentOption.toUpperCase(),
-
         deliveryStatus:
           paymentOption === "pickupatshop"
             ? "Ready for Pickup"
@@ -105,11 +83,8 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     return {
       success: true,
-
       status: "PENDING",
-
       message: "Order created with deferred payment.",
-
       method: paymentOption,
     };
   }
@@ -147,13 +122,9 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     return {
       success: true,
-
       status: "PENDING",
-
       method: "mpesa",
-
       gatewayResponse: response,
-
       authorizationUrl:
         response?.data?.authorization_url ??
         response?.authorization_url ??
@@ -177,13 +148,9 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     return {
       success: true,
-
       status: "PENDING",
-
       method: "paystack",
-
       gatewayResponse: response,
-
       authorizationUrl:
         response?.data?.authorization_url ??
         response?.authorization_url ??
@@ -204,13 +171,9 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     return {
       success: true,
-
       status: "PENDING",
-
       method: "ghuba",
-
       gatewayResponse: response,
-
       authorizationUrl:
         response?.data?.authorization_url ??
         response?.authorization_url ??
@@ -229,11 +192,8 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     return {
       success: true,
-
       status: "PENDING",
-
       method: "stripe",
-
       gatewayResponse: response,
     };
   }
@@ -249,13 +209,9 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     return {
       success: true,
-
       status: "PENDING",
-
       method: "paypal",
-
       gatewayResponse: response,
-
       authorizationUrl:
         response?.data?.authorization_url ??
         response?.authorization_url ??

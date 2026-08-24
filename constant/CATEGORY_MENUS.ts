@@ -69,7 +69,6 @@ const TIER_WEIGHTS: Record<string, number> = {
   "Ghuba Starter": 2,
   "Ghuba Pro": 3,
   "Ghuba Growth": 4,
-  "Ghuba Engage": 5,
 };
 
 // 2. Centralized Evaluation Function
@@ -359,18 +358,19 @@ export const getCategoryMenus = (
   return {
     "E-commerce": filterTiers([
       ...commonEcommerce(
-      adminSlug,
-      accessLevel,
-      currentTier,
-      isSubscriptionActive,
-    )]),
+        adminSlug,
+        accessLevel,
+        currentTier,
+        isSubscriptionActive,
+      ),
+    ]),
     "Agrovet Store": filterTiers([
       ...commonEcommerce(
         adminSlug,
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Baby Store": filterTiers([
       ...commonEcommerce(
@@ -378,7 +378,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Bike Store": filterTiers([
       ...commonEcommerce(
@@ -386,7 +386,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Book Store": filterTiers([
       ...commonEcommerce(
@@ -394,7 +394,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Cake Store": filterTiers([
       ...commonEcommerce(
@@ -402,7 +402,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Directory & Listings": filterTiers([
       ...commonEcommerce(
@@ -410,7 +410,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Earphones Store": filterTiers([
       ...commonEcommerce(
@@ -418,7 +418,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Fashion Shop": filterTiers([
       ...commonEcommerce(
@@ -426,7 +426,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Flowers Store": filterTiers([
       ...commonEcommerce(
@@ -434,7 +434,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Furniture Shop": filterTiers([
       ...commonEcommerce(
@@ -442,7 +442,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Gaming Store": filterTiers([
       ...commonEcommerce(
@@ -450,7 +450,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Glasses Store": filterTiers([
       ...commonEcommerce(
@@ -458,7 +458,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Groceries Store": filterTiers([
       ...commonEcommerce(
@@ -466,7 +466,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Hardware Shop": filterTiers([
       ...commonEcommerce(
@@ -474,7 +474,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Honey Store": filterTiers([
       ...commonEcommerce(
@@ -482,7 +482,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Meat Store": filterTiers([
       ...commonEcommerce(
@@ -490,7 +490,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Motorcycle Store": filterTiers([
       ...commonEcommerce(
@@ -498,7 +498,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Peanuts Store": filterTiers([
       ...commonEcommerce(
@@ -506,7 +506,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Pets Store": filterTiers([
       ...commonEcommerce(
@@ -514,7 +514,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Shoes Store": filterTiers([
       ...commonEcommerce(
@@ -522,7 +522,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Watch Store": filterTiers([
       ...commonEcommerce(
@@ -530,7 +530,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     "Automotive Store": filterTiers([
       ...commonEcommerce(
@@ -538,7 +538,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
     Marketplace: filterTiers([
       ...commonEcommerce(
@@ -546,7 +546,7 @@ export const getCategoryMenus = (
         accessLevel,
         currentTier,
         isSubscriptionActive,
-      )
+      ),
     ]),
 
     Ghuba: filterTiers([
@@ -561,40 +561,40 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/cated`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Site Categories",
         href: `/admin/${adminSlug}/site-categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locat`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Users",
         href: `/admin/${adminSlug}/saas-users`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Lead Bulk",
             href: `/admin/${adminSlug}/salesleads/imports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -603,160 +603,161 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/samplelistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Bulk Csv Upload For listings",
         href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Sample Image Upload For listings",
         href: `/admin/${adminSlug}/sync-images`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Backup And Restore",
         href: `/admin/${adminSlug}/db-management`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "All Companies",
         href: `/admin/${adminSlug}/companies-full-site`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Marketplace Listings",
         href: `/admin/${adminSlug}/marketplace-gh`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Subscription Payments",
         href: `/admin/${adminSlug}/subscriptionpayments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/saas-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/saas-reports`,
         icon: DocumentChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Support Tickets",
         href: `/admin/${adminSlug}/saas-support`,
         icon: LifebuoyIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/saas-announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Content (CMS)",
         href: `/admin/${adminSlug}/saas-content`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "API Keys",
         href: `/admin/${adminSlug}/saas-api-keys`,
         icon: KeyIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/saas-audit-log`,
         icon: ClipboardDocumentCheckIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "System Status",
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Basic",
-        },
+      },
     ]),
 
     "Service Provider": filterTiers([
       {
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
-        icon: HomeIcon,        },
+        icon: HomeIcon,
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
-            minTier: "Ghuba Basic",  
+            minTier: "Ghuba Basic",
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -764,12 +765,12 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -778,47 +779,47 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-        
+
         subItems: [
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/service-transport-vehicles`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -827,31 +828,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Booking & Appointments": filterTiers([
@@ -859,51 +860,51 @@ export const getCategoryMenus = (
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-         },
+      },
       {
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
-            minTier: "Ghuba Basic",  
+            minTier: "Ghuba Basic",
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -912,31 +913,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Real Estate": filterTiers([
@@ -945,41 +946,41 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Agents",
         href: `/admin/${adminSlug}/properties-agents`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -988,41 +989,41 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/properties`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/properties-inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Showings",
         href: `/admin/${adminSlug}/properties-showings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Offers & Contracts",
         href: `/admin/${adminSlug}/properties-offers`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "All Blogs",
             href: `/admin/${adminSlug}/blogs`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1031,7 +1032,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Healthcare & Clinics": filterTiers([
@@ -1040,82 +1041,82 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/health-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Patients",
         href: `/admin/${adminSlug}/health-patients`,
         icon: UsersIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/health-appointments`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Doctors",
         href: `/admin/${adminSlug}/health-doctors`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Staff",
         href: `/admin/${adminSlug}/health-staff`,
         icon: UserGroupIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/health-services`,
         icon: HeartIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Prescriptions",
         href: `/admin/${adminSlug}/health-prescriptions`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/health-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Inventory",
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "Browse Catalog",
             href: `/admin/${adminSlug}/inventory`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Market List",
             href: `/admin/${adminSlug}/mymarketplace`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -1124,31 +1125,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/health-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/health-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     Barbershop: filterTiers([
@@ -1157,83 +1158,83 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Transport",
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-        
+
         subItems: [
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/booking-transport-vehicles`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -1241,22 +1242,22 @@ export const getCategoryMenus = (
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
-            minTier: "Ghuba Basic",  
+            minTier: "Ghuba Basic",
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1264,12 +1265,12 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -1278,25 +1279,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     Drycleaning: filterTiers([
@@ -1305,25 +1306,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
@@ -1335,47 +1336,47 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-        
+
         subItems: [
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/booking-transport-vehicles`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -1383,22 +1384,22 @@ export const getCategoryMenus = (
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
-            minTier: "Ghuba Basic",  
+            minTier: "Ghuba Basic",
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1406,12 +1407,12 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -1420,31 +1421,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Portfolio & Personal Branding": filterTiers([
@@ -1453,83 +1454,83 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/service-pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Projects",
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Transport",
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-        
+
         subItems: [
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/portfolio-transport-vehicles`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -1537,22 +1538,22 @@ export const getCategoryMenus = (
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "Manage Appointments",
             href: `/admin/${adminSlug}/appointments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
-            minTier: "Ghuba Basic",  
+            minTier: "Ghuba Basic",
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1560,12 +1561,12 @@ export const getCategoryMenus = (
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -1574,31 +1575,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/reports`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Blog & Content": filterTiers([
@@ -1607,17 +1608,17 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        
+
         subItems: [
           {
             label: "All Blogs",
             href: `/admin/${adminSlug}/blogs`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1626,35 +1627,35 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/writers`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Podcast",
         href: `/admin/${adminSlug}/podcast`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Basic",
-        },
+      },
       {
         label: "Leads",
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        
+
         subItems: [
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -1663,19 +1664,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/comments`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     // "Directory & Listings": commonEcommerce(adminSlug),
@@ -1694,7 +1695,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Management",
         icon: ClipboardDocumentListIcon,
@@ -1702,58 +1703,58 @@ export const getCategoryMenus = (
           {
             label: "Academic Years",
             href: `/admin/${adminSlug}/academic-years`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Terms/Semesters", href: `/admin/${adminSlug}/terms` },
           {
             label: "Departments",
             href: `/admin/${adminSlug}/departments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Categories",
             href: `/admin/${adminSlug}/categories`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Academic Levels",
             href: `/admin/${adminSlug}/academic-levels`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Classrooms",
             href: `/admin/${adminSlug}/classrooms`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Teachers",
             href: `/admin/${adminSlug}/teachers`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Parents",
             href: `/admin/${adminSlug}/parents`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Students",
             href: `/admin/${adminSlug}/students`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Courses",
             href: `/admin/${adminSlug}/courses`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Course Materials",
             href: `/admin/${adminSlug}/course-materials`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "TimeTable",
             href: `/admin/${adminSlug}/lessons`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1764,7 +1765,7 @@ export const getCategoryMenus = (
           {
             label: "All Assignments",
             href: `/admin/${adminSlug}/assignments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           // { label: "Submissions", href: `/admin/${adminSlug}/assignments-submissions` },
         ],
@@ -1776,18 +1777,18 @@ export const getCategoryMenus = (
           {
             label: "Exam Categories",
             href: `/admin/${adminSlug}/exam-categories`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Exams",
             href: `/admin/${adminSlug}/exams`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           // { label: "Results", href: `/admin/${adminSlug}/results` },
           {
             label: "Grades & Report Card",
             href: `/admin/${adminSlug}/grading-report-card`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1796,7 +1797,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/attendance`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Events",
         icon: AcademicCapIcon,
@@ -1804,7 +1805,7 @@ export const getCategoryMenus = (
           {
             label: "All Events",
             href: `/admin/${adminSlug}/school-events`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1813,7 +1814,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/schoolAnnouncements`,
         icon: AcademicCapIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Library",
         href: `/admin/${adminSlug}/library`,
@@ -1822,67 +1823,67 @@ export const getCategoryMenus = (
           {
             label: "Categories",
             href: `/admin/${adminSlug}/library-books-categories`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Books",
             href: `/admin/${adminSlug}/library-books`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Members",
             href: `/admin/${adminSlug}/library-members`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Issuance Records",
             href: `/admin/${adminSlug}/library-issuance-records`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Returns",
             href: `/admin/${adminSlug}/library-returns`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Fines",
             href: `/admin/${adminSlug}/library-fines`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Maintenance",
             href: `/admin/${adminSlug}/library-maintenance`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Reservations",
             href: `/admin/${adminSlug}/library-reservations`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Suppliers Categories",
             href: `/admin/${adminSlug}/library-suppliers-categories`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Suppliers",
             href: `/admin/${adminSlug}/library-suppliers`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Acquisitions",
             href: `/admin/${adminSlug}/library-acquisitions`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Inventory",
             href: `/admin/${adminSlug}/library-inventory`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/library-reports`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1894,33 +1895,33 @@ export const getCategoryMenus = (
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/transport-vehicles`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // {
           //   label: "Assignments",
           //   href: `/admin/${adminSlug}/transport-assignments`,
@@ -1928,12 +1929,12 @@ export const getCategoryMenus = (
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1945,44 +1946,44 @@ export const getCategoryMenus = (
           {
             label: "Blocks",
             href: `/admin/${adminSlug}/hostel-blocks`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Rooms",
             href: `/admin/${adminSlug}/hostel-rooms`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Residents",
             href: `/admin/${adminSlug}/hostel-residents`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Room Assignments",
             href: `/admin/${adminSlug}/hostel-room-assignments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Maintenance Requests",
             href: `/admin/${adminSlug}/hostel-maintenance-requests`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Visitors",
             href: `/admin/${adminSlug}/hostel-visitors`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Fee Management", href: `/admin/${adminSlug}/hostel-fee-management` },
           // { label: "Inventory", href: `/admin/${adminSlug}/hostel-inventory` },
           {
             label: "Staff",
             href: `/admin/${adminSlug}/hostel-staff`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/hostel-reports`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -1994,47 +1995,47 @@ export const getCategoryMenus = (
           {
             label: "Departments",
             href: `/admin/${adminSlug}/staff-departments`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Roles",
             href: `/admin/${adminSlug}/staff-roles`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Staff Members",
             href: `/admin/${adminSlug}/staff-members`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Attendance",
             href: `/admin/${adminSlug}/staff-attendance`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Payroll",
             href: `/admin/${adminSlug}/staff-payroll`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Leave Management",
             href: `/admin/${adminSlug}/staff-leave-management`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Performance Reviews",
             href: `/admin/${adminSlug}/staff-performance-reviews`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Recruitment",
             href: `/admin/${adminSlug}/staff-recruitment`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/staff-reports`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -2047,25 +2048,25 @@ export const getCategoryMenus = (
           {
             label: "FEE Structure",
             href: `/admin/${adminSlug}/fee-items`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "FEE Transactions",
             href: `/admin/${adminSlug}/fee`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Transactions", href: `/admin/${adminSlug}/fee-transactions` },
           // { label: "Invoices", href: `/admin/${adminSlug}/fee-invoices` },
           {
             label: "Expenses",
             href: `/admin/${adminSlug}/fee-expenses`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Profit & Loss",
             href: `/admin/${adminSlug}/fee-profit-loss`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Payment Methods", href: `/admin/${adminSlug}/fee-payment-methods` },
           // { label: "Discounts", href: `/admin/${adminSlug}/fee-discounts` },
           // { label: "Reports", href: `/admin/${adminSlug}/fee-reports` },
@@ -2078,62 +2079,62 @@ export const getCategoryMenus = (
           {
             label: "Inventory Dashboard",
             href: `/admin/${adminSlug}/inventory-dashboard`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Assets Overview",
             href: `/admin/${adminSlug}/inventory-assets-overview`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Assets",
             href: `/admin/${adminSlug}/inventory-assets-list`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Asset Tracking",
             href: `/admin/${adminSlug}/asset-tracking`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Categories",
             href: `/admin/${adminSlug}/inventory-categories`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Inventory Items",
             href: `/admin/${adminSlug}/inventory-items`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Inventory Audits",
             href: `/admin/${adminSlug}/inventory-audits`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Suppliers",
             href: `/admin/${adminSlug}/inventory-suppliers`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Purchase Orders",
             href: `/admin/${adminSlug}/inventory-purchase-orders`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/inventory-maintenance-records`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Depreciation Schedules",
             href: `/admin/${adminSlug}/inventory-depreciation-schedules`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/inventory-reports`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -2142,25 +2143,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/school-reports`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Nonprofit & Community": filterTiers([
@@ -2169,13 +2170,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Projects",
         href: `/admin/${adminSlug}/projects`,
@@ -2187,25 +2188,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/donations`,
         icon: HeartIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Campaigns",
         href: `/admin/${adminSlug}/campaigns`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Donors",
         href: `/admin/${adminSlug}/donors`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -2213,8 +2214,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -2232,33 +2233,33 @@ export const getCategoryMenus = (
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/non-profit-transport-vehicles`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Pro",  
-    },
+            minTier: "Ghuba Pro",
+          },
           // {
           //   label: "Assignments",
           //   href: `/admin/${adminSlug}/transport-assignments`,
@@ -2266,12 +2267,12 @@ export const getCategoryMenus = (
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -2280,31 +2281,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/members`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Manage Events",
         href: `/admin/${adminSlug}/manage-events`,
         icon: TicketIcon,
         minTier: "Ghuba Growth",
-        },
+      },
     ]),
 
     "Company Portfolio": filterTiers([
@@ -2313,13 +2314,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
@@ -2331,13 +2332,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -2345,8 +2346,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -2356,48 +2357,92 @@ export const getCategoryMenus = (
           // },
         ],
       },
+
       {
         label: "Transport",
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-        },
+
+        subItems: [
+          {
+            label: "Vehicles",
+            href: `/admin/${adminSlug}/service-transport-vehicles`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Routes",
+            href: `/admin/${adminSlug}/transport-routes`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Drivers",
+            href: `/admin/${adminSlug}/transport-drivers`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Schedules",
+            href: `/admin/${adminSlug}/transport-schedules`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Maintenance Records",
+            href: `/admin/${adminSlug}/transport-maintenance-records`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Fuel Logs",
+            href: `/admin/${adminSlug}/transport-fuel-logs`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Incidents",
+            href: `/admin/${adminSlug}/transport-incidents`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Reports",
+            href: `/admin/${adminSlug}/transport-reports`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/reports`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Restaurant & Food Delivery": filterTiers([
@@ -2406,19 +2451,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/pos`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Products",
         icon: ClipboardDocumentListIcon,
@@ -2427,12 +2472,12 @@ export const getCategoryMenus = (
             label: "Browse Catalog",
             href: `/admin/${adminSlug}/inventory`,
             minTier: "Ghuba Starter",
-                },
+          },
           {
             label: "Market List",
             href: `/admin/${adminSlug}/mymarketplace`,
             minTier: "Ghuba Starter",
-                },
+          },
         ],
       },
       {
@@ -2440,19 +2485,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/orders`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -2460,8 +2505,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -2476,19 +2521,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/delivery`,
         icon: GlobeAltIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Transport",
         href: `/admin/${adminSlug}/transport`,
@@ -2497,33 +2542,33 @@ export const getCategoryMenus = (
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/store-transport-vehicles`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/store-transport-routes`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/store-transport-drivers`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/store-transport-schedules`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-            minTier: "Ghuba Pro",  
-    },
+            minTier: "Ghuba Pro",
+          },
           // {
           //   label: "Assignments",
           //   href: `/admin/${adminSlug}/store-transport-assignments`,
@@ -2531,12 +2576,12 @@ export const getCategoryMenus = (
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/store-transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/store-transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -2548,55 +2593,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Manage Events",
         href: `/admin/${adminSlug}/manage-events`,
         icon: TicketIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Tickets",
         href: `/admin/${adminSlug}/manage-tickets`,
         icon: TicketIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Orders",
         href: `/admin/${adminSlug}/manage-event-orders`,
         icon: ShoppingBagIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Check-in",
         href: `/admin/${adminSlug}/manage-check-in`,
         icon: QrCodeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Attendees",
         href: `/admin/${adminSlug}/manage-attendees`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "POS",
         href: `/admin/${adminSlug}/company-pos`,
         icon: CreditCardIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Users",
         icon: UsersIcon,
@@ -2604,12 +2649,12 @@ export const getCategoryMenus = (
           {
             label: "Sales Agents",
             href: `/admin/${adminSlug}/agents`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Clients",
             href: `/admin/${adminSlug}/consumers`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -2620,8 +2665,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -2636,13 +2681,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
-        },
+      },
     ]),
 
     "Content Management": filterTiers([
@@ -2651,43 +2696,43 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/pages`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        }, // For static pages like About Us, Contact
+      }, // For static pages like About Us, Contact
       {
         label: "Blog Posts",
         href: `/admin/${adminSlug}/blog`,
         icon: NewspaperIcon,
         minTier: "Ghuba Starter",
-        }, // If you have a blog
+      }, // If you have a blog
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Starter",
-        }, // For site-wide announcements
+      }, // For site-wide announcements
       {
         label: "Media Library",
         href: `/admin/${adminSlug}/media`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        }, // Central place for images, videos
+      }, // Central place for images, videos
       {
         label: "Promotions",
         href: `/admin/${adminSlug}/promotions`,
         icon: TagIcon,
         minTier: "Ghuba Growth",
-        }, // For discounts, promo codes
+      }, // For discounts, promo codes
       {
         label: "Sponsors",
         href: `/admin/${adminSlug}/sponsors`,
         icon: HandRaisedIcon,
         minTier: "Ghuba Growth",
-        }, // If events have sponsors
+      }, // If events have sponsors
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -2695,8 +2740,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -2714,19 +2759,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/users`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        }, // Manage all platform users
+      }, // Manage all platform users
       {
         label: "Roles & Permissions",
         href: `/admin/${adminSlug}/roles`,
         icon: KeyIcon,
         minTier: "Ghuba Starter",
-        }, // If you have different admin/organizer roles
+      }, // If you have different admin/organizer roles
       {
         label: "Organizers",
         href: `/admin/${adminSlug}/organizers`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        }, // Manage event organizers (if distinct from general users)
+      }, // Manage event organizers (if distinct from general users)
     ]),
 
     "Financials & Reports": filterTiers([
@@ -2735,25 +2780,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/payouts`,
         icon: BanknotesIcon,
         minTier: "Ghuba Starter",
-        }, // Track money paid out to organizers
+      }, // Track money paid out to organizers
       {
         label: "Transactions",
         href: `/admin/${adminSlug}/transactions`,
         icon: ReceiptPercentIcon,
         minTier: "Ghuba Starter",
-        }, // Detailed transaction logs
+      }, // Detailed transaction logs
       {
         label: "Revenue Reports",
         href: `/admin/${adminSlug}/reports/revenue`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Sales Reports",
         href: `/admin/${adminSlug}/reports/sales`,
         icon: ChartPieIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     Settings: filterTiers([
@@ -2762,25 +2807,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/settings/general`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Profile",
         href: `/admin/${adminSlug}/settings/profile`,
         icon: UserCircleIcon,
         minTier: "Ghuba Starter",
-        }, // Admin user profile settings
+      }, // Admin user profile settings
       {
         label: "Integrations",
         href: `/admin/${adminSlug}/settings/integrations`,
         icon: PuzzlePieceIcon,
         minTier: "Ghuba Starter",
-        }, // API keys, third-party connections
+      }, // API keys, third-party connections
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/settings/audit-log`,
         icon: ListBulletIcon,
         minTier: "Ghuba Starter",
-        }, // Track admin actions
+      }, // Track admin actions
     ]),
 
     // {
@@ -2821,19 +2866,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Users",
         href: `/admin/${adminSlug}/saas-users`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -2841,13 +2886,13 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Lead Bulk",
             href: `/admin/${adminSlug}/salesleads/imports`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
           // {
@@ -2861,91 +2906,91 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/db-management`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "All Companies",
         href: `/admin/${adminSlug}/companies-full-site`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Subscription Payments",
         href: `/admin/${adminSlug}/subscriptionpayments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/saas-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/saas-reports`,
         icon: DocumentChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Support Tickets",
         href: `/admin/${adminSlug}/saas-support`,
         icon: LifebuoyIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/saas-announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Content (CMS)",
         href: `/admin/${adminSlug}/saas-content`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "API Keys",
         href: `/admin/${adminSlug}/saas-api-keys`,
         icon: KeyIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/saas-audit-log`,
         icon: ClipboardDocumentCheckIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "System Status",
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     Dashboards: filterTiers([
@@ -2954,31 +2999,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/cated`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Site Categories",
         href: `/admin/${adminSlug}/site-categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locat`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Users",
         href: `/admin/${adminSlug}/saas-users`,
         icon: UsersIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -2986,13 +3031,13 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Lead Bulk",
             href: `/admin/${adminSlug}/salesleads/imports`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/salesleadsources` },
           // {
@@ -3006,115 +3051,115 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/samplelistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Bulk Csv Upload For listings",
         href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Sample Image Upload For listings",
         href: `/admin/${adminSlug}/sync-images`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Backup And Restore",
         href: `/admin/${adminSlug}/db-management`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "All Companies",
         href: `/admin/${adminSlug}/companies-full-site`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Marketplace Listings",
         href: `/admin/${adminSlug}/marketplace-gh`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Subscription Payments",
         href: `/admin/${adminSlug}/subscriptionpayments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "General Settings",
         href: `/admin/${adminSlug}/saas-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Analytics",
         href: `/admin/${adminSlug}/saas-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Reports",
         href: `/admin/${adminSlug}/saas-reports`,
         icon: DocumentChartBarIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Support Tickets",
         href: `/admin/${adminSlug}/saas-support`,
         icon: LifebuoyIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Announcements",
         href: `/admin/${adminSlug}/saas-announcements`,
         icon: MegaphoneIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Content (CMS)",
         href: `/admin/${adminSlug}/saas-content`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "API Keys",
         href: `/admin/${adminSlug}/saas-api-keys`,
         icon: KeyIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Audit Log",
         href: `/admin/${adminSlug}/saas-audit-log`,
         icon: ClipboardDocumentCheckIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "System Status",
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Media & Entertainment": filterTiers([
@@ -3123,61 +3168,61 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Content Library", // Renamed for clarity
         href: `/admin/${adminSlug}/media-content`, // Unified content management
         icon: FilmIcon, // Covers both video and general media
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Article Management", // Specific for articles
         href: `/admin/${adminSlug}/blogs`, //media-articles
         icon: NewspaperIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery Management", // Specific for galleries
         href: `/admin/${adminSlug}/media-gallery`,
         icon: VideoCameraIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Video Management", // Specific for videos
         href: `/admin/${adminSlug}/media-videos`,
         icon: VideoCameraIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Publishing Schedule", // More descriptive
         href: `/admin/${adminSlug}/media-schedule`,
         icon: CalendarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "User Management", // Essential for any platform
         href: `/admin/${adminSlug}/media-users`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3185,8 +3230,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3201,25 +3246,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/media-featured-picks`,
         icon: StarIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Sponsors & Partnerships", // More descriptive
         href: `/admin/${adminSlug}/media-sponsors`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Analytics", // For insights
         href: `/admin/${adminSlug}/media-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Pro",
-        },
+      },
     ]),
 
     "Finance & Legal": filterTiers([
@@ -3228,49 +3273,49 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/finance-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Manage client feedback
+      }, // Manage client feedback
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/finance-faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        }, // Manage frequently asked questions
+      }, // Manage frequently asked questions
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/finance-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        }, // General admin settings
+      }, // General admin settings
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3278,8 +3323,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3294,43 +3339,43 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/finance-team`,
         icon: ShieldCheckIcon,
         minTier: "Ghuba Growth",
-        }, // Manage experts/advisors
+      }, // Manage experts/advisors
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/finance-appointments`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        }, // For scheduling consultations
+      }, // For scheduling consultations
       {
         label: "Documents",
         href: `/admin/${adminSlug}/finance-documents`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Packages & Pricing",
         href: `/admin/${adminSlug}/finance-packages`,
         icon: TagIcon,
         minTier: "Ghuba Growth",
-        }, // Manage consultation packages
+      }, // Manage consultation packages
       {
         label: "Cases & Matters",
         href: `/admin/${adminSlug}/finance-cases`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Pro",
-        }, // For legal cases/financial matters
+      }, // For legal cases/financial matters
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/finance-invoices`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
     ]),
 
     Automotive: filterTiers([
@@ -3339,49 +3384,49 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Vehicles",
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        }, // vehicle-manage Manage all property listings (add, edit, delete, status)
+      }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Track and manage all property inquiries and messages
+      }, // Track and manage all property inquiries and messages
       {
         label: "Blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Growth",
-        }, // company-locations properties-locations Manage geographic locations for listings
+      }, // company-locations properties-locations Manage geographic locations for listings
       {
         label: "Agents",
         href: `/admin/${adminSlug}/sales-agents`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        }, // Manage agent profiles, performance, and assignments
+      }, // Manage agent profiles, performance, and assignments
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3389,8 +3434,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3405,19 +3450,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        }, // Schedule and manage property viewings
+      }, // Schedule and manage property viewings
       {
         label: "Offers & Contracts",
         href: `/admin/${adminSlug}/offers`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Pro",
-        }, // Manage offers, sales agreements, and contracts
+      }, // Manage offers, sales agreements, and contracts
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
       // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
     ]),
@@ -3428,49 +3473,49 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Vehicles",
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        }, // vehicle-manage Manage all property listings (add, edit, delete, status)
+      }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Track and manage all property inquiries and messages
+      }, // Track and manage all property inquiries and messages
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Growth",
-        }, // company-locations properties-locations Manage geographic locations for listings
+      }, // company-locations properties-locations Manage geographic locations for listings
       {
         label: "Agents",
         href: `/admin/${adminSlug}/sales-agents`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        }, // Manage agent profiles, performance, and assignments
+      }, // Manage agent profiles, performance, and assignments
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3478,8 +3523,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3494,19 +3539,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        }, // Schedule and manage property viewings
+      }, // Schedule and manage property viewings
       {
         label: "Offers & Contracts",
         href: `/admin/${adminSlug}/offers`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Pro",
-        }, // Manage offers, sales agreements, and contracts
+      }, // Manage offers, sales agreements, and contracts
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
       // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
     ]),
@@ -3517,49 +3562,49 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Vehicles",
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        }, // vehicle-manage Manage all property listings (add, edit, delete, status)
+      }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Track and manage all property inquiries and messages
+      }, // Track and manage all property inquiries and messages
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Growth",
-        }, // company-locations properties-locations Manage geographic locations for listings
+      }, // company-locations properties-locations Manage geographic locations for listings
       {
         label: "Agents",
         href: `/admin/${adminSlug}/sales-agents`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        }, // Manage agent profiles, performance, and assignments
+      }, // Manage agent profiles, performance, and assignments
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3567,8 +3612,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3583,19 +3628,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        }, // Schedule and manage property viewings
+      }, // Schedule and manage property viewings
       {
         label: "Offers & Contracts",
         href: `/admin/${adminSlug}/offers`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Pro",
-        }, // Manage offers, sales agreements, and contracts
+      }, // Manage offers, sales agreements, and contracts
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
       // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
     ]),
@@ -3606,13 +3651,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Destinations",
         href: `/admin/${adminSlug}/travel-destinations`,
@@ -3624,61 +3669,61 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/travel-packages`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Listings",
         href: `/admin/${adminSlug}/travel-experiences`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        }, // vehicle-manage Manage all property listings (add, edit, delete, status)
+      }, // vehicle-manage Manage all property listings (add, edit, delete, status)
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/inquiries`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        }, // Track and manage all property inquiries and messages
+      }, // Track and manage all property inquiries and messages
       {
         label: "Blog & Content",
         href: `/admin/${adminSlug}/blogs`,
         icon: NewspaperIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/travel-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/travel-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Growth",
-        }, // company-locations properties-locations Manage geographic locations for listings
+      }, // company-locations properties-locations Manage geographic locations for listings
       {
         label: "Users",
         href: `/admin/${adminSlug}/travel-users`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3686,8 +3731,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3702,25 +3747,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        }, // Schedule and manage property viewings
+      }, // Schedule and manage property viewings
       {
         label: "Travel Experts",
         href: `/admin/${adminSlug}/travel-experts`,
         icon: UserGroupIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Virtual Tours",
         href: `/admin/${adminSlug}/travel-virtual-tours`,
         icon: PlayCircleIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Promotions & Deals",
         href: `/admin/${adminSlug}/travel-promotions`,
         icon: TagIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Transport",
         href: `/admin/${adminSlug}/transport`,
@@ -3729,33 +3774,33 @@ export const getCategoryMenus = (
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/travel-transport-vehicles`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/transport-routes`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/transport-drivers`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/transport-schedules`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/transport-maintenance-records`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/transport-fuel-logs`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // {
           //   label: "Assignments",
           //   href: `/admin/${adminSlug}/transport-assignments`,
@@ -3763,12 +3808,12 @@ export const getCategoryMenus = (
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/transport-incidents`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -3777,19 +3822,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/travel-bookings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Offers & Contracts",
         href: `/admin/${adminSlug}/offers`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Pro",
-        }, // Manage offers, sales agreements, and contracts
+      }, // Manage offers, sales agreements, and contracts
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
     ]),
 
     "Property Management": filterTiers([
@@ -3798,73 +3843,73 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        }, // Overall view of key metrics
+      }, // Overall view of key metrics
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Properties",
         href: `/admin/${adminSlug}/properties`,
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
-        }, // Schedule and manage property viewings
+      }, // Schedule and manage property viewings
       {
         label: "Inquiries",
         href: `/admin/${adminSlug}/properties-inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Track and manage all property inquiries and messages
+      }, // Track and manage all property inquiries and messages
       {
         label: "Media Library",
         href: `/admin/${adminSlug}/properties-media`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        }, // Central place for property images, videos, and virtual tour media
+      }, // Central place for property images, videos, and virtual tour media
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/properties-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Manage client testimonials for properties
+      }, // Manage client testimonials for properties
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/properties-faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        }, // Manage frequently asked questions related to properties
+      }, // Manage frequently asked questions related to properties
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/properties-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        }, // General administrative settings
+      }, // General administrative settings
       {
         label: "Locations",
         href: `/admin/${adminSlug}/locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Growth",
-        }, // company-locations properties-locations Manage geographic locations for listings
+      }, // company-locations properties-locations Manage geographic locations for listings
       {
         label: "Agents",
         href: `/admin/${adminSlug}/properties-agents`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        }, // Manage agent profiles, performance, and assignments
+      }, // Manage agent profiles, performance, and assignments
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -3872,8 +3917,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -3891,48 +3936,48 @@ export const getCategoryMenus = (
           {
             label: "Blocks",
             href: `/admin/${adminSlug}/property-blocks`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Rooms",
             href: `/admin/${adminSlug}/property-rooms`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Residents",
             href: `/admin/${adminSlug}/property-residents`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Room Assignments",
             href: `/admin/${adminSlug}/property-room-assignments`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Maintenance Requests",
             href: `/admin/${adminSlug}/property-maintenance-requests`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Visitors",
             href: `/admin/${adminSlug}/property-visitors`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Fee Management",
             href: `/admin/${adminSlug}/property-fee-management`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Inventory", href: `/admin/${adminSlug}/property-inventory` },
           {
             label: "Staff",
             href: `/admin/${adminSlug}/property-staff`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/property-reports`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
         ],
       },
@@ -3941,37 +3986,37 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/properties-showings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Virtual Tours",
         href: `/admin/${adminSlug}/properties-virtual-tours`,
         icon: PlayCircleIcon,
         minTier: "Ghuba Growth",
-        }, // Manage virtual tour content for listings
+      }, // Manage virtual tour content for listings
       {
         label: "Promotions & Deals",
         href: `/admin/${adminSlug}/properties-promotions`,
         icon: TagIcon,
         minTier: "Ghuba Growth",
-        }, // Create and manage discounts, special offers for listings
+      }, // Create and manage discounts, special offers for listings
       {
         label: "Reports",
         href: `/admin/${adminSlug}/properties-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        }, // Generate various reports (sales, agent performance, market trends)
+      }, // Generate various reports (sales, agent performance, market trends)
       {
         label: "Offers & Contracts",
         href: `/admin/${adminSlug}/properties-offers`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
     ]),
 
     "Fitness & Wellness": filterTiers([
@@ -3980,61 +4025,61 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        }, // Overview of gym activity
+      }, // Overview of gym activity
       {
         label: "POS & Sales",
         href: `/admin/${adminSlug}/fitness-pos`,
         icon: CurrencyDollarIcon,
         minTier: "Ghuba Starter",
-        }, // Point of Sale and transaction management
+      }, // Point of Sale and transaction management
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Programs",
         href: `/admin/${adminSlug}/fitness-listings`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        }, // Manage fitness programs, classes, schedules
+      }, // Manage fitness programs, classes, schedules
       {
         label: "Classes",
         href: `/admin/${adminSlug}/fitness-classes`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        }, // Manage fitness programs, classes, schedules
+      }, // Manage fitness programs, classes, schedules
       {
         label: "Trainers & Staff",
         href: `/admin/${adminSlug}/fitness-trainers`,
         icon: BriefcaseIcon,
         minTier: "Ghuba Starter",
-        }, // Manage trainer profiles, availability
+      }, // Manage trainer profiles, availability
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "blogs",
         href: `/admin/${adminSlug}/blogs`,
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/fitness-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        }, // General administrative settings, user roles
+      }, // General administrative settings, user roles
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UsersIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4042,8 +4087,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4063,37 +4108,37 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/fitness-locations`,
         icon: MapPinIcon,
         minTier: "Ghuba Growth",
-        }, // Manage physical gym locations, equipment, rooms
+      }, // Manage physical gym locations, equipment, rooms
       {
         label: "Notifications & Comms",
         href: `/admin/${adminSlug}/fitness-notifications`,
         icon: BellIcon,
         minTier: "Ghuba Growth",
-        }, // Send announcements, newsletters, client messages
+      }, // Send announcements, newsletters, client messages
       {
         label: "Virtual Tours",
         href: `/admin/${adminSlug}/fitness-virtual-tours`,
         icon: PlayCircleIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Reports & Analytics",
         href: `/admin/${adminSlug}/fitness-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        }, // View performance metrics, sales reports
+      }, // View performance metrics, sales reports
       {
         label: "Bookings & Schedule",
         href: `/admin/${adminSlug}/fitness-bookings`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Pro",
-        }, // Manage class and personal training bookings
+      }, // Manage class and personal training bookings
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
     ]),
 
     // You could also categorize into more specific sections if the admin grows
@@ -4103,19 +4148,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/content`,
         icon: PencilSquareIcon,
         minTier: "Ghuba Starter",
-        }, // Blog posts, articles, website content
+      }, // Blog posts, articles, website content
       {
         label: "Promotions & Deals",
         href: `/admin/${adminSlug}/promotions`,
         icon: TagIcon,
         minTier: "Ghuba Starter",
-        }, // Create and manage discounts, special offers
+      }, // Create and manage discounts, special offers
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4123,8 +4168,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4139,19 +4184,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Manage client testimonials
+      }, // Manage client testimonials
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        }, // Manage frequently asked questions
+      }, // Manage frequently asked questions
     ]),
 
     "Billing & Finance": filterTiers([
@@ -4160,19 +4205,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/invoices`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/payments`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Refunds",
         href: `/admin/${adminSlug}/refunds`,
         icon: ArrowUturnLeftIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Consultant & Coach": filterTiers([
@@ -4181,7 +4226,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        }, // Overview of key metrics
+      }, // Overview of key metrics
       {
         label: "Programs & Courses",
         icon: BookOpenIcon, // Icon for a book or learning
@@ -4190,19 +4235,19 @@ export const getCategoryMenus = (
             label: "Categories",
             href: `/admin/${adminSlug}/categories`,
             minTier: "Ghuba Starter",
-            
+
             // icon: ClipboardDocumentListIcon,
-                },
+          },
           {
             label: "Ebooks",
             href: `/admin/${adminSlug}/ebooks`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Programs",
             href: `/admin/${adminSlug}/programs`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
           // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
           // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
@@ -4213,25 +4258,25 @@ export const getCategoryMenus = (
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        }, // Icon for gear/settings
+      }, // Icon for gear/settings
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4239,8 +4284,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4264,25 +4309,25 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
-        }, // Icon for charts/graphs
+      }, // Icon for charts/graphs
       {
         label: "Messaging",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        }, // Icon for chat/messages
+      }, // Icon for chat/messages
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/appointments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
       // {
       //   label: "Payments & Invoicing",
@@ -4301,7 +4346,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        }, // Overview of key metrics
+      }, // Overview of key metrics
       {
         label: "Programs & Courses",
         icon: BookOpenIcon, // Icon for a book or learning
@@ -4309,23 +4354,23 @@ export const getCategoryMenus = (
           {
             label: "Categories",
             href: `/admin/${adminSlug}/categories`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Ebooks",
             href: `/admin/${adminSlug}/ebooks`,
             minTier: "Ghuba Starter",
-                },
+          },
           {
             label: "Programs",
             href: `/admin/${adminSlug}/programs`,
             minTier: "Ghuba Starter",
-                },
+          },
           {
             label: "blogs",
             href: `/admin/${adminSlug}/blogs`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
           // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
           // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
@@ -4336,19 +4381,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        }, // Icon for gear/settings
+      }, // Icon for gear/settings
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserCircleIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4356,8 +4401,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4381,19 +4426,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        }, // Icon for chat/messages
+      }, // Icon for chat/messages
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/appointments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
       // {
       //   label: "Payments & Invoicing",
@@ -4426,19 +4471,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        }, // Overview of key metrics
+      }, // Overview of key metrics
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4446,8 +4491,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4467,20 +4512,20 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/finance-team`,
         icon: ShieldCheckIcon,
         minTier: "Ghuba Growth",
-        }, // Manage experts/advisors
+      }, // Manage experts/advisors
       // { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
       {
         label: "Documents",
         href: `/admin/${adminSlug}/finance-documents`,
         icon: DocumentTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Appointments",
         href: `/admin/${adminSlug}/finance-appointments`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Pro",
-        }, // For scheduling consultations
+      }, // For scheduling consultations
       {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
@@ -4492,31 +4537,31 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/finance-invoices`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Growth",
-        }, // More explicit name
+      }, // More explicit name
       {
         label: "Packages & Pricing",
         href: `/admin/${adminSlug}/finance-packages`,
         icon: TagIcon,
         minTier: "Ghuba Growth",
-        }, // Manage consultation packages
+      }, // Manage consultation packages
       {
         label: "Testimonials",
         href: `/admin/${adminSlug}/finance-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        }, // Manage client feedback
+      }, // Manage client feedback
       {
         label: "FAQs",
         href: `/admin/${adminSlug}/finance-faqs`,
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
-        }, // Manage frequently asked questions
+      }, // Manage frequently asked questions
       {
         label: "Blogs",
         icon: DocumentTextIcon,
@@ -4524,7 +4569,7 @@ export const getCategoryMenus = (
           {
             label: "All Blogs",
             href: `/admin/${adminSlug}/blogs`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
         ],
       },
@@ -4533,13 +4578,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/finance-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        }, // General admin settings
+      }, // General admin settings
     ]),
 
     "Delivery & Logistics": filterTiers([
@@ -4548,13 +4593,13 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        }, // Overview of key metrics
+      }, // Overview of key metrics
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Services",
         icon: ClipboardDocumentListIcon,
@@ -4575,17 +4620,17 @@ export const getCategoryMenus = (
           {
             label: "Marketplace",
             href: `/admin/${adminSlug}/customerorders`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Delivery",
             href: `/admin/${adminSlug}/deliveries`,
-            minTier: "Ghuba Starter",  
+            minTier: "Ghuba Starter",
           },
           {
             label: "Payments",
             href: `/admin/${adminSlug}/companyPaymentsDashboard`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -4597,33 +4642,33 @@ export const getCategoryMenus = (
           {
             label: "Vehicles",
             href: `/admin/${adminSlug}/store-transport-vehicles`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Routes",
             href: `/admin/${adminSlug}/store-transport-routes`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Drivers",
             href: `/admin/${adminSlug}/store-transport-drivers`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Schedules",
             href: `/admin/${adminSlug}/store-transport-schedules`,
-            minTier: "Ghuba Growth",  
+            minTier: "Ghuba Growth",
           },
           {
             label: "Maintenance Records",
             href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Fuel Logs",
             href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-            minTier: "Ghuba Growth",  
-    },
+            minTier: "Ghuba Growth",
+          },
           // {
           //   label: "Assignments",
           //   href: `/admin/${adminSlug}/store-transport-assignments`,
@@ -4631,12 +4676,12 @@ export const getCategoryMenus = (
           {
             label: "Incidents",
             href: `/admin/${adminSlug}/store-transport-incidents`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
           {
             label: "Reports",
             href: `/admin/${adminSlug}/store-transport-reports`,
-            minTier: "Ghuba Pro",  
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -4650,7 +4695,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4658,8 +4703,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4689,55 +4734,55 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/inquiries`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Shipments & Orders",
         href: `/admin/${adminSlug}/logistics-shipments`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Tracking & Status",
         href: `/admin/${adminSlug}/logistics-tracking`,
         icon: EyeIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Billing & Invoices",
         href: `/admin/${adminSlug}/logistics-billing`,
         icon: CreditCardIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Reports & Analytics",
         href: `/admin/${adminSlug}/logistics-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     "Social Media Manager": filterTiers([
@@ -4746,19 +4791,19 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "leads",
         icon: UsersIcon,
@@ -4766,8 +4811,8 @@ export const getCategoryMenus = (
           {
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
-            minTier: "Ghuba Starter",  
-    },
+            minTier: "Ghuba Starter",
+          },
           // { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
           // { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
           // { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
@@ -4787,43 +4832,43 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/social-calendar`,
         icon: CalendarDaysIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Post Management",
         href: `/admin/${adminSlug}/social-posts`,
         icon: PencilSquareIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Analytics & Reports",
         href: `/admin/${adminSlug}/social-analytics`,
         icon: ChartBarIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: BanknotesIcon,
         minTier: "Ghuba Pro",
-        },
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
-        },
+      },
       {
         label: "Messages & Engagement",
         href: `/admin/${adminSlug}/social-messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
-        },
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/social-settings`,
         icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
-        },
+      },
     ]),
 
     SCHOOL_DRIVER: filterTiers([
@@ -4832,7 +4877,7 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
         minTier: "Ghuba Starter",
-        },
+      },
 
       // Trips & Routes
       {
@@ -5218,11 +5263,11 @@ export const getCategoryMenus = (
           {
             label: "Attendance Report",
             href: `/admin/${adminSlug}/reports/attendance`,
-                },
+          },
           {
             label: "Performance",
             href: `/admin/${adminSlug}/reports/performance`,
-                },
+          },
         ],
       },
       {
@@ -5255,11 +5300,11 @@ export const getCategoryMenus = (
           {
             label: "Attendance Report",
             href: `/admin/${adminSlug}/reports/attendance`,
-                },
+          },
           {
             label: "Performance",
             href: `/admin/${adminSlug}/reports/performance`,
-                },
+          },
         ],
       },
       {

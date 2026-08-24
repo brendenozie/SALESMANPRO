@@ -1,486 +1,1166 @@
+import crypto from "node:crypto";
+
 import prisma from "@/server/db/prismadb";
-import { calculateServerSideOrder } from "@/lib/pricing/serverPricing";
 
-export const whatsappTools = [
-  {
-    type: "function" as const,
-    name: "search_marketplace",
-    description:
-      "Search available Ghuba marketplace listings for products, properties, vehicles, or services.",
-    parameters: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-        },
-        category: {
-          type: ["string", "null"],
-        },
-        maxPrice: {
-          type: ["number", "null"],
-        },
-      },
-      required: ["query", "category", "maxPrice"],
-      additionalProperties: false,
-    },
-    strict: true,
-  },
+import {
+  createUnifiedOrder,
+} from "@/lib/orders/unifiedOrderService";
 
-  {
-    type: "function" as const,
-    name: "get_listing",
-    description:
-      "Retrieve detailed information about a specific marketplace listing.",
-    parameters: {
-      type: "object",
-      properties: {
-        listingId: {
-          type: "string",
-        },
-      },
-      required: ["listingId"],
-      additionalProperties: false,
-    },
-    strict: true,
-  },
+import {
+  getCompanyPaymentConfig,
+} from "@/lib/paymentsv2/index";
 
-  {
-    type: "function" as const,
-    name: "calculate_order",
-    description:
-      "Calculate the authoritative server-side price for an order before checkout.",
-    parameters: {
-      type: "object",
-      properties: {
-        items: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              marketplaceListingId: {
-                type: "string",
-              },
-              quantity: {
-                type: "integer",
-              },
-              selectedOptions: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    category: {
-                      type: "string",
-                    },
-                    name: {
-                      type: "string",
-                    },
-                  },
-                  required: ["category", "name"],
-                  additionalProperties: false,
-                },
-              },
-            },
-            required: ["marketplaceListingId", "quantity", "selectedOptions"],
-            additionalProperties: false,
-          },
-        },
-      },
-      required: ["items"],
-      additionalProperties: false,
-    },
-    strict: true,
-  },
+import {
+  initiateMpesaPayment,
+} from "@/lib/paymentsv2/mpesa";
 
-  {
-    type: "function" as const,
-    name: "create_order",
-    description:
-      "Create a marketplace order after the customer has confirmed the final price and payment method.",
-    parameters: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-        },
-        email: {
-          type: "string",
-        },
-        phone: {
-          type: "string",
-        },
-        paymentOption: {
-          type: "string",
-        },
-        items: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              marketplaceListingId: {
-                type: "string",
-              },
-              quantity: {
-                type: "integer",
-              },
-              price: {
-                type: "number",
-              },
-              totalPrice: {
-                type: "number",
-              },
-            },
-            required: [
-              "marketplaceListingId",
-              "quantity",
-              "price",
-              "totalPrice",
-            ],
-            additionalProperties: false,
-          },
-        },
-      },
-      required: ["name", "email", "phone", "paymentOption", "items"],
-      additionalProperties: false,
-    },
-    strict: true,
-  },
+import {
+  whatsappRepository,
+} from "@/lib/whatsapp/repository";
 
-  {
-    type: "function" as const,
-    name: "request_human_agent",
-    description:
-      "Transfer the WhatsApp conversation to a human sales or support agent.",
-    parameters: {
-      type: "object",
-      properties: {
-        reason: {
-          type: "string",
-        },
-      },
-      required: ["reason"],
-      additionalProperties: false,
-    },
-    strict: true,
-  },
-];
+import {
+  whatsappActionSchema,
+  type WhatsAppAction,
+  type WhatsAppActionContext,
+  type WhatsAppActionResult,
+} from "@/lib/whatsapp/types";
 
-export async function executeWhatsAppAction({
-  action,
-  args,
-  companyId,
-  conversationId,
-}: {
-  action: string;
-  args: any;
-  companyId: string;
-  conversationId: string;
-}) {
-  switch (action) {
-    case "search_marketplace":
-      return searchMarketplace({
-        companyId,
-        ...args,
+import { calculateOrderPricing } from "@/lib/pricing";
+
+/**
+ * ============================================================
+ * ACTION ROUTER
+ * ============================================================
+ *
+ * AI never receives Prisma access.
+ *
+ * AI
+ *  ↓
+ * actionRouter
+ *  ↓
+ * application/domain services
+ *  ↓
+ * Prisma/payment infrastructure
+ */
+
+export async function actionRouter(params: {
+  action: unknown;
+
+  context: WhatsAppActionContext;
+}): Promise<WhatsAppActionResult> {
+  const parsed =
+    whatsappActionSchema.safeParse(
+      params.action,
+    );
+
+  if (!parsed.success) {
+    return {
+      success: false,
+
+      action: "escalate_to_human",
+
+      message:
+        "I couldn't safely understand that request. Let me connect you with someone from the team.",
+
+      shouldRespond: true,
+
+      shouldEscalate: true,
+    };
+  }
+
+  const action = parsed.data;
+
+  const startedAt = Date.now();
+
+  let auditId: string | null = null;
+
+  try {
+    /**
+     * Every action is auditable.
+     */
+
+    const audit =
+      await prisma.aIAction.create({
+        data: {
+          companyId:
+            params.context.companyId,
+
+          conversationId:
+            params.context.conversationId,
+
+          action:
+            action.action,
+
+          status: "RUNNING",
+
+          input:
+            sanitizeActionInput(action),
+
+          messageId:
+            params.context.messageId,
+
+          idempotencyKey:
+            `${params.context.conversationId}:${params.context.messageId ?? crypto.randomUUID()}:${action.action}`,
+          
+          startedAt:
+            new Date(),
+        },
       });
 
-    case "get_listing":
-      return getListing({
-        companyId,
-        listingId: args.listingId,
-      });
+    auditId = audit.id;
 
-    case "calculate_order":
-      return calculateOrder({
-        companyId,
-        ...args,
-      });
+    let result: WhatsAppActionResult;
 
-    case "create_order":
-      return createOrder({
-        companyId,
-        conversationId,
-        ...args,
-      });
+    switch (action.action) {
+      case "search_products":
+        result =
+          await searchProducts(
+            action,
+            params.context,
+          );
+        break;
 
-    case "request_human_agent":
-      return requestHumanAgent({
-        conversationId,
-        ...args,
-      });
+      case "calculate_checkout":
+        result =
+          await calculateCheckout(
+            action,
+            params.context,
+          );
+        break;
 
-    default:
-      throw new Error(`Unsupported WhatsApp action: ${action}`);
+      case "create_order":
+        result =
+          await createOrder(
+            action,
+            params.context,
+          );
+        break;
+
+      case "initiate_mpesa":
+        result =
+          await initiateMpesa(
+            action,
+            params.context,
+          );
+        break;
+
+      case "get_order_status":
+        result =
+          await getOrderStatus(
+            action,
+            params.context,
+          );
+        break;
+
+      case "escalate_to_human":
+        result =
+          await escalateToHuman(
+            action,
+            params.context,
+          );
+        break;
+
+      default:
+        result = {
+          success: false,
+
+          action:
+            action.action,
+
+          message:
+            "I can't perform that action.",
+        };
+    }
+
+    await prisma.aIAction.update({
+      where: {
+        id: auditId,
+      },
+
+      data: {
+        status: result.success
+          ? "COMPLETED"
+          : "FAILED",
+
+        output:
+          sanitizeActionOutput(result),
+
+        completedAt:
+          new Date(),
+
+        error:
+          result.success
+            ? undefined
+            : result.message,
+      },
+    });
+
+    return result;
+  } catch (error) {
+    console.error(
+      "[WHATSAPP_ACTION_ERROR]",
+      {
+        action: action.action,
+
+        companyId:
+          params.context.companyId,
+
+        conversationId:
+          params.context.conversationId,
+
+        error,
+      },
+    );
+
+    if (auditId) {
+      await prisma.aIAction.update({
+        where: {
+          id: auditId,
+        },
+
+        data: {
+          status: "FAILED",
+
+          error:
+            error instanceof Error
+              ? error.message
+              : "Action failed.",
+
+          completedAt:
+            new Date(),
+        },
+      }).catch(() => undefined);
+    }
+
+    return {
+      success: false,
+
+      action: action.action,
+
+      message:
+        "Sorry, I couldn't complete that request right now. Please try again.",
+    };
   }
 }
 
-async function searchMarketplace({
-  companyId,
-  query,
-  category,
-  maxPrice,
-}: {
-  companyId: string;
-  query: string;
-  category: string | null;
-  maxPrice: number | null;
-}) {
-  const listings = await prisma.marketplaceListings.findMany({
-    where: {
-      companyId,
+/**
+ * ============================================================
+ * PRODUCT SEARCH
+ * ============================================================
+ */
 
-      status: "ACTIVE",
+async function searchProducts(
+  action: Extract<
+    WhatsAppAction,
+    { action: "search_products" }
+  >,
+  context: WhatsAppActionContext,
+): Promise<WhatsAppActionResult> {
+  const args =
+    action.arguments;
 
-      isAvailable: true,
+  const where: Record<
+    string,
+    unknown
+  > = {
+    companyId:
+      context.companyId,
 
-      showOnGhuba: true,
+    status: "ACTIVE",
 
-      ...(category
-        ? {
-            category: {
-              contains: category,
-              mode: "insensitive",
-            },
-          }
-        : {}),
+    isAvailable: true,
 
-      ...(maxPrice !== null
-        ? {
-            finalPrice: {
-              lte: maxPrice,
-            },
-          }
-        : {}),
-
-      OR: [
-        {
-          name: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          description: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          brand: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-        {
-          category: {
-            contains: query,
-            mode: "insensitive",
-          },
-        },
-      ],
-    },
-
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      finalPrice: true,
-      sellingPrice: true,
-      images: true,
-      category: true,
-      subCategoryName: true,
-      brand: true,
-      condition: true,
-      locationName: true,
-      isAvailable: true,
-      listingTransactionType: true,
-    },
-
-    take: 8,
-
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return {
-    count: listings.length,
-    listings,
+    whatsappEnabled: true,
   };
-}
 
-async function getListing({
-  companyId,
-  listingId,
-}: {
-  companyId: string;
-  listingId: string;
-}) {
-  const listing = await prisma.marketplaceListings.findFirst({
-    where: {
-      id: listingId,
-      companyId,
-      status: "ACTIVE",
-    },
+  if (args.query) {
+    where.OR = [
+      {
+        name: {
+          contains:
+            args.query,
+          mode: "insensitive",
+        },
+      },
 
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      longDescription: true,
-      finalPrice: true,
-      sellingPrice: true,
-      discount: true,
-      images: true,
-      category: true,
-      subCategoryName: true,
-      brand: true,
-      condition: true,
-      quantity: true,
-      locationName: true,
-      latitude: true,
-      longitude: true,
-      delivery: true,
-      paymentOption: true,
-      amenities: true,
-      features: true,
-      make: true,
-      model: true,
-      year: true,
-      mileage: true,
-      bedrooms: true,
-      bathrooms: true,
-      propertyType: true,
-    },
-  });
+      {
+        description: {
+          contains:
+            args.query,
+          mode: "insensitive",
+        },
+      },
 
-  if (!listing) {
+      {
+        brand: {
+          contains:
+            args.query,
+          mode: "insensitive",
+        },
+      },
+    ];
+  }
+
+  if (args.brand) {
+    where.brand = {
+      contains:
+        args.brand,
+      mode: "insensitive",
+    };
+  }
+
+  if (args.minPrice !== undefined) {
+    where.finalPrice = {
+      ...(where.finalPrice as object ?? {}),
+      gte: args.minPrice,
+    };
+  }
+
+  if (args.maxPrice !== undefined) {
+    where.finalPrice = {
+      ...(where.finalPrice as object ?? {}),
+      lte: args.maxPrice,
+    };
+  }
+
+  const listings =
+    await prisma.marketplaceListings.findMany({
+      where: where as any,
+
+      select: {
+        id: true,
+
+        name: true,
+
+        description: true,
+
+        brand: true,
+
+        sellingPrice: true,
+
+        finalPrice: true,
+
+        discount: true,
+
+        quantity: true,
+
+        isAvailable: true,
+
+        images: true,
+
+        currency: true,
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      take: args.limit ?? 5,
+    });
+
+  if (!listings.length) {
     return {
-      found: false,
+      success: true,
+
+      action:
+        "search_products",
+
+      message:
+        "I couldn't find an available product matching that request.",
+
+      data: {
+        products: [],
+      },
     };
   }
 
   return {
-    found: true,
-    listing,
-  };
-}
-
-async function calculateOrder({
-  companyId,
-  items,
-}: {
-  companyId: string;
-  items: Array<{
-    marketplaceListingId: string;
-    quantity: number;
-    selectedOptions: Array<{
-      category: string;
-      name: string;
-    }>;
-  }>;
-}) {
-  const result = await calculateServerSideOrder({
-    companyId,
-    items,
-  });
-
-  return {
     success: true,
-    pricing: result,
+
+    action:
+      "search_products",
+
+    message:
+      `I found ${listings.length} product${listings.length === 1 ? "" : "s"} for you.`,
+
+    data: {
+      products:
+        listings.map(
+          (listing) => ({
+            id:
+              listing.id,
+
+            name:
+              listing.name,
+
+            description:
+              listing.description,
+
+            brand:
+              listing.brand,
+
+            price:
+              listing.finalPrice ??
+              listing.sellingPrice,
+
+            originalPrice:
+              listing.sellingPrice,
+
+            discount:
+              listing.discount,
+
+            stock:
+              listing.quantity,
+
+            available:
+              listing.isAvailable,
+
+            images:
+              listing.images,
+
+            currency:
+              listing.currency ??
+              "KES",
+          }),
+        ),
+    },
   };
 }
 
-async function createOrder({
-  companyId,
-  conversationId,
-  name,
-  email,
-  phone,
-  paymentOption,
-  items,
-}: {
-  companyId: string;
-  conversationId: string;
-  name: string;
-  email: string;
-  phone: string;
-  paymentOption: string;
+/**
+ * ============================================================
+ * SERVER-SIDE CHECKOUT PRICING
+ * ============================================================
+ */
 
-  items: Array<{
-    marketplaceListingId: string;
-    quantity: number;
-    price: number;
-    totalPrice: number;
-  }>;
-}) {
-  const idempotencyKey = crypto.randomUUID();
+async function calculateCheckout(
+  action: Extract<
+    WhatsAppAction,
+    { action: "calculate_checkout" }
+  >,
+  context: WhatsAppActionContext,
+): Promise<WhatsAppActionResult> {
+  const args =
+    action.arguments;
 
-  const response = await fetch(
-    `${process.env.INTERNAL_API_BASE_URL}/api/shop/orders`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-internal-whatsapp": process.env.WHATSAPP_INTERNAL_SECRET!,
+  const listingIds =
+    args.items.map(
+      (item) =>
+        item.marketplaceListingId,
+    );
+
+  const listings =
+    await prisma.marketplaceListings.findMany({
+      where: {
+        id: {
+          in: listingIds,
+        },
+
+        companyId:
+          context.companyId,
+
+        status: "ACTIVE",
+
+        isAvailable: true,
       },
-      body: JSON.stringify({
-        name,
-        email,
-        phone,
 
-        consumerId: undefined,
+      select: {
+        id: true,
 
-        paymentOption,
+        name: true,
 
-        items,
+        sellingPrice: true,
 
-        totalPrice: items.reduce((sum, item) => sum + item.totalPrice, 0),
+        finalPrice: true,
 
-        companyId,
+        discount: true,
 
-        idempotencyKey,
-      }),
+        tax: true,
+
+        shippingCost: true,
+
+        quantity: true,
+
+        pricingTiers: true,
+
+        duration: true,
+
+        hourlyRate: true,
+
+        minimumHours: true,
+
+        listingTransactionType: true,
+      },
+    });
+
+  const listingMap =
+    new Map(
+      listings.map(
+        (listing) => [
+          listing.id,
+          listing,
+        ],
+      ),
+    );
+
+  const pricingItems =
+    args.items.map(
+      (item) => {
+        const listing =
+          listingMap.get(
+            item.marketplaceListingId,
+          );
+
+        if (!listing) {
+          throw new Error(
+            "One of the selected products is no longer available.",
+          );
+        }
+
+        return {
+          listingId:
+            listing.id,
+
+          name:
+            listing.name,
+
+          quantity:
+            item.quantity,
+
+          sellingPrice:
+            listing.sellingPrice,
+
+          finalPrice:
+            listing.finalPrice,
+
+          discount:
+            listing.discount,
+
+          tax:
+            listing.tax,
+
+          shippingCost:
+            listing.shippingCost,
+
+          availableQuantity:
+            listing.quantity,
+
+          selectedOptions:
+            item.selectedOptions ?? [],
+
+          pricingTiers:
+            listing.pricingTiers ?? [],
+
+          duration:
+            listing.duration,
+
+          hourlyRate:
+            listing.hourlyRate,
+
+          minimumHours:
+            listing.minimumHours,
+
+          transactionType:
+            listing.listingTransactionType,
+
+          date:
+            item.date ?? null,
+
+          timeSlot:
+            item.timeSlot ?? null,
+
+          serviceNotes:
+            item.serviceNotes ?? null,
+        };
+      },
+    );
+
+  const pricing =
+    await calculateOrderPricing({
+      companyId:
+        context.companyId,
+
+      orderType:
+        "PRODUCT",
+
+      items:
+        pricingItems,
+
+      promoCode:
+        args.promoCode ?? null,
+
+      shippingMethod:
+        args.shippingMethod ?? null,
+
+      paymentOption:
+        args.paymentOption,
+
+      shippingAddress:
+        args.shippingAddress ?? null,
+    });
+
+  await whatsappRepository.updateCart(
+    context.conversationId,
+    {
+      items:
+        args.items,
+
+      pricing,
+
+      shippingAddress:
+        args.shippingAddress,
+
+      shippingMethod:
+        args.shippingMethod,
+
+      paymentOption:
+        args.paymentOption,
+
+      promoCode:
+        args.promoCode,
     },
   );
 
-  const result = await response.json();
+  return {
+    success: true,
 
-  if (!response.ok) {
-    throw new Error(
-      result?.message || result?.error || "Order creation failed",
-    );
-  }
+    action:
+      "calculate_checkout",
 
-  return result;
+    message:
+      buildCheckoutSummary(
+        pricing,
+        listings,
+      ),
+
+    data: {
+      pricing,
+    },
+  };
 }
 
-async function requestHumanAgent({
-  conversationId,
-  reason,
-}: {
-  conversationId: string;
-  reason: string;
-}) {
-  const conversation = await prisma.whatsAppConversation.update({
+/**
+ * ============================================================
+ * ORDER CREATION
+ * ============================================================
+ */
+
+async function createOrder(
+  action: Extract<
+    WhatsAppAction,
+    { action: "create_order" }
+  >,
+  context: WhatsAppActionContext,
+): Promise<WhatsAppActionResult> {
+  const args =
+    action.arguments;
+
+  if (!args.confirmation) {
+    return {
+      success: false,
+
+      action:
+        "create_order",
+
+      message:
+        "Order confirmation is required before I can place the order.",
+    };
+  }
+
+  /**
+   * Never trust an AI-provided price.
+   *
+   * createUnifiedOrder() performs authoritative
+   * server-side pricing again.
+   */
+
+  const result =
+    await createUnifiedOrder({
+      orderType:
+        "PRODUCT",
+
+      companyId:
+        context.companyId,
+
+      consumerId:
+        undefined,
+
+      name:
+        context.customerName ??
+        "WhatsApp Customer",
+
+      email:
+        context.customerEmail ??
+        `whatsapp-${context.waId}@placeholder.local`,
+
+      phone:
+        context.phoneNumber,
+
+      mpesaPhone:
+        args.mpesaPhone ??
+        null,
+
+      paymentOption:
+        args.paymentOption,
+
+      items:
+        args.items,
+
+      shippingAddress:
+        args.shippingAddress,
+
+      shippingMethod:
+        args.shippingMethod,
+
+      promoCode:
+        args.promoCode,
+
+      notes:
+        args.notes,
+
+      paymentData: {
+        source:
+          "WHATSAPP_AI",
+
+        conversationId:
+          context.conversationId,
+
+        whatsappMessageId:
+          context.messageId,
+      },
+
+      idempotencyKey:
+        crypto.randomUUID(),
+    });
+
+  /**
+   * Link the order to the WhatsApp conversation.
+   *
+   * This does not replace your canonical order service;
+   * it simply records the communication channel.
+   */
+
+  await prisma.customerOrder.update({
     where: {
-      id: conversationId,
+      id:
+        result.order.id,
     },
 
     data: {
-      status: "HUMAN",
-      humanHandoff: true,
-      aiEnabled: false,
-
-      context: {
-        handoffReason: reason,
-        requestedAt: new Date().toISOString(),
-      },
+      orderSource:
+        "WHATSAPP",
     },
   });
 
+  await whatsappRepository.updateCart(
+    context.conversationId,
+    {
+      orderId:
+        result.order.id,
+
+      trackingNumber:
+        result.trackingNumber,
+
+      pricing:
+        result.pricing,
+
+      status:
+        "ORDER_CREATED",
+    },
+  );
+
   return {
     success: true,
-    handedOff: true,
-    conversationId: conversation.id,
-    message: "The conversation has been transferred to a human agent.",
+
+    action:
+      "create_order",
+
+    message:
+      `Your order has been placed successfully.\n\nTracking: ${result.trackingNumber}\nTotal: ${formatMoney(result.pricing.total, result.pricing.currency)}\n\nHow would you like to pay?`,
+
+    data: {
+      orderId:
+        result.order.id,
+
+      trackingNumber:
+        result.trackingNumber,
+
+      pricing:
+        result.pricing,
+    },
+  };
+}
+
+/**
+ * ============================================================
+ * M-PESA
+ * ============================================================
+ */
+
+async function initiateMpesa(
+  action: Extract<
+    WhatsAppAction,
+    { action: "initiate_mpesa" }
+  >,
+  context: WhatsAppActionContext,
+): Promise<WhatsAppActionResult> {
+  const args =
+    action.arguments;
+
+  const order =
+    await prisma.customerOrder.findFirst({
+      where: {
+        id:
+          args.orderId,
+
+        companyId:
+          context.companyId,
+      },
+    });
+
+  if (!order) {
+    return {
+      success: false,
+
+      action:
+        "initiate_mpesa",
+
+      message:
+        "I couldn't find that order.",
+    };
+  }
+
+  if (
+    order.paymentStatus ===
+    "COMPLETED"
+  ) {
+    return {
+      success: true,
+
+      action:
+        "initiate_mpesa",
+
+      message:
+        "This order has already been paid for.",
+    };
+  }
+
+  const phone =
+    args.phone ??
+    context.phoneNumber;
+
+  if (!phone) {
+    return {
+      success: false,
+
+      action:
+        "initiate_mpesa",
+
+      message:
+        "Please provide the M-Pesa phone number to use.",
+    };
+  }
+
+  /**
+   * Tenant payment credentials are loaded only here.
+   * They are never passed to the AI.
+   */
+
+  const cfg =
+    await getCompanyPaymentConfig(
+      context.companyId,
+    );
+
+  if (!cfg?.credentials) {
+    return {
+      success: false,
+
+      action:
+        "initiate_mpesa",
+
+      message:
+        "M-Pesa is not currently configured for this store.",
+    };
+  }
+
+  /**
+   * Existing M-Pesa service.
+   *
+   * Do not mark the order paid here.
+   *
+   * The callback must do that after trusted
+   * Daraja confirmation.
+   */
+
+  const response =
+    await initiateMpesaPayment(
+      order,
+      phone,
+      cfg.credentials,
+    );
+
+  return {
+    success: true,
+
+    action:
+      "initiate_mpesa",
+
+    message:
+      "I've sent an M-Pesa payment request to your phone. Complete the request on your phone and I'll confirm the payment once the payment service verifies it.",
+
+    data: {
+      orderId:
+        order.id,
+
+      status:
+        "PENDING",
+
+      checkoutRequestId:
+        response?.data
+          ?.CheckoutRequestID ??
+        response?.CheckoutRequestID ??
+        null,
+
+      merchantRequestId:
+        response?.data
+          ?.MerchantRequestID ??
+        response?.MerchantRequestID ??
+        null,
+    },
+  };
+}
+
+/**
+ * ============================================================
+ * ORDER STATUS
+ * ============================================================
+ */
+
+async function getOrderStatus(
+  action: Extract<
+    WhatsAppAction,
+    { action: "get_order_status" }
+  >,
+  context: WhatsAppActionContext,
+): Promise<WhatsAppActionResult> {
+  const args =
+    action.arguments;
+
+  const order =
+    await prisma.customerOrder.findFirst({
+      where: {
+        companyId:
+          context.companyId,
+
+        OR: [
+          args.orderId
+            ? {
+                id:
+                  args.orderId,
+              }
+            : undefined,
+
+          args.trackingNumber
+            ? {
+                trackingNumber:
+                  args.trackingNumber,
+              }
+            : undefined,
+        ].filter(Boolean) as any,
+      },
+
+      select: {
+        id: true,
+
+        trackingNumber: true,
+
+        status: true,
+
+        paymentStatus: true,
+
+        paymentMethod: true,
+
+        deliveryStatus: true,
+
+        totalFinalPrice: true,
+
+        createdAt: true,
+      },
+    });
+
+  if (!order) {
+    return {
+      success: true,
+
+      action:
+        "get_order_status",
+
+      message:
+        "I couldn't find an order matching those details.",
+    };
+  }
+
+  return {
+    success: true,
+
+    action:
+      "get_order_status",
+
+    message:
+      `Order ${order.trackingNumber ?? order.id}\nStatus: ${order.status}\nPayment: ${order.paymentStatus}\nDelivery: ${order.deliveryStatus ?? "Pending"}\nTotal: ${order.totalFinalPrice ?? 0}`,
+
+    data: {
+      order,
+    },
+  };
+}
+
+/**
+ * ============================================================
+ * HUMAN ESCALATION
+ * ============================================================
+ */
+
+async function escalateToHuman(
+  action: Extract<
+    WhatsAppAction,
+    { action: "escalate_to_human" }
+  >,
+  context: WhatsAppActionContext,
+): Promise<WhatsAppActionResult> {
+  await whatsappRepository.escalateConversation(
+    context.conversationId,
+    action.arguments.reason,
+  );
+
+  return {
+    success: true,
+
+    action:
+      "escalate_to_human",
+
+    message:
+      "I've connected you with a member of our team. Someone will assist you shortly.",
+
+    shouldEscalate: true,
+
+    shouldRespond: true,
+  };
+}
+
+/**
+ * ============================================================
+ * HELPERS
+ * ============================================================
+ */
+
+function buildCheckoutSummary(
+  pricing: {
+    subtotal: number;
+    discount: number;
+    tax: number;
+    shipping: number;
+    total: number;
+    currency: string;
+  },
+  listings: Array<{
+    id: string;
+    name: string;
+  }>,
+) {
+  const names =
+    listings
+      .map(
+        (listing) =>
+          listing.name,
+      )
+      .join(", ");
+
+  return [
+    "Here is your order summary:",
+    "",
+    names,
+    "",
+    `Subtotal: ${formatMoney(
+      pricing.subtotal,
+      pricing.currency,
+    )}`,
+    `Discount: ${formatMoney(
+      pricing.discount,
+      pricing.currency,
+    )}`,
+    `Tax: ${formatMoney(
+      pricing.tax,
+      pricing.currency,
+    )}`,
+    `Delivery: ${formatMoney(
+      pricing.shipping,
+      pricing.currency,
+    )}`,
+    `Total: ${formatMoney(
+      pricing.total,
+      pricing.currency,
+    )}`,
+    "",
+    "Reply YES when you're ready to place the order.",
+  ].join("\n");
+}
+
+function formatMoney(
+  amount: number,
+  currency = "KES",
+) {
+  return new Intl.NumberFormat(
+    "en-KE",
+    {
+      style: "currency",
+
+      currency,
+
+      maximumFractionDigits: 2,
+    },
+  ).format(amount);
+}
+
+function sanitizeActionInput(
+  action: WhatsAppAction,
+) {
+  const json =
+    JSON.parse(
+      JSON.stringify(action),
+    );
+
+  if (
+    json.arguments?.mpesaPhone
+  ) {
+    json.arguments.mpesaPhone =
+      "[REDACTED]";
+  }
+
+  if (
+    json.arguments?.paymentData
+  ) {
+    json.arguments.paymentData =
+      "[REDACTED]";
+  }
+
+  return json;
+}
+
+function sanitizeActionOutput(
+  result: WhatsAppActionResult,
+) {
+  return {
+    success:
+      result.success,
+
+    action:
+      result.action,
+
+    message:
+      result.message,
+
+    data:
+      result.data,
   };
 }

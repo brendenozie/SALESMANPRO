@@ -689,6 +689,22 @@ model WhatsAppContact {
   @@index([lastMessageAt])
 }
 
+enum WhatsAppConversationState {
+  GENERAL
+  ORDER
+  APPOINTMENT
+  PAYMENT
+  SUPPORT
+  SALES
+  BOOKING
+  FEEDBACK
+  INQUIRY
+  COMPLAINT
+  FOLLOW_UP
+  PROMOTION
+  OTHER
+}
+
 model WhatsAppConversation {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -1320,6 +1336,7 @@ model WhatsAppWebhookEvent {
   eventId String?
 
   eventType String?
+  correlationId String?
 
   payload Json
 
@@ -1336,6 +1353,7 @@ model WhatsAppWebhookEvent {
   @@index([companyId])
   @@index([accountId])
   @@index([eventId])
+  @@index([correlationId])  
   @@index([processed])
   @@index([receivedAt])
 }

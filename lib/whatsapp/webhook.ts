@@ -1,142 +1,227 @@
-import prisma from "@/server/db/prismadb";
+import crypto from "node:crypto";
 
-export async function createOrder(data: any) {
-  const {
-    consumerId,
-    items,
-    totalPrice,
-    totalTax,
-    totalDiscount,
-    totalShipping,
-    totalFinalPrice,
-    paymentOption,
-    shippingAddress,
-    billingAddress,
-    notes,
-    name,
-    email,
-    phone,
-    mpesaPhone,
-    promoCode,
-    trackingNumber,
-    deliveryStatus,
-    status = "PENDING",
-    delivery,
-    shippingMethod,
-    companyId,
-    idempotencyKey,
-  } = data;
+import type {
+  MetaWebhookRequest,
+  MetaWebhookMessage,
+  NormalizedWhatsAppMessage,
+  WhatsAppMessageType,
+} from "@/lib/whatsapp/types";
 
-  return await prisma.customerOrder.create({
-    data: {
-      companyId,
-      consumerId,
-      name,
-      email,
-      phone,
-      mpesaPhone,
-      promoCode,
-      trackingNumber,
-      deliveryStatus,
-      delivery: delivery ?? false,
-      paymentOption,
-      paymentStatus: "INITIATED",
-      totalPrice,
-      totalTax: totalTax ?? 0,
-      totalDiscount: totalDiscount ?? 0,
-      totalShipping: totalShipping ?? 0,
-      totalFinalPrice: totalFinalPrice ?? totalPrice,
-      shippingAddress,
-      billingAddress,
-      shippingMethod,
-      notes,
-      status,
-      orderSource: "WEBSITE",
-      idempotencyKey,
+export function verifyMetaWebhookSignature(
+  rawBody: string,
+  signature: string | null,
+  appSecret: string,
+): boolean {
+  if (!signature) {
+    return false;
+  }
 
-      items: {
-        create: items.map((item: any) => ({
-          marketplaceListingId: item.marketplaceListingId,
-          quantity: item.quantity,
-          price: item.price,
-          totalPrice: item.totalPrice, // Store total price for the item
-          subtotal: item.subtotal, // Store subtotal for the item
-          date: item.date || null,
-          timeSlot: item.timeSlot || null,
-          // totalPrice: item.subtotal, // Calculate total price for the item
-          selectedOptions: item.selectedOptions || null, // Store selected options if available
-        })),
-      },
-    },
-    include: { items: true },
-  });
+  const expected =
+    "sha256=" +
+    crypto.createHmac("sha256", appSecret).update(rawBody).digest("hex");
+
+  const expectedBuffer = Buffer.from(expected, "utf8");
+
+  const actualBuffer = Buffer.from(signature, "utf8");
+
+  if (expectedBuffer.length !== actualBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
 }
 
-// import prisma from "@/server/db/prismadb";
+export function getMetaVerifyToken(): string {
+  const token = process.env.WHATSAPP_VERIFY_TOKEN;
 
-// export async function createOrder(data: any) {
-//   const {
-//     consumerId,
-//     items,
-//     totalPrice,
-//     totalTax,
-//     totalDiscount,
-//     totalShipping,
-//     totalFinalPrice,
-//     paymentOption,
-//     shippingAddress,
-//     billingAddress,
-//     notes,
-//     name,
-//     email,
-//     phone,
-//     mpesaPhone,
-//     promoCode,
-//     trackingNumber,
-//     deliveryStatus,
-//     status = "PENDING",
-//     delivery,
-//     shippingMethod,
-//     companyId,
-//   } = data;
+  if (!token) {
+    throw new Error("WHATSAPP_VERIFY_TOKEN is not configured.");
+  }
 
-//   return await prisma.customerOrder.create({
-//     data: {
-//       companyId,
-//       consumerId,
-//       name,
-//       email,
-//       phone,
-//       mpesaPhone,
-//       promoCode,
-//       trackingNumber,
-//       deliveryStatus,
-//       delivery: delivery ?? false,
-//       paymentOption,
-//       paymentStatus: "PENDING",
-//       totalPrice,
-//       totalTax: totalTax ?? 0,
-//       totalDiscount: totalDiscount ?? 0,
-//       totalShipping: totalShipping ?? 0,
-//       totalFinalPrice: totalFinalPrice ?? totalPrice,
-//       shippingAddress,
-//       billingAddress,
-//       shippingMethod,
-//       notes,
-//       status,
-//       orderSource: "WEBSITE",
+  return token;
+}
 
-//       // ✅ FIX: Pass the date string directly, removing new Date()
-//       items: {
-//         create: items.map((item: any) => ({
-//           marketplaceListingId: item.marketplaceListingId,
-//           quantity: item.quantity,
-//           price: item.price,
-//           date: item.date || null, // Changed from new Date(item.date)
-//           timeSlot: item.timeSlot || null,
-//         })),
-//       },
-//     },
-//     include: { items: true },
-//   });
-// }
+function mapMessageType(type?: string): WhatsAppMessageType {
+  switch (type) {
+    case "text":
+      return "TEXT";
+
+    case "image":
+      return "IMAGE";
+
+    case "video":
+      return "VIDEO";
+
+    case "audio":
+      return "AUDIO";
+
+    case "document":
+      return "DOCUMENT";
+
+    case "sticker":
+      return "STICKER";
+
+    case "location":
+      return "LOCATION";
+
+    case "contacts":
+      return "CONTACT";
+
+    case "interactive":
+      return "INTERACTIVE";
+
+    case "button":
+      return "BUTTON";
+
+    case "reaction":
+      return "REACTION";
+
+    default:
+      return "UNKNOWN";
+  }
+}
+
+export function normalizeMetaMessage(params: {
+  companyId: string;
+
+  accountId: string;
+
+  phoneNumberId: string;
+
+  contactName?: string | null;
+
+  message: MetaWebhookMessage;
+}): NormalizedWhatsAppMessage | null {
+  const { companyId, accountId, phoneNumberId, contactName, message } = params;
+
+  if (!message.id || !message.from) {
+    return null;
+  }
+
+  const type = mapMessageType(message.type);
+
+  let text: string | null = null;
+
+  let media: NormalizedWhatsAppMessage["media"] = null;
+
+  let location: NormalizedWhatsAppMessage["location"] = null;
+
+  let interactive: NormalizedWhatsAppMessage["interactive"] = null;
+
+  switch (message.type) {
+    case "text":
+      text = message.text?.body ?? null;
+      break;
+
+    case "image":
+      media = {
+        id: message.image?.id,
+        mimeType: message.image?.mime_type,
+        caption: message.image?.caption,
+      };
+      break;
+
+    case "video":
+      media = {
+        id: message.video?.id,
+        mimeType: message.video?.mime_type,
+        caption: message.video?.caption,
+      };
+      break;
+
+    case "audio":
+      media = {
+        id: message.audio?.id,
+        mimeType: message.audio?.mime_type,
+      };
+      break;
+
+    case "document":
+      media = {
+        id: message.document?.id,
+        mimeType: message.document?.mime_type,
+        caption: message.document?.caption,
+        filename: message.document?.filename,
+      };
+      break;
+
+    case "sticker":
+      media = {
+        id: message.sticker?.id,
+        mimeType: message.sticker?.mime_type,
+      };
+      break;
+
+    case "location":
+      if (
+        typeof message.location?.latitude === "number" &&
+        typeof message.location?.longitude === "number"
+      ) {
+        location = {
+          latitude: message.location.latitude,
+
+          longitude: message.location.longitude,
+
+          name: message.location.name,
+
+          address: message.location.address,
+        };
+      }
+      break;
+
+    case "interactive":
+      interactive = {
+        type: message.interactive?.type,
+
+        id:
+          message.interactive?.button_reply?.id ??
+          message.interactive?.list_reply?.id,
+
+        title:
+          message.interactive?.button_reply?.title ??
+          message.interactive?.list_reply?.title,
+
+        description: message.interactive?.list_reply?.description,
+
+        payload: message.interactive,
+      };
+      break;
+
+    case "button":
+      interactive = {
+        type: "button",
+
+        title: message.button?.text,
+
+        id: message.button?.payload,
+
+        payload: message.button,
+      };
+      break;
+
+    default:
+      break;
+  }
+
+  return {
+    provider: "META",
+    providerMessageId: message.id,
+    accountId,
+    companyId,
+    phoneNumberId,
+    waId: message.from,
+    phoneNumber: message.from,
+    displayName: contactName,
+    messageType: type,
+    text,
+    media,
+    location,
+    interactive,
+    timestamp: new Date(Number(message.timestamp ?? "0") * 1000),
+    rawPayload: message,
+  };
+}
+
+export function parseMetaWebhook(payload: unknown): MetaWebhookRequest {
+  return payload as MetaWebhookRequest;
+}

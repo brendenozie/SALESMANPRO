@@ -9,7 +9,6 @@ import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
 import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
-import { calculateOrderPricing } from "@/lib/pricing";
 
 export type OrderPaymentOption =
   | "cod"
