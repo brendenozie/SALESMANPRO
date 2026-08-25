@@ -59,6 +59,7 @@ import {
   CubeIcon,
   ExclamationTriangleIcon,
   MapIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 // Define hierarchy of tiers with weights for comparison
@@ -324,6 +325,33 @@ const commonEcommerce = (
         {
           label: "AI Automation & Rules",
           href: `/admin/${adminSlug}/whatsapp-settings`,
+          minTier: "Ghuba Pro",
+        },
+      ],
+    },
+    {
+      label: "AI Media Studio",
+      icon: SparklesIcon,
+      minTier: "Ghuba Pro",
+      subItems: [
+        {
+          label: "Image Generation",
+          href: `/admin/${adminSlug}/ai-images`,
+          minTier: "Ghuba Pro",
+        },
+        {
+          label: "Video Generation",
+          href: `/admin/${adminSlug}/ai-videos`,
+          minTier: "Ghuba Pro",
+        },
+        {
+          label: "Generated Library",
+          href: `/admin/${adminSlug}/ai-media-library`,
+          minTier: "Ghuba Pro",
+        },
+        {
+          label: "Integration Settings",
+          href: `/admin/${adminSlug}/ai-settings`,
           minTier: "Ghuba Pro",
         },
       ],
@@ -878,6 +906,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
@@ -1003,6 +1058,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
@@ -1090,6 +1172,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -1277,6 +1386,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Reports",
         href: `/admin/${adminSlug}/health-reports`,
         icon: ChartBarIcon,
@@ -1400,6 +1536,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -1570,6 +1733,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -1757,6 +1947,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
@@ -1905,6 +2122,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -2212,6 +2456,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -2583,6 +2854,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Members",
         href: `/admin/${adminSlug}/members`,
         icon: UsersIcon,
@@ -2736,6 +3034,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -2946,6 +3271,33 @@ export const getCategoryMenus = (
           },
         ],
       },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
     ]),
 
     "Event & Ticketing": filterTiers([
@@ -3061,6 +3413,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -3659,6 +4038,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Featured & Top Picks", // For managing highlighted content
         href: `/admin/${adminSlug}/media-featured-picks`,
         icon: StarIcon,
@@ -3775,6 +4181,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -3919,6 +4352,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Showings",
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
@@ -4031,6 +4491,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -4153,6 +4640,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Showings",
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
@@ -4247,6 +4761,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -4403,6 +4944,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Bookings",
         href: `/admin/${adminSlug}/travel-bookings`,
         icon: CalendarDaysIcon,
@@ -4537,6 +5105,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -4739,6 +5334,33 @@ export const getCategoryMenus = (
           },
         ],
       },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
       // {
       //   label: "Clients & Members",
       //   href: `/admin/${adminSlug}/fitness-clients`,
@@ -4923,6 +5545,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
@@ -5075,6 +5724,33 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
@@ -5134,6 +5810,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -5252,6 +5955,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -5467,6 +6197,33 @@ export const getCategoryMenus = (
           },
         ],
       },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
       // {
       //   label: "Drivers & Personnel",
       //   href: `/admin/${adminSlug}/logistics-drivers`,
@@ -5669,6 +6426,33 @@ export const getCategoryMenus = (
           {
             label: "AI Automation & Rules",
             href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "AI Media Studio",
+        icon: SparklesIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Image Generation",
+            href: `/admin/${adminSlug}/ai-images`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Video Generation",
+            href: `/admin/${adminSlug}/ai-videos`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Generated Library",
+            href: `/admin/${adminSlug}/ai-media-library`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Integration Settings",
+            href: `/admin/${adminSlug}/ai-settings`,
             minTier: "Ghuba Pro",
           },
         ],

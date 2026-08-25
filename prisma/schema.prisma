@@ -499,6 +499,7 @@ model Company {
   whatsAppAIToolCalls    WhatsAppAIToolCall[]
   whatsAppAIUsages       WhatsAppAIUsage[]
   aiActions              AIAction[]
+  mediaAssets            MediaAsset[]
 
   @@index([userId])
   @@index([name])
@@ -1335,7 +1336,7 @@ model WhatsAppWebhookEvent {
 
   eventId String?
 
-  eventType String?
+  eventType     String?
   correlationId String?
 
   payload Json
@@ -1353,7 +1354,7 @@ model WhatsAppWebhookEvent {
   @@index([companyId])
   @@index([accountId])
   @@index([eventId])
-  @@index([correlationId])  
+  @@index([correlationId])
   @@index([processed])
   @@index([receivedAt])
 }
@@ -2802,6 +2803,7 @@ model User {
   comments                Comment[]
   whatsAppContacts        WhatsAppContact[]
   whatsAppAgents          WhatsAppAgent[]
+  mediaAssets             MediaAsset[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -4692,7 +4694,7 @@ model Lesson {
   description String? // Student-facing description
   content     String? // The actual lesson body (HTML/Markdown)
   videoUrl    String?
-  duration    Int? // Estimated time in minutes
+  duration    Float? // Estimated time in minutes
   order       Int // Sequence within the module
 
   isFreePreview Boolean @default(false)
@@ -4910,7 +4912,7 @@ model CourseAssignment {
 
   // Fields for online exams
   isOnline        Boolean @default(false) // Whether this is an online exam
-  durationMinutes Int? // Duration of the exam once started (in minutes)
+  durationMinutes Float? // Duration of the exam once started (in minutes)
   autoGrade       Boolean @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
 
   status AssignmentStatus @default(Draft)
@@ -6235,7 +6237,7 @@ model Podcast {
   title         String
   description   String
   audioUrl      String // URL to the podcast audio file
-  duration      Int // Duration of the podcast in seconds
+  duration      Float // Duration of the podcast in seconds
   episodeNumber Int    @default(1) // Episode number, default to 1
 
   companyId String  @db.ObjectId
@@ -7109,30 +7111,37 @@ model VideoAlbum {
 // Refactored Video model
 // This model now only stores information specific to an individual video
 model Video {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  title        String?
-  url          String? // The S3 URL of the video file
-  description  String?
-  thumbnailUrl String? // The URL of the video's thumbnail image
-  duration     String? // Duration of the video in seconds
-  views        Int         @default(0)
-  status       VideoStatus @default(DRAFT)
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  // Each video belongs to one VideoAlbum
-  albumId String     @db.ObjectId
-  album   VideoAlbum @relation(fields: [albumId], references: [id])
+  mediaAssetId String     @unique @db.ObjectId
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id])
 
-  // Timestamps
+  title String?
+
+  description String?
+
+  views Int @default(0)
+
+  status VideoStatus @default(DRAFT)
+
+  albumId String @db.ObjectId
+
+  album VideoAlbum @relation(fields: [albumId], references: [id])
+
+  tags String[]
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  userId String? @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?  @db.ObjectId
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @db.ObjectId
-  tags      String[]
 
-  // Add index for faster lookups
-  // Add index for faster lookups
+  updatedAt DateTime @updatedAt
+
   @@index([albumId])
   @@index([companyId])
   @@index([userId])
@@ -7175,7 +7184,7 @@ model Content {
   thumbnailUrl String? // For video thumbnail URL
   contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
   category     String? // e.g., "Nature", "History", "Wildlife"
-  duration     String? // e.g., "5 min", "7 min"
+  duration     Float? // e.g., "5 min", "7 min"
   location     String? // ADD THIS FIELD for location
   tags         String[] // For additional keywords/tags
   companyId    String      @db.ObjectId
@@ -7235,28 +7244,248 @@ model PhotoAlbum {
 // Refactored Photo model
 // This model now only stores information specific to an individual image
 model Photo {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  imageUrl    String // The S3 or cloud storage URL of the photo file
-  altText     String? // For accessibility and SEO
-  title       String?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaAssetId String @unique @db.ObjectId
+
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id])
+
+  altText String?
+
+  title String?
+
   description String?
-  tags        String[]
 
-  // Each photo belongs to one PhotoAlbum
-  albumId String     @db.ObjectId
-  album   PhotoAlbum @relation(fields: [albumId], references: [id])
+  tags String[]
 
-  Company   Company? @relation(fields: [companyId], references: [id])
-  companyId String?  @db.ObjectId
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?  @db.ObjectId
+  albumId String @db.ObjectId
+
+  album PhotoAlbum @relation(fields: [albumId], references: [id])
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  userId String? @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+
   updatedAt DateTime @updatedAt
 
   @@index([albumId])
   @@index([companyId])
   @@index([userId])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  BOOK
+}
+
+enum MediaSource {
+  LOCAL
+  UPLOAD
+  AI_GENERATED
+  AI_EDITED
+  IMPORTED
+  SYSTEM
+}
+
+enum MediaStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum MediaVersionSource {
+  ORIGINAL
+  PROCESSED
+  AI_GENERATED
+  AI_EDITED
+  DERIVED
+}
+
+enum MediaAIAction {
+  GENERATE_IMAGE
+  EDIT_IMAGE
+  ENHANCE_IMAGE
+  REMOVE_BACKGROUND
+  REPLACE_BACKGROUND
+  UPSCALE_IMAGE
+  GENERATE_PRODUCT_IMAGE
+  GENERATE_THUMBNAIL
+
+  GENERATE_VIDEO
+  EDIT_VIDEO
+  GENERATE_CAPTIONS
+  GENERATE_VIDEO_THUMBNAIL
+
+  GENERATE_BOOK_COVER
+  EXTRACT_BOOK_METADATA
+
+  GENERATE_METADATA
+}
+
+enum MediaJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum MediaApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model MediaAsset {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  ownerId String? @db.ObjectId
+  owner   User?   @relation(fields: [ownerId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  type MediaType
+
+  source MediaSource @default(UPLOAD)
+
+  status MediaStatus @default(PENDING)
+
+  originalName String?
+
+  mimeType String?
+
+  size Int?
+
+  width Int?
+
+  height Int?
+
+  duration Float?
+
+  fps Float?
+
+  metadata Json?
+
+  url String?
+
+  thumbnailUrl String?
+
+  currentVersionId String? @db.ObjectId
+
+  versions MediaVersion[]
+
+  jobs MediaJob[]
+
+  approvalStatus MediaApprovalStatus @default(PENDING)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  photo     Photo?
+  video     Video?
+  document  Document?
+
+  @@index([ownerId])
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+  @@index([companyId, type])
+}
+
+model MediaVersion {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaId String     @db.ObjectId
+  media   MediaAsset @relation(fields: [mediaId], references: [id])
+
+  parentVersionId String? @db.ObjectId
+
+  version Int
+
+  source MediaVersionSource
+
+  operation MediaAIAction?
+
+  prompt String?
+
+  provider String?
+
+  model String?
+
+  url String
+
+  thumbnailUrl String?
+
+  mimeType String?
+
+  size Int?
+
+  width Int?
+
+  height Int?
+
+  duration Float?
+
+  fps Float?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([mediaId])
+  @@index([mediaId, version])
+  @@index([parentVersionId])
+}
+
+model MediaJob {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaId String?     @db.ObjectId
+  media   MediaAsset? @relation(fields: [mediaId], references: [id])
+
+  inputVersionId String? @db.ObjectId
+
+  outputVersionId String? @db.ObjectId
+
+  action MediaAIAction
+
+  status MediaJobStatus @default(QUEUED)
+
+  progress Int @default(0)
+
+  provider String?
+
+  model String?
+
+  config Json?
+
+  error String?
+
+  userId String? @db.ObjectId
+
+  companyId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  @@index([mediaId])
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+  @@index([status, createdAt])
 }
 
 // Model for managing sponsors and partners
@@ -7341,20 +7570,28 @@ model Case {
 }
 
 model Document {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  fileUrl    String
-  mimeType   String
-  fileSize   Int
-  uploaderId String   @db.ObjectId
-  uploader   User     @relation(fields: [uploaderId], references: [id])
-  companyId  String?  @db.ObjectId
-  company    Company? @relation(fields: [companyId], references: [id])
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaAssetId String @unique @db.ObjectId
+
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id])
+
+  name String
+
+  uploaderId String @db.ObjectId
+
+  uploader User @relation(fields: [uploaderId], references: [id])
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
+
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
+  @@index([uploaderId])
 }
 
 // Appointment model: Represents a scheduled meeting between a client and an expert
