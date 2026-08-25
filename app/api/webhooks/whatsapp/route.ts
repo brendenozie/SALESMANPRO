@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import crypto from "node:crypto";
 
-import { decryptWhatsAppSecret } from "@/lib/whatsapp/secrets";
-
 import {
   getMetaVerifyToken,
   normalizeMetaMessage,
@@ -12,6 +10,7 @@ import {
 } from "@/lib/whatsapp/webhook";
 
 import { whatsappRepository } from "@/lib/whatsapp/repository";
+import { decrypt } from "@/lib/crypto";
 
 function createCorrelationId() {
   return crypto.randomUUID();
@@ -165,8 +164,8 @@ export async function POST(req: NextRequest) {
           account.appSecretIv &&
           account.appSecretTag
         ) {
-          appSecret = decryptWhatsAppSecret({
-            encrypted: account.appSecretEncrypted,
+          appSecret = decrypt({
+            value: account.appSecretEncrypted,
 
             iv: account.appSecretIv,
 

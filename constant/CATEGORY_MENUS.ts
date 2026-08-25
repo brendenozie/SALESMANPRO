@@ -95,7 +95,6 @@ export interface MenuItem {
   requiredTier?: string;
 }
 
-
 // Centralized Evaluation Function
 const evaluateMenuItemsAccess = (
   items: MenuItem[],
@@ -155,7 +154,6 @@ const evaluateMenuItemsAccess = (
   });
 };
 
-
 // Helper to inject dynamic adminSlug and assign Tier requirements
 const commonEcommerce = (
   adminSlug: string,
@@ -167,19 +165,20 @@ const commonEcommerce = (
     {
       label: "Dashboard",
       href: `/admin/${adminSlug}`,
-      icon: HomeIcon,      
+      icon: HomeIcon,
     },
     {
       label: "POS",
       href: `/admin/${adminSlug}/storepos`,
       icon: ClipboardDocumentListIcon,
-      minTier: "Ghuba Basic",      
+      minTier: "Ghuba Basic",
     },
     {
       label: "Categories",
       href: `/admin/${adminSlug}/categories`,
       icon: ClipboardDocumentListIcon,
-      minTier: "Ghuba Starter",     },
+      minTier: "Ghuba Starter",
+    },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -210,7 +209,7 @@ const commonEcommerce = (
         {
           label: "Clients",
           href: `/admin/${adminSlug}/consumers`,
-          minTier: "Ghuba Basic",          
+          minTier: "Ghuba Basic",
         },
       ],
     },
@@ -222,7 +221,7 @@ const commonEcommerce = (
         {
           label: "All Leads",
           href: `/admin/${adminSlug}/salesleads`,
-          minTier: "Ghuba Growth",          
+          minTier: "Ghuba Growth",
         },
       ],
     },
@@ -234,7 +233,7 @@ const commonEcommerce = (
         {
           label: "Agent Orders",
           href: `/admin/${adminSlug}/agentorders`,
-          minTier: "Ghuba Growth",          
+          minTier: "Ghuba Growth",
         },
         {
           label: "Marketplace",
@@ -302,34 +301,62 @@ const commonEcommerce = (
       ],
     },
     {
+      label: "WhatsApp Engine",
+      // href: `/admin/${adminSlug}/whatsapp-inbox`,
+      icon: ChatBubbleLeftRightIcon,
+      minTier: "Ghuba Pro",
+      subItems: [
+        {
+          label: "Live Inbox",
+          href: `/admin/${adminSlug}/whatsapp-inbox`,
+          minTier: "Ghuba Pro",
+        },
+        {
+          label: "Conversations & Logs",
+          href: `/admin/${adminSlug}/whatsapp-conversations`,
+          minTier: "Ghuba Pro",
+        },
+        {
+          label: "Templates & Broadcasts",
+          href: `/admin/${adminSlug}/whatsapp-templates`,
+          minTier: "Ghuba Pro",
+        },
+        {
+          label: "AI Automation & Rules",
+          href: `/admin/${adminSlug}/whatsapp-settings`,
+          minTier: "Ghuba Pro",
+        },
+      ],
+    },
+    {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
       icon: ChartBarIcon,
-      minTier: "Ghuba Starter",  
+      minTier: "Ghuba Starter",
     },
     {
       label: "Blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: DocumentTextIcon,
-      minTier: "Ghuba Starter",  
+      minTier: "Ghuba Starter",
     },
     {
       label: "gallery",
       href: `/admin/${adminSlug}/gallery`,
       icon: PhotoIcon,
-      minTier: "Ghuba Starter",  
+      minTier: "Ghuba Starter",
     },
     {
       label: "Messages",
       href: `/admin/${adminSlug}/messages`,
       icon: ChatBubbleBottomCenterTextIcon,
-      minTier: "Ghuba Basic",  
+      minTier: "Ghuba Basic",
     },
     {
       label: "Settings",
       href: `/admin/${adminSlug}/settings`,
       icon: Cog6ToothIcon,
-      minTier: "Ghuba Starter",  
+      minTier: "Ghuba Starter",
     },
   ];
 
@@ -779,7 +806,6 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/transport`,
         icon: HomeIcon,
         minTier: "Ghuba Pro",
-
         subItems: [
           {
             label: "Vehicles",
@@ -819,6 +845,34 @@ export const getCategoryMenus = (
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -921,6 +975,34 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Reports",
         href: `/admin/${adminSlug}/revenuereport`,
         icon: ChartBarIcon,
@@ -981,6 +1063,34 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -1139,6 +1249,34 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Reports",
         href: `/admin/${adminSlug}/health-reports`,
         icon: ChartBarIcon,
@@ -1234,6 +1372,34 @@ export const getCategoryMenus = (
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -1376,6 +1542,34 @@ export const getCategoryMenus = (
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -1535,6 +1729,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Bookings",
         icon: CalendarIcon,
         minTier: "Ghuba Starter",
@@ -1656,6 +1878,34 @@ export const getCategoryMenus = (
             label: "All Leads",
             href: `/admin/${adminSlug}/salesleads`,
             minTier: "Ghuba Growth",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -1935,6 +2185,34 @@ export const getCategoryMenus = (
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
             minTier: "Ghuba Starter",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
           },
         ],
       },
@@ -2277,6 +2555,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Members",
         href: `/admin/${adminSlug}/members`,
         icon: UsersIcon,
@@ -2357,7 +2663,6 @@ export const getCategoryMenus = (
           // },
         ],
       },
-
       {
         label: "Transport",
         href: `/admin/${adminSlug}/transport`,
@@ -2403,6 +2708,34 @@ export const getCategoryMenus = (
           {
             label: "Reports",
             href: `/admin/${adminSlug}/transport-reports`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
             minTier: "Ghuba Pro",
           },
         ],
@@ -2585,6 +2918,34 @@ export const getCategoryMenus = (
           },
         ],
       },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
     ]),
 
     "Event & Ticketing": filterTiers([
@@ -2674,6 +3035,34 @@ export const getCategoryMenus = (
           //   label: "Lead Statuses",
           //   href: `/admin/${adminSlug}/saasleadstatuses`,
           // },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
         ],
       },
       {
@@ -3242,6 +3631,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Featured & Top Picks", // For managing highlighted content
         href: `/admin/${adminSlug}/media-featured-picks`,
         icon: StarIcon,
@@ -3332,6 +3749,34 @@ export const getCategoryMenus = (
           //   label: "Lead Statuses",
           //   href: `/admin/${adminSlug}/saasleadstatuses`,
           // },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
         ],
       },
       {
@@ -3446,6 +3891,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Showings",
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
@@ -3532,6 +4005,34 @@ export const getCategoryMenus = (
           //   label: "Lead Statuses",
           //   href: `/admin/${adminSlug}/saasleadstatuses`,
           // },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
         ],
       },
       {
@@ -3624,6 +4125,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Showings",
         href: `/admin/${adminSlug}/showings`,
         icon: CalendarDaysIcon,
@@ -3693,6 +4222,34 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
       },
       {
         label: "Testimonials",
@@ -3818,6 +4375,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Bookings",
         href: `/admin/${adminSlug}/travel-bookings`,
         icon: CalendarDaysIcon,
@@ -3926,6 +4511,34 @@ export const getCategoryMenus = (
           //   label: "Lead Statuses",
           //   href: `/admin/${adminSlug}/saasleadstatuses`,
           // },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
         ],
       },
       {
@@ -4098,6 +4711,34 @@ export const getCategoryMenus = (
           // },
         ],
       },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
       // {
       //   label: "Clients & Members",
       //   href: `/admin/${adminSlug}/fitness-clients`,
@@ -4254,6 +4895,34 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
         label: "Blogs",
         icon: DocumentTextIcon,
         href: `/admin/${adminSlug}/blogs`,
@@ -4376,6 +5045,35 @@ export const getCategoryMenus = (
           // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
         ],
       },
+
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
       {
         label: "Gallery",
         href: `/admin/${adminSlug}/gallery`,
@@ -4410,6 +5108,34 @@ export const getCategoryMenus = (
           //   label: "Lead Statuses",
           //   href: `/admin/${adminSlug}/saasleadstatuses`,
           // },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
         ],
       },
       // {
@@ -4500,6 +5226,34 @@ export const getCategoryMenus = (
           //   label: "Lead Statuses",
           //   href: `/admin/${adminSlug}/saasleadstatuses`,
           // },
+        ],
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
         ],
       },
       // {
@@ -4685,6 +5439,34 @@ export const getCategoryMenus = (
           },
         ],
       },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
       // {
       //   label: "Drivers & Personnel",
       //   href: `/admin/${adminSlug}/logistics-drivers`,
@@ -4862,6 +5644,34 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/social-messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
+      },
+      {
+        label: "WhatsApp Engine",
+        // href: `/admin/${adminSlug}/whatsapp-inbox`,
+        icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Live Inbox",
+            href: `/admin/${adminSlug}/whatsapp-inbox`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Conversations & Logs",
+            href: `/admin/${adminSlug}/whatsapp-conversations`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Templates & Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "AI Automation & Rules",
+            href: `/admin/${adminSlug}/whatsapp-settings`,
+            minTier: "Ghuba Pro",
+          },
+        ],
       },
       {
         label: "Settings",

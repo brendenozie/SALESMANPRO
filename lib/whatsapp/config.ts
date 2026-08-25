@@ -40,7 +40,7 @@ export async function getWhatsAppConfig(
   companyId?: string,
 ): Promise<WhatsAppConfig> {
   if (companyId) {
-    const settings = await prisma.whatsAppSettings.findUnique({
+    const settings = await prisma.whatsAppAIConfig.findUnique({
       where: {
         companyId,
       },

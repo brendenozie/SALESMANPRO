@@ -1,13 +1,15 @@
 import prisma from "@/server/db/prismadb";
-
+import { Prisma } from "@prisma/client";
 import type {
   NormalizedWhatsAppMessage,
   WhatsAppMessageStatus,
 } from "@/lib/whatsapp/types";
 
+
+
 const conversationInclude = {
-  account: true,
-  contact: true,
+  WhatsAppAccount: true,
+  WhatsAppContact: true,
 } as const;
 
 export class WhatsAppRepository {
@@ -100,8 +102,8 @@ export class WhatsAppRepository {
     const existing = await prisma.whatsAppConversation.findFirst({
       where: {
         companyId,
-        accountId,
-        contactId,
+        whatsAppAccountId: accountId,
+        whatsAppContactId: contactId,
         status: {
           in: ["OPEN", "PENDING", "WAITING_FOR_CUSTOMER", "WAITING_FOR_AGENT"],
         },
@@ -121,8 +123,8 @@ export class WhatsAppRepository {
     return prisma.whatsAppConversation.create({
       data: {
         companyId,
-        accountId,
-        contactId,
+        whatsAppAccountId: accountId,
+        whatsAppContactId: contactId,
         waId,
         phoneNumber,
         customerName: customerName ?? undefined,
@@ -457,7 +459,7 @@ export class WhatsAppRepository {
         context: {
           ...existing,
           ...context,
-        },
+        } as Prisma.InputJsonObject,
       },
     });
   }
@@ -469,7 +471,7 @@ export class WhatsAppRepository {
       },
 
       data: {
-        cart: cart as object,
+        cart: cart as Prisma.InputJsonValue,
       },
     });
   }
@@ -546,6 +548,65 @@ export class WhatsAppRepository {
         address: true,
         openingHours: true,
         logoUrl: true,
+      },
+    });
+  }
+
+  /**
+   * ============================================================
+   * RECENT CONVERSATION HISTORY FOR AI
+   * ============================================================
+   */
+
+  async getRecentConversationHistory(conversationId: string, limit = 12) {
+    const messages = await prisma.whatsAppMessage.findMany({
+      where: {
+        conversationId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
+
+    return messages.reverse().map((msg) => ({
+      direction: msg.direction,
+      body: msg.text,
+      createdAt: msg.createdAt,
+    }));
+  }
+
+  /**
+   * ============================================================
+   * PERSIST AI OUTBOUND MESSAGE
+   * ============================================================
+   */
+
+  async persistOutboundMessage(params: {
+    companyId: string;
+    accountId: string;
+    contactId: string;
+    conversationId: string;
+    providerMessageId?: string;
+    body: string;
+    status?: WhatsAppMessageStatus;
+  }) {
+    return prisma.whatsAppMessage.create({
+      data: {
+        companyId: params.companyId,
+        accountId: params.accountId,
+        contactId: params.contactId,
+        conversationId: params.conversationId,
+        whatsappMessageId: params.providerMessageId,
+        externalMessageId: params.providerMessageId,
+        direction: "OUTBOUND",
+        senderType: "AI",
+        type: "TEXT",
+        text: params.body,
+        status: params.status ?? "SENT",
+        isAI: true,
+        processedByAI: true,
+        sentAt: new Date(),
       },
     });
   }

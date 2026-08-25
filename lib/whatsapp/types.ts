@@ -1,10 +1,24 @@
 import { z } from "zod";
 
+
+
 /**
  * ============================================================
  * WHATSAPP DOMAIN TYPES
  * ============================================================
  */
+
+import type {
+  WhatsAppAccount as PrismaWhatsAppAccount,
+  WhatsAppContact as PrismaWhatsAppContact,
+  WhatsAppConversation as PrismaWhatsAppConversation,
+  WhatsAppMessage as PrismaWhatsAppMessage,
+} from "@prisma/client";
+
+export type WhatsAppAccount = PrismaWhatsAppAccount;
+export type WhatsAppContact = PrismaWhatsAppContact;
+export type WhatsAppConversation = PrismaWhatsAppConversation;
+export type WhatsAppMessage = PrismaWhatsAppMessage;
 
 export type WhatsAppMessageDirection = "INBOUND" | "OUTBOUND";
 

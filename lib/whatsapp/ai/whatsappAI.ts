@@ -32,6 +32,7 @@
  */
 
 import Groq from "groq-sdk";
+import { WhatsAppAction } from "../types";
 
 /* ============================================================
  * TYPES
@@ -300,6 +301,8 @@ export interface WhatsAppAIResult {
   leadDetected: boolean;
 
   shouldSend: boolean;
+
+  action?: WhatsAppAction | null; // Added action property
 }
 
 /* ============================================================
@@ -805,7 +808,7 @@ export class WhatsAppAIService {
    * Analyze a WhatsApp message.
    */
   async analyzeMessage(
-    context: WhatsAppAIContext
+    context: WhatsAppAIContext,
   ): Promise<WhatsAppAIAnalysis> {
     if (!AI_ENABLED) {
       return createFallbackAnalysis(context);
@@ -814,89 +817,67 @@ export class WhatsAppAIService {
     try {
       const groq = getGroqClient();
 
-      const systemPrompt =
-        this.buildAnalysisPrompt(context);
+      const systemPrompt = this.buildAnalysisPrompt(context);
 
-      const response =
-        await groq.chat.completions.create({
-          model: DEFAULT_MODEL,
+      const response = await groq.chat.completions.create({
+        model: DEFAULT_MODEL,
 
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt,
-            },
-            {
-              role: "user",
-              content: context.message,
-            },
-          ],
-
-          temperature: 0.1,
-
-          max_tokens: 500,
-
-          response_format: {
-            type: "json_object",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
           },
-        });
+          {
+            role: "user",
+            content: context.message,
+          },
+        ],
 
-      const content =
-        response.choices?.[0]?.message?.content;
+        temperature: 0.1,
+
+        max_tokens: 500,
+
+        response_format: {
+          type: "json_object",
+        },
+      });
+
+      const content = response.choices?.[0]?.message?.content;
 
       if (!content) {
-        throw new Error(
-          "Groq returned an empty analysis response."
-        );
+        throw new Error("Groq returned an empty analysis response.");
       }
 
       const parsed = extractJson(content);
 
       if (!parsed) {
-        throw new Error(
-          "Groq returned invalid JSON for message analysis."
-        );
+        throw new Error("Groq returned invalid JSON for message analysis.");
       }
 
       return {
         intent: normalizeIntent(parsed.intent),
 
-        confidence: clamp(
-          Number(parsed.confidence) || 0.5,
-          0,
-          1
-        ),
+        confidence: clamp(Number(parsed.confidence) || 0.5, 0, 1),
 
-        emotion: normalizeEmotion(
-          parsed.emotion
-        ),
+        emotion: normalizeEmotion(parsed.emotion),
 
-        language:
-          normalizeNullableString(
-            parsed.language
-          ) || "English",
+        language: normalizeNullableString(parsed.language) || "English",
 
         entities: normalizeEntities(
           parsed.entities,
           context.message,
-          context.customer
+          context.customer,
         ),
 
-        requiresHuman:
-          Boolean(parsed.requiresHuman),
+        requiresHuman: Boolean(parsed.requiresHuman),
 
-        leadDetected:
-          Boolean(parsed.leadDetected),
+        leadDetected: Boolean(parsed.leadDetected),
 
-        responseType:
-          normalizeResponseType(
-            parsed.responseType
-          ),
+        responseType: normalizeResponseType(parsed.responseType),
 
         summary:
-          normalizeNullableString(
-            parsed.summary
-          ) || "Customer message analyzed.",
+          normalizeNullableString(parsed.summary) ||
+          "Customer message analyzed.",
       };
     } catch (error) {
       logError("analysis_failed", {
@@ -913,73 +894,45 @@ export class WhatsAppAIService {
    */
   async generateResponse(
     context: WhatsAppAIContext,
-    analysis: WhatsAppAIAnalysis
+    analysis: WhatsAppAIAnalysis,
   ): Promise<WhatsAppAIResult> {
     if (!AI_ENABLED) {
-      return this.createFallbackResult(
-        context,
-        analysis
-      );
+      return this.createFallbackResult(context, analysis);
     }
 
-    if (
-      context.store.aiSettings?.enabled === false
-    ) {
-      return this.createFallbackResult(
-        context,
-        analysis
-      );
+    if (context.store.aiSettings?.enabled === false) {
+      return this.createFallbackResult(context, analysis);
     }
 
     try {
       const groq = getGroqClient();
 
-      const messages =
-        this.buildConversationMessages(
-          context,
-          analysis
-        );
+      const messages = this.buildConversationMessages(context, analysis);
 
-      const response =
-        await groq.chat.completions.create({
-          model: DEFAULT_MODEL,
+      const response = await groq.chat.completions.create({
+        model: DEFAULT_MODEL,
 
-          messages,
+        messages,
 
-          temperature: clamp(
-            TEMPERATURE,
-            0,
-            1
-          ),
+        temperature: clamp(TEMPERATURE, 0, 1),
 
-          max_tokens: MAX_TOKENS,
-        });
+        max_tokens: MAX_TOKENS,
+      });
 
-      const reply =
-        response.choices?.[0]?.message?.content?.trim();
+      const reply = response.choices?.[0]?.message?.content?.trim();
 
       if (!reply) {
-        throw new Error(
-          "Groq returned an empty response."
-        );
+        throw new Error("Groq returned an empty response.");
       }
 
-      const finalReply =
-        this.sanitizeWhatsAppReply(reply);
+      const finalReply = this.sanitizeWhatsAppReply(reply);
 
       const requiresHuman =
-        analysis.requiresHuman ||
-        this.shouldRequireHuman(
-          context,
-          analysis
-        );
+        analysis.requiresHuman || this.shouldRequireHuman(context, analysis);
 
       return {
         reply: requiresHuman
-          ? this.ensureHumanHandoff(
-              finalReply,
-              context
-            )
+          ? this.ensureHumanHandoff(finalReply, context)
           : finalReply,
 
         analysis,
@@ -989,20 +942,16 @@ export class WhatsAppAIService {
         model: DEFAULT_MODEL,
 
         usage: {
-          promptTokens:
-            response.usage?.prompt_tokens,
+          promptTokens: response.usage?.prompt_tokens,
 
-          completionTokens:
-            response.usage?.completion_tokens,
+          completionTokens: response.usage?.completion_tokens,
 
-          totalTokens:
-            response.usage?.total_tokens,
+          totalTokens: response.usage?.total_tokens,
         },
 
         requiresHuman,
 
-        leadDetected:
-          analysis.leadDetected,
+        leadDetected: analysis.leadDetected,
 
         shouldSend: true,
       };
@@ -1013,10 +962,7 @@ export class WhatsAppAIService {
         error: getErrorMessage(error),
       });
 
-      return this.createFallbackResult(
-        context,
-        analysis
-      );
+      return this.createFallbackResult(context, analysis);
     }
   }
 
@@ -1025,70 +971,45 @@ export class WhatsAppAIService {
    *
    * This is the main method your WhatsApp webhook should call.
    */
-  async processMessage(
-    context: WhatsAppAIContext
-  ): Promise<WhatsAppAIResult> {
+  async processMessage(context: WhatsAppAIContext): Promise<WhatsAppAIResult> {
     if (!context.store.companyId) {
-      throw new Error(
-        "WhatsApp AI requires companyId."
-      );
+      throw new Error("WhatsApp AI requires companyId.");
     }
 
     if (!context.store.name) {
-      throw new Error(
-        "WhatsApp AI requires store.name."
-      );
+      throw new Error("WhatsApp AI requires store.name.");
     }
 
     if (!context.message?.trim()) {
-      throw new Error(
-        "WhatsApp AI requires a customer message."
-      );
+      throw new Error("WhatsApp AI requires a customer message.");
     }
 
-    const normalizedContext =
-      this.normalizeContext(context);
+    const normalizedContext = this.normalizeContext(context);
 
     logInfo("processing_message", {
-      companyId:
-        normalizedContext.store.companyId,
+      companyId: normalizedContext.store.companyId,
 
-      customerId:
-        normalizedContext.customer?.id ?? null,
+      customerId: normalizedContext.customer?.id ?? null,
 
-      messageLength:
-        normalizedContext.message.length,
+      messageLength: normalizedContext.message.length,
     });
 
-    const analysis =
-      await this.analyzeMessage(
-        normalizedContext
-      );
+    const analysis = await this.analyzeMessage(normalizedContext);
 
-    const result =
-      await this.generateResponse(
-        normalizedContext,
-        analysis
-      );
+    const result = await this.generateResponse(normalizedContext, analysis);
 
     logInfo("message_processed", {
-      companyId:
-        normalizedContext.store.companyId,
+      companyId: normalizedContext.store.companyId,
 
-      intent:
-        analysis.intent,
+      intent: analysis.intent,
 
-      confidence:
-        analysis.confidence,
+      confidence: analysis.confidence,
 
-      requiresHuman:
-        result.requiresHuman,
+      requiresHuman: result.requiresHuman,
 
-      leadDetected:
-        result.leadDetected,
+      leadDetected: result.leadDetected,
 
-      provider:
-        result.provider,
+      provider: result.provider,
     });
 
     return result;
@@ -1131,14 +1052,9 @@ export class WhatsAppAIService {
 
         customer: {
           name: params.customerName,
-          firstName:
-            params.customerName
-              ?.trim()
-              .split(/\s+/)[0] || null,
+          firstName: params.customerName?.trim().split(/\s+/)[0] || null,
 
-          phoneNumber:
-            params.customerPhoneNumber,
-
+          phoneNumber: params.customerPhoneNumber,
         },
 
         store: {
@@ -1146,36 +1062,28 @@ export class WhatsAppAIService {
 
           name: params.storeName,
 
-          website:
-            params.storeWebsite,
+          website: params.storeWebsite,
 
-          phone:
-            params.storeContactPhoneNumber,
+          phone: params.storeContactPhoneNumber,
 
           ...(params.store || {}),
         },
 
         order:
           params.order ??
-          (
-            params.orderNumber
-              ? {
-                  id: params.orderNumber,
-                  orderNumber:
-                    params.orderNumber,
-                }
-              : null
-          ),
+          (params.orderNumber
+            ? {
+                id: params.orderNumber,
+                orderNumber: params.orderNumber,
+              }
+            : null),
 
-        products:
-          params.products || [],
+        products: params.products || [],
 
-        conversationHistory:
-          params.conversationHistory || [],
+        conversationHistory: params.conversationHistory || [],
       };
 
-      const result =
-        await this.processMessage(context);
+      const result = await this.processMessage(context);
 
       return result.reply;
     } catch (error) {
@@ -1192,9 +1100,7 @@ export class WhatsAppAIService {
    * ==========================================================
    */
 
-  private buildAnalysisPrompt(
-    context: WhatsAppAIContext
-  ): string {
+  private buildAnalysisPrompt(context: WhatsAppAIContext): string {
     return `
 You are the message-analysis engine for a multi-tenant ecommerce,
 retail and service platform called SalesmanPro.
@@ -1214,9 +1120,7 @@ CURRENT ORDER:
 ${safeJsonStringify(context.order || null)}
 
 AVAILABLE PRODUCTS:
-${safeJsonStringify(
-  this.limitProducts(context.products || [])
-)}
+${safeJsonStringify(this.limitProducts(context.products || []))}
 
 CUSTOMER MESSAGE:
 ${context.message}
@@ -1301,31 +1205,18 @@ RETURN ONLY JSON:
 
   private buildConversationMessages(
     context: WhatsAppAIContext,
-    analysis: WhatsAppAIAnalysis
+    analysis: WhatsAppAIAnalysis,
   ) {
-    const systemPrompt =
-      this.buildResponsePrompt(
-        context,
-        analysis
-      );
+    const systemPrompt = this.buildResponsePrompt(context, analysis);
 
-    const history =
-      (context.conversationHistory || [])
-        .slice(-MAX_HISTORY)
-        .map((message) => ({
-          role:
-            message.role as
-              | "user"
-              | "assistant"
-              | "system",
+    const history = (context.conversationHistory || [])
+      .slice(-MAX_HISTORY)
+      .map((message) => ({
+        role: message.role as "user" | "assistant" | "system",
 
-          content:
-            cleanText(message.content),
-        }))
-        .filter(
-          (message) =>
-            message.content.length > 0
-        );
+        content: cleanText(message.content),
+      }))
+      .filter((message) => message.content.length > 0);
 
     return [
       {
@@ -1344,23 +1235,18 @@ RETURN ONLY JSON:
 
   private buildResponsePrompt(
     context: WhatsAppAIContext,
-    analysis: WhatsAppAIAnalysis
+    analysis: WhatsAppAIAnalysis,
   ): string {
     const customerName =
-      context.customer?.firstName ||
-      context.customer?.name ||
-      "Customer";
+      context.customer?.firstName || context.customer?.name || "Customer";
 
-    const store =
-      context.store;
+    const store = context.store;
 
-    const maxSentences =
-      clamp(
-        store.aiSettings
-          ?.maxResponseSentences ?? 3,
-        1,
-        5
-      );
+    const maxSentences = clamp(
+      store.aiSettings?.maxResponseSentences ?? 3,
+      1,
+      5,
+    );
 
     return `
 You are the WhatsApp AI customer assistant for:
@@ -1399,46 +1285,28 @@ CURRENCY:
 ${store.currency || "Not provided"}
 
 OPENING HOURS:
-${safeJsonStringify(
-  store.openingHours || null
-)}
+${safeJsonStringify(store.openingHours || null)}
 
 STORE POLICIES:
-${safeJsonStringify(
-  store.policies || null
-)}
+${safeJsonStringify(store.policies || null)}
 
 AI SETTINGS:
-${safeJsonStringify(
-  store.aiSettings || null
-)}
+${safeJsonStringify(store.aiSettings || null)}
 
 CUSTOMER:
-${safeJsonStringify(
-  context.customer || {}
-)}
+${safeJsonStringify(context.customer || {})}
 
 CURRENT ORDER:
-${safeJsonStringify(
-  context.order || null
-)}
+${safeJsonStringify(context.order || null)}
 
 RECENT ORDERS:
-${safeJsonStringify(
-  context.recentOrders || []
-)}
+${safeJsonStringify(context.recentOrders || [])}
 
 SELECTED PRODUCT:
-${safeJsonStringify(
-  context.selectedProduct || null
-)}
+${safeJsonStringify(context.selectedProduct || null)}
 
 AVAILABLE PRODUCTS:
-${safeJsonStringify(
-  this.limitProducts(
-    context.products || []
-  )
-)}
+${safeJsonStringify(this.limitProducts(context.products || []))}
 
 MESSAGE ANALYSIS:
 ${safeJsonStringify(analysis)}
@@ -1551,82 +1419,54 @@ The final response must be plain WhatsApp text.
    * ==========================================================
    */
 
-  private normalizeContext(
-    context: WhatsAppAIContext
-  ): WhatsAppAIContext {
+  private normalizeContext(context: WhatsAppAIContext): WhatsAppAIContext {
     return {
       ...context,
 
-      message:
-        context.message.trim(),
+      message: context.message.trim(),
 
-      customer:
-        context.customer || null,
+      customer: context.customer || null,
 
-      conversationHistory:
-        (context.conversationHistory || [])
-          .slice(-MAX_HISTORY),
+      conversationHistory: (context.conversationHistory || []).slice(
+        -MAX_HISTORY,
+      ),
 
-      products:
-        this.limitProducts(
-          context.products || []
-        ),
+      products: this.limitProducts(context.products || []),
 
-      recentOrders:
-        (context.recentOrders || [])
-          .slice(0, 5),
+      recentOrders: (context.recentOrders || []).slice(0, 5),
     };
   }
 
-  private limitProducts(
-    products: WhatsAppProduct[]
-  ): WhatsAppProduct[] {
-    return products
-      .slice(0, 20)
-      .map((product) => ({
-        id: product.id,
+  private limitProducts(products: WhatsAppProduct[]): WhatsAppProduct[] {
+    return products.slice(0, 20).map((product) => ({
+      id: product.id,
 
-        name: product.name,
+      name: product.name,
 
-        description:
-          product.description
-            ?.slice(0, 500) || null,
+      description: product.description?.slice(0, 500) || null,
 
-        category:
-          product.category || null,
+      category: product.category || null,
 
-        brand:
-          product.brand || null,
+      brand: product.brand || null,
 
-        price:
-          typeof product.price === "number"
-            ? product.price
-            : null,
+      price: typeof product.price === "number" ? product.price : null,
 
-        compareAtPrice:
-          typeof product.compareAtPrice === "number"
-            ? product.compareAtPrice
-            : null,
+      compareAtPrice:
+        typeof product.compareAtPrice === "number"
+          ? product.compareAtPrice
+          : null,
 
-        currency:
-          product.currency || null,
+      currency: product.currency || null,
 
-        stock:
-          typeof product.stock === "number"
-            ? product.stock
-            : null,
+      stock: typeof product.stock === "number" ? product.stock : null,
 
-        available:
-          typeof product.available === "boolean"
-            ? product.available
-            : null,
+      available:
+        typeof product.available === "boolean" ? product.available : null,
 
-        url:
-          product.url || null,
+      url: product.url || null,
 
-        attributes:
-          product.attributes || null,
-      }));
+      attributes: product.attributes || null,
+    }));
   }
 
   /* ==========================================================
@@ -1636,38 +1476,33 @@ The final response must be plain WhatsApp text.
 
   private shouldRequireHuman(
     context: WhatsAppAIContext,
-    analysis: WhatsAppAIAnalysis
+    analysis: WhatsAppAIAnalysis,
   ): boolean {
     if (analysis.requiresHuman) {
       return true;
     }
 
-    if (
-      analysis.intent === "human_request"
-    ) {
+    if (analysis.intent === "human_request") {
       return true;
     }
 
     if (
       analysis.intent === "complaint" &&
-      context.store.aiSettings
-        ?.requireHumanForComplaints !== false
+      context.store.aiSettings?.requireHumanForComplaints !== false
     ) {
       return true;
     }
 
     if (
       analysis.intent === "refund" &&
-      context.store.aiSettings
-        ?.requireHumanForRefunds !== false
+      context.store.aiSettings?.requireHumanForRefunds !== false
     ) {
       return true;
     }
 
     if (
       analysis.intent === "order_issue" &&
-      context.store.aiSettings
-        ?.requireHumanForOrders !== false
+      context.store.aiSettings?.requireHumanForOrders !== false
     ) {
       return true;
     }
@@ -1677,10 +1512,9 @@ The final response must be plain WhatsApp text.
 
   private ensureHumanHandoff(
     reply: string,
-    context: WhatsAppAIContext
+    context: WhatsAppAIContext,
   ): string {
-    const lower =
-      reply.toLowerCase();
+    const lower = reply.toLowerCase();
 
     const alreadyHasHandoff =
       lower.includes("team") ||
@@ -1699,9 +1533,7 @@ The final response must be plain WhatsApp text.
    * ==========================================================
    */
 
-  private sanitizeWhatsAppReply(
-    reply: string
-  ): string {
+  private sanitizeWhatsAppReply(reply: string): string {
     let result = reply
       .trim()
       .replace(/^["']|["']$/g, "")
@@ -1718,17 +1550,14 @@ The final response must be plain WhatsApp text.
     /*
      * Prevent excessive blank lines.
      */
-    result = result
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+    result = result.replace(/\n{3,}/g, "\n\n").trim();
 
     /*
      * Prevent very long model output from becoming
      * an enormous WhatsApp message.
      */
     if (result.length > 1200) {
-      result =
-        result.slice(0, 1197).trim() + "...";
+      result = result.slice(0, 1197).trim() + "...";
     }
 
     return result;
@@ -1741,13 +1570,9 @@ The final response must be plain WhatsApp text.
 
   private createFallbackResult(
     context: WhatsAppAIContext,
-    analysis: WhatsAppAIAnalysis
+    analysis: WhatsAppAIAnalysis,
   ): WhatsAppAIResult {
-    const reply =
-      this.getFallbackReply(
-        context,
-        analysis
-      );
+    const reply = this.getFallbackReply(context, analysis);
 
     return {
       reply,
@@ -1756,28 +1581,23 @@ The final response must be plain WhatsApp text.
 
       provider: "fallback",
 
-      requiresHuman:
-        analysis.requiresHuman,
+      requiresHuman: analysis.requiresHuman,
 
-      leadDetected:
-        analysis.leadDetected,
+      leadDetected: analysis.leadDetected,
 
       shouldSend: true,
+
+      action: null,
     };
   }
 
   private getFallbackReply(
     context: WhatsAppAIContext,
-    analysis: WhatsAppAIAnalysis
+    analysis: WhatsAppAIAnalysis,
   ): string {
-    const customerName =
-      context.customer?.firstName ||
-      context.customer?.name;
+    const customerName = context.customer?.firstName || context.customer?.name;
 
-    const greeting =
-      customerName
-        ? `Hi ${customerName}! `
-        : "Hi! ";
+    const greeting = customerName ? `Hi ${customerName}! ` : "Hi! ";
 
     switch (analysis.intent) {
       case "greeting":
@@ -1793,13 +1613,11 @@ The final response must be plain WhatsApp text.
       case "price_inquiry":
         if (
           context.selectedProduct &&
-          typeof context.selectedProduct.price ===
-            "number"
+          typeof context.selectedProduct.price === "number"
         ) {
           return `${greeting}${context.selectedProduct.name} is ${formatMoney(
             context.selectedProduct.price,
-            context.selectedProduct.currency ||
-              context.store.currency
+            context.selectedProduct.currency || context.store.currency,
           )}.`;
         }
 
@@ -1808,8 +1626,7 @@ The final response must be plain WhatsApp text.
       case "availability":
         if (
           context.selectedProduct &&
-          typeof context.selectedProduct.available ===
-            "boolean"
+          typeof context.selectedProduct.available === "boolean"
         ) {
           return context.selectedProduct.available
             ? `${greeting}Yes, ${context.selectedProduct.name} is currently available.`
@@ -1846,7 +1663,7 @@ The final response must be plain WhatsApp text.
       case "store_hours":
         if (context.store.openingHours) {
           return `${greeting}Our opening hours are ${formatOpeningHours(
-            context.store.openingHours
+            context.store.openingHours,
           )}.`;
         }
 
@@ -1875,46 +1692,30 @@ The final response must be plain WhatsApp text.
    * ==========================================================
    */
 
-  validateEntities(
-    entities: ExtractedEntities
-  ): {
+  validateEntities(entities: ExtractedEntities): {
     isValid: boolean;
     errors: string[];
   } {
     const errors: string[] = [];
 
     if (entities.email) {
-      const emailRegex =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailRegex.test(entities.email)) {
-        errors.push(
-          "Invalid email address."
-        );
+        errors.push("Invalid email address.");
       }
     }
 
     if (entities.phoneNumber) {
-      const normalized =
-        entities.phoneNumber.replace(
-          /[\s().-]/g,
-          ""
-        );
+      const normalized = entities.phoneNumber.replace(/[\s().-]/g, "");
 
-      if (
-        !/^\+?\d{7,16}$/.test(
-          normalized
-        )
-      ) {
-        errors.push(
-          "Invalid phone number."
-        );
+      if (!/^\+?\d{7,16}$/.test(normalized)) {
+        errors.push("Invalid phone number.");
       }
     }
 
     return {
-      isValid:
-        errors.length === 0,
+      isValid: errors.length === 0,
 
       errors,
     };
@@ -1930,23 +1731,15 @@ The final response must be plain WhatsApp text.
 
   findRelevantProducts(
     products: WhatsAppProduct[],
-    message: string
+    message: string,
   ): WhatsAppProduct[] {
-    const query =
-      message
-        .toLowerCase()
-        .trim();
+    const query = message.toLowerCase().trim();
 
     if (!query) {
       return [];
     }
 
-    const words =
-      query
-        .split(/\s+/)
-        .filter(
-          (word) => word.length >= 3
-        );
+    const words = query.split(/\s+/).filter((word) => word.length >= 3);
 
     return products
       .map((product) => {
@@ -1973,17 +1766,10 @@ The final response must be plain WhatsApp text.
           score,
         };
       })
-      .filter(
-        (item) => item.score > 0
-      )
-      .sort(
-        (a, b) =>
-          b.score - a.score
-      )
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
       .slice(0, 10)
-      .map(
-        (item) => item.product
-      );
+      .map((item) => item.product);
   }
 }
 
