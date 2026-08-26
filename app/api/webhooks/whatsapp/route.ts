@@ -21,15 +21,16 @@ function createCorrelationId() {
  * META WEBHOOK VERIFICATION
  * ============================================================
  */
-
 export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
+  const mode = req.nextUrl.searchParams.get("hub.mode");
+  const token = req.nextUrl.searchParams.get("hub.verify_token");
+  const challenge = req.nextUrl.searchParams.get("hub.challenge");
 
-  const mode = searchParams.get("hub.mode");
-
-  const token = searchParams.get("hub.verify_token");
-
-  const challenge = searchParams.get("hub.challenge");
+  console.log("[WHATSAPP_WEBHOOK_VERIFY]", {
+    mode,
+    hasToken: Boolean(token),
+    hasChallenge: Boolean(challenge),
+  });
 
   if (mode !== "subscribe" || !token || !challenge) {
     return new NextResponse("Invalid verification request.", {
@@ -40,19 +41,38 @@ export async function GET(req: NextRequest) {
   try {
     const expected = getMetaVerifyToken();
 
-    const valid = crypto.timingSafeEqual(
-      Buffer.from(token),
-      Buffer.from(expected),
-    );
+    const tokenBuffer = Buffer.from(token, "utf8");
+    const expectedBuffer = Buffer.from(expected, "utf8");
 
-    if (!valid) {
+    // timingSafeEqual throws when lengths differ.
+    if (tokenBuffer.length !== expectedBuffer.length) {
+      console.warn("[WHATSAPP_WEBHOOK_VERIFY] Token length mismatch");
+
       return new NextResponse("Forbidden", {
         status: 403,
       });
     }
 
+    const valid = crypto.timingSafeEqual(
+      tokenBuffer,
+      expectedBuffer,
+    );
+
+    if (!valid) {
+      console.warn("[WHATSAPP_WEBHOOK_VERIFY] Invalid verify token");
+
+      return new NextResponse("Forbidden", {
+        status: 403,
+      });
+    }
+
+    console.log("[WHATSAPP_WEBHOOK_VERIFY] Verification successful");
+
     return new NextResponse(challenge, {
       status: 200,
+      headers: {
+        "Content-Type": "text/plain",
+      },
     });
   } catch (error) {
     console.error("[WHATSAPP_WEBHOOK_VERIFY_ERROR]", error);

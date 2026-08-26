@@ -1,9 +1,9 @@
 import {
   MediaAIAction,
   MediaAsset,
-  MediaAIConfig,
   MediaVersion,
 } from "@/lib/media/contracts";
+import { MediaAIConfig } from "../types";
 
 export interface AIExecutionContext {
   userId: string;

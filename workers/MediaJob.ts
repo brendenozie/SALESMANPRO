@@ -1,10 +1,9 @@
 import { Worker } from "bullmq";
 
-import { prisma } from "@/lib/prisma";
+import prisma from "@/server/db/prismadb";
 
 import { redisConnection } from "@/lib/redis";
 
-import { mediaAIRouter } from "@/lib/media/ai";
 
 export const mediaAIWorker = new Worker(
   "media-ai",

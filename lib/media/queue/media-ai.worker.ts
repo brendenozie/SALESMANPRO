@@ -1,11 +1,8 @@
 import { Worker, Job } from "bullmq";
 import prisma from "@/server/db/prismadb";
 import { MediaJobStatus } from "@prisma/client";
-import { NextResponse } from "next/server";
-import { MediaAIAction } from "@prisma/client";
 import { aiRouter } from "../action-router";
 import { OpenAIImageProvider } from "../providers/openai";
-import { enqueueAIJob } from "./queue";
 
 // Register providers
 aiRouter.register(new OpenAIImageProvider());
