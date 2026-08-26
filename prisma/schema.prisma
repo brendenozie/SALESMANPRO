@@ -501,6 +501,9 @@ model Company {
   aiActions              AIAction[]
   mediaAssets            MediaAsset[]
 
+  //Centralized AI Wallet
+  aiCreditBalance Float @default(0)
+
   @@index([userId])
   @@index([name])
   @@index([companyCategoryId])
@@ -564,48 +567,31 @@ enum WhatsAppMessageStatus {
 
 model WhatsAppAccount {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-
   companyId String @db.ObjectId
-
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
   businessAccountId String?
-
   phoneNumberId String @unique
-
   phoneNumber String?
-
   displayName String?
-
   accessTokenEncrypted String?
   accessTokenIv        String?
   accessTokenTag       String?
-
   appId String?
-
   appSecretEncrypted String?
   appSecretIv        String?
   appSecretTag       String?
-
   webhookVerifyTokenEncrypted String?
   webhookVerifyTokenIv        String?
   webhookVerifyTokenTag       String?
-
   environment WhatsAppEnvironment @default(PRODUCTION)
-
   status WhatsAppAccountStatus @default(DISCONNECTED)
-
   isActive Boolean @default(true)
-
   lastConnectedAt DateTime?
   lastWebhookAt   DateTime?
   lastError       String?
-
   isDefault Boolean @default(false)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   contacts      WhatsAppContact[]
   conversations WhatsAppConversation[]
   messages      WhatsAppMessage[]
@@ -1452,6 +1438,7 @@ enum WhatsAppCampaignRecipientStatus {
   OPTED_OUT
 }
 
+
 model WhatsAppAIUsage {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -1461,16 +1448,16 @@ model WhatsAppAIUsage {
   conversationId String? @db.ObjectId
 
   provider WhatsAppAIProvider
+  model    String
 
-  model String
-
-  inputTokens Int @default(0)
-
+  inputTokens  Int @default(0)
   outputTokens Int @default(0)
-
-  totalTokens Int @default(0)
+  totalTokens  Int @default(0)
 
   estimatedCost Float @default(0)
+  
+  // NEW: Normalized AI Credits consumed by this specific conversation
+  aiCreditsUsed Float @default(0)
 
   requestCount Int @default(1)
 
@@ -1484,49 +1471,27 @@ model WhatsAppAIUsage {
 
 model AIAction {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-
   companyId String? @db.ObjectId
-
   company Company? @relation(fields: [companyId], references: [id])
-
   conversationId String? @db.ObjectId
-
   conversation WhatsAppConversation? @relation(fields: [conversationId], references: [id])
-
   messageId String? @db.ObjectId
-
   message WhatsAppMessage? @relation(fields: [messageId], references: [id])
-
   action String
-
   status AIActionStatus @default(PENDING)
-
   input Json?
-
   output Json?
-
   error String?
-
   provider String?
-
   model String?
-
   confidence Float?
-
   orderId String? @db.ObjectId
-
   order CustomerOrder? @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
   idempotencyKey String?
-
   startedAt DateTime?
-
   completedAt DateTime?
-
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
-
   @@index([companyId])
   @@index([conversationId])
   @@index([messageId])
@@ -1535,7 +1500,6 @@ model AIAction {
   @@index([orderId])
   @@index([createdAt])
 }
-
 model CompanyAddress {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -7480,6 +7444,9 @@ model MediaJob {
   startedAt DateTime?
 
   completedAt DateTime?
+
+  //Track the specific cost of this media generation
+  creditsConsumed Float?
 
   @@index([mediaId])
   @@index([userId])

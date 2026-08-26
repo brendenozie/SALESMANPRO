@@ -259,6 +259,7 @@ model Company {
   whatsAppAIToolCalls    WhatsAppAIToolCall[]
   whatsAppAIUsages       WhatsAppAIUsage[]
   aiActions              AIAction[]
+  mediaAssets            MediaAsset[]
 
   @@index([userId])
   @@index([name])
@@ -1095,7 +1096,7 @@ model WhatsAppWebhookEvent {
 
   eventId String?
 
-  eventType String?
+  eventType     String?
   correlationId String?
 
   payload Json
@@ -1113,7 +1114,7 @@ model WhatsAppWebhookEvent {
   @@index([companyId])
   @@index([accountId])
   @@index([eventId])
-  @@index([correlationId])  
+  @@index([correlationId])
   @@index([processed])
   @@index([receivedAt])
 }
@@ -1295,3 +1296,825 @@ model AIAction {
   @@index([createdAt])
 }
 
+// --- New Schema for Video Management ---
+
+// A central model for all video assets.
+// This allows a single video to be referenced by multiple other models
+// (e.g., a Product, a Blog post, an ExamQuestion)
+// New model to serve as a container for a group of videos
+model VideoAlbum {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  tags        String[]
+
+  // A single video album can have multiple videos
+  videos Video[]
+
+  // Relations for ownership
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Content   Content[]
+  Blog      Blog[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([tags])
+}
+
+// Refactored Video model
+// This model now only stores information specific to an individual video
+model Video {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaAssetId String     @unique @db.ObjectId
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id])
+
+  title String?
+
+  description String?
+
+  views Int @default(0)
+
+  status VideoStatus @default(DRAFT)
+
+  albumId String @db.ObjectId
+
+  album VideoAlbum @relation(fields: [albumId], references: [id])
+
+  tags String[]
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  userId String? @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Enum for the video's lifecycle status
+enum VideoStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+  REJECTED
+}
+
+enum ContentStatus {
+  Draft
+  Scheduled
+  Published
+  Archived
+}
+
+// Add this enum if it doesn't exist, or ensure it includes VIDEO
+enum ContentType {
+  VIDEO
+  ARTICLE
+  IMAGE_GALLERY
+  VIRTUAL_TOUR
+  // 3D_MODEL
+  INTERACTIVE_3D
+  // 360_VIDEO
+}
+
+model Content {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  excerpt      String?
+  description  String? // Use this for a longer description if needed
+  contentUrl   String? // For video URL (e.g., YouTube embed URL)
+  thumbnailUrl String? // For video thumbnail URL
+  contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
+  category     String? // e.g., "Nature", "History", "Wildlife"
+  duration     Float? // e.g., "5 min", "7 min"
+  location     String? // ADD THIS FIELD for location
+  tags         String[] // For additional keywords/tags
+  companyId    String      @db.ObjectId
+  company      Company     @relation(fields: [companyId], references: [id])
+  published    Boolean     @default(false) // Whether the tour is live
+
+  type        String? // e.g., "Article", "PhotoAlbum", "VideoAlbum"
+  status      ContentStatus @default(Draft)
+  publishDate DateTime?
+  author      User?         @relation(fields: [authorId], references: [id])
+  authorId    String?       @db.ObjectId
+
+  // New relations for albums
+  photoAlbum   PhotoAlbum? @relation(fields: [photoAlbumId], references: [id])
+  photoAlbumId String?     @db.ObjectId
+
+  videoAlbum   VideoAlbum? @relation(fields: [videoAlbumId], references: [id])
+  videoAlbumId String?     @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([photoAlbumId])
+  @@index([videoAlbumId])
+  @@index([companyId])
+  @@index([tags])
+  @@index([status])
+}
+
+// New model to serve as a container for a group of photos
+model PhotoAlbum {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  tags        String[]
+
+  // A single photo album can have multiple photos
+  photos Photo[]
+
+  // Relations for ownership
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Content   Content[]
+  Blog      Blog[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([tags])
+}
+
+// Refactored Photo model
+// This model now only stores information specific to an individual image
+model Photo {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaAssetId String @unique @db.ObjectId
+
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id])
+
+  altText String?
+
+  title String?
+
+  description String?
+
+  tags String[]
+
+  albumId String @db.ObjectId
+
+  album PhotoAlbum @relation(fields: [albumId], references: [id])
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  userId String? @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([companyId])
+  @@index([userId])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  BOOK
+}
+
+enum MediaSource {
+  LOCAL
+  UPLOAD
+  AI_GENERATED
+  AI_EDITED
+  IMPORTED
+  SYSTEM
+}
+
+enum MediaStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum MediaVersionSource {
+  ORIGINAL
+  PROCESSED
+  AI_GENERATED
+  AI_EDITED
+  DERIVED
+}
+
+enum MediaAIAction {
+  GENERATE_IMAGE
+  EDIT_IMAGE
+  ENHANCE_IMAGE
+  REMOVE_BACKGROUND
+  REPLACE_BACKGROUND
+  UPSCALE_IMAGE
+  GENERATE_PRODUCT_IMAGE
+  GENERATE_THUMBNAIL
+
+  GENERATE_VIDEO
+  EDIT_VIDEO
+  GENERATE_CAPTIONS
+  GENERATE_VIDEO_THUMBNAIL
+
+  GENERATE_BOOK_COVER
+  EXTRACT_BOOK_METADATA
+
+  GENERATE_METADATA
+}
+
+enum MediaJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum MediaApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model MediaAsset {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  ownerId String? @db.ObjectId
+  owner   User?   @relation(fields: [ownerId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  type MediaType
+
+  source MediaSource @default(UPLOAD)
+
+  status MediaStatus @default(PENDING)
+
+  originalName String?
+
+  mimeType String?
+
+  size Int?
+
+  width Int?
+
+  height Int?
+
+  duration Float?
+
+  fps Float?
+
+  metadata Json?
+
+  url String?
+
+  thumbnailUrl String?
+
+  currentVersionId String? @db.ObjectId
+
+  versions MediaVersion[]
+
+  jobs MediaJob[]
+
+  approvalStatus MediaApprovalStatus @default(PENDING)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  photo     Photo?
+  video     Video?
+  document  Document?
+
+  @@index([ownerId])
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+  @@index([companyId, type])
+}
+
+model MediaVersion {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaId String     @db.ObjectId
+  media   MediaAsset @relation(fields: [mediaId], references: [id])
+
+  parentVersionId String? @db.ObjectId
+
+  version Int
+
+  source MediaVersionSource
+
+  operation MediaAIAction?
+
+  prompt String?
+
+  provider String?
+
+  model String?
+
+  url String
+
+  thumbnailUrl String?
+
+  mimeType String?
+
+  size Int?
+
+  width Int?
+
+  height Int?
+
+  duration Float?
+
+  fps Float?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([mediaId])
+  @@index([mediaId, version])
+  @@index([parentVersionId])
+}
+
+model MediaJob {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaId String?     @db.ObjectId
+  media   MediaAsset? @relation(fields: [mediaId], references: [id])
+
+  inputVersionId String? @db.ObjectId
+
+  outputVersionId String? @db.ObjectId
+
+  action MediaAIAction
+
+  status MediaJobStatus @default(QUEUED)
+
+  progress Int @default(0)
+
+  provider String?
+
+  model String?
+
+  config Json?
+
+  error String?
+
+  userId String? @db.ObjectId
+
+  companyId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  @@index([mediaId])
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+  @@index([status, createdAt])
+}
+
+// A central model for all video assets.
+// This allows a single video to be referenced by multiple other models
+// (e.g., a Product, a Blog post, an ExamQuestion)
+// New model to serve as a container for a group of videos
+model VideoAlbum {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  tags        String[]
+
+  // A single video album can have multiple videos
+  videos Video[]
+
+  // Relations for ownership
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Content   Content[]
+  Blog      Blog[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([tags])
+}
+
+// Refactored Video model
+// This model now only stores information specific to an individual video
+model Video {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaAssetId String     @unique @db.ObjectId
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id])
+
+  title String?
+
+  description String?
+
+  views Int @default(0)
+
+  status VideoStatus @default(DRAFT)
+
+  albumId String @db.ObjectId
+
+  album VideoAlbum @relation(fields: [albumId], references: [id])
+
+  tags String[]
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  userId String? @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Enum for the video's lifecycle status
+enum VideoStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+  REJECTED
+}
+
+enum ContentStatus {
+  Draft
+  Scheduled
+  Published
+  Archived
+}
+
+// Add this enum if it doesn't exist, or ensure it includes VIDEO
+enum ContentType {
+  VIDEO
+  ARTICLE
+  IMAGE_GALLERY
+  VIRTUAL_TOUR
+  // 3D_MODEL
+  INTERACTIVE_3D
+  // 360_VIDEO
+}
+
+model Content {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  excerpt      String?
+  description  String? // Use this for a longer description if needed
+  contentUrl   String? // For video URL (e.g., YouTube embed URL)
+  thumbnailUrl String? // For video thumbnail URL
+  contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
+  category     String? // e.g., "Nature", "History", "Wildlife"
+  duration     Float? // e.g., "5 min", "7 min"
+  location     String? // ADD THIS FIELD for location
+  tags         String[] // For additional keywords/tags
+  companyId    String      @db.ObjectId
+  company      Company     @relation(fields: [companyId], references: [id])
+  published    Boolean     @default(false) // Whether the tour is live
+
+  type        String? // e.g., "Article", "PhotoAlbum", "VideoAlbum"
+  status      ContentStatus @default(Draft)
+  publishDate DateTime?
+  author      User?         @relation(fields: [authorId], references: [id])
+  authorId    String?       @db.ObjectId
+
+  // New relations for albums
+  photoAlbum   PhotoAlbum? @relation(fields: [photoAlbumId], references: [id])
+  photoAlbumId String?     @db.ObjectId
+
+  videoAlbum   VideoAlbum? @relation(fields: [videoAlbumId], references: [id])
+  videoAlbumId String?     @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([photoAlbumId])
+  @@index([videoAlbumId])
+  @@index([companyId])
+  @@index([tags])
+  @@index([status])
+}
+
+// New model to serve as a container for a group of photos
+model PhotoAlbum {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  tags        String[]
+
+  // A single photo album can have multiple photos
+  photos Photo[]
+
+  // Relations for ownership
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Content   Content[]
+  Blog      Blog[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([tags])
+}
+
+// Refactored Photo model
+// This model now only stores information specific to an individual image
+model Photo {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaAssetId String @unique @db.ObjectId
+
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id])
+
+  altText String?
+
+  title String?
+
+  description String?
+
+  tags String[]
+
+  albumId String @db.ObjectId
+
+  album PhotoAlbum @relation(fields: [albumId], references: [id])
+
+  companyId String? @db.ObjectId
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  userId String? @db.ObjectId
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([albumId])
+  @@index([companyId])
+  @@index([userId])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  BOOK
+}
+
+enum MediaSource {
+  LOCAL
+  UPLOAD
+  AI_GENERATED
+  AI_EDITED
+  IMPORTED
+  SYSTEM
+}
+
+enum MediaStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum MediaVersionSource {
+  ORIGINAL
+  PROCESSED
+  AI_GENERATED
+  AI_EDITED
+  DERIVED
+}
+
+enum MediaAIAction {
+  GENERATE_IMAGE
+  EDIT_IMAGE
+  ENHANCE_IMAGE
+  REMOVE_BACKGROUND
+  REPLACE_BACKGROUND
+  UPSCALE_IMAGE
+  GENERATE_PRODUCT_IMAGE
+  GENERATE_THUMBNAIL
+
+  GENERATE_VIDEO
+  EDIT_VIDEO
+  GENERATE_CAPTIONS
+  GENERATE_VIDEO_THUMBNAIL
+
+  GENERATE_BOOK_COVER
+  EXTRACT_BOOK_METADATA
+
+  GENERATE_METADATA
+}
+
+enum MediaJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum MediaApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model MediaAsset {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  ownerId String? @db.ObjectId
+  owner   User?   @relation(fields: [ownerId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  type MediaType
+
+  source MediaSource @default(UPLOAD)
+
+  status MediaStatus @default(PENDING)
+
+  originalName String?
+
+  mimeType String?
+
+  size Int?
+
+  width Int?
+
+  height Int?
+
+  duration Float?
+
+  fps Float?
+
+  metadata Json?
+
+  url String?
+
+  thumbnailUrl String?
+
+  currentVersionId String? @db.ObjectId
+
+  versions MediaVersion[]
+
+  jobs MediaJob[]
+
+  approvalStatus MediaApprovalStatus @default(PENDING)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  photo     Photo?
+  video     Video?
+  document  Document?
+
+  @@index([ownerId])
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+  @@index([companyId, type])
+}
+
+model MediaVersion {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaId String     @db.ObjectId
+  media   MediaAsset @relation(fields: [mediaId], references: [id])
+
+  parentVersionId String? @db.ObjectId
+
+  version Int
+
+  source MediaVersionSource
+
+  operation MediaAIAction?
+
+  prompt String?
+
+  provider String?
+
+  model String?
+
+  url String
+
+  thumbnailUrl String?
+
+  mimeType String?
+
+  size Int?
+
+  width Int?
+
+  height Int?
+
+  duration Float?
+
+  fps Float?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([mediaId])
+  @@index([mediaId, version])
+  @@index([parentVersionId])
+}
+
+model MediaJob {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  mediaId String?     @db.ObjectId
+  media   MediaAsset? @relation(fields: [mediaId], references: [id])
+
+  inputVersionId String? @db.ObjectId
+
+  outputVersionId String? @db.ObjectId
+
+  action MediaAIAction
+
+  status MediaJobStatus @default(QUEUED)
+
+  progress Int @default(0)
+
+  provider String?
+
+  model String?
+
+  config Json?
+
+  error String?
+
+  userId String? @db.ObjectId
+
+  companyId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  //Track the specific cost of this media generation
+  creditsConsumed Float?
+
+  @@index([mediaId])
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+  @@index([status, createdAt])
+}

@@ -1,30 +1,17 @@
-// lib/whatsapp/config.ts
-
 import prisma from "@/server/db/prismadb";
 
 export interface WhatsAppConfig {
   enabled: boolean;
-
   phoneNumberId: string;
-
   accessToken: string;
-
   businessAccountId?: string;
-
   aiEnabled: boolean;
-
   aiModel?: string;
-
   aiSystemPrompt?: string;
-
   allowAIOrderCreation: boolean;
-
   allowAICancellation: boolean;
-
   allowAIPaymentLinks: boolean;
-
   allowAIAppointmentBooking: boolean;
-
   enableHumanHandoff: boolean;
 }
 
@@ -32,7 +19,6 @@ function required(value: string | undefined, name: string): string {
   if (!value) {
     throw new Error(`${name} is not configured`);
   }
-
   return value;
 }
 
@@ -40,15 +26,21 @@ export async function getWhatsAppConfig(
   companyId?: string,
 ): Promise<WhatsAppConfig> {
   if (companyId) {
-    const settings = await prisma.whatsAppAIConfig.findUnique({
-      where: {
-        companyId,
-      },
-    });
+    const [settings, account] = await Promise.all([
+      prisma.whatsAppAIConfig.findUnique({
+        where: { companyId },
+      }),
+      prisma.whatsAppAccount.findFirst({
+        where: { companyId, isDefault: true, isActive: true },
+      }),
+    ]);
 
     if (settings) {
+      // Resolve Access Token: Fall back to Account encrypted token, then environment variable
       const accessToken =
-        settings.accessTokenEncrypted || process.env.WHATSAPP_ACCESS_TOKEN;
+        settings.apiKeyEncrypted ||
+        account?.accessTokenEncrypted ||
+        process.env.WHATSAPP_ACCESS_TOKEN;
 
       if (!accessToken) {
         throw new Error(
@@ -56,35 +48,39 @@ export async function getWhatsAppConfig(
         );
       }
 
+      // Resolve Phone Number ID: Fall back to default account
+      const phoneNumberId =
+        account?.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID;
+
       return {
         enabled: settings.enabled,
-        phoneNumberId: required(
-          settings.phoneNumberId ?? undefined,
-          "WhatsApp phoneNumberId",
-        ),
+        phoneNumberId: required(phoneNumberId, "WhatsApp phoneNumberId"),
         accessToken,
-        businessAccountId: settings.businessAccountId ?? undefined,
+        businessAccountId:
+          account?.businessAccountId ||
+          process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
 
-        aiEnabled: settings.aiEnabled,
+        aiEnabled: settings.autoReply,
 
         aiModel:
-          settings.aiModel || process.env.WHATSAPP_AI_MODEL || "gpt-5.6-luna",
+          settings.model || process.env.WHATSAPP_AI_MODEL || "gpt-5.6-luna",
 
-        aiSystemPrompt: settings.aiSystemPrompt ?? undefined,
+        aiSystemPrompt: settings.systemPrompt ?? undefined,
 
-        allowAIOrderCreation: settings.allowAIOrderCreation,
+        allowAIOrderCreation: settings.canCreateOrders,
 
-        allowAICancellation: settings.allowAICancellation,
+        allowAICancellation: settings.canCancelOrders,
 
-        allowAIPaymentLinks: settings.allowAIPaymentLinks,
+        allowAIPaymentLinks: settings.canCheckPayments,
 
-        allowAIAppointmentBooking: settings.allowAIAppointmentBooking,
+        allowAIAppointmentBooking: settings.canCreateAppointments,
 
-        enableHumanHandoff: settings.enableHumanHandoff,
+        enableHumanHandoff: settings.humanHandoff,
       };
     }
   }
 
+  // Fallback default configuration using Environment Variables
   return {
     enabled: true,
 
@@ -104,13 +100,13 @@ export async function getWhatsAppConfig(
 
     aiModel: process.env.WHATSAPP_AI_MODEL || "gpt-5.6-luna",
 
-    allowAIOrderCreation: true,
+    allowAIOrderCreation: false,
 
     allowAICancellation: false,
 
     allowAIPaymentLinks: true,
 
-    allowAIAppointmentBooking: true,
+    allowAIAppointmentBooking: false,
 
     enableHumanHandoff: true,
   };

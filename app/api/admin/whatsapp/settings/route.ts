@@ -1,8 +1,9 @@
+import { NextRequest } from "next/server";
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
@@ -30,50 +31,69 @@ export async function GET(req: Request) {
   } catch (e) {}
 
   try {
-    const account = await prisma.whatsAppAccount.findFirst({
-      where: { companyId },
-      select: {
-        phoneNumberId: true,
-        businessAccountId: true,
-        accessTokenEncrypted: true,
-        webhookVerifyTokenEncrypted: true,
-      },
-    });
-
-    const aiConfig = await prisma.whatsAppAIConfig.findUnique({
-      where: { companyId },
-      select: {
-        enabled: true,
-        tone: true,
-        systemPrompt: true,
-        maxConversationMessages: true,
-        respectBusinessHours: true,
-        businessHours: true,
-      },
-    });
-
-    const handoffAutomation = await prisma.whatsAppAutomation.findFirst({
-      where: { companyId, trigger: "HUMAN_HANDOFF" },
-      select: { keywords: true },
-    });
-
-    const bh = (aiConfig?.businessHours as any) || {};
+    const [account, aiConfig] = await Promise.all([
+      prisma.whatsAppAccount.findFirst({
+        where: { companyId },
+        select: {
+          environment: true,
+          phoneNumberId: true,
+          phoneNumber: true,
+          displayName: true,
+          appId: true,
+          accessTokenEncrypted: true,
+          appSecretEncrypted: true,
+          webhookVerifyTokenEncrypted: true,
+        },
+      }),
+      prisma.whatsAppAIConfig.findUnique({
+        where: { companyId },
+        select: {
+          enabled: true,
+          provider: true,
+          model: true,
+          assistantName: true,
+          tone: true,
+          systemPrompt: true,
+          businessDescription: true,
+          autoReply: true,
+          humanHandoff: true,
+          handoffConfidenceThreshold: true,
+          temperature: true,
+          canSearchProducts: true,
+          canCheckOrders: true,
+          canCreateOrders: true,
+        },
+      }),
+    ]);
 
     const payload = {
-      phoneNumberId: account?.phoneNumberId || "",
-      wabaAccountId: account?.businessAccountId || "",
-      accessToken: account?.accessTokenEncrypted || "",
-      webhookVerifyToken: account?.webhookVerifyTokenEncrypted || "",
-      enableAiAgent: aiConfig?.enabled ?? true,
-      aiTone: aiConfig?.tone || "friendly",
-      aiSystemPrompt: aiConfig?.systemPrompt || "",
-      maxAutoRepliesPerUser: aiConfig?.maxConversationMessages || 10,
-      autoHandoffKeywords:
-        handoffAutomation?.keywords.join(", ") || "agent, human, support",
-      enableBusinessHours: aiConfig?.respectBusinessHours ?? false,
-      businessHoursStart: bh.start || "08:00",
-      businessHoursEnd: bh.end || "17:00",
-      offHoursMessage: bh.offHoursMessage || "We are currently offline.",
+      account: account
+        ? {
+            environment: account.environment,
+            phoneNumberId: account.phoneNumberId || "",
+            phoneNumber: account.phoneNumber || "",
+            displayName: account.displayName || "",
+            appId: account.appId || "",
+          }
+        : null,
+      aiConfig: aiConfig
+        ? {
+            enabled: aiConfig.enabled,
+            provider: aiConfig.provider,
+            model: aiConfig.model,
+            assistantName: aiConfig.assistantName || "Assistant",
+            tone: aiConfig.tone || "professional",
+            systemPrompt: aiConfig.systemPrompt || "",
+            businessDescription: aiConfig.businessDescription || "",
+            autoReply: aiConfig.autoReply,
+            humanHandoff: aiConfig.humanHandoff,
+            handoffConfidenceThreshold: aiConfig.handoffConfidenceThreshold,
+            temperature: aiConfig.temperature,
+            canSearchProducts: aiConfig.canSearchProducts,
+            canCheckOrders: aiConfig.canCheckOrders,
+            canCreateOrders: aiConfig.canCreateOrders,
+          }
+        : null,
     };
 
     try {
@@ -101,25 +121,10 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const {
-      companyId,
-      phoneNumberId,
-      wabaAccountId,
-      accessToken,
-      webhookVerifyToken,
-      enableAiAgent,
-      aiTone,
-      aiSystemPrompt,
-      maxAutoRepliesPerUser,
-      autoHandoffKeywords,
-      enableBusinessHours,
-      businessHoursStart,
-      businessHoursEnd,
-      offHoursMessage,
-    } = body;
+    const { companyId, account, aiConfig } = body;
 
     if (!companyId) {
       return formatResponse(
@@ -130,92 +135,88 @@ export async function PATCH(req: Request) {
       );
     }
 
-    if (phoneNumberId) {
+    // 1. Upsert WhatsApp Account Credentials
+    if (account && account.phoneNumberId) {
       const existingAccount = await prisma.whatsAppAccount.findFirst({
         where: { companyId },
       });
 
+      const accountData = {
+        environment: account.environment || "PRODUCTION",
+        phoneNumberId: account.phoneNumberId,
+        phoneNumber: account.phoneNumber,
+        displayName: account.displayName,
+        appId: account.appId,
+        ...(account.accessToken && {
+          accessTokenEncrypted: account.accessToken,
+        }),
+        ...(account.appSecret && { appSecretEncrypted: account.appSecret }),
+        ...(account.webhookVerifyToken && {
+          webhookVerifyTokenEncrypted: account.webhookVerifyToken,
+        }),
+        status: "CONNECTED" as const,
+      };
+
       if (existingAccount) {
         await prisma.whatsAppAccount.update({
           where: { id: existingAccount.id },
-          data: {
-            phoneNumberId,
-            businessAccountId: wabaAccountId,
-            accessTokenEncrypted: accessToken,
-            webhookVerifyTokenEncrypted: webhookVerifyToken,
-            status: "CONNECTED",
-          },
+          data: accountData,
         });
       } else {
         await prisma.whatsAppAccount.create({
           data: {
             companyId,
-            phoneNumberId,
-            businessAccountId: wabaAccountId,
-            accessTokenEncrypted: accessToken,
-            webhookVerifyTokenEncrypted: webhookVerifyToken,
-            status: "CONNECTED",
+            ...accountData,
           },
         });
       }
     }
 
-    await prisma.whatsAppAIConfig.upsert({
-      where: { companyId },
-      update: {
-        enabled: Boolean(enableAiAgent),
-        tone: aiTone,
-        systemPrompt: aiSystemPrompt,
-        maxConversationMessages: Number(maxAutoRepliesPerUser),
-        respectBusinessHours: Boolean(enableBusinessHours),
-        businessHours: {
-          start: businessHoursStart,
-          end: businessHoursEnd,
-          offHoursMessage,
+    // 2. Upsert WhatsApp AI Configuration
+    if (aiConfig) {
+      await prisma.whatsAppAIConfig.upsert({
+        where: { companyId },
+        update: {
+          enabled: Boolean(aiConfig.enabled),
+          provider: aiConfig.provider,
+          model: aiConfig.model,
+          assistantName: aiConfig.assistantName,
+          tone: aiConfig.tone,
+          systemPrompt: aiConfig.systemPrompt,
+          businessDescription: aiConfig.businessDescription,
+          autoReply: Boolean(aiConfig.autoReply),
+          humanHandoff: Boolean(aiConfig.humanHandoff),
+          handoffConfidenceThreshold: Number(
+            aiConfig.handoffConfidenceThreshold,
+          ),
+          temperature: Number(aiConfig.temperature),
+          canSearchProducts: Boolean(aiConfig.canSearchProducts),
+          canCheckOrders: Boolean(aiConfig.canCheckOrders),
+          canCreateOrders: Boolean(aiConfig.canCreateOrders),
         },
-      },
-      create: {
-        companyId,
-        enabled: Boolean(enableAiAgent),
-        tone: aiTone,
-        systemPrompt: aiSystemPrompt,
-        maxConversationMessages: Number(maxAutoRepliesPerUser),
-        respectBusinessHours: Boolean(enableBusinessHours),
-        businessHours: {
-          start: businessHoursStart,
-          end: businessHoursEnd,
-          offHoursMessage,
+        create: {
+          companyId,
+          enabled: Boolean(aiConfig.enabled),
+          provider: aiConfig.provider || "OPENAI",
+          model: aiConfig.model || "gpt-4o",
+          assistantName: aiConfig.assistantName || "Assistant",
+          tone: aiConfig.tone || "professional",
+          systemPrompt: aiConfig.systemPrompt,
+          businessDescription: aiConfig.businessDescription,
+          autoReply: Boolean(aiConfig.autoReply),
+          humanHandoff: Boolean(aiConfig.humanHandoff),
+          handoffConfidenceThreshold: Number(
+            aiConfig.handoffConfidenceThreshold || 0.55,
+          ),
+          temperature: Number(aiConfig.temperature || 0.3),
+          canSearchProducts: Boolean(aiConfig.canSearchProducts),
+          canCheckOrders: Boolean(aiConfig.canCheckOrders),
+          canCreateOrders: Boolean(aiConfig.canCreateOrders),
         },
-      },
-    });
-
-    if (autoHandoffKeywords) {
-      const keywordsArray = autoHandoffKeywords
-        .split(",")
-        .map((k: string) => k.trim())
-        .filter(Boolean);
-
-      const existingHandoff = await prisma.whatsAppAutomation.findFirst({
-        where: { companyId, trigger: "HUMAN_HANDOFF" },
       });
-
-      if (existingHandoff) {
-        await prisma.whatsAppAutomation.update({
-          where: { id: existingHandoff.id },
-          data: { keywords: keywordsArray },
-        });
-      } else {
-        await prisma.whatsAppAutomation.create({
-          data: {
-            companyId,
-            name: "Human Escalation Handoff",
-            trigger: "HUMAN_HANDOFF",
-            keywords: keywordsArray,
-          },
-        });
-      }
     }
 
+    // 3. Clear Redis Cache
     try {
       await cacheDel(`admin:whatsapp:settings:${companyId}`);
     } catch (e) {}
@@ -223,10 +224,11 @@ export async function PATCH(req: Request) {
     return formatResponse(
       true,
       { success: true },
-      "WhatsApp settings updated successfully",
+      "WhatsApp & AI settings updated successfully",
       200,
     );
   } catch (error) {
+    console.error("Error updating WhatsApp config:", error);
     return formatResponse(
       false,
       null,
