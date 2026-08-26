@@ -1,3 +1,5 @@
+import { MediaAIConfig } from "./types";
+
 export type MediaType = "IMAGE" | "VIDEO" | "BOOK";
 
 export type MediaSource = "LOCAL" | "SERVER" | "AI_GENERATED" | "AI_EDITED";
@@ -27,6 +29,7 @@ export type MediaAIAction =
   | "UPSCALE_IMAGE"
   | "GENERATE_PRODUCT_IMAGE"
   | "GENERATE_THUMBNAIL"
+  | "GENERATE_VIDEO_THUMBNAIL"
   | "GENERATE_VIDEO"
   | "EDIT_VIDEO"
   | "GENERATE_CAPTIONS"
@@ -52,31 +55,31 @@ export interface MediaMetadata {
   [key: string]: unknown;
 }
 
-export interface MediaAIConfig {
-  action: MediaAIAction;
+// export interface MediaAIConfig {
+//   action: MediaAIAction;
 
-  prompt?: string;
+//   prompt?: string;
 
-  negativePrompt?: string;
+//   negativePrompt?: string;
 
-  model?: string;
+//   model?: string;
 
-  provider?: string;
+//   provider?: string;
 
-  aspectRatio?: string;
+//   aspectRatio?: string;
 
-  width?: number;
+//   width?: number;
 
-  height?: number;
+//   height?: number;
 
-  duration?: number;
+//   duration?: number;
 
-  variationCount?: number;
+//   variationCount?: number;
 
-  preserveSubject?: boolean;
+//   preserveSubject?: boolean;
 
-  metadata?: Record<string, unknown>;
-}
+//   metadata?: Record<string, unknown>;
+// }
 
 export interface MediaAsset {
   id: string;

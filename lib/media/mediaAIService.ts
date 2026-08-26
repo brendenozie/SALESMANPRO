@@ -1,8 +1,7 @@
-import { prisma } from "@//prisma";
-
-import { MediaAIAction, MediaAIConfig } from "./contracts";
-
+import prisma from "@/server/db/prismadb";
 import { mediaAIQueue } from "./queues";
+import { MediaAIAction } from "@prisma/client";
+import { MediaAIConfig } from "./types";
 
 export interface CreateMediaAIJobInput {
   userId: string;
