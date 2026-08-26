@@ -1,8 +1,11 @@
 import { Worker, Job } from "bullmq";
-import { prisma } from "../prisma"; // Your prisma client
-import { aiRouter } from "../media-ai/action-router";
-import { OpenAIImageProvider } from "../media-ai/providers/openai";
+import prisma from "@/server/db/prismadb";
 import { MediaJobStatus } from "@prisma/client";
+import { NextResponse } from "next/server";
+import { MediaAIAction } from "@prisma/client";
+import { aiRouter } from "../action-router";
+import { OpenAIImageProvider } from "../providers/openai";
+import { enqueueAIJob } from "./queue";
 
 // Register providers
 aiRouter.register(new OpenAIImageProvider());
@@ -99,52 +102,49 @@ export const mediaAIWorker = new Worker(
   },
   { connection },
 );
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { enqueueAIJob } from "@/lib/queues/media-ai.queue";
-import { MediaAIAction } from "@prisma/client";
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { mediaId, inputVersionId, action, config, companyId } = body;
 
-    // 1. Validation & Auth (Assume user is verified here)
-    if (!mediaId || !action) {
-      return NextResponse.json(
-        { error: "Missing parameters" },
-        { status: 400 },
-      );
-    }
+// export async function POST(req: Request) {
+//   try {
+//     const body = await req.json();
+//     const { mediaId, inputVersionId, action, config, companyId } = body;
 
-    // 2. Create the Job
-    const job = await prisma.mediaJob.create({
-      data: {
-        mediaId,
-        inputVersionId,
-        action: action as MediaAIAction,
-        config,
-        companyId,
-      },
-    });
+//     // 1. Validation & Auth (Assume user is verified here)
+//     if (!mediaId || !action) {
+//       return NextResponse.json(
+//         { error: "Missing parameters" },
+//         { status: 400 },
+//       );
+//     }
 
-    // 3. Enqueue to BullMQ
-    await enqueueAIJob(job.id, { mediaJobId: job.id });
+//     // 2. Create the Job
+//     const job = await prisma.mediaJob.create({
+//       data: {
+//         mediaId,
+//         inputVersionId,
+//         action: action as MediaAIAction,
+//         config,
+//         companyId,
+//       },
+//     });
 
-    // 4. Return fast response
-    return NextResponse.json({
-      success: true,
-      job: {
-        id: job.id,
-        status: job.status,
-        progress: job.progress,
-      },
-    });
-  } catch (error) {
-    console.error("AI Job Creation Failed:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
-  }
-}
+//     // 3. Enqueue to BullMQ
+//     await enqueueAIJob(job.id, { mediaJobId: job.id });
+
+//     // 4. Return fast response
+//     return NextResponse.json({
+//       success: true,
+//       job: {
+//         id: job.id,
+//         status: job.status,
+//         progress: job.progress,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("AI Job Creation Failed:", error);
+//     return NextResponse.json(
+//       { error: "Internal Server Error" },
+//       { status: 500 },
+//     );
+//   }
+// }

@@ -1,3 +1,4 @@
+
 import { MediaAIAction } from "@prisma/client";
 import { MediaAIProvider } from "../provider";
 import { AIExecutionContext, MediaAIConfig, AIExecutionResult } from "../types";
@@ -28,7 +29,7 @@ export class OpenAIImageProvider implements MediaAIProvider {
       });
 
       return {
-        url: response.data[0].url as string,
+        url: response.data?.[0]?.url as string,
         mimeType: "image/png",
         provider: this.name,
         model: "dall-e-3",

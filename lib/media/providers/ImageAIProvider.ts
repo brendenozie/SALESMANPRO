@@ -1,10 +1,11 @@
-import { MediaAIAction, MediaAIConfig } from "@/lib/media/contracts";
+import { MediaAIAction, } from "@/lib/media/contracts";
 
 import {
   AIExecutionContext,
   AIExecutionResult,
   MediaAIProvider,
 } from "../ai/MediaAIActionRouter";
+import { MediaAIConfig } from "../types";
 
 export class ImageAIProvider implements MediaAIProvider {
   supports(action: MediaAIAction) {
