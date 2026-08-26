@@ -1,40 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-
-import prisma  from "@/server/db/prismadb";
-
-export async function GET(
-  _request: NextRequest,
-  context: {
-    params: Promise<{
-      jobId: string;
-    }>;
-  },
-) {
-  const { jobId } = await context.params;
-
-  const job = await prisma.mediaJob.findUnique({
-    where: {
-      id: jobId,
-    },
-  });
-
-  if (!job) {
-    return NextResponse.json(
-      {
-        error: "Job not found",
-      },
-      { status: 404 },
-    );
-  }
-
-  return NextResponse.json({
-    success: true,
-    job,
-  });
-}
-
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+
 
 export async function GET(
   req: Request,

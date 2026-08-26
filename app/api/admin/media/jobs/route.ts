@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createMediaAIJob } from "@/lib/media/mediaAIService";
 
-import { MediaAIAction, MediaAIConfig } from "@/lib/media/contracts";
+import { MediaAIConfig } from "@/lib/media/contracts";
+import { MediaAIAction } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
