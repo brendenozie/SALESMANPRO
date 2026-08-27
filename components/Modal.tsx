@@ -1,0 +1,163 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { setCookie } from "cookies-next";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useEffect, useState, ReactNode } from "react";
+
+// --- Utility Functions ---
+const storeSignupPath = (rolePath: string) => {
+  setCookie("signup_path", rolePath, { maxAge: 5 * 60 });
+};
+
+const handleSignupNavigation = (role: string) => {
+  storeSignupPath(role);
+  window.location.href = "/register";
+};
+
+// --- Custom Hook for Responsive Breakpoint ---
+const useIsMobile = (breakpoint: number = 640): boolean => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = `(max-width: ${breakpoint - 1}px)`;
+    const mediaQueryList = window.matchMedia(mediaQuery);
+
+    const handleResize = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(event.matches);
+    };
+
+    handleResize(mediaQueryList);
+    mediaQueryList.addEventListener("change", handleResize as any);
+
+    return () => {
+      mediaQueryList.removeEventListener("change", handleResize as any);
+    };
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
+// --- Modal Animations ---
+const mobileVariants: Variants = {
+  hidden: { y: "100%", opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", damping: 25, stiffness: 250 },
+  },
+  exit: { y: "100%", opacity: 0 },
+};
+
+const desktopVariants: Variants = {
+  hidden: { scale: 0.94, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "tween", duration: 0.25, ease: "easeOut" },
+  },
+  exit: { scale: 0.97, opacity: 0 },
+};
+
+// --- Modal Component ---
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+  showCloseButton?: boolean; // New prop to control close button visibility
+}
+
+function Modal({ isOpen, onClose, children,title, showCloseButton = true, }: ModalProps) {
+  // Disable background scroll when modal opens
+  useEffect(() => {
+      if (isOpen) document.body.style.overflow = "hidden";
+      else document.body.style.overflow = "";
+      return () => { document.body.style.overflow = ""; };
+    }, [isOpen]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Background Overlay */}
+          <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Modal Container */}
+         <motion.div
+            // className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
+            className="
+              fixed inset-0 z-50 
+              shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)]
+              rounded-t-[32px] sm:rounded-[28px]
+              flex flex-col items-start sm:items-center justify-center
+              p-0 sm:p-6 overflow-y-auto
+              max-h-[95vh]
+            "
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+          >
+            {/* Header Area */}
+            <div className="flex items-start justify-between px-6 sm:px-8 pt-6 pb-2">
+              <div className="flex-1">
+                {title && (
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                    {title}
+                  </h2>
+                )}
+                
+              </div>
+
+               {/* ❌ VISIBLE CLOSE BUTTON */}
+                {showCloseButton && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Stop click from hitting backdrop
+                      onClose();
+                    }}
+                    className="
+                      ml-4 p-2 
+                      bg-gray-100 dark:bg-gray-800 
+                      text-gray-600 dark:text-gray-400 
+                      hover:text-red-600 dark:hover:text-red-400 
+                      hover:bg-red-50 dark:hover:bg-red-900/20
+                      rounded-full transition-all duration-200
+                    "
+                  >
+                    <XMarkIcon className="w-6 h-6 stroke-[2.5]" />
+                  </button>
+                )}
+              </div>
+
+            {/* Inner Container */}
+            <div
+              className="
+                w-full
+                sm:w-[90vw]     
+                sm:max-w-[750px] 
+                flex flex-col
+                bg-transparent
+                sm:max-h-full
+              "
+            >
+              {children}
+            </div>
+
+            {/* Bottom spacer for mobile safe areas */}
+            <div className="h-6 sm:h-2 w-full shrink-0" />
+          </motion.div>
+
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+
+export default Modal;

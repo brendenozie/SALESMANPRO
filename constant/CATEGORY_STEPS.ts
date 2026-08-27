@@ -1,0 +1,375 @@
+// -------------------
+// CATEGORY_STEPS
+// (Already includes all categories and subcategories.)
+// -------------------
+export const CATEGORY_STEPS: Record<string, number[]> = {
+  // — Standard “store” items —
+  Electronics: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Clothing: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Fashion: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Smartphones: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Laptops: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Tablets: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Wearables: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Home Appliances": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Cameras: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Gaming Consoles": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Televisions: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Audio Systems": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Music: [1, 2, 7, 8, 10, 12, 11],
+  Books: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Stationery: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Shoes: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Watches: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Jewelry: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Beauty Products": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Skincare: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Haircare: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Toys: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Baby Toys": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Sports Equipment": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Fitness Gear": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Outdoor Gear": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Bicycles: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Musical Instruments": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Furniture: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Decor: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Kitchenware: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Dining: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Bedding: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Pet Supplies": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Pets: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Lighting: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Gardening: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Home & Garden": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Home And Garden": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Office Supplies": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Art Supplies": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Health Products": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Health & Beauty": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Health And Beauty": [1, 2, 7, 8, 9, 10, 12, 11],
+  Supplements: [1, 2, 7, 8, 9, 10, 12, 11],
+  "Baby Products": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Maternity: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Groceries: [1, 2, 7, 8, 10, 12, 11],
+  Snacks: [1, 2, 7, 8, 10, 12, 11],
+  Beverages: [1, 2, 7, 8, 10, 12, 11],
+  Alcohol: [1, 2, 7, 8, 10, 12, 11],
+  "Gourmet Foods": [1, 2, 7, 8, 10, 12, 11],
+  "Cleaning Supplies": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Safety Equipment": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Party Supplies": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Gifts: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Travel Gear": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  // — Property listings flow —
+  "Real Estate": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Property: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  "Property Management": [1, 2, 7, 15, 16, 17, 8, 10, 18, 12, 13, 11],
+  Houses: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Land: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Commercial: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Apartments: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  "Vacation Rentals": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Warehouses: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  "Gated Communities": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Offices: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  "Serviced Apartments": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Hostels: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  "Shared Housing": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Shops: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Farms: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  Hotels: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+  "Event Spaces": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
+
+  // — Automotive & tools flow —
+  Automotive: [1, 3, 4, 5, 7, 8, 10, 12, 14, 11],
+  "Automotive Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Cars: [1, 3, 4, 5, 8, 10, 12, 14, 11], //7,
+  "Car Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Tools: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Hardware: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  Motorcycles: [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Electric Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Performance Parts": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Care": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Charging Stations": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Tires & Wheels": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Audio & Navigation": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Interior Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Exterior Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Safety & Emergency Equipment": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Fluids & Oils": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Luxury Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Off-road Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Classic & Vintage Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Used Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Salvage Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "New Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Pickup Trucks": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Commercial Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Sports Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  Vans: [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "delivery trucks": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  buses: [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Car Rental & Leasing": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Auctions": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Insurance Services": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Batteries": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Power Systems": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Lighting": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  Bulbs: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Dash Cams": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Cameras": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Security": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Tracking Systems": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Diagnostic Tools": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Electronics": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Auto Tools": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Truck Parts & Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "RV & Camper Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Convertible & Sunroof Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Windshield Wipers & Washers": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Steering Wheels & Pedal Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Seat Covers & Floor Mats": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Wraps & Decals": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Towing Equipment & Trailers": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Exhaust Systems & Mufflers": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Transmission & Drivetrain Components": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Cooling Systems & Radiators": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Suspension & Steering Components": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Engine Parts & Mounts": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  // — Services flow —
+  Services: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Company Services": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Cleaning: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Drycleaning: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Plumbing: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Electrical: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Landscaping: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Catering: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Transportation: [1, 2, 3, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "IT Services": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Beauty Services": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Barbershop: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Tutoring: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Event Planning": [1, 2, 3, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  Tutors: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Math Tutors": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Science Tutors": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Language Tutors": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Programming Tutors": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Music Tutors": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Art Tutors": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  // Educational institutions
+  Schools: [1, 2, 7, 8, 9, 10, 12, 11],
+  "Primary Schools": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Secondary Schools": [1, 2, 7, 8, 9, 10, 12, 11],
+  "International Schools": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Vocational Schools": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Special Needs Schools": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  // Audiences & subjects
+  Students: [1, 2, 7, 8, 9, 10, 12, 11],
+  "Online Students": [1, 2, 7, 8, 9, 10, 12, 11],
+  Subjects: [1, 2, 7, 8, 9, 10, 12, 11],
+  Mathematics: [1, 2, 7, 8, 9, 10, 12, 11],
+  Science: [1, 2, 7, 8, 9, 10, 12, 11],
+  English: [1, 2, 7, 8, 9, 10, 12, 11],
+  "Computer Science": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  // — Arts & Crafts flow —
+  "Arts & Crafts": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Painting Supplies": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Knitting & Sewing": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "DIY Kits": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Scrapbooking: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Art Prints": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  // — Travel & Experiences flow —
+  "Travel & Experiences": [1, 2, 7, 15, 16, 17, 8, 10, 18, 12, 11],
+  "Flight Tickets": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Hotel Bookings": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Tour Packages": [1, 2, 7, 8, 15, 16, 17, 8, 10, 18, 12, 11],
+  "Event Tickets": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Travel Insurance": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  // — Digital Goods & Subscriptions flow —
+  "Digital Goods & Subscriptions": [1, 2, 7, 8, 10, 12, 11],
+  "Software Licenses": [1, 2, 7, 8, 10, 12, 11],
+  "E-books": [1, 2, 7, 8, 10, 12, 11],
+  "Online Courses": [1, 2, 7, 8, 10, 12, 11],
+  "Streaming Subscriptions": [1, 2, 7, 8, 10, 12, 11],
+  "Mobile App Credits": [1, 2, 7, 8, 10, 12, 11],
+
+  // Directory & Listings flow
+  "Directory & Listings": [1, 2, 8, 12, 11],
+
+  // — Consulting & Coaching flow —
+  "Consulting & Coaching": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  Consulting: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  Coaching: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  Consultant: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  Coach: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Business Coach": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Life Coach": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Career Coach": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Financial Consultant": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Health Coach": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  Therapist: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Security Services": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Security Consulting": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Company Portfolio": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  Agrovet: [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Baby Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Bike Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Blog & Content": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Book Store": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Booking & Appointments": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Cake Store": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  Cybersecurity: [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Dry Cleaning": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Earphones Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Electronic Security Systems": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Emergency Response Services": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Event & Ticketing": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Finance & Legal": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  // "Fitness & Wellness": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Fitness & Wellness": [1, 2, 3, 16, 7, 15, 17, 8, 9, 10, 12, 11],
+
+  "Flowers Store": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Gaming Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Glasses & Spectacles Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Groceries Store": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Hardware Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Healthcare & Clinics": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Honey Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  Lecturer: [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Meat & Butchery": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Media & Entertainment": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Motorcycle Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Nonprofit & Community": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Peanuts Store": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Pets Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Physical Security": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Portfolio & Personal Branding": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  Principal: [1, 2, 7, 8, 9, 10, 12, 11],
+
+  Pupils: [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Restaurant & Food Delivery": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "SaaS & Web Apps": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "School Head": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  Teacher: [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "VIP & Personal Protection": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "vip-protection": [1, 2, 7, 8, 9, 10, 12, 11],
+
+  "Watch Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Delivery & Logistics": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Logistics & Delivery": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Logistics & Transportation": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+};

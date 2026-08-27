@@ -1,0 +1,51 @@
+// File: components/site/layouts/BlogLayout/BlogSite.tsx
+'use client';
+
+import React from 'react';
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
+import { StoreForm } from '@/types/typings';
+
+// Above-the-fold components - statically imported
+import HeroSection from './components/HeroSection';
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// Loading skeleton
+
+// Dynamically import below-the-fold components
+const FeaturedCategoriesSection = dynamic(() => import('./components/FeaturedCategoriesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const LatestNewsSection = dynamic(() => import('./components/LatestNewsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const StaffWritersSection = dynamic(() => import('./components/StaffWritersSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const LatestPodcastSection = dynamic(() => import('./components/LatestPodcastSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function BlogSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  // Fetch client-side data
+  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
+  
+  return (
+    <>
+
+      <HeroSection heroSlides={pageData.heroSlides} />
+
+      <FeaturedCategoriesSection StoreCategory={pageData.StoreCategory} />
+
+      {blogsData?.data && <LatestNewsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />}
+
+      <StaffWritersSection Writer={pageData.Writer} />
+
+      {blogsData?.data && <PopularBlogsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />}
+
+      <LatestPodcastSection Podcast={pageData.Podcast} />
+
+      <CtaSection/>
+      
+    </>
+  );
+}
+

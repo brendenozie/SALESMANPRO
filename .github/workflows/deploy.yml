@@ -1,0 +1,118 @@
+name: 🚀 Auto Deploy SalesmanPro to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        run: |
+          install -m 0700 -d ~/.ssh
+          # Use 'printf' to preserve newlines in the private key
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Add the host to known_hosts to prevent the "Host verification" hang
+          ssh-keyscan -p 2222 -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Deploy to VPS
+        run: |
+          ssh -p 2222 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            # 1. KILL THE MALWARE IMMEDIATELY ON THE SERVER
+            echo "🛡️ Cleaning malware..."
+            sudo chattr -ai /tmp/kdevtmpfsi /tmp/libsystem.so /etc/cron.d/kinsing /var/tmp/.unix/javae || true
+            sudo pkill -9 kinsing || true
+            sudo pkill -9 kdevtmpfsi || true
+            sudo pkill -9 javae || true
+            sudo rm -rf /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix /etc/cron.d/kinsing
+
+            # 2. VACCINATE (Lock the paths so it can't come back mid-build)
+            # sudo mkdir -p /var/tmp/.unix
+            # sudo touch /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
+            # sudo chmod 000 /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
+            # sudo chattr +i /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
+
+            # 3. Standard Deployment
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            cd /var/www/salesmanpro
+            
+            echo "📥 Cleaning project and pulling code..."
+            # Remove the miner files if they were staged in the app folder
+            rm -rf xmrig* njs_monitor.log
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "📦 Installing dependencies..."
+            npm ci --legacy-peer-deps
+
+            ## 1. Free up RAM for the build
+            #echo "📉 Scaling down PM2 to 1 instance..."
+            pm2 scale salesmanpro 1
+            pm2 scale ssl-worker 0
+
+            echo "🏗️ Building Next.js app..."
+            export NODE_OPTIONS="--max-old-space-size=6144"
+            npm run build
+
+            echo "🔁 Reloading PM2..."
+            pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+            
+            # 2. Scale back up to 2 instances now that build is done
+            # pm2 scale salesmanpro 2
+
+            pm2 save
+            echo "🎉 Deployment successful!"
+          EOF
+
+      # - name: 🚀 Deploy to VPS
+      #   run: |
+      #     ssh -p 2222 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+      #       # Load NVM/Node paths (Critical for non-root users)
+      #       export NVM_DIR="$HOME/.nvm"
+      #       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+      #       echo "🔐 Changing to project directory..."
+      #       cd /var/www/salesmanpro
+
+      #       echo "📥 Pulling latest code..."
+      #       git pull origin main
+
+      #       echo "📦 Installing dependencies..."
+      #       # 'npm ci' is faster and more reliable for production
+      #       # npm ci
+      #       # 'ci' stands for Clean Install
+      #       npm ci --legacy-peer-deps
+
+      #       # 1. Free up RAM for the build
+      #       echo "📉 Scaling down PM2 to 1 instance..."
+      #       pm2 scale salesmanpro 1
+
+      #       echo "🏗️ Building Next.js app..."
+      #       # Leveraging your 8GB RAM capacity
+      #       export NODE_OPTIONS="--max-old-space-size=6144"
+      #       npm run build
+
+      #       echo "🔁 Reloading Server..."
+      #       cd /var/www/salesmanpro
+
+      #       # 2. Run an explicit check to see if the file exists (for debugging logs)
+      #       # Using reload instead of restart for zero-downtime
+      #       # This looks for the name defined in your ecosystem.config.js
+      #       pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+
+      #       # 2. Scale back up to 2 instances now that build is done
+      #       pm2 scale salesmanpro 2
+
+      #       # Save the PM2 state to ensure it persists after a reboot
+      #       pm2 save
+
+      #       echo "🎉 Deployment successful!"
+      #     EOF

@@ -1,0 +1,65 @@
+import prisma from '@/server/db/prismadb';
+import { loadStore } from '@/lib/loadStore';
+import ProductsClient from './ProductsClient';
+import { findCompanyCached } from '@/lib/company-fetcher';
+import { notFound } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
+
+export default async function ProductListPage({ params, searchParams }: {
+  params: { slug: string };
+  searchParams: { [key: string]: string | undefined };
+}) {
+  const { slug } = params;
+  const company = await findCompanyCached(slug, "lean");
+
+  if(!company)   notFound();
+
+  const companyId = company.id;
+
+  // get categories + initial products
+  const pageSize = 12;
+  const page = parseInt(searchParams.page || "1", 10);
+
+  const [categories, initialListings, totalCount] = await Promise.all([
+    prisma.storeCategory.findMany({
+      where: { companyId },
+      orderBy: { displayName: "asc" },
+      select: { id: true, displayName: true }
+    }),
+
+    prisma.marketplaceListings.findMany({
+      where: { companyId },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: { createdAt: "desc" }, // default
+      select: {
+        id: true,
+        name: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        option:true
+      }
+    }),
+
+    prisma.marketplaceListings.count({ where: { companyId } })
+  ]);
+
+  const safeInitialListings = initialListings as any;
+
+  return (
+    <main >
+      <div className="py-16 bg-[#fafaf9] dark:bg-black transition-colors duration-300">
+      </div>
+
+      <ProductsClient
+        companyId={companyId}
+        slug={slug}
+        initialListings={safeInitialListings}
+        categories={categories}
+        totalPages={Math.ceil(totalCount / pageSize)}
+      />
+    </main>
+  );
+}

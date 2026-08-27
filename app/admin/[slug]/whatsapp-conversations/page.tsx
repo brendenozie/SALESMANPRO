@@ -1,0 +1,57 @@
+import { cookies } from "next/headers";
+import WhatsAppConversationsClient, {
+  ConversationLog,
+} from "./WhatsAppConversationsClient";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
+
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function WhatsAppConversationsPage({ params }: PageProps) {
+  const { slug } = await params;
+  const cookieHeader = (await cookies()).toString();
+
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || "";
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div className="p-8 text-slate-500">Company configuration not found.</div>;
+  }
+
+  const companyId = company.id;
+  let initialConversations: ConversationLog[] = [];
+
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/admin/whatsapp/conversations/logs?companyId=${encodeURIComponent(
+        companyId
+      )}`,
+      {
+        headers: { cookie: cookieHeader },
+        next: { revalidate: 30 },
+      }
+    );
+
+    if (res.ok) {
+      initialConversations = (await res.json()).data;
+    }
+  } catch (err) {
+    console.error(
+      "[WhatsAppConversationsPage] Failed to fetch conversation logs",
+      err
+    );
+  }
+
+  return (
+    <WhatsAppConversationsClient
+      initialConversations={initialConversations}
+      companyId={companyId}
+    />
+  );
+}

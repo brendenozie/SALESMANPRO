@@ -1,0 +1,181 @@
+'use client';
+
+import React from 'react';
+import dynamic from "next/dynamic";
+import { 
+  UsersIcon, BriefcaseIcon, BookOpenIcon, CalendarDaysIcon, 
+  StarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, RocketLaunchIcon, 
+  ClockIcon,
+  ChatBubbleBottomCenterTextIcon,
+  MegaphoneIcon
+} from '@heroicons/react/24/outline';
+
+const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
+
+export default function PrincipalDashboard({ data }: { data: any }) {
+  const chartOptions: any = {
+    chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
+    colors: ['#3C50E0', '#10B981'],
+    stroke: { curve: 'smooth', width: 3 },
+    fill: { type: 'gradient', gradient: { opacityFrom: 0.6, opacityTo: 0.1 } },
+    xaxis: { categories: data.trendData.categories },
+    yaxis: { max: 100, labels: { formatter: (v: number) => `${v}%` } },
+    dataLabels: { enabled: false },
+    tooltip: { x: { show: false }, marker: { show: true } }
+  };
+
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const statIcons: Record<string, JSX.Element> = {
+    'Total Students': <UsersIcon className="h-6 w-6 text-blue-600" />,
+    'Total Teachers': <BriefcaseIcon className="h-6 w-6 text-emerald-600" />,
+    'Total Classes': <BookOpenIcon className="h-6 w-6 text-violet-600" />,
+    'Upcoming Events': <CalendarDaysIcon className="h-6 w-6 text-amber-600" />,
+    'Pending Approvals': <ClockIcon className="h-6 w-6 text-rose-600" />,
+  };
+  
+  return (
+    <div className="p-6 bg-slate-50 min-h-screen">
+      {/* Header */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 lg:text-3xl">Principal's Command Center</h1>
+          <p className="text-slate-500">Welcome back. Here is what's happening in your school today.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm text-sm font-semibold text-slate-600">
+          <CalendarDaysIcon className="h-5 w-5" /> {today}
+        </div>
+      </div>
+
+      {/* 1. Top Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {data.principalStats.map((stat: any, i: number) => (
+          <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+              {statIcons[stat.title]}
+            </div>
+            <h3 className={`text-2xl font-black ${stat.color}`}>{stat.value}</h3>
+            <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-wider font-bold">{stat.description}</p>
+          </div>
+        ))}
+      </div>
+      
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left: Main Charts & Impact */}
+        <div className="lg:col-span-8 space-y-8">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-slate-800">Operational Performance</h2>
+              <p className="text-sm text-slate-500">Correlation between teaching quality and academic results.</p>
+            </div>
+            <ApexCharts options={chartOptions} series={data.trendData.series} type="area" height={350} />
+          </div>
+
+          {/* Impact Drill-down Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200">
+              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <ArrowTrendingUpIcon className="h-5 w-5 text-blue-600" /> Academic Volatility
+              </h3>
+              <div className="space-y-4">
+                {data.impactReport.map((item: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                    <div>
+                      <p className="text-sm font-bold">{item.courseName}</p>
+                      <p className="text-[10px] text-slate-400">Impacted by: {item.keyExam}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-sm font-black ${item.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {item.change >= 0 ? '+' : ''}{item.change}%
+                      </span>
+                      <p className="text-[10px] text-slate-400">Avg: {item.currentAvg}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-slate-900 rounded-3xl p-6 text-white">
+              <h3 className="font-bold mb-4 flex items-center gap-2">
+                <RocketLaunchIcon className="h-5 w-5 text-blue-400" /> Admin Quick Links
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {['Financials', 'Staffing', 'Exam Board', 'Reports'].map(link => (
+                  <button key={link} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-semibold text-left transition-all border border-white/5">
+                    {link}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Spotlights & Feed */}
+        <div className="lg:col-span-4 space-y-6">
+
+          <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-1 rounded-3xl shadow-lg shadow-orange-100">
+            <div className="bg-white/95 backdrop-blur-sm p-6 rounded-[calc(1.5rem-1px)]">
+              <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6">
+                <StarIcon className="h-6 w-6 text-orange-500" /> Weekly Hall of Fame
+              </h3>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">🎓</div>
+                  <div>
+                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Student of the Week</p>
+                    <p className="font-bold text-slate-800">{data.spotlight.student}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">👨‍🏫</div>
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Teacher of the Week</p>
+                    <p className="font-bold text-slate-800">{data.spotlight.teacher}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Announcements */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold mb-4 flex items-center gap-2">
+              <MegaphoneIcon className="h-5 w-5 text-blue-600" /> Announcements
+            </h3>
+            <div className="space-y-3">
+              {data.announcements.map((note:any) => (
+                <div key={note.id} className={`p-3 rounded-xl text-sm border-l-4 ${note.type === 'warning' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}>
+                  {note.text}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Messages */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold mb-4 flex items-center gap-2">
+              <ChatBubbleBottomCenterTextIcon className="h-5 w-5 text-emerald-600" /> Staff Activity
+            </h3>
+            <div className="space-y-4">
+              {data.recentStaffMessages.map((msg:any) => (
+                <div key={msg.id} className="flex gap-3 items-start border-b border-slate-50 pb-3 last:border-0">
+                  <div className="h-8 w-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs font-bold">{msg.name[0]}</div>
+                  <div>
+                    <div className="flex justify-between items-center w-full">
+                      <p className="text-sm font-bold">{msg.name}</p>
+                      <span className="text-[10px] text-slate-400">{msg.time}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 line-clamp-2">{msg.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  );
+}

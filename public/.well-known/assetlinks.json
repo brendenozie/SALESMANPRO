@@ -1,0 +1,12 @@
+[
+    {
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "co.ke.salesmanpro.workoutpro",
+            "sha256_cert_fingerprints": [
+                "57:8E:89:A4:63:3D:BC:E7:1E:6D:A5:D9:8E:50:ED:B0:FC:F6:F4:8F:95:C1:29:F5:EA:81:83:56:81:1D:49:C4"
+            ]
+        }
+    }
+]

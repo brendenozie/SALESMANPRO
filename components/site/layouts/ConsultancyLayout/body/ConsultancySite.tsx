@@ -1,0 +1,78 @@
+'use client';
+
+import React from "react";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
+import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
+
+// Above-the-fold components - statically imported
+import HeroSection from "./components/HeroSection";
+import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
+
+// Loading skeleton
+
+const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// Dynamically import below-the-fold components
+const SocialProofSection = dynamic(() => import('./components/SocialProofSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const ServicesSection = dynamic(() => import('./components/ServicesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FeaturedListings = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const HowItWorks = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const BrowseByCategory = dynamic(() => import('./components/BrowseByCategorySection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const VideoShowcaseSection = dynamic(() => import('./components/VideoShowcaseSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const TestimonialsCarouselSection = dynamic(() => import('./components/TestimonialsCarouselSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CallToActionSection = dynamic(() => import('./components/CallToActionSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function ConsultancySite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
+
+  // Use pageData for all content
+  const siteData = pageData;
+  
+  // marketplaceListings from siteData → map to VehicleCardProps
+  const Ebookslistings = siteData?.marketplaceListings.filter(listing => listing.type === "ebook") || [];
+  const Programslisting = siteData?.marketplaceListings.filter(listing => listing.type !== "ebook") || [];
+
+  console.log("ConsultancySite - siteData:", siteData.marketplaceListings);
+
+  return (
+    <div className=" font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200  ">
+
+      <div className="bg-gradient-to-br from-gray-50 to-orange-50 font-sans antialiased">
+      
+      {/* Hero */}
+      <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
+
+      <SocialProofSection />
+      
+      <AboutSection />
+
+      <ServicesSection />  
+      
+      <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+
+      <HowItWorks />
+
+      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />   
+
+      {/* If videos are stored under latestVideos */}
+      {blogsData?.data && <VideoShowcaseSection blogs={(blogsData.data || []).map((b: any) => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
+
+      {testimonialsData?.data && <TestimonialsCarouselSection  testimonials={testimonialsData.data || []} />}
+
+      <CallToActionSection />
+
+    </div>
+     
+    </div>
+  );
+}
+

@@ -1,0 +1,229 @@
+'use client'; // This directive might be for Next.js 13+ App Router
+
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  CalendarIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+// import { ProductForm } from '@/components/AddProductModal';
+import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type
+
+interface BookingSlotType {
+  date: string;
+  time: string;
+  capacity: number;
+}
+
+// Assuming ServiceFormData is a sub-part of ProductForm.
+// If not, and this component truly operates on a distinct ServiceFormData,
+// you might need to adjust how it integrates with the parent's main form state.
+interface ServiceSpecificsProps {
+  formData: ProductForm; // Use the comprehensive form type
+  // setFormData: (name: string, value: any) => void; // Matches the useProductForm signature
+  setFormData: <K extends keyof ProductForm>(name: K, value: ProductForm[K]) => void;
+}
+
+const deliveryMethods = ['In-person', 'Online', 'Hybrid'];
+
+export const ServiceSpecifics = ({ formData, setFormData }: ServiceSpecificsProps) => {
+  const [open, setOpen] = useState(true);
+
+  // Initialize bookingSlots with a default slot if empty
+  useEffect(() => {
+    if (!formData.bookingSlots || formData.bookingSlots.length === 0) {
+      // setFormData('bookingSlots', [{ date: '', time: '', capacity: 1 }]);
+    }
+  }, [formData.bookingSlots, setFormData]); // Depend on setFormData
+
+  const handleSlotChange = useCallback(
+    (index: number, field: keyof BookingSlotType, value: string | number) => {
+      const currentSlots = formData.bookingSlots || [];
+      const updatedSlots = [...currentSlots]; // Create a shallow copy for immutability
+
+      if (!updatedSlots[index]) {
+        console.warn(`Attempted to update non-existent slot at index ${index}. This might indicate a timing issue.`);
+        return;
+      }
+
+      // Update the specific field for the chosen slot
+      updatedSlots[index] = {
+        ...updatedSlots[index],
+        [field]: field === 'capacity' ? Number(value) : value, // Ensure capacity is a number
+      };
+      setFormData('bookingSlots', updatedSlots); // Update the parent state
+    },
+    [formData.bookingSlots, setFormData]
+  );
+
+
+  return (
+    <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+      {/* Accordion Header */}
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-400 text-white rounded-t-2xl"
+      >
+        <div className="flex items-center space-x-3">
+          <CalendarIcon className="h-6 w-6" />
+          <h3 className="text-lg font-semibold">Service Specifics 📅</h3> {/* Added emoji */}
+        </div>
+        <span className="flex items-center">
+          {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+        </span>
+      </button>
+
+      {/* Accordion Content */}
+      {open && (
+        <div className="p-6 space-y-8">
+          {/* Service Fields */}
+          <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h4 className="text-2xl font-bold mb-4 text-gray-800">General Service Details</h4> {/* Changed title for clarity */}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Added lg:grid-cols-3 */}
+              <FormNumberField
+                label="Available Quantity (e.g., number of seats, items)"
+                placeholder="1"
+                value={formData.quantity}
+                onChange={(val) => setFormData('quantity', val ?? 0)} // Updated
+                step={1}
+              />
+
+              <FormNumberField
+                label="Hourly Rate ($) (if applicable)"
+                placeholder="0.00"
+                step={0.01}
+                value={formData.hourlyRate || 0}
+                onChange={(val) => setFormData('hourlyRate', val)} // Updated
+              />
+
+              <FormNumberField
+                label="Minimum Hours (for hourly services)"
+                placeholder="1"
+                step={1}
+                value={formData.minimumHours || 1}
+                onChange={(val) => setFormData('minimumHours', val)} // Updated
+              />
+
+              <FormTextField
+                label="Minimum Notice Period (e.g., 24 hours, 3 days)"
+                placeholder="24 hours"
+                value={formData.minNoticePeriod || ''}
+                onChange={(val) => setFormData('minNoticePeriod', val)} // Updated
+              />
+
+              <FormTextField
+                label="Max Booking Lead Time (e.g., 3 months, 1 year)"
+                placeholder="3 months"
+                value={formData.maxBookingAhead || ''}
+                onChange={(val) => setFormData('maxBookingAhead', val)} // Updated
+              />
+
+              <FormNumberField
+                label="Total Service Capacity (overall limit)"
+                placeholder="100"
+                step={1}
+                value={formData.totalCapacity || 0}
+                onChange={(val) => setFormData('totalCapacity', val)} // Updated
+              />
+
+              <div>
+                <label className="text-gray-700 font-medium text-sm block mb-1">Service Delivery Method</label>
+                <select
+                  className="block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  value={formData.deliveryMethod || ''}
+                  onChange={(e) => setFormData('deliveryMethod', e.target.value || undefined)} // Updated
+                >
+                  <option value="">Select Method</option>
+                  {deliveryMethods.map((method) => (
+                    <option key={method} value={method}>
+                      {method}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <FormTextField
+                label="Fulfillment Status (e.g., PENDING_CONFIRMATION, CONFIRMED)"
+                placeholder="e.g., PENDING_CONFIRMATION"
+                value={formData.fulfillmentStatus || ''}
+                onChange={(val) => setFormData('fulfillmentStatus', val)} // Updated
+              />
+
+              <FormNumberField
+                label="Provider Rating (Read-only, calculated automatically)"
+                placeholder="N/A"
+                value={formData.providerRating || 1}
+                readOnly
+              />
+            </div>
+          </section>
+
+        </div>
+      )}
+    </section>
+  );
+};
+
+/* ----------------------- Reusable Field Components (Updated for consistency) ----------------------- */
+
+interface FormNumberFieldProps {
+  label: string;
+  value?: number;
+  onChange?: (val: number | undefined) => void; // Allow undefined for clearing input
+  placeholder?: string;
+  step?: number;
+  readOnly?: boolean;
+}
+
+const FormNumberField: React.FC<FormNumberFieldProps> = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  step = 1,
+  readOnly = false,
+}) => (
+  <label className="block">
+    <span className="text-gray-700 font-medium text-sm">{label}</span>
+    <input
+      type="number"
+      step={step}
+      value={value ?? ''} // Use nullish coalescing to show empty string for undefined/null
+      readOnly={readOnly}
+      onChange={(e) => {
+        if (readOnly) return;
+        const val = e.target.value;
+        onChange?.(val === '' ? undefined : parseFloat(val)); // Pass undefined if input is cleared
+      }}
+      placeholder={placeholder}
+      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500 ${
+        readOnly ? 'bg-gray-100 cursor-not-allowed' : ''
+      }`}
+    />
+  </label>
+);
+
+interface FormTextFieldProps {
+  label: string;
+  value?: string;
+  onChange: (val: string | undefined) => void; // Allow undefined for clearing input
+  placeholder?: string;
+}
+
+const FormTextField: React.FC<FormTextFieldProps> = ({ label, value, onChange, placeholder }) => (
+  <label className="block">
+    <span className="text-gray-700 font-medium text-sm">{label}</span>
+    <input
+      type="text"
+      value={value ?? ''} // Use nullish coalescing to show empty string for undefined/null
+      onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.value)} // Pass undefined if input is cleared
+      placeholder={placeholder}
+      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+    />
+  </label>
+);

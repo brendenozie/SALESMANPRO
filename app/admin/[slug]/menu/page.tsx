@@ -1,0 +1,131 @@
+// app/admin/[slug]/menu/page.tsx
+import React from "react";
+import MenuClient from "./MenuClient";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
+import { cookies } from "next/headers";
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// Define types based on your Prisma schema
+// export type ProductCategory = {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   description: string;
+//   image: string | null;
+//   sortOrder: number;
+//   visible: boolean;
+//   companyId: string | null;
+// };
+
+// export type Product = {
+//   id: string;
+//   name: string;
+//   description: string | null;
+//   images: { url: string }[]; // Assuming images are stored as JSON array of objects with a 'url' key
+//   video: string | null;
+//   tags: string[];
+//   productCategoryId: string | null;
+//   category: { name: string } | null; // Include category name for display
+//   costPrice: number;
+//   salesPrice: number;
+//   finalPrice: number;
+//   discount: number | null;
+//   isAvailable: boolean;
+//   isOnOffer: boolean;
+//   isFlashDeal: boolean;
+//   isNewArrival: boolean;
+//   isDiscounted: boolean;
+//   isFeatured: boolean;
+//   ingredients: string | null;
+//   createdAt: string;
+//   updatedAt: string;
+// };
+
+interface PageProps {
+  params:Promise<{ slug: string }>
+}
+
+interface PaginatedListings {
+  meta: {
+    companyId:     string;
+    totalItems:    number;
+    totalPages:    number;
+    currentPage:   number;
+    perPage:       number;
+  };
+  results: MarketListingForm[];
+}
+
+/**
+ * Server Component: Fetches menu categories and products for a specific restaurant.
+ */
+export default async function MenuPage({ params }: PageProps) {
+    const { slug }  = await params;
+    const cookieHeader = (await cookies()).toString();
+  
+    let productsData: MarketListingForm[] = [];
+    let categoriesData: IStoreCategory[] = [];
+    
+      const session = await getAuthSession();
+    
+      // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+      const identifier = slug || session?.user?.id || '';
+    
+      // 2. Retrieve the memoized company data (no extra DB cost)
+      const company = await findCompanyCached(identifier, "page");
+    
+      if (!company) {
+        return <div>Company not found</div>;
+      }
+    
+      // Use the actual database ID for your API calls, ensuring consistency
+      const companyId = company.id;
+  
+    try {
+      const res = await fetch(
+        `${apiBaseUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
+        { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
+      );
+  
+      if (res.ok) {
+        
+        let menuRes = await res.json();   
+        // console.log("Fetched marketplace products data:", menuRes);
+        productsData = menuRes.data.results.map((product: any) => ({
+          ...product,
+          createdAt: product.createdAt ? new Date(product.createdAt).toISOString() : null,
+          updatedAt: product.updatedAt ? new Date(product.updatedAt).toISOString() : null,
+        })) as MarketListingForm[];
+        
+      } else {
+        // console.error(
+        //   "[ClientInventoryPage] Failed to fetch marketplace products:",
+        //   res.status,
+        //   res.statusText
+        // );
+      }
+  
+      
+      // Fetch all categories for this company
+      const categoriesRes = await fetch(
+        `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+          companyId
+        )}`,
+        { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
+      );
+      if (categoriesRes.ok) {
+          let catRes = await categoriesRes.json();
+          // console.log("Fetched categories data:", catRes);
+          const categoriesJson: { InfoResponse: any; results: IStoreCategory[] } = catRes.data;
+          categoriesData = categoriesJson.results;
+        };
+        
+    } catch (err: any) {
+      // console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
+    }
+  
+  return <MenuClient categoriesData={categoriesData} productsData={productsData} companyId={companyId} />;
+}

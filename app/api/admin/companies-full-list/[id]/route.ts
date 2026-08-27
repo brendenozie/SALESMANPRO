@@ -1,0 +1,187 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { NextResponse } from 'next/server';
+import prisma from "@/server/db/prismadb"; 
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { Prisma } from '@prisma/client';
+import { formatResponse } from "@/lib/formatResponse";
+
+const DEFAULT_SELECT = {
+  id: true,
+  displayName: true,
+  addressLine1Override: true,
+  cityOverride: true,
+  stateOverride: true,
+  postalCodeOverride: true,
+  sortOrder: true,
+  visible: true,
+  location: {
+    select: {
+      id: true,
+      name: true,
+      addressLine1: true,
+      city: true,
+    }
+  }
+};
+
+async function handleGet(_req: Request, context: { params: { id: string } }) {
+  
+  const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
+  const companyLocation = await prisma.companyLocation.findUnique({
+    where: { id: context.params.id },
+    select: DEFAULT_SELECT,
+  });
+
+  if (!companyLocation) {
+    return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+  }
+  
+  try {
+    if (companyLocation) {
+      await cacheSet(cacheKey, companyLocation, 60);
+    }
+  } catch (e) {}
+
+  return NextResponse.json(companyLocation);
+}
+
+
+async function handlePatch(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
+  const body = await request.json();
+  const cacheKey = `admin:company-locations:${id || 'global'}:all`;
+
+  // Guard against illegal updates
+  const forbidden = ['id', 'companyId', 'locationId'];
+  
+  if (forbidden.some(key => key in body)) {
+    return NextResponse.json({ message: `Cannot update ${forbidden.join(', ')}.` }, { status: 400 });
+  }
+
+  try {
+    const updated = await prisma.companyLocation.update({
+      where: { id },
+      data: {
+        ...body,
+        // Convert to float only if provided, otherwise leave as undefined to skip update
+        latitudeOverride: body.latitudeOverride !== undefined ? parseFloat(body.latitudeOverride) : undefined,
+        longitudeOverride: body.longitudeOverride !== undefined ? parseFloat(body.longitudeOverride) : undefined,
+      },
+      select: DEFAULT_SELECT,
+    });
+
+    try { await cacheDel(cacheKey); } catch (e) {}
+    return NextResponse.json(updated);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+    }
+    throw error;
+  }
+}
+
+
+async function handleDelete(_req: Request, context: { params: { id: string } }) {
+  const searchParams = new URL(_req.url).searchParams;
+    const companyId = searchParams.get('companyId');
+  const cacheKey = `admin:company-locations:${companyId || 'global'}:*`;
+  try {
+    await prisma.companyLocation.delete({ where: { id: context.params.id } });
+    const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
+    try { await cacheDel(cacheKey); } catch (e) {}
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+    }
+    throw error;
+  }
+}
+
+export const GET = withApiHandler(handleGet);
+export const PATCH = withApiHandler(handlePatch);
+export const DELETE = withApiHandler(handleDelete);
+// import { NextResponse } from 'next/server';
+
+
+//   if (!companyLocation) {
+//     return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+//   }
+
+//   return NextResponse.json(companyLocation, { status: 200 });
+// }
+
+// // --- Core Logic for PATCH request ---
+// async function handlePatch(request: Request, context: HandlerContext): Promise<NextResponse> {
+//   const { id } = context.params;
+//   const body = await request.json();
+
+//   if (body.id || body.companyId || body.locationId) {
+//     return NextResponse.json({ message: 'Cannot update ID, companyId, or locationId via PATCH.' }, { status: 400 });
+//   }
+
+//   try {
+//     const updatedCompanyLocation = await prisma.companyLocation.update({
+//       where: { id },
+//       data: {
+//         displayName: body.displayName,
+//         addressLine1Override: body.addressLine1Override,
+//         addressLine2Override: body.addressLine2Override,
+//         cityOverride: body.cityOverride,
+//         stateOverride: body.stateOverride,
+//         postalCodeOverride: body.postalCodeOverride,
+//         countryOverride: body.countryOverride,
+//         latitudeOverride: body.latitudeOverride ? parseFloat(body.latitudeOverride) : null,
+//         longitudeOverride: body.longitudeOverride ? parseFloat(body.longitudeOverride) : null,
+//         sortOrder: body.sortOrder,
+//         visible: body.visible,
+//         updatedAt: new Date(),
+//       },
+//       include: {
+//         location: true,
+//       },
+//     });
+
+//     return NextResponse.json(updatedCompanyLocation, { status: 200 });
+//   } catch (error) {
+//     if (error instanceof Error && error.message.includes('RecordNotFound')) {
+//       return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+//     }
+//     throw error;
+//   }
+// }
+
+// // --- Core Logic for DELETE request ---
+// async function handleDelete(request: Request, context: HandlerContext): Promise<NextResponse> {
+//   const { id } = context.params;
+
+//   try {
+//     await prisma.companyLocation.delete({
+//       where: { id },
+//     });
+
+//     return new NextResponse(null, { status: 204 });
+//   } catch (error) {
+//     if (error instanceof Error && error.message.includes('RecordNotFound')) {
+//       return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+//     }
+//     throw error;
+//   }
+// }
+
+// // --- Exported Route Handlers (Wrapped) ---
+
+// 
+// export const GET = withApiHandler(handleGet);
+
+// 
+// export const PATCH = withApiHandler(handlePatch);
+
+// 
+// export const DELETE = withApiHandler(handleDelete);

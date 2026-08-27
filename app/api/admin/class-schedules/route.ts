@@ -1,0 +1,290 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+// // app/api/class-schedules/route.ts
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+
+const DAY_ORDER: Record<string, number> = {
+  Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 7
+};
+
+const SCHEDULE_SELECT = {
+  id: true,
+  courseId: true,
+  dayOfWeek: true,
+  startTime: true,
+  endTime: true,
+  topic: true,
+  meetingLink: true,
+  academicLevel: { select: { id: true, name: true } },
+  course: { select: { id: true, title: true, code: true } },
+  classroom: { select: { id: true, name: true, academicLevelId: true } },
+  educator: { select: { id: true, user: { select: { name: true, email: true } } } },
+};
+
+export const GET = withApiHandler(async (request: Request, context) => {
+  const { searchParams } = new URL(request.url);
+  const companyId = context.user?.companyId; // Prefer context over searchParams for security
+
+  const filters = {
+    companyId: companyId || searchParams.get("companyId") || undefined,
+    courseId: searchParams.get("courseId") || undefined,
+    educatorId: searchParams.get("educatorId") || undefined,
+    dayOfWeek: searchParams.get("dayOfWeek") || undefined,
+    // Logic: filter by classroom if provided, else by level
+    ...(searchParams.get("classroomId") 
+        ? { classroomId: searchParams.get("classroomId") } 
+        : { academicLevelId: searchParams.get("academicLevelId") || undefined }
+    ),
+  };
+
+  const cacheKey = `admin:class-schedules:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
+  const schedules = await prisma.classSchedule.findMany({
+    where: filters,
+    select: SCHEDULE_SELECT,
+    orderBy: { startTime: "asc" },
+  });
+
+  // Sort by dayOfWeek using the index
+  const sorted = schedules.sort((a, b) => DAY_ORDER[a.dayOfWeek] - DAY_ORDER[b.dayOfWeek]);
+  
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(cacheKey, sorted, 60);
+  } catch (e) {}
+  
+  return formatResponse(true, sorted, "Schedules fetched", 200);
+}, { requireAuth: true });
+
+export const POST = withApiHandler(async (request: Request, context) => {
+  // const companyId = context.user?.companyId;
+  const body = await request.json();
+  const { 
+    courseId, educatorId, classroomId, academicLevelId, 
+    dayOfWeek, startTime, endTime, topic, meetingLink, companyId 
+  } = body;
+
+  // 1. Basic Validation
+  if (!DAY_ORDER[dayOfWeek]) return formatResponse(false, null, "Invalid day of week", 400);
+
+  const start = new Date(`1970-01-01T${startTime}:00Z`);
+  const end = new Date(`1970-01-01T${endTime}:00Z`);
+  if (start >= end) return formatResponse(false, null, "Start time must be before end time", 400);
+
+  try {
+    // 2. Atomic Creation 
+    // We use nested 'connect' to ensure relations exist and belong to the company
+    const newSchedule = await prisma.classSchedule.create({
+      data: {
+        dayOfWeek,
+        topic,
+        meetingLink,
+        startTime: start,
+        endTime: end,
+        company: { connect: { id: companyId } },
+        course: { connect: { id: courseId } },
+        educator: { connect: { id: educatorId } },
+        classroom: { connect: { id: classroomId } },
+        academicLevel: { connect: { id: academicLevelId } },
+      },
+      select: SCHEDULE_SELECT
+    });
+
+    
+    try { await cacheDel(`admin:class-schedules:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newSchedule, "Schedule created successfully", 201);
+  } catch (error: any) {
+    // Catch Foreign Key violations (P2002/P2025)
+    return formatResponse(false, null, "Validation failed: Ensure Course, Educator, and Classroom belong to your company.", 400);
+  }
+}, { requireAuth: true });
+
+// import { NextResponse } from "next/server";
+
+
+//   const dayOrder: Record<string, number> = {
+//     Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,
+//     Friday: 5, Saturday: 6, Sunday: 7,
+//   };
+
+//   const response = classSchedules
+//     .sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek])
+//     .map((schedule) => {
+//       // const courseAcademicLevels = schedule.course?.academicLevels
+//       //   .map((cal) => cal.academicLevel)
+//       //   .filter(Boolean)
+//       //   .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+//       //   .map((level) => ({ id: level!.id, name: level!.name }));
+
+//         return {
+//           id: schedule.id,
+//           courseId: schedule.courseId,
+//           courseTitle: schedule.course?.title || "N/A",
+//           courseCode: schedule.course?.code || "N/A",
+
+//           academicLevel: schedule.academicLevel
+//             ? { id: schedule.academicLevel.id, name: schedule.academicLevel.name }
+//             : null,
+
+//           classroom: schedule.classroom
+//             ? {
+//                 id: schedule.classroom.id,
+//                 name: schedule.classroom.name,
+//                 academicLevelId: schedule.classroom.academicLevelId,
+//               }
+//             : null,
+
+//           educatorId: schedule.educatorId,
+//           educatorName: schedule.educator?.user?.name || "N/A",
+//           educatorEmail: schedule.educator?.user?.email || "N/A",
+
+//           dayOfWeek: schedule.dayOfWeek,
+//           startTime: schedule.startTime,
+//           endTime: schedule.endTime,
+//           topic: schedule.topic,
+//           meetingLink: schedule.meetingLink,
+//         };
+
+
+//       // return {
+//       //   id: schedule.id,
+//       //   courseId: schedule.courseId,
+//       //   courseTitle: schedule.course?.title || "N/A",
+//       //   courseCode: schedule.course?.code || "N/A",
+//       //   courseAcademicLevels: courseAcademicLevels || [],
+//       //   courseClassrooms: schedule.classroom ? [{ id: schedule.classroom.id, name: schedule.classroom.name, academicLevelId: schedule.classroom.academicLevelId }] : [],
+//       //   educatorId: schedule.educatorId,
+//       //   educatorName: schedule.educator?.user?.name || "N/A",
+//       //   educatorEmail: schedule.educator?.user?.email || "N/A",
+//       //   dayOfWeek: schedule.dayOfWeek,
+//       //   startTime: schedule.startTime,
+//       //   endTime: schedule.endTime,
+//       //   topic: schedule.topic,
+//       //   meetingLink: schedule.meetingLink,
+//       //   companyId: schedule.companyId,
+//       //   createdAt: schedule.createdAt,
+//       //   updatedAt: schedule.updatedAt,
+//       // };
+//     });
+
+//   return NextResponse.json(response, { status: 200 });
+// },{requireAuth:true,requireRateLimit:true});
+
+// // POST /api/class-schedules
+// // Creates a new class schedule
+// export const POST = withApiHandler(async (request: Request) => {
+//   const body = await request.json();
+//   const { courseId, educatorId, classroomId, academicLevelId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
+
+//   if (!courseId || !educatorId || !classroomId || !academicLevelId || !dayOfWeek || !startTime || !endTime || !companyId) {
+//     return NextResponse.json(
+//       { message: "Course ID, Educator ID, Classroom ID, Academic Level ID, Day of Week, Start Time, End Time, and Company ID are required." },
+//       { status: 400 }
+//     );
+//   }
+
+//   if (!VALID_DAYS_OF_WEEK.includes(dayOfWeek)) {
+//     return NextResponse.json(
+//       { message: `Invalid dayOfWeek: ${dayOfWeek}. Must be one of ${VALID_DAYS_OF_WEEK.join(", ")}.` },
+//       { status: 400 }
+//     );
+//   }
+
+//   const existingCourse = await prisma.course.findUnique({ where: { id: courseId, companyId } });
+//   if (!existingCourse) {
+//     return NextResponse.json(
+//       { message: "Provided courseId does not exist or does not belong to this company." },
+//       { status: 400 }
+//     );
+//   }
+
+//   if (academicLevelId) {
+//     const level = await prisma.academicLevel.findUnique({
+//       where: { id: academicLevelId }
+//     });
+//     if (!level) {
+//       return NextResponse.json({ message: "Invalid academic level" }, { status: 400 });
+//     }
+//   }
+
+//   const existingClassroom = await prisma.classroom.findUnique({ where: { id: classroomId, companyId } });
+//   if (!existingClassroom) {
+//     return NextResponse.json(
+//       { message: "Provided classroomId does not exist or does not belong to this company." },
+//       { status: 400 }
+//     );
+//   }
+
+//   const existingEducator = await prisma.educator.findUnique({ where: { id: educatorId, companyId } });
+//   if (!existingEducator) {
+//     return NextResponse.json(
+//       { message: "Provided educatorId does not exist or does not belong to this company." },
+//       { status: 400 }
+//     );
+//   }
+
+
+
+//   const parsedStartTime = new Date(`1970-01-01T${startTime}:00Z`);
+//   const parsedEndTime = new Date(`1970-01-01T${endTime}:00Z`);
+//   if (isNaN(parsedStartTime.getTime()) || isNaN(parsedEndTime.getTime())) {
+//     return NextResponse.json(
+//       { message: "Invalid startTime or endTime format. Expected HH:MM (e.g., '09:00')." },
+//       { status: 400 }
+//     );
+//   }
+//   if (parsedStartTime >= parsedEndTime) {
+//     return NextResponse.json({ message: "Start time must be before end time." }, { status: 400 });
+//   }
+
+//   const newSchedule = await prisma.classSchedule.create({
+//     data: {
+//       courseId,
+//       educatorId,
+//       classroomId,
+//       dayOfWeek,
+//       startTime: parsedStartTime,
+//       endTime: parsedEndTime,
+//       topic,
+//       meetingLink,
+//       companyId,
+//       academicLevelId,
+//     },
+//     include: {
+//       course: { select: { id: true, title: true, code: true,} },
+//       educator: { select: { id: true, user: { select: { name: true, email: true } } } },
+//       classroom: { select: { id: true, name: true, academicLevelId: true } },
+//       academicLevel: { select: { id: true, name: true } },
+//     },
+//   });
+
+//   const responseData = {
+//     id: newSchedule.id,
+//     courseId: newSchedule.courseId,
+//     courseTitle: newSchedule.course?.title || "N/A",
+//     courseCode: newSchedule.course?.code || "N/A",
+//     academicLevelId: newSchedule.academicLevelId,
+//     academicLevelName: newSchedule.academicLevel?.name || "N/A",
+//     courseClassrooms: newSchedule.classroom ? [{ id: newSchedule.classroom.id, name: newSchedule.classroom.name, academicLevelId: newSchedule.classroom.academicLevelId }] : [],
+//     educatorId: newSchedule.educatorId,
+//     educatorName: newSchedule.educator?.user?.name || "N/A",
+//     educatorEmail: newSchedule.educator?.user?.email || "N/A",
+//     dayOfWeek: newSchedule.dayOfWeek,
+//     startTime: newSchedule.startTime,
+//     endTime: newSchedule.endTime,
+//     topic: newSchedule.topic,
+//     meetingLink: newSchedule.meetingLink,
+//     companyId: newSchedule.companyId,
+//     createdAt: newSchedule.createdAt,
+//     updatedAt: newSchedule.updatedAt,
+//   };
+
+//   return NextResponse.json(responseData, { status: 201 });
+// });

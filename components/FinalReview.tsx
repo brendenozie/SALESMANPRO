@@ -1,0 +1,381 @@
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  TagIcon,
+  HomeIcon,
+  BuildingOfficeIcon,
+  CurrencyDollarIcon,
+  CheckCircleIcon,
+  MapPinIcon,
+  PhoneIcon,
+  BookOpenIcon,
+  ShoppingBagIcon,
+  SparklesIcon,
+  WrenchScrewdriverIcon,
+  GlobeAltIcon,
+  AdjustmentsHorizontalIcon,
+} from "@heroicons/react/24/outline";
+
+const SectionCard: React.FC<{
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+}> = ({ icon: Icon, title, children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="bg-white rounded-xl shadow-lg p-6 border border-gray-200"
+  >
+    <div className="flex items-center mb-4">
+      <Icon className="w-6 h-6 text-blue-500 mr-2" />
+      <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+    </div>
+    <div className="space-y-2 text-gray-700">{children}</div>
+  </motion.div>
+);
+
+const KeyValue: React.FC<{ label: string; value: React.ReactNode }> = ({
+  label,
+  value,
+}) => (
+  <div className="flex justify-between">
+    <span className="font-medium">{label}:</span>
+    <span className="text-gray-800">{value}</span>
+  </div>
+);
+
+const GhubaToggle = ({ formData, setFormData }: { formData: any; setFormData: (name: string, value: any) => void}) => {
+  const isActive = formData.showOnGhuba;
+
+  return (
+    <div 
+      onClick={() => setFormData("showOnGhuba", !isActive)}
+      className={`relative flex h-8 w-14 cursor-pointer items-center rounded-full p-1 transition-all duration-300 ease-in-out ${
+        isActive ? "bg-indigo-600 justify-end" : "bg-gray-300 justify-start"
+      }`}
+    >
+      <motion.div
+        layout
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="h-6 w-6 rounded-full bg-white shadow-lg flex items-center justify-center"
+      >
+        <AnimatePresence mode="wait">
+          {isActive && (
+            <motion.div
+              key="icon"
+              initial={{ opacity: 0, scale: 0.2, rotate: -45 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.2, rotate: 45 }}
+              transition={{ duration: 0.15 }}
+            >
+              <SparklesIcon className="w-4 h-4 text-indigo-600" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
+
+const FinalReview = ({ formData, setFormData }: {
+    formData: Record<string, any>;
+    // Corrected type to match the updateField function from the parent
+    setFormData: (name: string, value: any) => void;
+  }) => {
+
+  // Helper to format N/A if missing or empty
+  const displayValue = (val: any) => val !== undefined && val !== "" ? val : "N/A";
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="text-center space-y-2"
+        >
+          <h2 className="text-3xl font-bold text-gray-800">Final Review</h2>
+          <p className="text-gray-600">
+            Double-check all details before submitting your listing.
+          </p>
+        </motion.div>
+
+        
+        {/* PRO FEATURE: Ghuba.shop Market Toggle Section */}
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          className="relative overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 shadow-xl"
+        >
+          <div className="bg-white/90 backdrop-blur-xl rounded-[15px] p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-indigo-100 p-3 rounded-xl">
+                <GlobeAltIcon className="w-8 h-8 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Market on ghuba.shop</h3>
+                <p className="text-sm text-gray-600 max-w-md">
+                  Boost visibility by automatically listing this item on the Ghuba marketplace for a wider reach.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 bg-gray-100/50 p-3 rounded-2xl border border-gray-200">
+              <span className={`text-sm font-bold transition-colors ${formData.showOnGhuba ? "text-indigo-600" : "text-gray-400"}`}>
+                {formData.showOnGhuba ? "ENABLED" : "DISABLED"}
+              </span>
+              <GhubaToggle formData={formData} setFormData={setFormData} />
+            </div>
+          </div>
+
+          {/* Decorative Sparkle for Active State */}
+          <AnimatePresence>
+            {formData.showOnGhuba && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                className="absolute top-2 right-2"
+              >
+                <SparklesIcon className="w-5 h-5 text-indigo-400 animate-pulse" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Grid of Sections */}
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Information */}
+          <SectionCard icon={TagIcon} title="Basic Information">
+            <KeyValue label="Title" value={displayValue(formData.name || formData.title)} />
+            <KeyValue label="Description" value={displayValue(formData.description)} />
+            <KeyValue
+              label="Category"
+              value={displayValue(formData.category?.name)}
+            />
+            <KeyValue label="Status" value={displayValue(formData.status)} />
+            {/* Removed the old plain string formData.option KeyValue from here */}
+          </SectionCard>
+
+          {/* Variants & Options */}
+          {formData.option?.length > 0 && (
+            <SectionCard icon={AdjustmentsHorizontalIcon} title="Variants & Options">
+              <div className="space-y-4">
+                {Object.entries(
+                  // Group the unified option array by category
+                  formData.option.reduce((acc: any, opt: any) => {
+                    if (!acc[opt.category]) acc[opt.category] = [];
+                    acc[opt.category].push(opt);
+                    return acc;
+                  }, {})
+                ).map(([category, options]: [string, any]) => (
+                  <div key={category}>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      {category}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {options.map((opt: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="bg-blue-50 border border-blue-100 text-blue-800 px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 shadow-sm"
+                        >
+                          <span className="font-semibold">{opt.name}</span>
+                          {opt.extraPrice > 0 && (
+                            <span className="bg-white text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-black tracking-wider">
+                              +Ksh {Number(opt.extraPrice).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          )}
+
+          {/* Studios & Bedrooms */}
+          {(formData.studios?.length > 0 || formData.bedrooms?.length > 0) && (
+            <SectionCard icon={HomeIcon} title="Unit Types">
+              {formData.studios?.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="font-semibold text-gray-700 mb-1">Studios</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800">
+                    {formData.studios.map((unit: any, idx: number) => (
+                      <li key={idx}>
+                        {unit.type} - {unit.size} sq m - Ksh {Number(unit.price).toLocaleString()}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {formData.bedrooms?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-1">Bedrooms</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800">
+                    {formData.bedrooms.map((unit: any, idx: number) => (
+                      <li key={idx}>
+                        {unit.type} - {unit.size} sq m - Ksh {Number(unit.price).toLocaleString()}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </SectionCard>
+          )}
+
+          {/* Amenities */}
+          {formData.amenities?.length > 0 && (
+            <SectionCard icon={SparklesIcon} title="Amenities">
+              <ul className="flex flex-wrap gap-2">
+                {formData.amenities.map((amenity: string, idx: number) => (
+                  <li
+                    key={idx}
+                    className="bg-gray-100 border border-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-medium"
+                  >
+                    {amenity}
+                  </li>
+                ))}
+              </ul>
+            </SectionCard>
+          )}
+
+          {/* Pricing Information */}
+          <SectionCard icon={CurrencyDollarIcon} title="Pricing Information">
+            <KeyValue
+              label="Cost Price"
+              value={displayValue(formData.costPrice || formData.buyingPrice)}
+            />
+            <KeyValue
+              label="Selling Price"
+              value={displayValue(
+                formData.salesPrice || formData.sellingPrice || formData.buyingPrice
+              )}
+            />
+            <KeyValue label="Discount (%)" value={displayValue(formData.discount)} />
+            <KeyValue label="Final Price" value={displayValue(formData.finalPrice)} />
+            <KeyValue
+              label="Profit Margin (%)"
+              value={displayValue(formData.profitMargin)}
+            />
+          </SectionCard>
+
+          {/* Availability & Features */}
+          <SectionCard icon={CheckCircleIcon} title="Availability & Features">
+            <KeyValue
+              label="Availability"
+              value={formData.isAvailable ? "In Stock" : "Out of Stock"}
+            />
+            <KeyValue
+              label="Featured"
+              value={formData.isFeatured ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="New Arrival"
+              value={formData.isNewArrival ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="On Offer"
+              value={formData.isOnOffer ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="On Discount"
+              value={formData.isDiscounted ? "Yes" : "No"}
+            />
+            <KeyValue
+              label="Flash Deal"
+              value={formData.isFlashDeal ? "Yes" : "No"}
+            />
+          </SectionCard>
+
+          {/* Category-Specific Details */}
+          {formData.category?.name === "Books" && (
+            <SectionCard icon={BookOpenIcon} title="Book Details">
+              <KeyValue label="Author" value={displayValue(formData.author)} />
+              <KeyValue label="Publisher" value={displayValue(formData.publisher)} />
+              <KeyValue label="ISBN" value={displayValue(formData.isbn)} />
+            </SectionCard>
+          )}
+
+          {["Clothing", "Fashion"].includes(formData.category?.name) && (
+            <SectionCard icon={ShoppingBagIcon} title="Clothing Details">
+              <KeyValue
+                label="Fabric Composition"
+                value={displayValue(formData.fabricComposition)}
+              />
+              <KeyValue
+                label="Care Instructions"
+                value={displayValue(formData.careInstructions)}
+              />
+            </SectionCard>
+          )}
+
+          {formData.category?.name === "Home Appliances" && (
+            <SectionCard icon={WrenchScrewdriverIcon} title="Appliance Details">
+              <KeyValue
+                label="Energy Rating"
+                value={displayValue(formData.energyRating)}
+              />
+              <KeyValue
+                label="Warranty Period"
+                value={displayValue(formData.warrantyPeriod)}
+              />
+              <KeyValue label="Dimensions" value={displayValue(formData.dimensions)} />
+            </SectionCard>
+          )}
+
+          {["Beauty Products", "Skincare", "Haircare"].includes(
+            formData.category?.name
+          ) && (
+            <SectionCard icon={SparklesIcon} title="Beauty Product Details">
+              <KeyValue
+                label="Ingredients"
+                value={displayValue(formData.ingredients)}
+              />
+              <KeyValue
+                label="Usage Instructions"
+                value={displayValue(formData.usageInstructions)}
+              />
+              <KeyValue
+                label="Expiration Date"
+                value={displayValue(formData.expirationDate)}
+              />
+            </SectionCard>
+          )}
+
+          {["Automotive", "Cars", "Car Accessories", "Tools", "Hardware"].includes(
+            formData.category?.name
+          ) && (
+            <SectionCard icon={WrenchScrewdriverIcon} title="Vehicle Details">
+              <KeyValue label="Make" value={displayValue(formData.make)} />
+              <KeyValue label="Model" value={displayValue(formData.model)} />
+              <KeyValue label="Year" value={displayValue(formData.year)} />
+              <KeyValue label="Trim" value={displayValue(formData.trim)} />
+              <KeyValue label="Type" value={displayValue(formData.type)} />
+              <KeyValue
+                label="Mileage"
+                value={displayValue(formData.mileage)}
+              />
+              <KeyValue
+                label="Condition"
+                value={displayValue(formData.condition)}
+              />
+            </SectionCard>
+          )}
+
+          {/* Contact & Location */}
+          <SectionCard icon={MapPinIcon} title="Contact & Location">
+            <KeyValue
+              label="Contact Number"
+              value={displayValue(formData.contact)}
+            />
+          </SectionCard>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FinalReview;
