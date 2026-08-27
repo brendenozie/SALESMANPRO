@@ -1,0 +1,206 @@
+"use strict";
+/**
+ * lib/ai/providers/videoProvider.ts
+ *
+ * Central Video Generation Provider for SalesmanPro.
+ * Connects to the video architecture: Video, VideoAlbum, Product, and Marketplace Listings.
+ */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.centralVideoProvider = exports.CentralVideoProvider = void 0;
+const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+class CentralVideoProvider {
+    /**
+     * Dispatches a video generation job (asynchronous by design).
+     */
+    async createVideoJob(model, input, context) {
+        const creditsReserved = model.videoCreditCost ?? 50;
+        // 1. Create central AIGenerationJob
+        const job = await prismadb_1.default.aIGenerationJob.create({
+            data: {
+                companyId: context.companyId,
+                userId: context.userId,
+                capability: "VIDEO",
+                provider: model.provider,
+                model: model.id,
+                action: "GENERATE_VIDEO",
+                status: "QUEUED",
+                prompt: input.prompt,
+                options: {
+                    durationSeconds: input.durationSeconds ?? 5,
+                    aspectRatio: input.aspectRatio ?? "16:9",
+                    title: input.title,
+                },
+                inputAssets: {
+                    sourceImageUrl: input.sourceImageUrl,
+                    productId: input.productId,
+                    marketplaceListingId: input.marketplaceListingId,
+                    albumId: input.albumId,
+                },
+                creditsReserved,
+                idempotencyKey: context.idempotencyKey,
+            },
+        });
+        // 2. Also register in MediaJob for queue workers
+        try {
+            await prismadb_1.default.mediaJob.create({
+                data: {
+                    companyId: context.companyId,
+                    userId: context.userId,
+                    action: "GENERATE_VIDEO",
+                    status: "QUEUED",
+                    progress: 0,
+                    provider: model.provider,
+                    model: model.id,
+                    config: {
+                        prompt: input.prompt,
+                        duration: input.durationSeconds ?? 5,
+                        jobId: job.id,
+                        productId: input.productId,
+                        marketplaceListingId: input.marketplaceListingId,
+                        albumId: input.albumId,
+                    },
+                    creditsConsumed: creditsReserved,
+                },
+            });
+        }
+        catch (e) {
+            console.warn("[MEDIA_JOB_CREATION_WARNING]", e);
+        }
+        return {
+            jobId: job.id,
+            status: "QUEUED",
+            estimatedDurationSeconds: input.durationSeconds ?? 5,
+            creditsReserved,
+        };
+    }
+    /**
+     * Finalizes a completed video job and links it to Video, MediaAsset, and Albums.
+     */
+    async completeVideoJob(params) {
+        const job = await prismadb_1.default.aIGenerationJob.findUnique({
+            where: { id: params.jobId },
+        });
+        if (!job)
+            throw new Error(`AI Generation Job ${params.jobId} not found`);
+        const inputAssets = job.inputAssets || {};
+        // 1. Create MediaAsset
+        const mediaAsset = await prismadb_1.default.mediaAsset.create({
+            data: {
+                companyId: job.companyId,
+                ownerId: job.userId,
+                type: "VIDEO",
+                source: "AI_GENERATED",
+                status: "READY",
+                url: params.videoUrl,
+                thumbnailUrl: params.thumbnailUrl,
+                duration: params.duration || 5,
+                metadata: {
+                    jobId: job.id,
+                    prompt: job.prompt,
+                    productId: inputAssets.productId,
+                    marketplaceListingId: inputAssets.marketplaceListingId,
+                },
+            },
+        });
+        // 2. Find or create default Video Album for the company
+        let albumId = inputAssets.albumId;
+        if (!albumId) {
+            const defaultAlbum = await prismadb_1.default.videoAlbum.findFirst({
+                where: { companyId: job.companyId },
+            });
+            if (defaultAlbum) {
+                albumId = defaultAlbum.id;
+            }
+            else {
+                const newAlbum = await prismadb_1.default.videoAlbum.create({
+                    data: {
+                        companyId: job.companyId,
+                        userId: job.userId,
+                        title: "AI Generated Videos",
+                        description: "Promotional product reels generated by SalesmanPro AI",
+                        tags: ["ai-generated", "promotions"],
+                    },
+                });
+                albumId = newAlbum.id;
+            }
+        }
+        // 3. Create Video record
+        const video = await prismadb_1.default.video.create({
+            data: {
+                mediaAssetId: mediaAsset.id,
+                albumId: albumId,
+                companyId: job.companyId,
+                userId: job.userId,
+                title: params.title || job.prompt?.slice(0, 60) || "AI Product Video",
+                description: params.description || job.prompt,
+                status: "PUBLISHED",
+                tags: ["ai-generated", "sales-reel"],
+            },
+        });
+        // 4. Update AIGenerationJob
+        await prismadb_1.default.aIGenerationJob.update({
+            where: { id: job.id },
+            data: {
+                status: "COMPLETED",
+                progress: 100,
+                completedAt: new Date(),
+                mediaAssetId: mediaAsset.id,
+                outputAssets: {
+                    videoUrl: params.videoUrl,
+                    thumbnailUrl: params.thumbnailUrl,
+                    videoId: video.id,
+                    mediaAssetId: mediaAsset.id,
+                },
+            },
+        });
+        // 5. If linked to product, attach video URL
+        if (inputAssets.productId) {
+            try {
+                const product = await prismadb_1.default.product.findUnique({
+                    where: { id: inputAssets.productId },
+                });
+                if (product) {
+                    const currentVideos = Array.isArray(product.videos) ? product.videos : [];
+                    await prismadb_1.default.product.update({
+                        where: { id: product.id },
+                        data: {
+                            videos: [...currentVideos, params.videoUrl],
+                        },
+                    });
+                }
+            }
+            catch (err) {
+                console.error("[ATTACH_VIDEO_TO_PRODUCT_ERROR]", err);
+            }
+        }
+        // 6. If linked to marketplace listing, attach video URL
+        if (inputAssets.marketplaceListingId) {
+            try {
+                const listing = await prismadb_1.default.marketplaceListings.findUnique({
+                    where: { id: inputAssets.marketplaceListingId },
+                });
+                if (listing) {
+                    const currentVideos = Array.isArray(listing.videos) ? listing.videos : [];
+                    await prismadb_1.default.marketplaceListings.update({
+                        where: { id: listing.id },
+                        data: {
+                            videos: [...currentVideos, params.videoUrl],
+                        },
+                    });
+                }
+            }
+            catch (err) {
+                console.error("[ATTACH_VIDEO_TO_LISTING_ERROR]", err);
+            }
+        }
+        return {
+            videoId: video.id,
+            mediaAssetId: mediaAsset.id,
+        };
+    }
+}
+exports.CentralVideoProvider = CentralVideoProvider;
+exports.centralVideoProvider = new CentralVideoProvider();
