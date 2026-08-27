@@ -502,7 +502,14 @@ model Company {
   mediaAssets            MediaAsset[]
 
   //Centralized AI Wallet
+<<<<<<< HEAD
   aiCreditBalance Float @default(0)
+=======
+  aiCreditBalance        Float                 @default(0)
+  aiCreditTransactions   AICreditTransaction[]
+  aiUsages               AIUsage[]
+  aiGenerationJobs       AIGenerationJob[]
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 
   @@index([userId])
   @@index([name])
@@ -2768,6 +2775,12 @@ model User {
   whatsAppContacts        WhatsAppContact[]
   whatsAppAgents          WhatsAppAgent[]
   mediaAssets             MediaAsset[]
+<<<<<<< HEAD
+=======
+  aiCreditTransactions    AICreditTransaction[]
+  aiUsages                AIUsage[]
+  aiGenerationJobs        AIGenerationJob[]
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 
   @@index([companyId])
   // @@index([settingsId])
@@ -9350,3 +9363,162 @@ model Expense {
 
   @@map("expenses")
 }
+<<<<<<< HEAD
+=======
+
+// ============================================================
+// CENTRAL AI PLATFORM MODELS & ENUMS
+// ============================================================
+
+enum AICapability {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  EMBEDDING
+  AGENT
+  WHATSAPP
+  PRODUCT_CONTENT
+  MARKETPLACE_CONTENT
+  ANALYSIS
+}
+
+enum AICreditTransactionType {
+  PURCHASE
+  USAGE
+  PROMOTIONAL
+  REFUND
+  ADJUSTMENT
+  BONUS
+  RESERVATION
+  RELEASE
+}
+
+enum AICreditTransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum AIGenerationStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+model AICreditTransaction {
+  id              String                    @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String                    @db.ObjectId
+  company         Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId          String?                   @db.ObjectId
+  user            User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  amount          Float                     // Positive for credit additions, negative for deductions
+  type            AICreditTransactionType   @default(USAGE)
+  status          AICreditTransactionStatus @default(COMPLETED)
+  description     String
+  idempotencyKey  String?                   @unique
+  referenceId     String?                   // Payment ID, GenerationJob ID, or Usage ID
+  balanceAfter    Float?
+  metadata        Json?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, createdAt])
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+}
+
+model AIUsage {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String       @db.ObjectId
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId          String?      @db.ObjectId
+  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  capability      AICapability @default(TEXT)
+  provider        String       // OPENAI, GROQ, GEMINI, STABILITY, DALL_E, etc.
+  model           String
+  promptTokens    Int          @default(0)
+  completionTokens Int         @default(0)
+  totalTokens     Int          @default(0)
+  inputUnits      Float        @default(0) // Token count, image count, video duration (secs)
+  outputUnits     Float        @default(0)
+  creditsCost     Float        @default(0)
+  estimatedCost   Float        @default(0) // Fiat provider cost estimation
+  source          String       @default("WEB") // WEB, WHATSAPP, API, AGENT, WORKER
+  feature         String?      // e.g. "product_description", "marketplace_listing", "image_generation", "video_generation"
+  status          String       @default("SUCCESS") // SUCCESS, FAILED, PARTIAL
+  errorMessage    String?
+  executionTimeMs Int?
+  metadata        Json?
+  idempotencyKey  String?
+  createdAt       DateTime     @default(now())
+
+  @@index([companyId])
+  @@index([companyId, capability])
+  @@index([companyId, createdAt])
+  @@index([provider])
+  @@index([feature])
+  @@index([createdAt])
+}
+
+model AIGenerationJob {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String             @db.ObjectId
+  company         Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId          String?            @db.ObjectId
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  capability      AICapability       @default(IMAGE)
+  provider        String
+  model           String
+  action          String             // e.g. "GENERATE_IMAGE", "GENERATE_VIDEO", "PRODUCT_ENHANCE"
+  status          AIGenerationStatus @default(QUEUED)
+  prompt          String?
+  negativePrompt  String?
+  options         Json?              // aspect ratio, duration, quality, style, etc.
+  inputAssets     Json?              // reference images, product ID, listing ID, etc.
+  outputAssets    Json?              // generated media URLs, text content, video URLs
+  mediaAssetId    String?            @db.ObjectId
+  creditsReserved Float              @default(0)
+  creditsConsumed Float              @default(0)
+  progress        Int                @default(0)
+  error           String?
+  providerJobId   String?
+  idempotencyKey  String?            @unique
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([userId])
+  @@index([capability])
+  @@index([status, createdAt])
+}
+
+model AIPackage {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique // Starter, Growth, Professional, Enterprise
+  credits     Int
+  price       Float    // Price in USD / default currency
+  currency    String   @default("USD")
+  description String?
+  badge       String?  // "Most Popular", "Best Value", "Starter Kit"
+  isPopular   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  features    String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([isPopular])
+}
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)

@@ -4,12 +4,18 @@ module.exports = {
       name: 'salesmanpro',
       script: 'node_modules/.bin/next',
       args: 'start -p 3000',
+<<<<<<< HEAD
       instances: 3,           // Back to 2 instances for better performance
       exec_mode: 'cluster',   // Cluster mode is fine now that we have RAM room
+=======
+      instances: 3,
+      exec_mode: 'cluster',
+>>>>>>> c00ac535 (Fresh initialization and recovery)
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
       },
+<<<<<<< HEAD
       // Set this higher so PM2 stops killing the app during startup spikes
       max_memory_restart: '4G', 
       restart_delay: 5000,    // 5-second buffer between restarts
@@ -23,12 +29,27 @@ module.exports = {
       name: 'ssl-worker',
       script: './dist-worker/workers/domain-ssl-worker.js', // Point to compiled JS
       node_args: "--max-old-space-size=150", // Hard limit Node to 150MB RAM
+=======
+      max_memory_restart: '4G',
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 100,
+      max_restarts: 10,
+      autorestart: true,
+      kill_timeout: 3000,
+      watch: false,
+    },
+    {
+      name: 'ssl-worker',
+      script: './dist-worker/workers/domain-ssl-worker.js',
+      node_args: '--max-old-space-size=150',
+>>>>>>> c00ac535 (Fresh initialization and recovery)
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
       },
+<<<<<<< HEAD
       // Add a memory limit to force a restart if it leaks
       max_memory_restart: '200M'
     }
@@ -60,5 +81,41 @@ module.exports = {
     //     // Pass your env vars here or ensure they are in your .env file
     //   }
     // }
+=======
+      max_memory_restart: '200M',
+    },
+    {
+      name: 'whatsapp-worker',
+      script: './dist-worker/workers/whatsapp-worker.js',
+      node_args: '--max-old-space-size=512',
+      interpreter: 'node',
+      instances: 2,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+      },
+      restart_delay: 3000,
+      max_memory_restart: '600M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
+    },
+    {
+      name: 'ai-job-worker',
+      script: './dist-worker/workers/ai-job-worker.js',
+      node_args: '--max-old-space-size=512',
+      interpreter: 'node',
+      instances: 2,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+      },
+      restart_delay: 3000,
+      max_memory_restart: '600M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
+    },
+>>>>>>> c00ac535 (Fresh initialization and recovery)
   ],
 };

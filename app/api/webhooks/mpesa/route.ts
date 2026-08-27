@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
 import prisma from "@/server/db/prismadb";
 import crypto from "crypto";
 
@@ -47,6 +48,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Paystack webhook error:", error);
+=======
+import { processMpesaCallback } from "@/lib/whatsapp/payments/mpesaCallbackHandler";
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const result = await processMpesaCallback(body);
+
+    return NextResponse.json(result, {
+      status: result.success ? 200 : 400,
+    });
+  } catch (error) {
+    console.error("[MPESA_WEBHOOK_ERROR]", error);
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

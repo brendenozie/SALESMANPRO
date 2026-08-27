@@ -1,11 +1,19 @@
 /**
  * lib/whatsapp/messageProcessor.ts
+<<<<<<< HEAD
  */
 
 import {
   whatsappAI,
   type WhatsAppAIContext,
 } from "@/lib/whatsapp/ai/whatsappAI";
+=======
+ *
+ * Re-exports processor for synchronous or standalone invocations.
+ */
+
+import { whatsappAI } from "@/lib/whatsapp/ai/whatsappAI";
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 import { actionRouter } from "@/lib/whatsapp/actionRouter";
 import { MetaWhatsAppClient } from "@/lib/whatsapp/metaClient";
 import { whatsappRepository } from "@/lib/whatsapp/repository";
@@ -16,8 +24,12 @@ import type {
   WhatsAppConversation,
   WhatsAppMessage,
 } from "@/lib/whatsapp/types";
+<<<<<<< HEAD
 import prisma from "@/server/db/prismadb";
 import { decrypt } from "../crypto";
+=======
+import { decrypt } from "@/lib/crypto";
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 
 export interface ProcessWhatsAppMessageParams {
   account: WhatsAppAccount;
@@ -34,8 +46,13 @@ export async function processWhatsAppMessage({
   message,
   correlationId,
 }: ProcessWhatsAppMessageParams): Promise<void> {
+<<<<<<< HEAD
   // 1. Skip processing if conversation is assigned to a human agent
   if (conversation.mode === "HUMAN") {
+=======
+  // Skip if conversation is assigned to a human agent
+  if (conversation.mode === "HUMAN" || conversation.humanHandoff) {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     console.info("[WHATSAPP_SKIPPED_HUMAN_MODE]", {
       conversationId: conversation.id,
       correlationId,
@@ -43,6 +60,7 @@ export async function processWhatsAppMessage({
     return;
   }
 
+<<<<<<< HEAD
   // 2. Decrypt access token to avoid 401 Unauthorized errors
   const decryptedToken = account.accessTokenEncrypted
     ? decrypt({
@@ -157,6 +175,28 @@ export async function processWhatsAppMessage({
   let finalReplyText = aiResult.reply;
 
   // 7. Prepare context for action routing
+=======
+  // Decrypt access token
+  let accessToken = process.env.WHATSAPP_ACCESS_TOKEN ?? "";
+  if (account.accessTokenEncrypted && account.accessTokenIv && account.accessTokenTag) {
+    accessToken = decrypt({
+      value: account.accessTokenEncrypted,
+      iv: account.accessTokenIv,
+      tag: account.accessTokenTag,
+    });
+  }
+
+  // Execute AI engine processing
+  const aiResult = await whatsappAI.processInboundMessage({
+    account,
+    contact,
+    conversation,
+    message,
+  });
+
+  let finalReplyText = aiResult.reply;
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)
   const actionContext: WhatsAppActionContext = {
     companyId: account.companyId,
     accountId: account.id,
@@ -164,11 +204,18 @@ export async function processWhatsAppMessage({
     contactId: contact.id,
     waId: contact.waId,
     phoneNumber: contact.phoneNumber,
+<<<<<<< HEAD
     customerName: contact.firstName ?? contact.phoneNumber,
+=======
+    customerName: contact.name ?? contact.profileName,
+    customerEmail: contact.email,
+    consumerId: contact.userId,
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     messageId: message.id,
     correlationId,
   };
 
+<<<<<<< HEAD
   // 8. Handle order status checks
   if (
     aiResult.analysis?.intent === "order_status" &&
@@ -203,6 +250,9 @@ export async function processWhatsAppMessage({
   }
 
   // 10. Direct action execution if returned by AI engine
+=======
+  // Execute action if produced
+>>>>>>> c00ac535 (Fresh initialization and recovery)
   if (aiResult.action) {
     const actionRes = await actionRouter({
       action: aiResult.action,
@@ -211,6 +261,7 @@ export async function processWhatsAppMessage({
     if (actionRes?.message) {
       finalReplyText = actionRes.message;
     }
+<<<<<<< HEAD
   }
 
   // 11. Send response via Meta WhatsApp Client
@@ -234,4 +285,44 @@ export async function processWhatsAppMessage({
     body: finalReplyText,
     status: "SENT",
   });
+=======
+    if (actionRes?.shouldEscalate) {
+      aiResult.requiresHuman = true;
+    }
+  }
+
+  // Handle human escalation
+  if (aiResult.requiresHuman) {
+    await whatsappRepository.escalateConversation(
+      conversation.id,
+      aiResult.intent ?? "Customer requested human support",
+    );
+  }
+
+  // Send response via Meta Client
+  if (accessToken && account.phoneNumberId && contact.phoneNumber) {
+    const client = new MetaWhatsAppClient({
+      accessToken,
+      phoneNumberId: account.phoneNumberId,
+    });
+
+    const sendResponse = await client.sendTextMessage({
+      to: contact.phoneNumber,
+      body: finalReplyText,
+    });
+
+    // Persist outbound response
+    await whatsappRepository.persistOutboundMessage({
+      companyId: account.companyId,
+      accountId: account.id,
+      contactId: contact.id,
+      conversationId: conversation.id,
+      providerMessageId: sendResponse?.messages?.[0]?.id ?? `ai_${Date.now()}`,
+      body: finalReplyText,
+      status: "SENT",
+      senderType: "AI",
+      aiModel: aiResult.model,
+    });
+  }
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 }

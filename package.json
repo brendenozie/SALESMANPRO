@@ -107,6 +107,10 @@
     "@types/lodash": "^4.17.15",
     "@types/lodash.debounce": "^4.0.9",
     "@types/micro": "^7.3.7",
+<<<<<<< HEAD
+=======
+    "@types/mocha": "^10.0.10",
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     "@types/multer": "^1.4.7",
     "@types/node": "^18.19.130",
     "@types/nodemailer": "^6.4.9",
@@ -127,5 +131,18 @@
     "tailwindcss": "^3.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^4.8.4"
+<<<<<<< HEAD
+=======
+  },
+  "allowScripts": {
+    "prisma@5.22.0": true,
+    "@prisma/client@5.22.0": true,
+    "@prisma/engines@5.22.0": true,
+    "sharp@0.33.5": true,
+    "@sentry/cli@2.58.2": true,
+    "msgpackr-extract@3.0.4": true,
+    "core-js@3.48.0": true,
+    "core-js@3.6.5": true
+>>>>>>> c00ac535 (Fresh initialization and recovery)
   }
 }

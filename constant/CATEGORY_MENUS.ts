@@ -58,8 +58,13 @@ import {
   ClockIcon,
   CubeIcon,
   ExclamationTriangleIcon,
+<<<<<<< HEAD
   MapIcon,
   SparklesIcon,
+=======
+  SparklesIcon,
+  MapIcon,
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 } from "@heroicons/react/24/outline";
 
 // Define hierarchy of tiers with weights for comparison
@@ -3769,6 +3774,15 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+<<<<<<< HEAD
+=======
+        label: "AI Studio",
+        href: `/dashboards/ai-studio`,
+        icon: SparklesIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
         label: "Categories",
         href: `/admin/${adminSlug}/cated`,
         icon: ClipboardDocumentListIcon,

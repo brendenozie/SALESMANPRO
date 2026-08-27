@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -5,6 +6,11 @@ import prisma from "@/server/db/prismadb";
 // ---------------------------
 // GLOBAL CORS HEADERS
 // ---------------------------
+=======
+import { NextResponse } from "next/server";
+import { processMpesaCallback } from "@/lib/whatsapp/payments/mpesaCallbackHandler";
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -12,6 +18,7 @@ const CORS_HEADERS = {
     "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
 };
 
+<<<<<<< HEAD
 function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
   return new NextResponse(JSON.stringify(json), {
     status,
@@ -26,6 +33,8 @@ function withCors(json: any, status = 200, extraHeaders: Record<string, string> 
 // ---------------------------
 // OPTIONS (PRE-FLIGHT)
 // ---------------------------
+=======
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
@@ -33,6 +42,7 @@ export function OPTIONS() {
   });
 }
 
+<<<<<<< HEAD
 
 export async function POST(req: Request) {
   try {
@@ -212,3 +222,28 @@ export async function POST(req: Request) {
 //     return NextResponse.json({ error: "Server error" }, { status: 500 });
 //   }
 // }
+=======
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const result = await processMpesaCallback(body);
+
+    return new NextResponse(JSON.stringify(result), {
+      status: result.success ? 200 : 400,
+      headers: {
+        "Content-Type": "application/json",
+        ...CORS_HEADERS,
+      },
+    });
+  } catch (error) {
+    console.error("[MPESA_DARAJA_CALLBACK_ERROR]", error);
+    return new NextResponse(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        ...CORS_HEADERS,
+      },
+    });
+  }
+}
+>>>>>>> c00ac535 (Fresh initialization and recovery)

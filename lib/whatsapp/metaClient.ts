@@ -1,3 +1,14 @@
+<<<<<<< HEAD
+=======
+/**
+ * lib/whatsapp/metaClient.ts
+ *
+ * Production Meta WhatsApp Cloud API Client.
+ * Supports text, images, documents, audio, interactive buttons,
+ * interactive lists, message templates, status updates, and order/payment notifications.
+ */
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 const DEFAULT_GRAPH_VERSION = process.env.WHATSAPP_GRAPH_VERSION ?? "v21.0";
 const GRAPH_BASE =
   process.env.WHATSAPP_GRAPH_BASE_URL ??
@@ -6,6 +17,10 @@ const GRAPH_BASE =
 export interface MetaWhatsAppClientOptions {
   accessToken: string;
   phoneNumberId: string;
+<<<<<<< HEAD
+=======
+  timeoutMs?: number;
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 }
 
 export interface MetaSendMessageResponse {
@@ -29,6 +44,7 @@ export interface MetaSendMessageResponse {
 export class MetaWhatsAppClient {
   private readonly accessToken: string;
   private readonly phoneNumberId: string;
+<<<<<<< HEAD
 
   constructor(options: MetaWhatsAppClientOptions) {
     if (!options.accessToken || !options.phoneNumberId) {
@@ -64,6 +80,64 @@ export class MetaWhatsAppClient {
     }
 
     return body as T;
+=======
+  private readonly timeoutMs: number;
+
+  constructor(options: MetaWhatsAppClientOptions) {
+    if (!options.accessToken || !options.phoneNumberId) {
+      throw new Error(
+        "WhatsApp credentials missing: accessToken and phoneNumberId are required.",
+      );
+    }
+    this.accessToken = options.accessToken;
+    this.phoneNumberId = options.phoneNumberId;
+    this.timeoutMs = options.timeoutMs ?? 15000;
+  }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(`${GRAPH_BASE}${path}`, {
+        ...init,
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          "Content-Type": "application/json",
+          ...(init.headers ?? {}),
+        },
+        cache: "no-store",
+      });
+
+      clearTimeout(timeoutId);
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errorMsg =
+          body?.error?.message ??
+          `Meta WhatsApp API request failed with HTTP ${response.status}`;
+        console.error("[META_WHATSAPP_API_ERROR]", {
+          status: response.status,
+          error: errorMsg,
+          code: body?.error?.code,
+          subcode: body?.error?.error_subcode,
+          path,
+        });
+        throw new Error(errorMsg);
+      }
+
+      return body as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error(
+          `Meta WhatsApp API timeout after ${this.timeoutMs}ms on ${path}`,
+        );
+      }
+      throw error;
+    }
+>>>>>>> c00ac535 (Fresh initialization and recovery)
   }
 
   // ─── Standard Messages ──────────────────────────────────────────────────────
@@ -72,7 +146,11 @@ export class MetaWhatsAppClient {
     to: string;
     body: string;
     previewUrl?: boolean;
+<<<<<<< HEAD
   }) {
+=======
+  }): Promise<MetaSendMessageResponse> {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
@@ -95,7 +173,11 @@ export class MetaWhatsAppClient {
     to: string;
     imageUrl: string;
     caption?: string;
+<<<<<<< HEAD
   }) {
+=======
+  }): Promise<MetaSendMessageResponse> {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
@@ -119,7 +201,11 @@ export class MetaWhatsAppClient {
     documentUrl: string;
     filename?: string;
     caption?: string;
+<<<<<<< HEAD
   }) {
+=======
+  }): Promise<MetaSendMessageResponse> {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
@@ -139,6 +225,7 @@ export class MetaWhatsAppClient {
     );
   }
 
+<<<<<<< HEAD
   // ─── Interactive Messages ───────────────────────────────────────────────────
 
   async sendInteractiveButtons(params: {
@@ -146,6 +233,12 @@ export class MetaWhatsAppClient {
     body: string;
     buttons: Array<{ id: string; title: string }>;
   }) {
+=======
+  async sendAudioMessage(params: {
+    to: string;
+    audioUrl: string;
+  }): Promise<MetaSendMessageResponse> {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
@@ -154,6 +247,7 @@ export class MetaWhatsAppClient {
           messaging_product: "whatsapp",
           recipient_type: "individual",
           to: params.to,
+<<<<<<< HEAD
           type: "interactive",
           interactive: {
             type: "button",
@@ -167,25 +261,107 @@ export class MetaWhatsAppClient {
                 },
               })),
             },
+=======
+          type: "audio",
+          audio: {
+            link: params.audioUrl,
+>>>>>>> c00ac535 (Fresh initialization and recovery)
           },
         }),
       },
     );
   }
 
-  async sendListMessage(params: {
+<<<<<<< HEAD
+=======
+  // ─── Interactive Messages ───────────────────────────────────────────────────
+
+  async sendInteractiveButtons(params: {
     to: string;
     body: string;
-    buttonText: string;
-    sections: Array<{
-      title?: string;
-      rows: Array<{ id: string; title: string; description?: string }>;
-    }>;
-  }) {
+    header?: { type: "text"; text: string };
+    footer?: string;
+    buttons: Array<{ id: string; title: string }>;
+  }): Promise<MetaSendMessageResponse> {
+    const payload: Record<string, unknown> = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: params.to,
+      type: "interactive",
+      interactive: {
+        type: "button",
+        ...(params.header ? { header: params.header } : {}),
+        body: { text: params.body },
+        ...(params.footer ? { footer: { text: params.footer } } : {}),
+        action: {
+          buttons: params.buttons.slice(0, 3).map((button) => ({
+            type: "reply",
+            reply: {
+              id: button.id,
+              title: button.title.slice(0, 20),
+            },
+          })),
+        },
+      },
+    };
+
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
         method: "POST",
+        body: JSON.stringify(payload),
+      },
+    );
+  }
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)
+  async sendListMessage(params: {
+    to: string;
+    body: string;
+    buttonText: string;
+<<<<<<< HEAD
+=======
+    header?: { type: "text"; text: string };
+    footer?: string;
+>>>>>>> c00ac535 (Fresh initialization and recovery)
+    sections: Array<{
+      title?: string;
+      rows: Array<{ id: string; title: string; description?: string }>;
+    }>;
+<<<<<<< HEAD
+  }) {
+=======
+  }): Promise<MetaSendMessageResponse> {
+    const payload: Record<string, unknown> = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: params.to,
+      type: "interactive",
+      interactive: {
+        type: "list",
+        ...(params.header ? { header: params.header } : {}),
+        body: { text: params.body },
+        ...(params.footer ? { footer: { text: params.footer } } : {}),
+        action: {
+          button: params.buttonText.slice(0, 20),
+          sections: params.sections.map((section) => ({
+            title: section.title?.slice(0, 24),
+            rows: section.rows.slice(0, 10).map((row) => ({
+              id: row.id,
+              title: row.title.slice(0, 24),
+              description: row.description?.slice(0, 72),
+            })),
+          })),
+        },
+      },
+    };
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)
+    return this.request<MetaSendMessageResponse>(
+      `/${this.phoneNumberId}/messages`,
+      {
+        method: "POST",
+<<<<<<< HEAD
         body: JSON.stringify({
           messaging_product: "whatsapp",
           recipient_type: "individual",
@@ -207,10 +383,34 @@ export class MetaWhatsAppClient {
             },
           },
         }),
+=======
+        body: JSON.stringify(payload),
+>>>>>>> c00ac535 (Fresh initialization and recovery)
       },
     );
   }
 
+<<<<<<< HEAD
+=======
+  // ─── Status & Read Receipts ─────────────────────────────────────────────────
+
+  async markMessageAsRead(messageId: string): Promise<boolean> {
+    try {
+      await this.request(`/${this.phoneNumberId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          status: "read",
+          message_id: messageId,
+        }),
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+>>>>>>> c00ac535 (Fresh initialization and recovery)
   // ─── Template Messages ──────────────────────────────────────────────────────
 
   async sendTemplateMessage(params: {
@@ -218,7 +418,11 @@ export class MetaWhatsAppClient {
     templateName: string;
     languageCode: string;
     components?: unknown[];
+<<<<<<< HEAD
   }) {
+=======
+  }): Promise<MetaSendMessageResponse> {
+>>>>>>> c00ac535 (Fresh initialization and recovery)
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
@@ -237,6 +441,7 @@ export class MetaWhatsAppClient {
     );
   }
 
+<<<<<<< HEAD
   // ─── Pre-Configured Store Templates ─────────────────────────────────────────
 
   async sendOrderConfirmation({
@@ -455,4 +660,69 @@ export class MetaWhatsAppClient {
 
     return Promise.all(sendPromises);
   }
+=======
+  // ─── High-Level Notifications ───────────────────────────────────────────────
+
+  async sendOrderConfirmation(params: {
+    phone: string;
+    name: string;
+    trackingNumber: string;
+    total: number;
+    currency?: string;
+    itemsSummary?: string;
+  }): Promise<MetaSendMessageResponse> {
+    const currency = params.currency ?? "KES";
+    const formattedTotal = new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency,
+    }).format(params.total);
+
+    const body = [
+      `🎉 *Order Confirmed!*`,
+      ``,
+      `Hello ${params.name}, your order has been received.`,
+      ``,
+      `📦 *Tracking #:* ${params.trackingNumber}`,
+      `💰 *Total:* ${formattedTotal}`,
+      params.itemsSummary ? `📋 *Items:* ${params.itemsSummary}` : "",
+      ``,
+      `We will notify you once your order is on the way!`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    return this.sendTextMessage({
+      to: params.phone,
+      body,
+    });
+  }
+
+  async sendPaymentReceivedNotification(params: {
+    phone: string;
+    trackingNumber: string;
+    receiptNumber: string;
+    amount: number;
+    currency?: string;
+  }): Promise<MetaSendMessageResponse> {
+    const currency = params.currency ?? "KES";
+    const formattedAmount = new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency,
+    }).format(params.amount);
+
+    const body = [
+      `✅ *Payment Received Successfully!*`,
+      ``,
+      `Your payment of *${formattedAmount}* for Order *#${params.trackingNumber}* has been confirmed.`,
+      `🧾 *Receipt:* ${params.receiptNumber}`,
+      ``,
+      `Thank you for shopping with us!`,
+    ].join("\n");
+
+    return this.sendTextMessage({
+      to: params.phone,
+      body,
+    });
+  }
+>>>>>>> c00ac535 (Fresh initialization and recovery)
 }
