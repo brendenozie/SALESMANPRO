@@ -502,14 +502,10 @@ model Company {
   mediaAssets            MediaAsset[]
 
   //Centralized AI Wallet
-<<<<<<< HEAD
-  aiCreditBalance Float @default(0)
-=======
   aiCreditBalance        Float                 @default(0)
   aiCreditTransactions   AICreditTransaction[]
   aiUsages               AIUsage[]
   aiGenerationJobs       AIGenerationJob[]
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
   @@index([userId])
   @@index([name])
@@ -2775,12 +2771,9 @@ model User {
   whatsAppContacts        WhatsAppContact[]
   whatsAppAgents          WhatsAppAgent[]
   mediaAssets             MediaAsset[]
-<<<<<<< HEAD
-=======
   aiCreditTransactions    AICreditTransaction[]
   aiUsages                AIUsage[]
   aiGenerationJobs        AIGenerationJob[]
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
   @@index([companyId])
   // @@index([settingsId])
@@ -9363,8 +9356,6 @@ model Expense {
 
   @@map("expenses")
 }
-<<<<<<< HEAD
-=======
 
 // ============================================================
 // CENTRAL AI PLATFORM MODELS & ENUMS
@@ -9521,4 +9512,3 @@ model AIPackage {
   @@index([isPopular])
 }
 
->>>>>>> c00ac535 (Fresh initialization and recovery)

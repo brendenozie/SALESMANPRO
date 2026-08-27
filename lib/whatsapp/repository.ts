@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 /**
  * lib/whatsapp/repository.ts
  *
@@ -7,22 +5,15 @@
  * customer identity mapping, state persistence, audit logging, and usage metrics.
  */
 
->>>>>>> c00ac535 (Fresh initialization and recovery)
 import prisma from "@/server/db/prismadb";
 import { Prisma } from "@prisma/client";
 import type {
   NormalizedWhatsAppMessage,
   WhatsAppMessageStatus,
-<<<<<<< HEAD
-} from "@/lib/whatsapp/types";
-
-
-=======
   WhatsAppConversationMode,
   WhatsAppActionName,
 } from "@/lib/whatsapp/types";
 import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
 const conversationInclude = {
   WhatsAppAccount: true,
@@ -41,8 +32,6 @@ export class WhatsAppRepository {
       where: {
         phoneNumberId,
       },
-<<<<<<< HEAD
-=======
       include: {
         company: {
           select: {
@@ -65,7 +54,6 @@ export class WhatsAppRepository {
         isActive: true,
       },
       orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
->>>>>>> c00ac535 (Fresh initialization and recovery)
     });
   }
 
@@ -82,11 +70,7 @@ export class WhatsAppRepository {
 
   /**
    * ============================================================
-<<<<<<< HEAD
-   * CONTACT
-=======
    * CONTACT & CUSTOMER IDENTITY
->>>>>>> c00ac535 (Fresh initialization and recovery)
    * ============================================================
    */
 
@@ -97,9 +81,6 @@ export class WhatsAppRepository {
     phoneNumber: string;
     profileName?: string | null;
   }) {
-<<<<<<< HEAD
-    const { companyId, accountId, waId, phoneNumber, profileName } = params;
-=======
     const { companyId, accountId, waId, profileName } = params;
     const normalizedPhone = normalizePhoneNumber(params.phoneNumber);
 
@@ -128,7 +109,6 @@ export class WhatsAppRepository {
         consumer = { id: pastOrder.consumerId, userId: "" };
       }
     }
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
     return prisma.whatsAppContact.upsert({
       where: {
@@ -137,27 +117,10 @@ export class WhatsAppRepository {
           waId,
         },
       },
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
       create: {
         companyId,
         accountId,
         waId,
-<<<<<<< HEAD
-        phoneNumber,
-        profileName: profileName ?? undefined,
-        name: profileName ?? undefined,
-        lastSeenAt: new Date(),
-        lastMessageAt: new Date(),
-      },
-
-      update: {
-        accountId,
-        phoneNumber,
-        profileName: profileName ?? undefined,
-=======
         phoneNumber: normalizedPhone,
         profileName: profileName ?? undefined,
         name: profileName ?? undefined,
@@ -170,7 +133,6 @@ export class WhatsAppRepository {
         phoneNumber: normalizedPhone,
         profileName: profileName ?? undefined,
         userId: consumer?.userId ? consumer.userId : undefined,
->>>>>>> c00ac535 (Fresh initialization and recovery)
         lastSeenAt: new Date(),
         lastMessageAt: new Date(),
       },
@@ -179,11 +141,7 @@ export class WhatsAppRepository {
 
   /**
    * ============================================================
-<<<<<<< HEAD
-   * CONVERSATION
-=======
    * CONVERSATION & STATE PERSISTENCE
->>>>>>> c00ac535 (Fresh initialization and recovery)
    * ============================================================
    */
 
@@ -195,13 +153,8 @@ export class WhatsAppRepository {
     phoneNumber: string;
     customerName?: string | null;
   }) {
-<<<<<<< HEAD
-    const { companyId, accountId, contactId, waId, phoneNumber, customerName } =
-      params;
-=======
     const { companyId, accountId, contactId, waId, customerName } = params;
     const normalizedPhone = normalizePhoneNumber(params.phoneNumber);
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
     const existing = await prisma.whatsAppConversation.findFirst({
       where: {
@@ -212,13 +165,7 @@ export class WhatsAppRepository {
           in: ["OPEN", "PENDING", "WAITING_FOR_CUSTOMER", "WAITING_FOR_AGENT"],
         },
       },
-<<<<<<< HEAD
-
       include: conversationInclude,
-
-=======
-      include: conversationInclude,
->>>>>>> c00ac535 (Fresh initialization and recovery)
       orderBy: {
         lastMessageAt: "desc",
       },
@@ -234,30 +181,6 @@ export class WhatsAppRepository {
         whatsAppAccountId: accountId,
         whatsAppContactId: contactId,
         waId,
-<<<<<<< HEAD
-        phoneNumber,
-        customerName: customerName ?? undefined,
-
-        status: "OPEN",
-
-        mode: "AI",
-
-        aiEnabled: true,
-
-        aiPaused: false,
-
-        humanHandoff: false,
-
-        state: "GENERAL",
-
-        lastCustomerMessageAt: new Date(),
-
-        customerWindowExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-
-        lastMessageAt: new Date(),
-      },
-
-=======
         phoneNumber: normalizedPhone,
         customerName: customerName ?? undefined,
         status: "OPEN",
@@ -270,16 +193,10 @@ export class WhatsAppRepository {
         customerWindowExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         lastMessageAt: new Date(),
       },
->>>>>>> c00ac535 (Fresh initialization and recovery)
       include: conversationInclude,
     });
   }
 
-<<<<<<< HEAD
-  /**
-   * ============================================================
-   * MESSAGE DEDUPLICATION
-=======
   async getRecentConversationHistory(
     conversationId: string,
     limit = 15,
@@ -410,7 +327,6 @@ export class WhatsAppRepository {
   /**
    * ============================================================
    * MESSAGE INGESTION & DEDUPLICATION
->>>>>>> c00ac535 (Fresh initialization and recovery)
    * ============================================================
    */
 
@@ -426,15 +342,6 @@ export class WhatsAppRepository {
     });
   }
 
-<<<<<<< HEAD
-  /**
-   * ============================================================
-   * INBOUND MESSAGE
-   * ============================================================
-   */
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   async persistInboundMessage(params: {
     companyId: string;
     accountId: string;
@@ -461,51 +368,6 @@ export class WhatsAppRepository {
     const created = await prisma.whatsAppMessage.create({
       data: {
         companyId: params.companyId,
-<<<<<<< HEAD
-
-        accountId: params.accountId,
-
-        contactId: params.contactId,
-
-        conversationId: params.conversationId,
-
-        whatsappMessageId: message.providerMessageId,
-
-        externalMessageId: message.providerMessageId,
-
-        direction: "INBOUND",
-
-        senderType: "CUSTOMER",
-
-        type: message.messageType,
-
-        text: message.text ?? undefined,
-
-        mediaId: message.media?.id ?? undefined,
-
-        mediaMimeType: message.media?.mimeType ?? undefined,
-
-        mediaCaption: message.media?.caption ?? undefined,
-
-        mediaFilename: message.media?.filename ?? undefined,
-
-        latitude: message.location?.latitude,
-
-        longitude: message.location?.longitude,
-
-        locationName: message.location?.name ?? undefined,
-
-        locationAddress: message.location?.address ?? undefined,
-
-        interactiveType: message.interactive?.type ?? undefined,
-
-        interactivePayload: message.interactive?.payload ?? undefined,
-
-        payload: message.rawPayload as object,
-
-        status: "RECEIVED",
-
-=======
         accountId: params.accountId,
         contactId: params.contactId,
         conversationId: params.conversationId,
@@ -527,32 +389,16 @@ export class WhatsAppRepository {
         interactivePayload: (message.interactive?.payload as Prisma.InputJsonValue) ?? undefined,
         payload: (message.rawPayload as Prisma.InputJsonValue) ?? undefined,
         status: "RECEIVED",
->>>>>>> c00ac535 (Fresh initialization and recovery)
         processedByAI: false,
       },
     });
 
     await prisma.whatsAppConversation.update({
-<<<<<<< HEAD
-      where: {
-        id: params.conversationId,
-      },
-
-      data: {
-        lastMessageAt: new Date(),
-
-        lastCustomerMessageAt: new Date(),
-
-        customerWindowExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-
-        aiPaused: false,
-=======
       where: { id: params.conversationId },
       data: {
         lastCustomerMessageAt: new Date(),
         lastMessageAt: new Date(),
         customerWindowExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
->>>>>>> c00ac535 (Fresh initialization and recovery)
       },
     });
 
@@ -562,89 +408,11 @@ export class WhatsAppRepository {
     };
   }
 
-<<<<<<< HEAD
-  /**
-   * ============================================================
-   * OUTBOUND MESSAGE
-   * ============================================================
-   */
-
-  async createOutboundMessage(params: {
-=======
   async persistOutboundMessage(params: {
->>>>>>> c00ac535 (Fresh initialization and recovery)
     companyId: string;
     accountId: string;
     contactId: string;
     conversationId: string;
-<<<<<<< HEAD
-    text?: string;
-    type?: string;
-    payload?: unknown;
-    senderType?: "AI" | "AGENT" | "SYSTEM";
-  }) {
-    return prisma.whatsAppMessage.create({
-      data: {
-        companyId: params.companyId,
-
-        accountId: params.accountId,
-
-        contactId: params.contactId,
-
-        conversationId: params.conversationId,
-
-        direction: "OUTBOUND",
-
-        senderType: params.senderType ?? "AI",
-
-        type: (params.type ?? "TEXT") as any,
-
-        text: params.text ?? undefined,
-
-        payload: params.payload as object | undefined,
-
-        status: "QUEUED",
-
-        isAI: params.senderType !== "AGENT",
-
-        processedByAI: true,
-      },
-    });
-  }
-
-  /**
-   * ============================================================
-   * UPDATE OUTBOUND META MESSAGE ID
-   * ============================================================
-   */
-
-  async markOutboundSent(params: {
-    messageId: string;
-    whatsappMessageId: string;
-  }) {
-    return prisma.whatsAppMessage.update({
-      where: {
-        id: params.messageId,
-      },
-
-      data: {
-        whatsappMessageId: params.whatsappMessageId,
-
-        externalMessageId: params.whatsappMessageId,
-
-        status: "SENT",
-
-        sentAt: new Date(),
-      },
-    });
-  }
-
-  /**
-   * ============================================================
-   * DELIVERY STATUS
-   * ============================================================
-   */
-=======
     providerMessageId?: string | null;
     body: string;
     status?: WhatsAppMessageStatus;
@@ -680,7 +448,6 @@ export class WhatsAppRepository {
 
     return created;
   }
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
   async updateMessageStatus(params: {
     whatsappMessageId: string;
@@ -688,33 +455,6 @@ export class WhatsAppRepository {
     errorCode?: string | null;
     errorMessage?: string | null;
   }) {
-<<<<<<< HEAD
-    const data: Record<string, unknown> = {
-      status: params.status,
-    };
-
-    const now = new Date();
-
-    switch (params.status) {
-      case "SENT":
-        data.sentAt = now;
-        break;
-
-      case "DELIVERED":
-        data.deliveredAt = now;
-        break;
-
-      case "READ":
-        data.readAt = now;
-        break;
-
-      case "FAILED":
-        data.failedAt = now;
-        data.errorCode = params.errorCode ?? undefined;
-        data.errorMessage = params.errorMessage ?? undefined;
-        break;
-    }
-=======
     const now = new Date();
     const timestamps: Record<string, Date> = {};
 
@@ -722,128 +462,47 @@ export class WhatsAppRepository {
     if (params.status === "DELIVERED") timestamps.deliveredAt = now;
     if (params.status === "READ") timestamps.readAt = now;
     if (params.status === "FAILED") timestamps.failedAt = now;
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
     return prisma.whatsAppMessage.updateMany({
       where: {
         whatsappMessageId: params.whatsappMessageId,
       },
-<<<<<<< HEAD
-
-      data,
-=======
       data: {
         status: params.status,
         errorCode: params.errorCode ?? undefined,
         errorMessage: params.errorMessage ?? undefined,
         ...timestamps,
       },
->>>>>>> c00ac535 (Fresh initialization and recovery)
     });
   }
 
   /**
    * ============================================================
-<<<<<<< HEAD
-   * WEBHOOK EVENT
-=======
    * WEBHOOK EVENTS
->>>>>>> c00ac535 (Fresh initialization and recovery)
    * ============================================================
    */
 
   async persistWebhookEvent(params: {
     companyId?: string | null;
     accountId?: string | null;
-<<<<<<< HEAD
-    eventId?: string | null;
-    eventType?: string | null;
-    correlationId: string;
-=======
     eventId?: string;
     eventType?: string;
     correlationId?: string;
->>>>>>> c00ac535 (Fresh initialization and recovery)
     payload: unknown;
   }) {
     return prisma.whatsAppWebhookEvent.create({
       data: {
         companyId: params.companyId ?? undefined,
-<<<<<<< HEAD
-
-        accountId: params.accountId ?? undefined,
-
-        eventId: params.eventId ?? undefined,
-
-        eventType: params.eventType ?? undefined,
-
-        correlationId: params.correlationId,
-
-        payload: params.payload as object,
-
-=======
         accountId: params.accountId ?? undefined,
         eventId: params.eventId ?? undefined,
         eventType: params.eventType ?? "whatsapp",
         correlationId: params.correlationId,
         payload: (params.payload as Prisma.InputJsonValue) ?? {},
->>>>>>> c00ac535 (Fresh initialization and recovery)
         processed: false,
       },
     });
   }
 
-<<<<<<< HEAD
-  /**
-   * ============================================================
-   * CONVERSATION STATE
-   * ============================================================
-   */
-
-  async updateConversationContext(
-    conversationId: string,
-    context: Record<string, unknown>,
-  ) {
-    const current = await prisma.whatsAppConversation.findUnique({
-      where: {
-        id: conversationId,
-      },
-
-      select: {
-        context: true,
-      },
-    });
-
-    const existing =
-      current?.context &&
-      typeof current.context === "object" &&
-      !Array.isArray(current.context)
-        ? (current.context as Record<string, unknown>)
-        : {};
-
-    return prisma.whatsAppConversation.update({
-      where: {
-        id: conversationId,
-      },
-
-      data: {
-        context: {
-          ...existing,
-          ...context,
-        } as Prisma.InputJsonObject,
-      },
-    });
-  }
-
-  async updateCart(conversationId: string, cart: unknown) {
-    return prisma.whatsAppConversation.update({
-      where: {
-        id: conversationId,
-      },
-
-      data: {
-        cart: cart as Prisma.InputJsonValue,
-=======
   async markWebhookEventProcessed(eventId: string, error?: string | null) {
     return prisma.whatsAppWebhookEvent.update({
       where: { id: eventId },
@@ -851,147 +510,12 @@ export class WhatsAppRepository {
         processed: !error,
         processedAt: new Date(),
         processingError: error ?? undefined,
->>>>>>> c00ac535 (Fresh initialization and recovery)
       },
     });
   }
 
   /**
    * ============================================================
-<<<<<<< HEAD
-   * HUMAN HANDOFF
-   * ============================================================
-   */
-
-  async escalateConversation(conversationId: string, reason: string) {
-    return prisma.whatsAppConversation.update({
-      where: {
-        id: conversationId,
-      },
-
-      data: {
-        mode: "HUMAN",
-
-        aiEnabled: false,
-
-        aiPaused: true,
-
-        humanHandoff: true,
-
-        status: "WAITING_FOR_AGENT",
-
-        state: "HUMAN_HANDOFF",
-
-        aiSummary: reason,
-      },
-    });
-  }
-
-  /**
-   * ============================================================
-   * RECENT MESSAGES
-   * ============================================================
-   */
-
-  async getRecentMessages(conversationId: string, limit = 20) {
-    return prisma.whatsAppMessage.findMany({
-      where: {
-        conversationId,
-      },
-
-      orderBy: {
-        createdAt: "desc",
-      },
-
-      take: limit,
-    });
-  }
-
-  /**
-   * ============================================================
-   * TENANT
-   * ============================================================
-   */
-
-  async getCompany(companyId: string) {
-    return prisma.company.findUnique({
-      where: {
-        id: companyId,
-      },
-
-      select: {
-        id: true,
-        name: true,
-        currency: true,
-        locale: true,
-        contactPhone: true,
-        contactEmail: true,
-        address: true,
-        openingHours: true,
-        logoUrl: true,
-      },
-    });
-  }
-
-  /**
-   * ============================================================
-   * RECENT CONVERSATION HISTORY FOR AI
-   * ============================================================
-   */
-
-  async getRecentConversationHistory(conversationId: string, limit = 12) {
-    const messages = await prisma.whatsAppMessage.findMany({
-      where: {
-        conversationId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: limit,
-    });
-
-    return messages.reverse().map((msg) => ({
-      direction: msg.direction,
-      body: msg.text,
-      createdAt: msg.createdAt,
-    }));
-  }
-
-  /**
-   * ============================================================
-   * PERSIST AI OUTBOUND MESSAGE
-   * ============================================================
-   */
-
-  async persistOutboundMessage(params: {
-    companyId: string;
-    accountId: string;
-    contactId: string;
-    conversationId: string;
-    providerMessageId?: string;
-    body: string;
-    status?: WhatsAppMessageStatus;
-  }) {
-    return prisma.whatsAppMessage.create({
-      data: {
-        companyId: params.companyId,
-        accountId: params.accountId,
-        contactId: params.contactId,
-        conversationId: params.conversationId,
-        whatsappMessageId: params.providerMessageId,
-        externalMessageId: params.providerMessageId,
-        direction: "OUTBOUND",
-        senderType: "AI",
-        type: "TEXT",
-        text: params.body,
-        status: params.status ?? "SENT",
-        isAI: true,
-        processedByAI: true,
-        sentAt: new Date(),
-      },
-    });
-  }
-=======
    * AUDITING & USAGE METRICS
    * ============================================================
    */
@@ -1114,7 +638,6 @@ export class WhatsAppRepository {
 
     return usage;
   }
->>>>>>> c00ac535 (Fresh initialization and recovery)
 }
 
 export const whatsappRepository = new WhatsAppRepository();

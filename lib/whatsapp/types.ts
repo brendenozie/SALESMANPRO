@@ -1,16 +1,4 @@
 import { z } from "zod";
-<<<<<<< HEAD
-
-
-
-/**
- * ============================================================
- * WHATSAPP DOMAIN TYPES
- * ============================================================
- */
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
 import type {
   WhatsAppAccount as PrismaWhatsAppAccount,
   WhatsAppContact as PrismaWhatsAppContact,
@@ -18,24 +6,17 @@ import type {
   WhatsAppMessage as PrismaWhatsAppMessage,
 } from "@prisma/client";
 
-<<<<<<< HEAD
-=======
 /**
  * ============================================================
  * PRISMA MODEL ALIASES
  * ============================================================
  */
->>>>>>> c00ac535 (Fresh initialization and recovery)
 export type WhatsAppAccount = PrismaWhatsAppAccount;
 export type WhatsAppContact = PrismaWhatsAppContact;
 export type WhatsAppConversation = PrismaWhatsAppConversation;
 export type WhatsAppMessage = PrismaWhatsAppMessage;
 
 export type WhatsAppMessageDirection = "INBOUND" | "OUTBOUND";
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
 export type WhatsAppSenderType = "CUSTOMER" | "AI" | "AGENT" | "SYSTEM";
 
 export type WhatsAppMessageType =
@@ -77,30 +58,6 @@ export type WhatsAppConversationStatus =
  * NORMALIZED INBOUND MESSAGE
  * ============================================================
  */
-<<<<<<< HEAD
-
-export interface NormalizedWhatsAppMessage {
-  provider: "META";
-
-  providerMessageId: string;
-
-  accountId: string;
-
-  companyId: string;
-
-  phoneNumberId: string;
-
-  waId: string;
-
-  phoneNumber: string;
-
-  displayName?: string | null;
-
-  messageType: WhatsAppMessageType;
-
-  text?: string | null;
-
-=======
 export interface NormalizedWhatsAppMessage {
   provider: "META";
   providerMessageId: string;
@@ -112,27 +69,18 @@ export interface NormalizedWhatsAppMessage {
   displayName?: string | null;
   messageType: WhatsAppMessageType;
   text?: string | null;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   media?: {
     id?: string | null;
     mimeType?: string | null;
     caption?: string | null;
     filename?: string | null;
   } | null;
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   location?: {
     latitude: number;
     longitude: number;
     name?: string | null;
     address?: string | null;
   } | null;
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   interactive?: {
     type?: string | null;
     id?: string | null;
@@ -140,13 +88,7 @@ export interface NormalizedWhatsAppMessage {
     description?: string | null;
     payload?: unknown;
   } | null;
-<<<<<<< HEAD
-
   timestamp: Date;
-
-=======
-  timestamp: Date;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   rawPayload: unknown;
 }
 
@@ -155,59 +97,30 @@ export interface NormalizedWhatsAppMessage {
  * META WEBHOOK TYPES
  * ============================================================
  */
-<<<<<<< HEAD
-
 export interface MetaWebhookRequest {
   object?: string;
-
-=======
-export interface MetaWebhookRequest {
-  object?: string;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   entry?: MetaWebhookEntry[];
 }
 
 export interface MetaWebhookEntry {
   id?: string;
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   changes?: MetaWebhookChange[];
 }
 
 export interface MetaWebhookChange {
   field?: string;
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   value?: MetaWebhookValue;
 }
 
 export interface MetaWebhookValue {
   messaging_product?: string;
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   metadata?: {
     display_phone_number?: string;
     phone_number_id?: string;
   };
-<<<<<<< HEAD
-
-  contacts?: MetaWebhookContact[];
-
-  messages?: MetaWebhookMessage[];
-
-  statuses?: MetaWebhookStatus[];
-
-=======
   contacts?: MetaWebhookContact[];
   messages?: MetaWebhookMessage[];
   statuses?: MetaWebhookStatus[];
->>>>>>> c00ac535 (Fresh initialization and recovery)
   errors?: MetaWebhookError[];
 }
 
@@ -215,123 +128,64 @@ export interface MetaWebhookContact {
   profile?: {
     name?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   wa_id?: string;
 }
 
 export interface MetaWebhookMessage {
   from?: string;
-<<<<<<< HEAD
-
-  id?: string;
-
-  timestamp?: string;
-
-  type?: string;
-
-  text?: {
-    body?: string;
-  };
-
-=======
   id?: string;
   timestamp?: string;
   type?: string;
   text?: {
     body?: string;
   };
->>>>>>> c00ac535 (Fresh initialization and recovery)
   image?: {
     id?: string;
     mime_type?: string;
     caption?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   video?: {
     id?: string;
     mime_type?: string;
     caption?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   audio?: {
     id?: string;
     mime_type?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   document?: {
     id?: string;
     mime_type?: string;
     filename?: string;
     caption?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   sticker?: {
     id?: string;
     mime_type?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   location?: {
     latitude?: number;
     longitude?: number;
     name?: string;
     address?: string;
   };
-<<<<<<< HEAD
-
-  contacts?: unknown[];
-
-  interactive?: {
-    type?: string;
-
-=======
   contacts?: unknown[];
   interactive?: {
     type?: string;
->>>>>>> c00ac535 (Fresh initialization and recovery)
     button_reply?: {
       id?: string;
       title?: string;
     };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
     list_reply?: {
       id?: string;
       title?: string;
       description?: string;
     };
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   button?: {
     text?: string;
     payload?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   reaction?: {
     message_id?: string;
     emoji?: string;
@@ -340,38 +194,20 @@ export interface MetaWebhookMessage {
 
 export interface MetaWebhookStatus {
   id?: string;
-<<<<<<< HEAD
-
-  status?: "sent" | "delivered" | "read" | "failed";
-
-  timestamp?: string;
-
-  recipient_id?: string;
-
-=======
   status?: "sent" | "delivered" | "read" | "failed";
   timestamp?: string;
   recipient_id?: string;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   conversation?: {
     id?: string;
     origin?: {
       type?: string;
     };
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   pricing?: {
     billable?: boolean;
     pricing_model?: string;
     category?: string;
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> c00ac535 (Fresh initialization and recovery)
   errors?: Array<{
     code?: number;
     title?: string;
@@ -381,16 +217,8 @@ export interface MetaWebhookStatus {
 
 export interface MetaWebhookError {
   code?: number;
-<<<<<<< HEAD
-
-  title?: string;
-
-  message?: string;
-
-=======
   title?: string;
   message?: string;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   error_data?: {
     details?: string;
   };
@@ -398,152 +226,6 @@ export interface MetaWebhookError {
 
 /**
  * ============================================================
-<<<<<<< HEAD
- * AI ACTIONS
- * ============================================================
- */
-
-export const whatsappActionSchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("search_products"),
-
-    arguments: z.object({
-      query: z.string().optional(),
-      maxPrice: z.number().positive().optional(),
-      minPrice: z.number().nonnegative().optional(),
-      quantity: z.number().int().positive().optional(),
-      brand: z.string().optional(),
-      category: z.string().optional(),
-      limit: z.number().int().positive().max(20).default(5),
-    }),
-  }),
-
-  z.object({
-    action: z.literal("calculate_checkout"),
-
-    arguments: z.object({
-      items: z.array(
-        z.object({
-          marketplaceListingId: z.string(),
-          quantity: z.number().int().positive(),
-          selectedOptions: z
-            .array(
-              z.object({
-                category: z.string(),
-                name: z.string(),
-                extraPrice: z.number().nonnegative().optional(),
-              }),
-            )
-            .optional(),
-          date: z.string().nullable().optional(),
-          timeSlot: z.string().nullable().optional(),
-          serviceNotes: z.string().nullable().optional(),
-        }),
-      ),
-      shippingAddress: z.record(z.string(), z.unknown()).optional(),
-      shippingMethod: z.string().optional(),
-      promoCode: z.string().optional(),
-      paymentOption: z
-        .enum([
-          "cod",
-          "pickupatshop",
-          "mpesa",
-          "card",
-          "paystack",
-          "ghuba",
-          "stripe",
-          "paypal",
-          "cash",
-          "split",
-          "pending",
-        ])
-        .default("cod"),
-    }),
-  }),
-
-  z.object({
-    action: z.literal("create_order"),
-
-    arguments: z.object({
-      confirmation: z.literal(true),
-
-      items: z.array(
-        z.object({
-          marketplaceListingId: z.string(),
-          quantity: z.number().int().positive(),
-          selectedOptions: z
-            .array(
-              z.object({
-                category: z.string(),
-                name: z.string(),
-                extraPrice: z.number().nonnegative().optional(),
-              }),
-            )
-            .optional(),
-          date: z.string().nullable().optional(),
-          timeSlot: z.string().nullable().optional(),
-          serviceNotes: z.string().nullable().optional(),
-        }),
-      ),
-
-      paymentOption: z
-        .enum([
-          "cod",
-          "pickupatshop",
-          "mpesa",
-          "card",
-          "paystack",
-          "ghuba",
-          "stripe",
-          "paypal",
-          "cash",
-          "split",
-          "pending",
-        ])
-        .default("cod"),
-
-      shippingAddress: z.record(z.string(), z.unknown()).optional(),
-
-      shippingMethod: z.string().optional(),
-
-      promoCode: z.string().optional(),
-
-      notes: z.string().optional(),
-
-      mpesaPhone: z.string().optional(),
-    }),
-  }),
-
-  z.object({
-    action: z.literal("initiate_mpesa"),
-
-    arguments: z.object({
-      orderId: z.string(),
-
-      phone: z.string().optional(),
-    }),
-  }),
-
-  z.object({
-    action: z.literal("get_order_status"),
-
-    arguments: z.object({
-      orderId: z.string().optional(),
-      trackingNumber: z.string().optional(),
-    }),
-  }),
-
-  z.object({
-    action: z.literal("escalate_to_human"),
-
-    arguments: z.object({
-      reason: z.string().min(1),
-    }),
-  }),
-]);
-
-export type WhatsAppAction = z.infer<typeof whatsappActionSchema>;
-=======
  * AI ACTION SCHEMAS (STRONGLY TYPED WITH ZOD)
  * ============================================================
  */
@@ -983,35 +665,12 @@ export const whatsappActionSchema = z.discriminatedUnion("action", [
 
 export type WhatsAppAction = z.infer<typeof whatsappActionSchema>;
 export type WhatsAppActionName = WhatsAppAction["action"];
->>>>>>> c00ac535 (Fresh initialization and recovery)
 
 /**
  * ============================================================
  * ACTION CONTEXT
  * ============================================================
  */
-<<<<<<< HEAD
-
-export interface WhatsAppActionContext {
-  companyId: string;
-
-  accountId: string;
-
-  conversationId: string;
-
-  contactId: string;
-
-  waId: string;
-
-  phoneNumber: string;
-
-  customerName?: string | null;
-
-  customerEmail?: string | null;
-
-  messageId?: string;
-
-=======
 export interface WhatsAppActionContext {
   companyId: string;
   accountId: string;
@@ -1023,7 +682,6 @@ export interface WhatsAppActionContext {
   customerEmail?: string | null;
   consumerId?: string | null;
   messageId?: string;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   correlationId: string;
 }
 
@@ -1032,26 +690,11 @@ export interface WhatsAppActionContext {
  * ACTION RESULT
  * ============================================================
  */
-<<<<<<< HEAD
-
-export interface WhatsAppActionResult {
-  success: boolean;
-
-  action: WhatsAppAction["action"];
-
-  message: string;
-
-  data?: Record<string, unknown>;
-
-  shouldRespond?: boolean;
-
-=======
 export interface WhatsAppActionResult {
   success: boolean;
   action: WhatsAppActionName;
   message: string;
   data?: Record<string, unknown>;
   shouldRespond?: boolean;
->>>>>>> c00ac535 (Fresh initialization and recovery)
   shouldEscalate?: boolean;
 }
