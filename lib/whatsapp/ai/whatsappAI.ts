@@ -116,8 +116,8 @@ export class WhatsAppAIService {
       completionTokens: outputTokens,
     });
 
-    whatsappRepository
-      .recordAIUsage({
+    try {
+      await whatsappRepository.recordAIUsage({
         companyId: account.companyId,
         conversationId: conversation.id,
         provider: result.provider,
@@ -125,10 +125,10 @@ export class WhatsAppAIService {
         inputTokens,
         outputTokens,
         aiCreditsUsed: creditsCost,
-      })
-      .catch((err) =>
-        console.error("[WHATSAPP_RECORD_AI_USAGE_ERROR]", err),
-      );
+      });
+    } catch (err) {
+      console.error("[WHATSAPP_RECORD_AI_USAGE_ERROR]", err);
+    }
 
     // 5. Update conversation state with intent, summary, and confidence
     await whatsappRepository.updateConversationState(conversation.id, {

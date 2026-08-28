@@ -18,11 +18,16 @@ import {
   ShoppingBagIcon,
   Squares2X2Icon,
   ExclamationCircleIcon,
-  ArrowTopRightOnSquareIcon,
   PlusCircleIcon,
   CheckCircleIcon,
   XMarkIcon,
   CpuChipIcon,
+  MegaphoneIcon,
+  UserGroupIcon,
+  FolderOpenIcon,
+  ArrowDownTrayIcon,
+  PlayCircleIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
 import { BoltIcon as BoltSolidIcon } from "@heroicons/react/24/solid";
 
@@ -37,9 +42,21 @@ import {
   useAIUsageAnalytics,
   useAIGenerations,
   useBuyAICredits,
+  useAIAgent,
+  useCancelAIGenerationJob,
 } from "@/hooks/useAI";
 
-type ActiveTab = "overview" | "text" | "image" | "video" | "product" | "credits" | "analytics";
+type ActiveTab =
+  | "overview"
+  | "text"
+  | "image"
+  | "video"
+  | "product"
+  | "marketing"
+  | "agents"
+  | "generations"
+  | "credits"
+  | "analytics";
 
 export default function AIStudio() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
@@ -48,19 +65,21 @@ export default function AIStudio() {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [phoneForPayment, setPhoneForPayment] = useState("");
 
-  // AI Hooks
+  // AI Query Hooks
   const { data: creditsData, isLoading: creditsLoading, refetch: refetchCredits } = useAICredits();
   const { data: modelsData } = useAIModels();
-  const { data: transactionsData } = useAICreditTransactions(1, 10);
+  const { data: transactionsData } = useAICreditTransactions(1, 20);
   const { data: usageData } = useAIUsageAnalytics("month");
-  const { data: generationsData } = useAIGenerations(1, 12);
+  const { data: generationsData, refetch: refetchGenerations } = useAIGenerations(1, 20);
 
-  // Mutations
+  // AI Mutations
   const textMutation = useGenerateText();
   const imageMutation = useGenerateImage();
   const videoMutation = useGenerateVideo();
   const productMutation = useProductAI();
   const buyCreditsMutation = useBuyAICredits();
+  const agentMutation = useAIAgent();
+  const cancelJobMutation = useCancelAIGenerationJob();
 
   // Text Tab State
   const [textPrompt, setTextPrompt] = useState("");
@@ -86,6 +105,26 @@ export default function AIStudio() {
   const [productCategory, setProductCategory] = useState("");
   const [productFeatures, setProductFeatures] = useState("");
   const [productOutput, setProductOutput] = useState<any>(null);
+
+  // Marketing Tab State
+  const [marketingTopic, setMarketingTopic] = useState("");
+  const [marketingType, setMarketingType] = useState("social_ad");
+  const [marketingDiscount, setMarketingDiscount] = useState("20% OFF");
+  const [marketingOutput, setMarketingOutput] = useState<any>(null);
+
+  // Agents Tab State
+  const [agentRole, setAgentRole] = useState<"SALES_ASSISTANT" | "SUPPORT_REP" | "MARKETING_ADVISOR" | "BUSINESS_ANALYST">("SALES_ASSISTANT");
+  const [agentInput, setAgentInput] = useState("");
+  const [agentHistory, setAgentHistory] = useState<Array<{ role: "system" | "user" | "assistant"; content: string; time: string }>>([
+    {
+      role: "assistant",
+      content: "Hello! I am your store AI sales & support agent. How can I help boost sales, check inventory, or draft customer replies today?",
+      time: "Just now",
+    },
+  ]);
+
+  // Generations Tab Filter
+  const [generationFilter, setGenerationFilter] = useState<string>("ALL");
 
   const balance = creditsData?.balance ?? 0;
   const companyName = creditsData?.companyName || "Store";
@@ -136,7 +175,7 @@ export default function AIStudio() {
         aspectRatio: videoAspectRatio,
       });
       setVideoPrompt("");
-      setActiveTab("overview");
+      setActiveTab("generations");
     } catch (err: any) {
       console.error(err);
     }
@@ -157,6 +196,51 @@ export default function AIStudio() {
     }
   };
 
+  const handleGenerateMarketing = async () => {
+    if (!marketingTopic) return;
+    try {
+      const res = await textMutation.mutateAsync({
+        prompt: `Create a high-converting ${marketingType.replace("_", " ")} campaign with offer '${marketingDiscount}' for: ${marketingTopic}`,
+        systemPrompt: "You are an expert eCommerce growth marketing director. Return high-converting hooks, email subject lines, Instagram captions with emojis and hashtags, and WhatsApp broadcast copy.",
+        modelId: "gemini-2.0-flash",
+        feature: "marketing_campaign",
+      });
+      setMarketingOutput(res);
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  const handleSendAgentMessage = async () => {
+    if (!agentInput.trim()) return;
+    const userText = agentInput;
+    setAgentInput("");
+
+    const newHistory = [
+      ...agentHistory,
+      { role: "user" as const, content: userText, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+    ];
+    setAgentHistory(newHistory);
+
+    try {
+      const res = await agentMutation.mutateAsync({
+        prompt: userText,
+        agentRole,
+        conversationHistory: newHistory.map((h) => ({ role: h.role, content: h.content })),
+      });
+
+      setAgentHistory([
+        ...newHistory,
+        { role: "assistant" as const, content: res.reply, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+      ]);
+    } catch (err: any) {
+      setAgentHistory([
+        ...newHistory,
+        { role: "assistant" as const, content: `Error: ${err.message || "Agent execution failed."}`, time: "Just now" },
+      ]);
+    }
+  };
+
   const handlePurchasePackage = async (pkg: any) => {
     try {
       await buyCreditsMutation.mutateAsync({
@@ -170,6 +254,11 @@ export default function AIStudio() {
       alert(err.message || "Failed to initiate top-up");
     }
   };
+
+  const filteredGenerations = (generationsData?.jobs || []).filter((job: any) => {
+    if (generationFilter === "ALL") return true;
+    return job.capability === generationFilter;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 antialiased">
@@ -223,12 +312,15 @@ export default function AIStudio() {
         <div className="max-w-7xl mx-auto mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {[
             { id: "overview", label: "Overview", icon: Squares2X2Icon },
-            { id: "text", label: "Text & Copywriter", icon: DocumentTextIcon },
+            { id: "text", label: "Text Copy", icon: DocumentTextIcon },
             { id: "image", label: "Image Studio", icon: PhotoIcon },
-            { id: "video", label: "Video Reel Studio", icon: VideoCameraIcon },
-            { id: "product", label: "Product Catalog AI", icon: ShoppingBagIcon },
+            { id: "video", label: "Video Reels", icon: VideoCameraIcon },
+            { id: "product", label: "Product AI", icon: ShoppingBagIcon },
+            { id: "marketing", label: "Marketing Ads", icon: MegaphoneIcon },
+            { id: "agents", label: "Store Agents", icon: UserGroupIcon },
+            { id: "generations", label: "Generations", icon: FolderOpenIcon },
             { id: "credits", label: "Wallet & Ledger", icon: CreditCardIcon },
-            { id: "analytics", label: "Usage & Telemetry", icon: ChartBarIcon },
+            { id: "analytics", label: "Telemetry", icon: ChartBarIcon },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -236,10 +328,11 @@ export default function AIStudio() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as ActiveTab)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${active
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
+                  active
                     ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
-                  }`}
+                }`}
               >
                 <Icon className="w-4 h-4 stroke-[1.75]" />
                 <span>{tab.label}</span>
@@ -357,26 +450,33 @@ export default function AIStudio() {
                   <h3 className="font-bold text-slate-900 text-base">Recent AI Generations</h3>
                   <p className="text-xs text-slate-500">Auto-persisted to store Media Library</p>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">
-                  Syncing Live
-                </span>
+                <button
+                  onClick={() => setActiveTab("generations")}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition"
+                >
+                  View All ({generationsData?.total || 0}) →
+                </button>
               </div>
 
               {generationsData?.jobs && generationsData.jobs.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {generationsData.jobs.map((job: any) => (
-                    <div key={job.id} className="border border-slate-200/80 rounded-xl p-3.5 bg-slate-50/50 space-y-2.5 hover:bg-white hover:border-slate-300 transition">
+                  {generationsData.jobs.slice(0, 4).map((job: any) => (
+                    <div
+                      key={job.id}
+                      className="border border-slate-200/80 rounded-xl p-3.5 bg-slate-50/50 space-y-2.5 hover:bg-white hover:border-slate-300 transition"
+                    >
                       <div className="flex items-center justify-between text-[11px] font-semibold">
                         <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
                           {job.capability}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded-md ${job.status === "COMPLETED"
+                          className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                            job.status === "COMPLETED"
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : job.status === "PROCESSING"
-                                ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                : "bg-slate-200 text-slate-700"
-                            }`}
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-slate-200 text-slate-700"
+                          }`}
                         >
                           {job.status}
                         </span>
@@ -448,10 +548,11 @@ export default function AIStudio() {
                       key={tone}
                       type="button"
                       onClick={() => setTextTone(tone)}
-                      className={`text-xs capitalize py-2 px-3 rounded-xl border font-semibold transition ${textTone === tone
+                      className={`text-xs capitalize py-2 px-3 rounded-xl border font-semibold transition ${
+                        textTone === tone
                           ? "border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
+                      }`}
                     >
                       {tone}
                     </button>
@@ -488,13 +589,6 @@ export default function AIStudio() {
                   </>
                 )}
               </button>
-
-              {textMutation.isError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
-                  <ExclamationCircleIcon className="w-4 h-4 flex-shrink-0 stroke-2 text-rose-600" />
-                  <span>{(textMutation.error as any)?.message || "Failed to generate text"}</span>
-                </div>
-              )}
             </div>
 
             {/* Output Display */}
@@ -524,10 +618,18 @@ export default function AIStudio() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-2 border-t border-slate-100 font-medium">
-                      <span>Model: <strong className="text-slate-700">{generatedTextOutput.model}</strong></span>
-                      <span>Tokens: <strong className="text-slate-700">{generatedTextOutput.totalTokens}</strong></span>
-                      <span>Credits: <strong className="text-slate-700">{generatedTextOutput.creditsConsumed}</strong></span>
-                      <span>Speed: <strong className="text-slate-700">{generatedTextOutput.executionTimeMs}ms</strong></span>
+                      <span>
+                        Model: <strong className="text-slate-700">{generatedTextOutput.model}</strong>
+                      </span>
+                      <span>
+                        Tokens: <strong className="text-slate-700">{generatedTextOutput.totalTokens}</strong>
+                      </span>
+                      <span>
+                        Credits: <strong className="text-slate-700">{generatedTextOutput.creditsConsumed}</strong>
+                      </span>
+                      <span>
+                        Speed: <strong className="text-slate-700">{generatedTextOutput.executionTimeMs}ms</strong>
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -557,7 +659,7 @@ export default function AIStudio() {
                   onChange={(e) => setImageAction(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition"
                 >
-                  <option value="GENERATE_IMAGE">Generate from Prompt Description</option>
+                  <option value="GENERATE_IMAGE">Generate from Description</option>
                   <option value="PRODUCT_PHOTO">Clean White Studio Product Shot</option>
                   <option value="REMOVE_BACKGROUND">Isolate & Remove Background</option>
                   <option value="REPLACE_BACKGROUND">Place in Lifestyle Scene</option>
@@ -576,10 +678,11 @@ export default function AIStudio() {
                       key={ratio.id}
                       type="button"
                       onClick={() => setImageAspectRatio(ratio.id as any)}
-                      className={`text-xs py-2 px-3 rounded-xl border font-semibold transition ${imageAspectRatio === ratio.id
+                      className={`text-xs py-2 px-3 rounded-xl border font-semibold transition ${
+                        imageAspectRatio === ratio.id
                           ? "border-purple-600 bg-purple-50 text-purple-700 shadow-xs"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
+                      }`}
                     >
                       {ratio.label}
                     </button>
@@ -598,11 +701,6 @@ export default function AIStudio() {
                 />
               </div>
 
-              <div className="p-3 bg-purple-50/60 border border-purple-100 rounded-xl text-xs text-purple-900 flex items-center justify-between">
-                <span>Standard Generation:</span>
-                <span className="font-bold">20 Credits</span>
-              </div>
-
               <button
                 type="button"
                 disabled={imageMutation.isPending || !imagePrompt}
@@ -612,38 +710,33 @@ export default function AIStudio() {
                 {imageMutation.isPending ? (
                   <>
                     <ArrowPathIcon className="w-4 h-4 animate-spin stroke-2" />
-                    <span>Rendering Visual...</span>
+                    <span>Rendering Image...</span>
                   </>
                 ) : (
                   <>
-                    <SparklesIcon className="w-4 h-4 stroke-2" />
-                    <span>Generate AI Image</span>
+                    <PhotoIcon className="w-4 h-4 stroke-2" />
+                    <span>Generate Image (~20 Credits)</span>
                   </>
                 )}
               </button>
             </div>
 
-            {/* Gallery Section */}
+            {/* Images Grid */}
             <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-              <h4 className="font-bold text-slate-900 text-base mb-4 border-b border-slate-100 pb-3">
-                Session Output Gallery
-              </h4>
-
+              <h4 className="font-bold text-slate-900 text-base mb-4">Generated Images</h4>
               {generatedImages.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   {generatedImages.map((img, idx) => (
-                    <div key={idx} className="border border-slate-200 rounded-xl overflow-hidden group bg-slate-100 relative shadow-xs">
-                      <img src={img.url} alt="Generated visual" className="w-full h-56 object-cover" />
-                      <div className="p-3 bg-white flex items-center justify-between border-t border-slate-100">
-                        <span className="text-[11px] text-slate-500 font-medium">In Store Library</span>
+                    <div key={idx} className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 aspect-square">
+                      <img src={img.url} alt="Generated visual" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <a
                           href={img.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs font-bold text-purple-600 hover:underline flex items-center gap-1"
+                          className="p-2.5 bg-white text-slate-900 rounded-xl shadow-lg hover:bg-slate-50 transition"
                         >
-                          <span>Full Res</span>
-                          <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 stroke-2" />
+                          <ArrowDownTrayIcon className="w-4 h-4 stroke-2" />
                         </a>
                       </div>
                     </div>
@@ -652,68 +745,61 @@ export default function AIStudio() {
               ) : (
                 <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                   <PhotoIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
-                  <span>Rendered image assets will display here</span>
+                  <span>Images generated will appear here and persist to your Media Library</span>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* VIDEO REELS TAB */}
+        {/* VIDEO TAB */}
         {activeTab === "video" && (
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <VideoCameraIcon className="w-5 h-5 text-rose-600 stroke-2" />
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">AI Video Reel Creator</h3>
-                <p className="text-xs text-slate-500">Async processing queue engine</p>
-              </div>
+              <h3 className="font-bold text-slate-900 text-base">Asynchronous Video Reel Studio</h3>
             </div>
 
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Clip Duration</label>
-              <select
-                value={videoDuration}
-                onChange={(e) => setVideoDuration(parseInt(e.target.value, 10))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none"
-              >
-                <option value={5}>5 Seconds Reel (50 Credits)</option>
-                <option value={10}>10 Seconds Showcase (100 Credits)</option>
-              </select>
-            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Create product showcase reels and promo clips. Videos are queued and processed asynchronously to ensure non-blocking performance.
+            </p>
 
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Aspect Ratio</label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "16:9", label: "16:9 Landscape" },
-                  { id: "9:16", label: "9:16 Reels / TikTok" },
-                  { id: "1:1", label: "1:1 Square" },
-                ].map((ratio) => (
-                  <button
-                    key={ratio.id}
-                    type="button"
-                    onClick={() => setVideoAspectRatio(ratio.id as any)}
-                    className={`text-xs py-2 px-3 rounded-xl border font-semibold transition ${videoAspectRatio === ratio.id
-                        ? "border-rose-600 bg-rose-50 text-rose-700 shadow-xs"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                  >
-                    {ratio.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Prompt Concept</label>
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Prompt Description</label>
               <textarea
                 value={videoPrompt}
                 onChange={(e) => setVideoPrompt(e.target.value)}
-                rows={4}
-                placeholder="e.g. 3D rotation of luxury chronograph watch with subtle fluid motion..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-normal text-slate-800 focus:bg-white focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition leading-relaxed"
+                rows={3}
+                placeholder="e.g. 360 degree smooth rotation of the titanium smart watch in luxury lighting..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-normal text-slate-800 focus:bg-white focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Duration</label>
+                <select
+                  value={videoDuration}
+                  onChange={(e) => setVideoDuration(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none"
+                >
+                  <option value={5}>5 Seconds (50 Credits)</option>
+                  <option value={10}>10 Seconds (100 Credits)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Aspect Ratio</label>
+                <select
+                  value={videoAspectRatio}
+                  onChange={(e) => setVideoAspectRatio(e.target.value as any)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none"
+                >
+                  <option value="16:9">16:9 Landscape</option>
+                  <option value="9:16">9:16 TikTok / Reel</option>
+                  <option value="1:1">1:1 Square</option>
+                </select>
+              </div>
             </div>
 
             <button
@@ -725,12 +811,12 @@ export default function AIStudio() {
               {videoMutation.isPending ? (
                 <>
                   <ArrowPathIcon className="w-4 h-4 animate-spin stroke-2" />
-                  <span>Submitting to Queue...</span>
+                  <span>Queueing Video Job...</span>
                 </>
               ) : (
                 <>
                   <VideoCameraIcon className="w-4 h-4 stroke-2" />
-                  <span>Dispatch Video Worker</span>
+                  <span>Submit Video Job</span>
                 </>
               )}
             </button>
@@ -743,153 +829,400 @@ export default function AIStudio() {
             <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <ShoppingBagIcon className="w-5 h-5 text-blue-600 stroke-2" />
-                <h3 className="font-bold text-slate-900 text-base">Product Catalog AI</h3>
+                <h3 className="font-bold text-slate-900 text-base">Product Content Generator</h3>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Product Name</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Product Title</label>
                 <input
                   type="text"
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
-                  placeholder="e.g. Ergonomic Executive Office Mesh Chair"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  placeholder="e.g. Ultra-Light Carbon Fiber Road Bike"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Category</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Category</label>
                 <input
                   type="text"
                   value={productCategory}
                   onChange={(e) => setProductCategory(e.target.value)}
-                  placeholder="e.g. Furniture / Office Supplies"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  placeholder="e.g. Sports & Outdoors > Cycling"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Features (comma separated)</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Key Features (comma separated)</label>
                 <textarea
                   value={productFeatures}
                   onChange={(e) => setProductFeatures(e.target.value)}
                   rows={3}
-                  placeholder="Lumbar support, breathable mesh, adjustable armrests, 360 swivel base"
+                  placeholder="e.g. 7.5kg weight, Shimano 105 drivetrain, hydraulic disc brakes, aerodynamic frame"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-normal text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
-              <div className="space-y-2 pt-2">
+              <div className="grid grid-cols-3 gap-2 pt-2">
                 <button
                   type="button"
                   disabled={productMutation.isPending || !productName}
                   onClick={() => handleGenerateProductContent("DESCRIPTION")}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-xs transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-xs transition disabled:opacity-50"
                 >
-                  <DocumentTextIcon className="w-4 h-4 stroke-2" />
-                  <span>Generate Descriptions & Bullets</span>
+                  Description
                 </button>
-
                 <button
                   type="button"
                   disabled={productMutation.isPending || !productName}
                   onClick={() => handleGenerateProductContent("SEO")}
-                  className="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 rounded-xl text-xs transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-xs transition disabled:opacity-50"
                 >
-                  <SparklesIcon className="w-4 h-4 stroke-2" />
-                  <span>Generate Meta & Tags</span>
+                  SEO Tags
                 </button>
-
                 <button
                   type="button"
                   disabled={productMutation.isPending || !productName}
                   onClick={() => handleGenerateProductContent("ATTRIBUTES")}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold py-2.5 rounded-xl text-xs transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-xs transition disabled:opacity-50"
                 >
-                  <Squares2X2Icon className="w-4 h-4 stroke-2" />
-                  <span>Extract JSON Attributes</span>
+                  Specs
                 </button>
               </div>
             </div>
 
-            {/* Output Panel */}
+            {/* Output */}
             <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-              <h4 className="font-bold text-slate-900 text-base mb-3 border-b border-slate-100 pb-3">
-                Structured Catalog Preview
-              </h4>
-
+              <h4 className="font-bold text-slate-900 text-base mb-3">Generated Product Data</h4>
               {productOutput ? (
-                <div className="space-y-4 text-xs text-slate-800">
-                  <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-xs font-mono leading-relaxed">
-                    {JSON.stringify(productOutput, null, 2)}
-                  </pre>
-                  <button
-                    onClick={() => handleCopy(JSON.stringify(productOutput, null, 2))}
-                    className="flex items-center gap-1.5 font-bold text-blue-600 hover:underline"
-                  >
-                    <DocumentDuplicateIcon className="w-4 h-4 stroke-2" />
-                    <span>Copy Structured JSON</span>
-                  </button>
+                <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-mono whitespace-pre-wrap leading-relaxed max-h-[480px] overflow-y-auto">
+                  {JSON.stringify(productOutput, null, 2)}
                 </div>
               ) : (
                 <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                   <ShoppingBagIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
-                  <span>Catalog descriptions and metadata will output here</span>
+                  <span>Select an action to generate descriptions, SEO, or attributes</span>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* WALLET & LEDGER TAB */}
-        {activeTab === "credits" && (
-          <div className="space-y-8">
-            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-300">
-                  Authoritative Tenant Wallet
-                </span>
-                <h2 className="text-4xl font-black mt-1 text-white">{balance.toLocaleString()} Credits</h2>
-                <p className="text-xs text-slate-300 mt-2">
-                  Deducts across Web AI, WhatsApp Concierge, Image Studio, and Video Reels.
-                </p>
+        {/* MARKETING ADS & CAMPAIGNS TAB */}
+        {activeTab === "marketing" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <MegaphoneIcon className="w-5 h-5 text-pink-600 stroke-2" />
+                <h3 className="font-bold text-slate-900 text-base">Marketing Campaign AI</h3>
               </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Campaign Type</label>
+                <select
+                  value={marketingType}
+                  onChange={(e) => setMarketingType(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
+                >
+                  <option value="social_ad">Instagram / Facebook Ad Carousel</option>
+                  <option value="flash_sale">Flash Sale Announcement</option>
+                  <option value="email_newsletter">Email Marketing Blast</option>
+                  <option value="whatsapp_broadcast">WhatsApp Customer Broadcast</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Special Offer / Hook</label>
+                <input
+                  type="text"
+                  value={marketingDiscount}
+                  onChange={(e) => setMarketingDiscount(e.target.value)}
+                  placeholder="e.g. 20% OFF or Buy 1 Get 1 Free"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">Product or Event Details</label>
+                <textarea
+                  value={marketingTopic}
+                  onChange={(e) => setMarketingTopic(e.target.value)}
+                  rows={4}
+                  placeholder="Describe your sale item or event (e.g. Weekend clearance on winter jacket collection with free expedited shipping)..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-normal text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
+                />
+              </div>
+
               <button
-                onClick={() => setShowBuyModal(true)}
-                className="bg-indigo-500 hover:bg-indigo-400 text-white font-bold px-6 py-3 rounded-xl shadow-md transition active:scale-[0.98] text-xs sm:text-sm"
+                type="button"
+                disabled={textMutation.isPending || !marketingTopic}
+                onClick={handleGenerateMarketing}
+                className="w-full bg-pink-600 hover:bg-pink-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl shadow-md shadow-pink-200 transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
               >
-                Top Up AI Credits
+                {textMutation.isPending ? (
+                  <>
+                    <ArrowPathIcon className="w-4 h-4 animate-spin stroke-2" />
+                    <span>Generating Campaign...</span>
+                  </>
+                ) : (
+                  <>
+                    <MegaphoneIcon className="w-4 h-4 stroke-2" />
+                    <span>Generate Multi-Channel Copy</span>
+                  </>
+                )}
               </button>
             </div>
 
-            {/* Packages */}
-            <div>
-              <h3 className="font-bold text-slate-900 text-base mb-4">Select Credit Package</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {(creditsData?.packages || []).map((pkg) => (
+            {/* Output */}
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                  <h4 className="font-bold text-slate-900 text-base">Campaign Copy & Hooks</h4>
+                  {marketingOutput && (
+                    <button
+                      onClick={() => handleCopy(marketingOutput.text)}
+                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
+                    >
+                      {copiedText ? <CheckIcon className="w-3.5 h-3.5 text-emerald-600 stroke-2" /> : <DocumentDuplicateIcon className="w-3.5 h-3.5 stroke-2 text-slate-500" />}
+                      <span>{copiedText ? "Copied!" : "Copy Campaign"}</span>
+                    </button>
+                  )}
+                </div>
+
+                {marketingOutput ? (
+                  <div className="bg-slate-50 p-4.5 rounded-xl text-slate-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed border border-slate-200/80 font-normal">
+                    {marketingOutput.text}
+                  </div>
+                ) : (
+                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    <MegaphoneIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
+                    <span>Your multi-channel promotional copy will appear here</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STORE AI AGENTS TAB */}
+        {activeTab === "agents" && (
+          <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col h-[650px]">
+            {/* Header & Role Picker */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50/70">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <UserGroupIcon className="w-5 h-5 stroke-2" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Interactive Store AI Agent</h3>
+                  <p className="text-xs text-slate-500">Empowered with safe bounded domain catalog & order tools</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-600">Role:</span>
+                <select
+                  value={agentRole}
+                  onChange={(e) => setAgentRole(e.target.value as any)}
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 outline-none shadow-xs"
+                >
+                  <option value="SALES_ASSISTANT">Sales Concierge</option>
+                  <option value="SUPPORT_REP">Customer Support</option>
+                  <option value="MARKETING_ADVISOR">Marketing Strategist</option>
+                  <option value="BUSINESS_ANALYST">Business Analyst</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Chat Conversation Scroll Area */}
+            <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-white">
+              {agentHistory.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                >
                   <div
-                    key={pkg.id}
-                    className={`bg-white rounded-2xl p-5 border transition flex flex-col justify-between ${pkg.isPopular
-                        ? "border-indigo-600 shadow-md ring-2 ring-indigo-600/10"
-                        : "border-slate-200/80 hover:border-indigo-300"
-                      }`}
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                      msg.role === "user" ? "bg-slate-800 text-white" : "bg-indigo-600 text-white"
+                    }`}
                   >
-                    <div>
-                      {pkg.badge && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 inline-block mb-3 border border-indigo-100">
-                          {pkg.badge}
+                    {msg.role === "user" ? "You" : "AI"}
+                  </div>
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-slate-900 text-white rounded-tr-none"
+                        : "bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200/60"
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <span className={`block text-[10px] mt-1.5 font-medium ${msg.role === "user" ? "text-slate-400 text-right" : "text-slate-400"}`}>
+                      {msg.time}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {agentMutation.isPending && (
+                <div className="flex items-center gap-2 text-xs text-indigo-600 font-medium py-2">
+                  <ArrowPathIcon className="w-4 h-4 animate-spin stroke-2" />
+                  <span>Agent is analyzing store context & executing tools...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Chat Input Bar */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50/50 flex items-center gap-3">
+              <input
+                type="text"
+                value={agentInput}
+                onChange={(e) => setAgentInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendAgentMessage();
+                  }
+                }}
+                placeholder="Ask agent to search items, compare products, or draft replies..."
+                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs"
+              />
+              <button
+                onClick={handleSendAgentMessage}
+                disabled={agentMutation.isPending || !agentInput.trim()}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 transition shadow-sm"
+              >
+                <span>Send</span>
+                <PaperAirplaneIcon className="w-3.5 h-3.5 stroke-2" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* GENERATIONS HISTORY TAB */}
+        {activeTab === "generations" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-slate-900 text-lg">AI Generations & Jobs</h3>
+                <p className="text-xs text-slate-500">Central audit trail for images, videos, and media assets</p>
+              </div>
+
+              {/* Filters */}
+              <div className="flex items-center gap-2">
+                {["ALL", "IMAGE", "VIDEO", "TEXT"].map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setGenerationFilter(filter)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                      generationFilter === filter
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {filteredGenerations.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredGenerations.map((job: any) => (
+                  <div
+                    key={job.id}
+                    className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-slate-300 transition"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                          {job.capability}
                         </span>
-                      )}
-                      <h4 className="font-bold text-slate-900 text-sm">{pkg.name}</h4>
-                      <div className="mt-2 mb-3">
-                        <span className="text-2xl font-black text-slate-900">${pkg.price}</span>
-                        <span className="text-xs text-slate-400 font-medium ml-1">/ {pkg.credits.toLocaleString()} Credits</span>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] ${
+                            job.status === "COMPLETED"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : job.status === "PROCESSING"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {job.status}
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-500 mb-4">{pkg.description}</p>
-                      <ul className="space-y-2 mb-6 text-xs text-slate-600">
-                        {pkg.features.map((feat, i) => (
+
+                      <p className="text-xs font-medium text-slate-800 line-clamp-3 leading-relaxed">
+                        {job.prompt}
+                      </p>
+
+                      {/* Render Output Asset if Available */}
+                      {job.outputAssets?.videoUrl && (
+                        <div className="rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+                          <video src={job.outputAssets.videoUrl} controls className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      {job.outputAssets?.images && job.outputAssets.images.length > 0 && (
+                        <div className="rounded-xl overflow-hidden bg-slate-100 aspect-square">
+                          <img src={job.outputAssets.images[0].url} alt="Generated visual" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                      <span>{new Date(job.createdAt).toLocaleString()}</span>
+                      <span>{job.creditsReserved || job.creditsConsumed || 0} Credits</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+                <FolderOpenIcon className="w-10 h-10 text-slate-300 mx-auto mb-2 stroke-1" />
+                <span>No generation records match the selected filter.</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CREDITS & WALLET TAB */}
+        {activeTab === "credits" && (
+          <div className="space-y-8">
+            {/* Packages Section */}
+            <div>
+              <h3 className="font-bold text-slate-900 text-lg mb-1">Purchase AI Credit Packages</h3>
+              <p className="text-xs text-slate-500 mb-5">
+                Top up your shared credit wallet. Credits never expire and work across all AI capabilities.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {(creditsData?.packages || []).map((pkg: any) => (
+                  <div
+                    key={pkg.name}
+                    className={`bg-white rounded-2xl p-5 border flex flex-col justify-between relative transition-all ${
+                      pkg.isPopular
+                        ? "border-indigo-600 shadow-md ring-2 ring-indigo-50"
+                        : "border-slate-200/80 shadow-xs hover:border-slate-300"
+                    }`}
+                  >
+                    {pkg.badge && (
+                      <span className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
+                        {pkg.badge}
+                      </span>
+                    )}
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">{pkg.name}</h4>
+                      <div className="mt-2 flex items-baseline gap-1">
+                        <span className="text-2xl font-black text-slate-900">${pkg.price}</span>
+                        <span className="text-xs font-semibold text-slate-500">/ {pkg.currency}</span>
+                      </div>
+                      <span className="inline-block mt-1 text-xs font-bold text-indigo-600">
+                        {pkg.credits.toLocaleString()} Credits
+                      </span>
+                      <p className="text-xs text-slate-500 mt-3 leading-relaxed">{pkg.description}</p>
+                      <ul className="mt-4 space-y-2 text-xs text-slate-600">
+                        {pkg.features.map((feat: string, i: number) => (
                           <li key={i} className="flex items-center gap-2">
-                            <CheckCircleIcon className="w-4 h-4 text-emerald-600 flex-shrink-0 stroke-2" />
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-500 stroke-2 flex-shrink-0" />
                             <span>{feat}</span>
                           </li>
                         ))}
@@ -901,10 +1234,11 @@ export default function AIStudio() {
                         setSelectedPackage(pkg);
                         setShowBuyModal(true);
                       }}
-                      className={`w-full py-2.5 rounded-xl font-bold text-xs transition ${pkg.isPopular
+                      className={`w-full mt-6 py-2.5 rounded-xl font-bold text-xs transition ${
+                        pkg.isPopular
                           ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs"
                           : "bg-slate-100 text-slate-800 hover:bg-slate-200"
-                        }`}
+                      }`}
                     >
                       Purchase Package
                     </button>
@@ -941,20 +1275,22 @@ export default function AIStudio() {
                         </td>
                         <td className="px-6 py-3.5">
                           <span
-                            className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${tx.type === "PURCHASE" || tx.type === "BONUS"
+                            className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                              tx.type === "PURCHASE" || tx.type === "BONUS"
                                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                 : tx.type === "REFUND" || tx.type === "RELEASE"
-                                  ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                  : "bg-amber-50 text-amber-700 border border-amber-200"
-                              }`}
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-amber-50 text-amber-700 border border-amber-200"
+                            }`}
                           >
                             {tx.type}
                           </span>
                         </td>
                         <td className="px-6 py-3.5 text-slate-800 font-semibold">{tx.description}</td>
                         <td
-                          className={`px-6 py-3.5 font-bold ${tx.amount > 0 ? "text-emerald-600" : "text-slate-800"
-                            }`}
+                          className={`px-6 py-3.5 font-bold ${
+                            tx.amount > 0 ? "text-emerald-600" : "text-slate-800"
+                          }`}
                         >
                           {tx.amount > 0 ? `+${tx.amount.toLocaleString()}` : tx.amount.toLocaleString()}
                         </td>
@@ -1020,10 +1356,7 @@ export default function AIStudio() {
               <h3 className="font-bold text-slate-900 text-base">
                 Top Up AI Credits ({selectedPackage?.name || "Credit Package"})
               </h3>
-              <button
-                onClick={() => setShowBuyModal(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 transition"
-              >
+              <button onClick={() => setShowBuyModal(false)} className="p-1 rounded-lg hover:bg-slate-100 transition">
                 <XMarkIcon className="w-5 h-5 text-slate-400 hover:text-slate-600 stroke-2" />
               </button>
             </div>

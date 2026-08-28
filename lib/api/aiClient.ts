@@ -175,4 +175,24 @@ export const aiClient = {
     }
     return data.data;
   },
+
+  async runAgent(payload: {
+    prompt: string;
+    agentRole?: "SALES_ASSISTANT" | "SUPPORT_REP" | "MARKETING_ADVISOR" | "BUSINESS_ANALYST";
+    conversationHistory?: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+    modelId?: string;
+  }): Promise<{ reply: string; model: string; creditsConsumed: number }> {
+    const res = await fetch("/api/ai/agent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      const err = new Error(data.error || "AI Agent run failed");
+      (err as any).code = data.code;
+      throw err;
+    }
+    return data;
+  },
 };

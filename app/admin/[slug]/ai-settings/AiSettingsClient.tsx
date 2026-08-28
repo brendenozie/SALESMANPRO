@@ -1,562 +1,331 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Toaster, toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
 import {
   CpuChipIcon,
-  KeyIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
   SparklesIcon,
   ArrowPathIcon,
-  ServerIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  SignalIcon,
-  ExclamationCircleIcon,
   CreditCardIcon,
-  BanknotesIcon,
-  ExclamationTriangleIcon,
   ChartBarIcon,
-} from '@heroicons/react/24/outline';
-
-export interface ProviderConfig {
-  id: string;
-  name: string;
-  providerKey: 'openai' | 'replicate' | 'runway' | 'google' | 'anthropic';
-  description: string;
-  active: boolean;
-  apiKey: string;
-  defaultModel: string;
-  availableModels: string[];
-  status?: 'connected' | 'untested' | 'failed';
-  usageCostMonthToDate?: number;
-}
-
-export interface CreditConfig {
-  monthlyLimit: number;
-  currentUsage: number;
-  currency: string;
-  alertThreshold: number;
-  autoTopUp: boolean;
-  topUpAmount: number;
-}
+  BoltIcon,
+  PlusCircleIcon,
+  XMarkIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
+import {
+  useAICredits,
+  useAIModels,
+  useAICreditTransactions,
+  useAIUsageAnalytics,
+  useBuyAICredits,
+} from "@/hooks/useAI";
 
 interface Props {
   companyId: string;
-  initialProviders?: ProviderConfig[];
-  initialCredits?: CreditConfig;
 }
 
-const DEFAULT_PROVIDERS: ProviderConfig[] = [
-  {
-    id: 'openai',
-    name: 'OpenAI (DALL-E 3 & GPT-4o)',
-    providerKey: 'openai',
-    description: 'Used for high-resolution product image generation and chat text prompts.',
-    active: true,
-    apiKey: '',
-    defaultModel: 'dall-e-3',
-    availableModels: ['dall-e-3', 'gpt-4o', 'gpt-4o-mini', 'dall-e-2'],
-    status: 'untested',
-    usageCostMonthToDate: 28.4,
-  },
-  {
-    id: 'replicate',
-    name: 'Replicate (Flux / SDXL)',
-    providerKey: 'replicate',
-    description: 'Used for custom image editing, upscaling, background removal, and Flux diffusion.',
-    active: true,
-    apiKey: '',
-    defaultModel: 'flux-schnell',
-    availableModels: ['flux-schnell', 'flux-dev', 'sdxl', 'rembg'],
-    status: 'untested',
-    usageCostMonthToDate: 14.1,
-  },
-  {
-    id: 'google',
-    name: 'Google Gemini & Imagen 3',
-    providerKey: 'google',
-    description: 'Multimodal vision context, automated copy drafting, and Imagen 3 asset generation.',
-    active: false,
-    apiKey: '',
-    defaultModel: 'gemini-1.5-pro',
-    availableModels: ['gemini-1.5-pro', 'gemini-1.5-flash', 'imagen-3'],
-    status: 'untested',
-    usageCostMonthToDate: 0.0,
-  },
-  {
-    id: 'runway',
-    name: 'Runway Gen-3 Alpha',
-    providerKey: 'runway',
-    description: 'Cinematic text-to-video and image-to-video motion rendering for ad campaigns.',
-    active: false,
-    apiKey: '',
-    defaultModel: 'gen-3-alpha',
-    availableModels: ['gen-3-alpha', 'gen-2'],
-    status: 'untested',
-    usageCostMonthToDate: 0.0,
-  },
-];
+export default function AiSettingsClient({ companyId }: Props) {
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [phoneForPayment, setPhoneForPayment] = useState("");
 
-const DEFAULT_CREDITS: CreditConfig = {
-  monthlyLimit: 150.0,
-  currentUsage: 42.5,
-  currency: 'USD',
-  alertThreshold: 80, // percentage
-  autoTopUp: false,
-  topUpAmount: 50.0,
-};
+  const { data: creditsData, isLoading: creditsLoading, refetch: refetchCredits } = useAICredits();
+  const { data: modelsData, isLoading: modelsLoading } = useAIModels();
+  const { data: transactionsData } = useAICreditTransactions(1, 15);
+  const { data: usageData } = useAIUsageAnalytics("month");
+  const buyCreditsMutation = useBuyAICredits();
 
-export default function AiSettingsClient({
-  companyId,
-  initialProviders,
-  initialCredits,
-}: Props) {
-  const [providers, setProviders] = useState<ProviderConfig[]>(
-    initialProviders && initialProviders.length > 0 ? initialProviders : DEFAULT_PROVIDERS
-  );
-  const [credits, setCredits] = useState<CreditConfig>(
-    initialCredits || DEFAULT_CREDITS
-  );
+  const balance = creditsData?.balance ?? 0;
+  const companyName = creditsData?.companyName || "Store";
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
-  const [testingStatus, setTestingStatus] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/admin/ai/settings?companyId=${companyId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.providers) && data.providers.length > 0) {
-            setProviders(data.providers);
-          }
-          if (data.credits) {
-            setCredits(data.credits);
-          }
-        }
-      } catch {
-        // Retain default fallbacks on error
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSettings();
-  }, [companyId]);
-
-  const handleToggleProvider = (id: string) => {
-    setProviders((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p))
-    );
-  };
-
-  const handleKeyChange = (id: string, newKey: string) => {
-    setProviders((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, apiKey: newKey, status: 'untested' } : p))
-    );
-  };
-
-  const handleModelChange = (id: string, model: string) => {
-    setProviders((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, defaultModel: model } : p))
-    );
-  };
-
-  const toggleKeyVisibility = (id: string) => {
-    setShowKeys((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleCreditChange = (field: keyof CreditConfig, value: number | boolean) => {
-    setCredits((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleTestConnection = async (provider: ProviderConfig) => {
-    if (!provider.apiKey) {
-      toast.error(`Please enter an API Key for ${provider.name} before testing.`);
-      return;
-    }
-
-    setTestingStatus((prev) => ({ ...prev, [provider.id]: true }));
-
+  const handlePurchase = async (pkg: any) => {
     try {
-      const res = await fetch('/api/admin/ai/test-connection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyId,
-          providerId: provider.id,
-          apiKey: provider.apiKey,
-          model: provider.defaultModel,
-        }),
+      await buyCreditsMutation.mutateAsync({
+        packageId: pkg.id,
+        phone: phoneForPayment || undefined,
+        paymentMethod: "MPESA",
       });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success(`${provider.name} connection verified!`);
-        setProviders((prev) =>
-          prev.map((p) => (p.id === provider.id ? { ...p, status: 'connected' } : p))
-        );
-      } else {
-        toast.error(data.message || `Failed to connect to ${provider.name}.`);
-        setProviders((prev) =>
-          prev.map((p) => (p.id === provider.id ? { ...p, status: 'failed' } : p))
-        );
-      }
-    } catch {
-      toast.error(`Network error testing ${provider.name}.`);
-      setProviders((prev) =>
-        prev.map((p) => (p.id === provider.id ? { ...p, status: 'failed' } : p))
-      );
-    } finally {
-      setTestingStatus((prev) => ({ ...prev, [provider.id]: false }));
+      setShowBuyModal(false);
+      refetchCredits();
+      toast.success(`Successfully top-up ${pkg.credits.toLocaleString()} credits!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to process payment top-up");
     }
   };
-
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-
-    try {
-      const res = await fetch('/api/admin/ai/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyId, providers, credits }),
-      });
-
-      if (res.ok) {
-        toast.success('AI Settings & Credit Monitoring updated!');
-      } else {
-        toast.error('Failed to save settings.');
-      }
-    } catch {
-      toast.success('Settings saved successfully (Mock mode).');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const usagePercent = Math.min(
-    100,
-    Math.round((credits.currentUsage / (credits.monthlyLimit || 1)) * 100)
-  );
-  const isNearLimit = usagePercent >= credits.alertThreshold;
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-[#05070A] text-slate-900 dark:text-slate-200 p-4 sm:p-6 md:p-8 font-sans">
+    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-[#05070A] text-slate-900 dark:text-slate-200 p-4 md:p-6 font-sans">
       <Toaster position="top-right" />
 
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="h-1 w-8 bg-emerald-500 rounded-full" />
-              <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                AI Media Studio
+              <span className="h-1 w-8 bg-indigo-500 rounded-full" />
+              <span className="text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                Central AI Control Center
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <CpuChipIcon className="h-7 w-7 text-emerald-500" />
-              Integration & <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">Credits</span>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <CpuChipIcon className="h-6 w-6 text-indigo-500" />
+              AI Wallet & <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">Infrastructure.</span>
             </h1>
           </div>
 
+          {/* Top-up CTA */}
           <button
-            type="button"
-            onClick={handleSaveSettings}
-            disabled={isSaving || isLoading}
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md shadow-emerald-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+            onClick={() => setShowBuyModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md shadow-indigo-200 transition"
           >
-            {isSaving ? (
-              <>
-                <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                Saving Changes...
-              </>
-            ) : (
-              <>
-                <CheckCircleIcon className="h-4 w-4 stroke-[2.5]" />
-                Save Integration Settings
-              </>
-            )}
+            <PlusCircleIcon className="w-4 h-4 stroke-2" />
+            <span>Top Up Credits</span>
           </button>
         </header>
 
-        {/* Credit Monitoring Section */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <CreditCardIcon className="w-5 h-5 text-emerald-500" /> Credit Usage & Billing Limits
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Track AI generation consumption, set expenditure thresholds, and manage auto-recharge triggers.
-              </p>
+        {/* Overview Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <BoltIcon className="w-6 h-6 stroke-2" />
             </div>
-            <div className="text-right">
-              <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block">Month-to-Date</span>
-              <span className="text-xl font-black text-slate-900 dark:text-white">
-                ${credits.currentUsage.toFixed(2)}{' '}
-                <span className="text-xs text-slate-500 font-normal">/ ${credits.monthlyLimit.toFixed(2)}</span>
+            <div>
+              <span className="text-xs font-semibold text-slate-500 block">Available Credit Balance</span>
+              <span className="text-2xl font-black text-slate-900 dark:text-white mt-0.5 block">
+                {creditsLoading ? "..." : balance.toLocaleString()} Credits
               </span>
             </div>
           </div>
 
-          {/* Usage Meter Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                <ChartBarIcon className="w-4 h-4 text-emerald-500" /> Monthly Allocation Used
-              </span>
-              <span className={`font-mono ${isNearLimit ? 'text-amber-500 dark:text-amber-400 font-bold' : 'text-emerald-500'}`}>
-                {usagePercent}% Spent
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <ChartBarIcon className="w-6 h-6 stroke-2" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-500 block">Monthly Requests</span>
+              <span className="text-2xl font-black text-slate-900 dark:text-white mt-0.5 block">
+                {(usageData?.totalRequests || 0).toLocaleString()}
               </span>
             </div>
+          </div>
 
-            <div className="w-full h-3 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden p-0.5 border border-slate-200/50 dark:border-slate-700/50">
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-xs flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <ShieldCheckIcon className="w-6 h-6 stroke-2" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-500 block">Infrastructure Engine</span>
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                Unified SalesmanPro Cluster
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Model Catalog Section */}
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">Active Model Registry & Credit Rates</h3>
+              <p className="text-xs text-slate-500">Unified pricing across Web AI Studio and WhatsApp AI Concierge</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(modelsData || []).map((model: any) => (
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  isNearLimit ? 'bg-gradient-to-r from-amber-500 to-rose-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                key={model.id}
+                className="p-4 bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">{model.displayName}</span>
+                    <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800">
+                      {model.provider}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{model.description}</p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>
+                    {model.imageCreditCost
+                      ? `${model.imageCreditCost} Credits / Image`
+                      : model.videoCreditCost
+                      ? `${model.videoCreditCost} Credits / Sec`
+                      : `${model.inputCreditCost} in / ${model.outputCreditCost} out per 1k tok`}
+                  </span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">Active</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Credit Packages */}
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
+          <h3 className="font-bold text-slate-900 dark:text-white text-base">Credit Top-Up Packages</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(creditsData?.packages || []).map((pkg: any) => (
+              <div
+                key={pkg.name}
+                className={`p-5 rounded-2xl border flex flex-col justify-between relative bg-slate-50 dark:bg-black/30 ${
+                  pkg.isPopular
+                    ? "border-indigo-600 shadow-md ring-2 ring-indigo-50 dark:ring-indigo-950/40"
+                    : "border-slate-200 dark:border-slate-800"
                 }`}
-                style={{ width: `${usagePercent}%` }}
+              >
+                {pkg.badge && (
+                  <span className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
+                    {pkg.badge}
+                  </span>
+                )}
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">{pkg.name}</h4>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">${pkg.price}</span>
+                    <span className="text-xs font-semibold text-slate-500">/ {pkg.currency}</span>
+                  </div>
+                  <span className="inline-block mt-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    {pkg.credits.toLocaleString()} Credits
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setSelectedPackage(pkg);
+                    setShowBuyModal(true);
+                  }}
+                  className={`w-full mt-5 py-2.5 rounded-xl font-bold text-xs transition ${
+                    pkg.isPopular
+                      ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs"
+                      : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  Buy Package
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Transactions Table */}
+        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xs">
+          <div className="p-5 border-b border-slate-100 dark:border-slate-800">
+            <h4 className="font-bold text-slate-900 dark:text-white text-base">Recent Credit Ledger Entries</h4>
+            <p className="text-xs text-slate-500">Immutable accounting records</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-black/40 text-slate-500 border-b border-slate-200 dark:border-slate-800 uppercase font-semibold">
+                <tr>
+                  <th className="px-6 py-3">Timestamp</th>
+                  <th className="px-6 py-3">Type</th>
+                  <th className="px-6 py-3">Description</th>
+                  <th className="px-6 py-3">Amount</th>
+                  <th className="px-6 py-3">Balance After</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {(transactionsData?.transactions || []).map((tx) => (
+                  <tr key={tx.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
+                    <td className="px-6 py-3.5 text-slate-500 whitespace-nowrap font-medium">
+                      {new Date(tx.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <span
+                        className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                          tx.type === "PURCHASE" || tx.type === "BONUS"
+                            ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200"
+                            : tx.type === "REFUND" || tx.type === "RELEASE"
+                            ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200"
+                            : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200"
+                        }`}
+                      >
+                        {tx.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 text-slate-800 dark:text-slate-200 font-semibold">{tx.description}</td>
+                    <td
+                      className={`px-6 py-3.5 font-bold ${
+                        tx.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-800 dark:text-slate-200"
+                      }`}
+                    >
+                      {tx.amount > 0 ? `+${tx.amount.toLocaleString()}` : tx.amount.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3.5 text-slate-500 font-medium">
+                      {tx.balanceAfter != null ? `${tx.balanceAfter.toLocaleString()} Credits` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Top-Up Payment Modal */}
+      {showBuyModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                Top Up AI Credits ({selectedPackage?.name || "Starter AI"})
+              </h3>
+              <button onClick={() => setShowBuyModal(false)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <XMarkIcon className="w-5 h-5 text-slate-400 hover:text-slate-600 stroke-2" />
+              </button>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">M-Pesa / Contact Phone</label>
+              <input
+                type="tel"
+                value={phoneForPayment}
+                onChange={(e) => setPhoneForPayment(e.target.value)}
+                placeholder="e.g. 254712345678"
+                className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
             </div>
 
-            {isNearLimit && (
-              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
-                <ExclamationTriangleIcon className="w-4 h-4 shrink-0" />
-                <span>
-                  Usage has reached <strong>{usagePercent}%</strong> of your monthly limit ({credits.alertThreshold}% threshold triggered).
+            <div className="p-4 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 rounded-2xl text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Credits to Add:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {selectedPackage?.credits?.toLocaleString() || "1,000"} Credits
                 </span>
               </div>
-            )}
-          </div>
-
-          {/* Credit Controls Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                Monthly Cap (USD)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400">$</span>
-                <input
-                  type="number"
-                  value={credits.monthlyLimit}
-                  onChange={(e) => handleCreditChange('monthlyLimit', parseFloat(e.target.value) || 0)}
-                  className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-7 pr-3 text-xs font-mono text-slate-900 dark:text-white focus:border-emerald-500 outline-none"
-                />
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Amount:</span>
+                <span className="font-bold text-slate-900 dark:text-white">${selectedPackage?.price || "10.00"}</span>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                Alert Threshold (%)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={credits.alertThreshold}
-                  onChange={(e) => handleCreditChange('alertThreshold', parseInt(e.target.value, 10) || 80)}
-                  className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-xl py-2 px-3 text-xs font-mono text-slate-900 dark:text-white focus:border-emerald-500 outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Auto Top-Up</span>
-                <span className="text-[10px] text-slate-500">Add ${credits.topUpAmount} when low</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCreditChange('autoTopUp', !credits.autoTopUp)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                  credits.autoTopUp ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                    credits.autoTopUp ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
+            <button
+              disabled={buyCreditsMutation.isPending}
+              onClick={() =>
+                handlePurchase(
+                  selectedPackage || { id: "starter", name: "Starter AI", credits: 1000, price: 10 },
+                )
+              }
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs sm:text-sm"
+            >
+              {buyCreditsMutation.isPending ? (
+                <>
+                  <ArrowPathIcon className="w-4 h-4 animate-spin stroke-2" />
+                  <span>Processing Payment...</span>
+                </>
+              ) : (
+                <span>Confirm & Credit Wallet</span>
+              )}
+            </button>
           </div>
         </div>
-
-        {/* API Model Providers Form */}
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-          <form onSubmit={handleSaveSettings} className="space-y-6">
-            <div className="space-y-1 border-b border-slate-100 dark:border-slate-800/60 pb-4">
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <SparklesIcon className="w-5 h-5 text-emerald-500" /> API Model Providers
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Configure credentials, default operational checkpoints, and vision model routes for enterprise AI pipelines.
-              </p>
-            </div>
-
-            {/* Provider Grid */}
-            <div className="grid grid-cols-1 gap-4">
-              {providers.map((provider) => {
-                const isTesting = Boolean(testingStatus[provider.id]);
-                const showKey = Boolean(showKeys[provider.id]);
-
-                return (
-                  <div
-                    key={provider.id}
-                    className={`p-5 rounded-2xl border transition-all space-y-4 ${
-                      provider.active
-                        ? 'bg-slate-50/70 dark:bg-slate-800/30 border-emerald-500/40 shadow-sm'
-                        : 'bg-slate-50/20 dark:bg-slate-900/20 border-slate-200 dark:border-slate-800/80 opacity-75'
-                    }`}
-                  >
-                    {/* Provider Top Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start sm:items-center gap-3">
-                        <div
-                          className={`p-2.5 rounded-xl shrink-0 mt-0.5 sm:mt-0 ${
-                            provider.active
-                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                              : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          <ServerIcon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-xs font-extrabold text-slate-900 dark:text-white">
-                              {provider.name}
-                            </h3>
-                            {provider.active && (
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                                Active
-                              </span>
-                            )}
-                            {provider.status === 'connected' && (
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" /> Connected
-                              </span>
-                            )}
-                            {provider.status === 'failed' && (
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
-                                <ExclamationCircleIcon className="w-3 h-3" /> Connection Error
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{provider.description}</p>
-                        </div>
-                      </div>
-
-                      {/* Usage & Toggle Switch */}
-                      <div className="flex items-center gap-4 shrink-0 self-end sm:self-center">
-                        {provider.usageCostMonthToDate !== undefined && provider.usageCostMonthToDate > 0 && (
-                          <div className="text-right hidden sm:block">
-                            <span className="text-[10px] text-slate-400 uppercase font-mono block">Spent</span>
-                            <span className="text-xs font-extrabold font-mono text-slate-900 dark:text-white">
-                              ${provider.usageCostMonthToDate.toFixed(2)}
-                            </span>
-                          </div>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => handleToggleProvider(provider.id)}
-                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            provider.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
-                          }`}
-                        >
-                          <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                              provider.active ? 'translate-x-5' : 'translate-x-0'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* API Key Input & Model Settings Row */}
-                    {provider.active && (
-                      <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                          {/* Key Input */}
-                          <div className="sm:col-span-7 relative">
-                            <KeyIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <input
-                              type={showKey ? 'text' : 'password'}
-                              value={provider.apiKey}
-                              onChange={(e) => handleKeyChange(provider.id, e.target.value)}
-                              placeholder={`Enter ${provider.name} API Secret Key...`}
-                              className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-xs text-slate-900 dark:text-white focus:border-emerald-500 outline-none font-mono"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => toggleKeyVisibility(provider.id)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                            >
-                              {showKey ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                            </button>
-                          </div>
-
-                          {/* Default Model Select */}
-                          <div className="sm:col-span-3 relative">
-                            <select
-                              value={provider.defaultModel}
-                              onChange={(e) => handleModelChange(provider.id, e.target.value)}
-                              className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-3 text-xs text-slate-900 dark:text-white font-mono focus:border-emerald-500 outline-none"
-                            >
-                              {provider.availableModels.map((model) => (
-                                <option key={model} value={model} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                                  {model}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Test Connection Button */}
-                          <div className="sm:col-span-2">
-                            <button
-                              type="button"
-                              onClick={() => handleTestConnection(provider)}
-                              disabled={isTesting || !provider.apiKey}
-                              className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-900 dark:text-slate-200 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all disabled:opacity-40 cursor-pointer"
-                            >
-                              {isTesting ? (
-                                <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-emerald-500" />
-                              ) : (
-                                <SignalIcon className="h-3.5 w-3.5 text-emerald-500" />
-                              )}
-                              Test
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Quota & Safety Notice */}
-            <div className="p-4 bg-emerald-500/5 dark:bg-emerald-950/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3">
-              <ShieldCheckIcon className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
-              <div className="text-xs text-slate-600 dark:text-slate-400 space-y-0.5">
-                <span className="font-extrabold text-slate-900 dark:text-white">
-                  Enterprise Safety Guardrails Active:
-                </span>{' '}
-                All generated text and media assets automatically pass through automated safety filters and rate-limiting rules prior to deployment in storefront catalogs or WhatsApp broadcasts.
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+      )}
     </main>
   );
 }

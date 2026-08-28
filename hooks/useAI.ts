@@ -152,3 +152,29 @@ export function useBuyAICredits() {
     },
   });
 }
+
+export function useAIAgent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      prompt: string;
+      agentRole?: "SALES_ASSISTANT" | "SUPPORT_REP" | "MARKETING_ADVISOR" | "BUSINESS_ANALYST";
+      conversationHistory?: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+      modelId?: string;
+    }) => aiClient.runAgent(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AI_QUERY_KEYS.credits() });
+    },
+  });
+}
+
+export function useCancelAIGenerationJob() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (jobId: string) => aiClient.cancelGenerationJob(jobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AI_QUERY_KEYS.credits() });
+      queryClient.invalidateQueries({ queryKey: ["ai", "generations"] });
+    },
+  });
+}

@@ -7,30 +7,12 @@ import {
   PhotoIcon,
   VideoCameraIcon,
   ArrowDownTrayIcon,
-  EllipsisVerticalIcon,
-  PlayCircleIcon,
+  FolderOpenIcon,
+  ArrowPathIcon,
+  ClockIcon,
   SparklesIcon,
-  FunnelIcon,
-  FolderOpenIcon
 } from "@heroicons/react/24/outline";
-
-type MediaType = "IMAGE" | "VIDEO";
-
-interface MediaAsset {
-  id: string;
-  type: MediaType;
-  url: string;
-  title: string;
-  date: string;
-}
-
-// Mock data to visualize the layout before hooking up the API
-const MOCK_ASSETS: MediaAsset[] = [
-  { id: "1", type: "IMAGE", url: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800", title: "Cyberpunk Cityscape", date: "Aug 20, 2026" },
-  { id: "2", type: "VIDEO", url: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800", title: "Cinematic Ocean Waves", date: "Aug 22, 2026" },
-  { id: "3", type: "IMAGE", url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=800", title: "Abstract Gradient", date: "Aug 24, 2026" },
-  { id: "4", type: "IMAGE", url: "https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&q=80&w=800", title: "Modern 3D Icon", date: "Aug 25, 2026" },
-];
+import { useAIGenerations } from "@/hooks/useAI";
 
 interface Props {
   companyId: string;
@@ -38,16 +20,24 @@ interface Props {
 
 export default function AiMediaLibraryClient({ companyId }: Props) {
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<MediaType | "ALL">("ALL");
+  const [filter, setFilter] = useState<"ALL" | "IMAGE" | "VIDEO">("ALL");
 
-  const filteredAssets = MOCK_ASSETS.filter((asset) => {
-    const matchesSearch = asset.title.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === "ALL" || asset.type === filter;
-    return matchesSearch && matchesFilter;
+  const { data: generationsData, isLoading, refetch } = useAIGenerations(
+    1,
+    50,
+    filter === "ALL" ? undefined : filter,
+  );
+
+  const jobs = generationsData?.jobs || [];
+
+  const filteredAssets = jobs.filter((job: any) => {
+    const promptText = job.prompt || "";
+    return promptText.toLowerCase().includes(search.toLowerCase());
   });
 
-  const handleDownload = (assetTitle: string) => {
-    toast.success(`Downloading ${assetTitle}...`);
+  const handleDownload = (url: string, filename: string) => {
+    window.open(url, "_blank");
+    toast.success(`Opening ${filename}...`);
   };
 
   return (
@@ -61,19 +51,26 @@ export default function AiMediaLibraryClient({ companyId }: Props) {
             <div className="flex items-center gap-2 mb-1">
               <span className="h-1 w-8 bg-emerald-500 rounded-full" />
               <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                AI Media Studio
+                Central Media Architecture
               </span>
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               <FolderOpenIcon className="h-6 w-6 text-emerald-500" />
-              Generated <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">Library.</span>
+              AI Media <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">Library.</span>
             </h1>
           </div>
+
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          >
+            <ArrowPathIcon className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
         </header>
 
         {/* Main Work Area */}
         <div className="flex-1 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm flex flex-col min-h-0">
-          
           {/* Top Bar: Search & Filters */}
           <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
             {/* Search Input */}
@@ -81,7 +78,7 @@ export default function AiMediaLibraryClient({ companyId }: Props) {
               <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search assets by prompt or title..."
+                placeholder="Search assets by prompt..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-white focus:border-emerald-500 outline-none transition-all"
@@ -100,86 +97,88 @@ export default function AiMediaLibraryClient({ companyId }: Props) {
                       : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                   }`}
                 >
-                  {f === "IMAGE" && <PhotoIcon className="h-3.5 w-3.5" />}
-                  {f === "VIDEO" && <VideoCameraIcon className="h-3.5 w-3.5" />}
-                  {f === "ALL" && <SparklesIcon className="h-3.5 w-3.5" />}
+                  {f === "IMAGE" && <PhotoIcon className="h-3 w-3" />}
+                  {f === "VIDEO" && <VideoCameraIcon className="h-3 w-3" />}
                   {f}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Grid Content */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-              {filteredAssets.map((asset) => (
-                <div 
-                  key={asset.id} 
-                  className="group relative bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-700/50 overflow-hidden flex flex-col hover:border-emerald-500/50 transition-colors"
-                >
-                  {/* Media Preview container */}
-                  <div className="relative aspect-square w-full bg-black/5 dark:bg-black/20 overflow-hidden">
-                    <img
-                      src={asset.url}
-                      alt={asset.title}
-                      className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                    />
-                    
-                    {/* Video Overlay Indicator */}
-                    {asset.type === "VIDEO" && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                        <PlayCircleIcon className="h-10 w-10 text-white opacity-90 shadow-sm" />
-                      </div>
-                    )}
-                    
-                    {/* Hover Actions Gradient Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 flex justify-end gap-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                      <button 
-                        onClick={() => handleDownload(asset.title)}
-                        className="p-1.5 bg-white/20 hover:bg-emerald-500 text-white rounded-lg backdrop-blur-sm transition-colors" 
-                        title="Download"
-                      >
-                        <ArrowDownTrayIcon className="h-4 w-4" />
-                      </button>
-                      <button 
-                        className="p-1.5 bg-white/20 hover:bg-slate-600 text-white rounded-lg backdrop-blur-sm transition-colors" 
-                        title="More options"
-                      >
-                        <EllipsisVerticalIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Meta Info */}
-                  <div className="p-3 flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="truncate text-xs font-bold text-slate-900 dark:text-white">
-                        {asset.title}
-                      </h3>
-                      <p className="mt-0.5 text-[10px] font-mono text-slate-500">
-                        {asset.date}
-                      </p>
-                    </div>
-                    <div className="shrink-0 flex items-center p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-400">
-                      {asset.type === "IMAGE" ? (
-                        <PhotoIcon className="h-3.5 w-3.5" />
-                      ) : (
-                        <VideoCameraIcon className="h-3.5 w-3.5" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Media Grid */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 min-h-0">
+            {isLoading ? (
+              <div className="h-full flex items-center justify-center text-xs text-slate-400 gap-2">
+                <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                <span>Loading media records from central ledger...</span>
+              </div>
+            ) : filteredAssets.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredAssets.map((job: any) => {
+                  const mediaUrl = job.outputAssets?.videoUrl || job.outputAssets?.images?.[0]?.url;
+                  const isVideo = job.capability === "VIDEO";
 
-            {/* Empty State */}
-            {filteredAssets.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center py-12 text-center text-slate-500">
-                <FunnelIcon className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-700 stroke-1" />
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">No media found</h3>
-                <p className="text-xs max-w-sm">
-                  We couldn't find any generated assets matching your search and filter criteria.
-                </p>
+                  return (
+                    <div
+                      key={job.id}
+                      className="group bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-emerald-500/50 transition-all shadow-xs"
+                    >
+                      <div className="relative aspect-square bg-black/10 dark:bg-black/40 flex items-center justify-center overflow-hidden">
+                        {mediaUrl ? (
+                          isVideo ? (
+                            <video src={mediaUrl} className="w-full h-full object-cover" />
+                          ) : (
+                            <img src={mediaUrl} alt={job.prompt} className="w-full h-full object-cover" />
+                          )
+                        ) : (
+                          <div className="text-center p-3 text-slate-400 text-xs">
+                            <SparklesIcon className="w-6 h-6 mx-auto mb-1 opacity-50" />
+                            <span>{job.status}</span>
+                          </div>
+                        )}
+
+                        <span
+                          className={`absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                            job.status === "COMPLETED"
+                              ? "bg-emerald-500 text-black"
+                              : job.status === "PROCESSING"
+                              ? "bg-amber-500 text-black"
+                              : "bg-slate-700 text-white"
+                          }`}
+                        >
+                          {job.capability}
+                        </span>
+
+                        {mediaUrl && (
+                          <button
+                            onClick={() => handleDownload(mediaUrl, `ai_asset_${job.id}`)}
+                            className="absolute bottom-2.5 right-2.5 p-2 bg-black/70 hover:bg-black text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="p-3 space-y-1.5">
+                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 leading-snug">
+                          {job.prompt || "AI Generation Asset"}
+                        </p>
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                          <span className="flex items-center gap-1">
+                            <ClockIcon className="w-3 h-3" />
+                            {new Date(job.createdAt).toLocaleDateString()}
+                          </span>
+                          <span>{job.creditsReserved || job.creditsConsumed || 0} Credits</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs">
+                <FolderOpenIcon className="w-12 h-12 stroke-1 mb-2 text-slate-300 dark:text-slate-700" />
+                <p>No generated media found.</p>
               </div>
             )}
           </div>

@@ -330,29 +330,34 @@ const commonEcommerce = (
       ],
     },
     {
-      label: "AI Media Studio",
+      label: "AI Studio & Media",
       icon: SparklesIcon,
-      minTier: "Ghuba Pro",
+      minTier: "Ghuba Basic",
       subItems: [
+        {
+          label: "AI Studio (Full Suite)",
+          href: `/admin/${adminSlug}/ai-studio`,
+          minTier: "Ghuba Basic",
+        },
         {
           label: "Image Generation",
           href: `/admin/${adminSlug}/ai-images`,
-          minTier: "Ghuba Pro",
+          minTier: "Ghuba Basic",
         },
         {
           label: "Video Generation",
           href: `/admin/${adminSlug}/ai-videos`,
-          minTier: "Ghuba Pro",
+          minTier: "Ghuba Basic",
         },
         {
           label: "Generated Library",
           href: `/admin/${adminSlug}/ai-media-library`,
-          minTier: "Ghuba Pro",
+          minTier: "Ghuba Basic",
         },
         {
-          label: "Integration Settings",
+          label: "AI Wallet & Settings",
           href: `/admin/${adminSlug}/ai-settings`,
-          minTier: "Ghuba Pro",
+          minTier: "Ghuba Basic",
         },
       ],
     },
