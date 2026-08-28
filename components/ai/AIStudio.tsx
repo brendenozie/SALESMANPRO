@@ -261,35 +261,35 @@ export default function AIStudio() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 antialiased">
+    <div className="min-h-screen bg-slate-100 text-slate-900 pb-16 antialiased">
       {/* Top Sticky Navigation Bar */}
-      <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-6 py-3.5 transition-all">
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-30 px-4 sm:px-6 py-3.5 transition-all">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-md shadow-indigo-200 ring-4 ring-indigo-50">
-              <SparklesIcon className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm">
+              <SparklesIcon className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold bg-gradient-to-r from-indigo-800 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-black text-slate-900 tracking-tight">
                   SalesmanPro AI Studio
                 </h1>
-                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200/60 rounded-full">
+                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-300 rounded-md">
                   Central Engine
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                Tenant: <span className="font-semibold text-slate-700">{companyName}</span>
+              <p className="text-xs text-slate-500 font-medium">
+                Tenant: <span className="font-semibold text-slate-800">{companyName}</span>
               </p>
             </div>
           </div>
 
           {/* Credit Wallet Summary & Action */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 bg-gradient-to-r from-amber-50/90 to-orange-50/90 border border-amber-200/80 px-4 py-2 rounded-xl shadow-xs">
-              <BoltSolidIcon className="w-5 h-5 text-amber-500" />
+            <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200/80 px-3.5 py-2 rounded-xl shadow-2xs">
+              <BoltSolidIcon className="w-5 h-5 text-amber-600" />
               <div>
-                <span className="text-[10px] font-bold tracking-wide uppercase text-amber-800 block leading-tight">
+                <span className="text-[10px] font-bold tracking-wider uppercase text-amber-800 block leading-tight">
                   Credit Balance
                 </span>
                 <span className="text-sm font-black text-amber-950">
@@ -300,7 +300,7 @@ export default function AIStudio() {
 
             <button
               onClick={() => setShowBuyModal(true)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-md shadow-indigo-200"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition-all text-white px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shadow-xs"
             >
               <PlusCircleIcon className="w-4 h-4 stroke-2" />
               <span>Top Up Credits</span>
@@ -328,10 +328,10 @@ export default function AIStudio() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as ActiveTab)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   active
-                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 <Icon className="w-4 h-4 stroke-[1.75]" />
@@ -351,10 +351,10 @@ export default function AIStudio() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div
                 onClick={() => setActiveTab("product")}
-                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200/80 hover:border-indigo-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-400 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                     <ShoppingBagIcon className="w-6 h-6 stroke-[1.75]" />
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">Product Content AI</h3>
@@ -362,17 +362,17 @@ export default function AIStudio() {
                     Generate 1-click descriptions, SEO meta tags, catalog specs, and bullet lists.
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 mt-5 group-hover:translate-x-0.5 transition-transform">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 mt-5 group-hover:translate-x-0.5 transition-transform">
                   Open Catalog AI <ArrowRightIcon className="w-3.5 h-3.5 stroke-2" />
                 </span>
               </div>
 
               <div
                 onClick={() => setActiveTab("image")}
-                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200/80 hover:border-indigo-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-400 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 text-purple-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                     <PhotoIcon className="w-6 h-6 stroke-[1.75]" />
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">AI Image Studio</h3>
@@ -380,17 +380,17 @@ export default function AIStudio() {
                     Render studio product shots, isolate backgrounds, and make marketing visuals.
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 mt-5 group-hover:translate-x-0.5 transition-transform">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 mt-5 group-hover:translate-x-0.5 transition-transform">
                   Generate Images <ArrowRightIcon className="w-3.5 h-3.5 stroke-2" />
                 </span>
               </div>
 
               <div
                 onClick={() => setActiveTab("video")}
-                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200/80 hover:border-indigo-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-400 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                     <VideoCameraIcon className="w-6 h-6 stroke-[1.75]" />
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">AI Video Reels</h3>
@@ -398,17 +398,17 @@ export default function AIStudio() {
                     Build dynamic short videos and promotional reels directly for social channels.
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 mt-5 group-hover:translate-x-0.5 transition-transform">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-700 mt-5 group-hover:translate-x-0.5 transition-transform">
                   Create Video <ArrowRightIcon className="w-3.5 h-3.5 stroke-2" />
                 </span>
               </div>
 
               <div
                 onClick={() => setActiveTab("credits")}
-                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200/80 hover:border-indigo-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="group cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-400 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                     <CreditCardIcon className="w-6 h-6 stroke-[1.75]" />
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">Credit Wallet</h3>
@@ -416,35 +416,35 @@ export default function AIStudio() {
                     {balance.toLocaleString()} available credits. Inspect real-time audit ledger.
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 mt-5 group-hover:translate-x-0.5 transition-transform">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 mt-5 group-hover:translate-x-0.5 transition-transform">
                   Manage Wallet <ArrowRightIcon className="w-3.5 h-3.5 stroke-2" />
                 </span>
               </div>
             </div>
 
             {/* Architecture Banner */}
-            <div className="bg-gradient-to-r from-emerald-900 to-teal-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-teal-950 border border-teal-800/50 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-emerald-800/80 border border-emerald-600/50 flex items-center justify-center flex-shrink-0">
-                  <ShieldCheckIcon className="w-6 h-6 text-emerald-300 stroke-[1.75]" />
+                <div className="w-11 h-11 rounded-xl bg-teal-900 border border-teal-700/60 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheckIcon className="w-6 h-6 text-teal-300 stroke-[1.75]" />
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">Unified AI Wallet Engine</h4>
-                  <p className="text-xs text-emerald-100/80 mt-1 max-w-2xl leading-relaxed">
+                  <p className="text-xs text-teal-100/80 mt-1 max-w-2xl leading-relaxed">
                     Your WhatsApp AI Concierge and Web Studio share the exact same tenant wallet, authorization parameters, and model registry.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setActiveTab("analytics")}
-                className="text-xs font-bold bg-white text-emerald-950 px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition active:scale-95 shadow-sm whitespace-nowrap"
+                className="text-xs font-bold bg-white text-teal-950 border border-teal-100 px-4 py-2.5 rounded-xl hover:bg-teal-50 transition active:scale-95 shadow-xs whitespace-nowrap"
               >
                 View Telemetry
               </button>
             </div>
 
             {/* Recent Generations Gallery */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs">
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">Recent AI Generations</h3>
@@ -463,18 +463,18 @@ export default function AIStudio() {
                   {generationsData.jobs.slice(0, 4).map((job: any) => (
                     <div
                       key={job.id}
-                      className="border border-slate-200/80 rounded-xl p-3.5 bg-slate-50/50 space-y-2.5 hover:bg-white hover:border-slate-300 transition"
+                      className="border border-slate-200 rounded-xl p-3.5 bg-slate-50 space-y-2.5 hover:bg-white hover:border-slate-300 transition"
                     >
                       <div className="flex items-center justify-between text-[11px] font-semibold">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-800 font-bold">
                           {job.capability}
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
                             job.status === "COMPLETED"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                               : job.status === "PROCESSING"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              ? "bg-amber-100 text-amber-800 border border-amber-200"
                               : "bg-slate-200 text-slate-700"
                           }`}
                         >
@@ -482,18 +482,18 @@ export default function AIStudio() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">{job.prompt}</p>
-                      <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-200/60 font-medium">
+                      <div className="text-[11px] text-slate-500 flex items-center justify-between pt-2 border-t border-slate-200 font-medium">
                         <span className="flex items-center gap-1">
-                          <ClockIcon className="w-3 h-3 stroke-2" />
+                          <ClockIcon className="w-3 h-3 stroke-2 text-slate-400" />
                           {new Date(job.createdAt).toLocaleDateString()}
                         </span>
-                        <span>{job.creditsReserved} Credits</span>
+                        <span className="font-semibold text-slate-700">{job.creditsReserved} Credits</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                <div className="text-center py-12 text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <SparklesIcon className="w-8 h-8 text-slate-300 mx-auto mb-2 stroke-1" />
                   <span>No recent generation jobs recorded yet. Try creating content!</span>
                 </div>
@@ -505,7 +505,7 @@ export default function AIStudio() {
         {/* TEXT & COPYWRITER TAB */}
         {activeTab === "text" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-5">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <DocumentTextIcon className="w-5 h-5 text-indigo-600 stroke-2" />
                 <h3 className="font-bold text-slate-900 text-base">Text AI Generator</h3>
@@ -548,9 +548,9 @@ export default function AIStudio() {
                       key={tone}
                       type="button"
                       onClick={() => setTextTone(tone)}
-                      className={`text-xs capitalize py-2 px-3 rounded-xl border font-semibold transition ${
+                      className={`text-xs capitalize py-2 px-3 rounded-xl border font-bold transition ${
                         textTone === tone
-                          ? "border-indigo-600 bg-indigo-50/80 text-indigo-700 shadow-xs"
+                          ? "border-slate-900 bg-slate-900 text-white shadow-2xs"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
                       }`}
                     >
@@ -575,7 +575,7 @@ export default function AIStudio() {
                 type="button"
                 disabled={textMutation.isPending || !textPrompt}
                 onClick={handleGenerateText}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl shadow-md shadow-indigo-200 transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
+                className="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-2xs transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
               >
                 {textMutation.isPending ? (
                   <>
@@ -584,7 +584,7 @@ export default function AIStudio() {
                   </>
                 ) : (
                   <>
-                    <CpuChipIcon className="w-4 h-4 stroke-2" />
+                    <CpuChipIcon className="w-4 h-4 stroke-2 text-indigo-400" />
                     <span>Generate Copy</span>
                   </>
                 )}
@@ -592,14 +592,14 @@ export default function AIStudio() {
             </div>
 
             {/* Output Display */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                   <h4 className="font-bold text-slate-900 text-base">Generated Result</h4>
                   {generatedTextOutput && (
                     <button
                       onClick={() => handleCopy(generatedTextOutput.text)}
-                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
+                      className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
                     >
                       {copiedText ? (
                         <CheckIcon className="w-3.5 h-3.5 text-emerald-600 stroke-2" />
@@ -613,27 +613,27 @@ export default function AIStudio() {
 
                 {generatedTextOutput ? (
                   <div className="space-y-4">
-                    <div className="bg-slate-50 p-4.5 rounded-xl text-slate-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed border border-slate-200/80 font-normal">
+                    <div className="bg-slate-50 p-4.5 rounded-xl text-slate-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed border border-slate-200 font-normal">
                       {generatedTextOutput.text}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-2 border-t border-slate-100 font-medium">
                       <span>
-                        Model: <strong className="text-slate-700">{generatedTextOutput.model}</strong>
+                        Model: <strong className="text-slate-800">{generatedTextOutput.model}</strong>
                       </span>
                       <span>
-                        Tokens: <strong className="text-slate-700">{generatedTextOutput.totalTokens}</strong>
+                        Tokens: <strong className="text-slate-800">{generatedTextOutput.totalTokens}</strong>
                       </span>
                       <span>
-                        Credits: <strong className="text-slate-700">{generatedTextOutput.creditsConsumed}</strong>
+                        Credits: <strong className="text-slate-800">{generatedTextOutput.creditsConsumed}</strong>
                       </span>
                       <span>
-                        Speed: <strong className="text-slate-700">{generatedTextOutput.executionTimeMs}ms</strong>
+                        Speed: <strong className="text-slate-800">{generatedTextOutput.executionTimeMs}ms</strong>
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
                     <DocumentTextIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
                     <span>Your AI-generated copy will render here</span>
                   </div>
@@ -646,7 +646,7 @@ export default function AIStudio() {
         {/* IMAGE STUDIO TAB */}
         {activeTab === "image" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-5">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <PhotoIcon className="w-5 h-5 text-purple-600 stroke-2" />
                 <h3 className="font-bold text-slate-900 text-base">AI Image Studio</h3>
@@ -678,9 +678,9 @@ export default function AIStudio() {
                       key={ratio.id}
                       type="button"
                       onClick={() => setImageAspectRatio(ratio.id as any)}
-                      className={`text-xs py-2 px-3 rounded-xl border font-semibold transition ${
+                      className={`text-xs py-2 px-3 rounded-xl border font-bold transition ${
                         imageAspectRatio === ratio.id
-                          ? "border-purple-600 bg-purple-50 text-purple-700 shadow-xs"
+                          ? "border-slate-900 bg-slate-900 text-white shadow-2xs"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
                       }`}
                     >
@@ -705,7 +705,7 @@ export default function AIStudio() {
                 type="button"
                 disabled={imageMutation.isPending || !imagePrompt}
                 onClick={handleGenerateImage}
-                className="w-full bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl shadow-md shadow-purple-200 transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
+                className="w-full bg-purple-700 hover:bg-purple-800 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-2xs transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
               >
                 {imageMutation.isPending ? (
                   <>
@@ -722,19 +722,19 @@ export default function AIStudio() {
             </div>
 
             {/* Images Grid */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
               <h4 className="font-bold text-slate-900 text-base mb-4">Generated Images</h4>
               {generatedImages.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
                   {generatedImages.map((img, idx) => (
                     <div key={idx} className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 aspect-square">
                       <img src={img.url} alt="Generated visual" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <a
                           href={img.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-2.5 bg-white text-slate-900 rounded-xl shadow-lg hover:bg-slate-50 transition"
+                          className="p-2.5 bg-white text-slate-900 rounded-xl shadow-md hover:bg-slate-50 transition"
                         >
                           <ArrowDownTrayIcon className="w-4 h-4 stroke-2" />
                         </a>
@@ -743,7 +743,7 @@ export default function AIStudio() {
                   ))}
                 </div>
               ) : (
-                <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <PhotoIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
                   <span>Images generated will appear here and persist to your Media Library</span>
                 </div>
@@ -754,7 +754,7 @@ export default function AIStudio() {
 
         {/* VIDEO TAB */}
         {activeTab === "video" && (
-          <div className="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
+          <div className="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-5">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <VideoCameraIcon className="w-5 h-5 text-rose-600 stroke-2" />
               <h3 className="font-bold text-slate-900 text-base">Asynchronous Video Reel Studio</h3>
@@ -806,7 +806,7 @@ export default function AIStudio() {
               type="button"
               disabled={videoMutation.isPending || !videoPrompt}
               onClick={handleGenerateVideo}
-              className="w-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl shadow-md shadow-rose-200 transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
+              className="w-full bg-rose-700 hover:bg-rose-800 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-2xs transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
             >
               {videoMutation.isPending ? (
                 <>
@@ -826,7 +826,7 @@ export default function AIStudio() {
         {/* PRODUCT CATALOG AI TAB */}
         {activeTab === "product" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <ShoppingBagIcon className="w-5 h-5 text-blue-600 stroke-2" />
                 <h3 className="font-bold text-slate-900 text-base">Product Content Generator</h3>
@@ -870,7 +870,7 @@ export default function AIStudio() {
                   type="button"
                   disabled={productMutation.isPending || !productName}
                   onClick={() => handleGenerateProductContent("DESCRIPTION")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-xs transition disabled:opacity-50"
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow-2xs transition disabled:opacity-50"
                 >
                   Description
                 </button>
@@ -878,7 +878,7 @@ export default function AIStudio() {
                   type="button"
                   disabled={productMutation.isPending || !productName}
                   onClick={() => handleGenerateProductContent("SEO")}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-xs transition disabled:opacity-50"
+                  className="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow-2xs transition disabled:opacity-50"
                 >
                   SEO Tags
                 </button>
@@ -886,7 +886,7 @@ export default function AIStudio() {
                   type="button"
                   disabled={productMutation.isPending || !productName}
                   onClick={() => handleGenerateProductContent("ATTRIBUTES")}
-                  className="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-3 rounded-xl text-xs shadow-xs transition disabled:opacity-50"
+                  className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow-2xs transition disabled:opacity-50"
                 >
                   Specs
                 </button>
@@ -894,14 +894,14 @@ export default function AIStudio() {
             </div>
 
             {/* Output */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
               <h4 className="font-bold text-slate-900 text-base mb-3">Generated Product Data</h4>
               {productOutput ? (
                 <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-mono whitespace-pre-wrap leading-relaxed max-h-[480px] overflow-y-auto">
                   {JSON.stringify(productOutput, null, 2)}
                 </div>
               ) : (
-                <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <ShoppingBagIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
                   <span>Select an action to generate descriptions, SEO, or attributes</span>
                 </div>
@@ -913,7 +913,7 @@ export default function AIStudio() {
         {/* MARKETING ADS & CAMPAIGNS TAB */}
         {activeTab === "marketing" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <MegaphoneIcon className="w-5 h-5 text-pink-600 stroke-2" />
                 <h3 className="font-bold text-slate-900 text-base">Marketing Campaign AI</h3>
@@ -959,7 +959,7 @@ export default function AIStudio() {
                 type="button"
                 disabled={textMutation.isPending || !marketingTopic}
                 onClick={handleGenerateMarketing}
-                className="w-full bg-pink-600 hover:bg-pink-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl shadow-md shadow-pink-200 transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
+                className="w-full bg-pink-700 hover:bg-pink-800 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-2xs transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs"
               >
                 {textMutation.isPending ? (
                   <>
@@ -976,14 +976,14 @@ export default function AIStudio() {
             </div>
 
             {/* Output */}
-            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                   <h4 className="font-bold text-slate-900 text-base">Campaign Copy & Hooks</h4>
                   {marketingOutput && (
                     <button
                       onClick={() => handleCopy(marketingOutput.text)}
-                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
+                      className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
                     >
                       {copiedText ? <CheckIcon className="w-3.5 h-3.5 text-emerald-600 stroke-2" /> : <DocumentDuplicateIcon className="w-3.5 h-3.5 stroke-2 text-slate-500" />}
                       <span>{copiedText ? "Copied!" : "Copy Campaign"}</span>
@@ -992,11 +992,11 @@ export default function AIStudio() {
                 </div>
 
                 {marketingOutput ? (
-                  <div className="bg-slate-50 p-4.5 rounded-xl text-slate-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed border border-slate-200/80 font-normal">
+                  <div className="bg-slate-50 p-4.5 rounded-xl text-slate-800 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed border border-slate-200 font-normal">
                     {marketingOutput.text}
                   </div>
                 ) : (
-                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
                     <MegaphoneIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />
                     <span>Your multi-channel promotional copy will appear here</span>
                   </div>
@@ -1008,11 +1008,11 @@ export default function AIStudio() {
 
         {/* STORE AI AGENTS TAB */}
         {activeTab === "agents" && (
-          <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col h-[650px]">
+          <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden flex flex-col h-[650px]">
             {/* Header & Role Picker */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50/70">
+            <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 text-indigo-400 flex items-center justify-center flex-shrink-0">
                   <UserGroupIcon className="w-5 h-5 stroke-2" />
                 </div>
                 <div>
@@ -1026,7 +1026,7 @@ export default function AIStudio() {
                 <select
                   value={agentRole}
                   onChange={(e) => setAgentRole(e.target.value as any)}
-                  className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 outline-none shadow-xs"
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 outline-none shadow-2xs"
                 >
                   <option value="SALES_ASSISTANT">Sales Concierge</option>
                   <option value="SUPPORT_REP">Customer Support</option>
@@ -1045,7 +1045,7 @@ export default function AIStudio() {
                 >
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      msg.role === "user" ? "bg-slate-800 text-white" : "bg-indigo-600 text-white"
+                      msg.role === "user" ? "bg-slate-900 text-white" : "bg-indigo-600 text-white"
                     }`}
                   >
                     {msg.role === "user" ? "You" : "AI"}
@@ -1054,7 +1054,7 @@ export default function AIStudio() {
                     className={`max-w-[75%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
                       msg.role === "user"
                         ? "bg-slate-900 text-white rounded-tr-none"
-                        : "bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200/60"
+                        : "bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200"
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -1065,7 +1065,7 @@ export default function AIStudio() {
                 </div>
               ))}
               {agentMutation.isPending && (
-                <div className="flex items-center gap-2 text-xs text-indigo-600 font-medium py-2">
+                <div className="flex items-center gap-2 text-xs text-indigo-700 font-bold py-2">
                   <ArrowPathIcon className="w-4 h-4 animate-spin stroke-2" />
                   <span>Agent is analyzing store context & executing tools...</span>
                 </div>
@@ -1073,7 +1073,7 @@ export default function AIStudio() {
             </div>
 
             {/* Chat Input Bar */}
-            <div className="p-4 border-t border-slate-200 bg-slate-50/50 flex items-center gap-3">
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center gap-3">
               <input
                 type="text"
                 value={agentInput}
@@ -1085,12 +1085,12 @@ export default function AIStudio() {
                   }
                 }}
                 placeholder="Ask agent to search items, compare products, or draft replies..."
-                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs"
+                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs"
               />
               <button
                 onClick={handleSendAgentMessage}
                 disabled={agentMutation.isPending || !agentInput.trim()}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-1.5 transition shadow-sm"
+                className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-2xs"
               >
                 <span>Send</span>
                 <PaperAirplaneIcon className="w-3.5 h-3.5 stroke-2" />
@@ -1114,9 +1114,9 @@ export default function AIStudio() {
                   <button
                     key={filter}
                     onClick={() => setGenerationFilter(filter)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
                       generationFilter === filter
-                        ? "bg-indigo-600 text-white shadow-xs"
+                        ? "bg-slate-900 text-white shadow-2xs"
                         : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -1131,19 +1131,19 @@ export default function AIStudio() {
                 {filteredGenerations.map((job: any) => (
                   <div
                     key={job.id}
-                    className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-slate-300 transition"
+                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between space-y-4 hover:border-slate-300 transition"
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                           {job.capability}
                         </span>
                         <span
                           className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] ${
                             job.status === "COMPLETED"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                               : job.status === "PROCESSING"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              ? "bg-amber-100 text-amber-800 border border-amber-200"
                               : "bg-slate-200 text-slate-700"
                           }`}
                         >
@@ -1170,7 +1170,7 @@ export default function AIStudio() {
 
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
                       <span>{new Date(job.createdAt).toLocaleString()}</span>
-                      <span>{job.creditsReserved || job.creditsConsumed || 0} Credits</span>
+                      <span className="font-bold text-slate-800">{job.creditsReserved || job.creditsConsumed || 0} Credits</span>
                     </div>
                   </div>
                 ))}
@@ -1200,12 +1200,12 @@ export default function AIStudio() {
                     key={pkg.name}
                     className={`bg-white rounded-2xl p-5 border flex flex-col justify-between relative transition-all ${
                       pkg.isPopular
-                        ? "border-indigo-600 shadow-md ring-2 ring-indigo-50"
-                        : "border-slate-200/80 shadow-xs hover:border-slate-300"
+                        ? "border-slate-900 shadow-md ring-2 ring-slate-900/10"
+                        : "border-slate-200 shadow-2xs hover:border-slate-300"
                     }`}
                   >
                     {pkg.badge && (
-                      <span className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
+                      <span className="absolute -top-2.5 right-4 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                         {pkg.badge}
                       </span>
                     )}
@@ -1215,14 +1215,14 @@ export default function AIStudio() {
                         <span className="text-2xl font-black text-slate-900">${pkg.price}</span>
                         <span className="text-xs font-semibold text-slate-500">/ {pkg.currency}</span>
                       </div>
-                      <span className="inline-block mt-1 text-xs font-bold text-indigo-600">
+                      <span className="inline-block mt-1 text-xs font-extrabold text-indigo-700">
                         {pkg.credits.toLocaleString()} Credits
                       </span>
                       <p className="text-xs text-slate-500 mt-3 leading-relaxed">{pkg.description}</p>
                       <ul className="mt-4 space-y-2 text-xs text-slate-600">
                         {pkg.features.map((feat: string, i: number) => (
                           <li key={i} className="flex items-center gap-2">
-                            <CheckCircleIcon className="w-4 h-4 text-emerald-500 stroke-2 flex-shrink-0" />
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-600 stroke-2 flex-shrink-0" />
                             <span>{feat}</span>
                           </li>
                         ))}
@@ -1236,7 +1236,7 @@ export default function AIStudio() {
                       }}
                       className={`w-full mt-6 py-2.5 rounded-xl font-bold text-xs transition ${
                         pkg.isPopular
-                          ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs"
+                          ? "bg-slate-900 text-white hover:bg-slate-800 shadow-2xs"
                           : "bg-slate-100 text-slate-800 hover:bg-slate-200"
                       }`}
                     >
@@ -1248,7 +1248,7 @@ export default function AIStudio() {
             </div>
 
             {/* Transactions Table */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-slate-900 text-base">Immutable Credit Ledger</h4>
@@ -1269,7 +1269,7 @@ export default function AIStudio() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {(transactionsData?.transactions || []).map((tx) => (
-                      <tr key={tx.id} className="hover:bg-slate-50/60 transition">
+                      <tr key={tx.id} className="hover:bg-slate-50 transition">
                         <td className="px-6 py-3.5 text-slate-500 whitespace-nowrap font-medium">
                           {new Date(tx.createdAt).toLocaleString()}
                         </td>
@@ -1277,10 +1277,10 @@ export default function AIStudio() {
                           <span
                             className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
                               tx.type === "PURCHASE" || tx.type === "BONUS"
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                                 : tx.type === "REFUND" || tx.type === "RELEASE"
-                                ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                : "bg-amber-50 text-amber-700 border border-amber-200"
+                                ? "bg-blue-100 text-blue-800 border border-blue-200"
+                                : "bg-amber-100 text-amber-800 border border-amber-200"
                             }`}
                           >
                             {tx.type}
@@ -1289,7 +1289,7 @@ export default function AIStudio() {
                         <td className="px-6 py-3.5 text-slate-800 font-semibold">{tx.description}</td>
                         <td
                           className={`px-6 py-3.5 font-bold ${
-                            tx.amount > 0 ? "text-emerald-600" : "text-slate-800"
+                            tx.amount > 0 ? "text-emerald-700" : "text-slate-800"
                           }`}
                         >
                           {tx.amount > 0 ? `+${tx.amount.toLocaleString()}` : tx.amount.toLocaleString()}
@@ -1310,36 +1310,36 @@ export default function AIStudio() {
         {activeTab === "analytics" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-xs text-slate-500 font-semibold block">Total Monthly Requests</span>
                 <span className="text-3xl font-black text-slate-900 mt-1 block">
                   {(usageData?.totalRequests || 0).toLocaleString()}
                 </span>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-xs text-slate-500 font-semibold block">Total Credits Consumed</span>
-                <span className="text-3xl font-black text-indigo-600 mt-1 block">
+                <span className="text-3xl font-black text-indigo-700 mt-1 block">
                   {(usageData?.totalCreditsUsed || 0).toLocaleString()}
                 </span>
               </div>
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-xs text-slate-500 font-semibold block">Total Tokens Processed</span>
-                <span className="text-3xl font-black text-purple-600 mt-1 block">
+                <span className="text-3xl font-black text-purple-700 mt-1 block">
                   {(usageData?.totalTokensUsed || 0).toLocaleString()}
                 </span>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
               <h4 className="font-bold text-slate-900 text-base mb-4">Breakdown by AI Capability</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {(usageData?.byCapability || []).map((cap: any) => (
-                  <div key={cap.capability} className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                  <div key={cap.capability} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                     <span className="text-xs font-bold text-slate-700 block">{cap.capability}</span>
                     <span className="text-xl font-black text-slate-900 mt-1 block">
                       {cap.credits.toLocaleString()} Credits
                     </span>
-                    <span className="text-[11px] text-slate-400 font-medium">{cap.requests} total requests</span>
+                    <span className="text-[11px] text-slate-500 font-medium">{cap.requests} total requests</span>
                   </div>
                 ))}
               </div>
@@ -1350,8 +1350,8 @@ export default function AIStudio() {
 
       {/* Top-Up Payment Modal */}
       {showBuyModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-2xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl space-y-5 border border-slate-200">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-900 text-base">
                 Top Up AI Credits ({selectedPackage?.name || "Credit Package"})
@@ -1372,13 +1372,13 @@ export default function AIStudio() {
               />
             </div>
 
-            <div className="p-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl text-xs text-indigo-950 space-y-1.5">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-slate-600">Credits to Add:</span>
+                <span className="text-slate-500">Credits to Add:</span>
                 <span className="font-bold">{selectedPackage?.credits?.toLocaleString() || "1,000"} Credits</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Amount:</span>
+                <span className="text-slate-500">Amount:</span>
                 <span className="font-bold">${selectedPackage?.price || "10.00"}</span>
               </div>
             </div>
@@ -1390,7 +1390,7 @@ export default function AIStudio() {
                   selectedPackage || { id: "starter", name: "Starter AI", credits: 1000, price: 10 },
                 )
               }
-              className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-md shadow-indigo-200 transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs sm:text-sm"
+              className="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-bold py-3 rounded-xl shadow-2xs transition disabled:opacity-50 flex items-center justify-center gap-2 text-xs sm:text-sm"
             >
               {buyCreditsMutation.isPending ? (
                 <>
