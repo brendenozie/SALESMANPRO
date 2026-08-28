@@ -32,7 +32,7 @@ export default function Navigation() {
 
   const navLinks = [
     { name: "Platform", href: "#platform" },
-    { name: "AI Studio", href: "#ai-studio", badge: "New" },
+    { name: "AI Studio", href: "#ai-studio"},// badge: "New" },
     { name: "WhatsApp", href: "#platform" },
     { name: "Features", href: "#features" },
     { name: "Pricing", href: "#pricing" },
@@ -68,11 +68,11 @@ export default function Navigation() {
                 className="px-3.5 py-1.5 rounded-full hover:text-orange-600 dark:hover:text-orange-400 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-all duration-200 flex items-center gap-1.5"
               >
                 {link.name}
-                {link.badge && (
+                {/* {link.badge && (
                   <span className="px-1.5 py-0.5 text-[9px] font-black tracking-wider uppercase bg-orange-500/10 dark:bg-orange-400/10 text-orange-600 dark:text-orange-400 rounded-full border border-orange-500/20 dark:border-orange-400/20">
                     {link.badge}
                   </span>
-                )}
+                )} */}
               </a>
             ))}
           </nav>
@@ -140,11 +140,11 @@ export default function Navigation() {
                   className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <span>{link.name}</span>
-                  {link.badge && (
+                  {/* {link.badge && (
                     <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-orange-500/10 text-orange-600 rounded-full border border-orange-500/20">
                       {link.badge}
                     </span>
-                  )}
+                  )} */}
                 </a>
               ))}
             </nav>

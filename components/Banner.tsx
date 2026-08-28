@@ -41,27 +41,6 @@ export default function HeroSection() {
         
         {/* Left Column: Headline, Description & CTAs */}
         <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
-          <motion.div
-              initial={{ opacity: 0, y: -15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-block"
-            >
-              <a
-                href="#features"
-                className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-orange-500/10 dark:bg-orange-400/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 dark:border-orange-400/20 hover:bg-orange-500/15 transition-all duration-200"
-              >
-                <span className="flex items-center gap-1.5 font-bold">
-                  <SparklesIcon className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                  <span>New Release</span>
-                </span>
-                <span className="w-1 h-1 rounded-full bg-orange-400 dark:bg-orange-500" />
-                <span className="text-slate-700 dark:text-slate-300">
-                  The AI Operating Platform for Modern Commerce
-                </span>
-                <ArrowRightIcon className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-all" />
-              </a>
-            </motion.div>
 
           {/* Clean Solid Headline without Text Gradients */}
           <motion.h1
