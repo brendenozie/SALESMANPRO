@@ -38,9 +38,9 @@ const Home = () => {
         
         <Pic />
         
-        <Testimonials />
-        
         <WhyChooseUs />
+        
+        <Testimonials />
         
         <PricingTable />
         

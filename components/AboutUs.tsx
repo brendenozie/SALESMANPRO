@@ -1,265 +1,212 @@
 "use client";
 
-import { useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { 
-  BuildingStorefrontIcon, 
-  ShoppingBagIcon, 
-  BanknotesIcon, 
-  TruckIcon, 
-  SparklesIcon,
-  CheckBadgeIcon
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CpuChipIcon,
+  ChatBubbleLeftRightIcon,
+  BuildingStorefrontIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
-import { motion, useMotionValue, useTransform, animate, MotionValue } from "framer-motion";
-import body from "@/assets/body.png";
 
-// Helper Component for animated counters
-function AnimatedCounter({ value }: { value: number }) {
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => Math.round(latest));
+const tabs = [
+  {
+    id: "ai-studio",
+    label: "AI Studio & Agents",
+    icon: <CpuChipIcon className="w-4 h-4" />,
+    title: "Meet the AI that actually knows your catalog.",
+    description:
+      "Unlike generic chatbots, SalesmanPro AI reads live inventory, pricing, and business policies to generate product descriptions, marketing campaigns, and close sales automatically.",
+    metrics: [
+      { label: "Content Generation", value: "Text, Image & Reel Studio" },
+      { label: "Catalog Sync", value: "Real-Time Stock Querying" },
+      { label: "Execution", value: "Autonomous Sales Agents" },
+    ],
+  },
+  {
+    id: "whatsapp",
+    label: "WhatsApp Commerce",
+    icon: <ChatBubbleLeftRightIcon className="w-4 h-4" />,
+    title: "Turn WhatsApp conversations into completed orders.",
+    description:
+      "Automate buyer inquiries over WhatsApp. The AI shares product catalogs, captures customer orders, triggers M-PESA STK Push requests, and verifies payments instantly.",
+    metrics: [
+      { label: "Checkout Engine", value: "Direct Link Generation" },
+      { label: "Payment Verification", value: "Instant M-PESA Push" },
+      { label: "Fulfillment Route", value: "Auto-Courier Booking" },
+    ],
+  },
+  {
+    id: "pos-inventory",
+    label: "POS & Operations",
+    icon: <BuildingStorefrontIcon className="w-4 h-4" />,
+    title: "Run physical and digital channels from one ledger.",
+    description:
+      "Whether selling in-store or online, keep inventory synchronized. Manage barcode scanning, low-stock warnings, and multi-location management without manual count discrepancies.",
+    metrics: [
+      { label: "Counter POS", value: "Barcode & Quick Pay" },
+      { label: "Stock Alerts", value: "Automated Low Thresholds" },
+      { label: "Multi-Store", value: "Unified Ledger Sync" },
+    ],
+  },
+  {
+    id: "analytics",
+    label: "Analytics & Profitability",
+    icon: <ChartBarIcon className="w-4 h-4" />,
+    title: "Real-time visibility into actual margins.",
+    description:
+      "Calculate true profit margins automatically based on item acquisition cost, active discounts, delivery fees, and tax structures.",
+    metrics: [
+      { label: "Margin Tracking", value: "Auto Profit-Calculated" },
+      { label: "Sales Breakdown", value: "By Channel & Agent" },
+      { label: "Customer Insights", value: "Lifetime Value Scoring" },
+    ],
+  },
+];
 
-  useEffect(() => {
-    const controls = animate(count, value, {
-      duration: 2,
-      delay: 0.3,
-      ease: "easeOut",
-    });
-    return controls.stop;
-  }, [value, count]);
+export default function ProductTabs() {
+  const [activeTab, setActiveTab] = useState("ai-studio");
 
-  return <motion.span>{rounded}</motion.span>;
-}
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  value: number;
-  label: string;
-  prefix?: string;
-  suffix?: string;
-  className?: string;
-  mouseX: MotionValue<number>;
-  mouseY: MotionValue<number>;
-}
-
-// Sub-component for floating statistic / proof cards
-function StatCard({ icon, value, label, prefix = "", suffix = "+", className = "", mouseX, mouseY }: StatCardProps) {
-  const translateX = useTransform(mouseX, [-200, 200], [-12, 12]);
-  const translateY = useTransform(mouseY, [-200, 200], [-12, 12]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: 30 }}
-      whileInView={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2, ease: "circOut" }}
-      viewport={{ once: true }}
-      style={{ x: translateX, y: translateY }}
-      className={`flex items-center gap-3.5 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 w-60 shadow-xl shadow-slate-900/5 z-20 ${className}`}
-    >
-      <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
-        {icon}
-      </div>
-      <div>
-        <h4 className="text-xl font-extrabold text-slate-900 tracking-tight">
-          {prefix}
-          <AnimatedCounter value={value} />
-          {suffix}
-        </h4>
-        <p className="text-xs text-slate-500 font-medium leading-snug">{label}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-export default function AboutUs() {
-  const { data: session } = useSession();
-
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const rotateX = useTransform(mouseY, [-400, 400], [6, -6], { clamp: true });
-  const rotateY = useTransform(mouseX, [-400, 400], [-6, 6], { clamp: true });
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const { clientX, clientY, currentTarget } = event;
-    const { left, top, width, height } = currentTarget.getBoundingClientRect();
-    const x = clientX - left - width / 2;
-    const y = clientY - top - height / 2;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.12,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-      },
-    },
-  };
-
-  const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    authUrl.searchParams.set("callbackUrl", window.location.origin);
-    window.location.href = authUrl.toString();
-  };
+  const activeContent = tabs.find((tab) => tab.id === activeTab) || tabs[0];
 
   return (
-    <section id="about-us" className="relative w-full py-24 px-6 md:px-12 bg-white text-slate-800 overflow-hidden border-t border-slate-100">
-      {/* Background Glows */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-orange-100/60 rounded-full filter blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 w-[450px] h-[450px] bg-amber-100/50 rounded-full filter blur-3xl pointer-events-none -z-10" />
-
-      <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <section id="platform" className="py-24 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white relative transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         
-        {/* Left Visual Area */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{ perspective: "1200px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative flex justify-center items-center order-2 lg:order-1"
-        >
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/60 px-3.5 py-1 rounded-full border border-orange-200 dark:border-orange-800/40 inline-block mb-3">
+            Interactive Product Preview
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            One Operating System. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-500 dark:from-orange-400 dark:to-amber-300">
+              Zero Manual Back & Forth.
+            </span>
+          </h2>
+        </div>
+
+        {/* Tab Selection Bar */}
+        <div className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto pb-4 scrollbar-none mb-12">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 ${
+                activeTab === tab.id
+                  ? "bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 shadow-lg shadow-orange-500/20 scale-105"
+                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 shadow-sm"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Active Content Visual Stage */}
+        <AnimatePresence mode="wait">
           <motion.div
-            className="relative w-full max-w-md lg:max-w-lg"
-            style={{ rotateX, rotateY }}
+            key={activeTab}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 lg:p-12 shadow-2xl backdrop-blur-xl"
           >
-            {/* Gradient Frame */}
-            <div className="relative w-full p-[3px] rounded-3xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 shadow-2xl shadow-orange-950/10">
-              <div className="w-full h-full bg-slate-900 rounded-[21px] overflow-hidden relative group">
-                <Image
-                  src={body}
-                  alt="Merchant using SalesmanPro E-Commerce OS"
-                  width={600}
-                  height={600}
-                  className="w-full h-auto object-cover aspect-square opacity-95 group-hover:scale-105 transition-transform duration-700 ease-out"
-                  priority
-                  loader={({ src }) => src}
-                />
-                
-                {/* Store Status Overlay Tag */}
-                <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-2 font-mono">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Store Engine Active 24/7
-                </div>
+            {/* Left Narrative Column */}
+            <div className="lg:col-span-5 space-y-6 text-left">
+              <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                {activeContent.title}
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm md:text-base">
+                {activeContent.description}
+              </p>
+
+              <div className="space-y-3 pt-2">
+                {activeContent.metrics.map((m, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200/80 dark:border-slate-800 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">{m.label}</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">{m.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Floating Stat Cards */}
-            <StatCard
-              icon={<BuildingStorefrontIcon className="w-6 h-6" />}
-              value={10000}
-              suffix="+"
-              label="Active Independent Merchants"
-              className="absolute -bottom-6 -left-4 md:-left-8"
-              mouseX={mouseX}
-              mouseY={mouseY}
-            />
-            
-            <StatCard
-              icon={<BanknotesIcon className="w-6 h-6 text-emerald-600" />}
-              value={100}
-              suffix="%"
-              label="Automated M-PESA Verification"
-              className="absolute -top-6 -right-4 md:-right-8"
-              mouseX={mouseX}
-              mouseY={mouseY}
-            />
-          </motion.div>
-        </motion.div>
-
-        {/* Right Content Area */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          className="space-y-8 order-1 lg:order-2 text-left"
-        >
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1 bg-orange-100/80 text-orange-700 rounded-full text-xs font-bold uppercase tracking-wider">
-            <SparklesIcon className="w-4 h-4 text-orange-600" />
-            Built for Modern Commerce
-          </motion.div>
-
-          <motion.h2
-            variants={itemVariants}
-            className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]"
-          >
-            Your Complete Online Store. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">
-              Zero Manual Back & Forth.
-            </span>
-          </motion.h2>
-
-          <motion.p variants={itemVariants} className="text-base md:text-lg text-slate-600 leading-relaxed">
-            At <span className="font-bold text-slate-900">SalesmanPro</span>, we replace tedious DM conversations with a full self-service e-commerce operating system. Give your customers a seamless web catalog where they browse, check out with M-PESA STK Push, and select nationwide delivery options—all on autopilot.
-          </motion.p>
-
-          <motion.div variants={itemVariants} className="space-y-3.5 pt-2">
-            {[
-              "Custom store domain with instant setup & zero coding",
-              "Direct M-PESA Paybill, Till & STK Push auto-reconciliation",
-              "Integrate and manage your courier routes at checkout"
-            ].map((text, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <CheckBadgeIcon className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700 font-medium text-sm md:text-base">{text}</span>
+            {/* Right Mock UI Stage */}
+            <div className="lg:col-span-7 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                  <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">
+                    Active Module: {activeTab}
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-slate-400 dark:text-slate-500">Live Workspace Sync</span>
               </div>
-            ))}
-          </motion.div>
 
-          {/* Action CTAs */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-4">
-            {!session ? (
-              <button 
-                onClick={handleGoogleSignIn}
-                className="rounded-full bg-orange-600 hover:bg-orange-700 text-white font-extrabold px-8 py-3.5 shadow-lg shadow-orange-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-center"
-              >
-                Launch Store Free
-              </button>
-            ) : (
-              <Link
-                href="/dashboards"
-                className="rounded-full bg-orange-600 hover:bg-orange-700 text-white font-extrabold px-8 py-3.5 shadow-lg shadow-orange-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-center"
-              >
-                Go to Merchant Dashboard
-              </Link>
-            )}
-            
-            <button 
-              onClick={() => {
-                const featuresSection = document.getElementById("features");
-                featuresSection?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="rounded-full border border-slate-300 hover:border-slate-400 text-slate-700 font-bold px-8 py-3.5 hover:bg-slate-50 transition-all duration-200 text-center"
-            >
-              Explore Features
-            </button>
-          </motion.div>
-        </motion.div>
+              {/* Dynamic UI Render simulation based on tab */}
+              {activeTab === "ai-studio" && (
+                <div className="space-y-4 text-xs text-left">
+                  <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm">
+                    <span className="text-slate-400 font-mono text-[10px]">AI MARKETING STUDIO</span>
+                    <div className="text-slate-900 dark:text-white font-bold">Generate Promo Campaign: Summer Collection</div>
+                    <div className="flex gap-2 pt-2">
+                      <span className="px-2 py-1 rounded bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 font-mono text-[10px] border border-orange-200 dark:border-orange-800/40">Instagram Ad Copy ✓</span>
+                      <span className="px-2 py-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-mono text-[10px] border border-amber-200 dark:border-amber-800/40">SEO Meta Tags ✓</span>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-mono shadow-sm">
+                    &quot;Elevate your look with our premium collection. Instant checkout available via M-PESA!&quot;
+                  </div>
+                </div>
+              )}
 
+              {activeTab === "whatsapp" && (
+                <div className="space-y-3 text-xs text-left">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300">
+                    ✓ Customer opted-in for SMS & WhatsApp receipt notifications.
+                  </div>
+                  <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 shadow-sm">
+                    <div className="text-slate-400 dark:text-slate-500 text-[10px]">AUTOMATED REPLY</div>
+                    &quot;Your order #8402 has been confirmed! Courier dispatch queued for Nairobi delivery.&quot;
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "pos-inventory" && (
+                <div className="space-y-3 text-xs text-left">
+                  <div className="flex justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <span className="text-slate-800 dark:text-slate-200">Main Store POS Counter</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">Terminal Active</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex justify-between items-center shadow-sm">
+                    <div>
+                      <div className="text-slate-900 dark:text-white font-bold">Leather Boots (Size 43)</div>
+                      <div className="text-slate-400 dark:text-slate-500 text-[10px]">SKU: LTH-BTS-43</div>
+                    </div>
+                    <span className="text-amber-600 dark:text-amber-400 font-extrabold text-sm">In Stock: 4</span>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "analytics" && (
+                <div className="space-y-4 text-xs text-left">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="text-slate-500 dark:text-slate-400">Gross Margin</div>
+                      <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">42.8%</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="text-slate-500 dark:text-slate-400">Net Profit</div>
+                      <div className="text-2xl font-black text-slate-900 dark:text-white">KES 104,200</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );

@@ -1,84 +1,167 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion as Motion } from "framer-motion";
-import Link from "next/link";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  ArrowRightIcon, 
+  CheckCircleIcon, 
+  SparklesIcon,
+  BoltIcon,
+  ShieldCheckIcon
+} from "@heroicons/react/24/outline";
 
-const Join = () => {
-  const formRef = useRef<HTMLFormElement>(null);
+export default function Join() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
-  const handleJoin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic for form submission
-    console.log("Form submitted!");
+    if (!email) return;
+
+    setStatus("loading");
+    // Simulate API submission delay
+    setTimeout(() => {
+      setStatus("success");
+      setEmail("");
+    }, 1200);
   };
 
   return (
-    <section id="contact" className="relative px-6 sm:px-16 lg:px-24 py-24 bg-gray-50 overflow-hidden">
-      {/* Radial Gradient Background */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center">
-        <div className="w-[800px] h-[800px] bg-gradient-to-r from-purple-200 to-indigo-100 rounded-full blur-3xl opacity-50"></div>
+    <section id="join" className="relative py-24 sm:py-32 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden transition-colors duration-300">
+      
+      {/* Background Radial Ambient Glow */}
+      <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center opacity-70 dark:opacity-30">
+        <div className="w-[600px] h-[600px] bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300 rounded-full blur-[140px]" />
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto text-center p-8 sm:p-12 lg:p-16 rounded-3xl bg-white shadow-2xl border border-gray-100">
-        {/* Animated Headline */}
-        <Motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          Ready to <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-yellow-400">Transform Your Sales?</span>
-        </Motion.h2>
+      <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="relative p-8 sm:p-14 lg:p-16 rounded-3xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-2xl backdrop-blur-xl overflow-hidden">
+          
+          {/* Top Edge Gradient Accent */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-amber-400 to-yellow-400" />
 
-        {/* Sub-headline */}
-        <Motion.p
-          className="mt-4 text-lg text-gray-600"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          Join thousands of professionals who are closing more deals and growing their business.
-        </Motion.p>
-
-        {/* Form Section */}
-        <Motion.div
-          className="mt-12 w-full"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          <form
-            ref={formRef}
-            onSubmit={handleJoin}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <input
-              type="email"
-              name="user_email"
-              placeholder="Enter your professional email"
-              required
-              className="flex-1 px-5 py-4 text-gray-800 placeholder-gray-400 bg-gray-100 border-2 border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-            />
-            <button
-              type="submit"
-              className="flex-shrink-0 flex items-center justify-center space-x-2 px-8 py-4 font-bold text-white bg-gradient-to-r from-pink-600 to-yellow-400 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+          {/* Section Header */}
+          <div className="text-center max-w-2xl mx-auto space-y-4">
+            
+            {/* Pill Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="inline-block"
             >
-              <span>Start Free Trial</span>
-              <ArrowRightIcon className="h-5 w-5" />
-            </button>
-          </form>
-          <p className="mt-4 text-sm text-gray-500">
-            No credit card required. Cancel anytime.
-          </p>
-        </Motion.div>
+              <span className="text-xs font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/60 px-4 py-1.5 rounded-full border border-orange-200 dark:border-orange-800/40 inline-flex items-center gap-1.5 shadow-sm">
+                <SparklesIcon className="w-3.5 h-3.5" />
+                Start Growing Today
+              </span>
+            </motion.div>
+
+            {/* Main Title */}
+            <motion.h2
+              className="text-3xl sm:text-5xl font-black tracking-tight leading-tight"
+              initial={{ opacity: 0, y: -15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              Ready to Accelerate <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-500">
+                Your Business Sales?
+              </span>
+            </motion.h2>
+
+            {/* Description */}
+            <motion.p
+              className="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed"
+              initial={{ opacity: 0, y: -15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              Join hundreds of businesses using SalesmanPro to automate M-PESA checkouts, inventory control, and AI-powered WhatsApp sales.
+            </motion.p>
+          </div>
+
+          {/* Form & Dynamic Response Stage */}
+          <motion.div
+            className="mt-10 max-w-xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+          >
+            <AnimatePresence mode="wait">
+              {status === "success" ? (
+                <motion.div
+                  key="success-box"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-2 shadow-sm"
+                >
+                  <CheckCircleIcon className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                  <h3 className="text-lg font-extrabold text-emerald-950 dark:text-emerald-100">
+                    You&apos;re on the access list!
+                  </h3>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 max-w-sm mx-auto">
+                    Check your inbox shortly to complete setting up your SalesmanPro store.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form-box"
+                  onSubmit={handleSubmit}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your work email address"
+                    required
+                    className="flex-1 px-5 py-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 shadow-inner"
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === "loading"}
+                    className="flex-shrink-0 flex items-center justify-center gap-2 px-8 py-4 text-xs font-black uppercase tracking-wider text-slate-950 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100"
+                  >
+                    {status === "loading" ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                        <span>Processing...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <span>Get Started Free</span>
+                        <ArrowRightIcon className="h-4 w-4 stroke-[3]" />
+                      </>
+                    )}
+                  </button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+
+            {/* Feature Trust Badges */}
+            <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center justify-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <CheckCircleIcon className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                Free 14-day trial
+              </span>
+              <span className="flex items-center gap-1.5">
+                <BoltIcon className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                Instant M-PESA setup
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheckIcon className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                No credit card required
+              </span>
+            </div>
+          </motion.div>
+
+        </div>
       </div>
     </section>
   );
-};
-
-export default Join;
+}
