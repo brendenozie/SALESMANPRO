@@ -2,7 +2,7 @@
  * app/api/webhooks/whatsapp/route.ts
  *
  * Meta WhatsApp Cloud API Webhook.
- * Handles GET challenge verification and fast, asynchronous POST event ingestion via BullMQ.
+ * GET challenge verification and fast POST ingestion via BullMQ.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -15,27 +15,21 @@ import {
 } from "@/lib/whatsapp/webhook";
 import { whatsappRepository } from "@/lib/whatsapp/repository";
 import { enqueueWhatsAppEvent } from "@/lib/whatsapp/queue/queue";
-import { decrypt } from "@/lib/crypto";
+import { decryptWhatsAppAppSecret } from "@/lib/whatsapp/credentials";
+import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
 
 function createCorrelationId() {
   return crypto.randomUUID();
 }
 
-/**
- * ============================================================
- * GET: META WEBHOOK VERIFICATION
- * ============================================================
- */
+function allowUnsignedWebhooks() {
+  return process.env.WHATSAPP_ALLOW_UNSIGNED_WEBHOOK === "true";
+}
+
 export async function GET(req: NextRequest) {
   const mode = req.nextUrl.searchParams.get("hub.mode");
   const token = req.nextUrl.searchParams.get("hub.verify_token");
   const challenge = req.nextUrl.searchParams.get("hub.challenge");
-
-  console.log("[WHATSAPP_WEBHOOK_VERIFY]", {
-    mode,
-    hasToken: Boolean(token),
-    hasChallenge: Boolean(challenge),
-  });
 
   if (mode !== "subscribe" || !token || !challenge) {
     return new NextResponse("Invalid verification request.", { status: 400 });
@@ -47,17 +41,14 @@ export async function GET(req: NextRequest) {
     const expectedBuffer = Buffer.from(expected, "utf8");
 
     if (tokenBuffer.length !== expectedBuffer.length) {
-      console.warn("[WHATSAPP_WEBHOOK_VERIFY] Token length mismatch");
       return new NextResponse("Forbidden", { status: 403 });
     }
 
     const valid = crypto.timingSafeEqual(tokenBuffer, expectedBuffer);
     if (!valid) {
-      console.warn("[WHATSAPP_WEBHOOK_VERIFY] Invalid verify token");
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    console.log("[WHATSAPP_WEBHOOK_VERIFY] Verification successful");
     return new NextResponse(challenge, {
       status: 200,
       headers: { "Content-Type": "text/plain" },
@@ -68,14 +59,10 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/**
- * ============================================================
- * POST: META WEBHOOK EVENT INGESTION
- * ============================================================
- */
 export async function POST(req: NextRequest) {
   const correlationId = createCorrelationId();
   const rawBody = await req.text();
+  const signature = req.headers.get("x-hub-signature-256");
 
   let payload: ReturnType<typeof parseMetaWebhook>;
   try {
@@ -94,8 +81,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const signature = req.headers.get("x-hub-signature-256");
-
   try {
     for (const entry of payload.entry ?? []) {
       for (const change of entry.changes ?? []) {
@@ -104,23 +89,13 @@ export async function POST(req: NextRequest) {
 
         if (!phoneNumberId) continue;
 
-        // 1. Resolve tenant account from trusted phoneNumberId
         const account = await whatsappRepository.findAccountByPhoneNumberId(phoneNumberId);
         if (!account || !account.isActive) {
           console.warn("[WHATSAPP_UNKNOWN_ACCOUNT]", { phoneNumberId, correlationId });
           continue;
         }
 
-        // 2. Validate HMAC SHA-256 signature
-        let appSecret = process.env.WHATSAPP_APP_SECRET;
-        if (account.appSecretEncrypted && account.appSecretIv && account.appSecretTag) {
-          appSecret = decrypt({
-            value: account.appSecretEncrypted,
-            iv: account.appSecretIv,
-            tag: account.appSecretTag,
-          });
-        }
-
+        const appSecret = decryptWhatsAppAppSecret(account);
         if (appSecret) {
           const valid = verifyMetaWebhookSignature(rawBody, signature, appSecret);
           if (!valid) {
@@ -131,11 +106,16 @@ export async function POST(req: NextRequest) {
             });
             return NextResponse.json({ success: false, error: "Invalid signature." }, { status: 401 });
           }
+        } else if (!allowUnsignedWebhooks()) {
+          console.error("[WHATSAPP_MISSING_APP_SECRET]", {
+            accountId: account.id,
+            correlationId,
+          });
+          return NextResponse.json({ success: false, error: "Invalid signature." }, { status: 401 });
         }
 
         await whatsappRepository.touchAccount(account.id);
 
-        // 3. Persist incoming webhook event
         await whatsappRepository.persistWebhookEvent({
           companyId: account.companyId,
           accountId: account.id,
@@ -145,7 +125,6 @@ export async function POST(req: NextRequest) {
           payload: value,
         });
 
-        // 4. Ingest Message Events
         for (const metaMessage of value?.messages ?? []) {
           const contactInfo = value.contacts?.find((c) => c.wa_id === metaMessage.from);
 
@@ -159,7 +138,11 @@ export async function POST(req: NextRequest) {
 
           if (!normalized) continue;
 
-          // Resolve contact & conversation
+          const businessPhone = normalizePhoneNumber(account.phoneNumber);
+          if (businessPhone && normalized.phoneNumber === businessPhone) {
+            continue;
+          }
+
           const contact = await whatsappRepository.findOrCreateContact({
             companyId: account.companyId,
             accountId: account.id,
@@ -177,7 +160,6 @@ export async function POST(req: NextRequest) {
             customerName: normalized.displayName,
           });
 
-          // Persist inbound message with deduplication protection
           const persisted = await whatsappRepository.persistInboundMessage({
             companyId: account.companyId,
             accountId: account.id,
@@ -187,15 +169,9 @@ export async function POST(req: NextRequest) {
           });
 
           if (persisted.duplicate) {
-            console.info("[WHATSAPP_DUPLICATE_MESSAGE]", {
-              whatsappMessageId: normalized.providerMessageId,
-              conversationId: conversation.id,
-              correlationId,
-            });
             continue;
           }
 
-          // 5. Enqueue to BullMQ for fast asynchronous processing
           await enqueueWhatsAppEvent({
             accountId: account.id,
             companyId: account.companyId,
@@ -206,7 +182,6 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // 6. Delivery Status Events (SENT, DELIVERED, READ, FAILED)
         for (const status of value?.statuses ?? []) {
           if (!status.id || !status.status) continue;
 
@@ -234,7 +209,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Return immediate success to Meta
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("[WHATSAPP_WEBHOOK_PROCESSING_ERROR]", {

@@ -1,37 +1,30 @@
 import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/adminAuth";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function DELETE(req: Request, { params }: RouteParams) {
   try {
+    const auth = await requireWhatsAppAdmin(req);
     const { id } = await params;
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get("companyId");
-
-    if (!id || !companyId) {
-      return formatResponse(
-        false,
-        null,
-        "Missing template ID or companyId",
-        400,
-      );
-    }
 
     await prisma.whatsAppTemplate.deleteMany({
       where: {
         id,
-        companyId,
+        companyId: auth.companyId,
       },
     });
 
     try {
-      await cacheDel(`admin:whatsapp:templates:${companyId}`);
-    } catch (e) {}
+      await cacheDel(`admin:whatsapp:templates:${auth.companyId}`);
+    } catch {
+      // ignore
+    }
 
     return formatResponse(true, { id }, "Template deleted successfully", 200);
   } catch (error) {
-    return formatResponse(false, null, "Failed to delete template", 500);
+    return unauthorizedResponse(error);
   }
 }

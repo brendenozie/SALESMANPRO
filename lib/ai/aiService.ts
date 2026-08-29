@@ -102,7 +102,7 @@ export class CentralAIService {
         description: `AI Text Generation (${model.displayName})`,
         idempotencyKey: context.idempotencyKey,
         usageData: {
-          capability: "TEXT",
+          capability: context.capability ?? "TEXT",
           provider: output.provider,
           model: output.model,
           promptTokens: output.promptTokens,

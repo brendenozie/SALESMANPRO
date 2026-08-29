@@ -1,12 +1,15 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/adminAuth";
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireWhatsAppAdmin(req);
+    const companyId = auth.companyId;
     const body = await req.json();
-    const { companyId, templateId, audienceSegment, customNumbers } = body;
+    const { templateId, audienceSegment, customNumbers } = body;
 
-    if (!companyId || !templateId) {
+    if (!templateId) {
       return formatResponse(
         false,
         null,

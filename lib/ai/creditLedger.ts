@@ -233,6 +233,16 @@ export class AICreditLedger {
     const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, referenceId, usageData } =
       params;
 
+    if (idempotencyKey) {
+      const existingUsage = await prisma.aIUsage.findFirst({
+        where: { companyId, idempotencyKey },
+      });
+      if (existingUsage) {
+        const balance = await this.getBalance(companyId);
+        return { transactionId: existingUsage.id, balanceAfter: balance };
+      }
+    }
+
     const diff = reservedAmount - actualAmount;
 
     return prisma.$transaction(async (tx) => {
@@ -344,6 +354,18 @@ export class AICreditLedger {
     if (amount <= 0) {
       const balance = await this.getBalance(companyId);
       return { transactionId: "zero_refund", balanceAfter: balance };
+    }
+
+    if (idempotencyKey) {
+      const existingTx = await prisma.aICreditTransaction.findUnique({
+        where: { idempotencyKey },
+      });
+      if (existingTx) {
+        return {
+          transactionId: existingTx.id,
+          balanceAfter: existingTx.balanceAfter ?? (await this.getBalance(companyId)),
+        };
+      }
     }
 
     return prisma.$transaction(async (tx) => {

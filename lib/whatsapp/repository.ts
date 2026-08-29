@@ -159,11 +159,7 @@ export class WhatsAppRepository {
     const existing = await prisma.whatsAppConversation.findFirst({
       where: {
         companyId,
-        whatsAppAccountId: accountId,
-        whatsAppContactId: contactId,
-        status: {
-          in: ["OPEN", "PENDING", "WAITING_FOR_CUSTOMER", "WAITING_FOR_AGENT"],
-        },
+        phoneNumber: normalizedPhone,
       },
       include: conversationInclude,
       orderBy: {
@@ -172,7 +168,24 @@ export class WhatsAppRepository {
     });
 
     if (existing) {
-      return existing;
+      const reopenClosed =
+        existing.status === "CLOSED" || existing.status === "RESOLVED";
+      return prisma.whatsAppConversation.update({
+        where: { id: existing.id },
+        data: {
+          whatsAppAccountId: accountId,
+          whatsAppContactId: contactId,
+          waId,
+          customerName: customerName ?? existing.customerName,
+          lastCustomerMessageAt: new Date(),
+          lastMessageAt: new Date(),
+          customerWindowExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          ...(reopenClosed && !existing.humanHandoff
+            ? { status: "OPEN", mode: "AI", aiPaused: false }
+            : {}),
+        },
+        include: conversationInclude,
+      });
     }
 
     return prisma.whatsAppConversation.create({
@@ -365,7 +378,9 @@ export class WhatsAppRepository {
       }
     }
 
-    const created = await prisma.whatsAppMessage.create({
+    let created;
+    try {
+      created = await prisma.whatsAppMessage.create({
       data: {
         companyId: params.companyId,
         accountId: params.accountId,
@@ -392,6 +407,22 @@ export class WhatsAppRepository {
         processedByAI: false,
       },
     });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002" &&
+        message.providerMessageId
+      ) {
+        const existing = await this.findMessageByMetaId({
+          accountId: params.accountId,
+          whatsappMessageId: message.providerMessageId,
+        });
+        if (existing) {
+          return { message: existing, duplicate: true };
+        }
+      }
+      throw error;
+    }
 
     await prisma.whatsAppConversation.update({
       where: { id: params.conversationId },
@@ -433,7 +464,7 @@ export class WhatsAppRepository {
         text: params.body,
         status: params.status ?? "SENT",
         sentAt: new Date(),
-        isAI: params.isAI ?? true,
+        isAI: params.isAI ?? params.senderType === "AI",
         aiModel: params.aiModel,
       },
     });
@@ -490,7 +521,16 @@ export class WhatsAppRepository {
     correlationId?: string;
     payload: unknown;
   }) {
-    return prisma.whatsAppWebhookEvent.create({
+    if (params.eventId && params.accountId) {
+      const existing = await prisma.whatsAppWebhookEvent.findFirst({
+        where: { eventId: params.eventId, accountId: params.accountId },
+      });
+      if (existing) {
+        return { ...existing, duplicate: true as const };
+      }
+    }
+
+    const created = await prisma.whatsAppWebhookEvent.create({
       data: {
         companyId: params.companyId ?? undefined,
         accountId: params.accountId ?? undefined,
@@ -501,6 +541,7 @@ export class WhatsAppRepository {
         processed: false,
       },
     });
+    return { ...created, duplicate: false as const };
   }
 
   async markWebhookEventProcessed(eventId: string, error?: string | null) {
@@ -576,10 +617,10 @@ export class WhatsAppRepository {
     aiCreditsUsed?: number;
   }) {
     const totalTokens = params.inputTokens + params.outputTokens;
-    const creditsCost = params.aiCreditsUsed ?? Math.max(1, Math.ceil(totalTokens / 1000));
+    const creditsCost = params.aiCreditsUsed ?? 0;
 
-    // 1. Create legacy WhatsAppAIUsage record
-    const usage = await prisma.whatsAppAIUsage.create({
+    // Channel-level telemetry only. Authoritative credit charges live in creditLedger / AIUsage.
+    return prisma.whatsAppAIUsage.create({
       data: {
         companyId: params.companyId,
         conversationId: params.conversationId,
@@ -592,51 +633,6 @@ export class WhatsAppRepository {
         aiCreditsUsed: creditsCost,
       },
     });
-
-    // 2. Atomically deduct from company AI credit balance & record central AIUsage
-    try {
-      await prisma.$transaction(async (tx) => {
-        const updated = await tx.company.update({
-          where: { id: params.companyId },
-          data: {
-            aiCreditBalance: { decrement: creditsCost },
-          },
-          select: { aiCreditBalance: true },
-        });
-
-        await tx.aICreditTransaction.create({
-          data: {
-            companyId: params.companyId,
-            amount: -creditsCost,
-            type: "USAGE",
-            status: "COMPLETED",
-            description: `WhatsApp AI Concierge (${params.model})`,
-            referenceId: params.conversationId || usage.id,
-            balanceAfter: updated.aiCreditBalance,
-          },
-        });
-
-        await tx.aIUsage.create({
-          data: {
-            companyId: params.companyId,
-            capability: "WHATSAPP",
-            provider: params.provider,
-            model: params.model,
-            promptTokens: params.inputTokens,
-            completionTokens: params.outputTokens,
-            totalTokens,
-            creditsCost,
-            source: "WHATSAPP",
-            feature: "whatsapp_concierge",
-            status: "SUCCESS",
-          },
-        });
-      });
-    } catch (e) {
-      console.warn("[CENTRAL_CREDIT_DEDUCT_WARNING]", e);
-    }
-
-    return usage;
   }
 }
 

@@ -2,13 +2,15 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { WhatsAppTemplateCategory } from "@prisma/client";
+import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/adminAuth";
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const companyId = searchParams.get("companyId");
-
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID is missing", 400);
+  let companyId: string;
+  try {
+    const auth = await requireWhatsAppAdmin(req);
+    companyId = auth.companyId;
+  } catch (error) {
+    return unauthorizedResponse(error);
   }
 
   const cacheKey = `admin:whatsapp:templates:${companyId}`;
@@ -79,9 +81,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireWhatsAppAdmin(req);
+    const companyId = auth.companyId;
     const body = await req.json();
     const {
-      companyId,
       name,
       category,
       language,
@@ -91,7 +94,7 @@ export async function POST(req: Request) {
       variables,
     } = body;
 
-    if (!companyId || !name || !bodyText) {
+    if (!name || !bodyText) {
       return formatResponse(
         false,
         null,

@@ -1,66 +1,78 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/adminAuth";
+import { mapInboxConversation } from "@/lib/whatsapp/adminDto";
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const companyId = searchParams.get("companyId");
-  const status = searchParams.get("status") || "ALL";
-
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID is missing", 400);
-  }
-
   try {
-    const where: any = { companyId };
-    if (status !== "ALL") {
+    const auth = await requireWhatsAppAdmin(req);
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status") || "ALL";
+    const search = searchParams.get("search") || "";
+    const includeMessages = searchParams.get("includeMessages") === "true";
+
+    const where: Record<string, unknown> = { companyId: auth.companyId };
+    if (status === "PENDING_HANDOFF" || status === "HANDOFF_REQUIRED") {
+      where.OR = [{ humanHandoff: true }, { status: "WAITING_FOR_AGENT" }];
+    } else if (status === "RESOLVED") {
+      where.status = { in: ["RESOLVED", "CLOSED"] };
+    } else if (status === "ACTIVE") {
+      where.status = { in: ["OPEN", "PENDING", "WAITING_FOR_CUSTOMER"] };
+      where.humanHandoff = false;
+    } else if (status !== "ALL") {
       where.status = status;
+    }
+
+    if (search) {
+      where.AND = [
+        {
+          OR: [
+            { phoneNumber: { contains: search, mode: "insensitive" } },
+            { customerName: { contains: search, mode: "insensitive" } },
+            { waId: { contains: search, mode: "insensitive" } },
+          ],
+        },
+      ];
     }
 
     const conversations = await prisma.whatsAppConversation.findMany({
       where,
       include: {
-        contact: {
+        WhatsAppContact: {
           select: {
             id: true,
             name: true,
+            profileName: true,
             phoneNumber: true,
-            avatarUrl: true,
           },
         },
         messages: {
-          take: 1,
+          take: includeMessages ? 100 : 1,
           orderBy: { createdAt: "desc" },
           select: {
             id: true,
-            body: true,
+            text: true,
             type: true,
             direction: true,
+            senderType: true,
+            isAI: true,
             status: true,
             createdAt: true,
           },
         },
+        _count: { select: { messages: true } },
       },
-      orderBy: { lastActivityAt: "desc" },
-      take: 50,
+      orderBy: { lastMessageAt: "desc" },
+      take: 100,
     });
-
-    const formatted = conversations.map((conv) => ({
-      id: conv.id,
-      contact: conv.contact,
-      status: conv.status,
-      unreadCount: conv.unreadCount,
-      assignedAgentId: conv.assignedAgentId,
-      lastMessage: conv.messages[0] || null,
-      lastActivityAt: conv.lastActivityAt,
-    }));
 
     return formatResponse(
       true,
-      formatted,
+      conversations.map(mapInboxConversation),
       "Fetched conversations successfully",
       200,
     );
   } catch (error) {
-    return formatResponse(false, null, "Failed to retrieve conversations", 500);
+    return unauthorizedResponse(error);
   }
 }

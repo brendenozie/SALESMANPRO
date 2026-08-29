@@ -1,18 +1,19 @@
 /**
  * app/api/whatsapp/health/route.ts
- *
- * WhatsApp AI health check and diagnostics endpoint.
  */
 
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { redisConnection } from "@/lib/redis";
+import { getWhatsAppWorkerHealth } from "@/lib/whatsapp/workerHealth";
 
 export async function GET() {
   const startTime = Date.now();
-  const checks: Record<string, { status: "HEALTHY" | "UNHEALTHY" | "WARNING"; latencyMs?: number; message?: string }> = {};
+  const checks: Record<
+    string,
+    { status: "HEALTHY" | "UNHEALTHY" | "WARNING"; latencyMs?: number; message?: string }
+  > = {};
 
-  // 1. Database Check
   try {
     const dbStart = Date.now();
     await prisma.$queryRaw`SELECT 1`;
@@ -20,11 +21,10 @@ export async function GET() {
   } catch (dbError) {
     checks.database = {
       status: "UNHEALTHY",
-      message: dbError instanceof Error ? dbError.message : "Database ping failed",
+      message: "Database ping failed",
     };
   }
 
-  // 2. Redis Check
   try {
     const redisStart = Date.now();
     const pong = await redisConnection.ping();
@@ -32,25 +32,31 @@ export async function GET() {
       status: pong === "PONG" ? "HEALTHY" : "UNHEALTHY",
       latencyMs: Date.now() - redisStart,
     };
-  } catch (redisError) {
-    checks.redis = {
-      status: "UNHEALTHY",
-      message: redisError instanceof Error ? redisError.message : "Redis ping failed",
-    };
+  } catch {
+    checks.redis = { status: "UNHEALTHY", message: "Redis ping failed" };
   }
 
-  // 3. Environment Config Check
+  checks.worker = await getWhatsAppWorkerHealth();
+
   const hasVerifyToken = Boolean(process.env.WHATSAPP_VERIFY_TOKEN);
-  const hasAccessToken = Boolean(process.env.WHATSAPP_ACCESS_TOKEN);
-  const hasPhoneNumberId = Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID);
+  const hasAppSecret = Boolean(process.env.WHATSAPP_APP_SECRET);
   const hasAIKey = Boolean(process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY);
+  const tenantAccounts = await prisma.whatsAppAccount.count({
+    where: { isActive: true },
+  }).catch(() => 0);
 
   checks.configuration = {
-    status: hasVerifyToken && hasAccessToken && hasPhoneNumberId && hasAIKey ? "HEALTHY" : "WARNING",
-    message: `VerifyToken: ${hasVerifyToken}, AccessToken: ${hasAccessToken}, PhoneNumberId: ${hasPhoneNumberId}, AIProvider: ${hasAIKey}`,
+    status:
+      hasVerifyToken && hasAIKey && (hasAppSecret || tenantAccounts > 0)
+        ? "HEALTHY"
+        : "WARNING",
+    message: `Verify token configured: ${hasVerifyToken}. AI provider configured: ${hasAIKey}. Active WhatsApp accounts: ${tenantAccounts}.`,
   };
 
-  const isHealthy = checks.database.status === "HEALTHY" && checks.redis.status === "HEALTHY";
+  const isHealthy =
+    checks.database.status === "HEALTHY" &&
+    checks.redis.status === "HEALTHY" &&
+    checks.worker.status !== "UNHEALTHY";
 
   return NextResponse.json(
     {

@@ -1,4 +1,6 @@
 import prisma from "@/server/db/prismadb";
+import { encrypt } from "@/lib/crypto";
+import { decryptWhatsAppAccessToken } from "./credentials";
 
 export interface WhatsAppConfig {
   enabled: boolean;
@@ -31,83 +33,56 @@ export async function getWhatsAppConfig(
         where: { companyId },
       }),
       prisma.whatsAppAccount.findFirst({
-        where: { companyId, isDefault: true, isActive: true },
+        where: { companyId, isActive: true },
+        orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
       }),
     ]);
 
-    if (settings) {
-      // Resolve Access Token: Fall back to Account encrypted token, then environment variable
-      const accessToken =
-        settings.apiKeyEncrypted ||
-        account?.accessTokenEncrypted ||
-        process.env.WHATSAPP_ACCESS_TOKEN;
-
+    if (settings && account) {
+      const accessToken = decryptWhatsAppAccessToken(account);
       if (!accessToken) {
-        throw new Error(
-          "WhatsApp access token is not configured for this company",
-        );
+        throw new Error("WhatsApp access token is not configured for this company");
       }
-
-      // Resolve Phone Number ID: Fall back to default account
-      const phoneNumberId =
-        account?.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID;
 
       return {
         enabled: settings.enabled,
-        phoneNumberId: required(phoneNumberId, "WhatsApp phoneNumberId"),
+        phoneNumberId: required(account.phoneNumberId, "WhatsApp phoneNumberId"),
         accessToken,
         businessAccountId:
-          account?.businessAccountId ||
-          process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
-
+          account.businessAccountId || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
         aiEnabled: settings.autoReply,
-
-        aiModel:
-          settings.model || process.env.WHATSAPP_AI_MODEL || "gpt-5.6-luna",
-
+        aiModel: settings.model || process.env.WHATSAPP_AI_MODEL,
         aiSystemPrompt: settings.systemPrompt ?? undefined,
-
         allowAIOrderCreation: settings.canCreateOrders,
-
         allowAICancellation: settings.canCancelOrders,
-
         allowAIPaymentLinks: settings.canCheckPayments,
-
         allowAIAppointmentBooking: settings.canCreateAppointments,
-
         enableHumanHandoff: settings.humanHandoff,
       };
     }
   }
 
-  // Fallback default configuration using Environment Variables
   return {
     enabled: true,
-
     phoneNumberId: required(
       process.env.WHATSAPP_PHONE_NUMBER_ID,
       "WHATSAPP_PHONE_NUMBER_ID",
     ),
-
     accessToken: required(
       process.env.WHATSAPP_ACCESS_TOKEN,
       "WHATSAPP_ACCESS_TOKEN",
     ),
-
     businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID,
-
     aiEnabled: true,
-
-    aiModel: process.env.WHATSAPP_AI_MODEL || "gpt-5.6-luna",
-
+    aiModel: process.env.WHATSAPP_AI_MODEL,
     allowAIOrderCreation: false,
-
     allowAICancellation: false,
-
     allowAIPaymentLinks: true,
-
     allowAIAppointmentBooking: false,
-
     enableHumanHandoff: true,
   };
+}
+
+export function encryptSecret(plain: string) {
+  return encrypt(plain);
 }

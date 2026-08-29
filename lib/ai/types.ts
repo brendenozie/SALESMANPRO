@@ -40,6 +40,7 @@ export interface AIExecutionContext {
   userId?: string;
   source?: "WEB" | "WHATSAPP" | "API" | "AGENT" | "WORKER";
   feature?: string;
+  capability?: AICapability;
   idempotencyKey?: string;
   ipAddress?: string;
 }

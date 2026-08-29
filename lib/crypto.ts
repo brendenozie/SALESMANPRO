@@ -56,9 +56,6 @@ export function decrypt({
     throw new Error("Crypto Error: Missing value, iv, or tag for decryption.");
   }
 
-  // 2. Log lengths to verify data isn't truncated (IV should be 24 hex chars, Tag should be 32 hex chars)
-  console.log(`[Crypto Debug] IV length: ${iv.length}, Tag length: ${tag.length}, Value length: ${value.length}`);
-
   const decipher = crypto.createDecipheriv(
     algorithm,
     getEncryptionKey(),
