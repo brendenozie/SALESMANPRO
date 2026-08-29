@@ -58,12 +58,77 @@ type ActiveTab =
   | "credits"
   | "analytics";
 
-export default function AIStudio() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
+interface AIStudioProps {
+companyId: string;
+initialProduct?: {
+  productId?: string;
+  name?: string;
+  description?: string;
+  price?: string;
+  imageUrl?: string;
+  category?: string;
+  subcategory?: string;
+};
+}
+
+export default function AIStudio({ companyId, initialProduct }: AIStudioProps) {
+
+
+  // 1. Default to "marketing" tab if a product was passed in
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    initialProduct?.productId ? "marketing" : "overview"
+  );
   const [copiedText, setCopiedText] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [phoneForPayment, setPhoneForPayment] = useState("");
+
+  // ... (Keep existing AI Query Hooks and Mutations) ...
+
+  // 2. Pre-fill Text Tab State
+  const [textPrompt, setTextPrompt] = useState(
+    initialProduct?.name ? `${initialProduct.name} - ${initialProduct.description || ""} ${initialProduct.price || ""} ${initialProduct.category || ""} ${initialProduct.subcategory || ""}` : ""
+  );
+  const [textModel, setTextModel] = useState("gemini-2.0-flash");
+  const [textTone, setTextTone] = useState("compelling");
+  const [textType, setTextType] = useState(initialProduct?.productId ? "social_ad_copy" : "product_description");
+  const [generatedTextOutput, setGeneratedTextOutput] = useState<any>(null);
+
+  // 3. Pre-fill Image Tab State
+  const [imagePrompt, setImagePrompt] = useState(initialProduct?.name || "");
+  const [imageModel, setImageModel] = useState("dall-e-3");
+  const [imageAspectRatio, setImageAspectRatio] = useState<"1:1" | "16:9" | "9:16">("1:1");
+  const [imageAction, setImageAction] = useState<any>(initialProduct?.imageUrl ? "REPLACE_BACKGROUND" : "GENERATE_IMAGE");
+  const [generatedImages, setGeneratedImages] = useState<any[]>([]);
+
+  // (Keep Video Tab State as is)
+  const [videoPrompt, setVideoPrompt] = useState(initialProduct?.name || "");
+  const [videoDuration, setVideoDuration] = useState(5);
+  const [videoAspectRatio, setVideoAspectRatio] = useState<"16:9" | "9:16" | "1:1">("16:9");
+
+  // 4. Pre-fill Product Tab State
+  const [productName, setProductName] = useState(initialProduct?.name || "");
+  const [productCategory, setProductCategory] = useState(initialProduct?.category || "");
+  const [productSubcategory, setProductSubcategory] = useState(initialProduct?.subcategory || "");
+  const [productFeatures, setProductFeatures] = useState(initialProduct?.description || "");
+  const [productOutput, setProductOutput] = useState<any>(null);
+
+  // 5. Pre-fill Marketing Tab State (Target Destination)
+  const [marketingTopic, setMarketingTopic] = useState(
+    initialProduct?.name 
+      ? `Product: ${initialProduct.name}. Details: ${initialProduct.description || ""}. Price: Ksh ${initialProduct.price || ""}`
+      : ""
+  );
+  const [marketingType, setMarketingType] = useState("social_ad");
+  const [marketingDiscount, setMarketingDiscount] = useState("20% OFF");
+  const [marketingOutput, setMarketingOutput] = useState<any>(null);
+
+
+  // const [activeTab, setActiveTab] = useState<ActiveTab>("overview");
+  // const [copiedText, setCopiedText] = useState(false);
+  // const [showBuyModal, setShowBuyModal] = useState(false);
+  // const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  // const [phoneForPayment, setPhoneForPayment] = useState("");
 
   // AI Query Hooks
   const { data: creditsData, isLoading: creditsLoading, refetch: refetchCredits } = useAICredits();
@@ -82,35 +147,35 @@ export default function AIStudio() {
   const cancelJobMutation = useCancelAIGenerationJob();
 
   // Text Tab State
-  const [textPrompt, setTextPrompt] = useState("");
-  const [textModel, setTextModel] = useState("gemini-2.0-flash");
-  const [textTone, setTextTone] = useState("compelling");
-  const [textType, setTextType] = useState("product_description");
-  const [generatedTextOutput, setGeneratedTextOutput] = useState<any>(null);
+  // const [textPrompt, setTextPrompt] = useState("");
+  // const [textModel, setTextModel] = useState("gemini-2.0-flash");
+  // const [textTone, setTextTone] = useState("compelling");
+  // const [textType, setTextType] = useState("product_description");
+  // const [generatedTextOutput, setGeneratedTextOutput] = useState<any>(null);
 
   // Image Tab State
-  const [imagePrompt, setImagePrompt] = useState("");
-  const [imageModel, setImageModel] = useState("dall-e-3");
-  const [imageAspectRatio, setImageAspectRatio] = useState<"1:1" | "16:9" | "9:16">("1:1");
-  const [imageAction, setImageAction] = useState<any>("GENERATE_IMAGE");
-  const [generatedImages, setGeneratedImages] = useState<any[]>([]);
+  // const [imagePrompt, setImagePrompt] = useState("");
+  // const [imageModel, setImageModel] = useState("dall-e-3");
+  // const [imageAspectRatio, setImageAspectRatio] = useState<"1:1" | "16:9" | "9:16">("1:1");
+  // const [imageAction, setImageAction] = useState<any>("GENERATE_IMAGE");
+  // const [generatedImages, setGeneratedImages] = useState<any[]>([]);
 
   // Video Tab State
-  const [videoPrompt, setVideoPrompt] = useState("");
-  const [videoDuration, setVideoDuration] = useState(5);
-  const [videoAspectRatio, setVideoAspectRatio] = useState<"16:9" | "9:16" | "1:1">("16:9");
+  // const [videoPrompt, setVideoPrompt] = useState("");
+  // const [videoDuration, setVideoDuration] = useState(5);
+  // const [videoAspectRatio, setVideoAspectRatio] = useState<"16:9" | "9:16" | "1:1">("16:9");
 
   // Product Tab State
-  const [productName, setProductName] = useState("");
-  const [productCategory, setProductCategory] = useState("");
-  const [productFeatures, setProductFeatures] = useState("");
-  const [productOutput, setProductOutput] = useState<any>(null);
+  // const [productName, setProductName] = useState("");
+  // const [productCategory, setProductCategory] = useState("");
+  // const [productFeatures, setProductFeatures] = useState("");
+  // const [productOutput, setProductOutput] = useState<any>(null);
 
   // Marketing Tab State
-  const [marketingTopic, setMarketingTopic] = useState("");
-  const [marketingType, setMarketingType] = useState("social_ad");
-  const [marketingDiscount, setMarketingDiscount] = useState("20% OFF");
-  const [marketingOutput, setMarketingOutput] = useState<any>(null);
+  // const [marketingTopic, setMarketingTopic] = useState("");
+  // const [marketingType, setMarketingType] = useState("social_ad");
+  // const [marketingDiscount, setMarketingDiscount] = useState("20% OFF");
+  // const [marketingOutput, setMarketingOutput] = useState<any>(null);
 
   // Agents Tab State
   const [agentRole, setAgentRole] = useState<"SALES_ASSISTANT" | "SUPPORT_REP" | "MARKETING_ADVISOR" | "BUSINESS_ANALYST">("SALES_ASSISTANT");
@@ -188,6 +253,7 @@ export default function AIStudio() {
         action,
         name: productName,
         category: productCategory,
+        subcategory: productSubcategory,
         features: productFeatures ? productFeatures.split(",").map((f) => f.trim()) : undefined,
       });
       setProductOutput(res);
@@ -266,17 +332,11 @@ export default function AIStudio() {
       <header className="border-b border-slate-200 bg-white sticky top-0 z-30 px-4 sm:px-6 py-3.5 transition-all">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm">
-              <SparklesIcon className="w-5 h-5 text-indigo-400" />
-            </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-slate-900 tracking-tight">
                   SalesmanPro AI Studio
                 </h1>
-                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-300 rounded-md">
-                  Central Engine
-                </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
                 Tenant: <span className="font-semibold text-slate-800">{companyName}</span>

@@ -71,6 +71,10 @@ export default async function ClientInventoryPage({ params, searchParams }: Page
   return (
     <ClientInventoryClient
       companyId={companyId}
+      slug={slug}
+      page={page}
+      limit={limit}
+      searchParams={searchParams}
       productsData={productsData}
       categoriesData={categoriesData}
       pagination={meta}

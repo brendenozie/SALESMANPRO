@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
-import { ArrowTrendingDownIcon, ChevronLeftIcon, ChevronRightIcon, CubeTransparentIcon, GiftTopIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, ShoppingBagIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowTrendingDownIcon, ChevronLeftIcon, ChevronRightIcon, CubeTransparentIcon, GiftTopIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, ShoppingBagIcon, SparklesIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 interface ClientProps {
   companyId: string;
@@ -17,9 +17,13 @@ interface ClientProps {
     total: number;
     totalPages: number;
   }
+  slug: string;
+  page: number;
+  limit: number;
+  searchParams?: { page?: string };
 }
 
-export default function ClientInventoryClient({ pagination, companyId, categoriesData, productsData }: ClientProps) {
+export default function ClientInventoryClient({ pagination, companyId, categoriesData, productsData, slug }: ClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -55,6 +59,23 @@ export default function ClientInventoryClient({ pagination, companyId, categorie
   const handleAddProductClick = () => {
     setSelectedProduct(null);
     setShowAddToMarketModal(true);
+  };
+
+  // 2. Add handleAiMarketingClick inside ClientInventoryClient
+  const handleAiMarketingClick = (product: MarketListingForm) => {
+    // Option A: Router navigation to AI Studio page with encoded product parameters
+    const query = new URLSearchParams({
+      productId: product.id || "",
+      name: product.name,
+      description: product.description || "",
+      price: product.sellingPrice.toString(),
+      image: product.images?.[0] || "",
+      imageUrl: product.images?.[0] || "",
+      category: product.category?.name || product.category.displayName || product.category || "",
+      subcategory: product.subCategory?.name || "",
+    }).toString();
+    
+    router.push(`/admin/${slug}/ai-studio?${query}`);
   };
 
   const filteredProducts = useMemo(() => {
@@ -189,6 +210,15 @@ export default function ClientInventoryClient({ pagination, companyId, categorie
                     className="flex-grow flex justify-center items-center gap-2 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <PencilIcon className="w-4 h-4" /> Edit
+                  </button>
+                  {/* NEW: AI Marketing Generator Button */}
+                  <button 
+                    onClick={() => handleAiMarketingClick(product)}
+                    title="Generate AI Marketing Assets & Plan"
+                    className="flex items-center gap-1.5 px-3 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-indigo-500/20 transition-all active:scale-95"
+                  >
+                    <SparklesIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">AI Studio</span>
                   </button>
                   <button 
                     onClick={() => handleRemoveProductClick(product)}
