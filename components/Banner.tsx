@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { 
   SparklesIcon, 
   CheckCircleIcon, 
@@ -14,6 +16,8 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function HeroSection() {
+
+  const { data: session } = useSession();
   const [salesCount] = useState(248500);
   const [orderState, setOrderState] = useState<"processing" | "confirmed">("processing");
 
@@ -73,13 +77,24 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
           >
-            <button
-              onClick={handleSignIn}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-orange-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              <span>Start Free Trial</span>
-              <ArrowRightIcon className="w-4 h-4 stroke-[3]" />
-            </button>
+            {!session ? (
+                            <>                              
+                            <button
+                              onClick={handleSignIn}
+                              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-orange-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                              <span>Start Free Trial</span>
+                              <ArrowRightIcon className="w-4 h-4 stroke-[3]" />
+                            </button>
+                            </>
+                          ) : (
+                            <Link
+                              href="/dashboards"
+                              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-orange-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                              <span>View Dashboard</span>
+                            </Link>
+                          )}
 
             <a
               href="#interactive-demo"
@@ -104,7 +119,7 @@ export default function HeroSection() {
               <ShieldCheckIcon className="w-4 h-4 text-orange-500 flex-shrink-0" /> Zero Coding Required
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircleIcon className="w-4 h-4 text-orange-500 flex-shrink-0" /> 14-Day Free Access
+              <CheckCircleIcon className="w-4 h-4 text-orange-500 flex-shrink-0" /> Check inventory & sales in real-time
             </span>
           </motion.div>
 
