@@ -10,8 +10,8 @@ import type {
   MetaWebhookMessage,
   NormalizedWhatsAppMessage,
   WhatsAppMessageType,
-} from "@/lib/whatsapp/types";
-import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
+} from "./types";
+import { normalizePhoneNumber } from "./normalizePhone";
 
 /**
  * Validates Meta X-Hub-Signature-256 HMAC header.

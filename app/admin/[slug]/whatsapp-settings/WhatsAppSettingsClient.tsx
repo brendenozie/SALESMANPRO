@@ -103,11 +103,11 @@ export default function WhatsAppSettingsClient({
   const fetchCreditBalance = async () => {
     setIsFetchingBalance(true);
     try {
-      const res = await fetch(`/api/admin/credits/balance?companyId=${companyId}`);
+      const res = await fetch(`/api/ai/credits?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data = await res.json();
-        if (typeof data.credits === 'number') {
-          setAiCreditBalance(data.credits);
+        if (typeof data.balance === 'number') {
+          setAiCreditBalance(data.balance);
         }
       }
     } catch {
@@ -157,25 +157,25 @@ export default function WhatsAppSettingsClient({
     setIsTopUpLoading(true);
 
     try {
-      const res = await fetch('/api/admin/credits/topup', {
+      const res = await fetch('/api/ai/credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           companyId,
           packageId: selectedPackage.id,
-          credits: selectedPackage.credits,
-          amountKes: selectedPackage.priceKes,
-          phoneNumber: paymentPhone.trim(),
+          customCredits: selectedPackage.credits,
+          phone: paymentPhone.trim(),
+          paymentMethod: 'MPESA',
         }),
       });
 
       const data = await res.json();
-      if (res.ok && (data.success || data.status === 200)) {
-        toast.success(`M-Pesa payment prompt sent to ${paymentPhone}. Complete payment to add credits.`);
+      if (res.ok && data.success) {
+        toast.success(`AI Credits purchase initiated. Refilled wallet balance: ${data.newBalance ?? (aiCreditBalance + selectedPackage.credits)}`);
         setIsTopUpModalOpen(false);
-        setTimeout(fetchCreditBalance, 3000);
+        fetchCreditBalance();
       } else {
-        toast.error(data.message || 'Payment initiation failed.');
+        toast.error(data.error || data.message || 'Payment initiation failed.');
       }
     } catch {
       toast.error('Network error initiating top-up.');

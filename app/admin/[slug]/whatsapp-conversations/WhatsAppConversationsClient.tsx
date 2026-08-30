@@ -5,7 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import {
   ChatBubbleLeftEllipsisIcon,
   SparklesIcon,
-  UserCheckIcon,
+  CheckIcon,
   CheckCircleIcon,
   XMarkIcon,
   MagnifyingGlassIcon,
@@ -267,18 +267,17 @@ export default function WhatsAppConversationsClient({
 
                     <td className="p-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          log.handledBy === "AI"
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${log.handledBy === "AI"
                             ? "bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20"
                             : log.handledBy === "HUMAN"
-                            ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
-                            : "bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20"
-                        }`}
+                              ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
+                              : "bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20"
+                          }`}
                       >
                         {log.handledBy === "AI" ? (
                           <SparklesIcon className="h-3 w-3" />
                         ) : (
-                          <UserCheckIcon className="h-3 w-3" />
+                          <CheckIcon className="h-3 w-3" />
                         )}
                         {log.handledBy}
                       </span>
@@ -301,15 +300,14 @@ export default function WhatsAppConversationsClient({
 
                     <td className="p-4">
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${
-                          log.status === "RESOLVED"
+                        className={`inline-block px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${log.status === "RESOLVED"
                             ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
                             : log.status === "HANDOFF_REQUIRED"
-                            ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"
-                            : log.status === "ARCHIVED"
-                            ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700"
-                            : "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"
-                        }`}
+                              ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"
+                              : log.status === "ARCHIVED"
+                                ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700"
+                                : "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"
+                          }`}
                       >
                         {log.status.replace("_", " ")}
                       </span>
@@ -367,30 +365,28 @@ export default function WhatsAppConversationsClient({
                 return (
                   <div
                     key={msg.id}
-                    className={`flex flex-col ${
-                      isUser ? "items-start" : "items-end"
-                    }`}
+                    className={`flex flex-col ${isUser ? "items-start" : "items-end"
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="text-[9px] font-bold uppercase text-slate-400">
                         {isUser
                           ? selectedLog.customerName
                           : isAi
-                          ? "AI Engine"
-                          : "Human Agent"}
+                            ? "AI Engine"
+                            : "Human Agent"}
                       </span>
                       <span className="text-[8px] text-slate-400 font-mono">
                         {msg.timestamp}
                       </span>
                     </div>
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-sm ${
-                        isUser
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-sm ${isUser
                           ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700/60"
                           : isAi
-                          ? "bg-teal-600 text-white rounded-br-none"
-                          : "bg-emerald-600 text-white rounded-br-none"
-                      }`}
+                            ? "bg-teal-600 text-white rounded-br-none"
+                            : "bg-emerald-600 text-white rounded-br-none"
+                        }`}
                     >
                       {msg.text}
                     </div>
