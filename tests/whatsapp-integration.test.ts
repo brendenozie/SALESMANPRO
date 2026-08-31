@@ -191,6 +191,65 @@ describe("Multi-Tenant Isolation Guardrails", () => {
   });
 });
 
+// ============================================================
+// 5. Admin DTO Mapping & Inbox Model Transformation
+// ============================================================
+describe("Admin DTO Mapping & Status Rules", () => {
+  it("should map sender types correctly for customer, AI, and agent", () => {
+    const { mapSender, mapConversationUiStatus } = require("../lib/whatsapp/adminDto");
+    assert.strictEqual(mapSender("CUSTOMER", false), "USER");
+    assert.strictEqual(mapSender("AI", true), "AI");
+    assert.strictEqual(mapSender("AGENT", false), "AGENT");
+
+    assert.strictEqual(mapConversationUiStatus("OPEN", false), "ACTIVE");
+    assert.strictEqual(mapConversationUiStatus("OPEN", true), "PENDING_HANDOFF");
+    assert.strictEqual(mapConversationUiStatus("RESOLVED", false), "RESOLVED");
+    assert.strictEqual(mapConversationUiStatus("CLOSED", false), "RESOLVED");
+  });
+
+  it("should map inbox conversation shape for frontend TanStack Query consumers", () => {
+    const { mapInboxConversation } = require("../lib/whatsapp/adminDto");
+    const mockDbConv = {
+      id: "conv_123",
+      customerName: "Alice Wanjiku",
+      phoneNumber: "254712345678",
+      status: "OPEN",
+      mode: "AI",
+      humanHandoff: false,
+      aiPaused: false,
+      aiIntent: "pricing_inquiry",
+      startedAt: new Date("2026-08-30T10:00:00Z"),
+      lastMessageAt: new Date("2026-08-30T10:05:00Z"),
+      WhatsAppContact: {
+        name: "Alice Wanjiku",
+        profileName: "Alice",
+        phoneNumber: "254712345678",
+      },
+      messages: [
+        {
+          id: "msg_1",
+          text: "How much is the Nike Air Max?",
+          senderType: "CUSTOMER",
+          isAI: false,
+          status: "DELIVERED",
+          createdAt: new Date("2026-08-30T10:05:00Z"),
+        },
+      ],
+      _count: { messages: 1 },
+    };
+
+    const mapped = mapInboxConversation(mockDbConv as any);
+    assert.strictEqual(mapped.id, "conv_123");
+    assert.strictEqual(mapped.customerName, "Alice Wanjiku");
+    assert.strictEqual(mapped.phoneNumber, "254712345678");
+    assert.strictEqual(mapped.status, "ACTIVE");
+    assert.strictEqual(mapped.aiHandled, true);
+    assert.strictEqual(mapped.lastMessage, "How much is the Nike Air Max?");
+    assert.strictEqual(mapped.messages.length, 1);
+    assert.strictEqual(mapped.messages[0].sender, "USER");
+  });
+});
+
 console.log(`\n========================================`);
 console.log(`Test Results: ${passed} Passed, ${failed} Failed`);
 console.log(`========================================\n`);

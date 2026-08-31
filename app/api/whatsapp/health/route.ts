@@ -16,7 +16,7 @@ export async function GET() {
 
   try {
     const dbStart = Date.now();
-    await prisma.$queryRaw`SELECT 1`;
+    await prisma.company.findFirst({ select: { id: true } });
     checks.database = { status: "HEALTHY", latencyMs: Date.now() - dbStart };
   } catch (dbError) {
     checks.database = {

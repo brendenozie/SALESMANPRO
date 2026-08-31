@@ -12,5 +12,8 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["workers/**/*.ts", "server/db/prismadb.ts"]
+  "ts-node": {
+    "transpileOnly": true
+  },
+  "include": ["workers/**/*.ts", "tests/**/*.ts", "lib/**/*.ts", "server/db/prismadb.ts"]
 }
