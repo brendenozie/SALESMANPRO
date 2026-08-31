@@ -2,8 +2,8 @@
 import SignInClient from "./SignInClient";
 
 export const metadata = {
-  title: "ghuba – Sign In",
-  description: "Sign in to Ghuba",
+  title: "SalesmanPro – Sign In",
+  description: "Sign in to SalesmanPro",
 };
 
 export default function SignInPage() {

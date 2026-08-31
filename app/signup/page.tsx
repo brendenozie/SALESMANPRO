@@ -1,12 +1,10 @@
-// File: app/signin/page.tsx
-
 import SignUpClient from "./SignUpClient";
 
-export default async function SignInPage() {
+export default async function SignUpPage() {
   return <SignUpClient />;
 }
 
 export const metadata = {
-  title: "ghuba – Sign Up",
-  description: "Sign up for Ghuba",
+  title: "SalesmanPro – Sign Up",
+  description: "Create your SalesmanPro account",
 };

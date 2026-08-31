@@ -29,13 +29,8 @@ export default function TokenSignIn() {
       });
 
       if (result?.ok) {
-        // 1. Remove token from URL
         router.replace(window.location.pathname, { scroll: false });
-
-        // 2. Force server components (RootLayout) to re-run
         router.refresh();
-      } else {
-        console.error("Token sign-in failed:", result?.error);
       }
     };
 

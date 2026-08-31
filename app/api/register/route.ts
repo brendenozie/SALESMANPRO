@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/server/db/prismadb";
+import { readAuthContextFromCookieHeader, resolveReturnContext, contextFromHostFallback } from "@/lib/auth/context";
+import { isBusinessAdminSignupKind, normalizeHost } from "@/lib/auth/domain";
+import { ensureConsumerForCompany, initialRoleForSignup } from "@/lib/auth/provision";
+import { createEmailVerificationToken, sendVerificationEmail } from "@/lib/auth/verification";
 
-// ---------------------------
-// GLOBAL CORS HEADERS
-// ---------------------------
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -23,9 +24,6 @@ function withCors(json: any, status = 200, extraHeaders: Record<string, string> 
   });
 }
 
-// ---------------------------
-// OPTIONS (PRE-FLIGHT)
-// ---------------------------
 export function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
@@ -33,69 +31,90 @@ export function OPTIONS() {
   });
 }
 
+function originHost(req: Request): string {
+  const origin = req.headers.get("origin") || req.headers.get("referer") || "";
+  try {
+    if (origin) return normalizeHost(new URL(origin).hostname);
+  } catch {
+    /* ignore */
+  }
+  return normalizeHost(req.headers.get("host"));
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, password } = body;
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    const callbackUrl = typeof body.callbackUrl === "string" ? body.callbackUrl : undefined;
 
     if (!name || !email || !password) {
-      return withCors(
-        { error: "All fields are required." },
-        400
-      );
+      return withCors({ error: "All fields are required." }, 400);
+    }
+
+    if (body.role || body.signupType || body.tenantId || body.companyId) {
+      // Client-supplied privilege fields are ignored. Context is server-resolved.
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
-
     if (existingUser) {
-      return withCors(
-        { error: "Email already registered." },
-        409
-      );
+      return withCors({ error: "Email already registered." }, 409);
     }
 
-    const origin = req.headers.get("origin") || "";
-    const isSalesmanPro = origin.includes("salesmanpro.site");
+    const cookieHeader = req.headers.get("cookie");
+    let ctx = readAuthContextFromCookieHeader(cookieHeader);
+    if (!ctx && callbackUrl) {
+      ctx = await resolveReturnContext(callbackUrl);
+    }
+    if (!ctx) {
+      ctx = contextFromHostFallback(originHost(req));
+    }
 
+    const role = await initialRoleForSignup(ctx);
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
-        password:hashedPassword,
-        role: isSalesmanPro ? "ADMIN" : "USER",
+        password: hashedPassword,
+        role,
+        emailVerified: false,
       },
     });
 
-    if(!isSalesmanPro) {
+    if (!isBusinessAdminSignupKind(ctx.kind)) {
+      const host = ctx.returnHost;
+      const slug = ctx.tenantSlug;
       const company = await prisma.company.findFirst({
-        where: { domain: origin.replace("www.", "") },
+        where: {
+          OR: [
+            { domain: host },
+            { domain: `www.${host}` },
+            ...(slug ? [{ slug }, { domain: slug }] : []),
+          ],
+        },
+        select: { id: true },
       });
-
       if (company) {
-        await prisma.consumer.upsert({
-            where: { userId: newUser.id },
-            update: {},
-            create: {
-              companyId: company.id,
-              userId: newUser.id,
-            },
-            include: { user: true }
-          });
+        await ensureConsumerForCompany(newUser.id, company.id);
       }
     }
 
+    const token = await createEmailVerificationToken(email);
+    await sendVerificationEmail(email, token, ctx.returnUrl).catch(() => null);
+
     return withCors(
-      { message: "User registered successfully.", user: { id: newUser.id, email: newUser.email } },
-      201
+      {
+        message: "User registered successfully. Verify your email before signing in.",
+        requiresVerification: true,
+        user: { id: newUser.id, email: newUser.email },
+      },
+      201,
     );
   } catch (error) {
     console.error("Registration error:", error);
-    return withCors(
-      { error: "Internal Server Error." },
-      500
-    );
+    return withCors({ error: "Internal Server Error." }, 500);
   }
 }

@@ -12,12 +12,16 @@ export enum Role {
 // Extend User interface to include Consumer model fields
 interface IUser extends DefaultUser {
   id: string;
-  role?: Role;
+  role?: Role | string;
   phone?: string;
   username?: string;
   bio?: string;
   address?: string;
   profilePicture?: string;
+  emailVerified?: boolean | null;
+  isActive?: boolean | null;
+  companyId?: string | null;
+  hasTenantAccess?: boolean;
   cardNumber?: string;
   cardExpiry?: string;
   cvv?: string;

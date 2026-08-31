@@ -1,12 +1,50 @@
 import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import { AUTH_HOST, classifyHost } from "@/lib/auth/domain";
+import { canAccessDashboard } from "@/lib/auth/authorization";
+import { attachAuthContextFromRequest } from "@/lib/auth/context";
 
-const PRIMARY_HOST = "salesmanpro.site";
-const AUTH_DOMAIN = "auth.salesmanpro.site";
+const PRIMARY_HOST_NAME = "salesmanpro.site";
 
 export const config = {
   matcher: ["/((?!_next/|.*\\..*).*)"],
 };
+
+function tokenCookieName() {
+  return process.env.NODE_ENV === "production"
+    ? "__Secure-next-auth.session-token"
+    : "next-auth.session-token";
+}
+
+const PUBLIC_AUTH_PATHS = [
+  "/signin",
+  "/signup",
+  "/verify-email",
+  "/unauthorized",
+  "/logout",
+  "/desktop-login",
+  "/api/auth",
+  "/api/register",
+];
+
+function isPublicAuthPath(pathname: string) {
+  return PUBLIC_AUTH_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`) || pathname.startsWith("/api/auth"),
+  );
+}
+
+const OPERATOR_PREFIXES = [
+  "/dashboards",
+  "/stores",
+  "/admin",
+  "/clients",
+  "/agents",
+  "/users",
+];
+
+function isOperatorPath(pathname: string) {
+  return OPERATOR_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
 
 export default async function middleware(
   request: NextRequest,
@@ -20,16 +58,38 @@ export default async function middleware(
     userAgent.includes("SalesmanProDesktop") ||
     userAgent.includes("SalesmanProAndroid");
 
-  let session = null;
+  const host = request.headers.get("host")?.split(":")[0] || "";
+  const fullHost = request.headers.get("host") || "";
+  const isLocalHost =
+    host === "localhost" || host === "127.0.0.1" || fullHost.endsWith(":3000");
 
-  if (isDesktop) {
+  if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
+    const res = NextResponse.next();
+    await attachAuthContextFromRequest(request, res);
+    return res;
+  }
+
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
+  if (host.startsWith("www.")) {
+    return NextResponse.redirect(
+      `https://${host.replace("www.", "")}${pathname}${url.search}`,
+    );
+  }
+
+  let session = null;
+  const needsToken =
+    isDesktop ||
+    isOperatorPath(pathname) ||
+    (classifyHost(host).kind === "hub" && pathname === "/");
+
+  if (needsToken) {
     session = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET!,
-      cookieName:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token",
+      cookieName: tokenCookieName(),
     });
   }
 
@@ -47,36 +107,64 @@ export default async function middleware(
     return NextResponse.redirect(new URL("/dashboards", request.url));
   }
 
-  const host = request.headers.get("host")?.split(":")[0] || "";
-  const fullHost = request.headers.get("host") || "";
-  const isLocalHost =
-    host === "localhost" || host === "127.0.0.1" || fullHost.endsWith(":3000");
+  const classified = classifyHost(host);
+  const isHub = classified.kind === "hub" || isLocalHost || host === AUTH_HOST;
 
-  if (pathname.startsWith("/api/")) {
+  if (isHub && isOperatorPath(pathname) && !isPublicAuthPath(pathname)) {
+    if (!session) {
+      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      authUrl.searchParams.set("callbackUrl", request.url);
+      return NextResponse.redirect(authUrl);
+    }
+    if (session.emailVerified === false) {
+      const verifyUrl = new URL("/verify-email", request.url);
+      verifyUrl.searchParams.set("email", String(session.email || ""));
+      return NextResponse.redirect(verifyUrl);
+    }
+    if (
+      !canAccessDashboard({
+        role: session.role as string,
+        companyId: session.companyId as string | undefined,
+        emailVerified: session.emailVerified as boolean | null,
+        isActive: session.isActive as boolean | null,
+        hasTenantAccess: session.hasTenantAccess as boolean | undefined,
+      })
+    ) {
+      return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
+    }
+  }
+
+  if (
+    isHub &&
+    pathname === "/" &&
+    session &&
+    canAccessDashboard({
+      role: session.role as string,
+      companyId: session.companyId as string | undefined,
+      emailVerified: session.emailVerified as boolean | null,
+      isActive: session.isActive as boolean | null,
+      hasTenantAccess: session.hasTenantAccess as boolean | undefined,
+    })
+  ) {
+    return NextResponse.redirect(new URL("/dashboards", request.url));
+  }
+
+  if (host === PRIMARY_HOST_NAME || isLocalHost || host === AUTH_HOST) {
     return NextResponse.next();
   }
 
-  if (host.startsWith("www.")) {
-    return NextResponse.redirect(
-      `https://${host.replace("www.", "")}${pathname}`,
-    );
-  }
-
-  if (host === PRIMARY_HOST || isLocalHost || host === AUTH_DOMAIN) {
+  if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
     return NextResponse.next();
   }
 
   if (
-    pathname.startsWith("/signin") ||
-    pathname.startsWith("/signup") ||
     pathname.startsWith("/dashboards") ||
     pathname.startsWith("/stores") ||
-    pathname.startsWith("/admin")
+    pathname === "/admin"
   ) {
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Subdomain Routing (e.g. tenant.salesmanpro.site)
   if (host.endsWith(".salesmanpro.site")) {
     const subdomain = host.replace(".salesmanpro.site", "");
     if (subdomain && subdomain !== "www") {
@@ -92,10 +180,9 @@ export default async function middleware(
     }
   }
 
-  // Custom Domain Tenant Routing (e.g. ghuba.shop)
   if (
     host &&
-    host !== PRIMARY_HOST &&
+    host !== PRIMARY_HOST_NAME &&
     !host.endsWith(".salesmanpro.site") &&
     !isLocalHost
   ) {

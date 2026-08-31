@@ -1,8 +1,9 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, useMemo } from "react";
+import { classifyHost, signupCopy } from "@/lib/auth/domain";
 
 // --- Heroicons ---
 const MailIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -92,7 +93,6 @@ const InputField = ({
 
 export default function SignUpClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
-  const router = useRouter();
   
   // Track the specific provider that is loading
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
@@ -104,6 +104,14 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     confirmPassword: "" 
   });
   const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const originKind = useMemo(() => {
+    try {
+      return classifyHost(new URL(callbackUrl).hostname).kind;
+    } catch {
+      return "hub" as const;
+    }
+  }, [callbackUrl]);
+  const copy = signupCopy(originKind);
 
   // Separate credentials providers from social providers
   const { credentialProvider, socialProviders } = useMemo(() => {
@@ -134,24 +142,16 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
     try {
       // Replace this with actual API request (to your backend)
-      const res = await fetch(`/api/register`, { // Adjust to your actual apiBaseUrl if needed
+      const res = await fetch(`/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, callbackUrl }),
       });
       const json = await res.json();
 
-      if (!res.ok) throw new Error(json.message || "Registration failed");
+      if (!res.ok) throw new Error(json.error || json.message || "Registration failed");
 
-      localStorage.setItem("callbackUrl", callbackUrl);
-      
-      // Automatically sign in the user
-      await signIn("credentials-email-password", {
-        redirect: true,
-        callbackUrl: callbackUrl,
-        email: data.email,
-        password: data.password,
-      });
+      window.location.href = `/verify-email?email=${encodeURIComponent(data.email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`;
 
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
@@ -195,10 +195,10 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
             </div>
             
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              Create Your Account
+              {copy.title}
             </h2>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Your sales success starts here.
+              {copy.subtitle}
               <br />
               <span className="text-xs text-yellow-500">powered by salesmanpro</span>
             </p>

@@ -90,6 +90,7 @@ const InputField = ({
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const authError = params.get("error");
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +112,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
   const handleRegister = () => {
     const registerUrl = new URL("https://auth.salesmanpro.site/signup");
-    registerUrl.searchParams.set("callbackUrl", window.location.origin);
+    registerUrl.searchParams.set("callbackUrl", callbackUrl);
     window.location.href = registerUrl.toString();
   };
 
@@ -201,11 +202,15 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           </>
         )}
 
-        {/* --- Error Handling --- */}
-        {error && (
+        {(error || authError) && (
           <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl text-red-700 dark:text-red-300 text-sm font-medium">
             <AlertTriangle className="h-5 w-5 mr-3" />
-            {error}
+            {error ||
+              (authError === "CredentialsSignin"
+                ? "Invalid email, password, or inactive account."
+                : authError === "OAuthAccountNotLinked"
+                  ? "Google sign-in failed. Try the same email you used before."
+                  : "Sign-in failed. Please try again.")}
           </div>
         )}
 

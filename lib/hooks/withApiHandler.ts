@@ -73,6 +73,7 @@ export function withApiHandler(
       }
 
       // --- Role-based Access Control ---
+      const requestPath = new URL(request.url).pathname;
       if (options.allowedRoles && options.allowedRoles.length > 0) {
         const userRole = context.user?.role?.toLowerCase();
         const allowedRolesLower = options.allowedRoles.map((role) =>
@@ -80,6 +81,17 @@ export function withApiHandler(
         );
 
         if (!userRole || !allowedRolesLower.includes(userRole)) {
+          return applyCors(
+            formatResponse(false, null, "Forbidden: Insufficient role", 403),
+          );
+        }
+      } else if (
+        options.requireAuth !== false &&
+        requestPath.startsWith("/api/admin") &&
+        context.user
+      ) {
+        const { isConsumerOnlyAccount } = await import("@/lib/auth/authorization");
+        if (isConsumerOnlyAccount(context.user)) {
           return applyCors(
             formatResponse(false, null, "Forbidden: Insufficient role", 403),
           );

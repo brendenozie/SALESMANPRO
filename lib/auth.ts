@@ -1,62 +1,39 @@
-// File: lib/auth.ts
-
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-// import { headers } from "next/headers";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-// import FacebookProvider from "next-auth/providers/facebook";
-// import AppleProvider from "next-auth/providers/apple";
-// import EmailProvider from "next-auth/providers/email";
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { decode, encode } from "next-auth/jwt";
+import { consumeHandoverToken } from "@/lib/auth/handover";
+import { canAccessDashboard } from "@/lib/auth/authorization";
+import { readAuthContextFromCookieHeader, resolveReturnContext, isAllowedReturnUrl, type AuthFlowContext } from "@/lib/auth/context";
+import { AUTH_HOST, HUB_URL } from "@/lib/auth/domain";
+import { applyLoginContext, provisionSignupRelationships } from "@/lib/auth/provision";
 
-const baseUrl = process.env.NEXTAUTH_URL!; // || process.env.NEXT_PUBLIC_NEXTAUTH_URL;
-// ⚠️ IMPORTANT: This secret MUST be the *exact same*
-// environment variable as your auth app.
-const aSharedSecret = process.env.NEXTAUTH_SECRET!; // || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!;
+const aSharedSecret = process.env.NEXTAUTH_SECRET!;
+const googleClientId = process.env.GOOGLE_CLIENT_ID!;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID!; // || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!; // || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!;
-
-// if (!aSharedSecret) {
-//   throw new Error("NEXTAUTH_SECRET is not set!");
-// }
-
-// Helper to find where the user is actually going
-const getRealTargetHost = (fullUrl: string, currentHost: string) => {
-  try {
-    const url = new URL(fullUrl, `https://${currentHost}`);
-    // Check for common redirect params
-    const target =
-      url.searchParams.get("target") || url.searchParams.get("callbackUrl");
-
-    if (target) {
-      return new URL(target).host.split(":")[0];
-    }
-  } catch (e) {
-    // console.error("Error parsing target host:", e);
-  }
-  return null;
+export type AuthRequestContext = {
+  host?: string;
+  cookieHeader?: string;
+  requestUrl?: string;
 };
 
-// ✅ Utility: find existing user by email
 async function findExistingUserByEmail(email: string) {
-  const user = await prisma.user.findUnique({ where: { email } });
-  return user || null;
+  return prisma.user.findUnique({
+    where: { email: email.trim().toLowerCase() },
+  });
 }
 
-// ✅ Utility: find Student/Educator/Parent by login code (passwordless flow)
 async function findUserByLoginCode(loginCode: string) {
   const student = await prisma.student.findUnique({
     where: { loginCode },
     include: { user: true },
   });
-  if (student)
-    return { user: student.user, role: student.levelStatus || "STUDENT" };
+  if (student) return { user: student.user, role: student.levelStatus || "STUDENT" };
 
   const educator = await prisma.educator.findUnique({
     where: { loginCode },
@@ -68,13 +45,13 @@ async function findUserByLoginCode(loginCode: string) {
     where: { loginCode },
     include: { user: true },
   });
-  if (consumer) return { user: consumer.user, role: "CONSUMER" };
+  if (consumer) return { user: consumer.user, role: consumer.user.role || "USER" };
 
   const salesAgent = await prisma.salesAgent.findUnique({
     where: { loginCode },
     include: { user: true },
   });
-  if (salesAgent) return { user: salesAgent.user, role: "SALES_AGENT" };
+  if (salesAgent) return { user: salesAgent.user, role: "AGENT" };
 
   const driver = await prisma.transportDriver.findUnique({
     where: { loginCode },
@@ -91,460 +68,388 @@ async function findUserByLoginCode(loginCode: string) {
   return null;
 }
 
-// ✅ Default user creation (OAuth signups only)
-async function createDefaultUser({
-  email,
-  name,
-  image,
-}: {
-  email: string;
-  name?: string;
-  image?: string;
-}) {
-  return prisma.user.create({
-    data: {
-      email,
-      name: name ?? "",
-      role: "USER", // Default role for new OAuth signups
-      image,
-    },
-  });
+async function resolveHasTenantAccess(userId: string, role?: string | null, companyId?: string | null) {
+  if (canAccessDashboard({ role, companyId, emailVerified: true, isActive: true })) {
+    return true;
+  }
+  const [owned, staff] = await Promise.all([
+    prisma.company.findFirst({ where: { userId }, select: { id: true } }),
+    prisma.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+  ]);
+  return !!(owned || staff);
 }
 
-// Add this helper inside or above your authOptions function
-const getTrueOrigin = (req: any) => {
-  // 1. Check the query params for callbackUrl
-  const callbackUrl = req?.query?.callbackUrl || "";
+async function resolveFlowContext(opts: AuthRequestContext): Promise<AuthFlowContext | null> {
+  const fromCookie = readAuthContextFromCookieHeader(opts.cookieHeader);
+  if (fromCookie) return fromCookie;
 
-  if (callbackUrl.startsWith("http")) {
+  if (opts.requestUrl) {
     try {
-      const url = new URL(callbackUrl);
-      return url.hostname.replace(/^www\./, "");
-    } catch (e) {
-      return "";
+      const url = new URL(opts.requestUrl);
+      const callbackUrl = url.searchParams.get("callbackUrl") || url.searchParams.get("target");
+      const resolved = await resolveReturnContext(callbackUrl);
+      if (resolved) return resolved;
+    } catch {
+      /* ignore */
     }
   }
 
-  // 2. Fallback to the current host if no callbackUrl is present
-  return (req?.headers?.host || "").split(":")[0].replace(/^www\./, "");
-};
+  return null;
+}
 
-const getTenantFromCallback = (url?: string) => {
-  if (!url) return null;
-  try {
-    const parsedUrl = new URL(url);
-    const host = parsedUrl.hostname;
-    const mainDomains = [
-      "salesmanpro.site",
-      "www.salesmanpro.site",
-      "auth.salesmanpro.site",
-    ];
+function sessionUserFromDb(user: {
+  id: string;
+  name?: string | null;
+  email: string;
+  role?: string | null;
+  phone?: string | null;
+  username?: string | null;
+  bio?: string | null;
+  address?: string | null;
+  profilePicture?: string | null;
+  image?: string | null;
+  emailVerified?: boolean | null;
+  isActive?: boolean | null;
+  companyId?: string | null;
+  hasTenantAccess?: boolean;
+}) {
+  return {
+    id: user.id,
+    name: user.name ?? undefined,
+    email: user.email,
+    role: (user.role || "USER") as any,
+    phone: user.phone ?? undefined,
+    username: user.username ?? undefined,
+    bio: user.bio ?? undefined,
+    address: user.address ?? undefined,
+    profilePicture: user.profilePicture ?? user.image ?? undefined,
+    emailVerified: user.emailVerified,
+    isActive: user.isActive !== false,
+    companyId: user.companyId ?? undefined,
+    hasTenantAccess: user.hasTenantAccess,
+  };
+}
 
-    if (mainDomains.includes(host)) return null;
+export const authOptions = (
+  ctx: string | AuthRequestContext = {},
+): NextAuthOptions => {
+  const requestCtx: AuthRequestContext =
+    typeof ctx === "string" ? { host: ctx } : ctx || {};
 
-    // Return the subdomain or custom domain
-    return host.replace(/^www\./, "");
-  } catch {
-    return null;
-  }
-};
+  return {
+    adapter: PrismaAdapter(prisma),
+    providers: [
+      CredentialsProvider({
+        id: "token-signin",
+        name: "Token Sign-In",
+        credentials: {
+          token: { label: "Token", type: "text" },
+        },
+        async authorize(credentials) {
+          if (!credentials?.token) return null;
+          try {
+            const decodedToken = await consumeHandoverToken(credentials.token);
+            if (!decodedToken || !decodedToken.email) return null;
 
-// Helper to extract tenant info
-const getTenantInfo = (host: string) => {
-  // Split host to remove port if present (e.g., localhost:3000)
-  const cleanHost = host.split(":")[0].toLowerCase();
-  // Use exact matches for main domains
-  // const mainDomains = [
-  //   "salesmanpro.site",
-  //   "www.salesmanpro.site",
-  //   // "auth.salesmanpro.site",
-  // ];
-  // These are the only domains where we want to trigger "Admin" logic
-  const hubDomains = ["salesmanpro.site", "www.salesmanpro.site", "localhost"];
-
-  // This is infrastructure; it's not a tenant, but it's not the "Admin" entry point either
-  const systemDomains = ["auth.salesmanpro.site"];
-
-  const isHub = hubDomains.includes(cleanHost);
-  const isSystem = systemDomains.includes(cleanHost);
-
-  // isMainApp remains true for both to prevent the code from looking for
-  // a company with the slug "auth" or "salesmanpro"
-  const isMainApp = isHub || isSystem;
-
-  // isMainApp is ONLY true if it is exactly one of the hub domains
-  // const isMainApp =   mainDomains.includes(cleanHost) || cleanHost.includes("localhost");
-
-  return { isMainApp, isHub, tenantIdentifier: cleanHost };
-};
-
-// export const authOptions: NextAuthOptions = {
-export const authOptions = (reqHost?: string): NextAuthOptions => ({
-  // httpOptions: {
-  //   timeout: 10000, // Increase to 10s for slower network environments
-  // },
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    CredentialsProvider({
-      // An ID for this custom provider
-      id: "token-signin",
-      name: "Token Sign-In",
-      credentials: {
-        token: { label: "Token", type: "text" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.token) {
-          // console.error("Authorize: No token provided.");
-          return null;
-        }
-
-        // 🚨 CRITICAL DEBUGGING LINE: Log the received token's length
-        // console.log(
-        //   `Authorize: Token received. Length: ${credentials.token.length}.`,
-        // );
-
-        try {
-          // Decode the token using the shared secret
-          const decodedToken = await decode({
-            token: credentials.token,
-            secret: aSharedSecret!,
-          });
-
-          if (!decodedToken || !decodedToken.email) {
-            // console.error(
-            //   "Authorize: Token decoding failed or no email/data found.",
-            // );
-            // // Log the result of the decode attempt if it failed without an exception
-            // console.log("Decoded Result (if available):", decodedToken);
+            return {
+              id: decodedToken.id as string,
+              name: decodedToken.name,
+              email: decodedToken.email,
+              image: decodedToken.image,
+              role: decodedToken.role,
+              emailVerified: decodedToken.emailVerified,
+              companyId: decodedToken.companyId,
+              hasTenantAccess: decodedToken.hasTenantAccess,
+            };
+          } catch {
             return null;
           }
+        },
+      }),
 
-          // 🚀 SUCCESS: Log the email/user ID to confirm decoding worked
-          // console.log(`Token Sign-In SUCCESS for email: ${decodedToken.email}`);
+      CredentialsProvider({
+        id: "credentials-email-password",
+        name: "Email & Password",
+        credentials: {
+          email: { label: "Email", type: "email" },
+          password: { label: "Password", type: "password" },
+        },
+        async authorize(credentials) {
+          if (!credentials?.email || !credentials?.password) return null;
 
-          // The decoded token is trusted. Return it as the user object.
-          // Note: Since this token comes from the other app, we trust its contents and skip a DB lookup here.
-          return {
-            id: decodedToken.id as string,
-            name: decodedToken.name,
-            email: decodedToken.email,
-            image: decodedToken.image,
-            role: decodedToken.role, // Pass through your custom properties
-            // ... add other properties from your token
-          };
-        } catch (error) {
-          // ❌ FAILURE: The error here is usually due to Expiration or Secret Mismatch
+          const userFoundInDb = await findExistingUserByEmail(credentials.email);
+          if (!userFoundInDb || !userFoundInDb.password) return null;
+          if (userFoundInDb.isActive === false) return null;
 
-          return null;
-        }
-      },
-    }),
+          const passwordMatch = await bcrypt.compare(
+            credentials.password,
+            userFoundInDb.password,
+          );
+          if (!passwordMatch) return null;
 
-    // ✅ Credentials: Email & Password
-    CredentialsProvider({
-      id: "credentials-email-password",
-      name: "Email & Password",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+          const hasTenantAccess = await resolveHasTenantAccess(
+            userFoundInDb.id,
+            userFoundInDb.role,
+            userFoundInDb.companyId,
+          );
 
-        const userFoundInDb = await findExistingUserByEmail(credentials.email);
-        if (!userFoundInDb || !userFoundInDb.password) return null;
+          const flow = await resolveFlowContext(requestCtx);
+          await applyLoginContext(userFoundInDb.id, flow);
 
-        const passwordMatch = await bcrypt.compare(
-          credentials.password,
-          userFoundInDb.password,
-        );
-        if (!passwordMatch) return null;
+          return sessionUserFromDb({ ...userFoundInDb, hasTenantAccess });
+        },
+      }),
 
-        // ✅ Role detection logic
-        let determinedRole: string | undefined =
-          userFoundInDb.role || undefined;
-        const studentCheck = await prisma.student.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const educatorCheck = await prisma.educator.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const consumerCheck = await prisma.consumer.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const salesAgentCheck = await prisma.salesAgent.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
-        const clientCheck = await prisma.client.findUnique({
-          where: { userId: userFoundInDb.id },
-        });
+      CredentialsProvider({
+        id: "school-code-login",
+        name: "School Login Code",
+        credentials: {
+          loginCode: { label: "School Login Code", type: "text" },
+        },
+        async authorize(credentials) {
+          if (!credentials?.loginCode) return null;
+          if (
+            credentials.loginCode.length !== 6 ||
+            !/^\d+$/.test(credentials.loginCode)
+          )
+            return null;
 
-        if (studentCheck) determinedRole = "STUDENT";
-        else if (consumerCheck) determinedRole = "CONSUMER";
-        else if (salesAgentCheck) determinedRole = "SALES_AGENT";
-        else if (clientCheck) determinedRole = "CLIENT";
-        else if (educatorCheck) determinedRole = "EDUCATOR";
-        else determinedRole = userFoundInDb.role || "ADMIN";
+          const loginCodeResult = await findUserByLoginCode(credentials.loginCode);
+          if (!loginCodeResult || !loginCodeResult.user) return null;
 
-        return {
-          id: userFoundInDb.id,
-          name: userFoundInDb.name ?? undefined,
-          email: userFoundInDb.email,
-          role: determinedRole as any,
-          phone: userFoundInDb.phone ?? undefined,
-          username: userFoundInDb.username ?? undefined,
-          bio: userFoundInDb.bio ?? undefined,
-          address: userFoundInDb.address ?? undefined,
-          profilePicture:
-            userFoundInDb.profilePicture ?? userFoundInDb.image ?? undefined,
-        };
-      },
-    }),
+          const user = loginCodeResult.user;
+          if (user.isActive === false) return null;
 
-    // ✅ Passwordless School Login Code
-    CredentialsProvider({
-      id: "school-code-login",
-      name: "School Login Code",
-      credentials: {
-        loginCode: { label: "School Login Code", type: "text" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.loginCode) return null;
-        if (
-          credentials.loginCode.length !== 6 ||
-          !/^\d+$/.test(credentials.loginCode)
-        )
-          return null;
+          const hasTenantAccess = await resolveHasTenantAccess(
+            user.id,
+            (loginCodeResult.role as string) || user.role,
+            user.companyId,
+          );
 
-        const loginCodeResult = await findUserByLoginCode(
-          credentials.loginCode,
-        );
-        if (!loginCodeResult || !loginCodeResult.user) return null;
-
-        const user = loginCodeResult.user;
-        return {
-          id: user.id,
-          name: user.name ?? undefined,
-          email: user.email,
-          role: loginCodeResult.role as any,
-          phone: user.phone ?? undefined,
-          username: user.username ?? undefined,
-          bio: user.bio ?? undefined,
-          address: user.address ?? undefined,
-          profilePicture: user.profilePicture ?? user.image ?? undefined,
-        };
-      },
-    }),
-
-    // ✅ OAuth Providers
-    GoogleProvider({
-      clientId: googleClientId!,
-      clientSecret: googleClientSecret!,
-      allowDangerousEmailAccountLinking: true,
-      httpOptions: {
-        timeout: 40000,
-      },
-    }),
-    // FacebookProvider({
-    //   clientId: process.env.FACEBOOK_CLIENT_ID!,
-    //   clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    // }),
-    // AppleProvider({
-    //   clientId: process.env.APPLE_CLIENT_ID!,
-    //   clientSecret: process.env.APPLE_CLIENT_SECRET!,
-    // }),
-    // EmailProvider({
-    //   server: process.env.EMAIL_SERVER,
-    //   from: process.env.EMAIL_FROM,
-    // }),
-  ],
-
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
-    generateSessionToken: () =>
-      randomUUID?.() ?? randomBytes(32).toString("hex"),
-  },
-  // ✅ AUTO-LINK OAUTH LOGINS HERE
-  callbacks: {
-    async redirect({ url, baseUrl }) {
-      const HUB_URL = "https://salesmanpro.site";
-      const AUTH_HOST = new URL(baseUrl).hostname;
-
-      // 🚫 Logout must NEVER go through handover
-      if (url.includes("/logout")) {
-        return url.startsWith("/") ? `${baseUrl}${url}` : url;
-      }
-
-      // 🚫 Never handover on signout
-      if (url.includes("/api/auth/signout")) {
-        return baseUrl;
-      }
-
-      // const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
-      if (url.includes("/api/auth/handover")) {
-        return url; // 🚀 STOP processing immediately
-      }
-
-      let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
-
-      // 🔥 FIX: decode if encoded
-      try {
-        finalRedirectUrl = decodeURIComponent(finalRedirectUrl);
-      } catch (e) {
-        // ignore if already decoded
-      }
-
-      try {
-        const targetUrlObj = new URL(finalRedirectUrl);
-        const targetHost = targetUrlObj.hostname;
-        const targetPath = targetUrlObj.pathname;
-        const trueHost = targetHost;
-
-        // ✅ جلوگیری infinite loops
-        if (
-          finalRedirectUrl.includes("/api/auth/handover") ||
-          finalRedirectUrl.includes("/failure")
-        ) {
-          return finalRedirectUrl;
-        }
-
-        // ✅ Allow internal auth routes
-        if (targetHost === AUTH_HOST) {
-          if (targetPath.startsWith("/api/auth") || targetPath === "/signin") {
-            return finalRedirectUrl;
-          }
-        }
-
-        const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-
-        const handoverUrl = new URL("/api/auth/handover", baseUrl);
-
-        if (mainDomains.includes(trueHost)) {
-          handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
-        } else {
-          handoverUrl.searchParams.set("target", finalRedirectUrl);
-        }
-
-        return handoverUrl.toString();
-      } catch (error) {
-        return `${HUB_URL}/failure?reason=invalid_redirect&error=${encodeURIComponent(error instanceof Error ? error.message : "unknown_error")}`;
-      }
-    },
-    async signIn({ user, account, profile }) {
-      if (!account || account.provider === "credentials") return true;
-      if (!user.email) return false;
-
-      const host = reqHost || "";
-
-      const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
-
-      if (!isMainApp) {
-        // const possibleSlug = trueHost.split(".")[0];
-        const company = await prisma.company.findFirst({
-          where: {
-            OR: [{ domain: host || tenantIdentifier }],
-          },
-        });
-
-        if (company && user.id) {
-          // Link them to the consumer table so they have access to this specific tenant
-          await prisma.consumer.upsert({
-            where: {
-              userId_companyId: { userId: user.id, companyId: company.id },
-              // userId: user.id,
-              // companyId: company.id,
-            },
-            update: {}, // Do nothing if link already exists
-            create: {
-              userId: user.id,
-              companyId: company.id,
-            },
+          return sessionUserFromDb({
+            ...user,
+            role: (loginCodeResult.role as string) || user.role,
+            hasTenantAccess,
           });
+        },
+      }),
+
+      GoogleProvider({
+        clientId: googleClientId!,
+        clientSecret: googleClientSecret!,
+        allowDangerousEmailAccountLinking: true,
+        httpOptions: {
+          timeout: 40000,
+        },
+      }),
+    ],
+
+    session: {
+      strategy: "jwt",
+      maxAge: 30 * 24 * 60 * 60,
+      updateAge: 24 * 60 * 60,
+      generateSessionToken: () =>
+        randomUUID?.() ?? randomBytes(32).toString("hex"),
+    },
+    callbacks: {
+      async redirect({ url, baseUrl }) {
+        if (url.includes("/logout") || url.includes("/api/auth/signout")) {
+          return url.startsWith("/") ? `${baseUrl}${url}` : url;
         }
-      } else {
-        if (!isHub) {
-          // console.log(
-          //   `User ${user.email} signed in on auth domain. They will be linked to the tenant based on their callbackUrl after sign-in completes.`,
-          // );
-        } else {
-          if (isHub && user.id && (user as { role?: string }).role === "USER") {
-            // Only upgrade to ADMIN if they are signing in via the main Hub
-            await prisma.user.update({
+
+        if (
+          url.includes("/api/auth/handover") ||
+          url.includes("/failure") ||
+          url.includes("/unauthorized") ||
+          url.includes("/verify-email")
+        ) {
+          return url.startsWith("/") ? `${baseUrl}${url}` : url;
+        }
+
+        let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+        try {
+          finalRedirectUrl = decodeURIComponent(finalRedirectUrl);
+        } catch {
+          /* already decoded */
+        }
+
+        try {
+          const targetUrlObj = new URL(finalRedirectUrl);
+          const targetHost = targetUrlObj.hostname;
+          const targetPath = targetUrlObj.pathname;
+
+          if (targetHost === AUTH_HOST || targetHost === new URL(baseUrl).hostname) {
+            if (
+              targetPath.startsWith("/api/auth") ||
+              targetPath === "/signin" ||
+              targetPath === "/signup" ||
+              targetPath.startsWith("/verify-email")
+            ) {
+              return finalRedirectUrl;
+            }
+          }
+
+          const allowed = await isAllowedReturnUrl(finalRedirectUrl);
+          if (!allowed) {
+            return `${HUB_URL}/unauthorized?reason=invalid_callback`;
+          }
+
+          const handoverUrl = new URL("/api/auth/handover", baseUrl);
+          handoverUrl.searchParams.set("target", finalRedirectUrl);
+          return handoverUrl.toString();
+        } catch {
+          return `${HUB_URL}/unauthorized?reason=invalid_redirect`;
+        }
+      },
+      async signIn({ user, account }) {
+        if (
+          !account ||
+          account.provider === "credentials" ||
+          account.provider === "token-signin" ||
+          account.provider === "school-code-login" ||
+          account.provider === "credentials-email-password"
+        ) {
+          return true;
+        }
+        if (!user.email) return false;
+
+        const flow = await resolveFlowContext(requestCtx);
+        const existing = await prisma.user.findUnique({
+          where: { email: user.email.toLowerCase() },
+          select: { id: true, role: true, isActive: true },
+        });
+
+        if (existing?.isActive === false) return false;
+
+        if (existing) {
+          await applyLoginContext(existing.id, flow);
+        }
+
+        return true;
+      },
+      async jwt({ token, user }) {
+        if (user) {
+          let dbUser: {
+            role?: string | null;
+            emailVerified?: boolean | null;
+            isActive?: boolean | null;
+            companyId?: string | null;
+          } | null = null;
+          if (user.id) {
+            dbUser = await prisma.user.findUnique({
               where: { id: user.id },
-              data: { role: "ADMIN" },
+              select: {
+                role: true,
+                emailVerified: true,
+                isActive: true,
+                companyId: true,
+              },
             });
           }
+          const role = dbUser?.role || (user as any).role || "USER";
+          const companyId = dbUser?.companyId ?? (user as any).companyId;
+          const hasTenantAccess =
+            (user as any).hasTenantAccess ??
+            (await resolveHasTenantAccess(user.id, role, companyId));
+
+          Object.assign(token, {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: (user as any).phone,
+            username: (user as any).username,
+            bio: (user as any).bio,
+            address: (user as any).address,
+            role,
+            profilePicture: (user as any).profilePicture,
+            emailVerified:
+              dbUser?.emailVerified ?? (user as any).emailVerified,
+            isActive: dbUser?.isActive ?? (user as any).isActive,
+            companyId,
+            hasTenantAccess,
+          });
+        } else if (token.id && token.hasTenantAccess === undefined) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: String(token.id) },
+            select: {
+              role: true,
+              emailVerified: true,
+              isActive: true,
+              companyId: true,
+            },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.emailVerified = dbUser.emailVerified;
+            token.isActive = dbUser.isActive;
+            token.companyId = dbUser.companyId;
+            token.hasTenantAccess = await resolveHasTenantAccess(
+              String(token.id),
+              dbUser.role,
+              dbUser.companyId,
+            );
+          } else {
+            token.hasTenantAccess = false;
+          }
         }
-      }
-
-      // 2. DO NOT manually create the User or Account here.
-      // Returning true allows the PrismaAdapter to do it safely.
-      return true;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        Object.assign(token, {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          phone: (user as any).phone,
-          username: (user as any).username,
-          bio: (user as any).bio,
-          address: (user as any).address,
-          role: (user as any).role,
-          profilePicture: (user as any).profilePicture,
-        });
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      // if (!token.isActive) {
-      //   // ⛔ immediately invalidate session
-      //   return null;
-      // }
-
-      if (session.user) {
-        Object.assign(session.user, {
-          id: token.id as string,
-          name: token.name,
-          email: token.email,
-          phone: token.phone,
-          username: token.username,
-          bio: token.bio,
-          address: token.address,
-          role: token.role,
-          profilePicture: token.profilePicture,
-        });
-      }
-      return session;
-    },
-  },
-
-  secret: aSharedSecret, //process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/signin",
-  },
-  cookies: {
-    sessionToken: {
-      name:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax", // this is the default, but we set it explicitly for clarity
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        // 🚀 THE FIX: You MUST explicitly declare maxAge here when overriding cookies,
-        // otherwise Android treats it as a session-only cookie and kills it on exit.
-        maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+        return token;
+      },
+      async session({ session, token }) {
+        if (session.user) {
+          Object.assign(session.user, {
+            id: token.id as string,
+            name: token.name,
+            email: token.email,
+            phone: token.phone,
+            username: token.username,
+            bio: token.bio,
+            address: token.address,
+            role: token.role,
+            profilePicture: token.profilePicture,
+            emailVerified: token.emailVerified,
+            isActive: token.isActive,
+            companyId: token.companyId,
+            hasTenantAccess: token.hasTenantAccess,
+          });
+        }
+        return session;
       },
     },
-  },
-});
+    events: {
+      async createUser({ user }) {
+        if (!user?.id) return;
+        const flow = await resolveFlowContext(requestCtx);
+        if (flow) {
+          await provisionSignupRelationships(user.id, flow, { isNewUser: true });
+        }
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: true },
+        });
+      },
+    },
 
-// ✅ For Next.js App Router
+    secret: aSharedSecret,
+    pages: {
+      signIn: "/signin",
+      error: "/signin",
+    },
+    cookies: {
+      sessionToken: {
+        name:
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 30 * 24 * 60 * 60,
+        },
+      },
+    },
+  };
+};
+
 export const getAuthSession = () => getServerSession(authOptions());

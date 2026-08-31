@@ -5,21 +5,21 @@ import { StoreContextProvider } from "@/contexts/StoreContext";
 import { transformCompanyToStoreForm } from "@/utils/transformPrismaToStoreForm";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
+import { canAccessCompanyAdmin } from "@/lib/auth/authorization";
+import prisma from "@/server/db/prismadb";
 
 export const dynamic = "force-dynamic";
 
-// Allowed roles for dashboard access
-const ALLOWED_ADMIN_ROLES = new Set([
-  "ADMIN",
-  "USER",
-  "JUNIOR",
-  "SENIOR",
+const EDUCATION_ROLES = new Set([
   "STUDENT",
   "EDUCATOR",
-  "SCHOOL_DRIVER",
-  "STORE_DRIVER",
+  "HEADTEACHER",
   "PARENT",
-  "CONSUMER",
+  "JUNIOR",
+  "SENIOR",
+  "SOPHOMORE",
+  "FRESHMAN",
+  "SCHOOL_DRIVER",
 ]);
 
 interface Props {
@@ -31,30 +31,51 @@ export default async function AdminStoreLayout({ params, children }: Props) {
   const { slug } = await params;
   const session = await getAuthSession();
 
-  // 1. Authentication check
   if (!session?.user?.id) {
-    redirect("/auth/signin");
+    redirect(
+      "https://auth.salesmanpro.site/signin?callbackUrl=" +
+        encodeURIComponent(`https://salesmanpro.site/admin/${slug}`),
+    );
   }
 
-  const userRole = session.user.role?.toUpperCase() || "OTHER";
-
-  // 2. Authorization check
-  if (!ALLOWED_ADMIN_ROLES.has(userRole)) {
-    notFound();
+  const user = session.user as any;
+  if (user.emailVerified === false) {
+    redirect(`/verify-email?email=${encodeURIComponent(user.email || "")}`);
   }
 
-  // 3. Identifier resolution (Supports slug, ID, or fallback to user ID)
   const identifier = slug || session.user.id;
-
-  // 4. Cached company fetch using the page strategy
   const rawCompany = await findCompanyCached(identifier, "page");
 
   if (!rawCompany) {
     notFound();
   }
 
-  // 5. Transform raw Prisma data into StoreForm state
+  const staff = await prisma.staffProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { companyId: true },
+  });
+
+  const related =
+    canAccessCompanyAdmin({
+      user: {
+        id: session.user.id,
+        role: user.role,
+        companyId: user.companyId,
+        emailVerified: user.emailVerified,
+        isActive: user.isActive,
+      },
+      company: { id: rawCompany.id, userId: rawCompany.userId },
+      staffCompanyId: staff?.companyId,
+    }) ||
+    (EDUCATION_ROLES.has(String(user.role || "").toUpperCase()) &&
+      user.companyId === rawCompany.id);
+
+  if (!related) {
+    redirect("/unauthorized?reason=forbidden");
+  }
+
   const storeFormData = transformCompanyToStoreForm(rawCompany);
+  const userRole = session.user.role?.toUpperCase() || "USER";
 
   return (
     <StoreContextProvider
