@@ -90,8 +90,8 @@ export function withApiHandler(
         requestPath.startsWith("/api/admin") &&
         context.user
       ) {
-        const { isConsumerOnlyAccount } = await import("@/lib/auth/authorization");
-        if (isConsumerOnlyAccount(context.user)) {
+        const { canAccessDashboard, isConsumerOnlyAccount } = await import("@/lib/auth/authorization");
+        if (!canAccessDashboard(context.user) || isConsumerOnlyAccount(context.user)) {
           return applyCors(
             formatResponse(false, null, "Forbidden: Insufficient role", 403),
           );

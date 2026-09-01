@@ -11,6 +11,7 @@ import {
 } from "../lib/auth/domain";
 import { canAccessDashboard, hasDashboardRole, isConsumerOnlyAccount, isEmailVerifiedForAccess } from "../lib/auth/authorization";
 import { decodeAuthContext, encodeAuthContext, type AuthFlowContext } from "../lib/auth/context-cookie";
+import { matchesHandoverAudience } from "../lib/auth/handover";
 
 function check(name: string, fn: () => void) {
   try {
@@ -86,6 +87,14 @@ check("auth context cookie is signed and expires", () => {
   assert.equal(decoded?.returnHost, "acme.salesmanpro.site");
   assert.equal(decodeAuthContext(encoded.replace(/\./, ".tamper")), null);
   assert.equal(decodeAuthContext("not-a-token"), null);
+});
+
+check("handover token audience matching is strict", () => {
+  assert.equal(matchesHandoverAudience(undefined, "salesmanpro.site"), true);
+  assert.equal(matchesHandoverAudience("shop.example.com", "shop.example.com"), true);
+  assert.equal(matchesHandoverAudience("shop.example.com", "www.shop.example.com"), true);
+  assert.equal(matchesHandoverAudience("shop.example.com", "other.example.com"), false);
+  assert.equal(matchesHandoverAudience("shop.example.com", ""), false);
 });
 
 console.log("\nAll auth identity tests passed.");

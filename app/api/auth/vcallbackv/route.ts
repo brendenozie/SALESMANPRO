@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       emailVerified: (session.user as any).emailVerified,
       companyId: (session.user as any).companyId,
       hasTenantAccess: (session.user as any).hasTenantAccess,
-    });
+    }, { audienceHost: target.hostname });
 
     const destination = new URL(target.toString());
     destination.searchParams.set("auth_token", token);
