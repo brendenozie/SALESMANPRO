@@ -11,7 +11,8 @@ export default async function StoresLayout({ children }: { children: React.React
     );
   }
 
-  const user = session.user as any;
+  const user = session.user;
+  
   if (user.emailVerified === false) {
     redirect(`/verify-email?email=${encodeURIComponent(user.email || "")}`);
   }
