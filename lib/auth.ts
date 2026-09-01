@@ -1,6 +1,3 @@
-//@ts-ignore
-import "server-only";
-
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
@@ -11,10 +8,21 @@ import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { consumeHandoverToken } from "@/lib/auth/handover";
 import { canAccessDashboard } from "@/lib/auth/authorization";
-import { readAuthContextFromCookieHeader, resolveReturnContext, isAllowedReturnUrl, type AuthFlowContext } from "@/lib/auth/context";
+import {
+  readAuthContextFromCookieHeader,
+  resolveReturnContext,
+  isAllowedReturnUrl,
+  type AuthFlowContext,
+} from "@/lib/auth/context";
 import { AUTH_HOST, HUB_URL, normalizeHost } from "@/lib/auth/domain";
-import { applyLoginContext, provisionSignupRelationships } from "@/lib/auth/provision";
-import { createEmailVerificationToken, sendVerificationEmail } from "@/lib/auth/verification";
+import {
+  applyLoginContext,
+  provisionSignupRelationships,
+} from "@/lib/auth/provision";
+import {
+  createEmailVerificationToken,
+  sendVerificationEmail,
+} from "@/lib/auth/verification";
 
 const aSharedSecret = process.env.NEXTAUTH_SECRET!;
 const googleClientId = process.env.GOOGLE_CLIENT_ID!;
@@ -37,7 +45,8 @@ async function findUserByLoginCode(loginCode: string) {
     where: { loginCode },
     include: { user: true },
   });
-  if (student) return { user: student.user, role: student.levelStatus || "STUDENT" };
+  if (student)
+    return { user: student.user, role: student.levelStatus || "STUDENT" };
 
   const educator = await prisma.educator.findUnique({
     where: { loginCode },
@@ -49,7 +58,8 @@ async function findUserByLoginCode(loginCode: string) {
     where: { loginCode },
     include: { user: true },
   });
-  if (consumer) return { user: consumer.user, role: consumer.user.role || "USER" };
+  if (consumer)
+    return { user: consumer.user, role: consumer.user.role || "USER" };
 
   const salesAgent = await prisma.salesAgent.findUnique({
     where: { loginCode },
@@ -72,8 +82,14 @@ async function findUserByLoginCode(loginCode: string) {
   return null;
 }
 
-async function resolveHasTenantAccess(userId: string, role?: string | null, companyId?: string | null) {
-  if (canAccessDashboard({ role, companyId, emailVerified: true, isActive: true })) {
+async function resolveHasTenantAccess(
+  userId: string,
+  role?: string | null,
+  companyId?: string | null,
+) {
+  if (
+    canAccessDashboard({ role, companyId, emailVerified: true, isActive: true })
+  ) {
     return true;
   }
   const [owned, staff] = await Promise.all([
@@ -83,14 +99,17 @@ async function resolveHasTenantAccess(userId: string, role?: string | null, comp
   return !!(owned || staff);
 }
 
-async function resolveFlowContext(opts: AuthRequestContext): Promise<AuthFlowContext | null> {
+async function resolveFlowContext(
+  opts: AuthRequestContext,
+): Promise<AuthFlowContext | null> {
   const fromCookie = readAuthContextFromCookieHeader(opts.cookieHeader);
   if (fromCookie) return fromCookie;
 
   if (opts.requestUrl) {
     try {
       const url = new URL(opts.requestUrl);
-      const callbackUrl = url.searchParams.get("callbackUrl") || url.searchParams.get("target");
+      const callbackUrl =
+        url.searchParams.get("callbackUrl") || url.searchParams.get("target");
       const resolved = await resolveReturnContext(callbackUrl);
       if (resolved) return resolved;
     } catch {
@@ -156,8 +175,9 @@ export const authOptions = (
               typeof (req as any)?.headers?.get === "function"
                 ? (req as any).headers.get("host")
                 : (req as any)?.headers?.host;
-            const expectedHost =
-              normalizeHost(rawReqHost || requestCtx.host || "");
+            const expectedHost = normalizeHost(
+              rawReqHost || requestCtx.host || "",
+            );
             const decodedToken = await consumeHandoverToken(
               credentials.token,
               expectedHost,
@@ -190,7 +210,9 @@ export const authOptions = (
         async authorize(credentials) {
           if (!credentials?.email || !credentials?.password) return null;
 
-          const userFoundInDb = await findExistingUserByEmail(credentials.email);
+          const userFoundInDb = await findExistingUserByEmail(
+            credentials.email,
+          );
           if (!userFoundInDb || !userFoundInDb.password) return null;
           if (userFoundInDb.isActive === false) return null;
 
@@ -227,7 +249,9 @@ export const authOptions = (
           )
             return null;
 
-          const loginCodeResult = await findUserByLoginCode(credentials.loginCode);
+          const loginCodeResult = await findUserByLoginCode(
+            credentials.loginCode,
+          );
           if (!loginCodeResult || !loginCodeResult.user) return null;
 
           const user = loginCodeResult.user;
@@ -291,7 +315,10 @@ export const authOptions = (
           const targetHost = targetUrlObj.hostname;
           const targetPath = targetUrlObj.pathname;
 
-          if (targetHost === AUTH_HOST || targetHost === new URL(baseUrl).hostname) {
+          if (
+            targetHost === AUTH_HOST ||
+            targetHost === new URL(baseUrl).hostname
+          ) {
             if (
               targetPath.startsWith("/api/auth") ||
               targetPath === "/signin" ||
@@ -375,8 +402,7 @@ export const authOptions = (
             address: (user as any).address,
             role,
             profilePicture: (user as any).profilePicture,
-            emailVerified:
-              dbUser?.emailVerified ?? (user as any).emailVerified,
+            emailVerified: dbUser?.emailVerified ?? (user as any).emailVerified,
             isActive: dbUser?.isActive ?? (user as any).isActive,
             companyId,
             hasTenantAccess,
@@ -433,7 +459,9 @@ export const authOptions = (
         if (!user?.id) return;
         const flow = await resolveFlowContext(requestCtx);
         if (flow) {
-          await provisionSignupRelationships(user.id, flow, { isNewUser: true });
+          await provisionSignupRelationships(user.id, flow, {
+            isNewUser: true,
+          });
         }
         const existing = await prisma.user.findUnique({
           where: { id: user.id },
@@ -445,14 +473,18 @@ export const authOptions = (
           where: { id: user.id },
           data: {
             emailVerified:
-              existing.emailVerified === false ? false : existing.emailVerified ?? false,
+              existing.emailVerified === false
+                ? false
+                : (existing.emailVerified ?? false),
           },
         });
 
         if (existing.emailVerified !== true) {
           const token = await createEmailVerificationToken(existing.email);
           const callbackUrl = flow?.returnUrl || HUB_URL;
-          await sendVerificationEmail(existing.email, token, callbackUrl).catch(() => null);
+          await sendVerificationEmail(existing.email, token, callbackUrl).catch(
+            () => null,
+          );
         }
       },
     },
