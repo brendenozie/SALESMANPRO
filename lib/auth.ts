@@ -9,8 +9,9 @@ import bcrypt from "bcryptjs";
 import { consumeHandoverToken } from "@/lib/auth/handover";
 import { canAccessDashboard } from "@/lib/auth/authorization";
 import { readAuthContextFromCookieHeader, resolveReturnContext, isAllowedReturnUrl, type AuthFlowContext } from "@/lib/auth/context";
-import { AUTH_HOST, HUB_URL } from "@/lib/auth/domain";
+import { AUTH_HOST, HUB_URL, normalizeHost } from "@/lib/auth/domain";
 import { applyLoginContext, provisionSignupRelationships } from "@/lib/auth/provision";
+import { createEmailVerificationToken, sendVerificationEmail } from "@/lib/auth/verification";
 
 const aSharedSecret = process.env.NEXTAUTH_SECRET!;
 const googleClientId = process.env.GOOGLE_CLIENT_ID!;
@@ -145,10 +146,19 @@ export const authOptions = (
         credentials: {
           token: { label: "Token", type: "text" },
         },
-        async authorize(credentials) {
+        async authorize(credentials, req) {
           if (!credentials?.token) return null;
           try {
-            const decodedToken = await consumeHandoverToken(credentials.token);
+            const rawReqHost =
+              typeof (req as any)?.headers?.get === "function"
+                ? (req as any).headers.get("host")
+                : (req as any)?.headers?.host;
+            const expectedHost =
+              normalizeHost(rawReqHost || requestCtx.host || "");
+            const decodedToken = await consumeHandoverToken(
+              credentials.token,
+              expectedHost,
+            );
             if (!decodedToken || !decodedToken.email) return null;
 
             return {
@@ -422,10 +432,25 @@ export const authOptions = (
         if (flow) {
           await provisionSignupRelationships(user.id, flow, { isNewUser: true });
         }
+        const existing = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { email: true, emailVerified: true },
+        });
+        if (!existing?.email) return;
+
         await prisma.user.update({
           where: { id: user.id },
-          data: { emailVerified: true },
+          data: {
+            emailVerified:
+              existing.emailVerified === false ? false : existing.emailVerified ?? false,
+          },
         });
+
+        if (existing.emailVerified !== true) {
+          const token = await createEmailVerificationToken(existing.email);
+          const callbackUrl = flow?.returnUrl || HUB_URL;
+          await sendVerificationEmail(existing.email, token, callbackUrl).catch(() => null);
+        }
       },
     },
 

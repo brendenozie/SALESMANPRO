@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { encode, decode } from "next-auth/jwt";
 import { cacheGet, cacheSet } from "@/lib/cache";
 import { isAllowedReturnUrl } from "./context";
-import { HUB_URL, parseAbsoluteUrl } from "./domain";
+import { HUB_URL, normalizeHost, parseAbsoluteUrl } from "./domain";
 
 const HANDOVER_MAX_AGE = 120;
 const PURPOSE = "cross-domain-handover";
@@ -16,8 +16,9 @@ export async function createHandoverToken(user: {
   emailVerified?: boolean | null;
   companyId?: string | null;
   hasTenantAccess?: boolean | null;
-}) {
+}, options?: { audienceHost?: string | null }) {
   const jti = randomUUID();
+  const audienceHost = normalizeHost(options?.audienceHost || "");
   const token = await encode({
     token: {
       id: user.id,
@@ -31,6 +32,7 @@ export async function createHandoverToken(user: {
       hasTenantAccess: user.hasTenantAccess,
       purpose: PURPOSE,
       jti,
+      aud: audienceHost || undefined,
     },
     secret: process.env.NEXTAUTH_SECRET!,
     maxAge: HANDOVER_MAX_AGE,
@@ -38,7 +40,17 @@ export async function createHandoverToken(user: {
   return { token, jti };
 }
 
-export async function consumeHandoverToken(raw: string) {
+export function matchesHandoverAudience(
+  tokenAudience: string | undefined,
+  expectedHost: string | null | undefined,
+) {
+  if (!tokenAudience) return true;
+  const expected = normalizeHost(expectedHost || "");
+  if (!expected) return false;
+  return normalizeHost(tokenAudience) === expected;
+}
+
+export async function consumeHandoverToken(raw: string, expectedHost?: string | null) {
   const decoded = await decode({
     token: raw,
     secret: process.env.NEXTAUTH_SECRET!,
@@ -47,8 +59,10 @@ export async function consumeHandoverToken(raw: string) {
   if (!decoded || !decoded.email || !decoded.id) return null;
   const purpose = (decoded as { purpose?: string }).purpose;
   const jti = (decoded as { jti?: string }).jti;
+  const audience = (decoded as { aud?: string }).aud;
   if (purpose !== PURPOSE) return null;
   if (!jti) return null;
+  if (!matchesHandoverAudience(audience, expectedHost)) return null;
 
   const replayKey = `handover:jti:${jti}`;
   const used = await cacheGet(replayKey);

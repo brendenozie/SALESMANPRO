@@ -25,6 +25,15 @@ export function withAuthAndRateLimit<T = any>(
         if (!auth.success) {
           return formatResponse(false, null, auth.error, 401);
         }
+        const requestPath = new URL(request.url).pathname;
+        if (requestPath.startsWith("/api/admin")) {
+          const { canAccessDashboard, isConsumerOnlyAccount } = await import(
+            "@/lib/auth/authorization"
+          );
+          if (!auth.user || !canAccessDashboard(auth.user) || isConsumerOnlyAccount(auth.user)) {
+            return formatResponse(false, null, "Forbidden: Insufficient role", 403);
+          }
+        }
         // attach user to context
         context = { ...context, user: auth.user };
       }
