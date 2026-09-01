@@ -1,3 +1,6 @@
+//@ts-ignore
+import "server-only";
+
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";

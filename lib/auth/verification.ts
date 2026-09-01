@@ -1,3 +1,6 @@
+//@ts-ignore
+import "server-only";
+
 import { randomBytes } from "crypto";
 import nodemailer from "nodemailer";
 import prisma from "@/server/db/prismadb";
@@ -17,7 +20,9 @@ function transporter() {
   });
 }
 
-export async function createEmailVerificationToken(email: string): Promise<string> {
+export async function createEmailVerificationToken(
+  email: string,
+): Promise<string> {
   const token = randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + VERIFY_TTL_MS);
 
@@ -142,13 +147,18 @@ export async function markEmailVerified(email: string) {
   });
 }
 
-export async function consumeVerificationToken(email: string, token: string): Promise<boolean> {
+export async function consumeVerificationToken(
+  email: string,
+  token: string,
+): Promise<boolean> {
   const record = await prisma.verificationToken.findUnique({
     where: { identifier_token: { identifier: email, token } },
   });
   if (!record || record.expires < new Date()) {
     if (record) {
-      await prisma.verificationToken.delete({ where: { id: record.id } }).catch(() => {});
+      await prisma.verificationToken
+        .delete({ where: { id: record.id } })
+        .catch(() => {});
     }
     return false;
   }

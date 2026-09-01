@@ -1,4 +1,3 @@
-// app/admin/[slug]/announcements/AdminAnnouncementsPage.tsx
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
@@ -12,11 +11,9 @@ import {
   ArchiveBoxIcon, 
   ArrowPathIcon, 
   BellAlertIcon, 
-  XMarkIcon, 
   CheckCircleIcon, 
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { getAuthSession } from '@/lib/auth';
 import { AnnouncementFormModal } from './AnnouncementFormModal';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -96,12 +93,8 @@ interface AdminAnnouncementsPageProps {
   allParents: ParentOption[];
   allAuthors: AuthorOption[];
   companyId: string;
+  currentUserId?: string;
 }
-
-
-
-
-// --- Main Admin Announcements Dashboard Screen ---
 
 export default function AdminAnnouncementsPage({
   initialAnnouncements,
@@ -113,6 +106,7 @@ export default function AdminAnnouncementsPage({
   allParents,
   allAuthors,
   companyId,
+  currentUserId,
 }: AdminAnnouncementsPageProps) {
   const [announcements, setAnnouncements] = useState<AnnouncementData[]>(initialAnnouncements);
   const [searchTerm, setSearchTerm] = useState('');
@@ -137,7 +131,10 @@ export default function AdminAnnouncementsPage({
     );
   }, []);
 
-  const session = getAuthSession();
+  // Sync initialAnnouncements if server revalidates
+  useEffect(() => {
+    setAnnouncements(initialAnnouncements);
+  }, [initialAnnouncements]);
 
   // Manual refresh fallback
   const refreshAnnouncements = useCallback(async () => {
@@ -147,7 +144,7 @@ export default function AdminAnnouncementsPage({
       const res = await fetch(`${apiBaseUrl}/admin/announcements?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const payload = await res.json();
-        const data = (payload?.data || payload) as AnnouncementData[];
+        const data = (payload?.data?.data || payload?.data || payload) as AnnouncementData[];
         setAnnouncements(data);
       } else {
         const errorData = await res.json().catch(() => null);
@@ -160,7 +157,7 @@ export default function AdminAnnouncementsPage({
     }
   }, [companyId]);
 
-  // Combined Single-Pass Memoization for Metrics & Select Filters (O(N) instead of 7x O(N))
+  // Combined Single-Pass Memoization for Metrics & Select Filters
   const {
     activeCount,
     draftCount,
@@ -216,7 +213,7 @@ export default function AdminAnnouncementsPage({
           announcement.title.toLowerCase().includes(term) ||
           (announcement.summary || '').toLowerCase().includes(term) ||
           (announcement.content || '').toLowerCase().includes(term) ||
-          announcement.authorName.toLowerCase().includes(term);
+          (announcement.authorName || '').toLowerCase().includes(term);
 
         const matchesAudience = filterAudience === 'All' || announcement.audience === filterAudience;
         const matchesStatus = filterStatus === 'All' || announcement.status === filterStatus;
@@ -233,7 +230,6 @@ export default function AdminAnnouncementsPage({
     setError(null);
 
     const previousState = [...announcements];
-    // Immediate local update
     setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
 
     try {
@@ -243,7 +239,6 @@ export default function AdminAnnouncementsPage({
         throw new Error(errorData?.message || 'Failed to delete announcement.');
       }
     } catch (err: any) {
-      // Rollback on failure
       setAnnouncements(previousState);
       setError(err.message || 'Network error during deletion.');
     }
@@ -254,7 +249,6 @@ export default function AdminAnnouncementsPage({
     setError(null);
     const previousState = [...announcements];
 
-    // Immediate local update
     setAnnouncements((prev) =>
       prev.map((a) => (a.id === announcementId ? { ...a, status: newStatus } : a))
     );
@@ -271,7 +265,6 @@ export default function AdminAnnouncementsPage({
         throw new Error(errorData?.message || 'Could not update status.');
       }
     } catch (err: any) {
-      // Rollback on failure
       setAnnouncements(previousState);
       setError(err.message || 'Status update failed.');
     }
@@ -296,7 +289,7 @@ export default function AdminAnnouncementsPage({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...announcementData,
-          authorId: announcementData.authorId || session?.user?.id || '',
+          authorId: announcementData.authorId || currentUserId || '',
           companyId,
           publishedAt: new Date(announcementData.publishedAt).toISOString(),
           expiresAt: announcementData.expiresAt ? new Date(announcementData.expiresAt).toISOString() : null,
@@ -448,7 +441,7 @@ export default function AdminAnnouncementsPage({
               <option value="All">🌍 All Audiences</option>
               {uniqueAudiences.map((aud) => (
                 <option key={aud} value={aud}>
-                  {AUDIENCE_LABELS[aud] || aud}
+                  {AUDIENCE_LABELS[aud as keyof typeof AUDIENCE_LABELS] || aud}
                 </option>
               ))}
             </select>
@@ -462,7 +455,7 @@ export default function AdminAnnouncementsPage({
               <option value="All">🔖 All Categories</option>
               {uniqueTypes.map((t) => (
                 <option key={t} value={t}>
-                  {TYPE_LABELS[t] || t}
+                  {TYPE_LABELS[t as keyof typeof TYPE_LABELS] || t}
                 </option>
               ))}
             </select>
@@ -476,7 +469,7 @@ export default function AdminAnnouncementsPage({
               <option value="All">🚦 All States</option>
               {uniqueStatuses.map((st) => (
                 <option key={st} value={st}>
-                  {STATUS_LABELS[st] || st}
+                  {STATUS_LABELS[st as keyof typeof STATUS_LABELS] || st}
                 </option>
               ))}
             </select>
@@ -664,7 +657,6 @@ export default function AdminAnnouncementsPage({
           allDepartments={allDepartments}
           allParents={allParents}
           allAuthors={allAuthors}
-          session={session}
         />
       )}
     </div>
