@@ -169,13 +169,14 @@ const PaginationControls = ({ page, totalPages, onPageChange } : {
 // --- 2. PRICING MODAL CONTAINER ---
 // ------------------------------------------------------------------
 
-const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscriptionSuccess }: { 
+const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscriptionSuccess, isSubscriptionActive }: { 
   isOpen: boolean, 
   onClose: () => void, 
   companyId: string | null,
   email: string,
   category: string,
-  onSubscriptionSuccess: () => void
+  onSubscriptionSuccess: () => void,
+  isSubscriptionActive: boolean
 }) => {
   return (
     <AnimatePresence>
@@ -205,6 +206,7 @@ const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscript
                 email={email}
                 category={category}
                 onSubscriptionSuccess={onSubscriptionSuccess}
+                isSubscriptionActive={isSubscriptionActive}
               />
             </div>
           </motion.div>
@@ -228,6 +230,7 @@ export default function StoresPage() {
   
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [isSubscriptionActive, setIsSubscriptionActive] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const router = useRouter();
@@ -325,10 +328,11 @@ export default function StoresPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleManageSubscription = (id: string, category: string) => {
+  const handleManageSubscription = (id: string, category: string, isSubscriptionActive: boolean) => {
     setSelectedCompanyId(id);
     setSelectedCategory(category);
     setIsPricingModalOpen(true);
+    setIsSubscriptionActive(isSubscriptionActive);
   };
 
   const handleSubscriptionSuccess = () => {
@@ -448,7 +452,7 @@ export default function StoresPage() {
                       isActive={isActive}
                       onEdit={isActive ? () => handleEdit(store.slug) : undefined}
                       onDelete={isActive ? () => handleDeleteClick(store) : undefined}
-                      onManageSubscription={!isActive ? () => handleManageSubscription(store.id || store.slug, store.category || '') : undefined}
+                      onManageSubscription={!isActive ? () => handleManageSubscription(store.id || store.slug, store.category || '', isActive) : undefined}
                     />
                   </motion.div>
                 );
@@ -485,6 +489,7 @@ export default function StoresPage() {
         email={session?.user?.email || ''}
         category={selectedCategory}
         onSubscriptionSuccess={handleSubscriptionSuccess}
+        isSubscriptionActive={false}
       />
     </>
   );

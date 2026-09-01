@@ -9,6 +9,7 @@ import {
   ChevronUpIcon,
   ArrowRightIcon,
   ShieldCheckIcon,
+  ArrowPathIcon, // Added for the renew state
 } from "@heroicons/react/24/outline";
 import { convertKEStoUSD } from "@/lib/hooks/useUserCountry";
 
@@ -39,6 +40,7 @@ interface PricingSectionProps {
   requiredTier?: string;
   featureName?: string;
   onSubscriptionSuccess: () => void;
+  isSubscriptionActive: boolean;
 }
 
 const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67";
@@ -52,6 +54,7 @@ export default function PricingSection({
   requiredTier = "Premium Tier",
   featureName,
   onSubscriptionSuccess,
+  isSubscriptionActive
 }: PricingSectionProps) {
   const paystackPublicKey =
     process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
@@ -323,7 +326,6 @@ export default function PricingSection({
                   <LockClosedIcon className="w-3.5 h-3.5" /> Access Upgrade Required
                 </div>
                 <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                  {/* if feature is path take the last segment of the path and use it as the feature name, otherwise use the featureName prop */}
                   {featureName ? `Unlock ${featureName?.includes("/") ? featureName.split("/").pop() : featureName}` : "Upgrade to access this section"}
                 </h2>
                 <p className="text-slate-300 text-xs md:text-sm leading-relaxed">
@@ -414,6 +416,11 @@ export default function PricingSection({
               plan.name.toLowerCase() === currentTier?.toLowerCase() ||
               plan.id === currentTier ||
               plan._id?.$oid === currentTier;
+            
+            // --- UPDATED LOGIC HERE ---
+            const isActiveTier = isCurrentTier && isSubscriptionActive;
+            const isExpiredTier = isCurrentTier && !isSubscriptionActive;
+
             const planPriceMonthly = getPlanPrice(plan, "MONTHLY");
             const isUpgrade = Boolean(currentTier && !isCurrentTier && planPriceMonthly > currentPlanMonthlyPrice);
 
@@ -425,7 +432,7 @@ export default function PricingSection({
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
                 className={`relative flex flex-col p-6 md:p-8 rounded-3xl transition-all duration-300 ${
-                  isCurrentTier
+                  isActiveTier
                     ? "bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-300 dark:border-slate-700 z-0 opacity-75"
                     : isRequiredTarget
                     ? "bg-white dark:bg-slate-900 shadow-2xl ring-2 ring-orange-500 md:scale-[1.03] z-10"
@@ -433,14 +440,19 @@ export default function PricingSection({
                 }`}
               >
                 {/* Badges */}
-                {isCurrentTier && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-700 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md">
+                {isActiveTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-slate-700 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md whitespace-nowrap">
                     Current Active Plan
                   </div>
                 )}
+                {isExpiredTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rose-600 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md whitespace-nowrap">
+                    Subscription Expired
+                  </div>
+                )}
 
-                {isRequiredTarget && !isCurrentTier && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
+                {isRequiredTarget && !isActiveTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1 whitespace-nowrap">
                     <SparklesIcon className="w-3.5 h-3.5" /> Required Upgrade
                   </div>
                 )}
@@ -559,12 +571,14 @@ export default function PricingSection({
                     <button
                       type="button"
                       onClick={() => {
-                        if (!isCurrentTier) setSelectedPlan(plan);
+                        if (!isActiveTier) setSelectedPlan(plan);
                       }}
-                      disabled={loading || isCurrentTier}
+                      disabled={loading || isActiveTier}
                       className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] mb-6 flex items-center justify-center gap-2 ${
-                        isCurrentTier
+                        isActiveTier
                           ? "bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
+                          : isExpiredTier
+                          ? "bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-500/20"
                           : isRequiredTarget
                           ? "bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 shadow-md shadow-orange-500/20"
                           : isUpgrade
@@ -572,9 +586,13 @@ export default function PricingSection({
                           : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}
                     >
-                      {isCurrentTier ? (
+                      {isActiveTier ? (
                         <>
                           <ShieldCheckIcon className="w-4 h-4" /> Active Plan
+                        </>
+                      ) : isExpiredTier ? (
+                        <>
+                          <ArrowPathIcon className="w-4 h-4" /> Renew {plan.name}
                         </>
                       ) : isRequiredTarget ? (
                         <>
