@@ -1,6 +1,4 @@
 //@ts-ignore
-import "server-only";
-
 import { randomBytes } from "crypto";
 import nodemailer from "nodemailer";
 import prisma from "@/server/db/prismadb";
