@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 async function createHandler(request: Request) {
   // Gather the headers available in the App Router environment so we can
   // pass the dynamic context into authOptions (host, cookie header, request URL).
-  const headerList = headers();
+  const headerList = await headers();
   const host = headerList.get("host") || "";
   const cookieHeader = headerList.get("cookie") || "";
 
