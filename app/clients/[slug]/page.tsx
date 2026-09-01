@@ -8,8 +8,6 @@ import productIcon from "@/assets/bmi.png";
 import communicationIcon from "@/assets/bmi.png";
 import ClientLayout from "@/components/ClientLayout";
 import UserNav from "@/components/UserNav";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // make sure this points to your NextAuth config
 
 // --- Helper Functions ---
 const calculateProgress = (currentValue: number, dailyGoal: number) => {
@@ -68,7 +66,7 @@ async function fetchDashboardData() {
 
 // --- Main Component ---
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  
   const { salesData, clientData, inventoryData, communicationData, taskData } =
     await fetchDashboardData();
 
