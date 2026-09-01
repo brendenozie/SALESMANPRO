@@ -7,5 +7,5 @@ export const metadata = {
 };
 
 export default function AIStudioPage() {
-  return <AIStudio />;
+  return <AIStudio companyId="" />;
 }
