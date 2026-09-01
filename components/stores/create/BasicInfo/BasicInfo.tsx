@@ -408,7 +408,7 @@ export default function BasicInfo({
                       <div className="flex items-center gap-2 overflow-hidden">
                         <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                         <span className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 truncate">
-                          https://{domain ? domain.toLowerCase().trim() : "yourbrand"}.salesmanpro.site
+                          https://{domain ? domain.toLowerCase().trim() : "yourbrand"}
                         </span>
                       </div>
                       <DevicePhoneMobileIcon className="w-4 h-4 text-zinc-400 shrink-0" />
