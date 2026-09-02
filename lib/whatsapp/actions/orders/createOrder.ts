@@ -42,7 +42,7 @@ export async function createOrder(
       phone: context.phoneNumber,
       mpesaPhone: args.mpesaPhone ?? context.phoneNumber,
       paymentOption: args.paymentOption,
-      items: args.items,
+      items: args.items as any,
       shippingAddress: args.shippingAddress,
       shippingMethod: args.shippingMethod,
       promoCode: args.promoCode,
@@ -66,7 +66,7 @@ export async function createOrder(
     // Clear active cart from conversation
     await whatsappRepository.clearCart(context.conversationId);
 
-    const currency = result.pricing.currency ?? "KES";
+    const currency = (result.pricing as any)?.currency ?? "KES";
     const totalFormatted = `${currency} ${result.pricing.total.toLocaleString()}`;
 
     let nextStepMessage = "";

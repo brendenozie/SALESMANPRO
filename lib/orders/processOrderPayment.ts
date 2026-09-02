@@ -6,6 +6,7 @@ import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
 import prisma from "@/server/db/prismadb";
+import { PaymentMethodType } from "@prisma/client";
 
 export type ProcessOrderPaymentInput = {
   order: any;
@@ -42,7 +43,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       data: {
         paymentStatus: "COMPLETED",
         status: "PAID",
-        paymentMethod: paymentOption.toUpperCase(),
+        paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
         deliveryStatus: "Processing",
       },
     });
@@ -73,7 +74,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       data: {
         paymentStatus: "PENDING",
         status: "PENDING",
-        paymentMethod: paymentOption.toUpperCase(),
+        paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
         deliveryStatus:
           paymentOption === "pickupatshop"
             ? "Ready for Pickup"
@@ -175,7 +176,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       method: "ghuba",
       gatewayResponse: response,
       authorizationUrl:
-        response?.data?.authorization_url ??
+        (response as any)?.data?.authorization_url ??
         response?.authorization_url ??
         null,
     };

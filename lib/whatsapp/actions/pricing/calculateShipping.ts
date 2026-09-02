@@ -41,11 +41,10 @@ export async function validateDiscount(
   args: { promoCode: string; subtotal?: number },
   context: WhatsAppActionContext,
 ): Promise<WhatsAppActionResult> {
-  const promotion = await prisma.promotion.findFirst({
+  const promotion = await prisma.promotionDiscount.findFirst({
     where: {
       companyId: context.companyId,
       code: args.promoCode.trim().toUpperCase(),
-      isActive: true,
       endDate: { gte: new Date() },
     },
   });
@@ -58,18 +57,19 @@ export async function validateDiscount(
     };
   }
 
-  const discountAmount = promotion.discountPercentage
-    ? ((args.subtotal ?? 1000) * promotion.discountPercentage) / 100
-    : (promotion.discountAmount ?? 0);
+  const isPercentage = String(promotion.discountType).toUpperCase().includes("PERCENT");
+  const discountAmount = isPercentage
+    ? ((args.subtotal ?? 1000) * promotion.discountValue) / 100
+    : promotion.discountValue;
 
   return {
     success: true,
     action: "validate_discount",
-    message: `🎉 Promo code *${promotion.code}* applied! You get ${promotion.discountPercentage ? `${promotion.discountPercentage}% off` : `KES ${promotion.discountAmount} off`}.`,
+    message: `🎉 Promo code *${promotion.code}* applied! You get ${isPercentage ? `${promotion.discountValue}% off` : `KES ${promotion.discountValue} off`}.`,
     data: {
       promoCode: promotion.code,
       discountAmount,
-      discountPercentage: promotion.discountPercentage,
+      discountPercentage: isPercentage ? promotion.discountValue : undefined,
     },
   };
 }

@@ -18,14 +18,16 @@ export interface AuthenticatedAIContext {
 }
 
 export async function resolveAIAuth(req?: Request): Promise<AuthenticatedAIContext> {
-  const session = await getServerSession(authOptions as any);
+  const session = (await getServerSession(authOptions as any)) as {
+    user?: { email?: string | null; name?: string | null; id?: string };
+  } | null;
 
-  if (!session || !session.user || !session.user.email) {
+  if (!session?.user?.email) {
     throw new AIPlatformError("UNAUTHORIZED", "Authentication required to access AI services", 401);
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user?.email },
+    where: { email: session.user.email },
     select: {
       id: true,
       email: true,
@@ -97,5 +99,45 @@ export async function resolveAIAuth(req?: Request): Promise<AuthenticatedAIConte
     companyId: targetCompanyId,
     companyName: company?.name || "Store",
     role: user.role || "USER",
+  };
+}
+
+export async function requireSuperAdmin(req?: Request): Promise<{
+  id: string;
+  email: string;
+  name?: string | null;
+  role: string;
+}> {
+  const session = (await getServerSession(authOptions as any)) as {
+    user?: { email?: string | null; name?: string | null; id?: string };
+  } | null;
+
+  if (!session?.user?.email) {
+    throw new AIPlatformError("UNAUTHORIZED", "Authentication required", 401);
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, email: true, name: true, role: true },
+  });
+
+  if (!user) {
+    throw new AIPlatformError("UNAUTHORIZED", "User record not found", 401);
+  }
+
+  // Super Admin security enforcement
+  if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
+    throw new AIPlatformError(
+      "UNAUTHORIZED",
+      "Super Admin privileges required to access this AI control center",
+      403,
+    );
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
   };
 }

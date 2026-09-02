@@ -10,9 +10,7 @@ export class OpenAIImageProvider implements MediaAIProvider {
   name = "OpenAI_DALL_E";
 
   supports(action: MediaAIAction): boolean {
-    return [MediaAIAction.GENERATE_IMAGE, MediaAIAction.EDIT_IMAGE].includes(
-      action,
-    );
+    return action === MediaAIAction.GENERATE_IMAGE || action === MediaAIAction.EDIT_IMAGE;
   }
 
   async execute(

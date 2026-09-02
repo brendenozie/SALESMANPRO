@@ -44,6 +44,7 @@ enum ROLES {
   AGENT
   CLIENT
   ADMIN
+  SUPER_ADMIN
   STUDENT
   EDUCATOR
   HEADTEACHER
@@ -9510,5 +9511,86 @@ model AIPackage {
 
   @@index([isActive])
   @@index([isPopular])
+}
+
+model PlatformAIProvider {
+  id                    String         @id @default(auto()) @map("_id") @db.ObjectId
+  provider              String         @unique // OPENAI, GEMINI, GROQ, etc.
+  name                  String
+  enabled               Boolean        @default(true)
+  apiKeyEncrypted       String?
+  apiKeyIv              String?
+  apiKeyTag             String?
+  connectionStatus      String         @default("NOT_CONFIGURED") // ACTIVE, ERROR, NOT_CONFIGURED
+  lastVerifiedAt        DateTime?
+  supportedCapabilities AICapability[]
+  metadata              Json?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([enabled])
+}
+
+model PlatformAIModel {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  modelId            String       @unique // e.g. "gpt-4o-mini", "gemini-2.0-flash", "llama-3.3-70b-versatile"
+  provider           String       // OPENAI, GEMINI, GROQ
+  displayName        String
+  description        String?
+  capability         AICapability
+  enabled            Boolean      @default(true)
+  isDefault          Boolean      @default(false)
+  inputCreditCost    Float        @default(1)
+  outputCreditCost   Float        @default(2)
+  fixedCreditCost    Float?
+  maxTokens          Int?
+  contextWindow      Int?
+  supportsVision     Boolean      @default(false)
+  supportsStreaming  Boolean      @default(true)
+  supportsJsonSchema Boolean      @default(true)
+  priority           Int          @default(0)
+  fallbackModelId    String?
+  metadata           Json?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([provider])
+  @@index([capability])
+  @@index([enabled])
+}
+
+model PlatformAIServiceConfig {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  serviceKey      String       @unique // e.g. "PRODUCT_DESCRIPTION", "PRODUCT_SEO", "IMAGE_GENERATION", "WHATSAPP_AI", "STORE_SETUP_AI"
+  displayName     String
+  description     String?
+  capability      AICapability
+  enabled         Boolean      @default(true)
+  primaryModelId  String
+  fallbackModelId String?
+  creditCost      Float?
+  maxTokens       Int?
+  temperature     Float?
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([capability])
+  @@index([enabled])
+}
+
+model AIAuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  action     String   // e.g. "PROVIDER_CONFIGURED", "PROVIDER_ENABLED", "MODEL_ACTIVATED", "CREDIT_ADJUSTMENT"
+  actorId    String?  @db.ObjectId
+  actorEmail String?
+  target     String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([action])
+  @@index([actorEmail])
+  @@index([createdAt])
 }
 

@@ -125,7 +125,7 @@ export async function checkoutAndEnrollStudent({
 
         notes: `Enrollment for ${course.title}`,
 
-        orderItems: {
+        items: {
           create: [
             {
               productId: course.id,

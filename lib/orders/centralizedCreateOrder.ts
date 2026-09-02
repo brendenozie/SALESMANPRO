@@ -3,6 +3,7 @@ import prisma from "@/server/db/prismadb";
 import {
   OrderSource,
   OrderStatus,
+  PaymentMethodType,
   PaymentStatus,
   Prisma,
 } from "@prisma/client";
@@ -233,7 +234,6 @@ export async function createOrder(
     })),
     promoCode: input.promoCode ?? undefined,
     shippingMethod: input.shippingMethod ?? undefined,
-    metadata: input.metadata,
   });
 
   // 5. Compute Order Defaults & Statuses
@@ -263,7 +263,7 @@ export async function createOrder(
           phone,
           mpesaPhone,
           paymentOption,
-          paymentMethod: paymentOption.toUpperCase(),
+          paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
           paymentStatus: computedPaymentStatus,
           status: computedOrderStatus,
           orderSource: resolvedSource,

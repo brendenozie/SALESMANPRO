@@ -141,10 +141,10 @@ export async function actionRouter(params: {
         result = await calculateShipping(action.arguments, params.context);
         break;
       case "validate_discount":
-        result = await validateDiscount(action.arguments, params.context);
+        result = await validateDiscount(action.arguments as any, params.context);
         break;
       case "calculate_checkout_total":
-        result = await calculateCheckoutTotal(action.arguments, params.context);
+        result = await calculateCheckoutTotal(action.arguments as any, params.context);
         break;
 
       // Checkout
@@ -163,7 +163,7 @@ export async function actionRouter(params: {
 
       // Orders
       case "create_order":
-        result = await createOrder(action.arguments, params.context);
+        result = await createOrder(action.arguments as any, params.context);
         break;
       case "get_order":
         result = await getOrder(action.arguments, params.context);
@@ -172,10 +172,10 @@ export async function actionRouter(params: {
         result = await trackOrder(action.arguments, params.context);
         break;
       case "cancel_order":
-        result = await cancelOrder(action.arguments, params.context);
+        result = await cancelOrder(action.arguments as any, params.context);
         break;
       case "request_order_change":
-        result = await requestOrderChange(action.arguments, params.context);
+        result = await requestOrderChange(action.arguments as any, params.context);
         break;
 
       // Services
@@ -187,13 +187,13 @@ export async function actionRouter(params: {
         result = await getServiceAvailability(action.arguments, params.context);
         break;
       case "create_service_booking":
-        result = await bookService(action.arguments, params.context);
+        result = await bookService(action.arguments as any, params.context);
         break;
       case "confirm_service_booking":
-        result = await confirmServiceBooking(action.arguments, params.context);
+        result = await confirmServiceBooking(action.arguments as any, params.context);
         break;
       case "cancel_service_booking":
-        result = await cancelServiceBooking(action.arguments, params.context);
+        result = await cancelServiceBooking(action.arguments as any, params.context);
         break;
 
       // Payments
@@ -216,7 +216,7 @@ export async function actionRouter(params: {
         result = await escalateToHuman(action.arguments, params.context);
         break;
       case "create_support_request":
-        result = await createSupportRequest(action.arguments, params.context);
+        result = await createSupportRequest(action.arguments as any, params.context);
         break;
       case "get_support_status":
         result = await getCustomerOrders({ limit: 1 }, params.context);

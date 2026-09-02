@@ -321,6 +321,96 @@ export default function AIStudio({ companyId, initialProduct }: AIStudioProps) {
     }
   };
 
+  const [applyingToMarketplace, setApplyingToMarketplace] = useState(false);
+  const [applySuccessMsg, setApplySuccessMsg] = useState<string | null>(null);
+
+  const handleApplyContent = async (type: "DESCRIPTION" | "SEO" | "ALL") => {
+    if (!initialProduct?.productId) return;
+    setApplyingToMarketplace(true);
+    setApplySuccessMsg(null);
+    try {
+      let descriptionToApply = "";
+      let tagsToApply: string[] | undefined = undefined;
+
+      if (productOutput) {
+        if (typeof productOutput === "string") {
+          descriptionToApply = productOutput;
+        } else if (productOutput.description) {
+          descriptionToApply = productOutput.description;
+        } else if (productOutput.content) {
+          descriptionToApply = productOutput.content;
+        } else {
+          descriptionToApply = JSON.stringify(productOutput);
+        }
+
+        if (Array.isArray(productOutput.tags)) {
+          tagsToApply = productOutput.tags;
+        } else if (Array.isArray(productOutput.keywords)) {
+          tagsToApply = productOutput.keywords;
+        }
+      } else if (generatedTextOutput?.text) {
+        descriptionToApply = generatedTextOutput.text;
+      }
+
+      const res = await fetch("/api/ai/marketplace/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: initialProduct.productId,
+          productId: initialProduct.productId,
+          description: descriptionToApply || undefined,
+          tags: tagsToApply,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setApplySuccessMsg("Applied to marketplace listing successfully!");
+        setTimeout(() => setApplySuccessMsg(null), 4000);
+      } else {
+        alert(data.error || "Failed to update marketplace listing");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to apply content");
+    } finally {
+      setApplyingToMarketplace(false);
+    }
+  };
+
+  const handleApplyImage = async (url: string, imageAction: "ADD_GALLERY" | "SET_FEATURED") => {
+    if (!initialProduct?.productId) return;
+    setApplyingToMarketplace(true);
+    setApplySuccessMsg(null);
+    try {
+      const res = await fetch("/api/ai/marketplace/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: initialProduct.productId,
+          productId: initialProduct.productId,
+          imageUrl: url,
+          imageAction,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setApplySuccessMsg(
+          imageAction === "SET_FEATURED"
+            ? "Set as listing featured image successfully!"
+            : "Added to listing gallery successfully!"
+        );
+        setTimeout(() => setApplySuccessMsg(null), 4000);
+      } else {
+        alert(data.error || "Failed to update listing images");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to apply image");
+    } finally {
+      setApplyingToMarketplace(false);
+    }
+  };
+
   const filteredGenerations = (generationsData?.jobs || []).filter((job: any) => {
     if (generationFilter === "ALL") return true;
     return job.capability === generationFilter;
@@ -789,15 +879,38 @@ export default function AIStudio({ companyId, initialProduct }: AIStudioProps) {
                   {generatedImages.map((img, idx) => (
                     <div key={idx} className="group relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 aspect-square">
                       <img src={img.url} alt="Generated visual" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <a
-                          href={img.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-2.5 bg-white text-slate-900 rounded-xl shadow-md hover:bg-slate-50 transition"
-                        >
-                          <ArrowDownTrayIcon className="w-4 h-4 stroke-2" />
-                        </a>
+                      <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-3">
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={img.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-2 bg-white text-slate-900 rounded-xl shadow-md hover:bg-slate-50 transition"
+                            title="Download Image"
+                          >
+                            <ArrowDownTrayIcon className="w-4 h-4 stroke-2" />
+                          </a>
+                        </div>
+                        {initialProduct?.productId && (
+                          <div className="flex flex-col gap-1.5 w-full max-w-[140px]">
+                            <button
+                              type="button"
+                              onClick={() => handleApplyImage(img.url, "SET_FEATURED")}
+                              disabled={applyingToMarketplace}
+                              className="w-full py-1.5 px-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-[10px] font-bold shadow-sm transition text-center"
+                            >
+                              Set as Featured
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleApplyImage(img.url, "ADD_GALLERY")}
+                              disabled={applyingToMarketplace}
+                              className="w-full py-1.5 px-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white rounded-lg text-[10px] font-bold shadow-sm transition text-center"
+                            >
+                              Add to Gallery
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -957,9 +1070,33 @@ export default function AIStudio({ companyId, initialProduct }: AIStudioProps) {
             <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
               <h4 className="font-bold text-slate-900 text-base mb-3">Generated Product Data</h4>
               {productOutput ? (
-                <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-mono whitespace-pre-wrap leading-relaxed max-h-[480px] overflow-y-auto">
-                  {JSON.stringify(productOutput, null, 2)}
-                </div>
+                <>
+                  <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-mono whitespace-pre-wrap leading-relaxed max-h-[480px] overflow-y-auto">
+                    {JSON.stringify(productOutput, null, 2)}
+                  </div>
+                  {initialProduct?.productId && (
+                    <div className="mt-3 flex items-center justify-between p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+                      <div className="text-xs text-indigo-900 font-medium">
+                        Target Listing: <span className="font-bold">{initialProduct.name || "Selected Product"}</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={applyingToMarketplace}
+                        onClick={() => handleApplyContent("ALL")}
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-2 px-3.5 rounded-xl text-xs shadow-xs transition flex items-center gap-1.5"
+                      >
+                        <CheckIcon className="w-4 h-4" />
+                        {applyingToMarketplace ? "Applying..." : "Apply to Marketplace Listing"}
+                      </button>
+                    </div>
+                  )}
+                  {applySuccessMsg && (
+                    <div className="mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center gap-2">
+                      <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+                      {applySuccessMsg}
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="h-64 flex flex-col items-center justify-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <ShoppingBagIcon className="w-8 h-8 mb-2 text-slate-300 stroke-1" />

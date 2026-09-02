@@ -22,8 +22,8 @@ export async function searchServices(
       status: "ACTIVE",
       isAvailable: true,
       OR: [
-        { listingTransactionType: { contains: "SERVICE", mode: "insensitive" } },
-        { listingTransactionType: { contains: "BOOK", mode: "insensitive" } },
+        { hourlyRate: { not: null } },
+        { minimumHours: { not: null } },
         { duration: { not: null } },
       ],
       ...(args.query
@@ -43,7 +43,9 @@ export async function searchServices(
       sellingPrice: true,
       hourlyRate: true,
       duration: true,
-      currency: true,
+      company: {
+        select: { currency: true },
+      },
     },
   });
 
@@ -68,7 +70,7 @@ export async function searchServices(
       return {
         success: true,
         action: "search_services",
-        message: "No specific booking services found matching your inquiry.",
+        message: "I couldn't find any services matching your search.",
         data: { services: [] },
       };
     }
@@ -76,7 +78,7 @@ export async function searchServices(
     const serviceList = services
       .map(
         (s) =>
-          `🗓️ *${s.name}*\n   💰 Price: KES ${s.price.toLocaleString()}\n   ⏱️ Duration: ${s.duration} mins`,
+          `🗓️ *${s.name}*\n   💰 Price: KES ${(s.price ?? 0).toLocaleString()}\n   🔖 ID: \`${s.id}\``,
       )
       .join("\n\n");
 
@@ -88,7 +90,7 @@ export async function searchServices(
     };
   }
 
-  const currency = listings[0]?.currency ?? "KES";
+  const currency = listings[0]?.company?.currency ?? "KES";
   const serviceList = listings
     .map(
       (l) =>

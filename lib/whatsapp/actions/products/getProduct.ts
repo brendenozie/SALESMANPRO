@@ -44,7 +44,9 @@ export async function getProduct(
       quantity: true,
       isAvailable: true,
       images: true,
-      currency: true,
+      company: {
+        select: { currency: true },
+      },
       option: true,
       pricingTiers: true,
     },
@@ -58,7 +60,7 @@ export async function getProduct(
     };
   }
 
-  const currency = listing.currency ?? "KES";
+  const currency = listing.company?.currency ?? "KES";
   const price = listing.finalPrice ?? listing.sellingPrice;
   const options = Array.isArray(listing.option) ? (listing.option as any[]) : [];
   

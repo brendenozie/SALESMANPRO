@@ -40,6 +40,8 @@ import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
 import SetupWizardLayout from "./SetupWizardLayout";
+import FastSetupAIModal from "../FastSetupAIModal";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -64,7 +66,7 @@ export interface SelectedLocation {
   children: SelectedLocation[];
 }
 
-type Props = {  
+type Props = {
   siteCategories: any[];
   availableCategories: IProductCategory[];
   availableLocations: ILocation[];
@@ -147,13 +149,13 @@ export default function CreateStoreForm({
   initialData,
   // session
 }: Props) {
-  
+
   const router = useRouter();
-  
-  const { data: session, status } = useSession();  
+
+  const { data: session, status } = useSession();
 
   const [stepIndex, setStepIndex] = useState(0);
-  
+
   // UPDATE: The defaultForm object is now initialized with all the fields
   // from the new, expanded StoreForm interface.
   const defaultForm: StoreForm = {
@@ -205,6 +207,7 @@ export default function CreateStoreForm({
     Announcement: [], // For site announcements
 
     addresses: [], // For multiple company addresses (locations)
+
 
 
     // --- JSON fields ---
@@ -270,7 +273,6 @@ export default function CreateStoreForm({
       paystackSecretKey: null, // New: Paystack Secret Key
 
 
-
       // Ghuba (NEW FIELDS)
       ghubaMerchantId: null,
       ghubaApiKey: null,
@@ -289,7 +291,10 @@ export default function CreateStoreForm({
       paystackSecret_tag: null,
       ghubaSecret_encrypted: null,
       ghubaSecret_iv: null,
-      ghubaSecret_tag: null
+      ghubaSecret_tag: null,
+      whatsappPaymentsEnabled: false,
+      whatsappPaymentConfirmationRequired: false,
+      whatsappPaymentInstructions: null
     },
     shippingSettings: {
       id: "",
@@ -344,7 +349,8 @@ export default function CreateStoreForm({
       layoutStyle: "default",
     },
     galleries: [],
-    subscription: null
+    subscription: null,
+    whatsappSettings: undefined
   };
 
 
@@ -355,7 +361,93 @@ export default function CreateStoreForm({
     return initialForm;
   });
 
-    // NEW: State for all available locations
+  // NEW: State for all available locations
+  const [showFastSetupModal, setShowFastSetupModal] = useState(false);
+
+  const handleApplyAiBlueprint = (blueprint: any) => {
+    const matchedCat = blueprint.matchedCategory;
+    let updatedStoreCategories = [...(form.StoreCategory || [])];
+
+    if (matchedCat?.id) {
+      const dbCat = availableCategories.find((c) => c.id === matchedCat.id);
+
+      const existingSubs = ((dbCat?.subcategories as any[]) || []).filter((s: any) => {
+        const sName = s?.name || s?.title || String(s);
+        return (matchedCat.matchedExistingSubcategories || []).includes(sName);
+      });
+
+      const newSubs = (matchedCat.newSubcategories || []).map((subName: string, idx: number) => ({
+        id: `ai_sub_${Date.now()}_${idx}`,
+        name: subName,
+        title: subName,
+        slug: subName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      }));
+
+      const allBrandsCombined = Array.from(
+        new Set([
+          ...(dbCat?.allBrands || []),
+          ...(matchedCat.newBrands || []),
+        ])
+      );
+
+      const newStoreCatEntry: IStoreCategory = {
+        id: "",
+        categoryId: matchedCat.id,
+        displayName: matchedCat.name || dbCat?.name || "Store Category",
+        icon: dbCat?.icon,
+        image: dbCat?.image,
+        subcategories: [...existingSubs, ...newSubs] as any,
+        allBrands: allBrandsCombined,
+        sortOrder: 0,
+        visible: true,
+      };
+
+      const existingIdx = updatedStoreCategories.findIndex((sc) => sc.categoryId === matchedCat.id);
+      if (existingIdx >= 0) {
+        updatedStoreCategories[existingIdx] = newStoreCatEntry;
+      } else {
+        updatedStoreCategories.push(newStoreCatEntry);
+      }
+    }
+
+    const matchedSiteCat = siteCategories.find(
+      (sc) =>
+        sc.name.toLowerCase() ===
+        (blueprint.selectedIndustry || blueprint.suggestedIndustry || "").toLowerCase()
+    );
+    const resolvedIndustryName = matchedSiteCat ? matchedSiteCat.name : (form.category || "Online Store");
+
+    setForm((prev) => ({
+      ...prev,
+      name: blueprint.name || prev.name,
+      description: blueprint.description || prev.description,
+      currency: blueprint.currency || prev.currency,
+      category: resolvedIndustryName,
+      companyCategoryId: matchedCat?.id || prev.companyCategoryId,
+      StoreCategory: updatedStoreCategories,
+      shippingSettings: blueprint.shipping
+        ? {
+          id: prev.shippingSettings?.id || "",
+          carrierName: prev.shippingSettings?.carrierName ?? null,
+          trackingUrl: prev.shippingSettings?.trackingUrl ?? null,
+          regions: prev.shippingSettings?.regions ?? null,
+          enablePickup: prev.shippingSettings?.enablePickup ?? true,
+          pickupInstructions:
+            blueprint.shipping.instructions ?? prev.shippingSettings?.pickupInstructions ?? "",
+          standardRate: Number(blueprint.shipping.standardRate ?? prev.shippingSettings?.standardRate ?? 0),
+          expressRate: Number(blueprint.shipping.expressRate ?? prev.shippingSettings?.expressRate ?? 0),
+        }
+        : prev.shippingSettings,
+      whatsappSettings: blueprint.whatsappGreeting
+        ? {
+          ...prev.whatsappSettings,
+          welcomeMessage: blueprint.whatsappGreeting,
+        }
+        : prev.whatsappSettings,
+    }));
+
+    setStepIndex(1);
+  };
   // NEW: State for selected location IDs (flat set for efficient lookup)
   const [currentSelectedLocationIds, setCurrentSelectedLocationIds] = useState<Set<string>>(() =>
     initialData?.CompanyLocation ? flattenCompanyLocationsToIds(initialData.CompanyLocation) : new Set()
@@ -395,7 +487,7 @@ export default function CreateStoreForm({
     }
 
   }, [form.category, initialData?.id]);
-  
+
   // ─────────────────────────────────────────────────────────────────────
   // 1) File state (logo, banner, hero slides, promotion slides)
   // ─────────────────────────────────────────────────────────────────────
@@ -411,10 +503,10 @@ export default function CreateStoreForm({
   // Memoize the selected locations in the hierarchical structure for display
 
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
-      const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
-      return buildSelectedLocationTree(form.CompanyLocation, allLocationsMap);
+    const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
+    return buildSelectedLocationTree(form.CompanyLocation, allLocationsMap);
   }, [form.CompanyLocation, availableLocations]);
-  
+
 
   // Track one File per hero slide. Initialize from existing heroSlides length
   const [heroSlideFiles, setHeroSlideFiles] = useState<(File | null)[]>(() =>
@@ -423,15 +515,15 @@ export default function CreateStoreForm({
 
   // Track one File per promotion. Initialize from existing promotions length
   type PromotionFiles = {
-  bannerUrl?: File;
-  featureImage1?: File;
-  featureImage2?: File;
-  featureImage3?: File;
-};
+    bannerUrl?: File;
+    featureImage1?: File;
+    featureImage2?: File;
+    featureImage3?: File;
+  };
 
-const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>(
-  () => form.promotions.map(() => ({}))
-);
+  const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>(
+    () => form.promotions.map(() => ({}))
+  );
 
   // When initialData changes (edit mode), clear out these File states
   useEffect(() => {
@@ -440,7 +532,7 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
     setBannerFile(null);
     setVideoFile(null);
     setHeroSlideFiles(initialData.heroSlides?.map(() => null) || []);
-    setPromotionSlideFiles(initialData.promotions?.map(() => ({})) || [] );
+    setPromotionSlideFiles(initialData.promotions?.map(() => ({})) || []);
   }, [initialData]);
 
   // Whenever form.heroSlides grows/shrinks, sync heroSlideFiles length
@@ -482,7 +574,7 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
     if (form.hasWebsite) {
       // 3) ...and, for certain categories, add pricing
       const cat = form.category?.toLowerCase().trim() || "";
-      
+
       if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         list.push(...pricingSteps);
       }
@@ -522,7 +614,7 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
       setLogoFile(file);
     } else if (field === "videoUrl") {
       setVideoFile(file);
-    }  else if (field === "founderImage") {
+    } else if (field === "founderImage") {
       setFounderImageFile(file);
     } else {
       setBannerFile(file);
@@ -642,26 +734,26 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
       const normalizedPromotions = prev.promotions.map(promo => {
         const nextPerks = Array.isArray(promo.perks)
           ? promo.perks.map((perk: any) => {
-              // handles: string, {icon,label}, or already-correct {id,icon,label}
-              if (perk && typeof perk === 'object' && 'id' in perk) return perk;
-              return {
-                id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
-                icon: typeof perk === 'object' ? perk.icon ?? '' : '',
-                label: typeof perk === 'object' ? perk.label ?? '' : String(perk ?? ''),
-              };
-            })
+            // handles: string, {icon,label}, or already-correct {id,icon,label}
+            if (perk && typeof perk === 'object' && 'id' in perk) return perk;
+            return {
+              id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+              icon: typeof perk === 'object' ? perk.icon ?? '' : '',
+              label: typeof perk === 'object' ? perk.label ?? '' : String(perk ?? ''),
+            };
+          })
           : [];
 
         const nextTrustLogos = Array.isArray(promo.trustLogos)
           ? promo.trustLogos.map((logo: any) => {
-              // handles: string or already-correct {id,url}
-              if (logo && typeof logo === 'object' && 'id' in logo && 'url' in logo) return logo;
-              const url = typeof logo === 'string' ? logo : logo?.url ?? '';
-              return {
-                id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
-                url,
-              };
-            })
+            // handles: string or already-correct {id,url}
+            if (logo && typeof logo === 'object' && 'id' in logo && 'url' in logo) return logo;
+            const url = typeof logo === 'string' ? logo : logo?.url ?? '';
+            return {
+              id: crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
+              url,
+            };
+          })
           : [];
 
         return { ...promo, perks: nextPerks, trustLogos: nextTrustLogos };
@@ -673,216 +765,216 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
 
 
   // Factory function: always consistent types
-const createEmptyPromotion = (companyId: string): IPromotion => ({
-  id: "",
-  companyId,
-  code: "",
+  const createEmptyPromotion = (companyId: string): IPromotion => ({
+    id: "",
+    companyId,
+    code: "",
 
-  // Strings
-  title: "",
-  description: "",
-  ctaText: "",
-  ctaLink: "",
-  bannerUrl: "",
-  featureImage1: "",
-  featureImage2: "",
-  featureImage3: "",
+    // Strings
+    title: "",
+    description: "",
+    ctaText: "",
+    ctaLink: "",
+    bannerUrl: "",
+    featureImage1: "",
+    featureImage2: "",
+    featureImage3: "",
 
-  // Dates always stored as ISO strings (empty string = not set)
-  startsAt: "",
-  endsAt: "",
+    // Dates always stored as ISO strings (empty string = not set)
+    startsAt: "",
+    endsAt: "",
 
-  // Arrays
-  perks: [] as { id: string; icon: string; label: string }[],
-  trustLogos: [] as { id: string; url: string; }[],
+    // Arrays
+    perks: [] as { id: string; icon: string; label: string }[],
+    trustLogos: [] as { id: string; url: string; }[],
 
-  // Colors
-  themePrimary: "#0d9488",   // sensible defaults
-  themeSecondary: "#f97316",
+    // Colors
+    themePrimary: "#0d9488",   // sensible defaults
+    themeSecondary: "#f97316",
 
-  // Meta
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-});
-
-// Add promotion
-const onAddPromotion = () => {
-  setForm((prev) => ({
-    ...prev,
-    promotions: [...prev.promotions, createEmptyPromotion(prev.id)],
-  }));
-};
-
-// Remove promotion
-const onRemovePromotion = (idx: number) => {
-  setForm((prev) => ({
-    ...prev,
-    promotions: prev.promotions.filter((_, i) => i !== idx),
-  }));
-};
-
-// In your Parent Form Component
-const onUpdatePromotion = <K extends keyof IPromotion>(
-  index: number,
-  field: K,
-  value: IPromotion[K]
-) => {
-  setForm((prev) => {
-    // 1. Create a new promotions array using .map()
-    const newPromotions = prev.promotions.map((promotion, idx) => {
-      // 2. If it's not the promotion we're updating, do nothing
-      if (idx !== index) {
-        return promotion;
-      }
-      
-      // 3. If it IS the promotion, create a new object,
-      //    spreading the old properties and setting the updated field.
-      //    This works for 'title', 'description', and 'perks' perfectly.
-      return { ...promotion, [field]: value };
-    });
-
-    // 4. Return the new top-level state object
-    return { ...prev, promotions: newPromotions };
-  });
-};
-
-// Upload + preview image for any field
-const onPromotionImageUpload = (
-  index: number,
-  file: File,
-  field: keyof IPromotion
-) => {
-  // resize local array to match promotions length
-  setPromotionSlideFiles((prev) => {
-    const copy = [...prev];
-    copy[index] = {
-      ...(copy[index] || {}),
-      [field]: file,      
-    };
-    return copy;
+    // Meta
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
-  const previewURL = URL.createObjectURL(file);
+  // Add promotion
+  const onAddPromotion = () => {
+    setForm((prev) => ({
+      ...prev,
+      promotions: [...prev.promotions, createEmptyPromotion(prev.id)],
+    }));
+  };
 
-  setForm((prev) => {
-    const promos = [...prev.promotions];
-    promos[index] = { ...promos[index], [field]: previewURL };
-    return { ...prev, promotions: promos };
-  });
-};
+  // Remove promotion
+  const onRemovePromotion = (idx: number) => {
+    setForm((prev) => ({
+      ...prev,
+      promotions: prev.promotions.filter((_, i) => i !== idx),
+    }));
+  };
 
-// Add a new perk to a specific promotion
-
-const onAddPerk = (promoIndex: number) => {
-  setForm((prev) => {
-    const newPromotions = prev.promotions.map((promo, idx) => {
-      if (idx === promoIndex) {
-        const currentPerks = promo.perks || [];
-        // Generate a unique ID for the new perk
-        const newPerk = { id: crypto.randomUUID(), icon: '', label: '' };
-        const updatedPerks = [...currentPerks, newPerk];
-        return { ...promo, perks: updatedPerks };
-      }
-      return promo;
-    });
-    return { ...prev, promotions: newPromotions };
-  });
-};
-
-// New, more specific handler for updating a perk
-const onUpdatePerk = (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => {
-  setForm((prev) => {
-    // Create a deep copy to ensure we don't mutate state
-    const newPromotions = prev.promotions.map((promo, pIdx) => {
-      // If it's not the promotion we're interested in, return it as is
-      if (pIdx !== promoIndex) {
-        return promo;
-      }
-
-      // Now, update the specific perk within this promotion
-      const updatedPerks = (promo.perks || []).map((perk, perIdx) => {
-        // If it's not the perk we're updating, return it as is
-        if (perIdx !== perkIndex) {
-          return perk;
+  // In your Parent Form Component
+  const onUpdatePromotion = <K extends keyof IPromotion>(
+    index: number,
+    field: K,
+    value: IPromotion[K]
+  ) => {
+    setForm((prev) => {
+      // 1. Create a new promotions array using .map()
+      const newPromotions = prev.promotions.map((promotion, idx) => {
+        // 2. If it's not the promotion we're updating, do nothing
+        if (idx !== index) {
+          return promotion;
         }
 
-        // Return a new object for the updated perk, preserving its ID
-        return { ...perk, [field]: value };
+        // 3. If it IS the promotion, create a new object,
+        //    spreading the old properties and setting the updated field.
+        //    This works for 'title', 'description', and 'perks' perfectly.
+        return { ...promotion, [field]: value };
       });
 
-      // Return the promotion with the updated perks array
-      return { ...promo, perks: updatedPerks };
+      // 4. Return the new top-level state object
+      return { ...prev, promotions: newPromotions };
+    });
+  };
+
+  // Upload + preview image for any field
+  const onPromotionImageUpload = (
+    index: number,
+    file: File,
+    field: keyof IPromotion
+  ) => {
+    // resize local array to match promotions length
+    setPromotionSlideFiles((prev) => {
+      const copy = [...prev];
+      copy[index] = {
+        ...(copy[index] || {}),
+        [field]: file,
+      };
+      return copy;
     });
 
-    // Return the new top-level state
-    return { ...prev, promotions: newPromotions };
-  });
-};
+    const previewURL = URL.createObjectURL(file);
 
-// You will also need to add onUpdatePerk to the props passed to PromotionsAccordion
-// Also add a dedicated function for removing a perk
-const onRemovePerk = (promoIndex: number, perkIndex: number) => {
-  setForm((prev) => {
-    const newPromotions = prev.promotions.map((promo, idx) => {
-      if (idx === promoIndex) {
-        const updatedPerks = (promo.perks || []).filter((_, i) => i !== perkIndex);
-        return { ...promo, perks: updatedPerks };
-      }
-      return promo;
+    setForm((prev) => {
+      const promos = [...prev.promotions];
+      promos[index] = { ...promos[index], [field]: previewURL };
+      return { ...prev, promotions: promos };
     });
-    return { ...prev, promotions: newPromotions };
-  });
-};
+  };
 
-const onAddTrustLogo = (promoIndex: number) => {
-  setForm((prev) => {
-    const newPromotions = prev.promotions.map((promo, idx) => {
-      if (idx === promoIndex) {
-        const updatedLogos = [...(promo.trustLogos || []), { id: crypto.randomUUID(), url: '' }];
-        return { ...promo, trustLogos: updatedLogos };
-      }
-      return promo;
+  // Add a new perk to a specific promotion
+
+  const onAddPerk = (promoIndex: number) => {
+    setForm((prev) => {
+      const newPromotions = prev.promotions.map((promo, idx) => {
+        if (idx === promoIndex) {
+          const currentPerks = promo.perks || [];
+          // Generate a unique ID for the new perk
+          const newPerk = { id: crypto.randomUUID(), icon: '', label: '' };
+          const updatedPerks = [...currentPerks, newPerk];
+          return { ...promo, perks: updatedPerks };
+        }
+        return promo;
+      });
+      return { ...prev, promotions: newPromotions };
     });
-    return { ...prev, promotions: newPromotions };
-  });
-};
+  };
 
-const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
-  setForm((prev) => {
-    const newPromotions = prev.promotions.map((promo, idx) => {
-      if (idx === promoIndex) {
-        const updatedLogos = (promo.trustLogos || []).filter((_, i) => i !== logoIndex);
-        return { ...promo, trustLogos: updatedLogos };
-      }
-      return promo;
-    });
-    return { ...prev, promotions: newPromotions };
-  });
-};
+  // New, more specific handler for updating a perk
+  const onUpdatePerk = (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => {
+    setForm((prev) => {
+      // Create a deep copy to ensure we don't mutate state
+      const newPromotions = prev.promotions.map((promo, pIdx) => {
+        // If it's not the promotion we're interested in, return it as is
+        if (pIdx !== promoIndex) {
+          return promo;
+        }
 
-const onUpdateTrustLogo = (
-  promoIndex: number, 
-  logoIndex: number, 
-  field: 'id' | 'url', // Add the 'field' parameter
-  value: string      // The last parameter is the 'value'
-) => {
-  setForm((prev) => {
-    const newPromotions = prev.promotions.map((promo, idx) => {
-      if (idx === promoIndex) {
-        const updatedLogos = (promo.trustLogos || []).map((logo, i) => {
-          if (i === logoIndex) {
-            // Use dynamic property keys to update the correct field
-            return { ...logo, [field]: value };
+        // Now, update the specific perk within this promotion
+        const updatedPerks = (promo.perks || []).map((perk, perIdx) => {
+          // If it's not the perk we're updating, return it as is
+          if (perIdx !== perkIndex) {
+            return perk;
           }
-          return logo;
+
+          // Return a new object for the updated perk, preserving its ID
+          return { ...perk, [field]: value };
         });
-        return { ...promo, trustLogos: updatedLogos };
-      }
-      return promo;
+
+        // Return the promotion with the updated perks array
+        return { ...promo, perks: updatedPerks };
+      });
+
+      // Return the new top-level state
+      return { ...prev, promotions: newPromotions };
     });
-    return { ...prev, promotions: newPromotions };
-  });
-};
+  };
+
+  // You will also need to add onUpdatePerk to the props passed to PromotionsAccordion
+  // Also add a dedicated function for removing a perk
+  const onRemovePerk = (promoIndex: number, perkIndex: number) => {
+    setForm((prev) => {
+      const newPromotions = prev.promotions.map((promo, idx) => {
+        if (idx === promoIndex) {
+          const updatedPerks = (promo.perks || []).filter((_, i) => i !== perkIndex);
+          return { ...promo, perks: updatedPerks };
+        }
+        return promo;
+      });
+      return { ...prev, promotions: newPromotions };
+    });
+  };
+
+  const onAddTrustLogo = (promoIndex: number) => {
+    setForm((prev) => {
+      const newPromotions = prev.promotions.map((promo, idx) => {
+        if (idx === promoIndex) {
+          const updatedLogos = [...(promo.trustLogos || []), { id: crypto.randomUUID(), url: '' }];
+          return { ...promo, trustLogos: updatedLogos };
+        }
+        return promo;
+      });
+      return { ...prev, promotions: newPromotions };
+    });
+  };
+
+  const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
+    setForm((prev) => {
+      const newPromotions = prev.promotions.map((promo, idx) => {
+        if (idx === promoIndex) {
+          const updatedLogos = (promo.trustLogos || []).filter((_, i) => i !== logoIndex);
+          return { ...promo, trustLogos: updatedLogos };
+        }
+        return promo;
+      });
+      return { ...prev, promotions: newPromotions };
+    });
+  };
+
+  const onUpdateTrustLogo = (
+    promoIndex: number,
+    logoIndex: number,
+    field: 'id' | 'url', // Add the 'field' parameter
+    value: string      // The last parameter is the 'value'
+  ) => {
+    setForm((prev) => {
+      const newPromotions = prev.promotions.map((promo, idx) => {
+        if (idx === promoIndex) {
+          const updatedLogos = (promo.trustLogos || []).map((logo, i) => {
+            if (i === logoIndex) {
+              // Use dynamic property keys to update the correct field
+              return { ...logo, [field]: value };
+            }
+            return logo;
+          });
+          return { ...promo, trustLogos: updatedLogos };
+        }
+        return promo;
+      });
+      return { ...prev, promotions: newPromotions };
+    });
+  };
 
   // ─────────────────────────────────────────────────────────────────────
   // 5) Generic form handlers (arrays, opening hours, etc.)
@@ -900,8 +992,8 @@ const onUpdateTrustLogo = (
     const domain = slug ? `${slug}.salesmanpro.site` : "";
     setForm((prev) => ({ ...prev, slug, domain }));
   }, [form.name, initialData]);
-  
-    useEffect(() => {
+
+  useEffect(() => {
     if (!form.name) return;
 
     const slug = form.name
@@ -933,11 +1025,11 @@ const onUpdateTrustLogo = (
     if (saved && initialData) {
       try {
         const parsedForm: StoreForm = JSON.parse(saved);
-        if(parsedForm.id == initialData.id){
+        if (parsedForm.id == initialData.id) {
           setForm(parsedForm);
           // Restore selected locations from companyLocations
           if (parsedForm.CompanyLocation) {
-              setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.CompanyLocation));
+            setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.CompanyLocation));
           }
         }
       } catch (e) {
@@ -953,40 +1045,40 @@ const onUpdateTrustLogo = (
     // We need to convert SelectedLocation[] back to CompanyLocationType[] for storage
     const companyLocationsToSave: CompanyLocation[] = [];
     const collectCompanyLocations = (selectedLocs: SelectedLocation[]) => {
-        selectedLocs.forEach(selectedLoc => {
-            companyLocationsToSave.push({
-              companyId: form.id || 'temp-company-id', // Use actual company ID or a temp one
-              locationId: selectedLoc.id,
-              visible: true, // Defaulting to true, adjust if you have UI for this
-              sortOrder: 0,
-              id: "",
-              createdAt: null,
-              updatedAt: null,
-              displayName: null,
-              addressLine1Override: null,
-              addressLine2Override: null,
-              cityOverride: null,
-              stateOverride: null,
-              postalCodeOverride: null,
-              countryOverride: null,
-              latitudeOverride: null,
-              longitudeOverride: null
-            });
-            if (selectedLoc.children) {
-                collectCompanyLocations(selectedLoc.children);
-            }
+      selectedLocs.forEach(selectedLoc => {
+        companyLocationsToSave.push({
+          companyId: form.id || 'temp-company-id', // Use actual company ID or a temp one
+          locationId: selectedLoc.id,
+          visible: true, // Defaulting to true, adjust if you have UI for this
+          sortOrder: 0,
+          id: "",
+          createdAt: null,
+          updatedAt: null,
+          displayName: null,
+          addressLine1Override: null,
+          addressLine2Override: null,
+          cityOverride: null,
+          stateOverride: null,
+          postalCodeOverride: null,
+          countryOverride: null,
+          latitudeOverride: null,
+          longitudeOverride: null
         });
+        if (selectedLoc.children) {
+          collectCompanyLocations(selectedLoc.children);
+        }
+      });
     };
 
     collectCompanyLocations(selectedLocationsForDisplay);
 
     const formToSave = {
-        ...form,
-        companyLocations: companyLocationsToSave,
+      ...form,
+      companyLocations: companyLocationsToSave,
     };
 
     localStorage.setItem("storeForm", JSON.stringify(formToSave));
-    
+
   }, [form, initialData, selectedLocationsForDisplay]);// Add selectedLocationsForDisplay as dependency
 
   // Navigation guard
@@ -1003,42 +1095,42 @@ const onUpdateTrustLogo = (
 
   // Inside CreateStoreForm.tsx, near other handlers:
 
-const onUpdatePaymentSettings = useCallback(
-  (updatedSettings: PaymentSettings) => {
-    setForm((prevForm) => ({
-      ...prevForm,
-      // Merge with existing paymentSettings to preserve required fields (eg. id)
-      paymentSettings: {
-        ...prevForm.paymentSettings,
-        ...updatedSettings,
-      } as typeof prevForm.paymentSettings,
-    }));
-  },
-  [] // No dependency needed if only using prevForm
-);
+  const onUpdatePaymentSettings = useCallback(
+    (updatedSettings: PaymentSettings) => {
+      setForm((prevForm) => ({
+        ...prevForm,
+        // Merge with existing paymentSettings to preserve required fields (eg. id)
+        paymentSettings: {
+          ...prevForm.paymentSettings,
+          ...updatedSettings,
+        } as typeof prevForm.paymentSettings,
+      }));
+    },
+    [] // No dependency needed if only using prevForm
+  );
 
   const handleChange = (
-  e: ChangeEvent<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >
-) => {
-  const { name, type, value } = e.target;
+    e: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, type, value } = e.target;
 
-  // when category changes, flag it:
-  if (name === "category") {
-    setCategoryChanged(true);
-  }
-  
-  if (type === "checkbox") {
-    // cast only inside the checkbox branch
-    const checked = (e.target as HTMLInputElement).checked;
-    setForm(f => ({ ...f, [name]: checked }));
-    return;
-  }
+    // when category changes, flag it:
+    if (name === "category") {
+      setCategoryChanged(true);
+    }
 
-  if (name.startsWith("openingHours.")) {
-    // …handle openingHours logic
-     const [, dayKey, field] = name.split(".");
+    if (type === "checkbox") {
+      // cast only inside the checkbox branch
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm(f => ({ ...f, [name]: checked }));
+      return;
+    }
+
+    if (name.startsWith("openingHours.")) {
+      // …handle openingHours logic
+      const [, dayKey, field] = name.split(".");
       setForm((f: any) => ({
         ...f,
         openingHours: {
@@ -1049,9 +1141,9 @@ const onUpdatePaymentSettings = useCallback(
           },
         },
       }));
-  } else {
-    setForm(f => ({ ...f, [name]: value }));
-  }
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
   };
 
   const onUpdateArray = <T,>(
@@ -1099,107 +1191,107 @@ const onUpdatePaymentSettings = useCallback(
   };
 
   //............................
-// State is an object map for O(1) lookups: { [categoryId]: IStoreCategory }
-type SelectedState = Record<string, IStoreCategory>;
-// Assume `availableCategories` is your full list from props/API.
-// Assume `form.StoreCategory` is your initial raw selected data.
+  // State is an object map for O(1) lookups: { [categoryId]: IStoreCategory }
+  type SelectedState = Record<string, IStoreCategory>;
+  // Assume `availableCategories` is your full list from props/API.
+  // Assume `form.StoreCategory` is your initial raw selected data.
 
-// 1. Initializer function runs ONLY ONCE to set up the reducer's initial state.
-// It normalizes the raw array from the form into our efficient object map.
-const resolveId = (sub: any) => sub?.id || sub?._id?.$oid || sub?.tempId || sub?.name;
+  // 1. Initializer function runs ONLY ONCE to set up the reducer's initial state.
+  // It normalizes the raw array from the form into our efficient object map.
+  const resolveId = (sub: any) => sub?.id || sub?._id?.$oid || sub?.tempId || sub?.name;
 
-const initializer = (rawSelected: IStoreCategory[]): SelectedState => {
+  const initializer = (rawSelected: IStoreCategory[]): SelectedState => {
     const initialState: SelectedState = {};
     for (const selection of rawSelected) {
-        const catId = selection.categoryId;
-        if (!catId) continue;
+      const catId = selection.categoryId;
+      if (!catId) continue;
 
-        if (initialState[catId]) {
-            const existing = initialState[catId];
-            
-            // Use resolveId to build the comparison set
-            const subIds = new Set(existing.subcategories.map(s => resolveId(s)));
-            
-            selection.subcategories.forEach(sub => {
-                const subId = resolveId(sub);
-                if (!subIds.has(subId)) {
-                    // Inject the guaranteed ID onto the object before saving it
-                    existing.subcategories.push({ ...sub, id: subId });
-                }
-            });
-            const brandSet = new Set(existing.allBrands || []);
-            (selection.allBrands || []).forEach(brand => {
-                if (!brandSet.has(brand)) {
-                    existing.allBrands.push(brand);
-                }
-            });
-        } else {
-            // Apply the fallback ID directly into the initialization
-            initialState[catId] = {
-                ...selection,
-                subcategories: selection.subcategories.map(sub => ({
-                    ...sub,
-                    id: resolveId(sub)
-                }))
-            };
-        }
+      if (initialState[catId]) {
+        const existing = initialState[catId];
+
+        // Use resolveId to build the comparison set
+        const subIds = new Set(existing.subcategories.map(s => resolveId(s)));
+
+        selection.subcategories.forEach(sub => {
+          const subId = resolveId(sub);
+          if (!subIds.has(subId)) {
+            // Inject the guaranteed ID onto the object before saving it
+            existing.subcategories.push({ ...sub, id: subId });
+          }
+        });
+        const brandSet = new Set(existing.allBrands || []);
+        (selection.allBrands || []).forEach(brand => {
+          if (!brandSet.has(brand)) {
+            existing.allBrands.push(brand);
+          }
+        });
+      } else {
+        // Apply the fallback ID directly into the initialization
+        initialState[catId] = {
+          ...selection,
+          subcategories: selection.subcategories.map(sub => ({
+            ...sub,
+            id: resolveId(sub)
+          }))
+        };
+      }
     }
     return initialState;
-};
+  };
 
-// 2. Initialize the reducer.
-const [selectedState, dispatch] = useReducer(categoryReducer, form.StoreCategory, initializer);
+  // 2. Initialize the reducer.
+  const [selectedState, dispatch] = useReducer(categoryReducer, form.StoreCategory, initializer);
 
-// 3. Create the memoized array of selected categories to pass to the child component and for form submission.
-const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [selectedState]);
+  // 3. Create the memoized array of selected categories to pass to the child component and for form submission.
+  const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [selectedState]);
 
   // NEW: Handlers for LocationSelectionAccordion
   const onToggleLocation = useCallback(
-  (location: ILocation, isSelected: boolean) => {
-    setForm((prevForm) => {
-      const newCompanyLocations = [...(prevForm.CompanyLocation || [])];
-      const allLocationsMap = new Map(
-        availableLocations.map((loc) => [loc.id, loc])
-      );
-      const idsToToggle = getAllDescendantIds(location, allLocationsMap);
-
-      idsToToggle.forEach((locId) => {
-        const existingIndex = newCompanyLocations.findIndex(
-          (cl) => cl.locationId === locId
+    (location: ILocation, isSelected: boolean) => {
+      setForm((prevForm) => {
+        const newCompanyLocations = [...(prevForm.CompanyLocation || [])];
+        const allLocationsMap = new Map(
+          availableLocations.map((loc) => [loc.id, loc])
         );
-        if (isSelected) {
-          if (existingIndex === -1) {
-            newCompanyLocations.push({
-              companyId:
-                prevForm.id || session?.user?.id || "temp-company-id",
-              locationId: locId,
-              visible: true,
-              sortOrder: 0,
-              id: "",
-              createdAt: null,
-              updatedAt: null,
-              displayName: null,
-              addressLine1Override: null,
-              addressLine2Override: null,
-              cityOverride: null,
-              stateOverride: null,
-              postalCodeOverride: null,
-              countryOverride: null,
-              latitudeOverride: null,
-              longitudeOverride: null,
-            });
-          }
-        } else {
-          if (existingIndex !== -1) {
-            newCompanyLocations.splice(existingIndex, 1);
-          }
-        }
-      });
+        const idsToToggle = getAllDescendantIds(location, allLocationsMap);
 
-      return { ...prevForm, CompanyLocation: newCompanyLocations };
-    });
-  },
-  [availableLocations, session?.user?.id]
+        idsToToggle.forEach((locId) => {
+          const existingIndex = newCompanyLocations.findIndex(
+            (cl) => cl.locationId === locId
+          );
+          if (isSelected) {
+            if (existingIndex === -1) {
+              newCompanyLocations.push({
+                companyId:
+                  prevForm.id || session?.user?.id || "temp-company-id",
+                locationId: locId,
+                visible: true,
+                sortOrder: 0,
+                id: "",
+                createdAt: null,
+                updatedAt: null,
+                displayName: null,
+                addressLine1Override: null,
+                addressLine2Override: null,
+                cityOverride: null,
+                stateOverride: null,
+                postalCodeOverride: null,
+                countryOverride: null,
+                latitudeOverride: null,
+                longitudeOverride: null,
+              });
+            }
+          } else {
+            if (existingIndex !== -1) {
+              newCompanyLocations.splice(existingIndex, 1);
+            }
+          }
+        });
+
+        return { ...prevForm, CompanyLocation: newCompanyLocations };
+      });
+    },
+    [availableLocations, session?.user?.id]
   );
 
   const onBulkToggleLocations = useCallback((locationIds: string[]) => {
@@ -1321,7 +1413,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   const handleLocationDelete = (locationId: string) => {
     const currentLocations = form.addresses || [];
     const updatedList = currentLocations.filter((loc) => loc.id !== locationId);
-    
+
     onChangeSettings({ addresses: updatedList });
 
     // If the deleted location was the selected one, clear selection
@@ -1357,7 +1449,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onChangeSettings,
 
     onToggleDay,
-    
+
     handleArrayChange,
     addItem,
     removeItem,
@@ -1396,10 +1488,10 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     goToStep,
     totalSteps
   };
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  
+
   // AI-related state
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiStatus, setAiStatus] = useState("");
@@ -1459,7 +1551,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
         subline?: string;
         ctaText?: string;
       }
-      
+
       const newHeroSlides = (data.heroSlides || []).map((slide: AIGeneratedSlide) => ({
         id: "",
         companyId: form.id,
@@ -1518,7 +1610,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
         question?: string;
         answer?: string;
       }
-      
+
       const newFaqs = (data.faqs || []).map((faq: AIGeneratedFAQ) => ({
         question: faq.question || "",
         answer: faq.answer || "",
@@ -1591,7 +1683,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
       await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
 
       toast.success("🎉 Store autopilot complete! Review your content.");
-      
+
       // Jump to review step (which is at index allSteps.length)
       setStepIndex(allSteps.length);
     } catch (error: unknown) {
@@ -1604,210 +1696,210 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     }
   };
 
-////////////////////////////////////////////////////////////////////////////////
-// Upload helper for getting signed URLs and uploading files
-////////////////////////////////////////////////////////////////////////////////
-async function uploadFile(files: File[], type: "image" | "video" | "book") {
-  if (!files?.length) return [];
-  const uploads = files.map(async (file, index) => {
-    // 1. Request signed URL from your backend
-    const res = await fetch(
-      `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-    );
+  ////////////////////////////////////////////////////////////////////////////////
+  // Upload helper for getting signed URLs and uploading files
+  ////////////////////////////////////////////////////////////////////////////////
+  async function uploadFile(files: File[], type: "image" | "video" | "book") {
+    if (!files?.length) return [];
+    const uploads = files.map(async (file, index) => {
+      // 1. Request signed URL from your backend
+      const res = await fetch(
+        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
 
-    if (!res.ok) throw new Error("Failed to get signed URL");
-    const { uploadUrl, publicUrl } = await res.json();
+      if (!res.ok) throw new Error("Failed to get signed URL");
+      const { uploadUrl, publicUrl } = await res.json();
 
-    // 2. Upload directly to S3 via PUT request
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
+      // 2. Upload directly to S3 via PUT request
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      // 3. Return the public CloudFront/S3 URL
+      return {
+        // The original index is not needed here as we will re-index later
+        url: publicUrl,
+      };
     });
-    if (!uploadRes.ok) throw new Error("Upload failed");
 
-    // 3. Return the public CloudFront/S3 URL
-    return {
-      // The original index is not needed here as we will re-index later
-      url: publicUrl,
-    };
-  });
-
-  return Promise.all(uploads);
-}
-
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
-  if (isSubmitting || !session?.user?.id) return;
-  setIsSubmitting(true);
-
-  const payload = { ...form };
-  const uploadPromises: Promise<void>[] = [];
-
-  // --- Logo Upload ---
-  if (logoFile) {
-    uploadPromises.push(
-      (async () => {
-        const [{ url }] = await uploadFile([logoFile], "image");
-        payload.logoUrl = url;
-        setForm((prev) => ({ ...prev, logoUrl: url }));
-        console.log("✅ Logo uploaded:", url);
-      })()
-    );
+    return Promise.all(uploads);
   }
 
-  // --- Banner Upload ---
-  if (bannerFile) {
-    uploadPromises.push(
-      (async () => {
-        const [{ url }] = await uploadFile([bannerFile], "image");
-        payload.bannerUrl = url;
-        setForm((prev) => ({ ...prev, bannerUrl: url }));
-        console.log("✅ Banner uploaded:", url);
-      })()
-    );
-  }
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting || !session?.user?.id) return;
+    setIsSubmitting(true);
 
-  // --- Video Upload ---
-  if (videoFile) {
-    uploadPromises.push(
-      (async () => {
-        const [{ url }] = await uploadFile([videoFile], "video");
-        payload.videoUrl = url;
-        setForm((prev) => ({ ...prev, videoUrl: url }));
-        console.log("✅ Video uploaded:", url);
-      })()
-    );
-  }
+    const payload = { ...form };
+    const uploadPromises: Promise<void>[] = [];
 
-  // --- Founder Image Upload ---
-  if (founderImageFile) {
-    uploadPromises.push(
-      (async () => {
-        const [{ url }] = await uploadFile([founderImageFile], "image");
-        payload.founderImage = url;
-        setForm((prev) => ({ ...prev, founderImage: url }));
-        console.log("✅ Founder image uploaded:", url);
-      })()
-    );
-  }
-
-  // --- Hero Slides ---
-  heroSlideFiles.forEach((file, idx) => {
-    if (file) {
+    // --- Logo Upload ---
+    if (logoFile) {
       uploadPromises.push(
         (async () => {
-          const [{ url }] = await uploadFile([file], "image");
-          if (!payload.heroSlides) payload.heroSlides = [];
-
-          const existing = payload.heroSlides[idx] || {};
-          payload.heroSlides[idx] = { ...existing, imageUrl: url };
-
-          setForm((prev) => {
-            const slides = [...prev.heroSlides];
-            slides[idx] = { ...slides[idx], imageUrl: url };
-            return { ...prev, heroSlides: slides };
-          });
-
+          const [{ url }] = await uploadFile([logoFile], "image");
+          payload.logoUrl = url;
+          setForm((prev) => ({ ...prev, logoUrl: url }));
+          console.log("✅ Logo uploaded:", url);
         })()
       );
     }
-  });
 
-  // --- Product Images for Hero Slides ---
-  productImageFiles.forEach((file, idx) => {
-    if (file) {
+    // --- Banner Upload ---
+    if (bannerFile) {
       uploadPromises.push(
         (async () => {
-          const [{ url }] = await uploadFile([file], "image");
-          if (!payload.heroSlides) payload.heroSlides = [];
-
-          const existing = payload.heroSlides[idx] || {};
-          payload.heroSlides[idx] = { ...existing, productImageUrl: url };
-
-          setForm((prev) => {
-            const slides = [...prev.heroSlides];
-            slides[idx] = { ...slides[idx], productImageUrl: url };
-            return { ...prev, heroSlides: slides };
-          });
+          const [{ url }] = await uploadFile([bannerFile], "image");
+          payload.bannerUrl = url;
+          setForm((prev) => ({ ...prev, bannerUrl: url }));
+          console.log("✅ Banner uploaded:", url);
         })()
       );
     }
-  });
 
-  // --- Promotion Slides ---
-  promotionSlideFiles.forEach((promoFiles: PromotionFiles, idx) => {
-    if (!promoFiles) return;
+    // --- Video Upload ---
+    if (videoFile) {
+      uploadPromises.push(
+        (async () => {
+          const [{ url }] = await uploadFile([videoFile], "video");
+          payload.videoUrl = url;
+          setForm((prev) => ({ ...prev, videoUrl: url }));
+          console.log("✅ Video uploaded:", url);
+        })()
+      );
+    }
 
-    for (const field of ["bannerUrl","featureImage1","featureImage2","featureImage3"]) {
-      const file = promoFiles[field as keyof PromotionFiles];
+    // --- Founder Image Upload ---
+    if (founderImageFile) {
+      uploadPromises.push(
+        (async () => {
+          const [{ url }] = await uploadFile([founderImageFile], "image");
+          payload.founderImage = url;
+          setForm((prev) => ({ ...prev, founderImage: url }));
+          console.log("✅ Founder image uploaded:", url);
+        })()
+      );
+    }
+
+    // --- Hero Slides ---
+    heroSlideFiles.forEach((file, idx) => {
       if (file) {
         uploadPromises.push(
           (async () => {
             const [{ url }] = await uploadFile([file], "image");
+            if (!payload.heroSlides) payload.heroSlides = [];
 
-            if (!payload.promotions) payload.promotions = [];
-            const existing = payload.promotions[idx] || {};
-            payload.promotions[idx] = { ...existing, [field]: url };
+            const existing = payload.heroSlides[idx] || {};
+            payload.heroSlides[idx] = { ...existing, imageUrl: url };
 
             setForm((prev) => {
-              const promos = [...prev.promotions];
-              promos[idx] = { ...promos[idx], [field]: url };
-              return { ...prev, promotions: promos };
+              const slides = [...prev.heroSlides];
+              slides[idx] = { ...slides[idx], imageUrl: url };
+              return { ...prev, heroSlides: slides };
             });
 
           })()
         );
       }
-    }
-  });
-
-  try {
-    // Wait for uploads to complete
-    await Promise.all(uploadPromises);
-
-    const isEdit = Boolean(initialData?.id);
-    const method = isEdit ? "PUT" : "POST";
-    const apiStoresUrl = isEdit
-      ? `${apiBaseUrl}/stores/${initialData!.id}`
-      : `${apiBaseUrl}/stores`;
-
-    const toSend = {
-      ...payload,
-      StoreCategory: selectedCategoriesArray,
-      userId: session.user.id,
-    };
-
-    const res = await fetch(apiStoresUrl, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(toSend),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      setIsSubmitting(false);
-      console.error("❌ Save failed:", text);
-      toast.error(`Error saving store: ${text}`);
-      setSubmissionError(text || res.statusText || "An unexpected error occurred");
-      return;
+    // --- Product Images for Hero Slides ---
+    productImageFiles.forEach((file, idx) => {
+      if (file) {
+        uploadPromises.push(
+          (async () => {
+            const [{ url }] = await uploadFile([file], "image");
+            if (!payload.heroSlides) payload.heroSlides = [];
+
+            const existing = payload.heroSlides[idx] || {};
+            payload.heroSlides[idx] = { ...existing, productImageUrl: url };
+
+            setForm((prev) => {
+              const slides = [...prev.heroSlides];
+              slides[idx] = { ...slides[idx], productImageUrl: url };
+              return { ...prev, heroSlides: slides };
+            });
+          })()
+        );
+      }
+    });
+
+    // --- Promotion Slides ---
+    promotionSlideFiles.forEach((promoFiles: PromotionFiles, idx) => {
+      if (!promoFiles) return;
+
+      for (const field of ["bannerUrl", "featureImage1", "featureImage2", "featureImage3"]) {
+        const file = promoFiles[field as keyof PromotionFiles];
+        if (file) {
+          uploadPromises.push(
+            (async () => {
+              const [{ url }] = await uploadFile([file], "image");
+
+              if (!payload.promotions) payload.promotions = [];
+              const existing = payload.promotions[idx] || {};
+              payload.promotions[idx] = { ...existing, [field]: url };
+
+              setForm((prev) => {
+                const promos = [...prev.promotions];
+                promos[idx] = { ...promos[idx], [field]: url };
+                return { ...prev, promotions: promos };
+              });
+
+            })()
+          );
+        }
+      }
+    });
+
+    try {
+      // Wait for uploads to complete
+      await Promise.all(uploadPromises);
+
+      const isEdit = Boolean(initialData?.id);
+      const method = isEdit ? "PUT" : "POST";
+      const apiStoresUrl = isEdit
+        ? `${apiBaseUrl}/stores/${initialData!.id}`
+        : `${apiBaseUrl}/stores`;
+
+      const toSend = {
+        ...payload,
+        StoreCategory: selectedCategoriesArray,
+        userId: session.user.id,
+      };
+
+      const res = await fetch(apiStoresUrl, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(toSend),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        setIsSubmitting(false);
+        console.error("❌ Save failed:", text);
+        toast.error(`Error saving store: ${text}`);
+        setSubmissionError(text || res.statusText || "An unexpected error occurred");
+        return;
+      }
+
+      let data = await res.json();
+
+      //on successful update clear or empty local cache 
+      localStorage.removeItem("storeForm");
+
+      toast.success(isEdit ? "Store updated successfully!" : "Store created!");
+      router.push("/stores");
+    } catch (err: any) {
+      console.error("❌ Error uploading or saving store:", err);
+      toast.error(`Error: ${err.message}`);
+      setSubmissionError(err.message || "An unexpected error occurred");
+    } finally {
+      // setIsSubmitting(false);
+      // console.log("🟡 Submit finished.");
     }
-
-    let data = await res.json();
-
-    //on successful update clear or empty local cache 
-    localStorage.removeItem("storeForm");
-
-    toast.success(isEdit ? "Store updated successfully!" : "Store created!");
-    router.push("/stores");
-  } catch (err: any) {
-    console.error("❌ Error uploading or saving store:", err);
-    toast.error(`Error: ${err.message}`);
-    setSubmissionError(err.message || "An unexpected error occurred");
-  } finally {
-    // setIsSubmitting(false);
-    // console.log("🟡 Submit finished.");
-  }
-};
+  };
 
   const StepContent = useMemo(() => {
     // 1. Render Specific Steps with AI Injection
@@ -1829,33 +1921,33 @@ const handleSubmit = async (e: FormEvent) => {
 
       // AI Configuration for Banners - Enhanced Color-grading & Theme Variables
       const aiConfig: Record<
-        string, 
+        string,
         { label: string; section: string; themeClass: string; btnGrad: string; desc: string }
       > = {
-        basic: { 
-          label: "Magic Wand Autopilot", 
-          section: "basic", 
+        basic: {
+          label: "Magic Wand Autopilot",
+          section: "basic",
           themeClass: "bg-violet-500/[0.03] border-violet-500/20 dark:border-violet-500/30 text-violet-600 dark:text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.02)]",
           btnGrad: "from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 focus:ring-violet-500/20 shadow-indigo-500/20",
           desc: "Generate your business name, tagline, and description automatically."
         },
-        seo: { 
-          label: "Optimize SEO Architecture", 
-          section: "seo", 
+        seo: {
+          label: "Optimize SEO Architecture",
+          section: "seo",
           themeClass: "bg-emerald-500/[0.03] border-emerald-500/20 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.02)]",
           btnGrad: "from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500/20 shadow-emerald-500/20",
           desc: "Let AI evaluate search metrics and construct high-ranking semantic meta tags."
         },
-        pricing: { 
-          label: "Synthesize Tier Strategy", 
-          section: "pricing", 
+        pricing: {
+          label: "Synthesize Tier Strategy",
+          section: "pricing",
           themeClass: "bg-amber-500/[0.03] border-amber-500/20 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.02)]",
           btnGrad: "from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 focus:ring-amber-500/20 shadow-orange-500/20",
           desc: "Analyze industry standard models and construct maximized retail pricing matrixes."
         },
-        marketing: { 
-          label: "Generate High-Conversion Copy", 
-          section: "marketing", 
+        marketing: {
+          label: "Generate High-Conversion Copy",
+          section: "marketing",
           themeClass: "bg-rose-500/[0.03] border-rose-500/20 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.02)]",
           btnGrad: "from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 focus:ring-rose-500/20 shadow-rose-500/20",
           desc: "Write engaging headlines, copy frameworks, and promotional incentives."
@@ -1871,10 +1963,10 @@ const handleSubmit = async (e: FormEvent) => {
           <div className="space-y-8 animate-fade-in bg-zinc-100 dark:bg-zinc-900 ">
             {/* AI Premium Copilot Box */}
             <div className={`p-5 rounded-2xl border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-all duration-300 relative overflow-hidden group backdrop-blur-sm ${currentAi.themeClass}`}>
-              
+
               {/* Ambient Background Aura */}
               <div className="absolute -right-16 -top-16 w-36 h-36 bg-current opacity-[0.03] rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-              
+
               {/* <div className="flex items-start gap-4">
                 <div className={`p-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 shadow-sm text-zinc-700 dark:text-zinc-200 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-300`}>
                   <SparklesIcon className="w-5 h-5 text-indigo-500 dark:text-indigo-400 animate-pulse" />
@@ -1893,28 +1985,33 @@ const handleSubmit = async (e: FormEvent) => {
                   </p>
                 </div>
               </div> */}
-              
-              <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end w-full lg:w-auto gap-3 flex-shrink-0">
-                {/* <button
-                  type="button"
-                  onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
-                  disabled={isButtonDisabled}
-                  className={`whitespace-nowrap flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r ${currentAi.btnGrad} text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md focus:outline-none focus:ring-4 disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 active:scale-[0.98]`}
-                >
-                  {isAiProcessing ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <SparklesIcon className="w-4 h-4 stroke-[2]" />
-                  )}
-                  <span>{currentAi.label}</span>
-                </button> */}
 
-                {/* Dynamic Disabled State Verification Badge */}
-                {!form.category && (
-                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 flex items-center gap-1 sm:text-right">
-                    ⚠️ Select a store category to unlock
-                  </span>
-                )}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full justify-between gap-3 p-4 mb-4 rounded-2xl bg-gradient-to-r from-indigo-900/20 via-purple-900/10 to-slate-900/20 border border-indigo-500/30 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                    <SparklesIcon className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                      Fast Setup with AI
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
+                        Autopilot
+                      </span>
+                    </h4>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Generate your store name, branding, catalog, and policies in seconds.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowFastSetupModal(true)}
+                  className="whitespace-nowrap flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition active:scale-[0.98]"
+                >
+                  <SparklesIcon className="w-4 h-4" />
+                  <span>Launch AI Setup</span>
+                </button>
               </div>
             </div>
 
@@ -1960,7 +2057,7 @@ const handleSubmit = async (e: FormEvent) => {
             >
               {/* Hover Accent Glow */}
               <div className="absolute top-0 bottom-0 left-0 w-1 bg-zinc-200 dark:bg-zinc-800 group-hover:bg-indigo-600 transition-colors duration-300" />
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
                   <span className="w-7 h-7 rounded-xl bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 group-hover:dark:bg-indigo-950/40 text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-600 group-hover:dark:text-indigo-400 border border-zinc-100 dark:border-zinc-700/60 flex items-center justify-center text-xs font-black transition-colors duration-300">
@@ -1970,13 +2067,13 @@ const handleSubmit = async (e: FormEvent) => {
                     {s.title}
                   </h3>
                 </div>
-                
+
                 <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1.5 transition-colors">
                   <span>Modify Parameters</span>
                   <span className="transform group-hover:translate-x-1 transition-transform duration-200">➔</span>
                 </span>
               </div>
-              
+
               {/* Injected Content Inner Container */}
               <div className="text-sm text-zinc-600 dark:text-zinc-300 bg-zinc-50/50 dark:bg-zinc-950/40 px-4 py-3.5 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 font-medium leading-relaxed shadow-inner">
                 {renderReviewContent(s.key, form)}
@@ -2005,26 +2102,38 @@ const handleSubmit = async (e: FormEvent) => {
   const currentTitle =
     stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
-  
-  return <SetupWizardLayout 
-      isSubmitting = {isSubmitting}
-      submissionError = {submissionError}
-      setSubmissionError= {setSubmissionError}
-      setIsSubmitting= {setIsSubmitting}
-      isAiProcessing= {isAiProcessing}
-      aiStatus= {aiStatus}
-      stepIndex= {stepIndex}
-      totalSteps= {totalSteps}
-      currentTitle= {currentTitle}
-      allSteps= {allSteps}
-      percent= {percent}
-      StepContent= {StepContent}
-      prev= {prev}
-      next= {next}
-      handleSubmit= {handleSubmit}
-      setStepIndex= {setStepIndex}
-  />
 
+  return (
+    <>
+      <SetupWizardLayout
+        isSubmitting={isSubmitting}
+        submissionError={submissionError}
+        setSubmissionError={setSubmissionError}
+        setIsSubmitting={setIsSubmitting}
+        isAiProcessing={isAiProcessing}
+        aiStatus={aiStatus}
+        stepIndex={stepIndex}
+        totalSteps={totalSteps}
+        currentTitle={currentTitle}
+        allSteps={allSteps}
+        percent={percent}
+        StepContent={StepContent}
+        prev={prev}
+        next={next}
+        handleSubmit={handleSubmit}
+        setStepIndex={setStepIndex}
+      />
+      <FastSetupAIModal
+        isOpen={showFastSetupModal}
+        onClose={() => setShowFastSetupModal(false)}
+        onApply={handleApplyAiBlueprint}
+        siteCategories={siteCategories}
+        availableCategories={availableCategories}
+        currentBusinessCategory={form.category || ""}
+        initialCategoryId={form.companyCategoryId || ""}
+      />
+    </>
+  );
 }
 
 // Helper to render review info for each step
@@ -2072,8 +2181,8 @@ const renderReviewContent = (stepKey: any, form: any) => {
         </ReviewSection>
       );
 
-      
-    case 'storeLocations': return <p>{form.CompanyLocation?.map((l:any) => l.name).join(', ')}</p>; // New review content
+
+    case 'storeLocations': return <p>{form.CompanyLocation?.map((l: any) => l.name).join(', ')}</p>; // New review content
 
     case "basic":
       return (

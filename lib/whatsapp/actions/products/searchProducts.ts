@@ -67,7 +67,9 @@ export async function searchProducts(
       quantity: true,
       isAvailable: true,
       images: true,
-      currency: true,
+      company: {
+        select: { currency: true },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: args.limit ?? 5,
@@ -82,7 +84,7 @@ export async function searchProducts(
     };
   }
 
-  const currency = listings[0]?.currency ?? "KES";
+  const currency = listings[0]?.company?.currency ?? "KES";
   const productList = listings.map((p) => {
     const price = p.finalPrice ?? p.sellingPrice;
     return `🛍️ *${p.name}*\n   💰 Price: ${currency} ${price.toLocaleString()}\n   📦 Stock: ${p.quantity > 0 ? `${p.quantity} in stock` : "Out of stock"}\n   🔖 ID: \`${p.id}\``;
@@ -103,7 +105,7 @@ export async function searchProducts(
         stock: l.quantity,
         available: l.isAvailable,
         images: l.images,
-        currency: l.currency ?? "KES",
+        currency: l.company?.currency ?? "KES",
       })),
     },
   };

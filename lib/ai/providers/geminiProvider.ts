@@ -6,6 +6,7 @@
  */
 
 import { IAIProvider } from "./providerInterface";
+import { superAdminAIService } from "../superAdminService";
 import {
   AITextGenerationInput,
   AITextGenerationOutput,
@@ -16,12 +17,13 @@ import {
 export class CentralGeminiProvider implements IAIProvider {
   public name = "GEMINI" as const;
 
-  private getApiKey(): string {
-    const key = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+  private async getApiKey(): Promise<string> {
+    const dbKey = await superAdminAIService.getDecryptedApiKey("GEMINI");
+    const key = dbKey || process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
     if (!key) {
       throw new AIPlatformError(
         "PROVIDER_ERROR",
-        "Google Gemini API key is not configured on the server",
+        "Google Gemini API key is not configured in Super Admin or server environment",
         500,
       );
     }
@@ -37,7 +39,7 @@ export class CentralGeminiProvider implements IAIProvider {
     input: AITextGenerationInput,
   ): Promise<AITextGenerationOutput> {
     const startTime = Date.now();
-    const apiKey = this.getApiKey();
+    const apiKey = await this.getApiKey();
 
     const targetModel = model.id || "gemini-2.0-flash";
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;

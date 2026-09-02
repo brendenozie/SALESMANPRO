@@ -102,7 +102,7 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
       where: { id: order.id },
       data: {
         paymentStatus: "COMPLETED",
-        paymentMethod: "M-PESA",
+        paymentMethod: "MPESA",
         transactionId: receipt,
         transactionDate: new Date(),
         deliveryStatus: "Payment Received",

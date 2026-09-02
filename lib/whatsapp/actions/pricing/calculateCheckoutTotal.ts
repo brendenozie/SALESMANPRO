@@ -34,7 +34,7 @@ export async function calculateCheckoutTotal(
     items: args.items.map((item) => ({
       marketplaceListingId: item.marketplaceListingId,
       quantity: item.quantity,
-      selectedOptions: item.selectedOptions ?? [],
+      selectedOptions: (item.selectedOptions as any) ?? [],
       date: item.date ?? undefined,
       timeSlot: item.timeSlot ?? undefined,
     })),

@@ -7,6 +7,7 @@
 
 import OpenAI from "openai";
 import { IAIProvider } from "./providerInterface";
+import { superAdminAIService } from "../superAdminService";
 import {
   AITextGenerationInput,
   AITextGenerationOutput,
@@ -18,21 +19,18 @@ import {
 
 export class CentralOpenAIProvider implements IAIProvider {
   public name = "OPENAI" as const;
-  private client: OpenAI | null = null;
 
-  private getClient(): OpenAI {
-    if (!this.client) {
-      const apiKey = process.env.OPENAI_API_KEY;
-      if (!apiKey) {
-        throw new AIPlatformError(
-          "PROVIDER_ERROR",
-          "OpenAI API key is not configured on the server",
-          500,
-        );
-      }
-      this.client = new OpenAI({ apiKey });
+  private async getClient(): Promise<OpenAI> {
+    const dbKey = await superAdminAIService.getDecryptedApiKey("OPENAI");
+    const apiKey = dbKey || process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new AIPlatformError(
+        "PROVIDER_ERROR",
+        "OpenAI API key is not configured in Super Admin or server environment",
+        500,
+      );
     }
-    return this.client;
+    return new OpenAI({ apiKey });
   }
 
   public isConfigured(): boolean {
@@ -44,7 +42,7 @@ export class CentralOpenAIProvider implements IAIProvider {
     input: AITextGenerationInput,
   ): Promise<AITextGenerationOutput> {
     const startTime = Date.now();
-    const openai = this.getClient();
+    const openai = await this.getClient();
 
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
@@ -127,7 +125,7 @@ export class CentralOpenAIProvider implements IAIProvider {
     input: AIImageGenerationInput,
   ): Promise<AIImageGenerationOutput> {
     const startTime = Date.now();
-    const openai = this.getClient();
+    const openai = await this.getClient();
 
     const targetModel = model.id === "dall-e-2" ? "dall-e-2" : "dall-e-3";
     const quality = input.quality ?? "standard";

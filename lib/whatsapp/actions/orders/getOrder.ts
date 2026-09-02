@@ -95,7 +95,7 @@ export async function cancelOrder(
     };
   }
 
-  if (order.status === "DELIVERED" || order.status === "SHIPPED") {
+  if (order.status === "COMPLETED" || order.status === "SHIPPED") {
     return {
       success: false,
       action: "cancel_order",

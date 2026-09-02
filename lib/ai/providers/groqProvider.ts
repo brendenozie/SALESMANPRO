@@ -7,6 +7,7 @@
 
 import Groq from "groq-sdk";
 import { IAIProvider } from "./providerInterface";
+import { superAdminAIService } from "../superAdminService";
 import {
   AITextGenerationInput,
   AITextGenerationOutput,
@@ -16,21 +17,18 @@ import {
 
 export class CentralGroqProvider implements IAIProvider {
   public name = "GROQ" as const;
-  private client: Groq | null = null;
 
-  private getClient(): Groq {
-    if (!this.client) {
-      const apiKey = process.env.GROQ_API_KEY;
-      if (!apiKey) {
-        throw new AIPlatformError(
-          "PROVIDER_ERROR",
-          "Groq API key is not configured on the server",
-          500,
-        );
-      }
-      this.client = new Groq({ apiKey });
+  private async getClient(): Promise<Groq> {
+    const dbKey = await superAdminAIService.getDecryptedApiKey("GROQ");
+    const apiKey = dbKey || process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      throw new AIPlatformError(
+        "PROVIDER_ERROR",
+        "Groq API key is not configured in Super Admin or server environment",
+        500,
+      );
     }
-    return this.client;
+    return new Groq({ apiKey });
   }
 
   public isConfigured(): boolean {
@@ -42,7 +40,7 @@ export class CentralGroqProvider implements IAIProvider {
     input: AITextGenerationInput,
   ): Promise<AITextGenerationOutput> {
     const startTime = Date.now();
-    const groq = this.getClient();
+    const groq = await this.getClient();
 
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [];
 

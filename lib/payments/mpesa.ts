@@ -56,7 +56,7 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
       data: {
         trackingNumber: result.CheckoutRequestID,
         transactionReference: result.MerchantRequestID,
-        paymentMethod: "M-Pesa",
+        paymentMethod: "MPESA",
         paymentStatus: "PENDING",
       },
     });

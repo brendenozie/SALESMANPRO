@@ -6,6 +6,7 @@
  */
 
 import prisma from "@/server/db/prismadb";
+import { BlogStatus, OrderStatus, BookingStatus, ListingStatus, EnrollmentStatus } from "@prisma/client";
 
 // ============================================================================
 // User Profile Helpers
@@ -61,8 +62,7 @@ export async function getUserBlogs(
 
   const blogs = await prisma.blog.findMany({
     where: {
-      authorId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as BlogStatus }),
       ...(category && { category }),
       ...(tags && tags.length > 0 && { tags: { hasSome: tags } }),
     },
@@ -77,11 +77,8 @@ export async function getUserBlogs(
       content: true,
       category: true,
       tags: true,
-      featuredImage: true,
+      coverImage: true,
       status: true,
-      views: true,
-      createdAt: true,
-      updatedAt: true,
       publishedAt: true,
     },
   });
@@ -115,26 +112,22 @@ export async function getUserEvents(
 
   const events = await prisma.event.findMany({
     where: {
-      createdById: userId,
-      ...(status && { status }),
-      ...(upcoming && { startDate: { gte: now } }),
+      organizerId: userId,
+      ...(upcoming && { startDateTime: { gte: now } }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
-    orderBy: { startDate: sort },
+    orderBy: { startDateTime: sort },
     select: {
       id: true,
       title: true,
       description: true,
-      startDate: true,
-      endDate: true,
+      startDateTime: true,
+      endDateTime: true,
       location: true,
       imageUrl: true,
-      status: true,
-      capacity: true,
-      type: true,
-      createdAt: true,
-      updatedAt: true,
+      eventStatus: true,
+      eventType: true,
     },
   });
 
@@ -153,7 +146,7 @@ export interface MediaFilters {
 }
 
 /**
- * Get user's media assets (images, videos, albums)
+ * Get user's media content (images, videos, documents)
  */
 export async function getUserMedia(
   userId: string,
@@ -164,7 +157,7 @@ export async function getUserMedia(
 
   // Using marketplaceListings as a proxy for user media content
   // since there's no dedicated media model in the schema
-  const media = await prisma.marketplaceListing.findMany({
+  const media = await prisma.marketplaceListings.findMany({
     where: {
       sellerId: userId,
       ...(type && { type }),
@@ -211,7 +204,7 @@ export async function getUserFinance(
   const orders = await prisma.customerOrder.findMany({
     where: {
       consumerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as OrderStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -269,10 +262,10 @@ export async function getUserAutomotive(
     sort = "desc",
   } = filters;
 
-  const listings = await prisma.marketplaceListing.findMany({
+  const listings = await prisma.marketplaceListings.findMany({
     where: {
       sellerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as ListingStatus }),
       ...(make && { make }),
       ...(model && { model }),
       ...(year && { year }),
@@ -328,7 +321,7 @@ export async function getUserTravel(
   const bookings = await prisma.booking.findMany({
     where: {
       consumerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as BookingStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -370,10 +363,10 @@ export async function getUserFitness(
   const { status, limit = 20, cursor, sort = "desc" } = filters;
 
   // Get user's course enrollments as fitness programs
-  const enrollments = await prisma.enrollment.findMany({
+  const enrollments = await prisma.courseEnrollment.findMany({
     where: {
-      userId: userId,
-      ...(status && { status }),
+      studentId: userId,
+      ...(status && { status: status as EnrollmentStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -384,7 +377,7 @@ export async function getUserFitness(
           id: true,
           title: true,
           description: true,
-          image: true,
+          imageUrl: true,
           duration: true,
           status: true,
         },
@@ -393,6 +386,51 @@ export async function getUserFitness(
   });
 
   return enrollments;
+}
+
+// ============================================================================
+// Health Helpers
+// ============================================================================
+
+export interface HealthFilters {
+  status?: string;
+  limit?: number;
+  cursor?: string;
+  sort?: "asc" | "desc";
+}
+
+/**
+ * Get user's health appointments/records
+ */
+export async function getUserHealth(
+  userId: string,
+  slug?: string,
+  filters: HealthFilters = {},
+) {
+  const { status, limit = 20, cursor, sort = "desc" } = filters;
+
+  // Get user's bookings as health appointments
+  const bookings = await prisma.booking.findMany({
+    where: {
+      consumerId: userId,
+      ...(status && { status: status as BookingStatus }),
+    },
+    take: limit,
+    ...(cursor && { skip: 1, cursor: { id: cursor } }),
+    orderBy: { createdAt: sort },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      status: true,
+      totalPrice: true,
+      notes: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return bookings;
 }
 
 // ============================================================================
@@ -420,7 +458,7 @@ export async function getUserSecurity(
   const bookings = await prisma.booking.findMany({
     where: {
       consumerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as BookingStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -463,10 +501,10 @@ export async function getUserRealEstate(
   const { status, propertyType, limit = 20, cursor, sort = "desc" } = filters;
 
   // Get user's saved/listed properties
-  const listings = await prisma.marketplaceListing.findMany({
+  const listings = await prisma.marketplaceListings.findMany({
     where: {
       sellerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as ListingStatus }),
       ...(propertyType && { propertyTypeId: propertyType }),
     },
     take: limit,
@@ -517,14 +555,15 @@ export async function getUserNonprofit(
   const contributions = await prisma.customerOrder.findMany({
     where: {
       consumerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as OrderStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
     orderBy: { createdAt: sort },
     select: {
       id: true,
-      total: true,
+      totalPrice: true,
+      totalFinalPrice: true,
       status: true,
       createdAt: true,
       updatedAt: true,
@@ -555,10 +594,10 @@ export async function getUserServices(
 ) {
   const { status, limit = 20, cursor, sort = "desc" } = filters;
 
-  const services = await prisma.marketplaceListing.findMany({
+  const services = await prisma.marketplaceListings.findMany({
     where: {
       sellerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as ListingStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -590,8 +629,8 @@ export async function getUserStats(userId: string, slug?: string) {
   const [orderCount, wishlistCount, blogCount, eventCount] = await Promise.all([
     prisma.customerOrder.count({ where: { consumerId: userId } }),
     prisma.wishlist.count({ where: { userId } }),
-    prisma.blog.count({ where: { authorId: userId } }),
-    prisma.event.count({ where: { createdById: userId } }),
+    prisma.blog.count(),
+    prisma.event.count({ where: { organizerId: userId } }),
   ]);
 
   return {
@@ -626,7 +665,7 @@ export async function getUserOrders(
   const orders = await prisma.customerOrder.findMany({
     where: {
       consumerId: userId,
-      ...(status && { status }),
+      ...(status && { status: status as OrderStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -667,7 +706,7 @@ export async function getUserWishlist(
   slug?: string,
   filters: WishlistFilters = {},
 ) {
-  const { limit = 20, cursor, sort = "desc" } = filters;
+  const { limit = 20, cursor } = filters;
 
   const wishlist = await prisma.wishlist.findMany({
     where: {
@@ -675,14 +714,17 @@ export async function getUserWishlist(
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
-    orderBy: { createdAt: sort },
     include: {
-      marketListing: {
-        select: {
-          id: true,
-          name: true,
-          images: true,
-          sellingPrice: true,
+      WishlistItem: {
+        include: {
+          marketplaceListings: {
+            select: {
+              id: true,
+              name: true,
+              images: true,
+              sellingPrice: true,
+            },
+          },
         },
       },
     },
@@ -710,7 +752,7 @@ export async function getUserAddresses(
 ) {
   const { limit = 20, cursor } = filters;
 
-  const addresses = await prisma.userAddress.findMany({
+  const addresses = await prisma.address.findMany({
     where: {
       userId,
     },
@@ -719,16 +761,13 @@ export async function getUserAddresses(
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
-      name: true,
       street: true,
       city: true,
       state: true,
-      zipCode: true,
+      postal: true,
       country: true,
-      phone: true,
       isDefault: true,
       createdAt: true,
-      updatedAt: true,
     },
   });
 
@@ -760,7 +799,7 @@ export async function getUserEngagements(
   const engagements = await prisma.booking.findMany({
     where: {
       OR: [{ consumerId: userId }, { educatorId: userId }],
-      ...(status && { status }),
+      ...(status && { status: status as BookingStatus }),
     },
     take: limit,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),

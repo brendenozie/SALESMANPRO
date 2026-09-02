@@ -135,7 +135,7 @@ export type OpeningHours = Record<
   { open: string; close: string } | undefined
 >;
 
-export interface IUser extends User {}
+export interface IUser extends User { }
 
 export interface ICoreValue {
   id?: string;
@@ -175,7 +175,7 @@ export interface Testimonial {
   order?: number;
 }
 
-export interface HeroSlide extends Banner {}
+export interface HeroSlide extends Banner { }
 // export interface IPromotion extends Promotion {}
 export interface IPromotion {
   id?: string;
@@ -221,7 +221,7 @@ export interface PricingTier {
   isFeatured?: boolean;
 }
 
-export interface IPageSection extends PageSection {}
+export interface IPageSection extends PageSection { }
 export interface AppPromo {
   id?: string;
   headline: string;
@@ -234,7 +234,7 @@ export interface AppPromo {
   screenshots: string[];
 }
 
-export interface IBlog extends Blog {}
+export interface IBlog extends Blog { }
 
 //################################################################################
 //## E-COMMERCE & PRODUCT INTERFACES
@@ -543,12 +543,12 @@ export interface MarketListingForm {
   companyId?: string | null;
   sellerId?: string | null;
   sellerType?:
-    | "CLIENT"
-    | "CONSUMER"
-    | "ADMIN"
-    | "COMPANY"
-    | "INDIVIDUAL"
-    | null;
+  | "CLIENT"
+  | "CONSUMER"
+  | "ADMIN"
+  | "COMPANY"
+  | "INDIVIDUAL"
+  | null;
   productId?: string | null;
   productCategoryId: string;
   productCategory?: any | null | undefined;
@@ -683,7 +683,7 @@ export interface MarketListingForm {
 //## EDUCATION (LMS) INTERFACES
 //################################################################################
 
-export interface ICourse extends Course {}
+export interface ICourse extends Course { }
 
 export interface TimetableEntry extends ClassSchedule {
   courseTitle: string;
@@ -783,7 +783,7 @@ export interface CompanyAddress {
 
   // Link back to the Company
   // companyId: string;
-  
+
   // Address Status
   isMain?: boolean | null; // Indicates if this is the primary address
 
@@ -808,6 +808,7 @@ export interface CompanyAddress {
 // FIXED: This interface no longer extends `Company` to avoid type conflicts.
 // It manually defines the shape of the data for your store form.
 export interface StoreForm {
+  whatsappSettings: any;
   // All fields from Prisma's Company model
   id: string;
   name: string;
@@ -921,7 +922,7 @@ export interface Subscription {
   tier?: string | null; // e.g., "Basic", "Pro", "Enterprise"
   status?: "ACTIVE" | "CANCELLED" | "EXPIRED" | null;
   startDate?: Date | null;
-  endDate?: Date | null ; // null if ongoing
+  endDate?: Date | null; // null if ongoing
   autoRenew?: boolean | null;
   paymentMethod?: string | null; // e.g., "Credit Card", "PayPal"
   billingCycle?: "MONTHLY" | "ANNUAL" | null;
@@ -1014,7 +1015,7 @@ export interface Handlers {
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
   setAddress: (address: string, geo: GeoLocation) => void;
-  
+
   savedLocations?: CompanyAddress[];
   selectedLocationId?: string | null;
 
@@ -1106,19 +1107,19 @@ export interface WhatsAppAIResult {
   reply: string;
 
   intent:
-    | "GREETING"
-    | "SEARCH_PRODUCT"
-    | "PRODUCT_DETAILS"
-    | "CREATE_ORDER"
-    | "ORDER_STATUS"
-    | "BOOK_SERVICE"
-    | "CANCEL_ORDER"
-    | "SELLER_ONBOARDING"
-    | "LISTING_HELP"
-    | "FAQ"
-    | "PROMOTION"
-    | "HUMAN_HANDOFF"
-    | "UNKNOWN";
+  | "GREETING"
+  | "SEARCH_PRODUCT"
+  | "PRODUCT_DETAILS"
+  | "CREATE_ORDER"
+  | "ORDER_STATUS"
+  | "BOOK_SERVICE"
+  | "CANCEL_ORDER"
+  | "SELLER_ONBOARDING"
+  | "LISTING_HELP"
+  | "FAQ"
+  | "PROMOTION"
+  | "HUMAN_HANDOFF"
+  | "UNKNOWN";
 
   confidence: number;
 
@@ -1165,24 +1166,24 @@ export interface StepConfig {
 export type CategoryAction =
   | { type: "TOGGLE_PARENT"; payload: { parent: IProductCategory } }
   | {
-      type: "TOGGLE_SUB";
-      payload: {
-        parentId: string;
-        subcategory: ISubcategory;
-        parentData: IProductCategory;
-      };
-    }
-  | {
-      type: "TOGGLE_BRAND";
-      payload: {
-        parentId: string;
-        brand: string;
-        parentData: IProductCategory;
-      };
-    }
-  | {
-      type: "BULK_UPDATE";
-      payload: { ids: Set<string>; availableForContext: IProductCategory[] };
+    type: "TOGGLE_SUB";
+    payload: {
+      parentId: string;
+      subcategory: ISubcategory;
+      parentData: IProductCategory;
     };
+  }
+  | {
+    type: "TOGGLE_BRAND";
+    payload: {
+      parentId: string;
+      brand: string;
+      parentData: IProductCategory;
+    };
+  }
+  | {
+    type: "BULK_UPDATE";
+    payload: { ids: Set<string>; availableForContext: IProductCategory[] };
+  };
 
 

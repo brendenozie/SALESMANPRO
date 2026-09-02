@@ -318,7 +318,7 @@ export class WhatsAppRepository {
     return prisma.whatsAppConversation.update({
       where: { id: conversationId },
       data: {
-        cart: Prisma.DbNull,
+        cart: Prisma.JsonNull as any,
       },
     });
   }

@@ -3,6 +3,7 @@ import { Worker } from "bullmq";
 import prisma from "@/server/db/prismadb";
 
 import { redisConnection } from "@/lib/redis";
+import { aiRouter } from "@/lib/media/action-router";
 
 
 export const mediaAIWorker = new Worker(
@@ -49,13 +50,14 @@ export const mediaAIWorker = new Worker(
           })
         : undefined;
 
-      const result = await mediaAIRouter.execute(
+      const result = await aiRouter.execute(
         mediaJob.action,
         mediaJob.config as any,
         {
+          jobId,
           userId,
           tenantId,
-          media: media as any,
+          mediaAsset: media as any,
           inputVersion: inputVersion as any,
         },
       );

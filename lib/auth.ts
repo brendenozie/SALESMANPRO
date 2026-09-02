@@ -261,13 +261,13 @@ export const authOptions = (
 
             return {
               id: decodedToken.id as string,
-              name: decodedToken.name,
-              email: decodedToken.email,
-              image: decodedToken.image,
-              role: decodedToken.role,
-              emailVerified: decodedToken.emailVerified,
-              companyId: decodedToken.companyId,
-              hasTenantAccess: decodedToken.hasTenantAccess,
+              name: (decodedToken.name as string) ?? null,
+              email: decodedToken.email as string,
+              image: (decodedToken.image as string) ?? null,
+              role: (decodedToken.role as string) ?? undefined,
+              emailVerified: typeof decodedToken.emailVerified === "boolean" ? decodedToken.emailVerified : null,
+              companyId: (decodedToken.companyId as string) ?? null,
+              hasTenantAccess: Boolean(decodedToken.hasTenantAccess),
             };
           } catch {
             return null;

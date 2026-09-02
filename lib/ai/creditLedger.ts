@@ -203,6 +203,41 @@ export class AICreditLedger {
   }
 
   /**
+   * Direct atomic charge for fixed-cost AI operations (e.g., store setup wizard, 1-click apply).
+   */
+  public async chargeCredits(params: {
+    companyId: string;
+    userId?: string;
+    amount: number;
+    feature: string;
+    description: string;
+    idempotencyKey?: string;
+  }): Promise<{ transactionId: string; balanceAfter: number }> {
+    await this.reserveCredits({
+      companyId: params.companyId,
+      userId: params.userId,
+      amount: params.amount,
+      description: params.description,
+      idempotencyKey: params.idempotencyKey ? `res_${params.idempotencyKey}` : undefined,
+    });
+
+    return this.finalizeCharge({
+      companyId: params.companyId,
+      userId: params.userId,
+      reservedAmount: params.amount,
+      actualAmount: params.amount,
+      description: params.description,
+      idempotencyKey: params.idempotencyKey,
+      usageData: {
+        capability: "PRODUCT_CONTENT",
+        provider: "PLATFORM",
+        model: "fixed_feature",
+        feature: params.feature,
+      },
+    });
+  }
+
+  /**
    * Finalizes an AI credit charge.
    * If actual consumption is lower than reserved, refunds the difference.
    * If actual consumption is higher, deducts additional amount.
