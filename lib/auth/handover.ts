@@ -1,11 +1,19 @@
 import { randomUUID } from "crypto";
 import { encode, decode } from "next-auth/jwt";
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { cacheGet, cacheSet } from "../cache";
 import { isAllowedReturnUrl } from "./context";
 import { HUB_URL, normalizeHost, parseAbsoluteUrl } from "./domain";
 
 const HANDOVER_MAX_AGE = 120;
 const PURPOSE = "cross-domain-handover";
+
+function handoverSecret(): string {
+  return (
+    process.env.NEXTAUTH_SECRET ||
+    process.env.AUTH_SECRET ||
+    "default-salesmanpro-handover-secret-32-chars-min"
+  );
+}
 
 export async function createHandoverToken(user: {
   id: string;
@@ -34,7 +42,7 @@ export async function createHandoverToken(user: {
       jti,
       aud: audienceHost || undefined,
     },
-    secret: process.env.NEXTAUTH_SECRET!,
+    secret: handoverSecret(),
     maxAge: HANDOVER_MAX_AGE,
   });
   return { token, jti };
@@ -53,7 +61,7 @@ export function matchesHandoverAudience(
 export async function consumeHandoverToken(raw: string, expectedHost?: string | null) {
   const decoded = await decode({
     token: raw,
-    secret: process.env.NEXTAUTH_SECRET!,
+    secret: handoverSecret(),
   });
 
   if (!decoded || !decoded.email || !decoded.id) return null;
@@ -73,9 +81,15 @@ export async function consumeHandoverToken(raw: string, expectedHost?: string | 
 }
 
 export async function safeHandoverTarget(rawTarget: string | null | undefined): Promise<URL | null> {
-  const fallback = new URL(HUB_URL);
-  const candidate = rawTarget ? parseAbsoluteUrl(rawTarget) : fallback;
+  const fallback = new URL(`${HUB_URL}/dashboards`);
+  let candidate = rawTarget ? parseAbsoluteUrl(rawTarget) : fallback;
   if (!candidate) return null;
+
+  // Prevent self-referencing handover loops to the auth domain
+  if (normalizeHost(candidate.hostname) === "auth.salesmanpro.site") {
+    candidate = fallback;
+  }
+
   const allowed = await isAllowedReturnUrl(candidate.toString());
   if (!allowed) return null;
   return candidate;

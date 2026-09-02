@@ -26,15 +26,35 @@ export {
 } from "./context-cookie";
 
 export async function resolveReturnContext(callbackUrl: string | null | undefined): Promise<AuthFlowContext | null> {
-  const url = parseAbsoluteUrl(callbackUrl);
+  let url = parseAbsoluteUrl(callbackUrl);
   if (!url) return null;
+
+  // If callbackUrl is a handover URL pointing to auth host, extract the inner target!
+  if (normalizeHost(url.hostname) === AUTH_HOST) {
+    const innerTarget = url.searchParams.get("target");
+    if (innerTarget) {
+      const unwrapped = parseAbsoluteUrl(innerTarget);
+      if (unwrapped) {
+        url = unwrapped;
+      }
+    }
+  }
 
   const host = normalizeHost(url.hostname);
   if (!host) return null;
 
   const classified = classifyHost(host);
 
-  if (classified.kind === "auth") return null;
+  // If the target is still the auth host, default to the Hub dashboards
+  if (classified.kind === "auth") {
+    return {
+      kind: "hub",
+      returnHost: "salesmanpro.site",
+      returnUrl: "https://salesmanpro.site/dashboards",
+      tenantSlug: null,
+      issuedAt: Date.now(),
+    };
+  }
 
   if (classified.kind === "custom_domain") {
     const allowed = await isAllowedReturnUrl(url.toString());
@@ -52,9 +72,10 @@ export async function resolveReturnContext(callbackUrl: string | null | undefine
   };
 }
 
-export function applyAuthContextCookie(res: NextResponse, ctx: AuthFlowContext | null) {
+export async function applyAuthContextCookie(res: NextResponse, ctx: AuthFlowContext | null) {
   if (!ctx) return res;
-  res.cookies.set(AUTH_CONTEXT_COOKIE, encodeAuthContext(ctx), cookieOptions());
+  const token = await encodeAuthContext(ctx);
+  res.cookies.set(AUTH_CONTEXT_COOKIE, token, cookieOptions());
   return res;
 }
 
@@ -63,7 +84,7 @@ export async function attachAuthContextFromRequest(request: NextRequest, res: Ne
     request.nextUrl.searchParams.get("callbackUrl") ||
     request.nextUrl.searchParams.get("target");
   const ctx = await resolveReturnContext(callbackUrl);
-  if (ctx) applyAuthContextCookie(res, ctx);
+  if (ctx) await applyAuthContextCookie(res, ctx);
   return ctx;
 }
 
@@ -81,7 +102,7 @@ export async function isAllowedReturnUrl(raw: string | null | undefined): Promis
   if (isStaticallyAllowedReturnHost(host)) return true;
 
   try {
-    const prisma = (await import("@/server/db/prismadb")).default;
+    const prisma = (await import("../../server/db/prismadb")).default;
     const classified = classifyHost(host);
     const company = await prisma.company.findFirst({
       where: {
@@ -104,9 +125,9 @@ export function contextFromHostFallback(host: string): AuthFlowContext {
   const classified = classifyHost(host);
   if (classified.kind === "auth" || classified.kind === "unknown" || !classified.host) {
     return {
-      kind: "unknown",
-      returnHost: AUTH_HOST,
-      returnUrl: `https://${AUTH_HOST}`,
+      kind: "hub",
+      returnHost: "salesmanpro.site",
+      returnUrl: "https://salesmanpro.site/dashboards",
       tenantSlug: null,
       issuedAt: Date.now(),
     };

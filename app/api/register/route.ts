@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     }
 
     const cookieHeader = req.headers.get("cookie");
-    let ctx = readAuthContextFromCookieHeader(cookieHeader);
+    let ctx = await readAuthContextFromCookieHeader(cookieHeader);
     if (!ctx && callbackUrl) {
       ctx = await resolveReturnContext(callbackUrl);
     }

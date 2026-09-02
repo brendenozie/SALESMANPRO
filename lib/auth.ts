@@ -6,7 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { consumeHandoverToken } from "@/lib/auth/handover";
+import { consumeHandoverToken, safeHandoverTarget } from "@/lib/auth/handover";
 import { canAccessDashboard } from "@/lib/auth/authorization";
 import {
   readAuthContextFromCookieHeader,
@@ -24,9 +24,61 @@ import {
   sendVerificationEmail,
 } from "@/lib/auth/verification";
 
-const aSharedSecret = process.env.NEXTAUTH_SECRET!;
-const googleClientId = process.env.GOOGLE_CLIENT_ID!;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;
+function getSharedSecret(): string {
+  return (
+    process.env.NEXTAUTH_SECRET ||
+    process.env.AUTH_SECRET ||
+    "default-salesmanpro-auth-secret-32-chars-min"
+  );
+}
+
+function createResilientPrismaAdapter(p: typeof prisma) {
+  const baseAdapter = PrismaAdapter(p);
+  return {
+    ...baseAdapter,
+    async getUserByAccount(provider_providerAccountId: {
+      provider: string;
+      providerAccountId: string;
+    }) {
+      const account = await p.account.findUnique({
+        where: { provider_providerAccountId },
+        include: { user: true },
+      });
+      if (!account) return null;
+      if (!account.user) {
+        // Purge orphan account whose User row was deleted so re-linking succeeds
+        await p.account.delete({ where: { id: account.id } }).catch(() => null);
+        return null;
+      }
+      return account.user;
+    },
+    async linkAccount(data: any) {
+      // Use upsert to avoid duplicate key error P2002 if an existing/orphan account record was present
+      return p.account.upsert({
+        where: {
+          provider_providerAccountId: {
+            provider: data.provider,
+            providerAccountId: data.providerAccountId,
+          },
+        },
+        update: {
+          userId: data.userId,
+          type: data.type,
+          refresh_token: data.refresh_token,
+          access_token: data.access_token,
+          expires_at: data.expires_at,
+          token_type: data.token_type,
+          scope: data.scope,
+          id_token: data.id_token,
+          session_state: data.session_state,
+        },
+        create: {
+          ...data,
+        },
+      });
+    },
+  };
+}
 
 export type AuthRequestContext = {
   host?: string;
@@ -102,8 +154,28 @@ async function resolveHasTenantAccess(
 async function resolveFlowContext(
   opts: AuthRequestContext,
 ): Promise<AuthFlowContext | null> {
-  const fromCookie = readAuthContextFromCookieHeader(opts.cookieHeader);
+  const fromCookie = await readAuthContextFromCookieHeader(opts.cookieHeader);
   if (fromCookie) return fromCookie;
+
+  // Fallback: check next-auth callback-url cookie if present
+  if (opts.cookieHeader) {
+    const parts = opts.cookieHeader.split(";").map((p) => p.trim());
+    const match = parts.find(
+      (p) =>
+        p.startsWith("__Secure-next-auth.callback-url=") ||
+        p.startsWith("next-auth.callback-url="),
+    );
+    if (match) {
+      const rawVal = match.split("=").slice(1).join("=");
+      if (rawVal) {
+        try {
+          const decodedVal = decodeURIComponent(rawVal);
+          const resolved = await resolveReturnContext(decodedVal);
+          if (resolved) return resolved;
+        } catch {}
+      }
+    }
+  }
 
   if (opts.requestUrl) {
     try {
@@ -158,9 +230,12 @@ export const authOptions = (
 ): NextAuthOptions => {
   const requestCtx: AuthRequestContext =
     typeof ctx === "string" ? { host: ctx } : ctx || {};
+  const secret = getSharedSecret();
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   return {
-    adapter: PrismaAdapter(prisma),
+    adapter: createResilientPrismaAdapter(prisma) as any,
     providers: [
       CredentialsProvider({
         id: "token-signin",
@@ -271,14 +346,18 @@ export const authOptions = (
         },
       }),
 
-      GoogleProvider({
-        clientId: googleClientId!,
-        clientSecret: googleClientSecret!,
-        allowDangerousEmailAccountLinking: true,
-        httpOptions: {
-          timeout: 40000,
-        },
-      }),
+      ...(googleClientId && googleClientSecret
+        ? [
+            GoogleProvider({
+              clientId: googleClientId,
+              clientSecret: googleClientSecret,
+              allowDangerousEmailAccountLinking: true,
+              httpOptions: {
+                timeout: 40000,
+              },
+            }),
+          ]
+        : []),
     ],
 
     session: {
@@ -295,7 +374,6 @@ export const authOptions = (
         }
 
         if (
-          url.includes("/api/auth/handover") ||
           url.includes("/failure") ||
           url.includes("/unauthorized") ||
           url.includes("/verify-email")
@@ -303,29 +381,66 @@ export const authOptions = (
           return url.startsWith("/") ? `${baseUrl}${url}` : url;
         }
 
+        // If it's already a handover URL, extract and validate the inner target
+        if (url.includes("/api/auth/handover")) {
+          try {
+            const handoverUrlObj = new URL(
+              url.startsWith("/") ? `${baseUrl}${url}` : url,
+            );
+            const innerTarget = handoverUrlObj.searchParams.get("target");
+            if (innerTarget && innerTarget !== url) {
+              const safeTarget = await safeHandoverTarget(innerTarget);
+              if (
+                safeTarget &&
+                normalizeHost(safeTarget.hostname) !== "auth.salesmanpro.site"
+              ) {
+                const cleanHandover = new URL("/api/auth/handover", baseUrl);
+                cleanHandover.searchParams.set("target", safeTarget.toString());
+                return cleanHandover.toString();
+              }
+            }
+          } catch {}
+        }
+
         let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
         try {
-          finalRedirectUrl = decodeURIComponent(finalRedirectUrl);
+          // Safely unroll nested percent-encoding up to 3 levels
+          for (let i = 0; i < 3; i++) {
+            if (finalRedirectUrl.includes("%")) {
+              const next = decodeURIComponent(finalRedirectUrl);
+              if (next === finalRedirectUrl) break;
+              finalRedirectUrl = next;
+            } else {
+              break;
+            }
+          }
         } catch {
           /* already decoded */
         }
 
         try {
           const targetUrlObj = new URL(finalRedirectUrl);
-          const targetHost = targetUrlObj.hostname;
+          const targetHost = normalizeHost(targetUrlObj.hostname);
           const targetPath = targetUrlObj.pathname;
 
+          // If the target is the auth domain itself, redirect to platform dashboards!
           if (
-            targetHost === AUTH_HOST ||
-            targetHost === new URL(baseUrl).hostname
+            targetHost === "auth.salesmanpro.site" ||
+            targetHost === normalizeHost(new URL(baseUrl).hostname)
           ) {
             if (
               targetPath.startsWith("/api/auth") ||
-              targetPath === "/signin" ||
-              targetPath === "/signup" ||
               targetPath.startsWith("/verify-email")
             ) {
               return finalRedirectUrl;
+            }
+            if (
+              targetPath === "/signin" ||
+              targetPath === "/signup" ||
+              targetPath === "/" ||
+              targetPath === ""
+            ) {
+              finalRedirectUrl = `${HUB_URL}/dashboards`;
             }
           }
 
@@ -489,7 +604,8 @@ export const authOptions = (
       },
     },
 
-    secret: aSharedSecret,
+    secret: secret,
+    useSecureCookies: process.env.NODE_ENV === "production",
     pages: {
       signIn: "/signin",
       error: "/signin",
@@ -506,6 +622,67 @@ export const authOptions = (
           path: "/",
           secure: process.env.NODE_ENV === "production",
           maxAge: 30 * 24 * 60 * 60,
+        },
+      },
+      callbackUrl: {
+        name:
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.callback-url"
+            : "next-auth.callback-url",
+        options: {
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+        },
+      },
+      csrfToken: {
+        name:
+          process.env.NODE_ENV === "production"
+            ? "__Host-next-auth.csrf-token"
+            : "next-auth.csrf-token",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+        },
+      },
+      pkceCodeVerifier: {
+        name:
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.pkce.code_verifier"
+            : "next-auth.pkce.code_verifier",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 60 * 15,
+        },
+      },
+      state: {
+        name:
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.state"
+            : "next-auth.state",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 60 * 15,
+        },
+      },
+      nonce: {
+        name:
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.nonce"
+            : "next-auth.nonce",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
         },
       },
     },

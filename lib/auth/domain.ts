@@ -82,6 +82,7 @@ export function isStorefrontSignupKind(kind: SignupOriginKind): boolean {
 export function isStaticallyAllowedReturnHost(host: string): boolean {
   const classified = classifyHost(host);
   if (!classified.host) return false;
+  if (classified.kind === "auth") return false;
   if (classified.kind === "unknown") return false;
   if (classified.kind === "custom_domain") return false;
   return true;
@@ -90,7 +91,21 @@ export function isStaticallyAllowedReturnHost(host: string): boolean {
 export function parseAbsoluteUrl(value: string | null | undefined): URL | null {
   if (!value) return null;
   try {
-    const decoded = decodeURIComponent(value);
+    let decoded = value.trim();
+    // Safely unroll nested percent-encoding up to 3 levels
+    for (let i = 0; i < 3; i++) {
+      if (decoded.includes("%")) {
+        try {
+          const next = decodeURIComponent(decoded);
+          if (next === decoded) break;
+          decoded = next;
+        } catch {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
     const url = new URL(decoded);
     if (url.protocol !== "https:" && url.protocol !== "http:") return null;
     if (url.username || url.password) return null;
