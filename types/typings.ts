@@ -808,7 +808,7 @@ export interface CompanyAddress {
 // FIXED: This interface no longer extends `Company` to avoid type conflicts.
 // It manually defines the shape of the data for your store form.
 export interface StoreForm {
-  whatsappSettings: any;
+  whatsappSettings?: any;
   // All fields from Prisma's Company model
   id: string;
   name: string;

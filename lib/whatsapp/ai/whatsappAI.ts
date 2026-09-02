@@ -119,11 +119,9 @@ export class WhatsAppAIService {
       catalogPreview: context.catalogPreview,
     });
 
-    const modelId =
-      aiConfig?.model ||
-      process.env.GROQ_MODEL ||
-      process.env.OPENAI_MODEL ||
-      "llama-3.3-70b-versatile";
+    // In the new architecture, model resolution is centrally governed by Super Admin
+    // capability routing for "WHATSAPP", ensuring tenant stores don't dictate raw models.
+    const modelId = undefined;
 
     try {
       const output = await aiService.generateText(

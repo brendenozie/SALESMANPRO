@@ -506,5 +506,6 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       : [],
 
     subscription: raw.subscription ?? null,
+    whatsappSettings: raw.whatsappSettings ?? null,
   };
 }

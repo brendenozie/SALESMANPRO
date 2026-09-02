@@ -14,6 +14,7 @@ import { centralGeminiProvider } from "./providers/geminiProvider";
 import { centralImageProvider } from "./providers/imageProvider";
 import { centralVideoProvider } from "./providers/videoProvider";
 import prisma from "@/server/db/prismadb";
+import { superAdminAIService } from "./superAdminService";
 import {
   AICapability,
   AITextGenerationInput,
@@ -38,8 +39,28 @@ export class CentralAIService {
       throw new AIPlatformError("TENANT_NOT_FOUND", "A valid tenant company ID is required", 400);
     }
 
-    // 1. Resolve model & check capabilities
-    const model = modelRegistry.getModel(input.modelId);
+    // 0. Enforce Super Admin Global Kill-switch
+    const isGlobalKilled = await superAdminAIService.getGlobalKillSwitch().catch(() => false);
+    if (isGlobalKilled) {
+      throw new AIPlatformError(
+        "AI_TEMPORARILY_UNAVAILABLE",
+        "Platform AI generation is temporarily suspended by system administration.",
+        503,
+      );
+    }
+
+    // 1. Resolve model via Super Admin capability routing if modelId not explicitly provided
+    let targetModelId = input.modelId;
+    if (!targetModelId && context.capability) {
+      const routingConfig = await prisma.platformAIServiceConfig.findFirst({
+        where: { capability: context.capability, enabled: true },
+      });
+      if (routingConfig?.primaryModelId) {
+        targetModelId = routingConfig.primaryModelId;
+      }
+    }
+
+    const model = modelRegistry.getModel(targetModelId);
     if (!model.enabled) {
       throw new AIPlatformError(
         "MODEL_DISABLED",

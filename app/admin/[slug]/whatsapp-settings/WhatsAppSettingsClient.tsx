@@ -377,31 +377,44 @@ export default function WhatsAppSettingsClient({
                 </label>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Provider Engine</label>
-                  <select
-                    value={settings.provider}
-                    onChange={(e) => handleChange('provider', e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 px-4 text-xs"
-                  >
-                    <option value="OPENAI">OpenAI (GPT-4o, GPT-4o-mini)</option>
-                    <option value="GOOGLE">Google Gemini (Gemini 2.5 Flash / Pro)</option>
-                    <option value="ANTHROPIC">Anthropic (Claude 3.5 Sonnet)</option>
-                    <option value="CUSTOM">Groq / Custom High-Speed LLM</option>
-                  </select>
+              {/* SalesmanPro Managed AI Engine Banner */}
+              <div className="p-4 md:p-5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-200/80 dark:border-indigo-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/20 shrink-0">
+                    <CpuChipIcon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        SalesmanPro Managed Intelligence
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        Platform Optimized
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 max-w-xl leading-relaxed">
+                      Provider routing, low-latency failover, and model versioning are centrally governed by SalesmanPro Super-Admin. Your store consumes AI credits per reply while you customize the persona, tone, and store context below.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Model Variant</label>
-                  <input
-                    type="text"
-                    value={settings.model}
-                    onChange={(e) => handleChange('model', e.target.value)}
-                    placeholder="e.g. gpt-4o-mini, llama-3.3-70b-versatile"
-                    className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 px-4 text-xs font-mono"
-                  />
+                <div className="sm:text-right shrink-0 flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-indigo-200/40 dark:border-indigo-800/40">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Current AI Balance</span>
+                  <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono block">
+                    {creditsLoading ? '...' : (creditsData?.balance ?? aiCreditBalance).toLocaleString()} Credits
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('billing')}
+                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline mt-0.5 cursor-pointer flex items-center gap-1"
+                  >
+                    <span>Manage & Top Up</span>
+                    <ArrowUpRightIcon className="w-3 h-3" />
+                  </button>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Assistant Name</label>
