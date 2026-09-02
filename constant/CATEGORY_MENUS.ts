@@ -60,6 +60,7 @@ import {
   ExclamationTriangleIcon,
   SparklesIcon,
   MapIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 
 // Define hierarchy of tiers with weights for comparison
@@ -357,6 +358,28 @@ const commonEcommerce = (
         {
           label: "AI Wallet & Settings",
           href: `/admin/${adminSlug}/ai-settings`,
+          minTier: "Ghuba Basic",
+        },
+      ],
+    },
+    {
+      label: "Social Media AI",
+      icon: ShareIcon,
+      minTier: "Ghuba Basic",
+      subItems: [
+        {
+          label: "Marketing Command Center",
+          href: `/admin/${adminSlug}/social`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Content Calendar",
+          href: `/admin/${adminSlug}/social/calendar`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Social Analytics",
+          href: `/admin/${adminSlug}/social/analytics`,
           minTier: "Ghuba Basic",
         },
       ],

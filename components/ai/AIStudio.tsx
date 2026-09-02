@@ -59,19 +59,20 @@ type ActiveTab =
   | "analytics";
 
 interface AIStudioProps {
-companyId: string;
-initialProduct?: {
-  productId?: string;
-  name?: string;
-  description?: string;
-  price?: string;
-  imageUrl?: string;
-  category?: string;
-  subcategory?: string;
-};
+  companyId: string;
+  slug?: string;
+  initialProduct?: {
+    productId?: string;
+    name?: string;
+    description?: string;
+    price?: string;
+    imageUrl?: string;
+    category?: string;
+    subcategory?: string;
+  };
 }
 
-export default function AIStudio({ companyId, initialProduct }: AIStudioProps) {
+export default function AIStudio({ companyId, slug, initialProduct }: AIStudioProps) {
 
 
   // 1. Default to "marketing" tab if a product was passed in
@@ -1114,6 +1115,19 @@ export default function AIStudio({ companyId, initialProduct }: AIStudioProps) {
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <MegaphoneIcon className="w-5 h-5 text-pink-600 stroke-2" />
                 <h3 className="font-bold text-slate-900 text-base">Marketing Campaign AI</h3>
+              </div>
+
+              <div className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-xs flex items-center justify-between text-xs">
+                <div>
+                  <p className="font-bold">Social Media Publishing Center</p>
+                  <p className="text-[11px] text-blue-100">Publish directly to Facebook, Instagram, TikTok & YouTube</p>
+                </div>
+                <a
+                  href={`/admin/${slug || "dashboard"}/social${initialProduct?.productId ? `?productId=${initialProduct.productId}&name=${encodeURIComponent(initialProduct.name || "")}` : ""}`}
+                  className="px-3 py-1.5 bg-white text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-50 transition shadow-xs whitespace-nowrap ml-2"
+                >
+                  Open Social Center →
+                </a>
               </div>
 
               <div>

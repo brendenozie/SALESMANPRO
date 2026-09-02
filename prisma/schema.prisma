@@ -508,6 +508,13 @@ model Company {
   aiUsages               AIUsage[]
   aiGenerationJobs       AIGenerationJob[]
 
+  // Social Media Platform
+  socialAccounts         SocialAccount[]
+  socialCampaigns        SocialCampaign[]
+  socialPosts            SocialMediaPost[]
+  socialPublications     SocialPublication[]
+  socialBrandProfile     SocialBrandProfile?
+
   @@index([userId])
   @@index([name])
   @@index([companyCategoryId])
@@ -1963,6 +1970,8 @@ model Product {
   Target              Target[]
   CommissionRate      CommissionRate?
   marketplaceListings marketplaceListings[]
+  socialCampaigns     SocialCampaign[]
+  socialPosts         SocialMediaPost[]
 
   // General Specifications (from General Details)
   model      String?
@@ -9373,6 +9382,7 @@ enum AICapability {
   PRODUCT_CONTENT
   MARKETPLACE_CONTENT
   ANALYSIS
+  SOCIAL_MARKETING
 }
 
 enum AICreditTransactionType {
@@ -9593,4 +9603,217 @@ model AIAuditLog {
   @@index([actorEmail])
   @@index([createdAt])
 }
+
+// ============================================================
+// SOCIAL MEDIA AI & MARKETING PLATFORM MODELS & ENUMS
+// ============================================================
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+}
+
+enum SocialAccountStatus {
+  CONNECTED
+  EXPIRED
+  REVOKED
+  ERROR
+  DISCONNECTED
+}
+
+enum SocialPostStatus {
+  DRAFT
+  GENERATING
+  READY
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  CANCELLED
+}
+
+enum SocialContentType {
+  TEXT
+  IMAGE
+  VIDEO
+  REEL_SHORT
+  CAROUSEL
+}
+
+enum SocialCampaignStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  PAUSED
+  ARCHIVED
+}
+
+enum SocialApprovalMode {
+  AUTOMATIC
+  MANUAL
+}
+
+model SocialAccount {
+  id                      String              @id @default(auto()) @map("_id") @db.ObjectId
+  companyId               String              @db.ObjectId
+  company                 Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  platform                SocialPlatform
+  platformAccountId       String              // Page ID, IG User ID, TikTok Open ID, YouTube Channel ID
+  accountName             String
+  username                String?
+  profileImageUrl         String?
+  accountType             String?             // "PAGE", "BUSINESS", "CREATOR", "CHANNEL"
+  accessTokenEncrypted    String?
+  accessTokenIv           String?
+  accessTokenTag          String?
+  refreshTokenEncrypted   String?
+  refreshTokenIv          String?
+  refreshTokenTag         String?
+  tokenExpiresAt          DateTime?
+  scopes                  String[]
+  status                  SocialAccountStatus @default(CONNECTED)
+  lastSyncAt              DateTime?
+  metadata                Json?               // Follower counts, category, page token status
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  publications            SocialPublication[]
+
+  @@unique([companyId, platform, platformAccountId])
+  @@index([companyId])
+  @@index([platform])
+  @@index([status])
+}
+
+model SocialBrandProfile {
+  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
+  companyId             String              @unique @db.ObjectId
+  company               Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  brandVoice            String?             // e.g. "Professional, friendly, educational"
+  tone                  String?             // e.g. "Inspiring and engaging"
+  preferredLanguage     String              @default("en")
+  targetAudience        Json?               // Personas, buying intent, demographics
+  bannedWords           String[]
+  preferredCtas         String[]
+  defaultHashtags       String[]
+  approvalMode          SocialApprovalMode  @default(MANUAL)
+  postingSchedulePreset Json?               // Preferred days and time slots
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+model SocialCampaign {
+  id              String               @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String               @db.ObjectId
+  company         Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  objective       String               // AWARENESS, SALES, ENGAGEMENT, TRAFFIC, LEAD_GEN
+  status          SocialCampaignStatus @default(ACTIVE)
+  targetAudience  Json?
+  contentPillars  String[]
+  platforms       SocialPlatform[]
+  productId       String?              @db.ObjectId
+  product         Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  startDate       DateTime?
+  endDate         DateTime?
+  frequency       String?              // "DAILY", "WEEKLY", "CUSTOM"
+  budget          Float?
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  posts           SocialMediaPost[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([productId])
+}
+
+model SocialMediaPost {
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  companyId           String              @db.ObjectId
+  company             Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  campaignId          String?             @db.ObjectId
+  campaign            SocialCampaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  productId           String?             @db.ObjectId
+  product             Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
+  title               String?
+  content             String              // Primary copy / caption
+  hashtags            String[]
+  targetPlatforms     SocialPlatform[]
+  contentType         SocialContentType   @default(TEXT)
+  status              SocialPostStatus    @default(DRAFT)
+  mediaAssetIds       String[]
+  mediaUrls           String[]
+  linkUrl             String?
+  callToAction        String?
+  scheduledAt         DateTime?
+  publishedAt         DateTime?
+  aiJobId             String?             @db.ObjectId
+  approvalMode        SocialApprovalMode  @default(MANUAL)
+  isApproved          Boolean             @default(false)
+  approvedByUserId    String?             @db.ObjectId
+  platformAdaptations Json?               // Platform-specific character adaptations, hooks, audio/specs
+  metadata            Json?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  publications        SocialPublication[]
+
+  @@index([companyId])
+  @@index([campaignId])
+  @@index([productId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model SocialPublication {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String              @db.ObjectId
+  company           Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  postId            String              @db.ObjectId
+  post              SocialMediaPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  socialAccountId   String              @db.ObjectId
+  socialAccount     SocialAccount       @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+  platform          SocialPlatform
+  platformPostId    String?             // ID returned by the platform
+  platformPostUrl   String?             // Live post URL
+  status            SocialPostStatus    @default(SCHEDULED)
+  scheduledAt       DateTime?
+  publishedAt       DateTime?
+  error             String?
+  retryCount        Int                 @default(0)
+  lastAttemptAt     DateTime?
+  analytics         Json?               // impressions, reach, views, likes, comments, shares, etc.
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([companyId])
+  @@index([postId])
+  @@index([socialAccountId])
+  @@index([platform])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model PlatformSocialAppConfig {
+  id                     String         @id @default(auto()) @map("_id") @db.ObjectId
+  platform               SocialPlatform @unique
+  enabled                Boolean        @default(true)
+  clientId               String?
+  clientSecretEncrypted  String?
+  clientSecretIv         String?
+  clientSecretTag        String?
+  redirectUri            String?
+  requiredScopes         String[]
+  rateLimitPerMinute     Int            @default(60)
+  metadata               Json?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@index([enabled])
+}
+
 

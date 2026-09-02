@@ -31,5 +31,5 @@ export default async function AiStudioPage({ params, searchParams }: PageProps) 
     return <div className="p-8 text-slate-500">Company configuration not found.</div>;
   }
 
-  return <AiStudioPageClient initialProduct={initialProductContext} companyId={company.id} />;
+  return <AiStudioPageClient initialProduct={initialProductContext} companyId={company.id} slug={slug} />;
 }

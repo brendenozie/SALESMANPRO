@@ -350,3 +350,4 @@ export class CentralAIService {
 }
 
 export const aiService = new CentralAIService();
+export const centralAIService = aiService;

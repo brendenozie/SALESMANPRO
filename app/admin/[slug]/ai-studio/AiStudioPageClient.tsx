@@ -4,7 +4,8 @@ import React from "react";
 import AIStudio from "@/components/ai/AIStudio";
 
 interface Props {
-  companyId: string;  
+  companyId: string;
+  slug?: string;
   initialProduct?: {
     productId?: string;
     name?: string;
@@ -16,6 +17,6 @@ interface Props {
   };
 }
 
-export default function AiStudioPageClient({ companyId, initialProduct }: Props) {
-  return <AIStudio companyId={companyId} initialProduct={initialProduct} />;
+export default function AiStudioPageClient({ companyId, slug, initialProduct }: Props) {
+  return <AIStudio companyId={companyId} slug={slug} initialProduct={initialProduct} />;
 }
