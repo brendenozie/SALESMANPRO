@@ -12,14 +12,14 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SuperAdminAIPage() {
-  // try {
-  //   await requireSuperAdmin();
-  // } catch (error: any) {
-  //   if (error?.statusCode === 401) {
-  //     redirect("/signin?callbackUrl=/super-admin/ai");
-  //   }
-  //   redirect("/unauthorized");
-  // }
+  try {
+    await requireSuperAdmin();
+  } catch (error: any) {
+    if (error?.statusCode === 401) {
+      redirect("/signin?callbackUrl=/super-admin/ai");
+    }
+    redirect("/unauthorized");
+  }
 
   return <SuperAdminAIControlCenter />;
 }
