@@ -156,9 +156,12 @@ export interface FetchWithCacheOptions {
 export async function fetchWithCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  options: FetchWithCacheOptions = {},
+  options: FetchWithCacheOptions | number = {},
 ): Promise<T> {
-  const { ttlSeconds = 60, swrSeconds = 0 } = options;
+  const opts: FetchWithCacheOptions =
+    typeof options === "number" ? { ttlSeconds: options } : options;
+  const { ttlSeconds = 60, swrSeconds = 0 } = opts;
+
 
   // 1. Try reading from cache first
   const cached = await cacheGet<T>(key);

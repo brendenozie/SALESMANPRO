@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { unstable_cache } from 'next/cache';
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { cacheGet, cacheSet, fetchWithCache, buildTenantCacheKey } from "@/lib/cache";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -77,26 +77,22 @@ export async function GET(req: Request) {
     const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
     const limit = Math.min(parseInt(searchParams.get("limit") || "6", 10), 50);
 
-    const cacheKey = `shop:productsByCategory:agent:${agentId || 'all'}:category:${categoryId || 'all'}:page:${page}:limit:${limit}`;
+    const cacheKey = buildTenantCacheKey(agentId || "global", "productsByCategory", {
+      categoryId: categoryId || "all",
+      page,
+      limit,
+    });
 
-    try {
-      const cached = await cacheGet(cacheKey);
-      if (cached) return withCors(cached, 200);
-    } catch (e) {}
-
-    // Fetch from cache
-    const result = await getListingsByCategory(agentId, categoryId, page, limit);
-    
-
-    try {
-      await cacheSet(cacheKey, result, 300); // Cache for 5 minutes
-    } catch (e) {
-      console.error("Failed to cache products by category:", e);
-    }
+    const result = await fetchWithCache(
+      cacheKey,
+      () => getListingsByCategory(agentId, categoryId, page, limit),
+      180
+    );
 
     return withCors(result, 200, {
       "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
     });
+
 
   } catch (error: any) {
     console.error("Error fetching marketplace listings by category:", error);

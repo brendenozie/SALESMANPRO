@@ -11,7 +11,7 @@ import Filters from "./ProductFilters";
 import CarGrid from "./ProductCarGrid";
 import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageProps {
   params: { slug: string };

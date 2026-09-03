@@ -5,7 +5,7 @@ import prisma from "@/server/db/prismadb";
 
 import FitnessCoursesListingView from "./FitnessCoursesListingView";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{

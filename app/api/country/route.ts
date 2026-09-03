@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithCache } from "@/lib/cache";
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -31,27 +32,48 @@ export function OPTIONS() {
   });
 }
 
-
 export async function GET(req: NextRequest) {
   try {
-   
-    // 3. SLOWEST: Call ipapi with the USER'S IP
-    // We must get the IP from headers, otherwise ipapi sees the server's IP
     const forwardedFor = req.headers.get("x-forwarded-for");
-    const userIp = forwardedFor ? forwardedFor.split(',')[0] : null;
+    const userIp = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
 
-    if (userIp) {
-        const res = await fetch(`https://ipapi.co/${userIp}/json/`, {
-             headers: { "User-Agent": "Mozilla/5.0" }
-        });
-        const data = await res.json();
-        return withCors({ country: data.country_name || "Unknown" });
+    if (userIp && userIp !== "127.0.0.1" && userIp !== "::1") {
+      const cacheKey = `geo:country:${userIp}`;
+
+      const country = await fetchWithCache(
+        cacheKey,
+        async () => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+          try {
+            const res = await fetch(`https://ipapi.co/${userIp}/json/`, {
+              headers: { "User-Agent": "Mozilla/5.0" },
+              signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+
+            if (!res.ok) return "Unknown";
+            const data = await res.json();
+            return data.country_name || "Unknown";
+          } catch (fetchErr) {
+            clearTimeout(timeoutId);
+            return "Unknown";
+          }
+        },
+        86400 // 24 hours TTL
+      );
+
+      return withCors(
+        { country },
+        200,
+        { "Cache-Control": "private, max-age=86400, stale-while-revalidate=43200" }
+      );
     }
 
     return withCors({ country: "Unknown" });
-
   } catch (e) {
     console.error("Location lookup failed:", e);
-    return withCors({ country: "Unknown" }, 500);
+    return withCors({ country: "Unknown" }, 200);
   }
 }

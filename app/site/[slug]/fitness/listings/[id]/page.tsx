@@ -7,7 +7,7 @@ import prisma from "@/server/db/prismadb";
 
 import FitnessWellnessView from "./FitnessWellnessView";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageParams {
   slug: string;

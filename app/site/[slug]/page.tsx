@@ -2,7 +2,10 @@ import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
 import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 
+export const revalidate = 60;
+
 interface StorePageProps {
+
   params: Promise<{
     slug: string;
   }>;

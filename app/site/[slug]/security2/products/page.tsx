@@ -3,7 +3,7 @@ import { loadStore } from '@/lib/loadStore';
 import ProductsClient from './ProductsClient';
 import { findCompanyCached } from '@/lib/company-fetcher';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ProductListPage({ params, searchParams }: {
   params: { slug: string };

@@ -5,6 +5,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useMemo,
   ReactNode,
   Dispatch,
   SetStateAction,
@@ -73,14 +74,17 @@ export function StoreContextProvider({
   // Local piece of state to track which service the user last clicked “Learn More” on.
   const [inquiryServiceId, setInquiryServiceId] = useState<string | number | null>(null);
 
-  // Build the object we’ll hand out via context
-  const value: StoreContextType = {
-    storeFormData: initialStore,
-    inquiryServiceId,
-    setInquiryServiceId,
-    userRole, // Include userRole in the context value
-    userId
-  };
+  // Memoize context value to prevent unnecessary re-rendering across storefront tree
+  const value = useMemo<StoreContextType>(
+    () => ({
+      storeFormData: initialStore,
+      inquiryServiceId,
+      setInquiryServiceId,
+      userRole,
+      userId,
+    }),
+    [initialStore, inquiryServiceId, userRole, userId],
+  );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

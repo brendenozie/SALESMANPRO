@@ -3,8 +3,9 @@ import { loadStore } from '@/lib/loadStore';
 import ProductsClient from './ProductsClient';
 import { findCompanyCached } from '@/lib/company-fetcher';
 import { notFound } from 'next/navigation';
+import { fetchWithCache, buildTenantCacheKey } from '@/lib/cache';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ProductListPage({ params, searchParams }: {
   params: { slug: string };
@@ -13,7 +14,7 @@ export default async function ProductListPage({ params, searchParams }: {
   const { slug } = params;
   const company = await findCompanyCached(slug, "lean");
 
-  if(!company)   notFound();
+  if (!company) notFound();
 
   const companyId = company.id;
 
@@ -21,30 +22,41 @@ export default async function ProductListPage({ params, searchParams }: {
   const pageSize = 12;
   const page = parseInt(searchParams.page || "1", 10);
 
-  const [categories, initialListings, totalCount] = await Promise.all([
-    prisma.storeCategory.findMany({
-      where: { companyId },
-      orderBy: { displayName: "asc" },
-      select: { id: true, displayName: true }
-    }),
+  const cacheKey = buildTenantCacheKey(companyId, "products_page", { page, pageSize });
 
-    prisma.marketplaceListings.findMany({
-      where: { companyId },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: { createdAt: "desc" }, // default
-      select: {
-        id: true,
-        name: true,
-        finalPrice: true,
-        sellingPrice: true,
-        images: true,
-        option:true
-      }
-    }),
+  const { categories, initialListings, totalCount } = await fetchWithCache(
+    cacheKey,
+    async () => {
+      const [categories, initialListings, totalCount] = await Promise.all([
+        prisma.storeCategory.findMany({
+          where: { companyId },
+          orderBy: { displayName: "asc" },
+          select: { id: true, displayName: true },
+        }),
 
-    prisma.marketplaceListings.count({ where: { companyId } })
-  ]);
+        prisma.marketplaceListings.findMany({
+          where: { companyId },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            name: true,
+            finalPrice: true,
+            sellingPrice: true,
+            images: true,
+            option: true,
+          },
+        }),
+
+        prisma.marketplaceListings.count({ where: { companyId } }),
+      ]);
+
+      return { categories, initialListings, totalCount };
+    },
+    180 // 3 minute cache
+  );
+
 
   const safeInitialListings = initialListings as any;
 

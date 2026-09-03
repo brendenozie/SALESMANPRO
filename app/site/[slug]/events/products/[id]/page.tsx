@@ -11,7 +11,7 @@ interface PageProps {
   params: Promise<{ slug: string; productId: string }>;
 }
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function EventDetailPage({ params }: PageProps) {
   const { slug, productId } = await params;

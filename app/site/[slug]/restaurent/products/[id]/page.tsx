@@ -9,7 +9,7 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 import { MarketListingForm } from '@/types/typings';
 import RestaurantDishDetail from './RestaurantDishDetail';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface PageParams {
   slug: string;

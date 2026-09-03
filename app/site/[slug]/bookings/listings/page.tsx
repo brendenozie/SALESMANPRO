@@ -23,7 +23,7 @@ interface PageProps {
   };
 }
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function AutoMarketPage({ params, searchParams = {} }: PageProps) {
   const { slug } = params;

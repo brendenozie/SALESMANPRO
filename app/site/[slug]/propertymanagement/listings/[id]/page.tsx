@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import prisma from "@/server/db/prismadb";
 import PropertyDetailsClient from "./PropertyDetailsClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageProps {
   params: { id: string };

@@ -7,7 +7,7 @@ import { findCompanyCached } from "@/lib/company-fetcher";
 
 import { notFound } from 'next/navigation';
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface ProductListPageProps {
   params: { slug: string };

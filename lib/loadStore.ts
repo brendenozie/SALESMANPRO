@@ -1,18 +1,24 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import React from "react";
 import { findCompanyCached, pageDataInclude } from "@/lib/company-fetcher";
 import { transformCompanyToStoreForm } from "@/utils/transformPrismaToStoreForm";
 import { getComponentNameForCategory } from "@/components/site/layouts/siteBodyComponentMap";
-import { getGhubaHomepageCached } from "@/lib/ghuba-fetcher"; // <-- Add this import
+import { getGhubaHomepageCached } from "@/lib/ghuba-fetcher";
+
+// Safe per-request memoization helper compatible with React 18 types
+const requestCache = ((React as any).cache || (<T extends (...args: any[]) => any>(fn: T): T => fn)) as <T extends (...args: any[]) => any>(fn: T) => T;
 
 export interface LoadedStore {
   raw: any;
   pageData: any;
   componentName: string;
-  ghubaData?: any; // <-- Add this to the interface
+  ghubaData?: any;
 }
 
-export async function loadStore(slug: string): Promise<LoadedStore> {
+export const loadStore = requestCache(async (slug: string): Promise<LoadedStore> => {
+
+
   const raw = await findCompanyCached(slug, "page");
 
   if (!raw) notFound();
@@ -35,4 +41,4 @@ export async function loadStore(slug: string): Promise<LoadedStore> {
   }
 
   return { raw, pageData, componentName, ghubaData };
-}
+});

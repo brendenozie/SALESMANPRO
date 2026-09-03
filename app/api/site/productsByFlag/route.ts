@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { unstable_cache } from "next/cache";
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { cacheGet, cacheSet, fetchWithCache, buildTenantCacheKey } from "@/lib/cache";
 
 /* ---------------------------------------------
    CORS
@@ -192,7 +192,7 @@ const getProductsByFlag = unstable_cache(
       },
     };
   },
-  [],
+  ["products-by-flag-base"],
   {
     revalidate: 60,
     tags: ["products-by-flag"],
@@ -216,21 +216,25 @@ export async function GET(request: Request) {
     const page = Math.max(Number(searchParams.get("page") || 1), 1);
 
     const queryString = searchParams.toString();
-    const cacheKey = `shop:products:${companyId}:${flag}:${page}:${limit}:${queryString}`;
-
-    // External Cache check
-    const cached = await cacheGet(cacheKey);
-    if (cached) return withCors(cached);
-
-    const result = await getProductsByFlag({
-      companyId,
+    const cacheKey = buildTenantCacheKey(companyId, "productsByFlag", {
       flag,
-      limit,
       page,
-      queryString, // passing safe string instead of object instance
+      limit,
+      query: queryString,
     });
 
-    await cacheSet(cacheKey, result, 300);
+    const result = await fetchWithCache(
+      cacheKey,
+      () =>
+        getProductsByFlag({
+          companyId,
+          flag,
+          limit,
+          page,
+          queryString,
+        }),
+      180
+    );
 
     return withCors(result, 200, {
       "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
@@ -243,3 +247,4 @@ export async function GET(request: Request) {
     );
   }
 }
+

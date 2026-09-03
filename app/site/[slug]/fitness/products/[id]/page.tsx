@@ -9,7 +9,7 @@ import FitnessWellnessView from "./FitnessWellnessView";
 
 import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface PageParams {
   slug: string;

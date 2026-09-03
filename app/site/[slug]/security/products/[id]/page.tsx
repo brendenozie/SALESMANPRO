@@ -13,7 +13,7 @@ interface PageProps {
 }
 
 // Ensure this is a server component as it fetches data
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug, productId } = await params;

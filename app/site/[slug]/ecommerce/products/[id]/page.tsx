@@ -1,14 +1,13 @@
-// app/[slug]/products/[productId]/page.tsx
-// Hybrid (Option B) refactor — server page + client ProductDetail
-
 import React from 'react';
 import { notFound } from 'next/navigation';
-import prisma from '@/server/db/prismadb'; // server-only
-import { ProductDetail } from './ProductDetail'; // client component
+import prisma from '@/server/db/prismadb';
+import { ProductDetail } from './ProductDetail';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { MarketListingForm } from '@/types/typings';
+import { findCompanyCached } from '@/lib/company-fetcher';
+import { fetchWithCache, buildTenantCacheKey } from '@/lib/cache';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface PageParams {
   slug: string;
@@ -28,26 +27,47 @@ export default async function ProductPage({ params }: PageProps) {
   // validate params quickly
   if (!slug || !id) notFound();
 
-  const product = await prisma.marketplaceListings.findFirst({
-    where: { id: id },
-    // include relations selectively if needed: images, variants, category
-    include: {
-      // images: true, // adjust to your schema
-      productCategory: true,
-    },
-  });
+  // Resolve tenant first to ensure strict tenant isolation
+  const company = await findCompanyCached(slug, "lean");
+  if (!company) notFound();
+
+  // Fetch product with tenant scope and singleflight cache protection
+  const productKey = buildTenantCacheKey(company.id, "product_detail", { id });
+  const product = await fetchWithCache(
+    productKey,
+    () =>
+      prisma.marketplaceListings.findFirst({
+        where: { id: id, companyId: company.id },
+        include: {
+          productCategory: true,
+        },
+      }),
+    300
+  );
 
   if (!product) notFound();
 
-  const related = await prisma.marketplaceListings.findMany({
-    where: {
-      companyId: product.companyId,
-      productCategoryId: product.productCategoryId,
-      NOT: { id: product.id },
-    },
-    take: 8,
-    include: { productCategory: true },
+  // Fetch related products with tenant scope and singleflight caching
+  const relatedKey = buildTenantCacheKey(company.id, "related_products", {
+    categoryId: product.productCategoryId || "none",
+    excludeId: product.id,
   });
+
+  const related = await fetchWithCache(
+    relatedKey,
+    () =>
+      prisma.marketplaceListings.findMany({
+        where: {
+          companyId: company.id,
+          productCategoryId: product.productCategoryId,
+          NOT: { id: product.id },
+        },
+        take: 8,
+        include: { productCategory: true },
+      }),
+    300
+  );
+
 
   // Normalize images server-side to avoid runtime checks in client
   const normalizeImages = (images: any): string[] => {

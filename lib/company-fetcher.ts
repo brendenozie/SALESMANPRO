@@ -1,6 +1,12 @@
 import "server-only";
+import React from "react";
 import { unstable_cache, revalidateTag } from "next/cache";
 import prisma from "@/server/db/prismadb";
+import { fetchWithCache, buildTenantCacheKey, cacheDel } from "@/lib/cache";
+
+// Safe per-request memoization helper compatible with React 18 types
+const requestCache = ((React as any).cache || (<T extends (...args: any[]) => any>(fn: T): T => fn)) as <T extends (...args: any[]) => any>(fn: T) => T;
+
 
 // Define the valid strategies to ensure type safety across the file
 type FetchStrategy = "lean" | "page";
@@ -47,13 +53,11 @@ const latestSubscriptionInclude = {
       status: true,
       renewalDate: true,
       createdAt: true,
-      billingCycle: true, // 👈 Moved this up from the plan level
+      billingCycle: true,
       plan: {
-        // 👈 Changed from 'subscription' to 'plan'
         select: {
           id: true,
           name: true,
-          // slug: true,  // 👈 Removed: 'slug' does not exist on the Plan model
           price: true,
           currency: true,
         },
@@ -68,48 +72,26 @@ const INCLUDE_MAP = {
 };
 
 /**
- * 🔍 Base Company Finder (No caching, executed by unstable_cache)
- * The identifier passed here is already cleaned and normalized by the wrapper.
- */
-/**
- * 🔍 Base Company Finder (No caching, executed by unstable_cache)
- * The identifier passed here is already cleaned and normalized by the wrapper.
+ * 🔍 Optimized Single-Query Company Finder
+ * Executes a single OR lookup across slug, domain, www.domain, and id
  */
 async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
   const include = INCLUDE_MAP[strategy];
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(cleanIdentifier);
 
-  // 1️⃣ Lookup by custom domain first (checking both raw and www. variants)
-  let company = await prisma.company.findFirst({
+  // Single unified database query instead of 3 sequential roundtrips
+  const company = await prisma.company.findFirst({
     where: {
-      OR: [{ domain: cleanIdentifier }, { domain: `www.${cleanIdentifier}` }],
+      OR: [
+        { slug: cleanIdentifier },
+        { domain: cleanIdentifier },
+        { domain: `www.${cleanIdentifier}` },
+        ...(isObjectId ? [{ id: cleanIdentifier }] : []),
+      ],
     },
     include,
   });
 
-  // 2️⃣ Fallback: Lookup by subdomain / slug
-  if (!company) {
-    company = await prisma.company.findFirst({
-      where: { slug: cleanIdentifier },
-      include,
-    });
-  }
-
-  // 3️⃣ Fallback: Lookup by ID
-  if (!company) {
-    // Note: If using strict UUIDs or ObjectIds, you might want to wrap this in a
-    // try/catch if cleanIdentifier isn't a valid format, as Prisma can throw here.
-    try {
-      company = await prisma.company.findFirst({
-        where: { id: cleanIdentifier },
-        include,
-      });
-    } catch (error) {
-      // Ignore format errors if it's not a valid ID
-      company = null;
-    }
-  }
-
-  // 🛑 FIX: If no company is found across all lookups, return null immediately
   if (!company) {
     return null;
   }
@@ -123,16 +105,14 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
           isActive:
             !!latestSubscription.renewalDate &&
             latestSubscription.renewalDate > new Date(),
-
-          // status: latestSubscription.status,
           status:
             latestSubscription?.renewalDate &&
             latestSubscription?.renewalDate > new Date()
               ? "ACTIVE"
               : "INACTIVE",
           renewalDate: latestSubscription.renewalDate,
-          plan: latestSubscription.plan, // 👈 Changed from .subscription to .plan
-          billingCycle: latestSubscription.billingCycle, // 👈 Pass the billing cycle here if you need it
+          plan: latestSubscription.plan,
+          billingCycle: latestSubscription.billingCycle,
         }
       : {
           isActive: false,
@@ -143,110 +123,50 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
   };
 }
 
-// async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
-//   const include = INCLUDE_MAP[strategy];
-
-//   // 1️⃣ Lookup by custom domain first (checking both raw and www. variants)
-//   let company = await prisma.company.findFirst({
-//     where: {
-//       OR: [{ domain: cleanIdentifier }, { domain: `www.${cleanIdentifier}` }],
-//     },
-//     include,
-//   });
-
-//   // 2️⃣ Fallback: Lookup by subdomain / slug
-//   if (!company) {
-//     company = await prisma.company.findFirst({
-//       where: { slug: cleanIdentifier },
-//       include,
-//     });
-//   }
-
-//   if (!company) {
-//     company = await prisma.company.findFirst({
-//       where: { id: cleanIdentifier },
-//       include,
-//     });
-//   }
-
-//   // const latestSubscription = company?.subscriptionCompanies?.[0];
-
-//   // const subscriptionInfo = latestSubscription
-//   //   ? {
-//   //       status:
-//   //         latestSubscription.renewalDate &&
-//   //         latestSubscription.renewalDate > new Date()
-//   //           ? "ACTIVE"
-//   //           : "INACTIVE",
-
-//   //       renewalDate: latestSubscription.renewalDate,
-//   //       subscriptionStatus: latestSubscription.status,
-
-//   //       plan: latestSubscription.subscription,
-//   //     }
-//   //   : {
-//   //       status: "INACTIVE",
-//   //       renewalDate: null,
-//   //       subscriptionStatus: null,
-//   //       plan: null,
-//   //     };
-
-//   const latestSubscription = company?.subscriptionCompanies?.[0] || null;
-
-//   return {
-//     ...company,
-//     subscription: latestSubscription
-//       ? {
-//           isActive:
-//             !!latestSubscription.renewalDate &&
-//             latestSubscription.renewalDate > new Date(),
-
-//           status: latestSubscription.status,
-//           renewalDate: latestSubscription.renewalDate,
-//           plan: latestSubscription.subscription,
-//         }
-//       : {
-//           isActive: false,
-//           status: "INACTIVE",
-//           renewalDate: null,
-//           plan: null,
-//         },
-//   };
-// }
-
 /**
  * 🧩 Tenant-aware Cached Fetcher
- * Generates an instantaneous cache match using highly stable string primitives.
+ * Layer 1: React.cache() - Request-level memoization across generateMetadata, Layout, and Page.
+ * Layer 2: fetchWithCache() - Redis + bounded in-memory LRU with Singleflight stampede protection (600s TTL).
+ * Layer 3: Next.js unstable_cache - Framework-level tag-based revalidation.
  */
-export async function findCompanyCached(
+export const findCompanyCached = requestCache(async (
   identifier: string,
   strategy: FetchStrategy = "lean",
-) {
+) => {
   // 1️⃣ Normalize safely up front to guarantee it's a string
   const cleanIdentifier = (identifier || "")
     .replace(/^www\./, "")
     .toLowerCase()
     .trim();
 
-  // 2️⃣ Build a stable cache key
-  const key = ["company-details", cleanIdentifier, strategy].join(":");
+  if (!cleanIdentifier) return null;
 
-  // 3️⃣ Setup the Next.js cache with the safe primitive variable
-  const cachedFetcher = unstable_cache(
-    () => findCompanyFn(cleanIdentifier, strategy), // 👈 Arrow func keeps scope clean
-    [key],
-    {
-      tags: [
-        `company:${cleanIdentifier}`,
-        `company-details:${cleanIdentifier}:${strategy}`,
-      ], // 👈 Safe primitive variables
-      revalidate: false, // Relies on manual revalidation from API routes
+  // 2️⃣ Deterministic multi-tenant cache key
+  const cacheKey = buildTenantCacheKey(cleanIdentifier, "company_details", { strategy });
+
+  // 3️⃣ Execute with Singleflight stampede protection and two-tier Redis/in-memory caching
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      // Setup Next.js tag-aware cache wrapper for ISR/framework integration
+      const nextKey = ["company-details", cleanIdentifier, strategy].join(":");
+      const cachedFetcher = unstable_cache(
+        () => findCompanyFn(cleanIdentifier, strategy),
+        [nextKey],
+        {
+          tags: [
+            `company:${cleanIdentifier}`,
+            `company-details:${cleanIdentifier}:${strategy}`,
+          ],
+          revalidate: 600, // 10 minute revalidation
+        },
+      );
+      return cachedFetcher();
     },
+    600 // 10 minute TTL
   );
+});
 
-  // 4️⃣ Execute
-  return cachedFetcher();
-}
 
 /**
  * -----------------------------------------------------
@@ -376,19 +296,46 @@ export function pageDataInclude() {
  * -----------------------------------------------------
  */
 
-// Invalidate the shell/page cache for a specific tenant by slug or domain
+// Invalidate the shell/page cache for a specific tenant by slug, domain, or id
 export async function revalidateCompanyCache(identifier: string) {
-  // 👈 Renamed parameter from 'slug' to 'identifier' for accuracy
-  revalidateTag(`company:${identifier}`);
-  revalidateTag(`company-details:${identifier}:lean`);
-  revalidateTag(`company-details:${identifier}:page`);
-  revalidateTag(`company-details:${identifier}:full`);
+  const clean = (identifier || "").replace(/^www\./, "").toLowerCase().trim();
+  if (!clean) return;
+
+  try {
+    revalidateTag(`company:${clean}`);
+    revalidateTag(`company-details:${clean}:lean`);
+    revalidateTag(`company-details:${clean}:page`);
+    revalidateTag(`company-details:${clean}:full`);
+  } catch (e) {}
+
+  // Invalidate Redis / in-memory cache pipelines
+  try {
+    await cacheDel(`tenant:${clean}:company_details:*`);
+    await cacheDel(`tenant:${clean}:storefront:*`);
+    await cacheDel(`tenant:${clean}:config:*`);
+    await cacheDel(`company-details:${clean}:*`);
+  } catch (e) {}
 }
 
-// Invalidate specific data subsets for a tenant
-export const revalidateStore = (companyId: string) => {
-  revalidateTag(`products-${companyId}`);
-  revalidateTag(`categories-${companyId}`);
-  revalidateTag(`blogs-${companyId}`);
-  revalidateTag(`testimonials-${companyId}`);
-};
+// Invalidate specific storefront catalog subsets for a tenant
+export async function revalidateStore(companyId: string) {
+  if (!companyId) return;
+
+  try {
+    revalidateTag(`products-${companyId}`);
+    revalidateTag(`categories-${companyId}`);
+    revalidateTag(`blogs-${companyId}`);
+    revalidateTag(`testimonials-${companyId}`);
+    revalidateTag(`products-by-flag`);
+  } catch (e) {}
+
+  // Invalidate Redis / in-memory cache pipelines
+  try {
+    await cacheDel(`tenant:${companyId}:products:*`);
+    await cacheDel(`tenant:${companyId}:productsByFlag:*`);
+    await cacheDel(`tenant:${companyId}:categories:*`);
+    await cacheDel(`shop:products:${companyId}:*`);
+    await cacheDel(`shop:productsByCategory:*${companyId}*`);
+  } catch (e) {}
+}
+
