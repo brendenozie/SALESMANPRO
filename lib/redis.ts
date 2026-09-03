@@ -56,7 +56,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export function isRedisAvailable(): boolean {
-  return redisConnection.status === "ready" || redisConnection.status === "connect";
+  return redisConnection.status === "ready";
 }
 
 const redis = redisConnection;

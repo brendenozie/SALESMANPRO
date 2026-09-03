@@ -48,7 +48,7 @@ if (process.env.NODE_ENV !== "production") {
     globalThis.__redisClient = exports.redisConnection;
 }
 function isRedisAvailable() {
-    return exports.redisConnection.status === "ready" || exports.redisConnection.status === "connect";
+    return exports.redisConnection.status === "ready";
 }
 exports.isRedisAvailable = isRedisAvailable;
 const redis = exports.redisConnection;

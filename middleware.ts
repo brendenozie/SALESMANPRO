@@ -3,6 +3,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 import { AUTH_HOST, classifyHost } from "@/lib/auth/domain";
 import { canAccessDashboard } from "@/lib/auth/authorization";
 import { attachAuthContextFromRequest } from "@/lib/auth/context";
+import { getTrustedHost, getTrustedProtocol } from "@/lib/requestIdentity";
 
 const PRIMARY_HOST_NAME = "salesmanpro.site";
 
@@ -58,8 +59,9 @@ export default async function middleware(
     userAgent.includes("SalesmanProDesktop") ||
     userAgent.includes("SalesmanProAndroid");
 
-  const host = request.headers.get("host")?.split(":")[0] || "";
-  const fullHost = request.headers.get("host") || "";
+  const host = getTrustedHost(request);
+  const fullHost = request.headers.get("host") || host;
+  const proto = getTrustedProtocol(request);
   const isLocalHost =
     host === "localhost" || host === "127.0.0.1" || fullHost.endsWith(":3000");
 
@@ -70,7 +72,14 @@ export default async function middleware(
   }
 
   if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-requested-host", host);
+    requestHeaders.set("x-forwarded-proto", proto);
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   if (host.startsWith("www.")) {
