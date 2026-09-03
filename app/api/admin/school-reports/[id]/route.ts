@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/store-categories/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -23,7 +23,7 @@ async function getStoreCategories(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:school-reports:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "school-reports", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -131,7 +131,10 @@ async function createStoreCategory(req: Request) {
       categorySlug: newStoreCategory.category?.slug,
     };
 
-    try { await cacheDel(`admin:school-reports:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:school-reports:*`);
+      await cacheDel(`admin:school-reports:*`);
+    } catch (e) {}
     return formatResponse(true, responseData, "Store category created successfully", 201);
   } catch (error: any) {
     console.error("Error creating store category:", error);

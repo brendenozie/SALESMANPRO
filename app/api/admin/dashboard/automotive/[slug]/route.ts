@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -19,7 +19,7 @@ export const GET = withApiHandler(
       const todayEnd = new Date(now.setHours(23, 59, 59, 999));
 
       
-    const cacheKey = `admin:automotive:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "automotive", {});
 
   try {
     const cached = await cacheGet(cacheKey);

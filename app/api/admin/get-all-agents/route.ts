@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb"; 
@@ -19,7 +19,7 @@ const getAgentsLogic = async (req: Request) => {
 
     // 2. Fetch the agents
     
-    const cacheKey = `admin:get-all-agents:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "get-all-agents", {});
 
   try {
     const cached = await cacheGet(cacheKey);

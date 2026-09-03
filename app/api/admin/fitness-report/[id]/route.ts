@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 
@@ -20,7 +20,7 @@ const getPropertyLogic = async (request: Request, { params }: RouteContext) => {
 
     const { id } = params;
 
-    const cacheKey = `admin:fitness-report:${id || 'global'}:all`;    
+    const cacheKey = buildTenantCacheKey(id, "fitness-report", {});
 
     try {
         const cached = await cacheGet(cacheKey);
@@ -106,7 +106,10 @@ const putPropertyLogic = async (request: Request, { params }: RouteContext) => {
 
         // Return 200 success response
         
-    try { await cacheDel(`admin:fitness-report:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:fitness-report:*`);
+      await cacheDel(`admin:fitness-report:*`);
+    } catch (e) {}
     return formatResponse(true, updatedProperty, 'Property updated successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found
@@ -129,7 +132,10 @@ const deletePropertyLogic = async (request: Request, { params }: RouteContext) =
         });
         // Return 200 success response
         
-    try { await cacheDel(`admin:fitness-report:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:fitness-report:*`);
+      await cacheDel(`admin:fitness-report:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Property deleted successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found

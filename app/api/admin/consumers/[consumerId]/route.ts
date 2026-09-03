@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
 import { formatResponse } from "@/lib/formatResponse";
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import { Prisma } from "@prisma/client";
 
 /* ====================================================
@@ -65,7 +65,8 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
     });
 
     if (updated.companyId) {
-      await cacheDel(`admin:consumers:${updated.companyId}:*`);
+      await cacheDel(`tenant:${updated.companyId}:consumers:*`);
+      await cacheDel(`admin:consumers:*`);
     }
 
     return formatResponse(
@@ -115,7 +116,8 @@ export const DELETE = withAuthAndRateLimit(async (_req, { params }) => {
   ]);
 
   if (consumer.companyId) {
-    await cacheDel(`admin:consumers:${consumer.companyId}:*`);
+    await cacheDel(`tenant:${consumer.companyId}:consumers:*`);
+    await cacheDel(`admin:consumers:*`);
   }
 
   return formatResponse(

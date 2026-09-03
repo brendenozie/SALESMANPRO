@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/projects/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -30,7 +30,7 @@ export const GET = withApiHandler(
     const { id } = params;
     if (!id) return formatResponse(false, null, "Project ID is required.", 400);
 
-    const cacheKey = `admin:projects:${id || "global"}:all`;
+    const cacheKey = buildTenantCacheKey(id, "projects", {});
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -104,7 +104,8 @@ export const PUT = withApiHandler(
       });
 
       try {
-        await cacheDel(`admin:projects:${id || "global"}:*`);
+        await cacheDel(`tenant:${id}:projects:*`);
+        await cacheDel(`admin:projects:*`);
       } catch (e) {}
 
       return formatResponse(
@@ -147,7 +148,8 @@ export const DELETE = withApiHandler(
       });
 
       try {
-        await cacheDel(`admin:projects:${id || "global"}:*`);
+        await cacheDel(`tenant:${id}:projects:*`);
+        await cacheDel(`admin:projects:*`);
       } catch (e) {}
       return formatResponse(true, null, "Project deleted successfully", 200);
     } catch (error: any) {

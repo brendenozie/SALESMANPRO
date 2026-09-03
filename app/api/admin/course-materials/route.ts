@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -42,7 +42,7 @@ export const GET = withApiHandler(async (req: Request) => {
     );
   }
 
-  const cacheKey = `admin:course-materials:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "course-materials", { courseId });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -160,7 +160,10 @@ export const POST = withApiHandler(async (req: Request) => {
       },
     });
 
-    try { await cacheDel(`admin:course-materials:${created.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${created.id}:course-materials:*`);
+      await cacheDel(`admin:course-materials:*`);
+    } catch (e) {}
 
     return formatResponse(
       true,

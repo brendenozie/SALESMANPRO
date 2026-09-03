@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import bcrypt from "bcryptjs";
 
 async function convertLeadToConsumer(req: Request) {
@@ -127,8 +127,10 @@ async function convertLeadToConsumer(req: Request) {
 
   // 4. Invalidate cache
   try {
-    await cacheDel(`admin:leads:${companyId}:*`);
-    await cacheDel(`admin:consumers:${companyId}:*`);
+    await cacheDel(`tenant:${companyId}:leads:*`);
+    await cacheDel(`admin:leads:*`);
+    await cacheDel(`tenant:${companyId}:consumers:*`);
+    await cacheDel(`admin:consumers:*`);
   } catch (e) {
     // Silently ignore cache deletion failures
   }

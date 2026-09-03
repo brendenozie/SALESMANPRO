@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -52,7 +52,7 @@ function formatSettings(company: Awaited<ReturnType<typeof fetchCompanySettings>
 
 async function handleGetSettings(request: Request, { params }: SettingsParams) {
 
-  const cacheKey = `admin:health-settings:${params.adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.adminSlug, "health-settings", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -173,7 +173,10 @@ async function handleUpdateSettings(request: Request, { params }: SettingsParams
 
   // Return success response with updated data
   
-    try { await cacheDel(`admin:health-settings:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:health-settings:*`);
+      await cacheDel(`admin:health-settings:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Settings updated successfully", settings: updatedSettings }, "Settings updated successfully", 200);
 }
 

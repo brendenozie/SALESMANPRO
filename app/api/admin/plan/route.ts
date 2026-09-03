@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/plans/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -26,7 +26,7 @@ const getHandler = async (request: Request) => {
   if (companyId) where.companyId = companyId;
 
   // Caching
-  const cacheKey = `admin:plan:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "plan", { page });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -144,7 +144,10 @@ const postHandler = async (request: Request) => {
   });
 
   
-    try { await cacheDel(`admin:plan:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:plan:*`);
+      await cacheDel(`admin:plan:*`);
+    } catch (e) {}
     return NextResponse.json(newPlan, { status: 201 });
 };
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -32,7 +32,7 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, "Invalid sortOrder parameter", 400);
   }
 
-  const cacheKey = `admin:invoices:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "invoices", { endDate, limit, page, sortBy, sortOrder, startDate });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -216,7 +216,10 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
 
   // Return success response with status 201
   
-    try { await cacheDel(`admin:invoices:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:invoices:*`);
+      await cacheDel(`admin:invoices:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Invoice generated successfully", invoice: newInvoice }, null, 201);
 }
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -23,7 +23,10 @@ const updateCategoryLogic = async (request: Request, { params }: RouteParams) =>
   });
 
   // Invalidate relevant caches
-  try { await cacheDel(`admin:libraryCategories:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:libraryCategories:*`);
+    await cacheDel(`admin:libraryCategories:*`);
+  } catch (e) {}
   return formatResponse(true, updatedCategory, "Category updated successfully", 200);
 };
 
@@ -42,7 +45,10 @@ const deleteCategoryLogic = async (request: Request, { params }: RouteParams) =>
   });
 
   // Invalidate relevant caches
-  try { await cacheDel(`admin:libraryCategories:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:libraryCategories:*`);
+    await cacheDel(`admin:libraryCategories:*`);
+  } catch (e) {}
   return formatResponse(true, null, "Category removed from archive", 200);
 };
 

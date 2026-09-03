@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -14,7 +14,7 @@ const getFeeStructuresLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required to fetch fee structures.", 400);
   }
 
-  const cacheKey = `admin:fee-structure:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "fee-structure", {});
   
   try {
     const cached = await cacheGet(cacheKey);
@@ -97,7 +97,8 @@ const postFeeStructureLogic = async (request: Request) => {
   });
 
   try {
-    await cacheDel(`admin:fee-structure:${companyId || 'global'}:*`);
+    await cacheDel(`tenant:${companyId}:fee-structure:*`);
+    await cacheDel(`admin:fee-structure:*`);
   } catch (e) {}
 
   return formatResponse(true, newFeeStructure, "Fee structure created successfully", 201);

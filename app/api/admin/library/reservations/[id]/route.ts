@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -42,7 +42,8 @@ export const PATCH = withApiHandler(async (request: Request, { params }: any) =>
 
   // Invalidate cache for reservations list
   try {
-    await cacheDel(`admin:libraryReservations:${reservation.companyId || 'global'}:*`);
+    await cacheDel(`tenant:${reservation.companyId}:libraryReservations:*`);
+    await cacheDel(`admin:libraryReservations:*`);
   } catch (e) {}
 
   return formatResponse(true, updated, `Reservation marked as ${status}`, 200);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +13,7 @@ async function getDonors(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:donors:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "donors", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -92,7 +92,10 @@ async function createDonor(request: Request) {
   });
 
   
-    try { await cacheDel(`admin:donors:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:donors:*`);
+      await cacheDel(`admin:donors:*`);
+    } catch (e) {}
     return formatResponse(true, { data: newDonor }, null, 201);
 }
 

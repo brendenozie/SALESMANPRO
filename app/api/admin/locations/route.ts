@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -16,7 +16,7 @@ async function handleGetLocations(request: Request) {
   const slug = searchParams.get("slug");
   const adminSlug = searchParams.get("adminSlug");
 
-  const cacheKey = `admin:locations:${slug || adminSlug || "global" || "global"}:all`;
+  const cacheKey = buildTenantCacheKey(slug || adminSlug, "locations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -166,7 +166,8 @@ async function handlePostLocation(request: Request) {
   // Return success response with status 201 via formatResponse wrapped by withApiHandler
 
   try {
-    await cacheDel(`admin:locations:${slug || "global"}:*`);
+    await cacheDel(`tenant:${slug}:locations:*`);
+    await cacheDel(`admin:locations:*`);
   } catch (e) {}
   return formatResponse(true, newLocation, null, 201);
 }

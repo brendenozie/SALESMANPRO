@@ -1,4 +1,4 @@
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
@@ -67,7 +67,8 @@ export const PUT = withAuthAndRateLimit(
 
       // Target the precise key created by your GET route
       try {
-        await cacheDel(`admin:agents:${updatedAgent.companyId}:all`);
+        await cacheDel(`tenant:${updatedAgent.companyId}:agents:*`);
+        await cacheDel(`admin:agents:*`);
       } catch (e) {}
 
       return formatResponse(
@@ -166,7 +167,8 @@ export const DELETE = withAuthAndRateLimit(
       });
 
       try {
-        await cacheDel(`admin:agents:${companyId}:all`);
+        await cacheDel(`tenant:${companyId}:agents:*`);
+        await cacheDel(`admin:agents:*`);
       } catch (e) {}
 
       return formatResponse(

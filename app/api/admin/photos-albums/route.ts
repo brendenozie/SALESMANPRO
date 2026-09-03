@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/photo-albums/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -12,7 +12,7 @@ const getHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:photos-albums:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "photos-albums", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -68,7 +68,10 @@ const postHandler = async (request: Request) => {
     },
   });
 
-    try { await cacheDel(`admin:photos-albums:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:photos-albums:*`);
+      await cacheDel(`admin:photos-albums:*`);
+    } catch (e) {}
     return NextResponse.json(newPhotoAlbum, { status: 201 });
 };
 

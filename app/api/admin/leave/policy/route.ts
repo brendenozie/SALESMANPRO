@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -27,7 +27,10 @@ export async function POST(request: Request) {
     );
 
     
-    try { await cacheDel(`admin:policy:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:policy:*`);
+      await cacheDel(`admin:policy:*`);
+    } catch (e) {}
     return NextResponse.json({ success: true, updates });
   } catch (error) {
     return NextResponse.json({ error: "Failed to save policies" }, { status: 500 });

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   try {
     
-    const cacheKey = `admin:leave:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "leave", { status });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -58,7 +58,10 @@ export async function PATCH(request: Request) {
     }
 
     
-    try { await cacheDel(`admin:leave:${updated.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updated.companyId}:leave:*`);
+      await cacheDel(`admin:leave:*`);
+    } catch (e) {}
     return formatResponse(true, updated, "Leave request updated", 200);
   } catch (error) {
     return formatResponse(false, null, "Update failed", 500);

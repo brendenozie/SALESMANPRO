@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -32,7 +32,10 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
   });
 
     // Invalidate relevant caches
-    try { await cacheDel(`admin:libraryBooks:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
+      await cacheDel(`admin:libraryBooks:*`);
+    } catch (e) {}
 
   return formatResponse(true, updatedBook, "Archive record updated", 200);
 };
@@ -52,7 +55,10 @@ const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
   });
 
     // Invalidate relevant caches
-    try { await cacheDel(`admin:libraryBooks:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
+      await cacheDel(`admin:libraryBooks:*`);
+    } catch (e) {}
 
   return formatResponse(true, null, "Volume removed from archive", 200);
 };

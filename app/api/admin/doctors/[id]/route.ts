@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -40,7 +40,7 @@ async function getDoctor(_req: Request, { params }: { params: { id: string } }) 
   const { id } = params;
 
   
-    const cacheKey = `admin:doctors:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "doctors", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -111,7 +111,10 @@ async function updateDoctor(req: Request, { params }: { params: { id: string } }
 
     const formatted = await formatDoctorData(updatedDoctor);
     
-    try { await cacheDel(`admin:doctors:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:doctors:*`);
+      await cacheDel(`admin:doctors:*`);
+    } catch (e) {}
     return formatResponse(true, formatted, "Doctor updated successfully", 200);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {
@@ -154,7 +157,10 @@ async function deleteDoctor(_req: Request, { params }: { params: { id: string } 
     }
   }
   
-    try { await cacheDel(`admin:doctors:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:doctors:*`);
+      await cacheDel(`admin:doctors:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedId: id }, "Doctor deleted successfully", 200);
 }
 

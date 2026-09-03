@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -63,7 +63,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:send-whatsapp:${updatedLead.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedLead.companyId}:send-whatsapp:*`);
+      await cacheDel(`admin:send-whatsapp:*`);
+    } catch (e) {}
     return NextResponse.json({ success: true, messageId: result.messages[0].id });
 
   } catch (error: any) {

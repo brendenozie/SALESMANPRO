@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -53,7 +53,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:manual:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:manual:*`);
+      await cacheDel(`admin:manual:*`);
+    } catch (e) {}
     return formatResponse(true, attendance, "Manual override successful", 200);
 
   } catch (error: any) {

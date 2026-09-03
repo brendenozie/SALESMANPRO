@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb';
@@ -63,7 +63,7 @@ async function getExperts(request: Request) {
     return formatResponse(false, null, 'Missing companyId query parameter.', 400);
   }
 
-  const cacheKey = `admin:experts:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "experts", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -196,7 +196,10 @@ async function createExpert(request: Request) {
 
   const formattedNewExpert = formatExpertData(newExpertData);
 
-  try { await cacheDel(`admin:experts:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:experts:*`);
+    await cacheDel(`admin:experts:*`);
+  } catch (e) {}
   
   return formatResponse(true, formattedNewExpert, null, 201);
 }

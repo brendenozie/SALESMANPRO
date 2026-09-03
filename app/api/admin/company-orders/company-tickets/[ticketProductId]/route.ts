@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // // app/api/admin/[adminSlug]/tickets/[ticketProductId]/route.ts
 
 // app/api/admin/[adminSlug]/tickets/[ticketProductId]/route.ts
@@ -147,7 +147,10 @@ export const PUT = withApiHandler(async (request, { params }) => {
   }
 
   
-    try { await cacheDel(`admin:company-tickets:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:company-tickets:*`);
+      await cacheDel(`admin:company-tickets:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Ticket type updated successfully");
 });
 
@@ -174,7 +177,10 @@ export const DELETE = withApiHandler(async (_, { params }) => {
     return formatResponse(false, null, "Ticket type not found", 404);
   }
 
-    try { await cacheDel(`admin:company-tickets:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:company-tickets:*`);
+      await cacheDel(`admin:company-tickets:*`);
+    } catch (e) {}
 
   return new NextResponse(null, { status: 204 });
 });

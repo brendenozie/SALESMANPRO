@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/class-schedules/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -104,7 +104,8 @@ const deleteClassSchedule = async (_req: Request, context: { params: { id: strin
     await prisma.classSchedule.delete({ where: { id, companyId } });
     // Invalidate cache for this specific schedule
     try {
-      await cacheDel(`admin:classSchedule:${companyId}:*`);
+      await cacheDel(`tenant:${companyId}:classSchedule:*`);
+      await cacheDel(`admin:classSchedule:*`);
     } catch (e) {}
     return formatResponse(true, { id }, "Deleted successfully", 200);
   } catch (error) {

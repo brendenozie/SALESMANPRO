@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/product-categories/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -7,7 +7,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 export const GET = withApiHandler(async (_req, { params }: { params: { id: string } }) => {
   
-  const cacheKey = `admin:product-categories:${params.id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.id, "product-categories", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -40,7 +40,10 @@ export const PUT = withApiHandler(async (req, { params }: { params: { id: string
     data: rest,
   });
 
-    try { await cacheDel(`admin:product-categories:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:product-categories:*`);
+      await cacheDel(`admin:product-categories:*`);
+    } catch (e) {}
     return formatResponse(true, category, "Category updated successfully");
 });
 
@@ -50,6 +53,9 @@ export const DELETE = withApiHandler(async (_req, { params }: { params: { id: st
     where: { id: params.id },
   });
 
-    try { await cacheDel(`admin:product-categories:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:product-categories:*`);
+      await cacheDel(`admin:product-categories:*`);
+    } catch (e) {}
     return formatResponse(true, deleted, "Category deleted successfully");
 });

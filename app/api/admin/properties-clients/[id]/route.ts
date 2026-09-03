@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/clients/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -86,7 +86,8 @@ const updateClient = async (req: Request, { params }: { params: { id: string } }
   };
 
   try {
-    await cacheDel(`admin:properties-clients:${updatedClient.companyId || 'global'}:*`);
+    await cacheDel(`tenant:${updatedClient.companyId}:properties-clients:*`);
+    await cacheDel(`admin:properties-clients:*`);
   } catch (e) {}
 
   return formatResponse(true, clientProfile, "Client updated successfully", 200);
@@ -118,7 +119,8 @@ const deleteClient = async (req: Request, { params }: { params: { id: string } }
   await prisma.user.delete({ where: { id: client.userId } });
 
   try {
-    await cacheDel(`admin:properties-clients:${client.companyId || 'global'}:*`);
+    await cacheDel(`tenant:${client.companyId}:properties-clients:*`);
+    await cacheDel(`admin:properties-clients:*`);
   } catch (e) {}
 
   return formatResponse(true, null, "Client deleted successfully", 200);

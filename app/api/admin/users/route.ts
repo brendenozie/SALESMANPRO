@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/users/route.ts
 import prisma from "@/server/db/prismadb";
 import { UserStatus, Plan, ROLES } from "@prisma/client";
@@ -49,7 +49,7 @@ async function handleGET(request: Request) {
 
     // Fetch total count for pagination
     
-    const cacheKey = `admin:users:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "users", { page });
 
   try {
     const cached = await cacheGet(cacheKey);

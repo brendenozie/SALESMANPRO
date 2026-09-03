@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -120,7 +120,10 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
 
     // withApiHandler will wrap this in formatResponse(true, formattedUpdatedLocation, null, 200)
     
-    try { await cacheDel(`admin:locationsv2:${locationId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${locationId}:locationsv2:*`);
+      await cacheDel(`admin:locationsv2:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedLocation, "Location updated successfully", 200);
 
   } catch (error) {
@@ -165,7 +168,10 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
 
     // Return success response with status 200
     
-    try { await cacheDel(`admin:locationsv2:${locationId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${locationId}:locationsv2:*`);
+      await cacheDel(`admin:locationsv2:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Location deleted successfully.', 200);
 
   } catch (error) {

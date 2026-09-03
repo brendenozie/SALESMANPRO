@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/virtual-tours/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -10,7 +10,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const companyId = searchParams.get('companyId');
 
   
-    const cacheKey = `admin:virtual-tours:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "virtual-tours", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -124,6 +124,9 @@ export const POST = withApiHandler(async (request: Request) => {
   };
 
   
-    try { await cacheDel(`admin:virtual-tours:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:virtual-tours:*`);
+      await cacheDel(`admin:virtual-tours:*`);
+    } catch (e) {}
     return formatResponse(true, formattedNewTour, 'Virtual tour created successfully.', 201);
 });

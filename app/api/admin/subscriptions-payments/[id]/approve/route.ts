@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/subscriptions-payments/[id]/approve/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -55,7 +55,10 @@ export async function POST(
       return updatedSub;
     });
 
-    try{ await cacheDel(`admin:subscriptions:${result.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${result.companyId}:subscriptions:*`);
+      await cacheDel(`admin:subscriptions:*`);
+    } catch (e) {}
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 400 });

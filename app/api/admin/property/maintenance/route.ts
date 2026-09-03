@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatDistanceToNow } from "date-fns";
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
 
   try {
     
-    const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "maintenance", {});
 
   try {
     const cached = await cacheGet(cacheKey);

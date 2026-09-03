@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { Prisma } from "@prisma/client";
 
 // Define a reusable selection for performance
@@ -102,7 +102,8 @@ const updateFee = async (
     // Invalidate caches
     try {
       await cacheDel(cacheKey);
-      await cacheDel(`admin:fees:${companyId}:*`);
+      await cacheDel(`tenant:${companyId}:fees:*`);
+      await cacheDel(`admin:fees:*`);
     } catch (e) {}
 
     return NextResponse.json(
@@ -142,7 +143,8 @@ const deleteFee = async (
     // Invalidate caches
     try {
       await cacheDel(`admin:fee:${id}`);
-      await cacheDel(`admin:fees:${companyId}:*`);
+      await cacheDel(`tenant:${companyId}:fees:*`);
+      await cacheDel(`admin:fees:*`);
     } catch (e) {}
 
     return NextResponse.json(

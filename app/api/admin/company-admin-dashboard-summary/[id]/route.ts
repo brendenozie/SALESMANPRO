@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/courses/[id]/route.ts
 
 import { NextResponse } from "next/server";
@@ -54,7 +54,7 @@ const formatCourse = (course: any) => ({
 // --- GET Handler ---
 async function handleGet(_req: Request, context: { params: { id: string } }) {
   
-    const cacheKey = `admin:company-admin-dashboard-summary:${context.params.id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(context.params.id, "company-admin-dashboard-summary", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -101,7 +101,10 @@ async function handlePatch(request: Request, context: { params: { id: string } }
     });
 
     
-    try { await cacheDel(`admin:company-admin-dashboard-summary:${context.params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${context.params.id}:company-admin-dashboard-summary:*`);
+      await cacheDel(`admin:company-admin-dashboard-summary:*`);
+    } catch (e) {}
     return formatResponse(true, formatCourse(updated), "Course updated successfully");
   } catch (error: any) {
     if (error.code === 'P2002') return formatResponse(false, null, "Course code already exists", 409);
@@ -115,7 +118,10 @@ async function handleDelete(_req: Request, context: { params: { id: string } }) 
   try {
     await prisma.course.delete({ where: { id: context.params.id } });
     
-    try { await cacheDel(`admin:company-admin-dashboard-summary:${context.params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${context.params.id}:company-admin-dashboard-summary:*`);
+      await cacheDel(`admin:company-admin-dashboard-summary:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Course deleted successfully");
   } catch (error: any) {
     if (error.code === 'P2025') return formatResponse(false, null, "Course not found", 404);

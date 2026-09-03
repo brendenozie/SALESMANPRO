@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { z } from "zod";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -22,7 +22,7 @@ async function getDepartments(request: Request) {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
-  const cacheKey = `admin:departments:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "departments", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -76,7 +76,10 @@ async function createDepartment(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:departments:${parsed.data.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${parsed.data.companyId}:departments:*`);
+      await cacheDel(`admin:departments:*`);
+    } catch (e) {}
     return formatResponse(true, { data: newDepartment }, null, 201);
   } catch (error: any) {
     if (error.code === "P2002" && error.meta?.target?.includes("name")) {

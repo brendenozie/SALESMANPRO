@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/travel-bookings/[bookingId]/route.ts
 import prisma from '@/server/db/prismadb';
 
@@ -83,7 +83,10 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
     };
 
     
-    try { await cacheDel(`admin:travel-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:travel-bookings:*`);
+      await cacheDel(`admin:travel-bookings:*`);
+    } catch (e) {}
     return formatResponse(true, formatted);
   } catch (error: any) {
     console.error(`Error updating travel booking ${bookingId}:`, error);
@@ -110,7 +113,10 @@ async function handleDELETE(request: Request, { params }: { params: { adminSlug:
     await prisma.booking.delete({ where: { id: bookingId } });
 
     
-    try { await cacheDel(`admin:travel-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:travel-bookings:*`);
+      await cacheDel(`admin:travel-bookings:*`);
+    } catch (e) {}
     return formatResponse(true, { message: 'Booking deleted successfully.' });
   } catch (error: any) {
     console.error(`Error deleting travel booking ${bookingId}:`, error);

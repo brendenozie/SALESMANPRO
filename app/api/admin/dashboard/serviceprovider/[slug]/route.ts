@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -17,7 +17,7 @@ export const GET = withApiHandler(
     try {
       // Find the company by its slug to get the ID
       
-    const cacheKey = `admin:serviceprovider:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "serviceprovider", {});
 
   try {
     const cached = await cacheGet(cacheKey);

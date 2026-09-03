@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     // We search for Students first (the most common use case)
     // We only want students who don't have an ACTIVE hostel allocation
     
-    const cacheKey = `admin:allocate:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "allocate", { query });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -118,7 +118,10 @@ export async function POST(req: Request) {
       return allocation;
     });
 
-    try { await cacheDel(`admin:allocate:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:allocate:*`);
+      await cacheDel(`admin:allocate:*`);
+    } catch (e) {}
 
     return formatResponse(true, result, "Allocation created successfully", 200);
   } catch (error: any) {

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/properties/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -39,7 +39,7 @@ export const GET = withApiHandler(async (request: Request) => {
     ];
   }
 
-  const cacheKey = `admin:properties:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "properties", { categoryId, status, type });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -120,6 +120,9 @@ export const POST = withApiHandler(async (request: Request) => {
   });
 
   
-    try { await cacheDel(`admin:properties:${newProperty.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${newProperty.companyId}:properties:*`);
+      await cacheDel(`admin:properties:*`);
+    } catch (e) {}
     return formatResponse(true, newProperty, "Property created successfully", 201);
 });

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -95,7 +95,10 @@ export async function GET(req: NextRequest) {
         });
       }
 
-      try { await cacheDel(`admin:vercel:${auth.user.id || 'global'}:*`); } catch (e) {}
+      try {
+        await cacheDel(`tenant:${auth.user.id}:vercel:*`);
+        await cacheDel(`admin:vercel:*`);
+      } catch (e) {}
 
       return formatResponse(
         true,
@@ -193,7 +196,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    try { await cacheDel(`admin:vercel:${auth.user.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${auth.user.id}:vercel:*`);
+      await cacheDel(`admin:vercel:*`);
+    } catch (e) {}
     return formatResponse(
       true,
       {

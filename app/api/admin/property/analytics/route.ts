@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { buildTenantCacheKey, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { startOfDay, subDays } from "date-fns";
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   if (!companyId)
     return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:analytics:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "analytics", {});
 
   try {
     const cached = await cacheGet(cacheKey);

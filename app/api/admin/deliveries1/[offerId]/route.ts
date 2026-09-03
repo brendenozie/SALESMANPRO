@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -17,7 +17,7 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
   const { offerId } = params;
 
   
-    const cacheKey = `admin:offers:${offerId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(offerId, "offers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -149,7 +149,10 @@ async function handlePatchOffer(request: Request, { params }: RouteParams) {
     });
 
     // Clear cache for this specific offer
-    try { await cacheDel(`admin:offers:${offerId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${offerId}:offers:*`);
+      await cacheDel(`admin:offers:*`);
+    } catch (e) {}
 
     return formatResponse(true, updatedOffer, "Offer updated successfully", 200);
   } catch (error) {
@@ -172,7 +175,10 @@ async function handleDeleteOffer(request: Request, { params }: RouteParams) {
     });
 
     
-    try { await cacheDel(`admin:offers:${offerId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${offerId}:offers:*`);
+      await cacheDel(`admin:offers:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Offer deleted successfully.', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -15,7 +15,7 @@ async function handleGetInquiries(request: Request) {
     throw new Error("Company ID is required to fetch inquiries.");
   }
 
-  const cacheKey = `admin:inquiries:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "inquiries", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -88,7 +88,10 @@ async function handlePostInquiry(request: Request) {
 
   // Return success response with status 201
   
-    try { await cacheDel(`admin:inquiries:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:inquiries:*`);
+      await cacheDel(`admin:inquiries:*`);
+    } catch (e) {}
     return formatResponse(true, newInquiry, "Inquiry created successfully", 201);
 }
 

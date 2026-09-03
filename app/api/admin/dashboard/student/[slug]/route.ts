@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -17,7 +17,7 @@ export async function GET(
   try {
     // 1. Fetch Student and their current Classroom Anchor
     
-    const cacheKey = `admin:student:${userId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(userId, "student", {});
 
   try {
     const cached = await cacheGet(cacheKey);

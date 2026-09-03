@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/video-albums/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
@@ -12,7 +12,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const companyId = searchParams.get('companyId');
 
   
-    const cacheKey = `admin:videos-albums:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "videos-albums", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -65,6 +65,9 @@ export const POST = withApiHandler(async (request: Request) => {
   });
 
   
-    try { await cacheDel(`admin:videos-albums:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:videos-albums:*`);
+      await cacheDel(`admin:videos-albums:*`);
+    } catch (e) {}
     return formatResponse(true, newVideoAlbum, 'Video album created successfully', 201);
 });

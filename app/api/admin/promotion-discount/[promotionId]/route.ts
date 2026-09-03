@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/promotions/[promotionId]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -103,7 +103,10 @@ export const PUT = withApiHandler(async (request, { params }) => {
   };
 
   
-    try { await cacheDel(`admin:promotion-discount:${existingPromotion.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${existingPromotion.companyId}:promotion-discount:*`);
+      await cacheDel(`admin:promotion-discount:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedPromotion, "Promotion updated.");
 });
 
@@ -139,6 +142,9 @@ export const DELETE = withApiHandler(async (_request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:promotion-discount:${promoToDelete.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${promoToDelete.companyId}:promotion-discount:*`);
+      await cacheDel(`admin:promotion-discount:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Promotion deleted successfully.");
 });

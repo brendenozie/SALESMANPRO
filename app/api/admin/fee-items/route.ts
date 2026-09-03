@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import {
@@ -20,7 +20,7 @@ async function handleGetFeeItems(request: Request) {
     return formatResponse(false, null, "Missing companyId", 400);
   }
 
-    const cacheKey = `admin:fee-items:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "fee-items", {});
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -88,7 +88,10 @@ async function handlePostFeeItem(request: Request) {
       term,
     });
 
-    try { await cacheDel(`admin:fee-items:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:fee-items:*`);
+      await cacheDel(`admin:fee-items:*`);
+    } catch (e) {}
     
     return formatResponse(true, item, null, 201);
   } catch (error: any) {

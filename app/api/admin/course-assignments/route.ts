@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // // app/api/course-assignments/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -21,7 +21,7 @@ export const GET = withApiHandler(async (req: Request) => {
 
   const whereClause = courseId ? { courseId } : { companyId };
 
-  const cacheKey = `admin:course-assignments:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "course-assignments", { courseId, limit, page });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -131,7 +131,10 @@ export const POST = withApiHandler(async (req: Request) => {
     });
 
     
-    try { await cacheDel(`admin:course-assignments:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:course-assignments:*`);
+      await cacheDel(`admin:course-assignments:*`);
+    } catch (e) {}
     return formatResponse(true, newAssignment, "Created", 201);
   } catch (error) {
     return formatResponse(false, null, "Failed to create assignment. Verify IDs.", 400);

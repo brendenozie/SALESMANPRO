@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +13,7 @@ const getVehicles = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:vehicles:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "vehicles", { status, type });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -77,7 +77,10 @@ const postVehicle = async (request: Request) => {
       }
     });
 
-    try { await cacheDel(`admin:vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:vehicles:*`);
+      await cacheDel(`admin:vehicles:*`);
+    } catch (e) {}
     return formatResponse(true, vehicle, "Vehicle successfully added to fleet", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {

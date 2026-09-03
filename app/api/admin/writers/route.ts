@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/writers/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -12,7 +12,7 @@ const { searchParams } = new URL(request.url);
 const companyId = searchParams.get('companyId');
 
 
-    const cacheKey = `admin:writers:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "writers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -122,6 +122,9 @@ company: true,
 });
 
 
-    try { await cacheDel(`admin:writers:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:writers:*`);
+      await cacheDel(`admin:writers:*`);
+    } catch (e) {}
     return formatResponse(true, newWriter, "Writer created successfully", 201);
 });

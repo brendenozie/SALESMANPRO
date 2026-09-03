@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/customer-orders/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -39,7 +39,7 @@ const updateOrderSchema = z.object({
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-  const cacheKey = `admin:customer-orders:${params.id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.id, "customer-orders", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -76,7 +76,10 @@ export const PUT = withApiHandler(async (req, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:customer-orders:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:customer-orders:*`);
+      await cacheDel(`admin:customer-orders:*`);
+    } catch (e) {}
     return formatResponse(true, updatedOrder, 'Order updated successfully');
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -94,7 +97,10 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
       select: { id: true },
     });
     
-    try { await cacheDel(`admin:customer-orders:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:customer-orders:*`);
+      await cacheDel(`admin:customer-orders:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedId: deleted.id }, 'Order deleted successfully');
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

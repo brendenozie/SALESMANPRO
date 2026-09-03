@@ -1,20 +1,51 @@
 import prisma from "@/server/db/prismadb";
+import { fetchWithCache } from "@/lib/cache";
 
-const MPESA_BASE_URL = process.env.MPESA_BASE_URL!;
-const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE!;
-const MPESA_PASSKEY = process.env.MPESA_PASSKEY!;
-const CALLBACK_URL = process.env.MPESA_CALLBACK_URL!;
+const MPESA_BASE_URL = process.env.MPESA_BASE_URL || "https://sandbox.safaricom.co.ke";
+const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || "";
+const MPESA_PASSKEY = process.env.MPESA_PASSKEY || "";
+const CALLBACK_URL = process.env.MPESA_CALLBACK_URL || "";
 
-async function getMpesaToken() {
-  const auth = Buffer.from(
-    `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
-  ).toString("base64");
+/**
+ * Cache Safaricom Daraja OAuth access token for 50 minutes (valid for 3600s).
+ * Eliminates 500-2000ms latency on every checkout attempt.
+ */
+async function getMpesaToken(): Promise<string> {
+  const cacheKey = `daraja:oauth:token:${process.env.MPESA_CONSUMER_KEY || "default"}`;
 
-  const res = await fetch(`${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
-    headers: { Authorization: `Basic ${auth}` },
-  });
-  const data = await res.json();
-  return data.access_token;
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const auth = Buffer.from(
+        `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`,
+      ).toString("base64");
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const res = await fetch(
+          `${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+          {
+            headers: { Authorization: `Basic ${auth}` },
+            signal: controller.signal,
+          },
+        );
+        clearTimeout(timer);
+
+        if (!res.ok) {
+          throw new Error(`Daraja OAuth failed with HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        return data.access_token as string;
+      } catch (err: any) {
+        clearTimeout(timer);
+        throw new Error(`Failed to fetch M-Pesa token: ${err.message}`);
+      }
+    },
+    { ttlSeconds: 3000 }, // 50 minutes
+  );
 }
 
 export async function initiateMpesaPayment(order: any, phoneNumber: string) {
@@ -23,14 +54,16 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
   const token = await getMpesaToken();
   const timestamp = generateTimestamp();
 
-  const password = Buffer.from( `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString("base64");
+  const password = Buffer.from(
+    `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`,
+  ).toString("base64");
 
   const payload = {
     BusinessShortCode: process.env.MPESA_SHORTCODE,
     Password: password,
     Timestamp: timestamp,
     TransactionType: "CustomerPayBillOnline",
-    Amount: 1, // or order.totalFinalPrice
+    Amount: order.totalFinalPrice ? Math.round(order.totalFinalPrice) : 1,
     PartyA: formattedPhone,
     PartyB: process.env.MPESA_SHORTCODE,
     PhoneNumber: formattedPhone,
@@ -39,31 +72,42 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
     TransactionDesc: `Payment for order ${order.id}`,
   };
 
-  const res = await fetch(`${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
 
-  const result = await res.json();
-
-  if (result.ResponseCode === "0") {
-    await prisma.customerOrder.update({
-      where: { id: order.id },
-      data: {
-        trackingNumber: result.CheckoutRequestID,
-        transactionReference: result.MerchantRequestID,
-        paymentMethod: "MPESA",
-        paymentStatus: "PENDING",
+  try {
+    const res = await fetch(`${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
     });
-  }
+    clearTimeout(timer);
 
-  return result;
+    const result = await res.json();
+
+    if (result.ResponseCode === "0") {
+      await prisma.customerOrder.update({
+        where: { id: order.id },
+        data: {
+          trackingNumber: result.CheckoutRequestID,
+          transactionReference: result.MerchantRequestID,
+          paymentMethod: "MPESA",
+          paymentStatus: "PENDING",
+        },
+      });
+    }
+
+    return result;
+  } catch (err: any) {
+    clearTimeout(timer);
+    throw new Error(`M-Pesa STK push error: ${err.message}`);
+  }
 }
+
 
 function generateTimestamp() {
   const date = new Date();

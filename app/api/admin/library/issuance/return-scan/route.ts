@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -12,7 +12,7 @@ export const GET = withApiHandler(async (request: Request) => {
   
   // Calculate date 24 hours ago
   const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  const cacheKey = `admin:return-scan:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "return-scan", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -66,7 +66,7 @@ const returnScanLogic = async (request: Request) => {
     return formatResponse(false, null, "Missing required parameters", 400);
   }
 
-  const cacheKey = `admin:issuance:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "issuance", {});
   
   // 1. Find an active issuance by either Book Identifier (ISBN/Code) OR Member ID
   const activeIssuance = await prisma.libraryIssuance.findFirst({

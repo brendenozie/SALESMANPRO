@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/trainers/[trainerId]/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
@@ -46,7 +46,10 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
       return updatedEducator;
     });
 
-    try { await cacheDel(`admin:trainers:${company.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${company.id}:trainers:*`);
+      await cacheDel(`admin:trainers:*`);
+    } catch (e) {}
     return formatResponse(true, {
       id: updatedTrainerData.id,
       userId: updatedTrainerData.userId,
@@ -89,7 +92,10 @@ async function handleDELETE(request: Request, { params }: { params: { adminSlug:
 
     await prisma.educator.delete({ where: { id: trainerId } });
     
-    try { await cacheDel(`admin:trainers:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:trainers:*`);
+      await cacheDel(`admin:trainers:*`);
+    } catch (e) {}
     return formatResponse(true, { message: 'Trainer deleted successfully.' });
   } catch (error: any) {
     console.error(`Error deleting trainer ${trainerId}:`, error);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +13,7 @@ const getSuppliers = async (request: Request) => {
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
   // Check cache first
-  const cacheKey = `admin:librarySuppliers:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "librarySuppliers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -98,7 +98,8 @@ const postSupplier = async (request: Request) => {
 
     try {
       // Invalidate suppliers list cache for this company
-      await cacheDel(`admin:librarySuppliers:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:librarySuppliers:*`);
+      await cacheDel(`admin:librarySuppliers:*`);
     } catch (e) {}
 
   return formatResponse(true, result, "Supplier onboarded with login access", 201);

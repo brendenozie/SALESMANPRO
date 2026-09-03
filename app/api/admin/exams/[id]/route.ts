@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -79,7 +79,7 @@ async function getExam(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  const cacheKey = `admin:exams:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "exams", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -242,7 +242,10 @@ async function updateExam(request: Request, { params }: Params) {
 
     const responseData = transformExamResponse(updatedExam);
     
-    try { await cacheDel(`admin:exams:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:exams:*`);
+      await cacheDel(`admin:exams:*`);
+    } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
 
   } catch (error: any) {
@@ -271,7 +274,10 @@ async function deleteExam(request: Request, { params }: Params) {
       where: { id },
     });
     
-    try { await cacheDel(`admin:exams:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:exams:*`);
+      await cacheDel(`admin:exams:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Exam deleted successfully", deletedId: deletedExam.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') {

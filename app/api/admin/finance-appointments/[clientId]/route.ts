@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -19,7 +19,7 @@ async function handleGetAppointment(request: Request, context: Context) {
   
   const { id } = context.params;
 
-  const cacheKey = `admin:finance-appointments:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "finance-appointments", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -52,7 +52,7 @@ async function handlePutAppointment(request: Request, context: Context) {
   
   const { id } = context.params;
 
-  const cacheKey = `admin:finance-appointments:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "finance-appointments", {});
 
   const { date, notes, status } = await request.json();
 
@@ -80,7 +80,7 @@ async function handlePutAppointment(request: Request, context: Context) {
 async function handleDeleteAppointment(request: Request, context: Context) {
   
   const { id } = context.params;
-  const cacheKey = `admin:finance-appointments:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "finance-appointments", {});
 
   // Note: The original code deleted from `prisma.appointment` but included
   // `financeAppointment` in other parts. Assuming `financeAppointment` is correct.

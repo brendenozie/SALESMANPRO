@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb';
@@ -17,7 +17,7 @@ async function handleGetCategories(request: Request, { params }: RouteParams) {
   const companyId = searchParams.get('companyId');
 
   
-    const cacheKey = `admin:menu-categories:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "menu-categories", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -84,7 +84,10 @@ async function handlePostCategory(request: Request, { params }: RouteParams) {
 
     // Explicitly return success with status 201
     
-    try { await cacheDel(`admin:menu-categories:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:menu-categories:*`);
+      await cacheDel(`admin:menu-categories:*`);
+    } catch (e) {}
 
     return formatResponse(true, newCategory, null, 201);
     

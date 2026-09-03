@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/store-categories/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -21,7 +21,7 @@ async function getStoreCategories(req: Request) {
   try {
     const whereClause = companyId ? { companyId } : {};
 
-    const cacheKey = `admin:store-categories:${companyId || "global"}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "store-categories", {});
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -153,7 +153,8 @@ async function postStoreCategory(req: Request) {
     };
 
     try {
-      await cacheDel(`admin:store-categories:${companyId || "global"}:*`);
+      await cacheDel(`tenant:${companyId}:store-categories:*`);
+      await cacheDel(`admin:store-categories:*`);
     } catch (e) {}
     return formatResponse(
       true,

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -16,7 +16,7 @@ async function getPosProducts(
 
   // 1. Find Company
   
-  const cacheKey = `admin:health-products:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "health-products", {});
 
   try {
     const cached = await cacheGet(cacheKey);

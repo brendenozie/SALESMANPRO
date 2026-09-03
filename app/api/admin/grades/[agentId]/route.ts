@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/sales-agents/[agentId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -30,7 +30,10 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:agents:${updatedAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedAgent.companyId}:agents:*`);
+      await cacheDel(`admin:agents:*`);
+    } catch (e) {}
     
     return formatResponse(true, updatedAgent, "Updated", 200);
   } catch (error) {
@@ -59,7 +62,10 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
       await prisma.user.delete({ where: { id: deletedAgent.userId } });
     }
 
-    try { await cacheDel(`admin:agents:${deletedAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${deletedAgent.companyId}:agents:*`);
+      await cacheDel(`admin:agents:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedId: agentId }, "Deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

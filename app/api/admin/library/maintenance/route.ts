@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -11,7 +11,7 @@ const getMaintenanceList = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "maintenance", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -55,7 +55,7 @@ const repairBook = async (request: Request) => {
   });
 
   // Invalidate cache for maintenance list
-  const cacheKey = `admin:maintenance:${updatedBook.companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(updatedBook.companyId, "maintenance", {});
   try { await cacheDel(cacheKey); } catch (e) {}
 
   return formatResponse(true, updatedBook, "Volume restored to circulation", 200);

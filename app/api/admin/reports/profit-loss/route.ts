@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { isWithinInterval } from "date-fns";
@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const startDate = new Date(start);
   const endDate = new Date(end);
 
-  const cacheKey = `admin:profit-loss:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "profit-loss", { endDate, startDate });
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { eachDayOfInterval, format } from "date-fns";
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
     // 2. Get all active/pending leave
     
-    const cacheKey = `admin:conflicts:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "conflicts", {});
 
   try {
     const cached = await cacheGet(cacheKey);

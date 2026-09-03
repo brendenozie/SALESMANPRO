@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/showings/[showingId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,7 +20,8 @@ export const PATCH = withApiHandler(async (request, { params }) => {
   });
 
   // Clear caches so the UI reflects the change
-  await cacheDel(`admin:companycategory:all`);
+  await cacheDel(`tenant:${'unscoped'}:companycategory:*`);
+  await cacheDel(`admin:companycategory:*`);
 
   return formatResponse(true, updatedCategory, `Industry is now ${status}`, 200);
 });

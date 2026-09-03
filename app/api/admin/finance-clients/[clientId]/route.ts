@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/clients/[id]/route.ts
 // Incorporate the new imports
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -16,7 +16,7 @@ const getClientLogic = async (req: Request, context: { params: { id: string } })
     
 const clientId = getClientId(req, context);
 
-const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
+const cacheKey = buildTenantCacheKey(clientId, "finance-clients", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -53,7 +53,7 @@ const putClientLogic = async (req: Request, context: { params: { id: string } })
     const body = await req.json();
     const { name, email, phone, status, ...clientData } = body;
     
-    const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(clientId, "finance-clients", { status });
 
     const existingClient = await prisma.client.findUnique({
         where: { id: clientId },
@@ -98,7 +98,7 @@ const deleteClientLogic = async (req: Request, context: { params: { id: string }
     
     const clientId = getClientId(req, context);
 
-    const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(clientId, "finance-clients", {});
 
     const existingClient = await prisma.client.findUnique({
         where: { id: clientId },

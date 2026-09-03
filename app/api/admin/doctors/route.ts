@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -51,7 +51,7 @@ async function getDoctors(request: Request) {
     whereClause.status = filterStatus;
   }
 
-  const cacheKey = `admin:doctors:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "doctors", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -172,7 +172,10 @@ async function createDoctor(request: Request) {
 
   const formatted = await formatDoctorData(newDoctor);
   
-    try { await cacheDel(`admin:doctors:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:doctors:*`);
+      await cacheDel(`admin:doctors:*`);
+    } catch (e) {}
     return formatResponse(true, { data: formatted }, null, 201);
 }
 

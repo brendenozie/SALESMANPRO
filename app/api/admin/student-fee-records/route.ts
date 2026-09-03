@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/student-fee-records/route.ts
 
 import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
@@ -23,7 +23,7 @@ async function getAllStudentFees(req: Request, context: Context) {
     return formatResponse(false, null, 'Company slug is required.', 400);
   }
 
-  const cacheKey = `admin:studentFeeRecords:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "studentFeeRecords", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -57,7 +57,10 @@ async function createStudentFee(req: Request) {
       return formatResponse(false, null, 'Failed to create student fee record. Student not found or other issue.', 404);
     }
 
-    try { await cacheDel(`admin:studentFeeRecords:${newRecord.studentId}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${newRecord.studentId}:studentFeeRecords:*`);
+      await cacheDel(`admin:studentFeeRecords:*`);
+    } catch (e) {}
     return formatResponse(true, newRecord, 'Student fee record created successfully.', 201);
   } catch (error: any) {
     console.error('Error creating student fee record:', error);

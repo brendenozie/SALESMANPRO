@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -14,7 +14,7 @@ export const GET = withApiHandler(
 
     try {
       
-    const cacheKey = `admin:events:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "events", {});
 
   try {
     const cached = await cacheGet(cacheKey);

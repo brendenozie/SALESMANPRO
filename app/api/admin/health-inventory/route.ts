@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -30,7 +30,7 @@ async function getServices(
 
   // 1. Find Company
   
-    const cacheKey = `admin:health-inventory:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "health-inventory", { limit, page, sortBy, sortOrder });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -184,7 +184,10 @@ async function createService(
   ]);
 
   
-    try { await cacheDel(`admin:health-inventory:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:health-inventory:*`);
+      await cacheDel(`admin:health-inventory:*`);
+    } catch (e) {}
     return formatResponse(true, newService, "Service created successfully", 201);
 }
 

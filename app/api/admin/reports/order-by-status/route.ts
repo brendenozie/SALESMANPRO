@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/reports/orders-by-status/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -23,7 +23,7 @@ const getOrdersByStatus = async (req: Request) => {
   const endDateTime = new Date(endDate);
   endDateTime.setHours(23, 59, 59, 999); // include the entire end day
 
-  const cacheKey = `admin:orders-by-status:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "orders-by-status", { endDate, startDate });
 
   try {
     const cached = await cacheGet(cacheKey);

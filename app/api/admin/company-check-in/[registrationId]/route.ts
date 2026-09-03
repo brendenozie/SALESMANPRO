@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -39,7 +39,10 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
     const isCheckedIn = updated.status === "ATTENDED";
 
     
-    try { await cacheDel(`admin:company-check-in:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:company-check-in:*`);
+      await cacheDel(`admin:company-check-in:*`);
+    } catch (e) {}
     return formatResponse(true, {
       id: updated.id,
       name: updated.user?.name || 'N/A',

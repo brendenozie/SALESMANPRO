@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 
 const processPayment = async (
   req: Request,
@@ -93,7 +93,8 @@ const processPayment = async (
     // 4. Clean up caches so the UI updates instantly
     try {
       await cacheDel(`admin:fee:${feeId}`);
-      await cacheDel(`admin:fees:${companyId}:*`);
+      await cacheDel(`tenant:${companyId}:fees:*`);
+      await cacheDel(`admin:fees:*`);
     } catch (e) {}
 
     return NextResponse.json(

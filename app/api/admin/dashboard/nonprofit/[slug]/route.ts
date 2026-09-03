@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -35,7 +35,7 @@ export const GET = withApiHandler(
 
       // 2. Active Campaigns
       
-    const cacheKey = `admin:nonprofit:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "nonprofit", {});
 
       try {
         const cached = await cacheGet(cacheKey);

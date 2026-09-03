@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -47,7 +47,7 @@ async function getAppointment(
 
   // --- Data Fetching ---
   
-    const cacheKey = `admin:health-appointemnts:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "health-appointemnts", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -144,7 +144,10 @@ async function updateAppointment(request: Request, context: { params: { adminSlu
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:health-appointemnts:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:health-appointemnts:*`);
+      await cacheDel(`admin:health-appointemnts:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Appointment updated successfully", appointment: updatedAppointment }, "Appointment updated successfully", 200);
 }
 
@@ -174,7 +177,10 @@ async function deleteAppointment(
   // --- Success Response ---
   // Use 200 OK or 204 No Content for successful deletion. Using 200 with a message.
   
-    try { await cacheDel(`admin:health-appointemnts:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:health-appointemnts:*`);
+      await cacheDel(`admin:health-appointemnts:*`);
+    } catch (e) {}
     
     return formatResponse(true, { message: "Appointment deleted successfully" }, "Appointment deleted successfully", 200);
 }

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 
 import prisma from "@/server/db/prismadb";
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     return formatResponse(false, null, "Company ID is required", 400);
   }
    
-  const cacheKey = `admin:recruitment:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "recruitment", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -59,7 +59,10 @@ export async function PATCH(request: Request) {
       data: { stage: nextStage }
     });
     
-    try { await cacheDel(`admin:recruitment:${updated.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updated.companyId}:recruitment:*`);
+      await cacheDel(`admin:recruitment:*`);
+    } catch (e) {}
     
     return formatResponse(true, updated, "Stage transitioned successfully", 200);
   } catch (error) {

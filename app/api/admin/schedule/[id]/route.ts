@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/subjects/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -14,7 +14,7 @@ async function getSubject(req: Request, { params }: { params: { id: string } }) 
   const { id } = params;
   
   // 
-  const cacheKey = `admin:schedule:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "schedule", {});
 
   try {
     const cached = await cacheGet(cacheKey);

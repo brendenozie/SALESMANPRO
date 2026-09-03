@@ -6,7 +6,8 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { revalidateCompanyCache, revalidateStore } from "@/lib/company-fetcher"; // 👈 Imported revalidateStore
 import { encrypt } from "@/lib/crypto/aes";
-import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import { cacheDel, cacheGet, cacheSet, buildTenantCacheKey } from "@/lib/cache";
+
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,11 @@ async function getCompany(
     return formatResponse(false, null, "Unauthorized", 401);
   }
 
-  const cacheKey = `company:${params.id}`;
+  const cacheKey = buildTenantCacheKey(params.id, "store_details", { userId: session.user.id });
 
   try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) {
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached && cached.userId === session.user.id) {
       return formatResponse(true, cached, "Company retrieved from cache");
     }
   } catch (e) {
@@ -65,6 +66,7 @@ async function getCompany(
 
   return formatResponse(true, company, "Company fetched successfully");
 }
+
 
 // =======================
 // PUT: Update a company

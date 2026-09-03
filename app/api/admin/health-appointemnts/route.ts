@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -228,7 +228,10 @@ async function createAppointment(
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:health-appointemnts:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:health-appointemnts:*`);
+      await cacheDel(`admin:health-appointemnts:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Appointment created successfully", appointment: newAppointment }, "Appointment created successfully", 201);
 }
 

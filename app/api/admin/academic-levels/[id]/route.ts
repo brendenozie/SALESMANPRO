@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 export const GET = withApiHandler(async (req, context) => {
   const { id } = context.params;
@@ -73,7 +73,9 @@ export const PATCH = withApiHandler(async (request, context) => {
 
   // Purge both list and item cache explicitly
   try {
-    await cacheDel(`admin:academic-levels:${companyId}:all`);
+    await cacheDel(`tenant:${companyId}:academic-levels:*`);
+    await cacheDel(`tenant:${companyId}:academic-levels:*`);
+    await cacheDel(`admin:academic-levels:*`);
     await cacheDel(`admin:academic-levels:${companyId}:id:${id}`);
   } catch (e) {}
 
@@ -96,9 +98,12 @@ export const DELETE = withApiHandler(async (request, context) => {
   });
 
   try {
-    await cacheDel(`admin:academic-levels:${companyId}:all`);
+    await cacheDel(`tenant:${companyId}:academic-levels:*`);
+    await cacheDel(`tenant:${companyId}:academic-levels:*`);
+    await cacheDel(`admin:academic-levels:*`);
     await cacheDel(`admin:academic-levels:${companyId}:id:${id}`);
   } catch (e) {}
+
 
   return formatResponse(true, null, "Deleted", 200);
 });

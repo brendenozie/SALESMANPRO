@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -141,7 +141,8 @@ async function createLead(req: Request) {
 
   // 7. Clear all lead cache keys for this company
   try {
-    await cacheDel(`admin:leads:${companyId}:*`);
+    await cacheDel(`tenant:${companyId}:leads:*`);
+    await cacheDel(`admin:leads:*`);
   } catch (e) {}
 
   return formatResponse(true, lead, "Lead saved successfully", 201);

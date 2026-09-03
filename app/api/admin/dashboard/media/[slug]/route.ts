@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,7 +20,7 @@ export const GET = withApiHandler(
 
       // --- METRIC CALCULATIONS ---
       
-    const cacheKey = `admin:media:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "media", {});
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,5 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { fetchWithCache, buildTenantCacheKey, cacheDel } from "@/lib/cache";
+
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -49,57 +50,55 @@ async function handleGet(req: Request, context: HandlerContext) {
     ];
   }
 
-  const cacheKey = `admin:company-events:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "company-events", {
+    page,
+    limit,
+    status,
+    search,
+    sortBy,
+    sortOrder,
+  });
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+  const responseData = await fetchWithCache(
+    cacheKey,
+    async () => {
+      const [events, totalItems] = await Promise.all([
+        prisma.event.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          skip: (page - 1) * limit,
+          take: limit,
+          select: {
+            id: true,
+            title: true,
+            startDateTime: true,
+            endDateTime: true,
+            location: true,
+            eventStatus: true,
+          },
+        }),
+        prisma.event.count({ where }),
+      ]);
 
-  const [events, totalItems] = await Promise.all([
-    prisma.event.findMany({
-      where,
-      orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        startDateTime: true,
-        endDateTime: true,
-        location: true,
-        eventStatus: true,
-      },
-    }),
-    prisma.event.count({ where }),
-  ]);
+      const formattedEvents = events.map((event) => ({
+        ...event,
+        date: event.startDateTime.toISOString(),
+        ticketsSold: null,
+      }));
 
-  const formattedEvents = events.map(event => ({
-    ...event,
-    date: event.startDateTime.toISOString(),
-    ticketsSold: null, // ready for aggregation later
-  }));
-
-  
-  try {
-      await cacheSet(cacheKey, {
-      events: formattedEvents,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    }, 60);
-  } catch (e) {}
-
-  return NextResponse.json(
-    {
-      events: formattedEvents,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
+      return {
+        events: formattedEvents,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      };
     },
-    { status: 200 }
+    { ttlSeconds: 60, swrSeconds: 60 },
   );
+
+  return NextResponse.json(responseData, { status: 200 });
 }
+
 
 
 async function handlePost(req: Request, context: HandlerContext) {
@@ -199,9 +198,12 @@ async function handlePost(req: Request, context: HandlerContext) {
     },
   });
 
-  const cacheKey = `admin:company-events:${adminSlug || 'global'}:*`;
-  
-  try {  await cacheDel(cacheKey);  } catch (e) {}
+  try {
+    await cacheDel(`tenant:${adminSlug}:company-events:*`);
+    await cacheDel(`tenant:${companyId}:company-events:*`);
+    await cacheDel(`admin:company-events:*`);
+  } catch (e) {}
+
 
   return NextResponse.json(
     { message: "Event created successfully", event },

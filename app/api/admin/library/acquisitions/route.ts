@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -9,7 +9,7 @@ const getOrders = async (request: Request) => {
   const companyId = searchParams.get("companyId");
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:libraryAcquisitions:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "libraryAcquisitions", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -55,7 +55,10 @@ const updateStatus = async (request: Request) => {
   });
 
   // Invalidate relevant caches
-  try { await cacheDel(`admin:libraryAcquisitions:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:libraryAcquisitions:*`);
+    await cacheDel(`admin:libraryAcquisitions:*`);
+  } catch (e) {}
 
   return formatResponse(true, result, "Inventory updated", 200);
 };

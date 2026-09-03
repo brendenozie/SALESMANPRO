@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -23,7 +23,7 @@ async function getFaqs(request: Request) {
     return formatResponse(false, null, 'Company ID is required to fetch FAQs.', 400);
   }
 
-  const cacheKey = `admin:faqs:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "faqs", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -70,7 +70,10 @@ async function createFaq(request: Request) {
 
   // The original response returned { newFaq: {...} }
   
-    try { await cacheDel(`admin:faqs:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:faqs:*`);
+      await cacheDel(`admin:faqs:*`);
+    } catch (e) {}
     return formatResponse(true, newFaq, null, 201);
 }
 

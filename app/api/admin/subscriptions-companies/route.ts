@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { BillingCycle, SubscriptionStatus } from '@prisma/client';
 import { formatResponse } from "@/lib/formatResponse";
@@ -97,7 +97,7 @@ async function handleGET(request: Request) {
     if (status) where.status = status;
 
     
-    const cacheKey = `admin:subscriptions-companies:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "subscriptions-companies", { page, status });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -229,7 +229,10 @@ async function handlePOST(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:subscriptions-companies:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:subscriptions-companies:*`);
+      await cacheDel(`admin:subscriptions-companies:*`);
+    } catch (e) {}
     return formatResponse(true, subscription, "Subscription created successfully.");
 
   } catch (error: any) {

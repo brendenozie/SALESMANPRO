@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -34,7 +34,10 @@ async function handlePost(request: Request) {
       }
     });
 
-    try { await cacheDel(`admin:company-locations:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:company-locations:*`);
+      await cacheDel(`admin:company-locations:*`);
+    } catch (e) {}
     return NextResponse.json(newRecord, { status: 201 });
   } catch (error) {
     // Catch unique constraint violation (P2002)
@@ -65,7 +68,7 @@ async function handleGet(request: Request) {
 
   // OPTIMIZATION: Parallelize data fetch and count
   
-  const cacheKey = `admin:company-locations:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "company-locations", { limit, page });
 
   try {
     const cached = await cacheGet(cacheKey);

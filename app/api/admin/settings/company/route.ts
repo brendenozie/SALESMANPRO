@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/settings/company/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Use your Prisma instance
@@ -14,7 +14,7 @@ async function getCompanySettings(req: Request) {
 
   if (!companyId) return formatResponse(false, null, "Company ID is required", 400);
 
-  const cacheKey = `admin:company:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "company", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -60,7 +60,10 @@ async function updateCompanySettings(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:company:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:company:*`);
+      await cacheDel(`admin:company:*`);
+    } catch (e) {}
     return formatResponse(true, updatedSettings, "Company settings updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update company settings:", error);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -21,7 +21,7 @@ async function handleGetAppointments(request: Request) {
     return formatResponse(false, null, 'companyId search parameter is required.', 400);
   }
 
-  const cacheKey = `admin:finance-appointments:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "finance-appointments", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -69,7 +69,7 @@ async function handlePostAppointment(request: Request) {
     return formatResponse(false, null, 'Missing required fields: clientId, expertId, date, companyId.', 400);
   }
 
-  const cacheKey = `admin:finance-appointments:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "finance-appointments", { date });
 
   const newAppointment = await prisma.financeAppointment.create({
     data: {

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/transaction/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -63,6 +63,9 @@ export const POST = withApiHandler(async (req: Request) => {
   const transaction = await prisma.transaction.create({ data: transactionData });
 
   
-    try { await cacheDel(`admin:post-transactions:${subscriptionPlanId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${subscriptionPlanId}:post-transactions:*`);
+      await cacheDel(`admin:post-transactions:*`);
+    } catch (e) {}
     return formatResponse(true, { transaction }, "Transaction created successfully", 201);
 });

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/courses/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -70,7 +70,7 @@ export const GET = withApiHandler(async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID is required.", 400);
 
-  const cacheKey = `admin:courses:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "courses", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -125,7 +125,10 @@ export const POST = withApiHandler(async (request: Request) => {
     });
 
     
-    try { await cacheDel(`admin:courses:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:courses:*`);
+      await cacheDel(`admin:courses:*`);
+    } catch (e) {}
     return formatResponse(true, mapCourse(newCourse), "Course created successfully", 201);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

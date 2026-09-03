@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/sponsors/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
@@ -11,7 +11,7 @@ async function getSponsors(req: Request) {
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get('companyId');
 
-    const cacheKey = `admin:sponsors:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "sponsors", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -61,7 +61,10 @@ async function createSponsor(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:sponsors:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:sponsors:*`);
+      await cacheDel(`admin:sponsors:*`);
+    } catch (e) {}
     return formatResponse(true, newSponsor, 'Sponsor created successfully', 201);
   } catch (error: any) {
     console.error('Error creating sponsor:', error);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -46,7 +46,7 @@ async function getAppointmentReport(request: Request) {
 
   // 1. Fetch Appointments with related data
   
-    const cacheKey = `admin:appointments:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "appointments", { status });
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { subMonths, startOfMonth, endOfMonth, format, isWithinInterval } from "date-fns";
@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     const months = Array.from({ length: 6 }).map((_, i) => subMonths(new Date(), i)).reverse();
     
     
-    const cacheKey = `admin:trend:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "trend", {});
 
   try {
     const cached = await cacheGet(cacheKey);

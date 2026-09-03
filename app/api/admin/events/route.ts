@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -206,7 +206,7 @@ async function getEvents(request: Request) {
   // if (isPaid !== undefined) {
   //   whereClause.isPaid = isPaid === "true";
   // }
-  const cacheKey = `admin:events:${companyId || "global"}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "events", { date });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -440,7 +440,8 @@ async function createEvent(request: Request) {
   const responseData = transformEventResponse(newEvent);
 
   try {
-    await cacheDel(`admin:events:${companyId || "global"}:*`);
+    await cacheDel(`tenant:${companyId}:events:*`);
+    await cacheDel(`admin:events:*`);
   } catch (e) {}
   return formatResponse(true, { data: responseData }, null, 201);
 }

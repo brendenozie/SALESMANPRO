@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // // app/api/course-assignments/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -63,14 +63,17 @@ export const POST = withApiHandler(async (req: Request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:submit:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:submit:*`);
+      await cacheDel(`admin:submit:*`);
+    } catch (e) {}
     return formatResponse(true, { submissionId: submission.id, score: submission.grade }, "Submitted", 201);
 });
 
 
 export const GET = withApiHandler(async (_req: Request, { params }) => {
   
-    const cacheKey = `admin:submit:${params.id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(params.id, "submit", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -126,7 +129,10 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     await prisma.courseAssignment.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:submit:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:submit:*`);
+      await cacheDel(`admin:submit:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {

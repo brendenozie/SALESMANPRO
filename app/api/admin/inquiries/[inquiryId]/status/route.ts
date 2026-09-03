@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -37,7 +37,10 @@ async function handlePatchInquiryStatus(request: Request, { params }: PatchParam
 
     // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
     
-    try { await cacheDel(`admin:status:${updatedInquiry.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedInquiry.companyId}:status:*`);
+      await cacheDel(`admin:status:*`);
+    } catch (e) {}
 
     return formatResponse(true, updatedInquiry, 'Inquiry status updated successfully.', 200);
     

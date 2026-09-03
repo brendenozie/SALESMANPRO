@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -58,7 +58,7 @@ const mapCourseResponse = (course: any) => ({
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-  const cacheKey = `admin:courses:${ params.id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.id, "courses", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -113,7 +113,8 @@ export const PATCH = withApiHandler(async (req, { params }) => {
     });
 
       try {
-        await cacheDel(`admin:courses:${updatedId || 'global'}:*`);
+        await cacheDel(`tenant:${updatedId}:courses:*`);
+        await cacheDel(`admin:courses:*`);
       } catch (e) {}
 
     return formatResponse(true, mapCourseResponse(updatedCourse), null, 200);
@@ -131,7 +132,10 @@ export const DELETE = withApiHandler(async (_, { params }) => {
   try {
     await prisma.course.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:courses:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:courses:*`);
+      await cacheDel(`admin:courses:*`);
+    } catch (e) {}
     
     return formatResponse(true, null, "Course deleted", 200);
   } catch (error) {

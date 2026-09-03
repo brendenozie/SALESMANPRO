@@ -1,48 +1,77 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-// app/api/products/route.ts
-import { NextRequest } from "next/server";
+import { fetchWithCache, cacheDel, buildTenantCacheKey } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/products
-// Fetches all products, optionally filtered by companyId
-export const GET = withApiHandler(async (request: Request) => {
-  
+// Fetches products with pagination, search, and strict tenant scoping
+export const GET = withApiHandler(async (request: Request, context: any) => {
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+  const companyId = searchParams.get("companyId") || context.user?.companyId;
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const limit = Math.min(Math.max(1, parseInt(searchParams.get("limit") || "20", 10)), 100);
+  const search = searchParams.get("search")?.trim() || "";
+  const categoryId = searchParams.get("categoryId") || "";
+  const skip = (page - 1) * limit;
 
-  const cacheKey = `admin:products:${companyId || 'global'}:all`;
+  if (!companyId) {
+    return formatResponse(false, null, "companyId query parameter or tenant session is required", 400);
+  }
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  const products = await prisma.product.findMany({
-    where: companyId ? { companyId } : {},
-    include: {
-      productCategory: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
+  const cacheKey = buildTenantCacheKey(companyId, "admin_products", {
+    page,
+    limit,
+    search,
+    categoryId,
   });
 
-  const formattedProducts = products.map((product) => ({
-    ...product,
-    category: product.productCategory ? { name: product.productCategory.name } : null,
-    images: product.images as unknown as { url: string }[], // ensure correct type
-  }));
+  const responseData = await fetchWithCache(
+    cacheKey,
+    async () => {
+      const where: any = {
+        companyId,
+        ...(categoryId ? { productCategoryId: categoryId } : {}),
+        ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
+      };
 
-  try {
-      await cacheSet(cacheKey, formattedProducts, 60);
-  } catch (e) {}
+      const [products, totalCount] = await Promise.all([
+        prisma.product.findMany({
+          where,
+          include: {
+            productCategory: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: limit,
+        }),
+        prisma.product.count({ where }),
+      ]);
 
-  return formatResponse(true, formattedProducts, "Products fetched successfully", 200);
+      const formattedProducts = products.map((product) => ({
+        ...product,
+        category: product.productCategory ? { id: product.productCategory.id, name: product.productCategory.name } : null,
+        images: product.images as unknown as { url: string }[],
+      }));
+
+      return {
+        products: formattedProducts,
+        pagination: {
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          currentPage: page,
+          limit,
+        },
+      };
+    },
+    { ttlSeconds: 60, swrSeconds: 60 },
+  );
+
+  return formatResponse(true, responseData, "Products fetched successfully", 200);
 });
 
 // POST /api/products
-// Creates a new product
-export const POST = withApiHandler(async (request: Request) => {
-  
+// Creates a new product and invalidates tenant-scoped product cache
+export const POST = withApiHandler(async (request: Request, context: any) => {
   const body = await request.json();
   const {
     name,
@@ -59,8 +88,9 @@ export const POST = withApiHandler(async (request: Request) => {
     isDiscounted,
     isFeatured,
     ingredients,
-    companyId,
   } = body;
+
+  const companyId = body.companyId || context.user?.companyId;
 
   if (!name || !productCategoryId || !companyId || costPrice === undefined || sellingPrice === undefined) {
     return formatResponse(false, null, "Missing required fields: name, productCategoryId, companyId, costPrice, sellingPrice", 400);
@@ -75,7 +105,7 @@ export const POST = withApiHandler(async (request: Request) => {
       images: images || [],
       tags: [],
       profitMargin: (sellingPrice - costPrice) / sellingPrice || 0,
-      brand: "Brand", // adjust if needed
+      brand: "Brand",
       company: { connect: { id: companyId } },
       productCategory: { connect: { id: productCategoryId } },
       costPrice,
@@ -89,7 +119,6 @@ export const POST = withApiHandler(async (request: Request) => {
       isDiscounted: typeof isDiscounted === "boolean" ? isDiscounted : discount > 0,
       isFeatured: typeof isFeatured === "boolean" ? isFeatured : false,
       ingredients,
-      // Defaults & fallbacks
       model: null,
       color: [],
       size: [],
@@ -136,7 +165,13 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  
-    try { await cacheDel(`admin:products:${companyId || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, newProduct, "Product created successfully", 201);
+  // Targeted cache invalidation using tenant pattern
+  try {
+    await cacheDel(`tenant:${companyId}:admin_products:*`);
+    await cacheDel(`tenant:${companyId}:products:*`);
+    await cacheDel(`admin:products:*`);
+  } catch (e) {}
+
+  return formatResponse(true, newProduct, "Product created successfully", 201);
 });
+

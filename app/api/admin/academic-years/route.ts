@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { cacheGet, cacheSet, cacheDel, buildTenantCacheKey } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -9,7 +9,8 @@ export async function GET(req: Request) {
   if (!companyId)
     return formatResponse(false, null, "Company ID is required", 400);
 
-  const cacheKey = `admin:academicYears:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "academic_years", {});
+
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -71,9 +72,14 @@ export async function POST(req: Request) {
 
     // Evacuate list and overall dynamic session layouts
     try {
-      await cacheDel(`admin:academicYears:${companyId}:all`);
-      await cacheDel(`admin:academicSession:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:academic_years:*`);
+      await cacheDel(`tenant:${companyId}:academic_session:*`);
+      await cacheDel(`tenant:${companyId}:academicYears:*`);
+      await cacheDel(`admin:academicYears:*`);
+      await cacheDel(`tenant:${companyId}:academicSession:*`);
+      await cacheDel(`admin:academicSession:*`);
     } catch (e) {}
+
 
     return formatResponse(true, academicYear, "Academic Year created", 201);
   } catch (error) {

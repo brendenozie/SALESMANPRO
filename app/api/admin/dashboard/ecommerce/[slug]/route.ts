@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -18,7 +18,7 @@ export const GET = withApiHandler(
       // --- Get Company ID from Slug ---
       // IMPORTANT: All queries must use the company's ObjectId, not its slug.
 
-      const cacheKey = `admin:ecommerce:${companyId || "global"}:all`;
+      const cacheKey = buildTenantCacheKey(companyId, "ecommerce", {});
 
       try {
         const cached = await cacheGet(cacheKey);

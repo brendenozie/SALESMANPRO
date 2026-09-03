@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -76,7 +76,10 @@ async function restockInventory(
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:restock:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:restock:*`);
+      await cacheDel(`admin:restock:*`);
+    } catch (e) {}
     return formatResponse(true, {
     message: `Successfully restocked ${parsedQuantity} units.`,
     newStock: updatedItem.quantity,

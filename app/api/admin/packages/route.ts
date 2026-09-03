@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
@@ -19,7 +19,7 @@ async function handleGetPackages(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, 'The companyId query parameter is required to fetch packages.', 400);
   }
 
-  const cacheKey = `admin:packages:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "packages", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -54,7 +54,7 @@ async function handlePostPackage(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, 'Missing required fields: companyId, title, and price.', 400);
   }
 
-  const cacheKey = `admin:packages:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "packages", { status });
 
   try {
     const newPackage = await prisma.package.create({

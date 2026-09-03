@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
 import { formatResponse } from '@/lib/formatResponse'; // New import
@@ -120,7 +120,10 @@ async function updateExpert(request: Request, { params }: Params) {
 
     const formattedUpdatedExpert = formatExpertData(updatedExpertData);
 
-    try { await cacheDel(`admin:experts:${company.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${company.id}:experts:*`);
+      await cacheDel(`admin:experts:*`);
+    } catch (e) {}
 
     return formatResponse(true, { data: formattedUpdatedExpert }, null, 200);
 
@@ -170,7 +173,10 @@ async function deleteExpert(request: Request, { params }: Params) {
       where: { id: expertId },
     });
     
-    try { await cacheDel(`admin:experts:${company.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${company.id}:experts:*`);
+      await cacheDel(`admin:experts:*`);
+    } catch (e) {}
     
     return formatResponse(true, { message: 'Expert deleted successfully.' }, null, 200);
 

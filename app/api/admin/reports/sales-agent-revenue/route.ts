@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/reports/sales-agent-revenue/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
@@ -34,7 +34,7 @@ async function getSalesAgentRevenue(req: Request) {
     whereClause.companyId = companyId;
   }
 
-  const cacheKey = `admin:sales-agent-revenue:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "sales-agent-revenue", { endDate, startDate });
 
   try {
     const cached = await cacheGet(cacheKey);

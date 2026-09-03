@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/get-all-agents/route.ts
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -21,7 +21,7 @@ async function fetchAllAgents(request: Request) {
   // --- Data Fetching ---
   // Fetch all agents and their AgentInventory entries (with product details)
   
-    const cacheKey = `admin:get-all-inventory-agents:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "get-all-inventory-agents", {});
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -35,8 +35,14 @@ export async function PATCH(req: Request) {
       });
     });
 
-    try { await cacheDel(`admin:rooms:*`); } catch (e) {}
-    try { await cacheDel(`admin:residents:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'unscoped'}:rooms:*`);
+      await cacheDel(`admin:rooms:*`);
+    } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'unscoped'}:residents:*`);
+      await cacheDel(`admin:residents:*`);
+    } catch (e) {}
     
     return formatResponse(true, result, "Transfer completed successfully", 200);
   } catch (error: any) {

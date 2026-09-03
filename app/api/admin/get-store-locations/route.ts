@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; 
 import { getAuthSession } from "@/lib/auth"; // Used for fetching the user session
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -25,7 +25,7 @@ async function fetchCompanyLocations(
     return formatResponse(false, null, "Missing required route parameter: id (companyId)", 400);
   }
 
-  const cacheKey = `admin:get-store-locations:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "get-store-locations", {});
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get('companyId');
-    const cacheKey = `admin:expenses:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "expenses", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -45,7 +45,10 @@ export async function POST(req: Request) {
     }
   });
 
-  try { await cacheDel(`admin:expenses:${schoolId || 'global'}:all`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${schoolId}:expenses:*`);
+    await cacheDel(`admin:expenses:*`);
+  } catch (e) {}
 
   return formatResponse(true, expense, null, 200);
 }

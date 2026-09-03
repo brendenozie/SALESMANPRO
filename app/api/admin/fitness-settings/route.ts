@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Adjust this path
@@ -45,7 +45,7 @@ const getSettingsLogic = async (request: Request, { params }: RouteContext) => {
 
     // 1. Find the company ID based on the adminSlug
     
-    const cacheKey = `admin:fitness-settings:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "fitness-settings", {});
 
     try {
         const cached = await cacheGet(cacheKey);
@@ -150,7 +150,10 @@ const putSettingsLogic = async (request: Request, { params }: RouteContext) => {
     });
 
     
-    try { await cacheDel(`admin:fitness-settings:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:fitness-settings:*`);
+      await cacheDel(`admin:fitness-settings:*`);
+    } catch (e) {}
     return formatResponse(true, updatedSettings, 'Settings updated successfully', 200);
 };
 

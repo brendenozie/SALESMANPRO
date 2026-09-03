@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client';
 import { formatResponse } from "@/lib/formatResponse";
@@ -26,7 +26,10 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:subscriptions:${updatedSubscription.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedSubscription.companyId}:subscriptions:*`);
+      await cacheDel(`admin:subscriptions:*`);
+    } catch (e) {}
     return formatResponse(true, updatedSubscription, 'Subscription updated successfully.');
   } catch (error: any) {
     console.error('Error updating subscription:', error);
@@ -50,7 +53,10 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
     await prisma.subscription.delete({ where: { id } });
 
     
-    try { await cacheDel(`admin:subscriptions:${updatedSubscription.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedSubscription.companyId}:subscriptions:*`);
+      await cacheDel(`admin:subscriptions:*`);
+    } catch (e) {}
     return formatResponse(true, null, `Subscription with id ${id} deleted successfully.`);
   } catch (error: any) {
     console.error('Error deleting subscription:', error);

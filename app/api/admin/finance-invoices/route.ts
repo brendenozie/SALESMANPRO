@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/invoices/route.ts
 
 // Incorporate the new imports
@@ -16,7 +16,7 @@ const getInvoicesLogic = async (req: Request) => {
 
     // Fetch all invoices for the specified company
     
-    const cacheKey = `admin:finance-invoices:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "finance-invoices", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -69,7 +69,11 @@ const postInvoiceLogic = async (req: Request) => {
 
     // Use formatResponse for success
     
-    try { await cacheDel(`admin:finance-invoices:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:finance-invoices:*`);
+      await cacheDel(`tenant:${companyId}:finance-invoices:*`);
+      await cacheDel(`admin:finance-invoices:*`);
+    } catch (e) {}
     return formatResponse(true, newInvoice, 'Invoice created successfully', 201);
 };
 

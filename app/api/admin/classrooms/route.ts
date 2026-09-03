@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -28,7 +28,7 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Unauthorized: No company context found", 401);
   }
 
-  const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "classrooms", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -74,7 +74,10 @@ export const POST = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:classrooms:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:classrooms:*`);
+      await cacheDel(`admin:classrooms:*`);
+    } catch (e) {}
     return formatResponse(true, newClassroom, "Classroom created successfully", 201);
 }, { requireAuth: true });
 

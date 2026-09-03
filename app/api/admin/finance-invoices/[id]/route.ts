@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/invoices/[id]/route.ts
 
 // Incorporate the new imports
@@ -22,7 +22,7 @@ const getInvoiceId = (context: RouteContext) => context.params.id;
 const getInvoiceLogic = async (req: Request, context: RouteContext) => {
     const invoiceId = getInvoiceId(context);
 
-    const cacheKey = `admin:finance-invoices:${invoiceId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(invoiceId, "finance-invoices", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -78,7 +78,7 @@ const putInvoiceLogic = async (req: Request, context: RouteContext) => {
         data.dueDate = new Date(dueDate);
     }
     
-    const cacheKey = `admin:finance-invoices:${invoiceId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(invoiceId, "finance-invoices", { status });
 
     const updatedInvoice = await prisma.invoice.update({
         where: { id: invoiceId },
@@ -109,7 +109,10 @@ const deleteInvoiceLogic = async (req: Request, context: RouteContext) => {
     
     // Use formatResponse for success (no data returned)
     
-    try { await cacheDel(`admin:finance-invoices:${invoiceId || 'global'}:all`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${invoiceId}:finance-invoices:*`);
+      await cacheDel(`admin:finance-invoices:*`);
+    } catch (e) {}
     
     return formatResponse(true, null, 'Invoice deleted successfully', 200);
 };

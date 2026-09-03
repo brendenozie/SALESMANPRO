@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from '@/lib/verifyAuth';
@@ -21,7 +21,7 @@ async function getDestination(req: Request, { params }: Params) {
   const { id } = params;
 
   
-    const cacheKey = `admin:destinations:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "destinations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -63,7 +63,10 @@ async function updateDestination(req: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:destinations:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:destinations:*`);
+      await cacheDel(`admin:destinations:*`);
+    } catch (e) {}
     return formatResponse(true, { data: updatedDestination }, null, 200);
 }
 
@@ -81,7 +84,10 @@ async function deleteDestination(req: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:destinations:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:destinations:*`);
+      await cacheDel(`admin:destinations:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Destination deleted successfully" }, null, 200);
 }
 

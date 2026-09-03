@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { fetchWithCache, buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -18,7 +18,6 @@ const SUBMISSION_SELECT = {
   course: { select: { title: true } },
   student: { select: { user: { select: { name: true } } } },
   reviewedBy: { select: { user: { select: { name: true } } } },
-  // We only include responses if specifically needed for detail views
 };
 
 // Sync mapper to clean up the nested Prisma structure
@@ -42,35 +41,41 @@ async function getSubmissions(request: Request) {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:assignment-submissions:${assignmentId || 'global'}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  
-  const submissions = await prisma.assignmentSubmission.findMany({
-    where: { 
-      companyId,
-      ...(assignmentId && { assignmentId }),
-      ...(studentId && { studentId }),
-    },
-    select: {
-      ...SUBMISSION_SELECT,
-      // Only fetch content if it's a filtered search for a specific student/assignment
-      submissionContent: !!(assignmentId || studentId), 
-    },
-    orderBy: { submittedAt: 'desc' },
-    take: 50, // Added safety pagination limit
+  const cacheKey = buildTenantCacheKey(companyId, "assignment-submissions", {
+    assignmentId,
+    studentId,
   });
 
-  try {
-    if (submissions) {
-      await cacheSet(cacheKey, submissions, 60);
-    }
-  } catch (e) {}
+  const responseData = await fetchWithCache(
+    cacheKey,
+    async () => {
+      const submissions = await prisma.assignmentSubmission.findMany({
+        where: { 
+          companyId,
+          ...(assignmentId && { assignmentId }),
+          ...(studentId && { studentId }),
+        },
+        select: {
+          ...SUBMISSION_SELECT,
+          ...(assignmentId && studentId && {
+            assignmentQuestionResponses: {
+              select: {
+                id: true,
+                questionId: true,
+                responseText: true,
+                selectedOptions: true,
+              }
+            }
+          })
+        },
+        orderBy: { submittedAt: 'desc' },
+      });
+      return submissions.map(flattenSubmission);
+    },
+    { ttlSeconds: 60, swrSeconds: 30 }
+  );
 
-  return formatResponse(true, submissions.map(flattenSubmission), null, 200);
+  return formatResponse(true, responseData, null, 200);
 }
 
 async function createSubmission(request: Request) {
@@ -82,8 +87,6 @@ async function createSubmission(request: Request) {
   }
 
   try {
-    // OPTIMIZATION: Prisma nested create is atomic by default. 
-    // No need for a manual $transaction wrapper here.
     const newSubmission = await prisma.assignmentSubmission.create({
       data: {
         assignmentId,
@@ -100,11 +103,15 @@ async function createSubmission(request: Request) {
           })) || []
         }
       },
-      select: { id: true, submittedAt: true } // Return minimal data for confirmation
+      select: { id: true, submittedAt: true }
     });
 
-    
-    try { await cacheDel(`admin:assignment-submissions:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:assignment-submissions:*`);
+      await cacheDel(`tenant:${companyId}:assignment-submissions:*`);
+      await cacheDel(`admin:assignment-submissions:*`);
+    } catch (e) {}
+
     return formatResponse(true, newSubmission, "Submission received.", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {

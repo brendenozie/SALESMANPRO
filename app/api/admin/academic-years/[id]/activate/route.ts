@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/sales-agents/[agentId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -23,7 +23,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     ]);
 
     // Invalidate cache for all years of this company
-    await cacheDel(`admin:academicYears:${companyId}:all`);
+    await cacheDel(`tenant:${companyId}:academicYears:*`);
+    await cacheDel(`admin:academicYears:*`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

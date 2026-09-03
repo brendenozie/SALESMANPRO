@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/settings/notifications/[userId]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -14,7 +14,7 @@ async function getUserSettings(req: Request, { params }: { params: { userId: str
   if (!userId) return formatResponse(false, null, "User ID is required", 400);
 
   
-    const cacheKey = `admin:notifications:${userId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(userId, "notifications", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -58,7 +58,10 @@ async function updateUserSettings(req: Request, { params }: { params: { userId: 
     });
 
     
-    try { await cacheDel(`admin:notifications:${userId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${userId}:notifications:*`);
+      await cacheDel(`admin:notifications:*`);
+    } catch (e) {}
     return formatResponse(true, updatedSettings, "User settings updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update user settings:", error);

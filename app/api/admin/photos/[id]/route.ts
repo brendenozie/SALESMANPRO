@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/photos/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -9,7 +9,7 @@ export const GET = withApiHandler(
   async (request: Request, { params }: { params: { id: string } }) => {
     const { id } = params;
 
-    const cacheKey = `admin:photos:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "photos", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -50,7 +50,10 @@ export const PUT = withApiHandler(
         },
       });
 
-    try { await cacheDel(`admin:photos:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:photos:*`);
+      await cacheDel(`admin:photos:*`);
+    } catch (e) {}
     return formatResponse(true, updatedPhoto, null, 200);
     } catch (err: any) {
       if (err.code === "P2025") {
@@ -69,7 +72,10 @@ export const DELETE = withApiHandler(
     try {
       await prisma.photo.delete({ where: { id } });
       
-    try { await cacheDel(`admin:photos:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:photos:*`);
+      await cacheDel(`admin:photos:*`);
+    } catch (e) {}
     return formatResponse(true, null, null, 204);
     } catch (err: any) {
       if (err.code === "P2025") {

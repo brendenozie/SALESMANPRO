@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; // Assumed to return a full NextResponse for errors
@@ -22,7 +22,7 @@ async function getInventory(req: Request) {
 
   // Fetch all products for this company, including any inventory and nested relations
   
-  const cacheKey = `admin:get-all-inventory:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "get-all-inventory", { limit, page });
 
   try {
     const cached = await cacheGet(cacheKey);

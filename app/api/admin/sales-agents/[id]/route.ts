@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/agents/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -98,7 +98,10 @@ async function updateAgent(req: Request, { params }: { params: { id: string } })
     };
 
     
-    try { await cacheDel(`admin:sales-agents:${updatedSalesAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedSalesAgent.companyId}:sales-agents:*`);
+      await cacheDel(`admin:sales-agents:*`);
+    } catch (e) {}
     return formatResponse(true, agentProfile, "Agent updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating agent:", error);
@@ -132,14 +135,20 @@ async function deleteAgent(req: Request, { params }: { params: { id: string } })
     if (!salesAgent.userId) {
       await prisma.salesAgent.delete({ where: { id: agentId } });
       
-    try { await cacheDel(`admin:sales-agents:${salesAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${salesAgent.companyId}:sales-agents:*`);
+      await cacheDel(`admin:sales-agents:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Agent deleted (no associated user)", 200);
     }
 
     await prisma.salesAgent.delete({ where: { id: agentId } });
     await prisma.user.delete({ where: { id: salesAgent.userId } });
 
-      try { await cacheDel(`admin:sales-agents:${salesAgent.companyId || 'global'}:*`); } catch (e) {}
+      try {
+        await cacheDel(`tenant:${salesAgent.companyId}:sales-agents:*`);
+        await cacheDel(`admin:sales-agents:*`);
+      } catch (e) {}
     return formatResponse(true, null, "Agent deleted successfully", 200);
   } catch (error) {
     console.error("Error deleting agent:", error);

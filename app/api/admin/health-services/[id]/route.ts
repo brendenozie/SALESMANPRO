@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -24,7 +24,7 @@ async function handleGetService(request: Request, { params }: ServiceParams) {
   const { id } = params;
 
   // We can skip the try/catch and 401 check, as withApiHandler handles it.
-  const cacheKey = `admin:health-services:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "health-services", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -74,7 +74,10 @@ async function handleUpdateService(request: Request, { params }: ServiceParams) 
 
     const formattedUpdatedService = await formatServiceData(updatedService);
     
-    try { await cacheDel(`admin:health-services:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:health-services:*`);
+      await cacheDel(`admin:health-services:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedService, "Service updated successfully", 200);
 
   } catch (err: any) {
@@ -97,7 +100,10 @@ async function handleDeleteService(request: Request, { params }: ServiceParams) 
 
   // Return a success message with 200/204 status
   
-    try { await cacheDel(`admin:health-services:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:health-services:*`);
+      await cacheDel(`admin:health-services:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Service deleted successfully", 200);
 }
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/project-members/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -18,7 +18,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId");
 
-  const cacheKey = `admin:project-members:${projectId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(projectId, "project-members", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -60,7 +60,10 @@ export const POST = withApiHandler(async (request: Request) => {
     });
 
     
-    try { await cacheDel(`admin:project-members:${projectId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${projectId}:project-members:*`);
+      await cacheDel(`admin:project-members:*`);
+    } catch (e) {}
     return formatResponse(true, newProjectMember, "Project member created successfully", 201);
   } catch (error: any) {
     if (error.code === "P2002") {

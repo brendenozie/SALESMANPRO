@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/clients/route.ts
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
@@ -21,7 +21,7 @@ async function handleGET(request: Request) {
 
   try {
     
-    const cacheKey = `admin:travel-users:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "travel-users", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -138,7 +138,8 @@ async function handlePOST(request: Request) {
     };
 
     try {
-      await cacheDel(`admin:travel-users:${companyId || 'global'}:*`);
+      await cacheDel(`tenant:${companyId}:travel-users:*`);
+      await cacheDel(`admin:travel-users:*`);
     } catch (e) {
       console.error("Error deleting cached clients:", e);
     }

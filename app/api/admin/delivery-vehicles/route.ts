@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/vehicles/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -119,7 +119,7 @@ export const GET = withApiHandler(async (request, context) => {
   }
 
   
-    const cacheKey = `admin:delivery-vehicles:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "delivery-vehicles", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -186,6 +186,9 @@ export const POST = withApiHandler(async (request, context) => {
 
   const newVehicle = formatProductAsVehicle(newProduct);
   
-    try { await cacheDel(`admin:delivery-vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:delivery-vehicles:*`);
+      await cacheDel(`admin:delivery-vehicles:*`);
+    } catch (e) {}
     return formatResponse(true, newVehicle, "Vehicle created successfully.", 201);
 });

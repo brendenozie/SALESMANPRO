@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/patients/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -53,7 +53,7 @@ export const GET = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "Missing companyId", 400);
   }
   
-  const cacheKey = `admin:patients:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "patients", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -135,7 +135,10 @@ export const POST = withApiHandler(async (request: Request) => {
 
     const newPatient = await formatPatientData(patient);
     
-    try { await cacheDel(`admin:patients:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:patients:*`);
+      await cacheDel(`admin:patients:*`);
+    } catch (e) {}
     return formatResponse(true, newPatient, null, 201);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {

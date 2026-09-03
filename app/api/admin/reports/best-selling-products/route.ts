@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/reports/best-selling-products/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -37,7 +37,7 @@ const getBestSellingProducts = async (req: Request) => {
     whereClause.order = { companyId };
   }
 
-  const cacheKey = `admin:best-selling-products:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "best-selling-products", { endDate, limit, startDate });
 
   try {
     const cached = await cacheGet(cacheKey);

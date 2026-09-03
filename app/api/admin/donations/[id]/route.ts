@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -28,7 +28,10 @@ async function updateDonation(request: Request, { params }: Params) {
     },
   });
 
-  try { await cacheDel(`admin:donations:${id || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${id}:donations:*`);
+    await cacheDel(`admin:donations:*`);
+  } catch (e) {}
   return formatResponse(true, { data: updatedDonation }, null, 200);
 }
 
@@ -45,7 +48,10 @@ async function deleteDonation(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:donations:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:donations:*`);
+      await cacheDel(`admin:donations:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Donation deleted successfully" }, null, 200);
 }
 

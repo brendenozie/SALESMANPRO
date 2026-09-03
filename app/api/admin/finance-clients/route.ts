@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/clients/route.ts
 
 // 1. Incorporate the new imports
@@ -18,7 +18,7 @@ const getClientsLogic = async (req: Request) => {
 
   // Find all clients and include their associated user data
   
-    const cacheKey = `admin:finance-clients:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "finance-clients", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -87,7 +87,10 @@ const postClientLogic = async (req: Request) => {
 
   // Use formatResponse for success
   
-    try { await cacheDel(`admin:finance-clients:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:finance-clients:*`);
+      await cacheDel(`admin:finance-clients:*`);
+    } catch (e) {}
     
     return formatResponse(true, newClient, 'Client created successfully', 201);
 };

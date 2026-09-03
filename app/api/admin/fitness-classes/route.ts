@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 import prisma from "@/server/db/prismadb";
 // New Imports
@@ -32,7 +32,7 @@ const getProgramsLogic = async (request: Request, context: RouteContext) => {
 
   // 1. Find the company ID
 
-  const cacheKey = `admin:fitness-programs:${companyId || "global"}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "fitness-programs", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -218,7 +218,7 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
     price: newCourse.createdCourse.price || 0,
   };
 
-  const cacheKey = `admin:fitness-programs:${companyId || "global"}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "fitness-programs", {});
 
   // Clear cache for the list of programs for this company
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -46,7 +46,10 @@ export async function PATCH(req: Request) {
       return allocation;
     });
 
-    try { await cacheDel(`admin:allocate:${allocationId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${allocationId}:allocate:*`);
+      await cacheDel(`admin:allocate:*`);
+    } catch (e) {}
 
     return formatResponse(true, updatedAllocation, "Resident checked out successfully", 200);
 

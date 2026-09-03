@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -20,7 +20,10 @@ const updateCampaign = async (request: Request, context: { params: { id: string 
     data: updateData,
   });
 
-  try { await cacheDel(`admin:campaigns:${id || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${id}:campaigns:*`);
+    await cacheDel(`admin:campaigns:*`);
+  } catch (e) {}
   return formatResponse(true, updatedCampaign, "Campaign updated", 200);
 };
 
@@ -33,7 +36,10 @@ const deleteCampaign = async (_request: Request, context: { params: { id: string
     where: { id },
   });
 
-  try { await cacheDel(`admin:campaigns:${id || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${id}:campaigns:*`);
+    await cacheDel(`admin:campaigns:*`);
+  } catch (e) {}
   return formatResponse(true, null, "Campaign deleted", 200);
 };
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -58,7 +58,10 @@ export async function POST(req: Request) {
     }
   }
 
-  try { await cacheDel(`admin:leads:${companyId || 'global'}:*`); } catch (e) {}  
+  try {
+    await cacheDel(`tenant:${companyId}:leads:*`);
+    await cacheDel(`admin:leads:*`);
+  } catch (e) {}
   
   return formatResponse(true, { total: users.length, created, skipped }, "Import completed", 200);
 }

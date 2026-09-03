@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "maintenance", {});
     
     const newTicket = await prisma.hostelMaintenanceRequest.create({
       data: {

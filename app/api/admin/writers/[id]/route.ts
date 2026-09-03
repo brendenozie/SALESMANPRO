@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/writers/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
@@ -12,7 +12,7 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
 const { id } = params;
 
 
-    const cacheKey = `admin:writers:${'global' || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey('global', "writers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -100,7 +100,10 @@ company: true,
 });
 
 
-    try { await cacheDel(`admin:writers:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:writers:*`);
+      await cacheDel(`admin:writers:*`);
+    } catch (e) {}
     return NextResponse.json(updatedWriter, { status: 200 });
 });
 
@@ -122,6 +125,9 @@ where: { id },
 });
 
 
-    try { await cacheDel(`admin:writers:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:writers:*`);
+      await cacheDel(`admin:writers:*`);
+    } catch (e) {}
     return NextResponse.json({ message: 'Writer deleted successfully' }, { status: 200 });
 });

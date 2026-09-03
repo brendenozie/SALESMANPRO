@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/students/[id]/promote/route.ts
 import prisma from "@/server/db/prismadb";
 import { StudentLevelStatus } from "@prisma/client";
@@ -41,7 +41,10 @@ async function promoteStudent(req: Request, { params }: { params: { id: string }
       )
     );
 
-    try { await cacheDel(`admin:promote-bulk:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:promote-bulk:*`);
+      await cacheDel(`admin:promote-bulk:*`);
+    } catch (e) {}
     return formatResponse(true, result, "Student promoted successfully", 201);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/clients/route.ts
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
@@ -18,7 +18,7 @@ const getClients = async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:properties-clients:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "properties-clients", {});
 
   try {
     const cached = await cacheGet(cacheKey);

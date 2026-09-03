@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
@@ -14,7 +14,7 @@ type RouteParams = { params: { id: string } };
 async function handleGetPackage(request: Request, { params }: RouteParams) {
   const { id } = params;
   
-  const cacheKey = `admin:packages:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "packages", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -46,7 +46,7 @@ async function handlePutPackage(request: Request, { params }: RouteParams) {
   const body = await request.json();
   const { title, price, frequency, features, status, isFeatured } = body;
 
-  const cacheKey = `admin:packages:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "packages", { status });
 
   try {
     const updatedPackage = await prisma.package.update({
@@ -81,7 +81,7 @@ async function handlePutPackage(request: Request, { params }: RouteParams) {
 async function handleDeletePackage(request: Request, { params }: RouteParams) {
   const { id } = params;
 
-  const cacheKey = `admin:packages:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "packages", {});
 
   try {
     await prisma.package.delete({

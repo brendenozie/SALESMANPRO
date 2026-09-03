@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/agents/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -91,7 +91,10 @@ async function putHandler(req: Request, { params }: { params: { id: string } }) 
   };
 
   
-    try { await cacheDel(`admin:properties-agents:${updatedSalesAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedSalesAgent.companyId}:properties-agents:*`);
+      await cacheDel(`admin:properties-agents:*`);
+    } catch (e) {}
     return formatResponse(true, agentProfile, "Agent updated successfully", 200);
 }
 
@@ -120,7 +123,10 @@ async function deleteHandler(req: Request, { params }: { params: { id: string } 
   await prisma.user.delete({ where: { id: salesAgent.userId || "" } });
 
   
-    try { await cacheDel(`admin:properties-agents:${salesAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${salesAgent.companyId}:properties-agents:*`);
+      await cacheDel(`admin:properties-agents:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Agent deleted successfully", 200);
 }
 

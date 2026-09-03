@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/testimonials/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,7 +12,7 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
 
   try {
     
-    const cacheKey = `admin:testimonials:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "testimonials", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -58,7 +58,10 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:testimonials:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:testimonials:*`);
+      await cacheDel(`admin:testimonials:*`);
+    } catch (e) {}
     return formatResponse(true, updatedTestimonial);
   } catch (error: any) {
     console.error('Failed to update testimonial:', error);
@@ -76,7 +79,10 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
   try {
     await prisma.testimonial.delete({ where: { id } });
     
-    try { await cacheDel(`admin:testimonials:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:testimonials:*`);
+      await cacheDel(`admin:testimonials:*`);
+    } catch (e) {}
     return formatResponse(true, { message: 'Testimonial deleted successfully' });
   } catch (error: any) {
     console.error('Failed to delete testimonial:', error);

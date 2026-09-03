@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -34,7 +34,7 @@ async function getInvoice(
 
   // --- Data Fetching ---
   
-    const cacheKey = `admin:health-billing:${params.adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(params.adminSlug, "health-billing", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -98,7 +98,10 @@ async function updateInvoice(
   // --- Success Response ---
   const formattedUpdatedInvoice = await formatInvoiceData(updatedInvoice);
   
-    try { await cacheDel(`admin:health-billing:${params.adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.adminSlug}:health-billing:*`);
+      await cacheDel(`admin:health-billing:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedInvoice, "Invoice updated successfully.", 200);
 }
 
@@ -122,7 +125,10 @@ async function deleteInvoice(
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:health-billing:${params.adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.adminSlug}:health-billing:*`);
+      await cacheDel(`admin:health-billing:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Invoice deleted successfully" }, "Invoice deleted successfully.", 200);
 }
 

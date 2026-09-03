@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 
   if (!companyId) return formatResponse(false, null, "Missing Company ID", 400);
 
-  const cacheKey = `admin:issuance:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "issuance", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -67,7 +67,10 @@ export async function POST(req: Request) {
     });
 
     // Invalidate relevant caches
-    try { await cacheDel(`admin:issuance:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:issuance:*`);
+      await cacheDel(`admin:issuance:*`);
+    } catch (e) {}
 
     return formatResponse(true, transaction, "Issuance created successfully", 201);
   } catch (error: any) {

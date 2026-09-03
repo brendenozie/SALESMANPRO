@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // // app/api/course-assignments/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -8,7 +8,7 @@ import { Prisma } from "@prisma/client";
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-  const cacheKey = `admin:course-assignments:${params.id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.id, "course-assignments", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -82,7 +82,10 @@ export const PATCH = withApiHandler(async (req: Request, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:course-assignments:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:course-assignments:*`);
+      await cacheDel(`admin:course-assignments:*`);
+    } catch (e) {}
     return formatResponse(true, updated, "Updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -97,7 +100,10 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     await prisma.courseAssignment.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:course-assignments:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:course-assignments:*`);
+      await cacheDel(`admin:course-assignments:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

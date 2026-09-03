@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -46,7 +46,7 @@ async function getExamQuestions(request: Request) {
   }
   whereClause.examId = examId;
 
-  const cacheKey = `admin:exam-questions:${examId}:all`;
+  const cacheKey = buildTenantCacheKey(examId, "exam-questions", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -154,7 +154,10 @@ async function createExamQuestion(request: Request) {
 
   const responseData = transformQuestionResponse(newQuestion);
   
-    try { await cacheDel(`admin:exam-questions:${examId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${examId}:exam-questions:*`);
+      await cacheDel(`admin:exam-questions:*`);
+    } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 201);
 }
 

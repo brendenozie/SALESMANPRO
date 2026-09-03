@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/user/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -74,6 +74,9 @@ export const PUT = withApiHandler(async (req: Request) => {
   });
 
   
-    try { await cacheDel(`admin:post-update-user:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:post-update-user:*`);
+      await cacheDel(`admin:post-update-user:*`);
+    } catch (e) {}
     return formatResponse(true, updatedUser, "User updated successfully", 200);
 });

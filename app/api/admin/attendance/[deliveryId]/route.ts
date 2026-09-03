@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/deliveries/[deliveryId]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -45,7 +45,10 @@ export const PUT = withApiHandler(async (request, context) => {
     });
 
     
-    try { await cacheDel(`admin:attendance:${updated.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updated.companyId}:attendance:*`);
+      await cacheDel(`admin:attendance:*`);
+    } catch (e) {}
     return formatResponse(true, {
       ...updated,
       riderName: updated.rider?.name || 'Unassigned'
@@ -76,7 +79,10 @@ export const DELETE = withApiHandler(async (request, context) => {
       },
     });
     
-    try { await cacheDel(`admin:attendance:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:attendance:*`);
+      await cacheDel(`admin:attendance:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Delivery deleted successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

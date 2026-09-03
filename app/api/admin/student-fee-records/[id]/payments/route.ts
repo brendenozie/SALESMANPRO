@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/student-fee-records/[id]/payments/route.ts
 
 import { addPaymentToStudentFeeRecord } from '@/lib/data';
@@ -32,7 +32,10 @@ async function postPayment(req:Request, context: Context) {
       return formatResponse(false, null, 'Student fee record not found or failed to add payment.', 404);
     }
 
-    try { await cacheDel(`admin:studentFeeRecords:${id}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:studentFeeRecords:*`);
+      await cacheDel(`admin:studentFeeRecords:*`);
+    } catch (e) {}
     
     return formatResponse(true, updatedRecord, 'Payment added successfully');
   } catch (error: any) {

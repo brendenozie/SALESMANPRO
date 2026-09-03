@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -37,7 +37,7 @@ async function fetchPaginatedUsers(req: Request) {
   // --- Data Fetching ---
   // Use transaction for atomic count and fetch operations.
   
-    const cacheKey = `admin:get-tasks:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "get-tasks", { limit, offset, page });
 
   try {
     const cached = await cacheGet(cacheKey);

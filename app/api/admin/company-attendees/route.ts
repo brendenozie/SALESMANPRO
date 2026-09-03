@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -42,7 +42,7 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
   try {
     // 4. Parallelize Data and Total Count
     
-    const cacheKey = `admin:company-attendees:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "company-attendees", { limit, page, search, sortBy, sortOrder });
 
   try {
     const cached = await cacheGet(cacheKey);

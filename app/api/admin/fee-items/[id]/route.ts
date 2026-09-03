@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { updateFeeItem, deleteFeeItem } from "@/lib/data";
@@ -19,7 +19,8 @@ async function handlePutFeeItem(
   }
 
   try {
-    await cacheDel(`admin:fee-items:${params.id || 'global'}:*`);
+    await cacheDel(`tenant:${params.id}:fee-items:*`);
+    await cacheDel(`admin:fee-items:*`);
   } catch (e) {}
 
   return formatResponse(true, updated, null, 200);
@@ -38,7 +39,10 @@ async function handleDeleteFeeItem(
     return formatResponse(false, null, "Failed to delete fee item", 400);
   }
   
-  try {    await cacheDel(`admin:fee-items:${params.id || 'global'}:*`);
+  try {
+    await cacheDel(`tenant:${params.id}:fee-items:*`);
+    await cacheDel(`admin:fee-items:*`);
+  } catch (e) {}
   } catch (e) {}
 
   return formatResponse(true, true, null, 200);

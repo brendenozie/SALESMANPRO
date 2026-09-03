@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -24,7 +24,7 @@ async function getFaq(req: Request, { params }: Params) {
     return formatResponse(false, null, "Missing FAQ ID.", 400);
   }
   
-  const cacheKey = `admin:faqs:${faqId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(faqId, "faqs", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -68,7 +68,10 @@ async function updateFaq(req: Request, { params }: Params) {
     },
   });
   
-    try { await cacheDel(`admin:faqs:${faqId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${faqId}:faqs:*`);
+      await cacheDel(`admin:faqs:*`);
+    } catch (e) {}
     return formatResponse(true, updatedFaq, null, 200);
 }
 
@@ -87,7 +90,10 @@ async function deleteFaq(req: Request, { params }: Params) {
     where: { id: faqId },
   });
 
-    try { await cacheDel(`admin:faqs:${faqId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${faqId}:faqs:*`);
+      await cacheDel(`admin:faqs:*`);
+    } catch (e) {}
     return formatResponse(true, { message: 'FAQ deleted successfully' }, null, 200);
 }
 

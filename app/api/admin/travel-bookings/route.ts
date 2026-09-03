@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/travel-bookings/route.ts
 import prisma from '@/server/db/prismadb';
 
@@ -18,7 +18,7 @@ async function handleGET(request: Request) {
 
   try {
     
-    const cacheKey = `admin:travel-bookings:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "travel-bookings", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -142,7 +142,10 @@ async function handlePOST(request: Request) {
     };
 
     
-    try { await cacheDel(`admin:travel-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:travel-bookings:*`);
+      await cacheDel(`admin:travel-bookings:*`);
+    } catch (e) {}
     return formatResponse(true, formatted, 'Booking created successfully');
   } catch (error: any) {
     console.error('Error creating travel booking:', error);

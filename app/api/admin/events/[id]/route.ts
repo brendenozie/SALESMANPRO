@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -63,7 +63,7 @@ async function getEvent(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  const cacheKey = `admin:events:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "events", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -233,7 +233,10 @@ async function updateEvent(request: Request, { params }: Params) {
 
     const responseData = transformEventResponse(updatedEvent);
     
-    try { await cacheDel(`admin:events:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:events:*`);
+      await cacheDel(`admin:events:*`);
+    } catch (e) {}
 
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
@@ -266,7 +269,10 @@ async function deleteEvent(request: Request, { params }: Params) {
       where: { id },
     });
     
-    try { await cacheDel(`admin:events:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:events:*`);
+      await cacheDel(`admin:events:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Event deleted successfully", deletedId: deletedEvent.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') { // Foreign key constraint failed (e.g., if EventRegistration exists)

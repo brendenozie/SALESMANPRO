@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/virtual-tours/[tourId]/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -68,7 +68,10 @@ export const PUT = withApiHandler(async (request, { params }) => {
   };
 
   
-    try { await cacheDel(`admin:virtual-tours:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:virtual-tours:*`);
+      await cacheDel(`admin:virtual-tours:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedTour, 'Virtual tour updated successfully.', 200);
 });
 
@@ -99,6 +102,9 @@ export const DELETE = withApiHandler(async (_request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:virtual-tours:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:virtual-tours:*`);
+      await cacheDel(`admin:virtual-tours:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Virtual tour deleted successfully.', 200);
 });

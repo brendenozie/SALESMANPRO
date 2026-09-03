@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -15,7 +15,7 @@ async function getDocuments(request: Request,) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:documents:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "documents", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -64,7 +64,10 @@ async function createDocument(request: Request) {
   });
 
   // Clear cache for documents in this company
-    try { await cacheDel(`admin:documents:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:documents:*`);
+      await cacheDel(`admin:documents:*`);
+    } catch (e) {}
     return formatResponse(true, { data: newDocument }, null, 201);
 }
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/tour-packages/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -24,7 +24,7 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
 
   try {
     
-    const cacheKey = `admin:travel-packages:${'global' || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey('global', "travel-packages", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -109,7 +109,10 @@ async function handlePUT(request: Request) {
         },
       });
     });
-    try { await cacheDel(`admin:travel-packages:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:travel-packages:*`);
+      await cacheDel(`admin:travel-packages:*`);
+    } catch (e) {}
     return formatResponse(true, updatedPackage, "Tour package updated successfully");
   } catch (error: any) {
     console.error("Error updating tour package:", error);
@@ -135,7 +138,10 @@ async function handleDELETE(request: Request) {
       await tx.tourPackage.delete({ where: { id } });
     });
 
-    try { await cacheDel(`admin:travel-packages:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:travel-packages:*`);
+      await cacheDel(`admin:travel-packages:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Tour package deleted successfully");
   } catch (error: any) {
     console.error("Error deleting tour package:", error);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/store-categories/[id]/subcategories/route.ts
 import prisma from "@/server/db/prismadb";
 import { v4 as uuidv4 } from "uuid"; // For unique IDs
@@ -51,7 +51,10 @@ async function postSubcategory(req: Request, { params }: { params: { id: string 
     });
 
     
-    try { await cacheDel(`admin:subcategories:${slug || 'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${slug}:subcategories:*`);
+      await cacheDel(`admin:subcategories:*`);
+    } catch (e) {}
     return formatResponse(true, newSubcategory, "Subcategory added successfully", 201);
   } catch (err: any) {
     console.error(`Error adding subcategory to store category ${id}:`, err);

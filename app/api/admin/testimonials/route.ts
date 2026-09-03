@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/testimonials/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
@@ -17,7 +17,7 @@ async function handleGET(request: Request) {
     if (status) where.status = String(status);
 
     
-    const cacheKey = `admin:testimonials:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "testimonials", { status });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -56,7 +56,10 @@ async function handlePOST(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:testimonials:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:testimonials:*`);
+      await cacheDel(`admin:testimonials:*`);
+    } catch (e) {}
     return formatResponse(true, { newTestimonial });
   } catch (error: any) {
     console.error('Failed to create testimonial:', error);

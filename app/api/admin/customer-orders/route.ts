@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -285,7 +285,8 @@ export const POST = withApiHandler(async (request) => {
   });
 
   try {
-    await cacheDel(`admin:customer-orders:${companyId || 'global'}:*`);
+    await cacheDel(`tenant:${companyId}:customer-orders:*`);
+    await cacheDel(`admin:customer-orders:*`);
   } catch (e) {}
 
   return formatResponse(

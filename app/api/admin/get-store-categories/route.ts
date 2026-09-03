@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -37,7 +37,7 @@ async function fetchStoreCategories(req: Request) {
 
   // Run count and paginated query in a transaction for efficiency
   
-    const cacheKey = `admin:get-store-categories:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "get-store-categories", { page });
 
   try {
     const cached = await cacheGet(cacheKey);

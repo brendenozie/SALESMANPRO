@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -263,7 +263,8 @@ export const POST = withApiHandler(
 
       // 2️⃣ Cache Cleans (Message List Cache & Conversation Inbox Cache)
       try {
-        await cacheDel(`admin:messages:${conversationId}:*`);
+        await cacheDel(`tenant:${conversationId}:messages:*`);
+        await cacheDel(`admin:messages:*`);
         await invalidateConversationListCache(companyId, allParticipantUserIds);
       } catch (e) {
         console.error("Cache purge error after message creation:", e);

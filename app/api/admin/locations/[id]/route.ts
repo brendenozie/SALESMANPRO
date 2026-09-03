@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -18,7 +18,7 @@ async function handleGetLocation(request: Request, { params }: RouteParams) {
   const slug = searchParams.get("slug");
   const adminSlug = searchParams.get("adminSlug");
 
-  const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(slug || adminSlug, "locations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -72,7 +72,10 @@ async function handlePatchLocation(request: Request, { params }: RouteParams) {
       },
     });
     
-    try { await cacheDel(`admin:locations:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:locations:*`);
+      await cacheDel(`admin:locations:*`);
+    } catch (e) {}
     return formatResponse(true, updatedLocation, "Location updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -154,7 +157,10 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
   });
 
   
-    try { await cacheDel(`admin:locations:${locationId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${locationId}:locations:*`);
+      await cacheDel(`admin:locations:*`);
+    } catch (e) {}
     return formatResponse(true, updatedLocation, "Location updated successfully", 200);
 }
 
@@ -193,7 +199,10 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
 
   // Return success response with 204 No Content (standard for DELETE)
   
-    try { await cacheDel(`admin:locations:${locationId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${locationId}:locations:*`);
+      await cacheDel(`admin:locations:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Location deleted successfully", 204);
 }
 

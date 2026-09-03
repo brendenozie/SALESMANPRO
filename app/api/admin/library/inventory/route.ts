@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -11,7 +11,7 @@ const getInventory = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-    const cacheKey = `admin:inventory:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "inventory", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -55,7 +55,10 @@ export const PATCH = withApiHandler(async (request: Request) => {
   });
 
   // Invalidate relevant caches
-  try { await cacheDel(`admin:inventory:${updatedBook.companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${updatedBook.companyId}:inventory:*`);
+    await cacheDel(`admin:inventory:*`);
+  } catch (e) {}
   
   return formatResponse(true, updatedBook, "Audit log updated", 200);
 }, { requireAuth: true });

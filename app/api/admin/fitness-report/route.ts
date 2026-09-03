@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Adjust this path
@@ -48,7 +48,7 @@ const getReportsLogic = async (request: Request, { params }: RouteContext) => {
 
     // const companyId = searchParams.get('id');
     
-    const cacheKey = `admin:fitness-report:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "fitness-report", {});
 
   try {
     const cached = await cacheGet(cacheKey);

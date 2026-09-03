@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs"; // Recommended for passwords
@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
   try {
     
-    const cacheKey = `admin:staff:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "staff", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -117,7 +117,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:staff:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:staff:*`);
+      await cacheDel(`admin:staff:*`);
+    } catch (e) {}
     
     return formatResponse(true, result, "Staff created successfully", 201);
   } catch (error: any) {

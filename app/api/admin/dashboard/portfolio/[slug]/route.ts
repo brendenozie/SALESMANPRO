@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -30,7 +30,7 @@ export const GET = withApiHandler(
 
       // 1. Total Projects: Count projects where the user is a member
       
-    const cacheKey = `admin:portfolio:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "portfolio", {});
 
   try {
     const cached = await cacheGet(cacheKey);

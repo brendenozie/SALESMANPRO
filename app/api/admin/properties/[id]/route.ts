@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/properties/[id]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -9,7 +9,7 @@ import { formatResponse } from "@/lib/formatResponse";
 export const GET = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
-   const cacheKey = `admin:properties:${id || 'global'}:all`;
+   const cacheKey = buildTenantCacheKey(id, "properties", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -45,7 +45,7 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
   const { id } = params;
   const body = await request.json();
 
-    const cacheKey = `admin:properties:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "properties", {});
 
   const {
     title,
@@ -103,6 +103,9 @@ export const DELETE = withApiHandler(async (_req: Request, { params }: { params:
     where: { id },
   });
 
-    try { await cacheDel(`admin:properties:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:properties:*`);
+      await cacheDel(`admin:properties:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Property deleted successfully");
 });

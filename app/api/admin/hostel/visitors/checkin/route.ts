@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,7 +20,10 @@ export async function POST(req: Request) {
       include: { student: { select: { firstName: true } }, educator: { include: { user: { select: { name: true } } } } }
     });
     
-    try { await cacheDel(`admin:checkin:${body.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${body.companyId}:checkin:*`);
+      await cacheDel(`admin:checkin:*`);
+    } catch (e) {}
     
     return formatResponse(true, visitor, "Visitor checked in successfully", 201);
   } catch (err) {

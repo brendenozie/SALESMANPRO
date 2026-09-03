@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -40,7 +40,7 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
     );
   }
 
-    const cacheKey = `admin:bulk-create:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "bulk-create", { limit, offset, page });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -130,7 +130,10 @@ async function handleBulkCreate(req: Request) {
     if (companySlug) await revalidateCompanyCache(companySlug);
 
     // Clear caches
-    try { await cacheDel(`admin:bulk-create:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:bulk-create:*`);
+      await cacheDel(`admin:bulk-create:*`);
+    } catch (e) {}
 
     return formatResponse(
       true,
@@ -179,7 +182,10 @@ async function handleBulkCreatev1(req: Request) {
     await revalidateCompanyCache(created?.[0]?.company?.slug || "");
 
     
-    try { await cacheDel(`admin:bulk-create:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:bulk-create:*`);
+      await cacheDel(`admin:bulk-create:*`);
+    } catch (e) {}
     return formatResponse(
       true,
       { createdCount: created.length, created },

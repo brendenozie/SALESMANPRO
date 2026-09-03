@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/prescriptions/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -49,7 +49,7 @@ export const GET = withApiHandler(async (req) => {
     whereClause.status = filterStatus;
   }
 
-    const cacheKey = `admin:prescriptions:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "prescriptions", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -134,6 +134,9 @@ export const POST = withApiHandler(async (req) => {
 
   const formatted = await formatPrescriptionData(newPrescription);
   
-    try { await cacheDel(`admin:prescriptions:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:prescriptions:*`);
+      await cacheDel(`admin:prescriptions:*`);
+    } catch (e) {}
     return formatResponse(true, formatted, "Prescription created successfully", 201);
 });

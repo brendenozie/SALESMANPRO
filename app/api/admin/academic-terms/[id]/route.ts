@@ -1,5 +1,5 @@
 import prisma from "@/server/db/prismadb";
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 
 export async function PATCH(
@@ -34,7 +34,8 @@ export async function PATCH(
     });
 
     try {
-      await cacheDel(`admin:terms:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:terms:*`);
+      await cacheDel(`admin:terms:*`);
       await cacheDel(`admin:terms:${companyId}:${updatedTerm.academicYearId}`);
     } catch (e) {}
 
@@ -81,7 +82,8 @@ export async function PUT(
     });
 
     try {
-      await cacheDel(`admin:terms:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:terms:*`);
+      await cacheDel(`admin:terms:*`);
       await cacheDel(`admin:terms:${companyId}:${academicYearId}`);
     } catch (e) {}
 
@@ -121,7 +123,8 @@ export async function DELETE(
     });
 
     try {
-      await cacheDel(`admin:terms:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:terms:*`);
+      await cacheDel(`admin:terms:*`);
       await cacheDel(`admin:terms:${companyId}:${term.academicYearId}`);
     } catch (e) {}
 

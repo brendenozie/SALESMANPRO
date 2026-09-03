@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -34,7 +34,7 @@ async function getStaff(req: Request, { params }: { params: { id: string } }) {
   
   const { id } = params;
     
-    const cacheKey = `admin:school-staff:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "school-staff", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -92,7 +92,10 @@ async function updateStaff(req: Request, { params }: { params: { id: string } })
 
     const formattedUpdatedStaff = await formatStaffData(updatedStaff);
     
-    try { await cacheDel(`admin:school-staff:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:school-staff:*`);
+      await cacheDel(`admin:school-staff:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedStaff, "Staff updated successfully", 200);
   } catch (err: any) {
     console.error(`PUT staff/${id} error:`, err);
@@ -110,7 +113,10 @@ async function deleteStaff(req: Request, { params }: { params: { id: string } })
 
     await prisma.staffProfile.delete({ where: { id } });
     
-    try { await cacheDel(`admin:school-staff:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:school-staff:*`);
+      await cacheDel(`admin:school-staff:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Staff member deleted successfully", 200);
   } catch (err: any) {
     console.error(`DELETE staff/${id} error:`, err);

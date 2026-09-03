@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -14,7 +14,7 @@ const getFinesLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
-  const cacheKey = `admin:libraryFines:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "libraryFines", { status });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -69,7 +69,10 @@ const patchFineLogic = async (request: Request) => {
   });
 
   // Invalidate relevant caches
-  try { await cacheDel(`admin:libraryFines:${updatedFine.companyId || 'global'}:all`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${updatedFine.companyId}:libraryFines:*`);
+    await cacheDel(`admin:libraryFines:*`);
+  } catch (e) {}
 
   return formatResponse(true, updatedFine, "Fine settled successfully", 200);
 };

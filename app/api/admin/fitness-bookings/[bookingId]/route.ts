@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your Prisma client instance
@@ -111,7 +111,10 @@ const putBookingLogic = async (request: Request, context: any) => {
 
   // Use formatResponse for success
   
-    try { await cacheDel(`admin:fitness-bookings:${company.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${company.id}:fitness-bookings:*`);
+      await cacheDel(`admin:fitness-bookings:*`);
+    } catch (e) {}
     return formatResponse(true, formattedUpdatedBooking, 'Booking updated successfully', 200);
 };
 
@@ -151,7 +154,10 @@ const deleteBookingLogic = async (request: Request, context: any) => {
 
   // Use formatResponse for success
   
-    try { await cacheDel(`admin:fitness-bookings:${company.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${company.id}:fitness-bookings:*`);
+      await cacheDel(`admin:fitness-bookings:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Booking deleted successfully.', 200);
 };
 

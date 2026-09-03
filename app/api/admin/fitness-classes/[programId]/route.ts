@@ -1,4 +1,4 @@
-import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -180,7 +180,7 @@ const putProgramsLogic = async (request: Request, context: RouteContext) => {
   };
 
   // 5. Invalidate relevant collection caching references
-  const cacheKey = `admin:fitness-programs:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "fitness-programs", { status, type });
   try {
     await cacheDel(cacheKey);
   } catch (e) {}
@@ -246,7 +246,7 @@ const deleteProgramsLogic = async (request: Request, context: RouteContext) => {
   });
 
   // 3. Cache structural sync drops updates tracking reset calls
-  const cacheKey = `admin:fitness-programs:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "fitness-programs", {});
   try {
     await cacheDel(cacheKey);
   } catch (e) {}

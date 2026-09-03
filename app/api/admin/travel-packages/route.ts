@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/tour-packages/route.ts
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -28,7 +28,7 @@ async function handleGET(request: Request) {
 
   try {
     
-    const cacheKey = `admin:travel-packages:${'global' || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey('global', "travel-packages", {});
 
   try {
     const cached = await cacheGet(cacheKey);

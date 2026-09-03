@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/locations/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -12,7 +12,7 @@ const getLocations = async (req: Request) => {
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   
-    const cacheKey = `admin:properties-locations:${'global'}:all`;
+    const cacheKey = buildTenantCacheKey('unscoped', "properties-locations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -77,7 +77,10 @@ const createLocation = async (req: Request) => {
   });
 
   // slug || adminSlug || 
-    try { await cacheDel(`admin:properties-locations:${'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:properties-locations:*`);
+      await cacheDel(`admin:properties-locations:*`);
+    } catch (e) {}
     return formatResponse(true, newLocation, "Location created successfully", 201);
 };
 

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // // app/api/custom-domain/route.ts
 
 // app/api/custom-domain/route.ts
@@ -129,7 +129,10 @@ export async function POST(req: NextRequest) {
     data: { domain },
   });
 
-    try { await cacheDel(`admin:custom-domain:${user.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${user.id}:custom-domain:*`);
+      await cacheDel(`admin:custom-domain:*`);
+    } catch (e) {}
     return formatResponse(
     true,
     { domain },

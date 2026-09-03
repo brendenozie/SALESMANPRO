@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/admin/[adminSlug]/communications/[commId]/route.ts
 
 import { NextResponse } from 'next/server';
@@ -33,7 +33,8 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
       updateData.sentDate = null;
     }
 
-    const cacheKey = `admin:communications:${adminSlug || 'global'}:all`; // Cache key for invalidation
+    const cacheKey = buildTenantCacheKey(adminSlug, "communications", {});
+
 
 
     const updated = await prisma.communication.update({
@@ -68,7 +69,7 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
       },
     });
 
-    const cacheKey = `admin:communications:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "communications", {});
     try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, null, "Deleted successfully", 200);
   } catch (error) {

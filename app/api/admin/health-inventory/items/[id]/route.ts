@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -35,7 +35,7 @@ async function getInventoryItem(
 ) {
   const { adminSlug, id } = params;
   
-  const cacheKey = `admin:items:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "items", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -143,7 +143,10 @@ async function updateInventoryItem(
     });
   }
 
-    try { await cacheDel(`admin:items:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:items:*`);
+      await cacheDel(`admin:items:*`);
+    } catch (e) {}
     return formatResponse(true, updatedItem, "Inventory item updated successfully", 200);
 }
 
@@ -174,7 +177,10 @@ async function deleteInventoryItem(
 
   // Successful deletion typically returns 204 No Content, but we use 200 with a message for consistency.
   
-    try { await cacheDel(`admin:items:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:items:*`);
+      await cacheDel(`admin:items:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Inventory item deleted successfully", 200);
 }
 

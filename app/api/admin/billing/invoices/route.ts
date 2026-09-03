@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -35,7 +35,7 @@ export const GET = withApiHandler(async (req, { user }) => {
 
   // ✅ Run in parallel
   
-  const cacheKey = `admin:invoices:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "invoices", { limit, page, status });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -167,7 +167,9 @@ export const POST = withApiHandler(async (req, { user }) => {
   });
 
   try {
-    await cacheDel(`admin:invoices:${companyId || 'global'}:all`);
+    await cacheDel(`tenant:${companyId}:invoices:*`);
+    await cacheDel(`tenant:${companyId}:invoices:*`);
+    await cacheDel(`admin:invoices:*`);
   } catch (e) {}
 
   return formatResponse(true, newInvoice, "Invoice created successfully", 201);

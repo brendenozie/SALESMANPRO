@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/product/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -512,7 +512,8 @@ async function handlePost(req: Request) {
       });
 
   try {
-    await cacheDel(`admin:post-product:${companyId || "global"}:*`);
+    await cacheDel(`tenant:${companyId}:post-product:*`);
+    await cacheDel(`admin:post-product:*`);
   } catch (e) {}
   return formatResponse(
     true,

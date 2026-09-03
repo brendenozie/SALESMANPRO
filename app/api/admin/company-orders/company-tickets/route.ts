@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // // app/api/admin/[adminSlug]/tickets/route.ts
 // app/api/admin/[adminSlug]/tickets/route.ts
 import { NextResponse } from "next/server";
@@ -85,7 +85,7 @@ export const GET = withApiHandler(async (request, { params }) => {
     ];
   }
   
-    const cacheKey = `admin:company-tickets:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "company-tickets", { limit, page, search, sortBy, sortOrder });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -224,7 +224,10 @@ export const POST = withApiHandler(async (request, { params }) => {
       data: { productCount: { increment: 1 } },
     });
 
-    try { await cacheDel(`admin:company-tickets:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:company-tickets:*`);
+      await cacheDel(`admin:company-tickets:*`);
+    } catch (e) {}
 
     return product;
   });

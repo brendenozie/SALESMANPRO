@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/server/db/prismadb";
@@ -76,7 +76,8 @@ export async function POST(req: Request) {
 
       // 4. Cache Invalidation
       try {
-        await cacheDel(`admin:payroll:${staffId || 'global'}:*`);
+        await cacheDel(`tenant:${staffId}:payroll:*`);
+        await cacheDel(`admin:payroll:*`);
       } catch (e) {}
 
     return NextResponse.json({ success: true, data: result });

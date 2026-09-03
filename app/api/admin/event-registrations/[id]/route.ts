@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { verifyAuth } from "@/lib/verifyAuth"; // Keep verifyAuth
@@ -21,7 +21,7 @@ async function getRegistration(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  const cacheKey = `admin:event-registrations:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "event-registrations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -79,7 +79,7 @@ async function updateRegistration(request: Request, { params }: Params) {
   const body = await request.json();
   const { status, studentId, ...rest } = body;
 
-  const cacheKey = `admin:event-registrations:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "event-registrations", { status, studentId });
 
   const existingRegistration = await prisma.eventRegistration.findUnique({
     where: { id },
@@ -160,7 +160,7 @@ async function deleteRegistration(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  const cacheKey = `admin:event-registrations:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "event-registrations", {});
 
   const existingRegistration = await prisma.eventRegistration.findUnique({
     where: { id },

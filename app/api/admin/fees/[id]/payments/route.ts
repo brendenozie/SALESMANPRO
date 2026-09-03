@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { addPaymentToStudentFeeRecord } from '@/lib/data';
@@ -28,7 +28,8 @@ async function handlePostPayment(request: Request, context: Context) {
     if (!updatedRecord) throw new Error("Record not found");
 
     try {
-      await cacheDel(`admin:fees:${id || 'global'}:*`);
+      await cacheDel(`tenant:${id}:fees:*`);
+      await cacheDel(`admin:fees:*`);
     } catch (e) {}
 
     return formatResponse(true, updatedRecord, "Payment logged successfully", 200);

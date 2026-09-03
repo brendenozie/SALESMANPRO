@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/academic-levels/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -41,6 +41,7 @@ export const PATCH = withApiHandler(async (request, { params }) => {
   });
 
   // Clear cache for both the list and any specific company caches
+  await cacheDel(`tenant:${'unscoped'}:companycategory:*`);
   await cacheDel(`admin:companycategory:*`);
   
   return formatResponse(true, updatedCategory, "Category Updated", 200);
@@ -59,6 +60,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
     where: { id }
   });
 
+  await cacheDel(`tenant:${'unscoped'}:companycategory:*`);
   await cacheDel(`admin:companycategory:*`);
   
   return formatResponse(true, null, "Category and variants deleted", 200);

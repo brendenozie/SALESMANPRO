@@ -1,4 +1,4 @@
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -25,8 +25,10 @@ export async function PATCH(
     });
 
     try {
-      await cacheDel(`admin:academicYears:${companyId}:all`);
-      await cacheDel(`admin:academicSession:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:academicYears:*`);
+      await cacheDel(`admin:academicYears:*`);
+      await cacheDel(`tenant:${companyId}:academicSession:*`);
+      await cacheDel(`admin:academicSession:*`);
       await cacheDel(`admin:academicSession:${companyId}:active`);
     } catch (e) {}
 
@@ -58,8 +60,10 @@ export async function PUT(
     ]);
 
     try {
-      await cacheDel(`admin:academicYears:${companyId}:all`);
-      await cacheDel(`admin:academicSession:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:academicYears:*`);
+      await cacheDel(`admin:academicYears:*`);
+      await cacheDel(`tenant:${companyId}:academicSession:*`);
+      await cacheDel(`admin:academicSession:*`);
       await cacheDel(`admin:academicSession:${companyId}:active`);
     } catch (e) {}
 
@@ -95,8 +99,10 @@ export async function DELETE(
     });
 
     try {
-      await cacheDel(`admin:academicYears:${companyId}:all`);
-      await cacheDel(`admin:academicSession:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:academicYears:*`);
+      await cacheDel(`admin:academicYears:*`);
+      await cacheDel(`tenant:${companyId}:academicSession:*`);
+      await cacheDel(`admin:academicSession:*`);
       await cacheDel(`admin:academicSession:${companyId}:active`);
     } catch (e) {}
 

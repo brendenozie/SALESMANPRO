@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/showings/[showingId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -9,7 +9,7 @@ async function getShowing(req: Request, { params }: { params: { showingId: strin
  
   const { showingId } = params;
   
-  const cacheKey = `admin:showings:${showingId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(showingId, "showings", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -82,7 +82,7 @@ async function updateShowing(req: Request, { params }: { params: { showingId: st
       return formatResponse(false, null, "No fields provided for update", 400);
     }
 
-    const cacheKey = `admin:showings:${showingId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(showingId, "showings", { status });
 
     const updatedShowing = await prisma.showing.update({
       where: { id: showingId },
@@ -93,7 +93,10 @@ async function updateShowing(req: Request, { params }: { params: { showingId: st
       await cacheSet(cacheKey, updatedShowing, 60);
     } catch (e) {}
 
-    try { await cacheDel(`admin:showings:${showingId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${showingId}:showings:*`);
+      await cacheDel(`admin:showings:*`);
+    } catch (e) {}
     return formatResponse(true, updatedShowing, "Showing updated successfully", 200);
   } catch (error: any) {
     console.error(`Error updating showing with ID ${showingId}:`, error);
@@ -112,7 +115,10 @@ async function deleteShowing(req: Request, { params }: { params: { showingId: st
   try {
     await prisma.showing.delete({ where: { id: showingId } });
     
-    try { await cacheDel(`admin:showings:${showingId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${showingId}:showings:*`);
+      await cacheDel(`admin:showings:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Showing deleted successfully", 200);
   } catch (error: any) {
     console.error(`Error deleting showing with ID ${showingId}:`, error);

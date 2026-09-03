@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/projects/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -30,7 +30,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:projects:${companyId || "global"}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "projects", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -91,7 +91,8 @@ export const POST = withApiHandler(async (request: Request) => {
     });
 
     try {
-      await cacheDel(`admin:projects:${companyId || "global"}:*`);
+      await cacheDel(`tenant:${companyId}:projects:*`);
+      await cacheDel(`admin:projects:*`);
     } catch (e) {}
 
     return formatResponse(

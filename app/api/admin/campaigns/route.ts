@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -128,7 +128,10 @@ const createCampaign = async (request: Request, context: { user?: any }) => {
   });
 
     // Invalidate relevant caches
-  try { await cacheDel(`admin:campaigns:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${'unscoped'}:campaigns:*`);
+    await cacheDel(`admin:campaigns:*`);
+  } catch (e) {}
 
   return NextResponse.json(newCampaign, { status: 201 });
 };

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/plans/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -68,7 +68,10 @@ const putHandler = async (
     },
   });
 
-  try { await cacheDel(`admin:plans:${id || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${id}:plans:*`);
+    await cacheDel(`admin:plans:*`);
+  } catch (e) {}
 
   return NextResponse.json(updatedPlan, { status: 200 });
 };

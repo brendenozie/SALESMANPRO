@@ -2,7 +2,7 @@ import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import bcrypt from "bcryptjs";
 
 /* ====================================================
@@ -16,7 +16,7 @@ export const GET = withApiHandler(async (request, context) => {
   if (!companyId)
     return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:consumers:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "consumers", {});
   const cached = await cacheGet(cacheKey);
   if (cached) return formatResponse(true, cached, "Fetched (cached)", 200);
 
@@ -120,7 +120,8 @@ export const POST = withAuthAndRateLimit(async (request) => {
     });
   });
 
-  await cacheDel(`admin:consumers:${companyId}:*`);
+  await cacheDel(`tenant:${companyId}:consumers:*`);
+  await cacheDel(`admin:consumers:*`);
 
   // Return nested structure matched by the updated frontend
   return formatResponse(

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   } : {};
 
   
-    const cacheKey = `admin:shifts:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "shifts", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -99,7 +99,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:shifts:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:shifts:*`);
+      await cacheDel(`admin:shifts:*`);
+    } catch (e) {}
     return formatResponse(true, newShift, "Shift authorized and dispatched", 201);
   } catch (error: any) {
     console.error("SHIFT_POST_ERROR", error);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -24,7 +24,7 @@ async function handleGet(request: Request, context: { user?: any }) {
   if (!companyId) return formatResponse(false, null, 'Unauthorized', 401);
 
   
-    const cacheKey = `admin:communications:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "communications", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -79,7 +79,10 @@ async function handlePost(request: Request, context: { user?: any }) {
   });
 
   
-    try { await cacheDel(`admin:communications:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:communications:*`);
+      await cacheDel(`admin:communications:*`);
+    } catch (e) {}
     return formatResponse(true, newComm, 'Communication created', 201);
 }
 

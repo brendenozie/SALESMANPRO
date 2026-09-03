@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/server/db/prismadb";
@@ -22,7 +22,7 @@ export async function GET(
 
     // 1. Find by ID - This is lightning fast because it's indexed
     
-    const cacheKey = `admin:receipt:${params.recordId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(params.recordId, "receipt", {});
 
   try {
     const cached = await cacheGet(cacheKey);

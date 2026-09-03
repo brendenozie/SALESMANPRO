@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -28,7 +28,7 @@ async function handleGET(request: Request) {
     if (type) where.type = type;
     if (gateway) where.gateway = gateway;
 
-    const cacheKey = `admin:payments-companies:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "payments-companies", { page, status, type });
 
   try {
     const cached = await cacheGet(cacheKey);

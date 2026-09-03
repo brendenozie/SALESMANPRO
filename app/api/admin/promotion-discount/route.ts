@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/promotions/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -23,7 +23,7 @@ export const GET = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
-  const cacheKey = `admin:promotion-discount:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "promotion-discount", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -147,6 +147,9 @@ export const POST = withApiHandler(async (request: Request) => {
   };
 
   
-    try { await cacheDel(`admin:promotion-discount:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:promotion-discount:*`);
+      await cacheDel(`admin:promotion-discount:*`);
+    } catch (e) {}
     return formatResponse(true, formattedNewPromotion, "Promotion created successfully.", 201);
 });

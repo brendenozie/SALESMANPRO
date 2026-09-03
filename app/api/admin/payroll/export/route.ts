@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   try {
     // 1. Fetch staff with their bank details and payroll profiles
     
-    const cacheKey = `admin:export:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "export", {});
 
   // try {
   //   const cached = await cacheGet(cacheKey);

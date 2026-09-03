@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -50,7 +50,7 @@ async function handleGet(req: Request, context: HandlerContext) {
 
   
   
-    const cacheKey = `admin:check-in-attendees:${adminSlug || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(adminSlug, "check-in-attendees", { search, status });
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/store-categories/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -22,7 +22,7 @@ async function getStoreCategories(req: Request) {
   try {
     const whereClause = companyId ? { companyId } : {};
     
-    const cacheKey = `admin:store-categories:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "store-categories", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -117,7 +117,10 @@ async function postStoreCategory(req: Request) {
     };
 
     
-    try { await cacheDel(`admin:store-categories:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:store-categories:*`);
+      await cacheDel(`admin:store-categories:*`);
+    } catch (e) {}
     return formatResponse(true, responseData, "Store category created successfully", 201);
   } catch (err: any) {
     console.error("Error creating store category:", err);
@@ -141,7 +144,10 @@ async function deleteStoreCategory(req: Request) {
 
     await prisma.storeCategory.delete({ where: { id } });
     
-    try { await cacheDel(`admin:store-categories:${existingStoreCategory.companyId || "global"}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${existingStoreCategory.companyId}:store-categories:*`);
+      await cacheDel(`admin:store-categories:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Store category deleted successfully");
   } catch (err: any) {
     console.error("Error deleting store category:", err);

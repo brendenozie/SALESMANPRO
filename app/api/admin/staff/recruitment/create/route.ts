@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -21,7 +21,10 @@ export async function POST(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:create:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:create:*`);
+      await cacheDel(`admin:create:*`);
+    } catch (e) {}
     return NextResponse.json({ success: true, data: candidate });
   } catch (error) {
     console.error("Candidate creation error:", error);

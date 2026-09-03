@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/content/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -27,7 +27,7 @@ const CONTENT_SELECT = {
 export const GET = withApiHandler(async (_req, { params }) => {
   const { id } = params;
 
-  const cacheKey = `admin:content:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "content", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -55,7 +55,7 @@ export const GET = withApiHandler(async (_req, { params }) => {
 export const PUT = withApiHandler(async (request, { params }) => {
   const { id } = params;
   const body = await request.json();
-  const cacheKey = `admin:content:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "content", {});
   try {
     const updatedContent = await prisma.content.update({
       where: { id },
@@ -89,7 +89,10 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     await prisma.content.delete({ where: { id } });
     
-    try { await cacheDel(`admin:content:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:content:*`);
+      await cacheDel(`admin:content:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Content deleted', 200); // 204 doesn't usually return a body
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

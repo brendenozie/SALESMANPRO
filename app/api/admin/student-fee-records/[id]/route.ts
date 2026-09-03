@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/student-fee-records/[id]/route.ts
 
 import { getStudentFeeRecordById, updateStudentFeeRecord, deleteStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
@@ -19,7 +19,10 @@ async function getStudentFee(req: Request, context: Context) {
     if (!record) {
       return formatResponse(false, null, 'Student fee record not found.', 404);
     }
-    try { await cacheDel(`admin:studentFeeRecords:${id}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:studentFeeRecords:*`);
+      await cacheDel(`admin:studentFeeRecords:*`);
+    } catch (e) {}
     return formatResponse(true, record);
   } catch (error: any) {
     console.error('Error fetching student fee record:', error);
@@ -43,7 +46,10 @@ async function updateStudentFee(req: Request, context: Context) {
       return formatResponse(false, null, 'Student fee record not found or failed to update.', 404);
     }
 
-    try { await cacheDel(`admin:studentFeeRecords:${id}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:studentFeeRecords:*`);
+      await cacheDel(`admin:studentFeeRecords:*`);
+    } catch (e) {}
     return formatResponse(true, updatedRecord, 'Student fee record updated successfully.');
   } catch (error: any) {
     console.error('Error updating student fee record:', error);
@@ -61,7 +67,10 @@ async function deleteStudentFee(req: Request, context: Context) {
       return formatResponse(false, null, 'Student fee record not found or failed to delete.', 404);
     }
     
-    try { await cacheDel(`admin:studentFeeRecords:${id}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:studentFeeRecords:*`);
+      await cacheDel(`admin:studentFeeRecords:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Student fee record deleted successfully.', 204);
   } catch (error: any) {
     console.error('Error deleting student fee record:', error);

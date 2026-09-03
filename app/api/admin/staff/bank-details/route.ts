@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -21,7 +21,10 @@ export async function POST(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:bank-details:${staffId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${staffId}:bank-details:*`);
+      await cacheDel(`admin:bank-details:*`);
+    } catch (e) {}
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     return NextResponse.json({ error: "Failed to save bank details" }, { status: 500 });

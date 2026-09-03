@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/products/[id]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -67,7 +67,10 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     },
   });
 
-    try { await cacheDel(`admin:products:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:products:*`);
+      await cacheDel(`admin:products:*`);
+    } catch (e) {}
     return formatResponse(true, updatedProduct, "Product updated successfully", 200);
 });
 
@@ -80,6 +83,9 @@ export const DELETE = withApiHandler(async (request: Request, { params }: { para
       where: { id },
     });
 
-    try { await cacheDel(`admin:products:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:products:*`);
+      await cacheDel(`admin:products:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Product deleted successfully", 200);
 });

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/reports/top-customers/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -36,7 +36,7 @@ async function getTopCustomers(req: Request) {
     whereClause.companyId = companyId;
   }
 
-  const cacheKey = `admin:top-customers:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "top-customers", { endDate, limit, startDate });
 
   try {
     const cached = await cacheGet(cacheKey);

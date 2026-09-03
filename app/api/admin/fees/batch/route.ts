@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { getStudentsByTarget, batchApplySpecificFees } from '@/lib/data';
@@ -32,7 +32,8 @@ export async function POST(request: Request) {
   });
 
   try {
-    await cacheDel(`admin:fees:${schoolId || 'global'}:*`);
+    await cacheDel(`tenant:${schoolId}:fees:*`);
+    await cacheDel(`admin:fees:*`);
   } catch (e) {}
 
   return formatResponse(true, report, "Batch processing complete.", 201);

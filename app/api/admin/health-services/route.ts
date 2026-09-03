@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -47,7 +47,7 @@ async function handleGetServices(request: Request, { params }: RouteParams) {
     ];
   }
 
-  const cacheKey = `admin:health-services:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "health-services", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -100,7 +100,10 @@ async function handleCreateService(request: Request, { params }: RouteParams) {
 
     // Return the data; withApiHandler will use the provided status 201
     
-    try { await cacheDel(`admin:health-services:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:health-services:*`);
+      await cacheDel(`admin:health-services:*`);
+    } catch (e) {}
     return formatResponse(true, formattedNewService, "Service created successfully", 201);
   } catch (err: any) {
     // Handle unique constraint violation specifically (Prisma code P2002)

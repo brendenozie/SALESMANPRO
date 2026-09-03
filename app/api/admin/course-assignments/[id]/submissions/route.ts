@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -11,7 +11,7 @@ export const GET = withApiHandler(
       return formatResponse(false, null, "Assignment ID is required", 400);
     }
 
-    const cacheKey = `admin:submissions:${assignmentId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(assignmentId, "submissions", { assignmentId });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -107,7 +107,7 @@ export const PATCH = withApiHandler(async (req: Request) => {
   if (comments !== undefined) updateData.comments = comments;
   if (reviewedById !== undefined) updateData.reviewedById = reviewedById;
 
-  const cacheKey = `admin:submissions:${submissionId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(submissionId, "submissions", {});
 
   try {
     const updated = await prisma.assignmentSubmission.update({

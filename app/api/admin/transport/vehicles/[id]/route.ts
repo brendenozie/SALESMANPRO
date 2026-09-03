@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -15,7 +15,10 @@ export const PATCH = withApiHandler(async (request: Request, { params }: any) =>
   });
 
   
-    try { await cacheDel(`admin:vehicles:${body.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${body.companyId}:vehicles:*`);
+      await cacheDel(`admin:vehicles:*`);
+    } catch (e) {}
     return formatResponse(true, updatedVehicle, "Vehicle updated", 200);
 }, { requireAuth: true });
 
@@ -26,6 +29,9 @@ export const DELETE = withApiHandler(async (request: Request, { params }: any) =
  let vehicle = await prisma.transportVehicle.delete({ where: { id } });
   
   
-    try { await cacheDel(`admin:vehicles:${vehicle.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${vehicle.companyId}:vehicles:*`);
+      await cacheDel(`admin:vehicles:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Vehicle removed from fleet", 200);
 }, { requireAuth: true });

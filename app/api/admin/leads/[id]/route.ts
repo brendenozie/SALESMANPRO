@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,7 +12,10 @@ async function updateLead(req: Request, { params }: { params: { id: string } }) 
   });
 
   
-    try { await cacheDel(`admin:leads:${lead.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${lead.companyId}:leads:*`);
+      await cacheDel(`admin:leads:*`);
+    } catch (e) {}
     return formatResponse(true, lead, "Updated", 200);
 }
 

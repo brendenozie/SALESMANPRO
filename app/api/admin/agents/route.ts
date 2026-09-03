@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { cacheGet, cacheSet, cacheDel, buildTenantCacheKey } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
@@ -17,7 +17,8 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Company ID is required", 400);
   }
 
-  const cacheKey = `admin:agents:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "agents", {});
+
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -251,8 +252,11 @@ export const POST = withAuthAndRateLimit(async (request) => {
 
     // Explicit cache invalidation fix
     try {
-      await cacheDel(`admin:agents:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:agents:*`);
+      await cacheDel(`tenant:${companyId}:agents:*`);
+      await cacheDel(`admin:agents:*`);
     } catch (e) {}
+
 
     return formatResponse(true, agent, "Agent created successfully", 201);
   } catch (error) {

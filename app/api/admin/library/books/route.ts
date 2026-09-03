@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +13,7 @@ const getBooksLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
-  const cacheKey = `admin:libraryBooks:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "libraryBooks", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -84,7 +84,10 @@ const postBookLogic = async (request: Request) => {
   });
   
   // Invalidate relevant caches
-  try { await cacheDel(`admin:libraryBooks:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:libraryBooks:*`);
+    await cacheDel(`admin:libraryBooks:*`);
+  } catch (e) {}
 
   return formatResponse(true, newBook, "Volume acquired successfully", 201);
 };

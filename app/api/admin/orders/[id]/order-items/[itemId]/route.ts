@@ -1,5 +1,5 @@
 // app/api/admin/orders/[id]/route.ts
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { OrderStatus, Prisma } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -35,7 +35,8 @@ async function handlePutOrderItem(req: Request, { params }: RouteParams) {
 
     // Invalidate the specific company's order cache
     if (companyId) {
-      await cacheDel(`admin:orders:${companyId}:*`);
+      await cacheDel(`tenant:${companyId}:orders:*`);
+      await cacheDel(`admin:orders:*`);
     }
 
     return formatResponse(true, updatedItem, "Update successful", 200);

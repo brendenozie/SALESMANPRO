@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/blogs/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -139,7 +139,10 @@ const createOrUpdateBlog = async (req: Request) => {
     });
   }
 
-    try { await cacheDel(`admin:post-blog:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:post-blog:*`);
+      await cacheDel(`admin:post-blog:*`);
+    } catch (e) {}
     return formatResponse(true, { blog }, "Blog saved successfully.", 201);
 };
 

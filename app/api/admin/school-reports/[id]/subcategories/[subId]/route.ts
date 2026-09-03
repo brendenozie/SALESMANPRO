@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/store-categories/[id]/subcategories/[subId]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -53,7 +53,10 @@ async function updateSubcategory(req: Request, { params }: { params: { id: strin
     });
 
     
-    try { await cacheDel(`admin:subcategories:${slug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${slug}:subcategories:*`);
+      await cacheDel(`admin:subcategories:*`);
+    } catch (e) {}
     return formatResponse(true, updatedSubcategory, "Subcategory updated successfully", 200);
   } catch (error: any) {
     console.error(`Error updating subcategory ${subId} in store category ${id}:`, error);
@@ -89,7 +92,10 @@ async function deleteSubcategory(req: Request, { params }: { params: { id: strin
     });
 
     
-    try { await cacheDel(`admin:subcategories:${slug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${slug}:subcategories:*`);
+      await cacheDel(`admin:subcategories:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedSubId: subId }, "Subcategory deleted successfully", 200);
   } catch (error: any) {
     console.error(`Error deleting subcategory ${subId} from store category ${id}:`, error);

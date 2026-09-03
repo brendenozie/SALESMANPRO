@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/staff/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -43,7 +43,7 @@ async function getAllStaff(req: Request) {
     const whereClause: any = { companyId };
     if (filterStatus && filterStatus !== "All") whereClause.employmentStatus = filterStatus;
 
-    const cacheKey = `admin:staff:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "staff", {});
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -115,7 +115,10 @@ async function createStaff(req: Request) {
 
     const formattedStaff = await formatStaffData(newStaff);
     
-    try { await cacheDel(`admin:staff:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:staff:*`);
+      await cacheDel(`admin:staff:*`);
+    } catch (e) {}
     return formatResponse(true, formattedStaff, "Staff created successfully", 201);
   } catch (err: any) {
     console.error("POST /api/admin/staff error:", err);

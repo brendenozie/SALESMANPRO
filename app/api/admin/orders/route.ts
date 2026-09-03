@@ -1,131 +1,137 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-
+import { fetchWithCache, buildTenantCacheKey } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { OrderStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { Prisma } from "@prisma/client";
 
-// Define the expected structure for route parameters (empty for a collection route)
 type RouteParams = { params: {} };
 
-// --- GET Handler Core Logic ---
+async function getCachedMonthlyRevenue(companyId: string, currentYear: number): Promise<number[]> {
+  const revCacheKey = buildTenantCacheKey(companyId, "monthly_revenue", { year: currentYear });
+  return fetchWithCache<number[]>(
+    revCacheKey,
+    async () => {
+      const monthlyData = await prisma.orderItem.findMany({
+        where: {
+          marketplaceListing: { companyId },
+          order: { createdAt: { gte: new Date(`${currentYear}-01-01`) } },
+        },
+        select: {
+          price: true,
+          order: { select: { createdAt: true } },
+        },
+      });
 
+      const monthlyRevenue = Array(12).fill(0);
+      for (const item of monthlyData) {
+        if (item.order?.createdAt) {
+          const month = new Date(item.order.createdAt).getMonth();
+          monthlyRevenue[month] += item.price;
+        }
+      }
+      return monthlyRevenue;
+    },
+    { ttlSeconds: 600 },
+  );
+}
+
+// --- GET Handler Core Logic ---
 async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
   // 1. Parsing & Validation
-  const limit = Math.max(1, parseInt(searchParams.get("limit") || "10", 10));
+  const limit = Math.min(Math.max(1, parseInt(searchParams.get("limit") || "10", 10)), 100);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const companyId = searchParams.get("companyId");
-  const search = searchParams.get("search") || "";
+  const search = searchParams.get("search")?.trim() || "";
   const status = searchParams.get("status") || "PENDING";
   const skip = (page - 1) * limit;
 
   if (!companyId) return formatResponse(false, null, "companyId required", 400);
 
-  // 2. Unique Cache Key (Crucial for pagination/search)
-  const cacheKey = `admin:orders:${companyId}:p_${page}:l_${limit}:s_${search}`;
-  
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-
-  // 3. Define the Order Filter
-  // We want Orders where at least one item belongs to this seller
-  const orderWhereFilter: Prisma.CustomerOrderWhereInput = {
-    status: status as OrderStatus,
-    items: {
-      some: {
-        marketplaceListing: {
-          companyId: companyId,
-          ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
-        },
-      },
-    },
-  };
+  // 2. Deterministic, tenant-safe cache key (including status and all query params)
+  const cacheKey = buildTenantCacheKey(companyId, "seller_orders", {
+    page,
+    limit,
+    search,
+    status,
+  });
 
   try {
-    // 4. Execute Transaction
-    const [orders, totalOrders, totalRev, pendingRev] =
-      await prisma.$transaction([
-        // Fetch the Orders
-        prisma.customerOrder.findMany({
-          where: orderWhereFilter,
-          include: {
-            items: {
-              // Very Important: Filter the items INSIDE the order
-              // so the seller doesn't see items from other companies in the same order
-              where: {
-                marketplaceListing: { companyId: companyId },
+    const responseData = await fetchWithCache(
+      cacheKey,
+      async () => {
+        // 3. Define the Order Filter
+        const orderWhereFilter: Prisma.CustomerOrderWhereInput = {
+          status: status as OrderStatus,
+          items: {
+            some: {
+              marketplaceListing: {
+                companyId: companyId,
+                ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
               },
-              include: { marketplaceListing: true },
             },
           },
-          skip,
-          take: limit,
-          orderBy: { createdAt: "desc" },
-        }),
-        // Count total orders for pagination
-        prisma.customerOrder.count({ where: orderWhereFilter }),
-        // Aggregate Revenue for this seller's items only
-        prisma.orderItem.aggregate({
-          _sum: { price: true },
-          where: { marketplaceListing: { companyId } },
-        }),
-        prisma.orderItem.aggregate({
-          _sum: { price: true },
-          where: {
-            marketplaceListing: { companyId },
-            order: { status: "PENDING" },
+        };
+
+        // 4. Parallelized Independent Queries
+        const currentYear = new Date().getFullYear();
+
+        const [orders, totalOrders, totalRev, pendingRev, monthlyRevenue] = await Promise.all([
+          prisma.customerOrder.findMany({
+            where: orderWhereFilter,
+            include: {
+              items: {
+                where: {
+                  marketplaceListing: { companyId: companyId },
+                },
+                include: { marketplaceListing: true },
+              },
+            },
+            skip,
+            take: limit,
+            orderBy: { createdAt: "desc" },
+          }),
+          prisma.customerOrder.count({ where: orderWhereFilter }),
+          prisma.orderItem.aggregate({
+            _sum: { price: true },
+            where: { marketplaceListing: { companyId } },
+          }),
+          prisma.orderItem.aggregate({
+            _sum: { price: true },
+            where: {
+              marketplaceListing: { companyId },
+              order: { status: "PENDING" },
+            },
+          }),
+          getCachedMonthlyRevenue(companyId, currentYear),
+        ]);
+
+        return {
+          orders,
+          pagination: {
+            totalItems: totalOrders,
+            totalPages: Math.ceil(totalOrders / limit),
+            currentPage: page,
           },
-        }),
-      ]);
-
-    // 5. Monthly Revenue Logic (Optimized)
-    // Fetch only what's needed for the chart
-    const currentYear = new Date().getFullYear();
-    const monthlyData = await prisma.orderItem.findMany({
-      where: {
-        marketplaceListing: { companyId },
-        order: { createdAt: { gte: new Date(`${currentYear}-01-01`) } }
+          revenue: {
+            total: totalRev._sum.price || 0,
+            pending: pendingRev._sum.price || 0,
+            monthly: monthlyRevenue,
+          },
+        };
       },
-      select: {
-        price: true,
-        order: { select: { createdAt: true } }
-      }
-    });
+      { ttlSeconds: 60, swrSeconds: 60 },
+    );
 
-    const monthlyRevenue = Array(12).fill(0);
-    monthlyData.forEach(item => {
-      const month = new Date(item.order?.createdAt ?? new Date()).getMonth();
-      monthlyRevenue[month] += item.price;
-    });
-
-    const responseData = {
-      orders, // Now returns Array<{ id, status, orderItems: [] }>
-      pagination: {
-        totalItems: totalOrders,
-        totalPages: Math.ceil(totalOrders / limit),
-        currentPage: page,
-      },
-      revenue: {
-        total: totalRev._sum.price || 0,
-        pending: pendingRev._sum.price || 0,
-        monthly: monthlyRevenue,
-      },
-    };
-
-    // 6. Cache and Return
-    await cacheSet(cacheKey, responseData, 60);
     return formatResponse(true, responseData, "Orders fetched successfully", 200);
-
   } catch (error: any) {
-    console.error(error);
+    console.error("[ORDERS_FETCH_ERROR]", error);
     return formatResponse(false, null, error.message, 500);
   }
 }
 
 // Wrap the core logic with the API handler middleware.
 export const GET = withApiHandler(handleGetSellerOrders);
+

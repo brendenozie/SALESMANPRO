@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Adjust this path
@@ -19,7 +19,7 @@ type RouteContext = {
 const getFaqLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
 
-    const cacheKey = `admin:fitness-settings:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "fitness-settings", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -60,7 +60,10 @@ const putFaqLogic = async (request: Request, { params }: RouteContext) => {
 
         // Return 200 success response
         
-    try { await cacheDel(`admin:fitness-settings:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:fitness-settings:*`);
+      await cacheDel(`admin:fitness-settings:*`);
+    } catch (e) {}
 
     return formatResponse(true, updatedFaq, 'FAQ updated successfully', 200);
 
@@ -86,7 +89,10 @@ const deleteFaqLogic = async (request: Request, { params }: RouteContext) => {
 
         // Return 200 success response
         
-    try { await cacheDel(`admin:fitness-settings:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:fitness-settings:*`);
+      await cacheDel(`admin:fitness-settings:*`);
+    } catch (e) {}
     
     return formatResponse(true, null, 'FAQ deleted successfully', 200);
     } catch (error: any) {

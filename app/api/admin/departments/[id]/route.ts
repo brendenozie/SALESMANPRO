@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/departments/[id]/route.ts
 import { z } from "zod";
 import prisma from "@/server/db/prismadb";
@@ -19,7 +19,7 @@ async function getDepartment(request: Request, { params }: { params: { id: strin
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:departments:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "departments", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -101,7 +101,10 @@ async function updateDepartment(request: Request, { params }: { params: { id: st
       data: parsed.data,
     });
 
-    try { await cacheDel(`admin:departments:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:departments:*`);
+      await cacheDel(`admin:departments:*`);
+    } catch (e) {}
     return formatResponse(true, {data: updatedDepartment  },null,200 );
     
   } catch (error: any) {
@@ -122,7 +125,10 @@ async function deleteDepartment(request: Request, { params }: { params: { id: st
   try {
     const deleted = await prisma.department.delete({ where: { id, companyId: companyId || undefined } });
     
-    try { await cacheDel(`admin:departments:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:departments:*`);
+      await cacheDel(`admin:departments:*`);
+    } catch (e) {}
     return formatResponse(true, {data: { deletedDepartmentId: deleted.id, message: "Department deleted successfully" }  },null,200 );
     
     

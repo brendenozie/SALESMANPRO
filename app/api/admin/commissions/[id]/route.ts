@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -20,7 +20,7 @@ export const GET = withApiHandler(async (req, context: { params: { id: string },
   const searchParams = new URL(req.url).searchParams;
   const companyId = searchParams.get("companyId") || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
   
-  const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "classrooms", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -38,7 +38,8 @@ export const GET = withApiHandler(async (req, context: { params: { id: string },
 
   //invalidate cache for classrooms list since we fetched a single classroom (could be used in list)
   try {
-    await cacheDel(`admin:classrooms:${companyId || 'global'}:*`);
+    await cacheDel(`tenant:${companyId}:classrooms:*`);
+    await cacheDel(`admin:classrooms:*`);
   } catch (e) {}  
 
   return formatResponse(true, classroom, "Fetched successfully", 200);
@@ -66,7 +67,10 @@ export const PATCH = withApiHandler(async (request, context: { params: { id: str
     });
 
     
-    try { await cacheDel(`admin:classrooms:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:classrooms:*`);
+      await cacheDel(`admin:classrooms:*`);
+    } catch (e) {}
     return formatResponse(true, updated, "Classroom updated", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -87,7 +91,10 @@ export const DELETE = withApiHandler(async (request, context: { params: { id: st
       where: { id, companyId } 
     });
     
-    try { await cacheDel(`admin:classrooms:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:classrooms:*`);
+      await cacheDel(`admin:classrooms:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedId: deleted.id }, "Classroom deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

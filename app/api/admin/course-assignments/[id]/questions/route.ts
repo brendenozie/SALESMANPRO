@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/course-assignments/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -48,7 +48,7 @@ export const POST = withApiHandler(
       }
     });
 
-    const cacheKey = `admin:questions:${assignmentId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(assignmentId, "questions", {});
     try { await cacheDel(cacheKey); } catch (e) {}
 
     return formatResponse(

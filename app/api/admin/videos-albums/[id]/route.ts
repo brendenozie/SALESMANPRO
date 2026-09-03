@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/video-albums/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
@@ -10,7 +10,7 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
   const { id } = params;
 
   
-    const cacheKey = `admin:videos-albums:${'global' || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey('global', "videos-albums", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -49,7 +49,10 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
   });
 
   
-    try { await cacheDel(`admin:videos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:videos-albums:*`);
+      await cacheDel(`admin:videos-albums:*`);
+    } catch (e) {}
     return formatResponse(true, updatedVideoAlbum, 'Video album updated successfully', 200);
 });
 
@@ -62,6 +65,9 @@ export const DELETE = withApiHandler(async (request: Request, { params }: { para
     prisma.videoAlbum.delete({ where: { id } }),
   ]);
 
-    try { await cacheDel(`admin:videos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:videos-albums:*`);
+      await cacheDel(`admin:videos-albums:*`);
+    } catch (e) {}
   return new NextResponse(null, { status: 204 });
 });

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/class-schedules/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -39,7 +39,7 @@ export const GET = withApiHandler(async (request: Request, context) => {
     ),
   };
 
-  const cacheKey = `admin:class-schedules:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "class-schedules", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -98,7 +98,10 @@ export const POST = withApiHandler(async (request: Request, context) => {
     });
 
     
-    try { await cacheDel(`admin:class-schedules:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:class-schedules:*`);
+      await cacheDel(`admin:class-schedules:*`);
+    } catch (e) {}
     return formatResponse(true, newSchedule, "Schedule created successfully", 201);
   } catch (error: any) {
     // Catch Foreign Key violations (P2002/P2025)

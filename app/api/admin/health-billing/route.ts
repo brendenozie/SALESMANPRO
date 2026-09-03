@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -50,7 +50,7 @@ async function getInvoices(request: Request) {
   // --- Data Fetching ---
   // Fetching all relevant data first, as the search filter logic is client-side/in-memory
   
-  const cacheKey = `admin:health-billing:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "health-billing", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -149,7 +149,10 @@ async function createInvoice(request: Request) {
   // --- Success Response ---
   const formattedNewInvoice = await formatInvoiceData(newInvoice);
   
-    try { await cacheDel(`admin:health-billing:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:health-billing:*`);
+      await cacheDel(`admin:health-billing:*`);
+    } catch (e) {}
     return formatResponse(true, formattedNewInvoice, "Invoice created successfully", 201);
 }
 

@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { cacheGet, cacheSet, cacheDel, buildTenantCacheKey } from "@/lib/cache";
 import { Prisma } from "@prisma/client";
 
 export const GET = withApiHandler(async (request) => {
@@ -12,7 +12,7 @@ export const GET = withApiHandler(async (request) => {
     return formatResponse(false, null, "Company ID required", 400);
   }
 
-  const cacheKey = `admin:academic-levels:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "academic-levels", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -73,8 +73,11 @@ export const POST = withApiHandler(async (request) => {
 
     // Explicitly invalidate the list cache
     try {
-      await cacheDel(`admin:academic-levels:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:academic-levels:*`);
+      await cacheDel(`tenant:${companyId}:academic-levels:*`);
+      await cacheDel(`admin:academic-levels:*`);
     } catch (e) {}
+
 
     return formatResponse(true, newAcademicLevel, "Created", 201);
   } catch (error) {

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -42,7 +42,7 @@ async function getQuestion(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  const cacheKey = `admin:exam-questions:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "exam-questions", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -150,7 +150,10 @@ async function updateQuestion(request: Request, { params }: Params) {
 
     const responseData = transformQuestionResponse(updatedQuestion);
     
-    try { await cacheDel(`admin:exam-questions:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:exam-questions:*`);
+      await cacheDel(`admin:exam-questions:*`);
+    } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') { // Record not found
@@ -183,7 +186,10 @@ async function deleteQuestion(request: Request, { params }: Params) {
     });
 
     
-    try { await cacheDel(`admin:exam-questions:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:exam-questions:*`);
+      await cacheDel(`admin:exam-questions:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Exam question deleted successfully", deletedId: deletedQuestion.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') { // Foreign key constraint failed

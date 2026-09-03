@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { UserStatus, Plan, ROLES } from "@prisma/client";
@@ -194,6 +194,7 @@ async function handlePOST(request: Request) {
     });
 
     try {
+      await cacheDel(`tenant:${companyId}:users:*`);
       await cacheDel(`admin:users:*`);
     } catch (e) {
       console.error("Error deleting cached entries:", e);

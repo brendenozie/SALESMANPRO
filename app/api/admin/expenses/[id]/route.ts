@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { NextResponse } from "next/server";
@@ -16,7 +16,10 @@ export async function DELETE(
       where: { id },
     });
 
-    try { await cacheDel(`admin:expenses:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:expenses:*`);
+      await cacheDel(`admin:expenses:*`);
+    } catch (e) {}
 
     return formatResponse(true, null, "Expense deleted successfully", 200);
   } catch (error) {

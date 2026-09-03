@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -17,7 +17,7 @@ async function getDonor(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  const cacheKey = `admin:donors:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "donors", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -74,7 +74,10 @@ async function updateDonor(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:donors:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:donors:*`);
+      await cacheDel(`admin:donors:*`);
+    } catch (e) {}
     return formatResponse(true, { data: updatedDonor }, null, 200);
 }
 
@@ -89,7 +92,10 @@ async function deleteDonor(request: Request, { params }: Params) {
     where: { id },
   });
 
-  try { await cacheDel(`admin:donors:${id || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${id}:donors:*`);
+    await cacheDel(`admin:donors:*`);
+  } catch (e) {}
   
   return formatResponse(true, { message: "Donor profile deleted successfully" }, null, 200);
 }

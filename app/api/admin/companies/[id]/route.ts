@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -26,7 +26,7 @@ const DEFAULT_SELECT = {
 
 async function handleGet(_req: Request, context: { params: { id: string } }) {
   
-  const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(context.params.id, "company-locations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -55,7 +55,7 @@ async function handleGet(_req: Request, context: { params: { id: string } }) {
 async function handlePatch(request: Request, context: { params: { id: string } }) {
   const { id } = context.params;
   const body = await request.json();
-  const cacheKey = `admin:company-locations:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "company-locations", {});
 
   // Guard against illegal updates
   const forbidden = ['id', 'companyId', 'locationId'];
@@ -93,7 +93,7 @@ async function handleDelete(_req: Request, context: { params: { id: string } }) 
   const cacheKey = `admin:company-locations:${companyId || 'global'}:*`;
   try {
     await prisma.companyLocation.delete({ where: { id: context.params.id } });
-    const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(context.params.id, "company-locations", {});
     try { await cacheDel(cacheKey); } catch (e) {}
     return new NextResponse(null, { status: 204 });
   } catch (error) {

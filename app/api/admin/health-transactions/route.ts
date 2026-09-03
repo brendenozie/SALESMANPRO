@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -107,7 +107,10 @@ async function handlePostTransaction(request: Request, { params }: POSTParams) {
   };
 
   
-    try { await cacheDel(`admin:health-transactions:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:health-transactions:*`);
+      await cacheDel(`admin:health-transactions:*`);
+    } catch (e) {}
     return formatResponse(true, responseData, "Transaction successful", 201);
 }
 

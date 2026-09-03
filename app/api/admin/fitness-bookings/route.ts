@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 import prisma from '@/server/db/prismadb';
 // Incorporate the new utilities
@@ -31,7 +31,7 @@ const getBookingsLogic = async (req: Request, context: RouteContext) => {
 
     // 1. Verify Company
     
-    const cacheKey = `admin:fitness-bookings:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "fitness-bookings", {});
 
   try {
 
@@ -189,7 +189,10 @@ const postBookingLogic = async (req: Request, context: RouteContext) => {
 
     // Use formatResponse for success
     
-    try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:fitness-bookings:*`);
+      await cacheDel(`admin:fitness-bookings:*`);
+    } catch (e) {}
     
     return formatResponse(true, formattedNewBooking, 'Booking created successfully', 201);
 };

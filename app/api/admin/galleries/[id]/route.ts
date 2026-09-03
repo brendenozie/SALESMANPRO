@@ -1,5 +1,5 @@
 import prisma from "@/server/db/prismadb";
-import { cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 
 /**
@@ -23,7 +23,8 @@ export async function PATCH(
     });
 
     // Invalidate terms cache for this company
-    await cacheDel(`admin:terms:${updatedTerm.companyId}:all`);
+    await cacheDel(`tenant:${updatedTerm.companyId}:terms:*`);
+    await cacheDel(`admin:terms:*`);
 
     return formatResponse(true, updatedTerm, "Term updated successfully", 200);
   } catch (error: any) {
@@ -57,7 +58,8 @@ export async function PUT(
       });
     });
 
-    await cacheDel(`admin:terms:${companyId}:all`);
+    await cacheDel(`tenant:${companyId}:terms:*`);
+    await cacheDel(`admin:terms:*`);
 
     return formatResponse(
       true,
@@ -83,7 +85,8 @@ export async function DELETE(
     });
 
     // Clean up cache
-    await cacheDel(`admin:terms:${term.companyId}:all`);
+    await cacheDel(`tenant:${term.companyId}:terms:*`);
+    await cacheDel(`admin:terms:*`);
 
     return formatResponse(true, term, "Term deleted successfully", 200);
   } catch (error: any) {

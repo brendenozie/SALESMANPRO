@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -178,7 +178,8 @@ export const PUT = withApiHandler(async (request, context) => {
     });
 
     try {
-      await cacheDel(`admin:appointments:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:appointments:*`);
+      await cacheDel(`admin:appointments:*`);
       await cacheDel(`admin:appointments:${companyId}:item:${id}`);
     } catch (e) {}
 
@@ -235,7 +236,8 @@ export const DELETE = withApiHandler(async (request, context) => {
     }
 
     try {
-      await cacheDel(`admin:appointments:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:appointments:*`);
+      await cacheDel(`admin:appointments:*`);
       await cacheDel(`admin:appointments:${companyId}:item:${id}`);
     } catch (e) {}
 

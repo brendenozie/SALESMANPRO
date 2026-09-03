@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 export const GET = withApiHandler(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -9,7 +9,7 @@ export const GET = withApiHandler(async (request) => {
 
   // if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:companycategory:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "companycategory", {});
   
   try {
     const cached = await cacheGet(cacheKey);
@@ -57,7 +57,8 @@ export const POST = withApiHandler(async (request) => {
   });
 
   // Purge the cache
-  await cacheDel(`admin:companycategory:all`);
+  await cacheDel(`tenant:${'unscoped'}:companycategory:*`);
+  await cacheDel(`admin:companycategory:*`);
   
   return formatResponse(true, category, "Category Created", 201);
 });

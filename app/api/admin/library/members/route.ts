@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +13,7 @@ const getMembersLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
-  const cacheKey = `admin:libraryMembers:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "libraryMembers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -69,7 +69,7 @@ const postMemberLogic = async (request: Request) => {
     return formatResponse(false, null, "Missing required fields", 400);
   }
 
-  const cacheKey = `admin:libraryMembers:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "libraryMembers", { type });
 
   // Check if this profile is already onboarded to prevent duplicates
   const existingMember = await prisma.libraryMember.findFirst({

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextRequest } from "next/server"; // Use NextRequest for better handler typing
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -45,7 +45,7 @@ async function getRegistrations(request: Request) {
     whereClause.status = upperStatus;
   }
 
-  const cacheKey = `admin:event-registrations:${eventId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(eventId, "event-registrations", { status, studentId });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -212,7 +212,10 @@ async function createRegistration(request: Request) {
   };
 
   
-    try { await cacheDel(`admin:event-registrations:${newRegistration.eventId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${newRegistration.eventId}:event-registrations:*`);
+      await cacheDel(`admin:event-registrations:*`);
+    } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 201);
 }
 

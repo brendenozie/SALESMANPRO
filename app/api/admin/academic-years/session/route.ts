@@ -1,6 +1,6 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { cacheGet, cacheSet, buildTenantCacheKey } from "@/lib/cache";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -11,7 +11,10 @@ export async function GET(req: Request) {
     return formatResponse(false, null, "Company ID required", 400);
 
   const isOnlyActiveQuery = type === "active";
-  const cacheKey = `admin:academicSession:${companyId}:${isOnlyActiveQuery ? "active" : "all"}`;
+  const cacheKey = buildTenantCacheKey(companyId, "academic_session", {
+    type: isOnlyActiveQuery ? "active" : "all",
+  });
+
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -22,7 +22,7 @@ export const GET = withApiHandler(async (request) => {
   if (audience) where.audience = audience.toUpperCase();
   if (pubAfter) where.publishedAt = { gte: new Date(pubAfter) };
 
-  const cacheKey = `admin:announcements:${companyId}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "announcements", { status, type });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -106,7 +106,8 @@ export const POST = withApiHandler(async (request) => {
 
     // Clear list cache key safely
     try {
-      await cacheDel(`admin:announcements:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:announcements:*`);
+      await cacheDel(`admin:announcements:*`);
     } catch (e) {}
 
     return formatResponse(

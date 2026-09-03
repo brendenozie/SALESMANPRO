@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/sales-agents/[agentId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
@@ -40,7 +40,10 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:riders:${existingAgent.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${existingAgent.companyId}:riders:*`);
+      await cacheDel(`admin:riders:*`);
+    } catch (e) {}
     return formatResponse(true, updatedAgent, "Agent updated successfully", 200);
 });
 
@@ -67,6 +70,9 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
   ]);
 
   
-    try { await cacheDel(`admin:riders:${agentToDelete.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${agentToDelete.companyId}:riders:*`);
+      await cacheDel(`admin:riders:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedId: agentId }, "Agent deleted successfully", 200);
 });

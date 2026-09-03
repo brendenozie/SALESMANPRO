@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -10,7 +10,7 @@ const getRoutes = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
-  const cacheKey = `admin:routes:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "routes", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -61,7 +61,10 @@ const postRoute = async (request: Request) => {
     }
   });
 
-    try { await cacheDel(`admin:routes:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:routes:*`);
+      await cacheDel(`admin:routes:*`);
+    } catch (e) {}
   return formatResponse(true, route, "New route established", 201);
 };
 

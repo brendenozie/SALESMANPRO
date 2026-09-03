@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/deliveries/[deliveryId]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -48,7 +48,10 @@ export const PUT = withApiHandler(async (request, context) => {
     riderName: updatedDelivery.rider?.name || 'Unassigned',
   };
 
-    try { await cacheDel(`admin:deliveries:${deliveryId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${deliveryId}:deliveries:*`);
+      await cacheDel(`admin:deliveries:*`);
+    } catch (e) {}
 
     return formatResponse(true, formattedDelivery, "Delivery updated successfully.", 200);
 });
@@ -73,7 +76,10 @@ export const DELETE = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:deliveries:${deliveryId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${deliveryId}:deliveries:*`);
+      await cacheDel(`admin:deliveries:*`);
+    } catch (e) {}
 
     return formatResponse(true, null, "Delivery deleted successfully.", 200);
 });

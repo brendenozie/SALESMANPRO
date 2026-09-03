@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -34,7 +34,8 @@ async function handlePostPayment(request: Request, context: Context) {
   const updatedRecord = addPaymentToStudentFeeRecord(id, { amount, date, method, receiptNumber });
 
   try {
-    await cacheDel(`admin:fees:${id || 'global'}:*`);
+    await cacheDel(`tenant:${id}:fees:*`);
+    await cacheDel(`admin:fees:*`);
   } catch (e) {}
 
   if (updatedRecord) {

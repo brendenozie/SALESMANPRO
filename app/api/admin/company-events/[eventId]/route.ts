@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -52,7 +52,10 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
     });
 
     
-    try { await cacheDel(`admin:company-events:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:company-events:*`);
+      await cacheDel(`admin:company-events:*`);
+    } catch (e) {}
     return formatResponse(true, updatedEvent, "Event updated successfully");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -75,7 +78,10 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
     });
 
     
-    try { await cacheDel(`admin:company-events:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:company-events:*`);
+      await cacheDel(`admin:company-events:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Event deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

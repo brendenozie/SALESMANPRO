@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/users/[userId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -39,7 +39,10 @@ async function handleDELETE(request: Request, { params }: { params: { adminSlug:
     await prisma.user.delete({ where: { id: userId } });
 
     
-    try { await cacheDel(`admin:travel-users:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:travel-users:*`);
+      await cacheDel(`admin:travel-users:*`);
+    } catch (e) {}
     return formatResponse(true, null, "User deleted successfully");
   } catch (error: any) {
     console.error(`Error deleting user ${userId}:`, error);

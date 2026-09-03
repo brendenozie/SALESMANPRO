@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/prescriptions/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -37,7 +37,7 @@ export const GET = withApiHandler(async (_req, { params }) => {
   const { id } = params;
 
   
-    const cacheKey = `admin:prescriptions:${id || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(id, "prescriptions", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -101,7 +101,10 @@ export const PUT = withApiHandler(async (req, { params }) => {
 
   const formatted = await formatPrescriptionData(updatedPrescription);
   
-    try { await cacheDel(`admin:prescriptions:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:prescriptions:*`);
+      await cacheDel(`admin:prescriptions:*`);
+    } catch (e) {}
     return formatResponse(true, formatted, "Prescription updated successfully", 200);
 });
 
@@ -110,7 +113,10 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   const { id } = params;
   await prisma.prescription.delete({ where: { id } });
   
-    try { await cacheDel(`admin:prescriptions:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:prescriptions:*`);
+      await cacheDel(`admin:prescriptions:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Prescription deleted successfully", 204);
 });
 

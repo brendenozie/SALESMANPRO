@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -34,7 +34,10 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
 
     // 3. Structured Response
     
-    try { await cacheDel(`admin:status:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:status:*`);
+      await cacheDel(`admin:status:*`);
+    } catch (e) {}
     return formatResponse(true, {
       id: updated.id,
       name: updated.user?.name || 'N/A',

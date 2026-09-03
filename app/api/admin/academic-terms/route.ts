@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -101,7 +101,8 @@ export async function POST(req: Request) {
 
     // EVACUATE BOTH CACHE POSSIBILITIES
     try {
-      await cacheDel(`admin:terms:${companyId}:all`);
+      await cacheDel(`tenant:${companyId}:terms:*`);
+      await cacheDel(`admin:terms:*`);
       await cacheDel(`admin:terms:${companyId}:${academicYearId}`);
     } catch (e) {}
 

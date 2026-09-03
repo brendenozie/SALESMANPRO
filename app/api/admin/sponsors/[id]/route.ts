@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/sponsors/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 
@@ -10,7 +10,7 @@ async function getSponsor(req: Request, { params }: { params: { id: string } }) 
   
   const { id } = params;
 
-  const cacheKey = `admin:sponsors:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "sponsors", {});
 
   try {
     
@@ -50,7 +50,10 @@ async function updateSponsor(req: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:sponsors:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:sponsors:*`);
+      await cacheDel(`admin:sponsors:*`);
+    } catch (e) {}
     return formatResponse(true, updatedSponsor, 'Sponsor updated successfully', 200);
   } catch (error: any) {
     console.error(`Error updating sponsor with ID ${id}:`, error);
@@ -65,7 +68,10 @@ async function deleteSponsor(req: Request, { params }: { params: { id: string } 
   try {
     await prisma.sponsor.delete({ where: { id } });
     
-    try { await cacheDel(`admin:sponsors:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:sponsors:*`);
+      await cacheDel(`admin:sponsors:*`);
+    } catch (e) {}
     return formatResponse(true, null, 'Sponsor deleted successfully', 204);
   } catch (error: any) {
     console.error(`Error deleting sponsor with ID ${id}:`, error);

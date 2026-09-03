@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/agents/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -163,7 +163,10 @@ async function createAgent(req: Request) {
     };
 
     
-    try { await cacheDel(`admin:sales-agents:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:sales-agents:*`);
+      await cacheDel(`admin:sales-agents:*`);
+    } catch (e) {}
     return formatResponse(true, agentProfile, "Agent created successfully", 201);
   } catch (error) {
     console.error("Error creating agent:", error);

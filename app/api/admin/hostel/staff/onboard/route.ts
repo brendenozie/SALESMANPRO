@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -40,7 +40,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:onboard:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:onboard:*`);
+      await cacheDel(`admin:onboard:*`);
+    } catch (e) {}
     return formatResponse(true, newStaff, "Staff onboarded successfully", 201);
   } catch (error: any) {
     console.error("ONBOARD_ERROR", error);

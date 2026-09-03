@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
   
-    const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "maintenance", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -56,7 +56,10 @@ export async function POST(req: Request) {
     }
 
     
-    try { await cacheDel(`admin:maintenance:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:maintenance:*`);
+      await cacheDel(`admin:maintenance:*`);
+    } catch (e) {}
     return formatResponse(true, maintenance, "Service record created", 201);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);

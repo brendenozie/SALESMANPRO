@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -13,7 +13,7 @@ type RouteParams = { params: { adminSlug: string; id: string } };
 async function handleGetInvoice(request: Request, { params }: RouteParams) {
   const { adminSlug, id } = params;
 
-  const cacheKey = `admin:invoices:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "invoices", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -156,7 +156,10 @@ async function handlePutInvoice(request: Request, { params }: RouteParams) {
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
   
-    try { await cacheDel(`admin:invoices:${adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${adminSlug}:invoices:*`);
+      await cacheDel(`admin:invoices:*`);
+    } catch (e) {}
     return formatResponse(true, updatedInvoice, "Invoice updated successfully", 200);
 }
 

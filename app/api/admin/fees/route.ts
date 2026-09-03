@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -21,7 +21,7 @@ async function handleGetFeeRecords(request: Request) {
     return formatResponse(false, null, 'schoolId is required for fetching fee records.', 400);
   }
 
-  const cacheKey = `admin:fees:${schoolId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(schoolId, "fees", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -147,7 +147,10 @@ async function handlePostFeeRecord(request: Request) {
   });
 
   
-    try { await cacheDel(`admin:fees:${schoolId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${schoolId}:fees:*`);
+      await cacheDel(`admin:fees:*`);
+    } catch (e) {}
     return formatResponse(
       true,
       {

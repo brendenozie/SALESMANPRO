@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 
   if (!companyId) return formatResponse(false, null, "Missing companyId", 400);
   
-  const cacheKey = `admin:blocks:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "blocks", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -68,7 +68,10 @@ export async function DELETE(req: Request) {
   try {
     await prisma.hostelBlock.delete({ where: { id } });
     
-    try { await cacheDel(`admin:blocks:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:blocks:*`);
+      await cacheDel(`admin:blocks:*`);
+    } catch (e) {}
 
     return formatResponse(true, null, "Block deleted successfully", 200);
   } catch (error) {

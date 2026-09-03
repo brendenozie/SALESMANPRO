@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -64,7 +64,10 @@ async function updateSubmission(request: Request, { params }: Params) {
       });
     });
 
-    try { await cacheDel(`admin:assignment-submissions:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:assignment-submissions:*`);
+      await cacheDel(`admin:assignment-submissions:*`);
+    } catch (e) {}
     
     return formatResponse(true, updated, "Grading updated successfully.", 200);
   } catch (error: any) {

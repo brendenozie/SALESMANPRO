@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -11,7 +11,7 @@ async function getStore(req: Request, { params }: { params: { id: string } }) {
   try {
     const storeId = params.id;
 
-    const cacheKey = `admin:stores:${storeId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(storeId, "stores", {});
 
   try {
     const cached = await cacheGet(cacheKey);

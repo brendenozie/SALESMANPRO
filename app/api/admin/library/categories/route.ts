@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -14,7 +14,7 @@ const getCategoriesLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
-  const cacheKey = `admin:libraryCategories:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "libraryCategories", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -72,7 +72,10 @@ const postCategoryLogic = async (request: Request) => {
   });
   
   // Invalidate relevant caches
-  try { await cacheDel(`admin:libraryCategories:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:libraryCategories:*`);
+    await cacheDel(`admin:libraryCategories:*`);
+  } catch (e) {}
 
   return formatResponse(true, newCategory, "Category created successfully", 201);
 };

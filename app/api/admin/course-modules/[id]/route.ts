@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import prisma from "@/server/db/prismadb";
@@ -33,7 +33,7 @@ const flattenMaterial = (m: any) => ({
 
 export const GET = withApiHandler(async (req, { params }) => {
   
-  const cacheKey = `admin:course-materials:${params.id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.id, "course-materials", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -78,7 +78,10 @@ export const PATCH = withApiHandler(async (req, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:course-materials:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:course-materials:*`);
+      await cacheDel(`admin:course-materials:*`);
+    } catch (e) {}
     return formatResponse(true, flattenMaterial(updated));
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -93,7 +96,10 @@ export const DELETE = withApiHandler(async (req, { params }) => {
   try {
     await prisma.courseMaterial.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:course-materials:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:course-materials:*`);
+      await cacheDel(`admin:course-materials:*`);
+    } catch (e) {}
     return formatResponse(true, { deletedId: params.id }, "Deleted successfully");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

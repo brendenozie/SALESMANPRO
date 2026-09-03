@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     delete whereClause.hostelMember;
 
   try {
-    const cacheKey = `admin:residents:${companyId || "global"}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "residents", {});
 
     try {
       const cached = await cacheGet(cacheKey);

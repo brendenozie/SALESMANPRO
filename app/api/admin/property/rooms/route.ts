@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
   try {
     
-    const cacheKey = `admin:rooms:${blockId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(blockId, "rooms", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -85,7 +85,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:rooms:${blockId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${blockId}:rooms:*`);
+      await cacheDel(`admin:rooms:*`);
+    } catch (e) {}
     return formatResponse(true, newRoom, "Room created successfully", 201);
   } catch (error: any) {
     // Handle Prisma unique constraint error (P2002) for [blockId, roomNumber]

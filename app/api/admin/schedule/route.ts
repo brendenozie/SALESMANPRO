@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/schedule/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -14,7 +14,7 @@ async function getSchedule(req: Request, { params }: { params: { adminSlug: stri
   const isAdmin = true; // TODO: Replace with real authentication logic
   if (!isAdmin) return formatResponse(false, null, "Unauthorized", 401);
     
-  const cacheKey = `admin:schedule:${params.adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(params.adminSlug, "schedule", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -105,7 +105,10 @@ async function createSchedule(req: Request, { params }: { params: { adminSlug: s
     }
 
     
-    try { await cacheDel(`admin:schedule:${params.adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.adminSlug}:schedule:*`);
+      await cacheDel(`admin:schedule:*`);
+    } catch (e) {}
     return formatResponse(true, newItem, "Content created successfully", 201);
   } catch (error) {
     console.error("Failed to create content:", error);
@@ -144,7 +147,10 @@ async function updateSchedule(req: Request, { params }: { params: { adminSlug: s
     }
 
     
-    try { await cacheDel(`admin:schedule:${params.adminSlug || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.adminSlug}:schedule:*`);
+      await cacheDel(`admin:schedule:*`);
+    } catch (e) {}
     return formatResponse(true, updatedItem, "Content updated successfully", 200);
   } catch (error) {
     console.error("Failed to update item:", error);

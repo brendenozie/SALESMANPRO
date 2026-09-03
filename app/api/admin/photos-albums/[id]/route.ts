@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/photo-albums/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -8,7 +8,7 @@ import { formatResponse } from "@/lib/formatResponse";
 export const GET = withApiHandler(async (_request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
-  const cacheKey = `admin:photos-albums:${id || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(id, "photos-albums", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -51,7 +51,10 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
   });
 
   
-    try { await cacheDel(`admin:photos-albums:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:photos-albums:*`);
+      await cacheDel(`admin:photos-albums:*`);
+    } catch (e) {}
     return formatResponse(true, updatedPhotoAlbum, null, 200);
 });
 
@@ -64,6 +67,9 @@ export const DELETE = withApiHandler(async (_request: Request, { params }: { par
     prisma.photoAlbum.delete({ where: { id } }),
   ]);
   
-    try { await cacheDel(`admin:photos-albums:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:photos-albums:*`);
+      await cacheDel(`admin:photos-albums:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Photo album deleted successfully", 204);
 });

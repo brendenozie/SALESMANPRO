@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/students/[id]/repeat/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -56,7 +56,10 @@ async function repeatStudent(
       });
     });
 
-    try { await cacheDel(`admin:students:${result.studentId}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${result.studentId}:students:*`);
+      await cacheDel(`admin:students:*`);
+    } catch (e) {}
     return formatResponse(true, result, "Student retained successfully", 201);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);

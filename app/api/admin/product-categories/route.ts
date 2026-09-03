@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/product-categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -15,7 +15,7 @@ export const GET = withApiHandler(async (request: Request, context: any) => {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
-  const cacheKey = `admin:product-categories:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "product-categories", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -105,6 +105,9 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-    try { await cacheDel(`admin:product-categories:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:product-categories:*`);
+      await cacheDel(`admin:product-categories:*`);
+    } catch (e) {}
     return formatResponse(true, category, "Category created successfully", 201);
 });

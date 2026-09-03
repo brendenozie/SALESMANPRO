@@ -523,6 +523,8 @@ model Company {
   @@index([deletedAt, slug])
 }
 
+
+
 enum WhatsAppConversationStatus {
   OPEN
   PENDING
@@ -3464,7 +3466,9 @@ model marketplaceListings {
   @@index([isFeatured, createdAt])
   @@index([companyId, whatsappSearchable, status])
   @@index([whatsappEnabled, status])
+  @@index([companyId, status, isAvailable])
 }
+
 
 model ProductReview {
   id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
@@ -4030,6 +4034,11 @@ model CustomerOrder {
   @@index([sourceEventId])
   @@index([requiresHumanReview, status])
   @@index([channelPhone])
+  @@index([companyId, status, createdAt])
+  @@index([companyId, createdAt])
+  @@index([trackingNumber])
+  @@index([transactionReference])
+  @@index([phone])
 }
 
 model OrderItem {
@@ -4068,7 +4077,10 @@ model OrderItem {
   @@index([marketplaceListingId])
   @@index([orderId])
   @@index([status])
+  @@index([marketplaceListingId, createdAt])
+  @@index([orderId, marketplaceListingId])
 }
+
 
 enum LocationStatus {
   OPEN

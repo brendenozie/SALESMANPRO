@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -16,7 +16,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:update-status:${updatedLead.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updatedLead.companyId}:update-status:*`);
+      await cacheDel(`admin:update-status:*`);
+    } catch (e) {}
     return NextResponse.json({ success: true, lead: updatedLead });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

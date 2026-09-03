@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -41,7 +41,10 @@ async function updateSubmission(request: Request, { params }: Params) {
       });
     });
 
-    try { await cacheDel(`admin:payroll:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:payroll:*`);
+      await cacheDel(`admin:payroll:*`);
+    } catch (e) {}
     return formatResponse(true, { data: updated }, "Grading updated successfully.", 200);
   } catch (error: any) {
     if (error.code === 'P2025') return formatResponse(false, null, "Submission not found.", 404);
@@ -54,7 +57,10 @@ async function deleteSubmission(request: Request, { params }: Params) {
   try {
     await prisma.assignmentSubmission.delete({ where: { id } });
     
-    try { await cacheDel(`admin:payroll:${params.id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${params.id}:payroll:*`);
+      await cacheDel(`admin:payroll:*`);
+    } catch (e) {}
     return formatResponse(true, { message: "Submission deleted." }, null, 200);
   } catch (error) {
     return formatResponse(false, null, "Failed to delete submission.", 500);

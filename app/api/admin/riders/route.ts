@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/sales-agents/route.ts
 import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
@@ -17,7 +17,7 @@ export const GET = withApiHandler(async (request, context) => {
   }
 
   
-    const cacheKey = `admin:riders:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "riders", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -130,6 +130,9 @@ export const POST = withAuthAndRateLimit(async (request) => {
   });
 
   
-    try { await cacheDel(`admin:riders:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:riders:*`);
+      await cacheDel(`admin:riders:*`);
+    } catch (e) {}
     return formatResponse(true, newAgent, "Agent created successfully", 201);
 });

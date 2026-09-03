@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/content/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -23,7 +23,7 @@ export const GET = withApiHandler(async (request: Request) => {
 
   // 2. Fetch data and count in parallel
   
-  const cacheKey = `admin:content:${companyID || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyID, "content", { limit, page, type });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -89,7 +89,7 @@ export const POST = withApiHandler(async (request: Request, context: any) => {
   const body = await request.json();
   const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
   const { adminSlug } = context.params;
-  const cacheKey = `admin:content:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "content", { status, type });
 
   // Validation
   // 1. Fast Validation

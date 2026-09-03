@@ -36,23 +36,33 @@ export async function initiatePaystackPayment(order: any, email: string) {
     },
   };
 
-  console.log("🔥 Paystack Init Payload:", payload);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
 
-  const res = await fetch("https://api.paystack.co/transaction/initialize", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${secret}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  let data: any;
+  try {
+    const res = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    data = await res.json();
+  } catch (err: any) {
+    clearTimeout(timer);
+    throw new Error(`Paystack request error: ${err.message}`);
+  }
 
-  const data = await res.json();
   console.log("🔁 Paystack Response:", data);
 
   if (!data.status) {
     throw new Error(data.message || "Paystack initialization failed");
   }
+
 
   return {
     authorization_url: data.data.authorization_url,

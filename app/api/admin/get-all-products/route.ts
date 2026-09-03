@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,7 +20,7 @@ async function fetchProductsByCompany(req: Request) {
   // If an error occurs here (e.g., Prisma failure), withApiHandler will catch it
   // and return a 500 Internal Server Error.
   
-    const cacheKey = `admin:get-all-products:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "get-all-products", {});
 
   try {
     const cached = await cacheGet(cacheKey);

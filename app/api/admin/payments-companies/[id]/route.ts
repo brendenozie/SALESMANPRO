@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { SubscriptionStatus, BillingCycle } from '@prisma/client';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -12,7 +12,7 @@ async function handleGET(_: Request, { params }: { params: { id: string } }) {
     const { id } = params;
 
     
-    const cacheKey = `admin:payments-companies:${'global' || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey('global', "payments-companies", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -88,7 +88,10 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:payments-companies:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:payments-companies:*`);
+      await cacheDel(`admin:payments-companies:*`);
+    } catch (e) {}
     return formatResponse(true, updated, "Subscription updated.");
   } catch (error: any) {
     console.error("Error updating subscription:", error);
@@ -121,7 +124,10 @@ async function handleDELETE(_: Request, { params }: { params: { id: string } }) 
     });
 
     
-    try { await cacheDel(`admin:payments-companies:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:payments-companies:*`);
+      await cacheDel(`admin:payments-companies:*`);
+    } catch (e) {}
     return formatResponse(true, cancelled, "Subscription cancelled.");
   } catch (error: any) {
     console.error("Error deleting subscription:", error);

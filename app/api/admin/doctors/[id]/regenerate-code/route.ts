@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -41,7 +41,10 @@ async function regenerateLoginCode(req: Request, { params }: { params: { id: str
   }
 
   
-    try { await cacheDel(`admin:regenerate-code:${doctorId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${doctorId}:regenerate-code:*`);
+      await cacheDel(`admin:regenerate-code:*`);
+    } catch (e) {}
     return formatResponse(true, { data: { ...updatedDoctor, loginCode } }, null, 200);
 }
 

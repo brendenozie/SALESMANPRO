@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; // adjust path if needed
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse"; // Assumed to return a NextResponse for errors
@@ -29,7 +29,7 @@ async function fetchBlogs(req: Request) {
 
   // --- Data Fetching ---
   
-  const cacheKey = `admin:get-all-blogs:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "get-all-blogs", { limit, offset, page });
 
   try {
     const cached = await cacheGet(cacheKey);

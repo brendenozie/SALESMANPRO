@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
     }
 
-  const cacheKey = `admin:suppliers-categories:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "suppliers-categories", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -54,7 +54,10 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:suppliers-categories:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:suppliers-categories:*`);
+      await cacheDel(`admin:suppliers-categories:*`);
+    } catch (e) {}
     return formatResponse(true, category, "Category created", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -81,7 +84,10 @@ export async function PATCH(
       data: { name },
     });
 
-    try { await cacheDel(`admin:suppliers-categories:${updated.companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${updated.companyId}:suppliers-categories:*`);
+      await cacheDel(`admin:suppliers-categories:*`);
+    } catch (e) {}
     return formatResponse(true, updated, "Category updated", 200);
   } catch (error) {
     return formatResponse(false, null, "Update failed", 500);

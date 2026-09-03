@@ -40,10 +40,11 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
   //   console.error("Error caching updated book:", e);
   // }
 
-  try {const cacheKey = `admin:library:book:${companyId || 'global'}:all`;
-    await cacheDel(cacheKey);
+  try {
+    await cacheDel(`tenant:${companyId}:residents:*`);
+    await cacheDel(`admin:residents:*`);
   } catch (e) {
-    console.error("Error deleting book from cache:", e);
+    console.error("Error deleting resident from cache:", e);
   }
   return formatResponse(true, updatedBook, "Archive record updated", 200);
 };
@@ -63,11 +64,12 @@ const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
   });
 
   try {
-    const cacheKey = `admin:library:book:${companyId || 'global'}:all`;
-    await cacheDel(cacheKey);
+    await cacheDel(`tenant:${companyId}:residents:*`);
+    await cacheDel(`admin:residents:*`);
   } catch (e) {
-    console.error("Error deleting book from cache:", e);
+    console.error("Error deleting resident from cache:", e);
   }
+
 
   return formatResponse(true, null, "Volume removed from archive", 200);
 };

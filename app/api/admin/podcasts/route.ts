@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/podcasts/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -20,7 +20,7 @@ const getPodcasts = async (request: Request) => {
     whereClause.creatorId = companyId;
   }
 
-  const cacheKey = `admin:podcasts:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "podcasts", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -136,7 +136,10 @@ const createPodcast = async (request: Request) => {
   });
 
   
-    try { await cacheDel(`admin:podcasts:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:podcasts:*`);
+      await cacheDel(`admin:podcasts:*`);
+    } catch (e) {}
     return formatResponse(true, newPodcast, null, 201);
 };
 

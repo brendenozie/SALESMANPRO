@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/showings/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -19,7 +19,7 @@ async function getShowings(req: Request) {
       );
     }
 
-    const cacheKey = `admin:showings:${companyId || "global"}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "showings", {});
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -115,7 +115,8 @@ async function createShowing(req: Request) {
     });
 
     try {
-      await cacheDel(`admin:showings:${companyId || "global"}:*`);
+      await cacheDel(`tenant:${companyId}:showings:*`);
+      await cacheDel(`admin:showings:*`);
     } catch (e) {}
     return formatResponse(
       true,

@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -75,7 +75,8 @@ const postReservationLogic = async (request: Request) => {
 
   // Invalidate cache for reservations list
   try {
-    await cacheDel(`admin:libraryReservations:${companyId || 'global'}:*`);
+    await cacheDel(`tenant:${companyId}:libraryReservations:*`);
+    await cacheDel(`admin:libraryReservations:*`);
   } catch (e) {}
 
   return formatResponse(true, reservation, "Hold placed on volume", 201);
@@ -100,7 +101,8 @@ const postReservation = async (request: Request) => {
 
   // Invalidate cache for reservations list
   try {
-    await cacheDel(`admin:libraryReservations:${companyId || 'global'}:*`);
+    await cacheDel(`tenant:${companyId}:libraryReservations:*`);
+    await cacheDel(`admin:libraryReservations:*`);
   } catch (e) {}
 
   return formatResponse(true, newReservation, "Reservation created", 201);

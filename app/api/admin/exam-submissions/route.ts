@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -76,7 +76,7 @@ async function getExamSubmissions(request: Request) {
     whereClause.exam.createdByEducatorId = createdByEducatorId;
   }
 
-  const cacheKey = `admin:exam-submissions:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "exam-submissions", { courseId, studentId });
 
   try {
     const cached = await cacheGet(cacheKey);

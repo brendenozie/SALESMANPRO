@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from '@/lib/verifyAuth';
@@ -15,7 +15,7 @@ async function getDestinations(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
-  const cacheKey = `admin:destinations:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "destinations", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -90,7 +90,10 @@ async function createDestination(req: Request) {
   });
 
   
-    try { await cacheDel(`admin:destinations:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:destinations:*`);
+      await cacheDel(`admin:destinations:*`);
+    } catch (e) {}
     return formatResponse(true, { data: newDestination }, null, 201);
 }
 

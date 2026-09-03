@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/videos/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { VideoStatus } from "@prisma/client";
@@ -13,7 +13,7 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
     if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
     
-    const cacheKey = `admin:videos:${'global' || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey('global', "videos", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -80,7 +80,10 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:videos:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:videos:*`);
+      await cacheDel(`admin:videos:*`);
+    } catch (e) {}
     return formatResponse(true, updatedVideo, "Video updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating video:", error);
@@ -99,7 +102,10 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
     await prisma.video.delete({ where: { id } });
 
     
-    try { await cacheDel(`admin:videos:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:videos:*`);
+      await cacheDel(`admin:videos:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Video deleted successfully", 204);
   } catch (error: any) {
     console.error(`Error deleting video with ID ${params.id}:`, error);

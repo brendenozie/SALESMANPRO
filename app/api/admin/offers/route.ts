@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -23,7 +23,7 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
   }
 
   
-    const cacheKey = `admin:offers:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "offers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -154,7 +154,10 @@ async function handlePostOffer(request: Request, { params }: RouteParams) {
 
     // Explicitly return success with status 201
     
-    try { await cacheDel(`admin:offers:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:offers:*`);
+      await cacheDel(`admin:offers:*`);
+    } catch (e) {}
 
     return formatResponse(true, newOffer, null, 201);
     

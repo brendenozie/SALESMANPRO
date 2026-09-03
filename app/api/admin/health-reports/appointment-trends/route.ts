@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -17,7 +17,7 @@ async function getAppointmentTrends(
 
   // 1. Find Company
   
-  const cacheKey = `admin:appointment-trends:${adminSlug || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(adminSlug, "appointment-trends", {});
 
   try {
     const cached = await cacheGet(cacheKey);

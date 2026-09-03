@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 
   try {
     
-    const cacheKey = `admin:roster:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "roster", {});
 
   try {
     const cached = await cacheGet(cacheKey);

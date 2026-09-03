@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,7 +12,7 @@ const getHandler = async (request: Request) => {
   try {
     // 1. Find Parent and their children with their active Classroom
     
-    const cacheKey = `admin:parent:${parentUserId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(parentUserId, "parent", {});
 
   try {
     const cached = await cacheGet(cacheKey);

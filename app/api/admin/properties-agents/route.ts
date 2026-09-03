@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/agents/route.ts
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
@@ -32,7 +32,7 @@ async function getHandler(req: Request) {
   const companyId = searchParams.get("companyId") || undefined;
 
   
-    const cacheKey = `admin:properties-agents:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "properties-agents", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -160,7 +160,10 @@ async function postHandler(req: Request) {
   };
 
   
-    try { await cacheDel(`admin:properties-agents:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:properties-agents:*`);
+      await cacheDel(`admin:properties-agents:*`);
+    } catch (e) {}
     return formatResponse(true, agentProfile, "Agent created successfully", 201);
 }
 

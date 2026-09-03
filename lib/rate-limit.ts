@@ -50,19 +50,39 @@ type Bucket = {
   lastRefill: number;
 };
 
+const MAX_RATE_LIMIT_BUCKETS = 10_000;
 const tokenCache = new Map<string, Bucket>();
 
+export type RateLimitTier = "standard" | "auth" | "checkout" | "search";
+
+export const TIER_LIMITS: Record<RateLimitTier, { limit: number; windowMs: number }> = {
+  standard: { limit: 120, windowMs: 60_000 },
+  auth: { limit: 20, windowMs: 60_000 },
+  checkout: { limit: 30, windowMs: 60_000 },
+  search: { limit: 60, windowMs: 60_000 },
+};
+
 /**
- * Token Bucket Rate Limiter
+ * Token Bucket Rate Limiter with realistic production limits and memory bounding.
+ * Default: 120 requests per 60 seconds (prevents accidental 429s on dashboard loads).
  */
-export function rateLimit(ip: string, limit = 5, windowMs = 60_000): boolean {
+export function rateLimit(
+  identifier: string,
+  limit = 120,
+  windowMs = 60_000,
+): boolean {
   const now = Date.now();
   const refillRate = limit / windowMs; // tokens per ms
 
-  let bucket = tokenCache.get(ip);
+  let bucket = tokenCache.get(identifier);
   if (!bucket) {
+    if (tokenCache.size >= MAX_RATE_LIMIT_BUCKETS) {
+      // Evict oldest buckets
+      const keysToDelete = Array.from(tokenCache.keys()).slice(0, 1000);
+      for (const k of keysToDelete) tokenCache.delete(k);
+    }
     bucket = { tokens: limit, lastRefill: now };
-    tokenCache.set(ip, bucket);
+    tokenCache.set(identifier, bucket);
   }
 
   // Refill based on elapsed time
@@ -83,15 +103,18 @@ export function rateLimit(ip: string, limit = 5, windowMs = 60_000): boolean {
  * Cleanup routine to prevent unbounded memory growth.
  * Removes buckets that haven't been touched for `staleMs`.
  */
-function cleanupBuckets(staleMs = 5 * 60_000) { // default: 5 minutes
+function cleanupBuckets(staleMs = 5 * 60_000) {
   const now = Date.now();
-  for (const [ip, bucket] of tokenCache.entries()) {
+  for (const [id, bucket] of tokenCache.entries()) {
     if (now - bucket.lastRefill > staleMs) {
-      tokenCache.delete(ip);
+      tokenCache.delete(id);
     }
   }
 }
 
 // Run cleanup periodically
-setInterval(() => cleanupBuckets(), 60_000).unref(); 
-// `.unref()` so it won’t keep Node alive
+if (typeof setInterval !== "undefined") {
+  const timer = setInterval(() => cleanupBuckets(), 60_000);
+  if (timer.unref) timer.unref();
+}
+

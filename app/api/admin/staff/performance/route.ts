@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return formatResponse(false, null, "Company ID is required", 400);
   }
 
-  const cacheKey = `admin:performance:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "performance", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -58,7 +58,10 @@ export async function POST(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:performance:${companyId || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:performance:*`);
+      await cacheDel(`admin:performance:*`);
+    } catch (e) {}
     return formatResponse(true, review, "Appraisal submitted successfully", 200);
   } catch (error) {
     return formatResponse(false, null, "Appraisal submission failed", 500);

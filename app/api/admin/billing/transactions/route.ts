@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // // app/api/admin/[slug]/billing/transactions/route.ts
 import prisma from "@/server/db/prismadb";
 import { TransactionStatus, TransactionType, Prisma } from "@prisma/client";
@@ -26,7 +26,7 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
 
   // ✅ OPTIMIZATION: Parallel execution to eliminate Query Waterfall
   
-  const cacheKey = `admin:transactions:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "transactions", { limit, page, status, type });
 
   try {
     const cached = await cacheGet(cacheKey);

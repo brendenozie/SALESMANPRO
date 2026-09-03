@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 // app/api/admin/[adminSlug]/trainers/route.ts
 import prisma from '@/server/db/prismadb';
 import bcrypt from 'bcryptjs';
@@ -27,7 +27,7 @@ async function handleGET(request: Request) {
 
   try {
     
-    const cacheKey = `admin:trainers:${companyId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(companyId, "trainers", {});
 
   try {
     const cached = await cacheGet(cacheKey);

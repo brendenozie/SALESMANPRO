@@ -2,7 +2,7 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { Prisma } from "@prisma/client";
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 const VALID_QUESTION_TYPES = ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER", "ESSAY", "FILL_IN_THE_BLANK", "MATCHING", "NUMERIC"];
 
@@ -89,7 +89,10 @@ export const PATCH = withApiHandler(async (request, context) => {
     const cacheKey = `examQuestion:${id}`;
     await cacheSet(cacheKey, flatten(updated), 120); // Update cache with new data
     
-    try { await cacheDel(`admin:assignment-questions:${id || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${id}:assignment-questions:*`);
+      await cacheDel(`admin:assignment-questions:*`);
+    } catch (e) {}
     return formatResponse(true, flatten(updated), null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

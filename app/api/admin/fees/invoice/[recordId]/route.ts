@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import jsPDF from "jspdf";
@@ -13,7 +13,7 @@ export async function GET(
   try {
     // 1️⃣ Fetch fee record with required relations
     
-    const cacheKey = `admin:invoice:${params.recordId || 'global'}:all`;
+    const cacheKey = buildTenantCacheKey(params.recordId, "invoice", {});
 
   // try {
   //   const cached = await cacheGet(cacheKey);

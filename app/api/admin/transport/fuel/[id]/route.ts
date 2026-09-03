@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -16,7 +16,10 @@ export const PATCH = withApiHandler(async (request: Request, { params }: any) =>
   });
 
   
-    try { await cacheDel(`admin:fuel:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:fuel:*`);
+      await cacheDel(`admin:fuel:*`);
+    } catch (e) {}
     return formatResponse(true, updated, "Assignment updated", 200);
 }, { requireAuth: true });
 
@@ -24,6 +27,9 @@ export const DELETE = withApiHandler(async (request: Request, { params }: any) =
   const { id } = params;
   await prisma.transportAssignment.delete({ where: { id } });
   
-    try { await cacheDel(`admin:fuel:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheDel(`tenant:${'global'}:fuel:*`);
+      await cacheDel(`admin:fuel:*`);
+    } catch (e) {}
     return formatResponse(true, null, "Assignment removed", 200);
 }, { requireAuth: true });

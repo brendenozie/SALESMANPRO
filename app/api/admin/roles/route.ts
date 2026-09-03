@@ -1,4 +1,4 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
 
   if (!companyId) return formatResponse(false, null, "Missing Company ID", 400);
 
-  const cacheKey = `admin:roles:${companyId || 'global'}:all`;
+  const cacheKey = buildTenantCacheKey(companyId, "roles", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -45,7 +45,8 @@ export async function POST(req: Request) {
     });
 
     try {
-      await cacheDel(`admin:roles:${companyId || 'global'}:*`);
+      await cacheDel(`tenant:${companyId}:roles:*`);
+      await cacheDel(`admin:roles:*`);
     } catch (e) {}
     
     return formatResponse(true, role, "Role created successfully", 201);
