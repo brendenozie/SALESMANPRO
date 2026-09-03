@@ -1,11 +1,19 @@
 // /lib/swrCachedFetcher.ts
-// /lib/swrCachedFetcher.ts
+
+function normalizeApiUrl(url: string): string {
+  if (typeof window !== "undefined" && url.includes("localhost:3000/api") && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return url.replace(/^https?:\/\/localhost:3000\/api/, "/api");
+  }
+  return url;
+}
+
 export const createCachedFetcher = (
   cacheKey: string,
   ttlMs: number = 5 * 60 * 1000 // default 5 minutes
 ) => {
   return async (url: string) => {
-    const localCacheKey = `swr-cache:${cacheKey}:${url}`;
+    const normalizedUrl = normalizeApiUrl(url);
+    const localCacheKey = `swr-cache:${cacheKey}:${normalizedUrl}`;
     const metaKey = `${localCacheKey}:meta`;
 
     const maxRetries = 3;
@@ -42,7 +50,6 @@ export const createCachedFetcher = (
 
     // Serve cached data instantly if not expired
     if (cachedData && !isExpired) {
-      console.log("Serving fresh cached data →", localCacheKey);
       return cachedData;
     }
 
@@ -52,20 +59,20 @@ export const createCachedFetcher = (
 
     while (attempt < maxRetries) {
       try {
-        const res = await fetch(url, {
-          headers: { "Cache-Control": "no-store" },
-        });
+        const res = await fetch(normalizedUrl);
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
 
         // Store fresh cache + metadata
-        localStorage.setItem(localCacheKey, JSON.stringify(data));
-        localStorage.setItem(
-          metaKey,
-          JSON.stringify({ timestamp: Date.now() })
-        );
+        if (typeof window !== "undefined") {
+          localStorage.setItem(localCacheKey, JSON.stringify(data));
+          localStorage.setItem(
+            metaKey,
+            JSON.stringify({ timestamp: Date.now() })
+          );
+        }
 
         return data;
       } catch (err) {
@@ -90,10 +97,10 @@ export const createCachedFetcher = (
   };
 };
 
-
 export const createCachedFetcherv1 = (cacheKey: string) => {
   return async (url: string) => {
-    const localCacheKey = `swr-cache:${cacheKey}:${url}`;
+    const normalizedUrl = normalizeApiUrl(url);
+    const localCacheKey = `swr-cache:${cacheKey}:${normalizedUrl}`;
     const maxRetries = 3;
     let attempt = 0;
     let delay = 1000;
@@ -102,10 +109,7 @@ export const createCachedFetcherv1 = (cacheKey: string) => {
     const cached = typeof window !== 'undefined' ? localStorage.getItem(localCacheKey) : null;
     if (cached) {
       try {
-        console.log('Found cached SWR data.', cached);
-        const parsed = JSON.parse(cached);
-        console.log('Serving data from SWR cache.', parsed);
-        return parsed;
+        return JSON.parse(cached);
       } catch {
         console.warn('Failed to parse cached SWR data.');
       }
@@ -114,11 +118,13 @@ export const createCachedFetcherv1 = (cacheKey: string) => {
     // ✅ Retry with exponential backoff
     while (attempt < maxRetries) {
       try {
-        const res = await fetch(url, { headers: { 'Cache-Control': 'no-store' } });
+        const res = await fetch(normalizedUrl);
         if (!res.ok) throw new Error(`Request failed with ${res.status}`);
 
         const data = await res.json();
-        localStorage.setItem(localCacheKey, JSON.stringify(data));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(localCacheKey, JSON.stringify(data));
+        }
         return data;
       } catch (err) {
         attempt++;

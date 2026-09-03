@@ -18,8 +18,11 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
 
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+  if (!src) return '';
+  const separator = src.includes('?') ? '&' : '?';
+  return `${src}${separator}w=${width}&q=${quality || 75}`;
+};
 
 export default function Header() {
   const { cart } = useStateContext();

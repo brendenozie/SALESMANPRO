@@ -124,7 +124,18 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   
   // Categorize subscription state
   const isFullyActive = isActiveFlag && subStatus === 'active';
-  const isPastDueGracePeriod = subStatus === 'past_due' && renewalDate && new Date(renewalDate) > new Date(); 
+  
+  // 7-day grace period after payment becomes past due
+  const GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
+  const gracePeriodEnd = renewalDate
+    ? new Date(new Date(renewalDate).getTime() + GRACE_PERIOD_MS)
+    : null;
+  const isWithinGrace = gracePeriodEnd ? gracePeriodEnd.getTime() > Date.now() : false;
+  const graceDaysLeft = gracePeriodEnd
+    ? Math.max(1, Math.ceil((gracePeriodEnd.getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
+    : 3;
+
+  const isPastDueGracePeriod = subStatus === 'past_due' && isWithinGrace;
   const isSubscriptionValid = isFullyActive || isPastDueGracePeriod;
 
   // 🛑 2. Soft Stop: If subscription is EXPIRED or INACTIVE, render a polite maintenance view
@@ -179,7 +190,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
         
         {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
         {isPastDueGracePeriod && (
-          <SubscriptionGraceBanner storeName={raw.name} daysLeft={3} />
+          <SubscriptionGraceBanner storeName={raw.name} daysLeft={graceDaysLeft} />
         )}
 
         <LayoutComponent params={{ storeFormData }}>

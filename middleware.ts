@@ -168,12 +168,22 @@ export default async function middleware(
   if (host.endsWith(".salesmanpro.site")) {
     const subdomain = host.replace(".salesmanpro.site", "");
     if (subdomain && subdomain !== "www") {
-      url.pathname =
-        pathname === "/" || pathname === ""
-          ? `/site/${subdomain}`
-          : `/site/${subdomain}${pathname}`;
+      if (!pathname.startsWith("/site/")) {
+        url.pathname =
+          pathname === "/" || pathname === ""
+            ? `/site/${subdomain}`
+            : `/site/${subdomain}${pathname}`;
+      }
 
-      const res = NextResponse.rewrite(url);
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set("x-requested-subdomain", subdomain);
+      requestHeaders.set("x-requested-host", host);
+
+      const res = NextResponse.rewrite(url, {
+        request: {
+          headers: requestHeaders,
+        },
+      });
       res.headers.set("x-requested-subdomain", subdomain);
       res.headers.set("x-requested-host", host);
       return res;
@@ -188,12 +198,22 @@ export default async function middleware(
   ) {
     const normalizedHost = host.replace(/^www\./, "").toLowerCase();
 
-    url.pathname =
-      pathname === "/" || pathname === ""
-        ? `/site/${normalizedHost}`
-        : `/site/${normalizedHost}${pathname}`;
+    if (!pathname.startsWith("/site/")) {
+      url.pathname =
+        pathname === "/" || pathname === ""
+          ? `/site/${normalizedHost}`
+          : `/site/${normalizedHost}${pathname}`;
+    }
 
-    const res = NextResponse.rewrite(url);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-requested-host", host);
+    requestHeaders.set("x-rewritten-slug", normalizedHost);
+
+    const res = NextResponse.rewrite(url, {
+      request: {
+        headers: requestHeaders,
+      },
+    });
     res.headers.set("x-requested-host", host);
     res.headers.set("x-rewritten-slug", normalizedHost);
     return res;

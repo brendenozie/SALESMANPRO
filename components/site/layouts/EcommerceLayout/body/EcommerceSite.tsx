@@ -60,8 +60,14 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     CoreValues = [],
   } = pageData;
 
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  // Fetch client-side data with instant server-rendered fallback
+  const { data: testimonialsData } = useSWR(
+    companyId ? `/api/site/testimonials?id=${companyId}` : null,
+    fetcher
+  );
+  const activeTestimonials = testimonialsData?.data?.length
+    ? testimonialsData.data
+    : (testimonials?.length ? testimonials : null);
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
@@ -81,7 +87,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
-      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
+      {activeTestimonials && <TestimonialsSection testimonials={activeTestimonials} />}
       <NewsletterSection />
     </div>
   );

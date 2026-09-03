@@ -5,6 +5,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useEffect,
   useMemo,
   ReactNode,
   Dispatch,
@@ -18,6 +19,9 @@ import { StoreForm } from '../types/typings'; // Ensure StoreForm is correctly i
 interface StoreContextType {
   // The full StoreForm fetched from Prisma → passed in from StoreLayout
   storeFormData: StoreForm | null;
+
+  // Setter so that pages/children can enrich or update storeFormData
+  setStoreFormData: Dispatch<SetStateAction<StoreForm | null>>;
 
   // The ID of the service the user clicked “Learn More” on.
   // Components can read this if they need to prefill a contact form, etc.
@@ -56,7 +60,7 @@ export const useStore = useStoreContext;
 
 //
 // 5. The Provider component. It expects the `initialStore` (a StoreForm object)
-//    and `userRole`, then sets up local state for inquiryServiceId so that children can read/set it.
+//    and `userRole`, then sets up local state for storeFormData & inquiryServiceId.
 //
 interface StoreContextProviderProps {
   children: ReactNode;
@@ -71,20 +75,44 @@ export function StoreContextProvider({
   userRole, // Destructure userRole from props
   userId, // New prop for the user's ID
 }: StoreContextProviderProps) {
-  // Local piece of state to track which service the user last clicked “Learn More” on.
+  const [storeFormData, setStoreFormData] = useState<StoreForm | null>(initialStore);
   const [inquiryServiceId, setInquiryServiceId] = useState<string | number | null>(null);
+
+  useEffect(() => {
+    if (initialStore) {
+      setStoreFormData((prev) => (prev ? { ...prev, ...initialStore } : initialStore));
+    }
+  }, [initialStore]);
 
   // Memoize context value to prevent unnecessary re-rendering across storefront tree
   const value = useMemo<StoreContextType>(
     () => ({
-      storeFormData: initialStore,
+      storeFormData,
+      setStoreFormData,
       inquiryServiceId,
       setInquiryServiceId,
       userRole,
       userId,
     }),
-    [initialStore, inquiryServiceId, userRole, userId],
+    [storeFormData, inquiryServiceId, userRole, userId],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+}
+
+/**
+ * ⚡ StoreDataSync Helper
+ * Allows Server-Rendered pages (like page.tsx) to seamlessly enrich StoreContext
+ * with deep page data without forcing client waterfalls or unnecessary re-renders.
+ */
+export function StoreDataSync({ data }: { data: StoreForm | null }) {
+  const { setStoreFormData } = useStoreContext();
+
+  useEffect(() => {
+    if (data) {
+      setStoreFormData((prev) => (prev ? { ...prev, ...data } : data));
+    }
+  }, [data, setStoreFormData]);
+
+  return null;
 }

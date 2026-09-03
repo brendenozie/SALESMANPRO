@@ -1,7 +1,6 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import React from "react";
-import { findCompanyCached, pageDataInclude } from "@/lib/company-fetcher";
+import { findCompanyCached } from "@/lib/company-fetcher";
 import { transformCompanyToStoreForm } from "@/utils/transformPrismaToStoreForm";
 import { getComponentNameForCategory } from "@/components/site/layouts/siteBodyComponentMap";
 import { getGhubaHomepageCached } from "@/lib/ghuba-fetcher";

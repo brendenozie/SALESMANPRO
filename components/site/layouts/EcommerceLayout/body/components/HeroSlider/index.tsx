@@ -7,8 +7,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+  if (!src) return '';
+  const separator = src.includes('?') ? '&' : '?';
+  return `${src}${separator}w=${width}&q=${quality || 75}`;
+};
 
 const autoAdvanceDelay = 6000;
 
@@ -113,6 +116,7 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
               alt="Hero background"
               fill
               priority
+              sizes="100vw"
               loader={loader}
               className="object-cover object-center"
             />

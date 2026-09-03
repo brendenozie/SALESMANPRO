@@ -2,7 +2,7 @@ import "server-only";
 import React from "react";
 import { unstable_cache, revalidateTag } from "next/cache";
 import prisma from "@/server/db/prismadb";
-import { fetchWithCache, buildTenantCacheKey, cacheDel } from "@/lib/cache";
+import { fetchWithCache, buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 // Safe per-request memoization helper compatible with React 18 types
 const requestCache = ((React as any).cache || (<T extends (...args: any[]) => any>(fn: T): T => fn)) as <T extends (...args: any[]) => any>(fn: T) => T;
@@ -40,7 +40,7 @@ const latestSubscriptionInclude = {
   subscriptionCompanies: {
     where: {
       status: {
-        in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+        in: ["ACTIVE", "AWAITING_CONFIRMATION", "PAST_DUE"],
       },
     },
     // get the latest subscription by createdAt date
@@ -103,13 +103,9 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
     subscription: latestSubscription
       ? {
           isActive:
-            !!latestSubscription.renewalDate &&
-            latestSubscription.renewalDate > new Date(),
-          status:
-            latestSubscription?.renewalDate &&
-            latestSubscription?.renewalDate > new Date()
-              ? "ACTIVE"
-              : "INACTIVE",
+            latestSubscription.status === "ACTIVE" ||
+            (!!latestSubscription.renewalDate && new Date(latestSubscription.renewalDate) > new Date()),
+          status: latestSubscription.status,
           renewalDate: latestSubscription.renewalDate,
           plan: latestSubscription.plan,
           billingCycle: latestSubscription.billingCycle,
@@ -141,6 +137,16 @@ export const findCompanyCached = requestCache(async (
 
   if (!cleanIdentifier) return null;
 
+  // 1.5️⃣ Fast-path: If requesting 'lean', check if the richer 'page' entry is already cached!
+  // Because 'page' is a complete superset of 'lean', it immediately satisfies the shell layout.
+  if (strategy === "lean") {
+    const pageKey = buildTenantCacheKey(cleanIdentifier, "company_details", { strategy: "page" });
+    const cachedPage = await cacheGet<any>(pageKey);
+    if (cachedPage) {
+      return cachedPage;
+    }
+  }
+
   // 2️⃣ Deterministic multi-tenant cache key
   const cacheKey = buildTenantCacheKey(cleanIdentifier, "company_details", { strategy });
 
@@ -161,7 +167,20 @@ export const findCompanyCached = requestCache(async (
           revalidate: 600, // 10 minute revalidation
         },
       );
-      return cachedFetcher();
+      const data = await cachedFetcher();
+
+      // If we loaded the rich 'page' strategy, simultaneously warm the 'lean' cache key!
+      if (data && strategy === "page") {
+        const leanKey = buildTenantCacheKey(cleanIdentifier, "company_details", { strategy: "lean" });
+        cacheSet(leanKey, data, 600).catch(() => {});
+        // Also cross-link under canonical company id if identifier was a slug/domain
+        if (data.id && data.id !== cleanIdentifier) {
+          cacheSet(buildTenantCacheKey(data.id, "company_details", { strategy: "page" }), data, 600).catch(() => {});
+          cacheSet(buildTenantCacheKey(data.id, "company_details", { strategy: "lean" }), data, 600).catch(() => {});
+        }
+      }
+
+      return data;
     },
     600 // 10 minute TTL
   );
@@ -206,7 +225,7 @@ export function leanShellInclude() {
   };
 }
 
-// Data needed for the main content of the page
+// Data needed for the main content of the page (complete superset of lean shell)
 export function pageDataInclude() {
   const userSelect = {
     select: {
@@ -219,12 +238,27 @@ export function pageDataInclude() {
   const orderedAsc = { orderBy: { order: "asc" as const } };
 
   return {
+    SEO: true,
+    AnalyticsConfig: true,
+    Announcement: {
+      orderBy: { publishedAt: "desc" as const },
+      take: 1,
+    },
+    socialLinks: true,
+    policies: true,
+    StoreCategory: {
+      orderBy: { sortOrder: "asc" as const },
+      include: {
+        category: {
+          select: { id: true, name: true, slug: true, image: true, icon: true },
+        },
+      },
+    },
     ...latestSubscriptionInclude,
     blogs: { orderBy: { publishedAt: "desc" as const } },
     faqs: orderedAsc,
     testimonials: orderedAsc,
     heroSlides: orderedAsc,
-    StoreCategory: true,
     promotions: {
       select: {
         title: true,
@@ -301,19 +335,36 @@ export async function revalidateCompanyCache(identifier: string) {
   const clean = (identifier || "").replace(/^www\./, "").toLowerCase().trim();
   if (!clean) return;
 
-  try {
-    revalidateTag(`company:${clean}`);
-    revalidateTag(`company-details:${clean}:lean`);
-    revalidateTag(`company-details:${clean}:page`);
-    revalidateTag(`company-details:${clean}:full`);
-  } catch (e) {}
+  const purgeTarget = async (target: string) => {
+    try {
+      revalidateTag(`company:${target}`);
+      revalidateTag(`company-details:${target}:lean`);
+      revalidateTag(`company-details:${target}:page`);
+      revalidateTag(`company-details:${target}:full`);
+    } catch (e) {}
 
-  // Invalidate Redis / in-memory cache pipelines
+    try {
+      await cacheDel(`tenant:${target}:company_details:*`);
+      await cacheDel(`tenant:${target}:storefront:*`);
+      await cacheDel(`tenant:${target}:config:*`);
+      await cacheDel(`company-details:${target}:*`);
+    } catch (e) {}
+  };
+
+  await purgeTarget(clean);
+
+  // Invalidate any associated slug/domain/id aliases so cross-tenant cache remains in sync
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(clean);
   try {
-    await cacheDel(`tenant:${clean}:company_details:*`);
-    await cacheDel(`tenant:${clean}:storefront:*`);
-    await cacheDel(`tenant:${clean}:config:*`);
-    await cacheDel(`company-details:${clean}:*`);
+    const company = await prisma.company.findFirst({
+      where: isObjectId ? { id: clean } : { OR: [{ slug: clean }, { domain: clean }] },
+      select: { id: true, slug: true, domain: true },
+    });
+    if (company) {
+      if (company.id && company.id !== clean) await purgeTarget(company.id);
+      if (company.slug && company.slug.toLowerCase() !== clean) await purgeTarget(company.slug.toLowerCase());
+      if (company.domain && company.domain.toLowerCase() !== clean) await purgeTarget(company.domain.toLowerCase());
+    }
   } catch (e) {}
 }
 
