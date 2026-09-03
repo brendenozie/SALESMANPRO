@@ -15,8 +15,8 @@ async function searchServices(args, context) {
             status: "ACTIVE",
             isAvailable: true,
             OR: [
-                { listingTransactionType: { contains: "SERVICE", mode: "insensitive" } },
-                { listingTransactionType: { contains: "BOOK", mode: "insensitive" } },
+                { hourlyRate: { not: null } },
+                { minimumHours: { not: null } },
                 { duration: { not: null } },
             ],
             ...(args.query
@@ -36,7 +36,9 @@ async function searchServices(args, context) {
             sellingPrice: true,
             hourlyRate: true,
             duration: true,
-            currency: true,
+            company: {
+                select: { currency: true },
+            },
         },
     });
     if (!listings.length) {
@@ -59,12 +61,12 @@ async function searchServices(args, context) {
             return {
                 success: true,
                 action: "search_services",
-                message: "No specific booking services found matching your inquiry.",
+                message: "I couldn't find any services matching your search.",
                 data: { services: [] },
             };
         }
         const serviceList = services
-            .map((s) => `🗓️ *${s.name}*\n   💰 Price: KES ${s.price.toLocaleString()}\n   ⏱️ Duration: ${s.duration} mins`)
+            .map((s) => `🗓️ *${s.name}*\n   💰 Price: KES ${(s.price ?? 0).toLocaleString()}\n   🔖 ID: \`${s.id}\``)
             .join("\n\n");
         return {
             success: true,
@@ -73,7 +75,7 @@ async function searchServices(args, context) {
             data: { services },
         };
     }
-    const currency = listings[0]?.currency ?? "KES";
+    const currency = listings[0]?.company?.currency ?? "KES";
     const serviceList = listings
         .map((l) => `🗓️ *${l.name}*\n   💰 Rate: ${currency} ${(l.hourlyRate ?? l.sellingPrice).toLocaleString()} ${l.duration ? `(${l.duration})` : ""}\n   🔖 ID: \`${l.id}\``)
         .join("\n\n");

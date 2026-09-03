@@ -35,7 +35,9 @@ async function getProduct(args, context) {
             quantity: true,
             isAvailable: true,
             images: true,
-            currency: true,
+            company: {
+                select: { currency: true },
+            },
             option: true,
             pricingTiers: true,
         },
@@ -47,7 +49,7 @@ async function getProduct(args, context) {
             message: "I couldn't find that product in our store.",
         };
     }
-    const currency = listing.currency ?? "KES";
+    const currency = listing.company?.currency ?? "KES";
     const price = listing.finalPrice ?? listing.sellingPrice;
     const options = Array.isArray(listing.option) ? listing.option : [];
     let optionsText = "";

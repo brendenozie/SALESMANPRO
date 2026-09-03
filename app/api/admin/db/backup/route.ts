@@ -1,129 +1,151 @@
+/**
+ * app/api/admin/db/backup/route.ts
+ *
+ * GET: Stream application-level JSON export for local emergency download.
+ * POST: Trigger asynchronous background cloud backup job via BullMQ.
+ */
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { verifyBackupSecret } from "@/lib/verifyBackupSecret";
+import { backupService } from "@/lib/backup/backupService";
+import { formatResponse } from "@/lib/formatResponse";
+import { BackupType } from "@/lib/backup/types";
 
 export const runtime = "nodejs";
 
-export const GET = withApiHandler(async (req) => {
-  verifyBackupSecret(req);
+export const GET = withApiHandler(
+  async (req, context) => {
+    const encoder = new TextEncoder();
+    const runtimeModel = (prisma as any)._runtimeDataModel;
+    const models = Object.keys(runtimeModel.models);
 
-  const encoder = new TextEncoder();
-  // Get the full list of models and their schema definitions
-  const runtimeModel = (prisma as any)._runtimeDataModel;
-  const models = Object.keys(runtimeModel.models);
+    const stream = new ReadableStream({
+      async start(controller) {
+        const errorMap: Record<string, string> = {};
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const errorMap: Record<string, string> = {};
+        const header =
+          JSON.stringify({
+            meta: {
+              version: "v2",
+              timestamp: Date.now(),
+              platform: "mongodb",
+            },
+          }).slice(0, -1) + ', "data": {';
 
-      // 1. START JSON: Open meta and open data object
-      const header =
-        JSON.stringify({
-          meta: {
-            version: "v1",
-            timestamp: Date.now(),
-            platform: "mongodb",
-          },
-        }).slice(0, -1) + ', "data": {';
+        controller.enqueue(encoder.encode(header));
 
-      controller.enqueue(encoder.encode(header));
+        for (let i = 0; i < models.length; i++) {
+          const modelName = models[i];
+          const modelMeta = runtimeModel.models[modelName];
+          const prismaKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+          const modelClient = (prisma as any)[prismaKey];
 
-      // 2. ITERATE MODELS
-      for (let i = 0; i < models.length; i++) {
-        const modelName = models[i];
-        const modelMeta = runtimeModel.models[modelName];
-        const prismaKey =
-          modelName.charAt(0).toLowerCase() + modelName.slice(1);
-        const modelClient = (prisma as any)[prismaKey];
+          if (!modelClient) continue;
 
-        if (!modelClient) continue;
+          controller.enqueue(encoder.encode(`"${modelName}":[`));
 
-        // Open array for this model
-        controller.enqueue(encoder.encode(`"${modelName}":[`));
+          const batchSize = 1000;
+          let skip = 0;
+          let batch: any[] = [];
+          let firstRecordInModel = true;
 
-        const batchSize = 1000;
-        let skip = 0;
-        let batch: any[] = [];
-        let firstRecordInModel = true;
+          try {
+            do {
+              batch = await modelClient.findMany({
+                skip,
+                take: batchSize,
+              });
 
-        try {
-          do {
-            batch = await modelClient.findMany({
-              skip,
-              take: batchSize,
-            });
+              for (const record of batch) {
+                if (!firstRecordInModel) {
+                  controller.enqueue(encoder.encode(","));
+                }
 
-            for (const record of batch) {
-              if (!firstRecordInModel) {
-                controller.enqueue(encoder.encode(","));
+                const clean = sanitizeForBackup(record, modelMeta);
+                controller.enqueue(encoder.encode(JSON.stringify(clean)));
+                firstRecordInModel = false;
               }
 
-              // SANITIZE: Pass metadata so we know which fields are real scalars
-              const clean = sanitizeForBackup(record, modelMeta);
+              skip += batchSize;
+            } while (batch.length === batchSize);
+          } catch (err: any) {
+            errorMap[modelName] = err.message;
+          }
 
-              controller.enqueue(encoder.encode(JSON.stringify(clean)));
-              firstRecordInModel = false;
-            }
+          controller.enqueue(encoder.encode("]"));
 
-            skip += batchSize;
-          } while (batch.length === batchSize);
-        } catch (err: any) {
-          errorMap[modelName] = err.message;
+          if (i < models.length - 1) {
+            controller.enqueue(encoder.encode(","));
+          }
         }
 
-        // Close array for this model
-        controller.enqueue(encoder.encode("]"));
+        const footer = `}, "errors": ${JSON.stringify(errorMap)}}`;
+        controller.enqueue(encoder.encode(footer));
+        controller.close();
+      },
+    });
 
-        // Comma between models
-        if (i < models.length - 1) {
-          controller.enqueue(encoder.encode(","));
-        }
-      }
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename=salesmanpro-db-export-${Date.now()}.json`,
+        "Cache-Control": "no-store",
+      },
+    });
+  },
+  {
+    requireAuth: true,
+    allowedRoles: ["ADMIN", "SUPER_ADMIN"],
+    timeoutMs: 120_000,
+  }
+);
 
-      // 3. CLOSE DATA, ADD ERRORS, CLOSE ROOT
-      const footer = `}, "errors": ${JSON.stringify(errorMap)}}`;
-      controller.enqueue(encoder.encode(footer));
-      controller.close();
-    },
-  });
+export const POST = withApiHandler(
+  async (req, context) => {
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {}
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename=full-db-backup-${Date.now()}.json`,
-      "Cache-Control": "no-store",
-    },
-  });
-});
+    const type = (body.type || "MANUAL") as BackupType;
+    const requestedBy = context.user?.email || context.user?.id || "admin";
 
-/**
- * SCHEMA-AWARE SANITIZER
- * Only keeps fields that are defined as scalar fields in the Prisma schema.
- * This prevents relation objects from breaking future imports.
- */
+    const record = await backupService.triggerBackup(type, requestedBy);
+
+    return formatResponse(
+      true,
+      {
+        backup: {
+          ...record,
+          sizeBytes: record.sizeBytes ? Number(record.sizeBytes) : 0,
+        },
+      },
+      "Backup initiated successfully",
+      202
+    );
+  },
+  {
+    requireAuth: true,
+    allowedRoles: ["ADMIN", "SUPER_ADMIN"],
+  }
+);
+
 function sanitizeForBackup(record: any, modelMeta: any) {
   const cleaned: any = {};
-
-  // modelMeta.fields contains the definition of every field in this model
   for (const field of modelMeta.fields) {
-    // 1. ONLY keep scalar fields (actual columns in Mongo)
-    // Skip 'object' kind (relations like "user", "posts")
     if (field.kind !== "scalar") continue;
-
     const key = field.name;
     const value = record[key];
-
-    // 2. Handle values
     if (value === undefined || value === null) continue;
-
-    // 3. Format Dates for JSON consistency
     if (field.type === "DateTime" && value instanceof Date) {
       cleaned[key] = value.toISOString();
       continue;
     }
-
+    if (typeof value === "bigint") {
+      cleaned[key] = value.toString();
+      continue;
+    }
     cleaned[key] = value;
   }
-
   return cleaned;
 }

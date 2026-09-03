@@ -41,9 +41,9 @@ async function createSupportRequest(args, context) {
     // Create an inquiry or notification for store support
     await prismadb_1.default.inquiry.create({
         data: {
-            name: context.customerName ?? context.phoneNumber,
-            phone: context.phoneNumber,
-            email: context.customerEmail ?? `wa-${context.waId}@support.local`,
+            clientName: context.customerName ?? context.phoneNumber,
+            clientPhone: context.phoneNumber,
+            clientEmail: context.customerEmail ?? `wa-${context.waId}@support.local`,
             message: `[${args.priority ?? "MEDIUM"}] ${args.subject}: ${args.description}`,
             companyId: context.companyId,
         },

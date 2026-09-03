@@ -62,5 +62,21 @@ module.exports = {
       kill_timeout: 5000,
       watch: false,
     },
+    {
+      name: 'backup-worker',
+      script: './dist-worker/workers/backup-worker.js',
+      node_args: '--max-old-space-size=512',
+      interpreter: 'node',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+      },
+      restart_delay: 5000,
+      max_memory_restart: '800M',
+      autorestart: true,
+      kill_timeout: 10000,
+      watch: false,
+    },
   ],
 };

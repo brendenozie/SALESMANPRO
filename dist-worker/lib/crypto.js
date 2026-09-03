@@ -46,8 +46,6 @@ function decrypt({ value, iv, tag, }) {
         console.error("Decryption failed due to missing inputs:", { value, iv, tag });
         throw new Error("Crypto Error: Missing value, iv, or tag for decryption.");
     }
-    // 2. Log lengths to verify data isn't truncated (IV should be 24 hex chars, Tag should be 32 hex chars)
-    console.log(`[Crypto Debug] IV length: ${iv.length}, Tag length: ${tag.length}, Value length: ${value.length}`);
     const decipher = crypto_1.default.createDecipheriv(algorithm, getEncryptionKey(), Buffer.from(iv, "hex"));
     decipher.setAuthTag(Buffer.from(tag, "hex"));
     try {

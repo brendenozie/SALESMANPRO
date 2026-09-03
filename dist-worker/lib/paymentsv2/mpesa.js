@@ -61,17 +61,11 @@ async function initiateMpesaPayment(order, phoneNumber, credentials) {
     return json;
 }
 exports.initiateMpesaPayment = initiateMpesaPayment;
+const normalizePhone_1 = require("@/lib/whatsapp/normalizePhone");
 function formatPhone(phone) {
-    // Remove spaces
-    phone = phone.replace(/\s+/g, "");
-    // If starts with +254 → convert to 254
-    if (phone.startsWith("+254"))
-        return phone.replace("+254", "254");
-    // If starts with 07 → convert to 2547
-    if (phone.startsWith("07"))
-        return phone.replace(/^0/, "254");
-    // If already 2547XXXXXXXX → keep it
-    if (phone.startsWith("2547"))
-        return phone;
-    throw new Error("Invalid phone number format");
+    const normalized = (0, normalizePhone_1.normalizePhoneNumber)(phone);
+    if (/^254\d{9}$/.test(normalized)) {
+        return normalized;
+    }
+    throw new Error("Invalid phone number format. Expected format: 2547XXXXXXXX or 2541XXXXXXXX");
 }

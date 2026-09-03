@@ -7,6 +7,7 @@ exports.mediaAIWorker = void 0;
 const bullmq_1 = require("bullmq");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const redis_1 = require("@/lib/redis");
+const action_router_1 = require("@/lib/media/action-router");
 exports.mediaAIWorker = new bullmq_1.Worker("media-ai", async (job) => {
     const { jobId, userId, tenantId } = job.data;
     const mediaJob = await prismadb_1.default.mediaJob.findUnique({
@@ -42,10 +43,11 @@ exports.mediaAIWorker = new bullmq_1.Worker("media-ai", async (job) => {
                 },
             })
             : undefined;
-        const result = await mediaAIRouter.execute(mediaJob.action, mediaJob.config, {
+        const result = await action_router_1.aiRouter.execute(mediaJob.action, mediaJob.config, {
+            jobId,
             userId,
             tenantId,
-            media: media,
+            mediaAsset: media,
             inputVersion: inputVersion,
         });
         await prismadb_1.default.mediaJob.update({

@@ -11,26 +11,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.centralOpenAIProvider = exports.CentralOpenAIProvider = void 0;
 const openai_1 = __importDefault(require("openai"));
+const superAdminService_1 = require("../superAdminService");
 const types_1 = require("../types");
 class CentralOpenAIProvider {
     name = "OPENAI";
-    client = null;
-    getClient() {
-        if (!this.client) {
-            const apiKey = process.env.OPENAI_API_KEY;
-            if (!apiKey) {
-                throw new types_1.AIPlatformError("PROVIDER_ERROR", "OpenAI API key is not configured on the server", 500);
-            }
-            this.client = new openai_1.default({ apiKey });
+    async getClient() {
+        const dbKey = await superAdminService_1.superAdminAIService.getDecryptedApiKey("OPENAI");
+        const apiKey = dbKey || process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            throw new types_1.AIPlatformError("PROVIDER_ERROR", "OpenAI API key is not configured in Super Admin or server environment", 500);
         }
-        return this.client;
+        return new openai_1.default({ apiKey });
     }
     isConfigured() {
         return Boolean(process.env.OPENAI_API_KEY);
     }
     async generateText(model, input) {
         const startTime = Date.now();
-        const openai = this.getClient();
+        const openai = await this.getClient();
         const messages = [];
         if (input.systemPrompt) {
             messages.push({
@@ -95,7 +93,7 @@ class CentralOpenAIProvider {
     }
     async generateImage(model, input) {
         const startTime = Date.now();
-        const openai = this.getClient();
+        const openai = await this.getClient();
         const targetModel = model.id === "dall-e-2" ? "dall-e-2" : "dall-e-3";
         const quality = input.quality ?? "standard";
         const quantity = targetModel === "dall-e-3" ? 1 : Math.min(input.quantity ?? 1, 4);

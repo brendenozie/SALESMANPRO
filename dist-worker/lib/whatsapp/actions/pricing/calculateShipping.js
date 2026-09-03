@@ -29,11 +29,10 @@ async function calculateShipping(args, context) {
 }
 exports.calculateShipping = calculateShipping;
 async function validateDiscount(args, context) {
-    const promotion = await prismadb_1.default.promotion.findFirst({
+    const promotion = await prismadb_1.default.promotionDiscount.findFirst({
         where: {
             companyId: context.companyId,
             code: args.promoCode.trim().toUpperCase(),
-            isActive: true,
             endDate: { gte: new Date() },
         },
     });
@@ -44,17 +43,18 @@ async function validateDiscount(args, context) {
             message: `Coupon code "${args.promoCode}" is invalid or expired.`,
         };
     }
-    const discountAmount = promotion.discountPercentage
-        ? ((args.subtotal ?? 1000) * promotion.discountPercentage) / 100
-        : (promotion.discountAmount ?? 0);
+    const isPercentage = String(promotion.discountType).toUpperCase().includes("PERCENT");
+    const discountAmount = isPercentage
+        ? ((args.subtotal ?? 1000) * promotion.discountValue) / 100
+        : promotion.discountValue;
     return {
         success: true,
         action: "validate_discount",
-        message: `🎉 Promo code *${promotion.code}* applied! You get ${promotion.discountPercentage ? `${promotion.discountPercentage}% off` : `KES ${promotion.discountAmount} off`}.`,
+        message: `🎉 Promo code *${promotion.code}* applied! You get ${isPercentage ? `${promotion.discountValue}% off` : `KES ${promotion.discountValue} off`}.`,
         data: {
             promoCode: promotion.code,
             discountAmount,
-            discountPercentage: promotion.discountPercentage,
+            discountPercentage: isPercentage ? promotion.discountValue : undefined,
         },
     };
 }

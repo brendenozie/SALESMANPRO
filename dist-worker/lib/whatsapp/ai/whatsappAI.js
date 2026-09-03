@@ -2,112 +2,188 @@
 /**
  * lib/whatsapp/ai/whatsappAI.ts
  *
- * Centralized WhatsApp AI Orchestrator.
- * Dynamically resolves provider, builds context and prompt, executes inference,
- * records telemetry/tokens, and returns structured action and response.
+ * WhatsApp AI orchestrator — uses the Central AI Platform for inference
+ * and the shared credit ledger (reserve → infer → finalize / refund).
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.whatsappAI = exports.WhatsAppAIService = void 0;
-const groqProvider_1 = require("./groqProvider");
-const openaiProvider_1 = require("./openaiProvider");
+const aiService_1 = require("@/lib/ai/aiService");
+const types_1 = require("@/lib/ai/types");
 const prompts_1 = require("./prompts");
 const context_1 = require("./context");
 const repository_1 = require("../repository");
-const creditLedger_1 = require("@/lib/ai/creditLedger");
-const modelRegistry_1 = require("@/lib/ai/modelRegistry");
-class WhatsAppAIService {
-    getProvider(companyId) {
-        // Check if GROQ_API_KEY is available (fastest default)
-        if (process.env.GROQ_API_KEY) {
-            return new groqProvider_1.GroqAIProvider({});
+const types_2 = require("../types");
+const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+function parseStructuredReply(raw, json) {
+    const source = json ?? (() => {
+        try {
+            return JSON.parse(raw);
         }
-        // Fall back to OpenAI
-        if (process.env.OPENAI_API_KEY) {
-            return new openaiProvider_1.OpenAIProvider({});
+        catch {
+            return null;
         }
-        throw new Error("No AI provider configured. Set GROQ_API_KEY or OPENAI_API_KEY.");
+    })();
+    if (!source) {
+        return {
+            reply: raw || "How can I help you today?",
+            action: null,
+            intent: "unknown",
+            sentiment: "neutral",
+            confidence: 0.5,
+            requiresHuman: false,
+        };
     }
-    /**
-     * Main entry point to process an inbound WhatsApp message.
-     */
+    let action = null;
+    if (source.action && typeof source.action === "object") {
+        const validated = types_2.whatsappActionSchema.safeParse(source.action);
+        if (validated.success) {
+            action = validated.data;
+        }
+    }
+    return {
+        reply: typeof source.reply === "string"
+            ? source.reply
+            : "How can I help you with our store today?",
+        action,
+        intent: typeof source.intent === "string" ? source.intent : "unknown",
+        sentiment: typeof source.sentiment === "string" ? source.sentiment : "neutral",
+        confidence: typeof source.confidence === "number" ? source.confidence : 0.9,
+        requiresHuman: Boolean(source.requiresHuman || source.escalate),
+    };
+}
+class WhatsAppAIService {
     async processInboundMessage(params) {
         const { account, contact, conversation, message } = params;
-        // Check central credit balance first
-        const hasCredits = await creditLedger_1.creditLedger.hasSufficientCredits(account.companyId, 1);
-        if (!hasCredits) {
-            console.warn(`[WHATSAPP_AI_INSUFFICIENT_CREDITS] Company ${account.companyId} has no AI credits remaining`);
+        const aiConfig = await prismadb_1.default.whatsAppAIConfig.findUnique({
+            where: { companyId: account.companyId },
+        });
+        const currentText = message.text?.trim() ||
+            (message.type === "IMAGE"
+                ? "[Customer sent an image]"
+                : message.type === "AUDIO"
+                    ? "[Customer sent a voice note]"
+                    : message.type === "DOCUMENT"
+                        ? "[Customer sent a document]"
+                        : message.type === "VIDEO"
+                            ? "[Customer sent a video]"
+                            : message.type === "LOCATION"
+                                ? "[Customer shared a location]"
+                                : "");
+        if (!currentText) {
             return {
-                reply: "Hello! Our automated AI assistant is currently resting. A human sales representative will be with you shortly to assist!",
+                reply: "I received your message. How can I help you with our store today?",
                 action: null,
-                intent: "credit_exhausted",
+                intent: "empty",
                 sentiment: "neutral",
-                confidence: 1.0,
+                confidence: 1,
                 model: "offline",
                 provider: "SYSTEM",
             };
         }
-        const provider = this.getProvider(account.companyId);
-        // 1. Assemble rich domain context
         const context = await (0, context_1.assembleAIContext)({
             account,
             contact,
             conversation,
         });
-        // 2. Build multi-tenant system prompt
         const systemPrompt = (0, prompts_1.buildSystemPrompt)({
             store: context.storeContext,
             customer: context.customerContext,
             catalogPreview: context.catalogPreview,
         });
-        const currentText = message.text ?? "";
-        // 3. Execute AI provider inference with automatic fallback
-        let result;
+        // In the new architecture, model resolution is centrally governed by Super Admin
+        // capability routing for "WHATSAPP", ensuring tenant stores don't dictate raw models.
+        const modelId = undefined;
         try {
-            result = await provider.processConversation({
+            const output = await aiService_1.aiService.generateText({
+                prompt: currentText,
                 systemPrompt,
+                modelId,
+                temperature: aiConfig?.temperature ?? 0.3,
+                maxTokens: aiConfig?.maxTokens ?? 1000,
+                jsonSchema: true,
                 conversationHistory: context.conversationHistory,
-                currentMessage: currentText,
+            }, {
+                companyId: account.companyId,
+                source: "WHATSAPP",
+                feature: "whatsapp_concierge",
+                capability: "WHATSAPP",
+                idempotencyKey: `whatsapp:${message.id}`,
             });
+            const structured = parseStructuredReply(output.text, output.json);
+            await repository_1.whatsappRepository.recordAIUsage({
+                companyId: account.companyId,
+                conversationId: conversation.id,
+                provider: output.provider === "OPENAI"
+                    ? "OPENAI"
+                    : output.provider === "GEMINI"
+                        ? "GOOGLE"
+                        : "CUSTOM",
+                model: output.model,
+                inputTokens: output.promptTokens,
+                outputTokens: output.completionTokens,
+                aiCreditsUsed: output.creditsConsumed,
+            }).catch(() => undefined);
+            await repository_1.whatsappRepository.updateConversationState(conversation.id, {
+                aiIntent: structured.intent,
+                aiSummary: structured.reply.slice(0, 100),
+                aiConfidence: structured.confidence,
+            });
+            return {
+                reply: structured.reply,
+                action: structured.action,
+                intent: structured.intent,
+                sentiment: structured.sentiment,
+                confidence: structured.confidence,
+                inputTokens: output.promptTokens,
+                outputTokens: output.completionTokens,
+                model: output.model,
+                provider: output.provider === "OPENAI"
+                    ? "OPENAI"
+                    : output.provider === "GEMINI"
+                        ? "GOOGLE"
+                        : "CUSTOM",
+                requiresHuman: structured.requiresHuman,
+            };
         }
         catch (error) {
             console.error("[WHATSAPP_AI_INFERENCE_ERROR]", error);
-            // Graceful conversational fallback
-            result = {
-                reply: "I'm currently having trouble connecting to my product database. How else can I assist you, or would you like me to connect you to our support team?",
+            if (error instanceof types_1.AIPlatformError && error.code === "INSUFFICIENT_CREDITS") {
+                return {
+                    reply: "Hello! Our automated AI assistant is currently resting. A human sales representative will be with you shortly to assist!",
+                    action: null,
+                    intent: "credit_exhausted",
+                    sentiment: "neutral",
+                    confidence: 1,
+                    model: "offline",
+                    provider: "SYSTEM",
+                    requiresHuman: true,
+                };
+            }
+            await prismadb_1.default.aIUsage.create({
+                data: {
+                    companyId: account.companyId,
+                    capability: "WHATSAPP",
+                    provider: "SYSTEM",
+                    model: modelId,
+                    source: "WHATSAPP",
+                    feature: "whatsapp_concierge",
+                    status: "FAILED",
+                    errorMessage: error instanceof Error ? error.message : "AI inference failed",
+                },
+            }).catch(() => undefined);
+            return {
+                reply: "I'm currently having trouble completing that request. Would you like me to connect you with our support team?",
                 action: null,
                 intent: "unknown",
                 sentiment: "neutral",
                 confidence: 0.5,
-                model: provider.defaultModel,
-                provider: provider.name,
+                model: modelId,
+                provider: "SYSTEM",
             };
         }
-        // 4. Record token telemetry & deduct from Central Credit Ledger
-        const inputTokens = result.inputTokens ?? Math.ceil(currentText.length / 4);
-        const outputTokens = result.outputTokens ?? Math.ceil(result.reply.length / 4);
-        const modelMeta = modelRegistry_1.modelRegistry.getModel(result.model);
-        const creditsCost = modelRegistry_1.modelRegistry.calculateActualCreditCost(modelMeta, {
-            promptTokens: inputTokens,
-            completionTokens: outputTokens,
-        });
-        repository_1.whatsappRepository
-            .recordAIUsage({
-            companyId: account.companyId,
-            conversationId: conversation.id,
-            provider: result.provider,
-            model: result.model,
-            inputTokens,
-            outputTokens,
-            aiCreditsUsed: creditsCost,
-        })
-            .catch((err) => console.error("[WHATSAPP_RECORD_AI_USAGE_ERROR]", err));
-        // 5. Update conversation state with intent, summary, and confidence
-        await repository_1.whatsappRepository.updateConversationState(conversation.id, {
-            aiIntent: result.intent,
-            aiSummary: result.reply.slice(0, 100),
-            aiConfidence: result.confidence,
-        });
-        return result;
     }
 }
 exports.WhatsAppAIService = WhatsAppAIService;

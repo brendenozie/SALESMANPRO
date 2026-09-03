@@ -164,12 +164,47 @@ class AICreditLedger {
         });
     }
     /**
+     * Direct atomic charge for fixed-cost AI operations (e.g., store setup wizard, 1-click apply).
+     */
+    async chargeCredits(params) {
+        await this.reserveCredits({
+            companyId: params.companyId,
+            userId: params.userId,
+            amount: params.amount,
+            description: params.description,
+            idempotencyKey: params.idempotencyKey ? `res_${params.idempotencyKey}` : undefined,
+        });
+        return this.finalizeCharge({
+            companyId: params.companyId,
+            userId: params.userId,
+            reservedAmount: params.amount,
+            actualAmount: params.amount,
+            description: params.description,
+            idempotencyKey: params.idempotencyKey,
+            usageData: {
+                capability: "PRODUCT_CONTENT",
+                provider: "PLATFORM",
+                model: "fixed_feature",
+                feature: params.feature,
+            },
+        });
+    }
+    /**
      * Finalizes an AI credit charge.
      * If actual consumption is lower than reserved, refunds the difference.
      * If actual consumption is higher, deducts additional amount.
      */
     async finalizeCharge(params) {
         const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, referenceId, usageData } = params;
+        if (idempotencyKey) {
+            const existingUsage = await prismadb_1.default.aIUsage.findFirst({
+                where: { companyId, idempotencyKey },
+            });
+            if (existingUsage) {
+                const balance = await this.getBalance(companyId);
+                return { transactionId: existingUsage.id, balanceAfter: balance };
+            }
+        }
         const diff = reservedAmount - actualAmount;
         return prismadb_1.default.$transaction(async (tx) => {
             let currentBalance = 0;
@@ -267,6 +302,17 @@ class AICreditLedger {
         if (amount <= 0) {
             const balance = await this.getBalance(companyId);
             return { transactionId: "zero_refund", balanceAfter: balance };
+        }
+        if (idempotencyKey) {
+            const existingTx = await prismadb_1.default.aICreditTransaction.findUnique({
+                where: { idempotencyKey },
+            });
+            if (existingTx) {
+                return {
+                    transactionId: existingTx.id,
+                    balanceAfter: existingTx.balanceAfter ?? (await this.getBalance(companyId)),
+                };
+            }
         }
         return prismadb_1.default.$transaction(async (tx) => {
             const updated = await tx.company.update({

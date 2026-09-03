@@ -9930,4 +9930,95 @@ model PlatformSocialAppConfig {
   @@index([enabled])
 }
 
+model DatabaseBackup {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  backupType         String    // HOURLY, DAILY, WEEKLY, MONTHLY, MANUAL, PRE_DEPLOYMENT, PRE_RESTORE, DISASTER_RECOVERY
+  status             String    // QUEUED, RUNNING, UPLOADING, UPLOADED, VERIFYING, VERIFIED, COMPLETED, FAILED, CORRUPTED, EXPIRED
+  startedAt          DateTime  @default(now())
+  completedAt        DateTime?
+  storageProvider    String    @default("s3")
+  storageBucket      String?
+  storageKey         String?
+  sizeBytes          BigInt?
+  checksum           String?   // SHA-256
+  compression        String?   @default("gzip")
+  encryption         String?   @default("aes-256-gcm")
+  encryptionVersion  String?   @default("v1")
+  schemaVersion      String?   @default("v2")
+  formatVersion      String?   @default("2.0")
+  collectionCount    Int?
+  recordCount        Int?
+  durationMs         Int?
+  serverId           String?
+  workerId           String?
+  triggeredBy        String?
+  failureReason      String?
+  verificationStatus String?   @default("PENDING") // PENDING, VERIFIED, FAILED
+  verifiedAt         DateTime?
+  restoreCount       Int       @default(0)
+  lastRestoredAt     DateTime?
+  restoreTestStatus  String?   @default("UNTESTED") // UNTESTED, PASSED, FAILED
+  restoreTestAt      DateTime?
+  manifest           Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([status])
+  @@index([backupType, createdAt])
+  @@index([createdAt])
+}
+
+model DatabaseRestoreJob {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  backupId            String
+  mode                String    // VALIDATE_ONLY, RESTORE_TO_NEW_DATABASE, RESTORE_TO_PRODUCTION
+  status              String    // QUEUED, RUNNING, PRE_BACKUP, RESTORING, VERIFYING, COMPLETED, FAILED, CANCELLED
+  startedAt           DateTime?
+  completedAt         DateTime?
+  progressPercent     Float?    @default(0)
+  currentCollection   String?
+  collectionsTotal    Int?      @default(0)
+  collectionsDone     Int?      @default(0)
+  recordsTotal        Int?      @default(0)
+  recordsProcessed    Int?      @default(0)
+  recordsRestored     Int?      @default(0)
+  recordsSkipped      Int?      @default(0)
+  recordsFailed       Int?      @default(0)
+  preRestoreBackupId  String?
+  errorMessage        String?
+  errorSummary        Json?
+  requestedBy         String?
+  workerId            String?
+  serverId            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([status])
+  @@index([backupId])
+  @@index([createdAt])
+}
+
+model BackupSystemConfig {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  enabled                Boolean  @default(true)
+  timezone               String   @default("UTC")
+  hourlyEnabled          Boolean  @default(true)
+  dailyEnabled           Boolean  @default(true)
+  weeklyEnabled          Boolean  @default(true)
+  monthlyEnabled         Boolean  @default(true)
+  retentionHourly        Int      @default(48)
+  retentionDaily         Int      @default(30)
+  retentionWeekly        Int      @default(12)
+  retentionMonthly       Int      @default(12)
+  dailyCron              String   @default("0 2 * * *")
+  weeklyCron             String   @default("0 3 * * 0")
+  monthlyCron            String   @default("0 4 1 * *")
+  restoreTestingEnabled  Boolean  @default(true)
+  alertEmail             String?
+  alertsEnabled          Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+
 

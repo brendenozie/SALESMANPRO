@@ -76,7 +76,7 @@ async function cancelOrder(args, context) {
             message: "I couldn't find that order to cancel.",
         };
     }
-    if (order.status === "DELIVERED" || order.status === "SHIPPED") {
+    if (order.status === "COMPLETED" || order.status === "SHIPPED") {
         return {
             success: false,
             action: "cancel_order",

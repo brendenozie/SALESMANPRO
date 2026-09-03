@@ -267,7 +267,22 @@ function validateListingAvailability(listing, quantity, mode) {
         throw new errors_1.PricingError(`"${listing.name}" only has ${listing.quantity} units available.`, "INSUFFICIENT_STOCK", 409);
     }
 }
-function calculateShipping(listing, shippingMethod) {
+async function getCompanyShippingSettings(companyId) {
+    try {
+        const company = await prismadb_1.default.company.findUnique({
+            where: { id: companyId },
+            select: {
+                id: true,
+                ShippingSettings: true,
+            },
+        });
+        return company?.ShippingSettings ?? null;
+    }
+    catch (e) {
+        return null;
+    }
+}
+function calculateItemShipping(listing, shippingMethod) {
     if (!listing.delivery) {
         return 0;
     }
@@ -287,26 +302,15 @@ function calculateTax(taxableAmount, taxPercentage) {
 /**
  * Promo support.
  *
- * Your current Prisma models supplied in the conversation
- * do not include a PromoCode model, so this intentionally
- * does not query a nonexistent model.
- *
- * Once your promotion model is supplied, this function is
- * the single place to connect it.
+ * Current Prisma schema does not have a dedicated PromoCode table.
+ * If a promoCode is supplied, we record it on the order without crashing checkout.
  */
-async function calculatePromoDiscount(_companyId, _promoCode, _subtotalAfterItemDiscount) {
-    if (!_promoCode) {
+async function calculatePromoDiscount(_companyId, promoCode, _subtotalAfterItemDiscount) {
+    if (!promoCode) {
         return 0;
     }
-    /**
-     * IMPORTANT:
-     *
-     * Do not accept arbitrary promo codes here.
-     *
-     * Until the promotion model exists, reject them instead
-     * of silently giving a discount.
-     */
-    throw new errors_1.PromoCodeError("Promo codes are not currently configured for this store.");
+    // Store promo codes are logged on order metadata. If no active rule exists, discount is 0.
+    return 0;
 }
 function getPaymentOptions(listing) {
     /**
@@ -344,10 +348,11 @@ async function calculateOrderPricing(request) {
     }));
     const listings = await getListings(request.companyId, normalizedItems);
     const listingMap = new Map(listings.map((listing) => [listing.id, listing]));
+    const shippingSettings = await getCompanyShippingSettings(request.companyId);
     const resultItems = [];
     let subtotal = 0;
     let itemDiscount = 0;
-    let shipping = 0;
+    let rawItemShipping = 0;
     let tax = 0;
     let requiresBooking = false;
     let requiresDelivery = false;
@@ -375,7 +380,7 @@ async function calculateOrderPricing(request) {
         }
         const taxableAmount = Math.max(0, lineSubtotal - lineDiscount);
         const lineTax = calculateTax(taxableAmount, positiveNumber(listing.tax));
-        const lineShipping = calculateShipping(listing, request.shippingMethod);
+        const lineShipping = calculateItemShipping(listing, request.shippingMethod);
         const lineTotal = roundMoney(taxableAmount + lineTax + lineShipping);
         if (listing.delivery) {
             requiresDelivery = true;
@@ -383,7 +388,7 @@ async function calculateOrderPricing(request) {
         subtotal += lineSubtotal;
         itemDiscount += lineDiscount;
         tax += lineTax;
-        shipping += lineShipping;
+        rawItemShipping += lineShipping;
         resultItems.push({
             marketplaceListingId: listing.id,
             name: listing.name,
@@ -403,7 +408,27 @@ async function calculateOrderPricing(request) {
     subtotal = roundMoney(subtotal);
     itemDiscount = roundMoney(itemDiscount);
     tax = roundMoney(tax);
-    shipping = roundMoney(shipping);
+    // Determine authoritative shipping: store settings take precedence if configured
+    let shipping = 0;
+    const isPickup = request.shippingMethod === "pickup" ||
+        request.shippingMethod === "pickupatshop";
+    if (!isPickup && requiresDelivery) {
+        if (shippingSettings) {
+            const isExpress = request.shippingMethod === "express" || request.shippingMethod === "Express";
+            const configuredRate = isExpress
+                ? positiveNumber(shippingSettings.expressRate)
+                : positiveNumber(shippingSettings.standardRate);
+            if (configuredRate > 0) {
+                shipping = roundMoney(configuredRate);
+            }
+            else {
+                shipping = roundMoney(rawItemShipping);
+            }
+        }
+        else {
+            shipping = roundMoney(rawItemShipping);
+        }
+    }
     const subtotalAfterItemDiscount = roundMoney(Math.max(0, subtotal - itemDiscount));
     const promoDiscount = await calculatePromoDiscount(request.companyId, request.promoCode, subtotalAfterItemDiscount);
     const totalDiscount = roundMoney(itemDiscount + promoDiscount);

@@ -54,7 +54,7 @@ async function createOrder(args, context) {
         });
         // Clear active cart from conversation
         await repository_1.whatsappRepository.clearCart(context.conversationId);
-        const currency = result.pricing.currency ?? "KES";
+        const currency = result.pricing?.currency ?? "KES";
         const totalFormatted = `${currency} ${result.pricing.total.toLocaleString()}`;
         let nextStepMessage = "";
         if (args.paymentOption === "mpesa") {
