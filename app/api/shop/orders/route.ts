@@ -136,6 +136,8 @@ export const POST = withApiHandler(
             pricing: result.pricing,
             trackingNumber: result.trackingNumber,
             payment,
+            authorizationUrl: payment?.authorizationUrl ?? null,
+            checkoutRequestId: (payment as any)?.checkoutRequestId ?? null,
             alreadyExists: result.alreadyExists,
           },
         },

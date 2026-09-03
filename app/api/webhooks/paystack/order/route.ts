@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import crypto from "crypto";
+import * as crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
@@ -24,23 +24,52 @@ export async function POST(req: Request) {
 
     // Only handle successful charge events
     if (event.event === "charge.success") {
-      const reference = data.reference;
-      const amount = data.amount / 100; // Convert from kobo to currency units
+      const reference = String(data.reference || "");
+      const amount = Number(data.amount || 0) / 100; // Convert from kobo/cents to currency units
 
-      // Match order by reference or metadata
+      // Match order by reference, transactionReference, or metadata
       const order = await prisma.customerOrder.findFirst({
-        where: { trackingNumber: reference },
+        where: {
+          OR: [
+            { trackingNumber: reference },
+            { transactionReference: reference },
+            data.metadata?.orderId ? { id: data.metadata.orderId } : undefined,
+            data.metadata?.trackingNumber ? { trackingNumber: data.metadata.trackingNumber } : undefined,
+          ].filter(Boolean) as any,
+        },
       });
 
       if (order) {
-        await prisma.customerOrder.update({
-          where: { id: order.id },
-          data: {
-            status: "PAID",
-            deliveryStatus: "Payment Received",
-          },
-        });
-        // console.log(`✅ Order ${order.trackingNumber} marked as PAID`);
+        // Idempotency check
+        if (order.paymentStatus !== "COMPLETED") {
+          await prisma.$transaction(async (tx) => {
+            await tx.customerOrder.update({
+              where: { id: order.id },
+              data: {
+                paymentStatus: "COMPLETED",
+                paymentMethod: (order.paymentMethod ?? "Paystack") as any,
+                status: "PAID",
+                transactionId: String(data.id || reference),
+                transactionReference: reference,
+                deliveryStatus: "Payment Received",
+              },
+            });
+
+            await tx.payment.create({
+              data: {
+                userId: order.consumerId ?? order.companyId ?? "unknown",
+                orderId: order.id,
+                amount,
+                status: "COMPLETED",
+                transactionId: String(data.id || reference),
+              },
+            });
+          });
+
+          console.log(`✅ [PAYSTACK_WEBHOOK] Order ${order.trackingNumber || order.id} marked as PAID.`);
+        }
+      } else {
+        console.warn(`⚠️ [PAYSTACK_WEBHOOK] Order not found for reference: ${reference}`);
       }
     }
 

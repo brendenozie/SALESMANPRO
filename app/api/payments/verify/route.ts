@@ -55,15 +55,22 @@ export async function GET(req: Request) {
 
     let result: any = null;
 
+    const wantsJson =
+      searchParams.get("format") === "json" ||
+      searchParams.get("json") === "true" ||
+      req.headers.get("accept")?.includes("application/json");
+
     /* -------------------------------------------------------------------------- */
     /*                              PAYSTACK VERIFICATION                         */
     /* -------------------------------------------------------------------------- */
     if (provider === "paystack") {
       if (!reference) {
-        return withCors(
-          { success: false, message: "Missing Paystack reference" },
-          400
-        );
+        if (wantsJson) {
+          return withCors({ success: false, message: "Missing Paystack reference" }, 400);
+        }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+        failureUrl.searchParams.set("message", "Missing Paystack reference");
+        return NextResponse.redirect(failureUrl);
       }
 
       const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
@@ -82,16 +89,15 @@ export async function GET(req: Request) {
 
       const data = await response.json();
       if (!response.ok || !data.status) {
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        if (wantsJson) {
+          return withCors({ success: false, message: "Failed to verify Paystack payment", data }, 400);
+        }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
           `Failed to verify Paystack payment: ${data.message || 'Unknown error'}`
         );
         return NextResponse.redirect(failureUrl);
-        // return NextResponse.json(
-        //   { success: false, message: "Failed to verify Paystack payment", data },
-        //   { status: 400 }
-        // );
       }
 
       const paymentStatus = data.data.status;
@@ -99,24 +105,30 @@ export async function GET(req: Request) {
       const transactionId = data.data.id;
       const email = data.data.customer?.email || null;
 
-      // Find order by reference (tracking number or transactionId)
+      // Find order by trackingNumber, transactionReference, or transactionId
       const order = await prisma.customerOrder.findFirst({
         where: {
-          OR: [{ trackingNumber: reference }, { transactionId: reference }],
+          OR: [
+            { trackingNumber: reference },
+            { transactionReference: reference },
+            { transactionId: String(transactionId) },
+          ],
+        },
+        include: {
+          Company: { select: { id: true, slug: true } },
         },
       });
 
       if (!order) {
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        if (wantsJson) {
+          return withCors({ success: false, message: "Order not found for provided Paystack reference" }, 404);
+        }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
           "Order not found for provided Paystack reference"
         );
         return NextResponse.redirect(failureUrl);
-        // return NextResponse.json(
-        //   { success: false, message: "Order not found for provided Paystack reference" },
-        //   { status: 404 }
-        // );
       }
 
       // If payment succeeded, update both order and payment records
@@ -129,7 +141,7 @@ export async function GET(req: Request) {
               paymentMethod: "Paystack",
               transactionId: transactionId.toString(),
               transactionReference: reference,
-              status: "COMPLETED",
+              status: "PAID",
               deliveryStatus: "Payment Verified",
             },
           });
@@ -141,7 +153,7 @@ export async function GET(req: Request) {
               amount,
             },
             create: {
-              userId: order.consumerId,
+              userId: order.consumerId ?? order.Company?.id ?? "unknown",
               orderId: order.id,
               amount,
               status: "COMPLETED",
@@ -161,6 +173,7 @@ export async function GET(req: Request) {
         status: paymentStatus,
         amount,
         orderTracking: order.trackingNumber,
+        companySlug: order.Company?.slug ?? null,
       };
     }
 
@@ -169,74 +182,81 @@ export async function GET(req: Request) {
     /* -------------------------------------------------------------------------- */
     else if (provider === "mpesa") {
       if (!checkoutRequestId) {
-       const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        if (wantsJson) {
+          return withCors({ success: false, message: "Missing M-Pesa checkoutRequestId" }, 400);
+        }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
         failureUrl.searchParams.set("message", "Missing M-Pesa checkoutRequestId");
         return NextResponse.redirect(failureUrl);
-          // return NextResponse.json(
-          //   { success: false, message: "Missing M-Pesa checkoutRequestId" },
-          //   { status: 400 }
-          // );
       }
 
       // Look up the order that was created during STK push
       const order = await prisma.customerOrder.findFirst({
         where: {
           OR: [
-            { transactionId: checkoutRequestId },
             { transactionReference: checkoutRequestId },
+            { transactionId: checkoutRequestId },
+            { trackingNumber: checkoutRequestId },
           ],
+        },
+        include: {
+          Company: { select: { id: true, slug: true } },
         },
       });
 
       if (!order) {
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        if (wantsJson) {
+          return withCors({ success: false, message: "Order not found for provided CheckoutRequestID" }, 404);
+        }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
           "Order not found for provided M-Pesa CheckoutRequestID"
         );
         return NextResponse.redirect(failureUrl);
-        // return NextResponse.json(
-        //   { success: false, message: "Order not found for provided CheckoutRequestID" },
-        //   { status: 404 }
-        // );
       }
 
-      if (order.paymentStatus === "COMPLETED") {
-        result = {
-          provider: "mpesa",
-          status: "COMPLETED",
-          orderTracking: order.trackingNumber,
-        };
-      } else {
-        result = {
-          provider: "mpesa",
-          status: order.paymentStatus,
-          message: "Status from local record (no live query available)",
-          orderTracking: order.trackingNumber,
-        };
-      }
+      result = {
+        provider: "mpesa",
+        status: order.paymentStatus,
+        orderStatus: order.status,
+        orderTracking: order.trackingNumber,
+        companySlug: order.Company?.slug ?? null,
+      };
     }
 
     /* -------------------------------------------------------------------------- */
     /*                                UNKNOWN PROVIDER                            */
     /* -------------------------------------------------------------------------- */
     else {
-      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+      if (wantsJson) {
+        return withCors({ success: false, message: "Unsupported provider (use paystack or mpesa)" }, 400);
+      }
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
       failureUrl.searchParams.set("message", "Unsupported provider (use paystack or mpesa)");
       return NextResponse.redirect(failureUrl);
-      // return NextResponse.json(
-      //   { success: false, message: "Unsupported provider (use paystack or mpesa)" },
-      //   { status: 400 }
-      // );
     }
 
-    const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/success`);
-    successUrl.searchParams.set("trackingNumber", result.orderTracking);
+    if (wantsJson) {
+      return withCors({ success: true, data: result });
+    }
+
+    if (result.companySlug && result.orderTracking) {
+      const storeSuccessUrl = new URL(
+        `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/site/${result.companySlug}/ecommerce/track`
+      );
+      storeSuccessUrl.searchParams.set("trackingNumber", result.orderTracking);
+      return NextResponse.redirect(storeSuccessUrl);
+    }
+
+    const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/success`);
+    if (result.orderTracking) {
+      successUrl.searchParams.set("trackingNumber", result.orderTracking);
+    }
     return NextResponse.redirect(successUrl);
-    // return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     console.error("Payment verification error:", error);
-    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
     failureUrl.searchParams.set("message", error.message || "Internal server error");
     return NextResponse.redirect(failureUrl);
   }

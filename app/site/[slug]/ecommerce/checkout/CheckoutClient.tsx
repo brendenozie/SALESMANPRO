@@ -116,31 +116,73 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     }
   }, []);
 
-  // Totals
-  const subtotal = useMemo(() => cart.reduce((s: number, i: any) => s + (i.finalPrice || 0) * (i.quantity || 0), 0), [cart]);
-  const shippingCost = useMemo(() => (shipping.method === 'Express' ? shippingSettings.expressRate ?? 0 : shipping.method === 'Standard' ? shippingSettings.standardRate ?? 0 : 0), [shipping.method, shippingSettings]);
-  const discountAmount = useMemo(() => subtotal * discountRate, [subtotal, discountRate]);
-  const total = useMemo(() => subtotal + shippingCost - discountAmount, [subtotal, shippingCost, discountAmount]);
+  // Live Server Pricing
+  const [serverPricing, setServerPricing] = useState<any>(null);
+  const [isPricingLoading, setIsPricingLoading] = useState<boolean>(false);
 
-  // Promo debounce
   useEffect(() => {
-    if (!promoCode) {
-      setPromoMessage('');
-      setDiscountRate(0);
+    if (!storeFormData?.id || cart.length === 0) {
+      setServerPricing(null);
       return;
     }
-    const t = setTimeout(() => {
-      const normalized = promoCode.trim().toUpperCase();
-      if (normalized === 'SAVE10') {
-        setDiscountRate(0.1);
-        setPromoMessage('🎉 10% discount applied!');
-      } else {
-        setDiscountRate(0);
-        setPromoMessage('❌ Invalid promo code. Try SAVE10!');
+
+    let isMounted = true;
+    const fetchPricing = async () => {
+      setIsPricingLoading(true);
+      try {
+        const res = await fetch('/api/shop/pricing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyId: storeFormData.id,
+            items: cart.map((i: any) => ({
+              marketplaceListingId: i.id,
+              quantity: i.quantity,
+              price: i.finalPrice || i.sellingPrice,
+              selectedOptions: i.selectedOptions || [],
+            })),
+            shippingMethod: shipping.method === 'Express' ? 'express' : shipping.method === 'Standard' ? 'standard' : 'pickup',
+            promoCode: promoCode ? promoCode.trim() : undefined,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data?.data) {
+            setServerPricing(data.data);
+            if (promoCode && data.data.totalDiscount > 0) {
+              setPromoMessage('🎉 Promo code discount applied!');
+            } else if (promoCode) {
+              setPromoMessage('ℹ️ Promo code recorded for this order.');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Live pricing query failed, using local estimate', err);
+      } finally {
+        if (isMounted) setIsPricingLoading(false);
       }
-    }, 350);
-    return () => clearTimeout(t);
-  }, [promoCode]);
+    };
+
+    const timer = setTimeout(fetchPricing, 350);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [storeFormData?.id, cart, shipping.method, promoCode]);
+
+  // Authoritative Totals (Server First, Local Fallback)
+  const localSubtotal = useMemo(() => cart.reduce((s: number, i: any) => s + (i.finalPrice || 0) * (i.quantity || 0), 0), [cart]);
+  const subtotal = useMemo(() => serverPricing?.subtotal ?? localSubtotal, [serverPricing, localSubtotal]);
+  const shippingCost = useMemo(() => {
+    if (serverPricing?.shipping !== undefined) return serverPricing.shipping;
+    return shipping.method === 'Express'
+      ? shippingSettings.expressRate ?? 0
+      : shipping.method === 'Standard'
+      ? shippingSettings.standardRate ?? 0
+      : 0;
+  }, [serverPricing, shipping.method, shippingSettings]);
+  const discountAmount = useMemo(() => serverPricing?.totalDiscount ?? (subtotal * discountRate), [serverPricing, subtotal, discountRate]);
+  const total = useMemo(() => serverPricing?.total ?? (subtotal + shippingCost - discountAmount), [serverPricing, subtotal, shippingCost, discountAmount]);
 
   const updateBilling = useCallback((patch: Partial<typeof billing>) => setBilling((s) => ({ ...s, ...patch })), []);
   const updateShipping = useCallback((patch: Partial<typeof shipping>) => setShipping((s) => ({ ...s, ...patch })), []);
@@ -266,18 +308,18 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
 
       const { data: orderResponse } = await res.json();
 
-      if (payment.method === 'paystack' && orderResponse?.authorizationUrl) {
-        router.push(orderResponse.authorizationUrl);
+      const authUrl =
+        orderResponse?.authorizationUrl ||
+        orderResponse?.payment?.authorizationUrl ||
+        orderResponse?.checkoutUrl;
+
+      if ((payment.method === 'paystack' || payment.method === 'ghuba') && authUrl) {
+        window.location.href = authUrl;
         return;
       }
-      if (payment.method === 'ghuba' && orderResponse?.authorizationUrl) {
-          // router.push(orderResponse.checkoutUrl);
-          router.push(orderResponse.authorizationUrl);
-          return;
-      }
-      if (payment.method === 'paypal' && orderResponse?.approveLink) {
-          router.push(orderResponse.approveLink);
-          return;
+      if (payment.method === 'paypal' && (orderResponse?.approveLink || authUrl)) {
+        window.location.href = orderResponse?.approveLink || authUrl;
+        return;
       }
 
       if (!orderResponse?.trackingNumber) throw new Error('Server did not return a tracking number');
@@ -294,6 +336,11 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
   };
 
   if (isOrderPlaced) {
+    const slug = storeFormData?.slug;
+    const trackingHref = slug
+      ? `/site/${slug}/ecommerce/track?trackingNumber=${trackingNumber}`
+      : `/ecommerce/track?trackingNumber=${trackingNumber}`;
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white p-6">
         <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={400} />
@@ -302,10 +349,23 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
             <CheckCircleIcon className="w-16 h-16 text-green-600" />
           </div>
           <h2 className="text-3xl font-extrabold text-gray-800">Order Placed!</h2>
-          <p className="mt-2 text-gray-600">Thanks — your order is confirmed.</p>
+          <p className="mt-2 text-gray-600">Thanks — your order has been received.</p>
           <p className="mt-2 text-indigo-600 font-medium">Tracking Number: <span className="font-semibold">{trackingNumber}</span></p>
+
+          {payment.method === 'mpesa' && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 my-4 text-left">
+              <p className="text-emerald-900 font-bold text-sm flex items-center gap-2">
+                <TagIcon className="w-5 h-5 text-emerald-600" />
+                M-Pesa STK Prompt Sent
+              </p>
+              <p className="text-emerald-800 text-xs mt-1">
+                Please check your phone ({payment.mpesaPhone || billing.phone}) and enter your M-Pesa PIN. You can track payment confirmation in real-time below.
+              </p>
+            </div>
+          )}
+
           <div className="mt-6 grid gap-3">
-            <button onClick={() => router.push(`/shop/orderTracking?trackingnumber=${trackingNumber}`)} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
+            <button onClick={() => router.push(trackingHref)} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">
               Track Your Order
             </button>
             <button onClick={() => router.push('/')} className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2">

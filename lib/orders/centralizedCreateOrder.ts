@@ -329,15 +329,35 @@ export async function createOrder(
         },
       });
 
-      // Stock Decrement Loop
+      // Stock Decrement Loop with Atomic Concurrency Check
       for (const pItem of pricing.items) {
         if (pItem.pricingMode === "PRODUCT") {
+          const currentListing = await tx.marketplaceListings.findUnique({
+            where: { id: pItem.marketplaceListingId },
+            select: { id: true, name: true, quantity: true, isAvailable: true },
+          });
+
+          if (!currentListing) {
+            throw new Error(
+              `Item "${pItem.name || pItem.marketplaceListingId}" is no longer available.`,
+            );
+          }
+
+          if (currentListing.quantity < pItem.quantity) {
+            throw new Error(
+              `Insufficient stock for "${currentListing.name}". Available: ${currentListing.quantity}, Requested: ${pItem.quantity}`,
+            );
+          }
+
           await tx.marketplaceListings.update({
             where: { id: pItem.marketplaceListingId },
             data: {
               quantity: {
                 decrement: pItem.quantity,
               },
+              ...(currentListing.quantity - pItem.quantity <= 0
+                ? { isAvailable: false }
+                : {}),
             },
           });
         }

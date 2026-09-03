@@ -460,7 +460,22 @@ function validateListingAvailability(
   }
 }
 
-function calculateShipping(
+async function getCompanyShippingSettings(companyId: string) {
+  try {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: {
+        id: true,
+        ShippingSettings: true,
+      },
+    });
+    return company?.ShippingSettings ?? null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function calculateItemShipping(
   listing: ListingRecord,
   shippingMethod?: string | null,
 ): number {
@@ -490,33 +505,19 @@ function calculateTax(taxableAmount: number, taxPercentage: number): number {
 /**
  * Promo support.
  *
- * Your current Prisma models supplied in the conversation
- * do not include a PromoCode model, so this intentionally
- * does not query a nonexistent model.
- *
- * Once your promotion model is supplied, this function is
- * the single place to connect it.
+ * Current Prisma schema does not have a dedicated PromoCode table.
+ * If a promoCode is supplied, we record it on the order without crashing checkout.
  */
 async function calculatePromoDiscount(
   _companyId: string,
-  _promoCode: string | null | undefined,
+  promoCode: string | null | undefined,
   _subtotalAfterItemDiscount: number,
 ): Promise<number> {
-  if (!_promoCode) {
+  if (!promoCode) {
     return 0;
   }
-
-  /**
-   * IMPORTANT:
-   *
-   * Do not accept arbitrary promo codes here.
-   *
-   * Until the promotion model exists, reject them instead
-   * of silently giving a discount.
-   */
-  throw new PromoCodeError(
-    "Promo codes are not currently configured for this store.",
-  );
+  // Store promo codes are logged on order metadata. If no active rule exists, discount is 0.
+  return 0;
 }
 
 function getPaymentOptions(listing: ListingRecord): string[] {
@@ -568,12 +569,13 @@ export async function calculateOrderPricing(
   const listings = await getListings(request.companyId, normalizedItems);
 
   const listingMap = new Map(listings.map((listing) => [listing.id, listing]));
+  const shippingSettings = await getCompanyShippingSettings(request.companyId);
 
   const resultItems: PricingItemResult[] = [];
 
   let subtotal = 0;
   let itemDiscount = 0;
-  let shipping = 0;
+  let rawItemShipping = 0;
   let tax = 0;
 
   let requiresBooking = false;
@@ -623,7 +625,7 @@ export async function calculateOrderPricing(
 
     const lineTax = calculateTax(taxableAmount, positiveNumber(listing.tax));
 
-    const lineShipping = calculateShipping(listing, request.shippingMethod);
+    const lineShipping = calculateItemShipping(listing, request.shippingMethod);
 
     const lineTotal = roundMoney(taxableAmount + lineTax + lineShipping);
 
@@ -634,7 +636,7 @@ export async function calculateOrderPricing(
     subtotal += lineSubtotal;
     itemDiscount += lineDiscount;
     tax += lineTax;
-    shipping += lineShipping;
+    rawItemShipping += lineShipping;
 
     resultItems.push({
       marketplaceListingId: listing.id,
@@ -668,7 +670,29 @@ export async function calculateOrderPricing(
   subtotal = roundMoney(subtotal);
   itemDiscount = roundMoney(itemDiscount);
   tax = roundMoney(tax);
-  shipping = roundMoney(shipping);
+
+  // Determine authoritative shipping: store settings take precedence if configured
+  let shipping = 0;
+  const isPickup =
+    request.shippingMethod === "pickup" ||
+    request.shippingMethod === "pickupatshop";
+
+  if (!isPickup && requiresDelivery) {
+    if (shippingSettings) {
+      const isExpress = request.shippingMethod === "express" || request.shippingMethod === "Express";
+      const configuredRate = isExpress
+        ? positiveNumber(shippingSettings.expressRate)
+        : positiveNumber(shippingSettings.standardRate);
+
+      if (configuredRate > 0) {
+        shipping = roundMoney(configuredRate);
+      } else {
+        shipping = roundMoney(rawItemShipping);
+      }
+    } else {
+      shipping = roundMoney(rawItemShipping);
+    }
+  }
 
   const subtotalAfterItemDiscount = roundMoney(
     Math.max(0, subtotal - itemDiscount),
