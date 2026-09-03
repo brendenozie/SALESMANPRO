@@ -120,11 +120,11 @@ async function runVerification() {
     scuId: "OSCU123456",
     qrCodeUrl: "https://etims.kra.go.ke/receipt?pin=P051234567Z",
     taxBreakdown: {
-      A: { taxableAmount: 1000, taxAmount: 160 },
-      B: { taxableAmount: 0, taxAmount: 0 },
-      C: { taxableAmount: 0, taxAmount: 0 },
-      D: { taxableAmount: 0, taxAmount: 0 },
-      E: { taxableAmount: 0, taxAmount: 0 },
+      A: { taxCode: "A", taxRate: 16, taxableAmount: 1000, taxAmount: 160 },
+      B: { taxCode: "B", taxRate: 0, taxableAmount: 0, taxAmount: 0 },
+      C: { taxCode: "C", taxRate: 0, taxableAmount: 0, taxAmount: 0 },
+      D: { taxCode: "D", taxRate: 8, taxableAmount: 0, taxAmount: 0 },
+      E: { taxCode: "E", taxRate: 0, taxableAmount: 0, taxAmount: 0 },
     },
   };
 

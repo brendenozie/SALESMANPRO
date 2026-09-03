@@ -307,11 +307,14 @@ export class OSCUAdapter implements ETIMSProvider {
   async checkHealth(config: KraConfiguration): Promise<{ ok: boolean; message: string; latencyMs: number }> {
     const baseUrl = this.getBaseUrl(config);
     const start = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     try {
       const res = await fetch(`${baseUrl}/etims-api/health`, {
         method: "GET",
-        signal: AbortSignal.timeout(5000),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const latencyMs = Date.now() - start;
       return {
         ok: res.ok,
@@ -319,6 +322,7 @@ export class OSCUAdapter implements ETIMSProvider {
         latencyMs,
       };
     } catch (error: any) {
+      clearTimeout(timeout);
       const latencyMs = Date.now() - start;
       // In sandbox, treat as simulated healthy if endpoint isn't listening
       if (config.environment === "sandbox") {

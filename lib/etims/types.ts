@@ -42,6 +42,7 @@ export interface ETIMSTaxRateInfo {
 export interface ETIMSItemLine {
   itemSeq: number;
   itemCode: string;
+  itemId?: string;
   itemClassificationCode: string; // UNSPSC / KRA HS code
   itemName: string;
   taxTypeCode: ETIMSTaxCode;
