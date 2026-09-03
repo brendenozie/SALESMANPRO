@@ -54,6 +54,9 @@ export const unifiedOrderSchema = z.object({
   notes: z.string().optional(),
   trackingNumber: z.string().optional(),
   idempotencyKey: z.string().uuid().optional(),
+  customerPin: z.string().optional(),
+  terminalId: z.string().optional(),
+  cashierName: z.string().optional(),
   paymentData: z.record(z.string(), z.any()).optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });

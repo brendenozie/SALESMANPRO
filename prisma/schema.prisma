@@ -485,7 +485,7 @@ model Company {
   userProgresses       UserProgress[]
   socialIntegrations   SocialIntegration[]
   kraConfigurations    KraConfiguration[]
-
+  etimsInvoices        ETIMSInvoice[]
   whatsappAccounts       WhatsAppAccount[]
   whatsappContacts       WhatsAppContact[]
   whatsappConversations  WhatsAppConversation[]
@@ -1541,30 +1541,131 @@ model CompanyAddress {
   @@index([companyId])
 }
 
-//Etims Configuration
+// eTIMS Configuration
 model KraConfiguration {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])
-  companyId String  @unique @db.ObjectId // Changed to @unique assuming 1 configuration per tenant company
+  companyId String  @unique @db.ObjectId // 1 configuration per tenant company
 
-  // eTIMS Operational Toggles
-  etimsEnabled Boolean @default(false)
-  environment  String  @default("sandbox") // 'sandbox' or 'production'
-  etimsUrl     String? // KRA Sandbox or Production base URL
+  // Statutory & Operational Invoicing Toggles
+  invoicingRequirement String   @default("NOT_CONFIGURED") // REQUIRED, ENABLED, NOT_APPLICABLE, NOT_CONFIGURED
+  integrationMode      String   @default("OSCU") // OSCU, VSCU
+  status               String   @default("PENDING_SETUP") // NOT_CONFIGURED, PENDING_SETUP, ACTIVE, SUSPENDED, ERROR, DISCONNECTED
+  etimsEnabled         Boolean  @default(false)
+  environment          String   @default("sandbox") // 'sandbox' or 'production'
+  etimsUrl             String?  // Custom KRA base URL if needed
+
+  // Business Identity
+  businessName         String?
+  taxpayerName         String?
+  taxOffice            String?
 
   // Authentication & Onboarding
-  kraPin     String // KRA PIN for tax purposes
-  branchId   String  @default("00") // Default to head office '00'
-  managerKey String? // The platform or account level eTIMS API Manager Key
-  deviceId   String? // System/Device Serial Number assigned by KRA after onboarding
+  kraPin     String   // Taxpayer KRA PIN (e.g. P051234567Z)
+  branchId   String   @default("00") // Default to head office '00'
+  branchName String?  @default("Head Office")
+  branches   Json?    // Multi-branch directory [{ branchId: "00", branchName: "Main", deviceId: "..." }]
+  terminals  Json?    // Multi-paypoint/till directory [{ terminalId: "T01", name: "Till 1", deviceId: "..." }]
+  managerKey String?  // Encrypted platform or account level eTIMS API Manager Key
+  deviceId   String?  // System/Device Serial Number assigned by KRA after onboarding
 
   // Transaction Keys & Session State
-  cmcKey     String? // Encrypted Communication Key received during initialization
-  lastInitAt DateTime? // Crucial for managing the 24-hour key lifecycle
+  cmcKey     String?  // Encrypted Communication Key received during initialization
+  lastInitAt DateTime? // Managing the key lifecycle
+
+  // Printing & Defaults
+  defaultTaxCode   String   @default("A") // Default to A (16% VAT)
+  autoPrintReceipt Boolean  @default(true)
+  offlineAllowed   Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Authoritative eTIMS Fiscal Invoice Record
+model ETIMSInvoice {
+  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  companyId           String        @db.ObjectId
+  company             Company       @relation(fields: [companyId], references: [id])
+
+  orderId             String?       @db.ObjectId
+  order               CustomerOrder? @relation(fields: [orderId], references: [id])
+  orderTrackingNumber String?
+
+  branchId            String        @default("00")
+  branchName          String?
+  deviceId            String?
+  terminalId          String?
+  cashierId           String?
+  cashierName         String?
+
+  integrationMode     String        @default("OSCU") // OSCU | VSCU
+  invoiceType         String        @default("ORIGINAL") // ORIGINAL | CREDIT_NOTE | DEBIT_NOTE
+
+  invoiceNumber       String        @unique // Authoritative KRA fiscal invoice number or device invoice number
+  originalInvoiceNumber String?     // For Credit Note reference
+  creditNoteReason    String?
+
+  kraPin              String
+  customerPin         String?
+  customerName        String?
+
+  totalAmount         Float
+  taxableAmount       Float
+  taxAmount           Float
+  totalDiscount       Float         @default(0)
+  taxBreakdown        Json          // { A: { taxable: 100, tax: 16 }, B: { taxable: 50, tax: 0 }, ... }
+  items               Json          // Snapshot of line items (itemCode, hsCode, taxType, unitPrice, qty, total, tax)
+
+  paymentMethod       String        @default("CASH") // CASH, CARD, MOBILE_MONEY, SPLIT
+
+  // KRA Fiscal Response Parameters
+  submissionStatus    String        @default("PENDING") // NOT_REQUIRED, PENDING, QUEUED, SUBMITTING, CONFIRMED, FAILED, RETRYING, CANCELLED
+  controlCode         String?       // KRA SCU Receipt Signature / Control Code
+  scuId               String?       // KRA SDC / SCU ID
+  internalData        String?       // KRA internal verification block
+  qrCodeUrl           String?       // KRA verification URL (rendered as QR code on receipt)
+  receiptDate         DateTime?
+
+  requestId           String?
+  responseId          String?
+  errorCode           String?
+  errorMessage        String?
+  retryCount          Int           @default(0)
+  idempotencyKey      String?       @unique
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  SyncEvents          ETIMSSyncEvent[]
+
+  @@index([companyId, submissionStatus])
+  @@index([companyId, createdAt])
+  @@index([orderId])
+}
+
+// eTIMS Queue & Retry Event Log
+model ETIMSSyncEvent {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  companyId      String        @db.ObjectId
+  invoiceId      String?       @db.ObjectId
+  invoice        ETIMSInvoice? @relation(fields: [invoiceId], references: [id])
+
+  eventType      String        // SUBMIT_INVOICE, RETRY_INVOICE, CREDIT_NOTE, SYNC_STATUS, HANDSHAKE
+  status         String        @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  payload        Json?
+  response       Json?
+  errorMessage   String?
+  attempts       Int           @default(0)
+  nextAttemptAt  DateTime?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([companyId, status])
+  @@index([nextAttemptAt])
+}
+
 
 // This model represents the integration of a company's account with various social media platforms.
 model SocialIntegration {
@@ -3906,6 +4007,7 @@ model CustomerOrder {
   sourceEventId String?
 
   externalReference String?
+  etimsInvoices     ETIMSInvoice[]
 
   // ============================================================
   // INDEXES

@@ -15,10 +15,14 @@ import {
   CalendarIcon,
   TagIcon,
   WalletIcon,
+  ShieldCheckIcon,
+  DocumentTextIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
 import { Company } from '@prisma/client';
+import { receiptRenderer } from '@/lib/receipts/receiptRenderer';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api";
 
@@ -283,6 +287,10 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // Add these state variables at the top of your POS component
   const [isSplit, setIsSplit] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [etimsConfig, setEtimsConfig] = useState<any>(null);
+  const [customerPin, setCustomerPin] = useState('');
+  const [lastSaleReceipt, setLastSaleReceipt] = useState<any>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
  
   // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
@@ -396,12 +404,23 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       setCompanyInfo({
         name: 'Your Awesome Store',
         address: '123 Main St, Nairobi, Kenya',
-        phone: '+254 7XX XXX XXX',
         currency: 'KES',
       } as CompanyInfo);
     };
+    const fetchEtimsConfig = async () => {
+      try {
+        const res = await fetch(`/api/admin/etims/config?companyId=${companyId}`);
+        if (res.ok) {
+          const json = await res.json();
+          setEtimsConfig(json.data?.config);
+        }
+      } catch (e) {
+        console.error("Failed to load store eTIMS config:", e);
+      }
+    };
     fetchAgentInfo();
     fetchCompanyInfo();
+    fetchEtimsConfig();
   }, [companyId, userId, userName]);
 
   // -----------------------------------------------------
@@ -536,6 +555,9 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       paymentOption: isPending ? "pending" : (isSplit ? "split" : splits[0].method),
       totalPrice: subtotal,
       totalFinalPrice: finalTotal,
+      customerPin: customerPin ? customerPin.trim() : undefined,
+      terminalId: "T01",
+      cashierName: currentAgent?.name || userName || "Cashier",
       items: cart.map(item => ({
         marketplaceListingId: item.id,
         quantity: item.quantity,
@@ -547,7 +569,9 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       paymentData: {
         notes: `POS Sale by ${currentAgent?.name} ${isPending ? '[CREDIT/PENDING]' : ''}`,
         discountApplied: totalDiscountAmount,
-        // Pass breakdown details to backend for ledger logging
+        customerPin: customerPin ? customerPin.trim() : undefined,
+        cashierName: currentAgent?.name || userName || "Cashier",
+        paymentMethodDetails: isPending ? "PENDING/CREDIT" : (isSplit ? "SPLIT BILL" : splits[0].method.toUpperCase()),
         paymentBreakdown: isPending ? [] : splits,
       }
     };
@@ -564,35 +588,20 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       
       setPaymentStatus('success');
 
-      const now = new Date();
-      const receiptDetails = {
-        cart: cart.map(item => ({
-          ...item,
-          finalPrice: item.finalPrice || 0,
-          subtotal: item.subtotal - (item.discount || 0),
-          category: item.category || "General",
-        })),
-        subtotal: subtotal,
-        totalDiscountAmount: totalDiscountAmount,
-        totalTax: totalTax,
-        finalTotal: finalTotal,
-        agentId: currentAgent?.id || 'N/A',
-        agentName: currentAgent?.name || 'N/A', 
-        transactionId: result.data.trackingNumber, 
-        date: now.toISOString().split('T')[0], 
-        time: now.toTimeString().split(' ')[0], 
-        storeName: companyInfo?.name || 'Store',
-        storeAddress: companyInfo?.address || 'Address',
-        storePhone: companyInfo?.contactPhone || 'Phone',
-        currencySymbol: currencySymbol,
-        paymentMethodDetails: isPending ? "PENDING/CREDIT" : (isSplit ? "SPLIT BILL" : splits[0].method.toUpperCase())
-      };
+      // Unified Dual Receipt Printing (Mode A eTIMS vs Mode B Standard)
+      if (result.data?.receipt) {
+        setLastSaleReceipt(result.data.receipt);
+        setShowSuccessModal(true);
 
-      printReceipt(generateReceiptHtml(receiptDetails), receiptDetails);
+        if (result.data.receipt.html) {
+          receiptRenderer.printReceipt(result.data.receipt.html, result.data.receipt.escPos);
+        }
+      }
 
       // Reset workflow
       setCart([]);
       setDiscountPercentage(0);
+      setCustomerPin('');
       setShowPaymentModal(false);
 
     } catch (error: any) {
@@ -741,7 +750,24 @@ const handleProcessPayment = useCallback(() => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* eTIMS Compliance Status Badge */}
+          {etimsConfig?.invoicingRequirement === 'REQUIRED' || etimsConfig?.status === 'ACTIVE' ? (
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-full text-xs font-bold shadow-sm">
+              <ShieldCheckIcon className="w-4 h-4 text-emerald-600" />
+              KRA eTIMS Fiscal POS
+            </span>
+          ) : etimsConfig?.invoicingRequirement === 'NOT_APPLICABLE' ? (
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-full text-xs font-medium">
+              <DocumentTextIcon className="w-4 h-4 text-zinc-500" />
+              Standard Sales POS
+            </span>
+          ) : (
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 rounded-full text-xs font-medium">
+              eTIMS Pending
+            </span>
+          )}
+
           <div className="text-right hidden md:block">
             <p className="text-xs font-medium text-zinc-500">Active Agent</p>
             <p className="text-sm font-bold">{userName}</p>
@@ -1229,6 +1255,26 @@ const handleProcessPayment = useCallback(() => {
                   )}
                 </div>
 
+                {/* B2B / Customer Tax PIN */}
+                <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+                    Customer KRA PIN (Optional — for VAT Tax Invoice)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. P051234567Z"
+                    maxLength={11}
+                    value={customerPin}
+                    onChange={(e) => setCustomerPin(e.target.value.toUpperCase())}
+                    className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:ring-1 focus:ring-indigo-500 font-mono uppercase tracking-wider"
+                  />
+                  {etimsConfig?.invoicingRequirement === 'REQUIRED' && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                      <ShieldCheckIcon className="w-3.5 h-3.5" /> Authoritative KRA eTIMS transmission enabled.
+                    </p>
+                  )}
+                </div>
+
                 {/* Actions */}
                 <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex gap-3">
                   <button
@@ -1247,6 +1293,75 @@ const handleProcessPayment = useCallback(() => {
                   </button>
                 </div>
 
+              </div>
+            </div>
+          )}
+
+          {/* POST-SALE SUCCESS & FISCAL CONFIRMATION MODAL */}
+          {showSuccessModal && lastSaleReceipt && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+              <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6 text-center animate-in zoom-in-95 duration-150">
+                {lastSaleReceipt.mode === 'ETIMS' ? (
+                  <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShieldCheckIcon className="w-9 h-9" />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircleIcon className="w-9 h-9" />
+                  </div>
+                )}
+
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white">
+                  {lastSaleReceipt.mode === 'ETIMS' ? 'eTIMS Fiscal Sale Confirmed' : 'Sale Completed'}
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Receipt #{lastSaleReceipt.details?.trackingNumber}
+                </p>
+
+                {lastSaleReceipt.mode === 'ETIMS' && lastSaleReceipt.details?.controlCode && (
+                  <div className="my-4 p-3.5 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700 text-left text-xs font-mono space-y-2">
+                    <div>
+                      <span className="text-zinc-400 font-sans text-[10px] uppercase font-bold block">KRA SCU Control Code:</span>
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm tracking-wider">{lastSaleReceipt.details.controlCode}</span>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-zinc-200 dark:border-zinc-700/60">
+                      <div>
+                        <span className="text-zinc-400 font-sans text-[10px] uppercase font-bold block">Fiscal Invoice:</span>
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">{lastSaleReceipt.details.invoiceNumber}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-zinc-400 font-sans text-[10px] uppercase font-bold block">Taxpayer PIN:</span>
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-200">{lastSaleReceipt.details.kraPin || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const reprintData = {
+                        ...lastSaleReceipt.details,
+                        isReprint: true,
+                        reprintedAt: new Date().toLocaleString(),
+                      };
+                      const reprintHtml = receiptRenderer.renderHtml(reprintData, lastSaleReceipt.mode);
+                      const reprintEscPos = receiptRenderer.renderEscPos(reprintData, lastSaleReceipt.mode);
+                      receiptRenderer.printReceipt(reprintHtml, reprintEscPos);
+                    }}
+                    className="flex-1 py-3 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 font-bold text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition active:scale-98"
+                  >
+                    Reprint Receipt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuccessModal(false)}
+                    className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-600/20 transition active:scale-98"
+                  >
+                    New Sale
+                  </button>
+                </div>
               </div>
             </div>
           )}
