@@ -1,69 +1,80 @@
-// app/admin/clients/page.tsx
-
 import React from "react";
-import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
+import { canAccessCompanyAdmin } from "@/lib/auth/authorization";
+import prisma from "@/server/db/prismadb";
+import {
+  getStorePaymentMetrics,
+  getStorePaymentTransactions,
+} from "@/lib/payments/reportingService";
 import PaymentsClient from "./PaymentsClient";
-import { getAuthSession } from '@/lib/auth';
-import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-export type Client = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  totalSales: number;
-  recentTransactionAmount: number;
-  recentTransactionDate: string;
-  status: "new" | "active";
-};
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export default async function StorePaymentsPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-/**
- * Server Component that fetches clients on every request
- * (next: { revalidate: 60 }) and passes the array down to the client side.
- */
-export default async function ClientsPage(_: PageProps) {
-  let clientsData: Client[] = [];
-  const cookieHeader = (await cookies()).toString();
+  if (!session?.user?.id) {
+    redirect(
+      "https://auth.salesmanpro.site/signin?callbackUrl=" +
+        encodeURIComponent(`https://salesmanpro.site/admin/${slug}/payments`)
+    );
+  }
 
-  
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
+  const user = session.user as any;
+  const identifier = slug || user.id;
+  const company = await findCompanyCached(identifier, "page");
 
-  // try {
-  //   const res = await fetch(`${apiBaseUrl}/admin/clients`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
-  //   if (res.ok) {
-  //     clientsData = (await res.json()).data as Client[];
-  //   } else {
-  //     console.error(
-  //       "[ClientsPage] Failed to fetch clients →",
-  //       res.status,
-  //       res.statusText
-  //     );
-  //   }
-  // } catch (err: any) {
-  //   console.error("[ClientsPage] Error fetching clients →", err.message);
-  // }
+  if (!company) {
+    notFound();
+  }
 
-  return <PaymentsClient  />;
+  const staff = await prisma.staffProfile.findUnique({
+    where: { userId: user.id },
+    select: { companyId: true },
+  });
+
+  const isAuthorized =
+    user.role === "SUPER_ADMIN" ||
+    canAccessCompanyAdmin({
+      user: {
+        id: user.id,
+        role: user.role,
+        companyId: user.companyId,
+        emailVerified: user.emailVerified,
+        isActive: user.isActive,
+      },
+      company: { id: company.id, userId: company.userId },
+      staffCompanyId: staff?.companyId,
+    });
+
+  if (!isAuthorized) {
+    redirect("/unauthorized?reason=forbidden");
+  }
+
+  // Pre-load 30-day metrics and transactions on server
+  const [metrics, transactionData] = await Promise.all([
+    getStorePaymentMetrics(company.id, { period: "30days" }),
+    getStorePaymentTransactions({
+      companyId: company.id,
+      period: "30days",
+      page: 1,
+      pageSize: 25,
+    }),
+  ]);
+
+  return (
+    <PaymentsClient
+      companyId={company.id}
+      companyName={company.name}
+      slug={slug}
+      initialMetrics={metrics}
+      initialTransactions={transactionData.transactions}
+      initialPagination={transactionData.pagination}
+    />
+  );
 }

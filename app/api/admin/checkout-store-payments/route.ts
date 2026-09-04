@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { canAccessCompanyAdmin } from "@/lib/auth/authorization";
 import prisma from "@/server/db/prismadb";
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { getStorePaymentTransactions } from "@/lib/payments/reportingService";
 
-export type PaymentStatus = "INITIATED" | "PENDING" | "COMPLETED";
+export type PaymentStatus = "INITIATED" | "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
 export type PaymentOption =
   | "cod"
   | "pickupatshop"
@@ -25,168 +27,114 @@ export interface OrderPayment {
   paymentOption: PaymentOption;
   paymentStatus: PaymentStatus;
   date: string;
+  grossAmount?: number;
+  feeAmount?: number;
+  netAmount?: number;
+  channel?: string;
+  provider?: string;
 }
-
-const MOCK_PAYMENTS: OrderPayment[] = [
-  // {
-  //   id: "1",
-  //   trackingNumber: "TRK-2605-A8F9B2",
-  //   customerName: "Alice Kamau",
-  //   companyId: "tulivuapps",
-  //   totalFinalPrice: 4500,
-  //   paymentOption: "mpesa",
-  //   paymentStatus: "COMPLETED",
-  //   date: "2026-08-06T10:30:00Z",
-  // },
-  // {
-  //   id: "2",
-  //   trackingNumber: "TRK-2605-B9C8D7",
-  //   customerName: "John Doe",
-  //   companyId: "tulivuapps",
-  //   totalFinalPrice: 12500,
-  //   paymentOption: "stripe",
-  //   paymentStatus: "PENDING",
-  //   date: "2026-08-06T11:15:00Z",
-  // },
-  // {
-  //   id: "3",
-  //   trackingNumber: "TRK-2605-E3F4G5",
-  //   customerName: "Mercy Wanjiku",
-  //   companyId: "salesmanpro",
-  //   totalFinalPrice: 3200,
-  //   paymentOption: "ghuba",
-  //   paymentStatus: "COMPLETED",
-  //   date: "2026-08-05T14:20:00Z",
-  // },
-  // {
-  //   id: "4",
-  //   trackingNumber: "TRK-2605-Z1X2C3",
-  //   customerName: "Brenden",
-  //   companyId: "tulivuapps",
-  //   totalFinalPrice: 800,
-  //   paymentOption: "cash",
-  //   paymentStatus: "COMPLETED",
-  //   date: "2026-08-05T09:00:00Z",
-  // },
-  // {
-  //   id: "5",
-  //   trackingNumber: "TRK-2605-Q7W8E9",
-  //   customerName: "David Ochieng",
-  //   companyId: "salesmanpro",
-  //   totalFinalPrice: 5600,
-  //   paymentOption: "paystack",
-  //   paymentStatus: "PENDING",
-  //   date: "2026-08-04T16:45:00Z",
-  // },
-  // {
-  //   id: "6",
-  //   trackingNumber: "TRK-2605-K3L4M5",
-  //   customerName: "Grace Muthoni",
-  //   companyId: "tulivuapps",
-  //   totalFinalPrice: 9400,
-  //   paymentOption: "mpesa",
-  //   paymentStatus: "COMPLETED",
-  //   date: "2026-08-03T08:12:00Z",
-  // },
-];
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success || !auth.user) {
+      return NextResponse.json(
+        { success: false, message: auth.error || "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get("companyId");
-    const status = searchParams.get("status");
 
-    const cacheKey = `admin:payments:${companyId || "global"}:${status || "all"}`;
-
-    // Attempt Cache Retrieval
-    try {
-      if (typeof cacheGet === "function") {
-        const cached = await cacheGet(cacheKey);
-        if (cached) {
-          return NextResponse.json({
-            success: true,
-            data: cached,
-            source: "cache",
-          });
-        }
-      }
-    } catch {
-      // Continue if cache fails
+    if (!companyId) {
+      return NextResponse.json(
+        { success: false, message: "Missing required companyId" },
+        { status: 400 }
+      );
     }
 
-    let payments: OrderPayment[] = [];
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { id: true, userId: true },
+    });
 
-    // Attempt Live Database Fetch
-    try {
-      if (prisma && (prisma as any).customerOrder) {
-        const whereClause: any = {};
-        if (companyId) whereClause.companyId = companyId;
-        if (status) whereClause.paymentStatus = status;
-
-        const dbOrders = await (prisma as any).customerOrder.findMany({
-          where: whereClause,
-          orderBy: { createdAt: "desc" },
-          take: 50,
-        });
-
-        if (dbOrders && dbOrders.length > 0) {
-          payments = dbOrders.map((order: any) => ({
-            id: order.id,
-            trackingNumber: order.trackingNumber || order.id.slice(0, 8),
-            customerName: order.customerName || "Guest",
-            companyId: order.companyId,
-            totalFinalPrice: Number(order.totalFinalPrice || order.total || 0),
-            paymentOption: (
-              order.paymentOption || "pending"
-            ).toLowerCase() as PaymentOption,
-            paymentStatus: (
-              order.paymentStatus || "PENDING"
-            ).toUpperCase() as PaymentStatus,
-            date: order.createdAt
-              ? new Date(order.createdAt).toISOString()
-              : new Date().toISOString(),
-          }));
-        }
-      }
-    } catch {
-      // Fall through to mock dataset if Prisma query fails or model is uninitialized
+    if (!company) {
+      return NextResponse.json(
+        { success: false, message: "Company not found" },
+        { status: 404 }
+      );
     }
 
-    // Fallback Mock Dataset Filtering
-    if (payments.length === 0) {
-      payments = MOCK_PAYMENTS;
-      if (companyId) {
-        const filtered = payments.filter(
-          (item) => item.companyId.toLowerCase() === companyId.toLowerCase(),
-        );
-        payments =
-          filtered.length > 0
-            ? filtered
-            : MOCK_PAYMENTS.map((item) => ({ ...item, companyId }));
-      }
-      if (status && status !== "ALL") {
-        payments = payments.filter((item) => item.paymentStatus === status);
-      }
+    const staff = await prisma.staffProfile.findUnique({
+      where: { userId: auth.user.id },
+      select: { companyId: true },
+    });
+
+    const isAuthorized =
+      auth.user.role === "SUPER_ADMIN" ||
+      canAccessCompanyAdmin({
+        user: {
+          id: auth.user.id,
+          role: auth.user.role,
+          companyId: auth.user.companyId,
+          emailVerified: auth.user.emailVerified,
+          isActive: auth.user.isActive,
+        },
+        company: { id: company.id, userId: company.userId },
+        staffCompanyId: staff?.companyId,
+      });
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: Access denied to company payments" },
+        { status: 403 }
+      );
     }
 
-    // Save to Cache
-    try {
-      if (typeof cacheSet === "function") {
-        await cacheSet(cacheKey, payments, 60);
-      }
-    } catch {
-      // Ignore cache write errors
-    }
+    const status = searchParams.get("status") || undefined;
+    const channel = searchParams.get("channel") || undefined;
+    const provider = searchParams.get("provider") || undefined;
+    const search = searchParams.get("search") || undefined;
+    const period = (searchParams.get("period") as any) || "all";
+
+    const result = await getStorePaymentTransactions({
+      companyId: company.id,
+      status,
+      channel,
+      provider,
+      search,
+      period,
+      page: 1,
+      pageSize: 100,
+    });
+
+    const mappedPayments: OrderPayment[] = result.transactions.map((t) => ({
+      id: t.id,
+      trackingNumber: t.trackingNumber,
+      customerName: t.customerName,
+      companyId: t.companyId,
+      totalFinalPrice: t.grossAmount,
+      grossAmount: t.grossAmount,
+      feeAmount: t.feeAmount,
+      netAmount: t.netAmount,
+      channel: t.channel,
+      provider: t.provider,
+      paymentOption: (t.provider.toLowerCase() as PaymentOption),
+      paymentStatus: (t.status.toUpperCase() as PaymentStatus),
+      date: t.date,
+    }));
 
     return NextResponse.json({
       success: true,
-      data: payments,
+      data: mappedPayments,
+      pagination: result.pagination,
     });
   } catch (error: any) {
-    console.error("[PAYMENTS_API_GET]", error);
+    console.error("[CHECKOUT_STORE_PAYMENTS_ERROR]", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch payment records." },
-      { status: 500 },
+      { success: false, message: error.message || "Failed to fetch payments" },
+      { status: 500 }
     );
   }
 }

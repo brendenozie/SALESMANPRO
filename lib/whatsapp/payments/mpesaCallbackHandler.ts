@@ -7,6 +7,7 @@
  */
 
 import prisma from "@/server/db/prismadb";
+import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { MetaWhatsAppClient } from "../metaClient";
 import { whatsappRepository } from "../repository";
 import { decrypt } from "@/lib/crypto";
@@ -86,28 +87,18 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
     const receipt = String(meta.find((x) => x.Name === "MpesaReceiptNumber")?.Value ?? CheckoutRequestID);
     const phone = String(meta.find((x) => x.Name === "PhoneNumber")?.Value ?? order.mpesaPhone ?? order.phone);
 
-    // Create Payment record linked to order
-    await prisma.payment.create({
-      data: {
-        userId: order.consumerId ?? order.Company?.id ?? "unknown",
-        orderId: order.id,
-        amount,
-        status: "COMPLETED",
-        transactionId: receipt,
-      },
-    });
-
-    // Update CustomerOrder to COMPLETED / PAID
-    await prisma.customerOrder.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: "COMPLETED",
-        paymentMethod: "MPESA",
-        transactionId: receipt,
-        transactionDate: new Date(),
-        deliveryStatus: "Payment Received",
-        status: "PAID",
-      },
+    // Create/update authoritative Payment record linked to order
+    await syncAuthoritativePayment({
+      orderId: order.id,
+      transactionId: receipt,
+      providerTransactionId: receipt,
+      internalReference: CheckoutRequestID || order.trackingNumber,
+      amount,
+      provider: "MPESA",
+      channel: order.channel || "WHATSAPP",
+      status: "COMPLETED",
+      companyId: order.companyId,
+      paidAt: new Date(),
     });
 
     // 4. Proactively send WhatsApp notification to customer if ordered via WhatsApp

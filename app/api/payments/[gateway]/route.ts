@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 
 /**
  * Manual payment verification route
@@ -89,33 +90,17 @@ export async function GET(req: Request) {
 
       // If payment succeeded, update both order and payment records
       if (paymentStatus === "success") {
-        await prisma.$transaction(async (tx) => {
-          await tx.customerOrder.update({
-            where: { id: order.id },
-            data: {
-              paymentStatus: "COMPLETED",
-              paymentMethod: "Paystack",
-              transactionId: transactionId.toString(),
-              transactionReference: reference,
-              status: "COMPLETED",
-              deliveryStatus: "Payment Verified",
-            },
-          });
-
-          await tx.payment.upsert({
-            where: { transactionId: transactionId.toString() },
-            update: {
-              status: "COMPLETED",
-              amount,
-            },
-            create: {
-              userId: order.consumerId,
-              orderId: order.id,
-              amount,
-              status: "COMPLETED",
-              transactionId: transactionId.toString(),
-            },
-          });
+        await syncAuthoritativePayment({
+          orderId: order.id,
+          transactionId: transactionId.toString(),
+          providerTransactionId: transactionId.toString(),
+          internalReference: reference,
+          amount,
+          provider: "PAYSTACK",
+          channel: order.channel || "WEBSITE",
+          status: "COMPLETED",
+          companyId: order.companyId,
+          paidAt: new Date(),
         });
       } else {
         await prisma.customerOrder.update({

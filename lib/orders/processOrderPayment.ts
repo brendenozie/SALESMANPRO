@@ -1,3 +1,4 @@
+import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
 import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
 import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
@@ -37,16 +38,16 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
    */
 
   if (paymentOption === "cash" || paymentOption === "split") {
-    await prisma.customerOrder.update({
-      where: {
-        id: order.id,
-      },
-      data: {
-        paymentStatus: "COMPLETED",
-        status: "PAID",
-        paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
-        deliveryStatus: "Processing",
-      },
+    const gross = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+    await syncAuthoritativePayment({
+      orderId: order.id,
+      transactionId: `CASH-${order.trackingNumber || order.id}`,
+      amount: gross,
+      provider: paymentOption.toUpperCase(),
+      channel: order.channel || "POS",
+      status: "COMPLETED",
+      companyId: companyId || order.companyId,
+      paidAt: new Date(),
     });
 
     return {
@@ -68,19 +69,15 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
     paymentOption === "pending" ||
     paymentOption === "pickupatshop"
   ) {
-    await prisma.customerOrder.update({
-      where: {
-        id: order.id,
-      },
-      data: {
-        paymentStatus: "PENDING",
-        status: "PENDING",
-        paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
-        deliveryStatus:
-          paymentOption === "pickupatshop"
-            ? "Ready for Pickup"
-            : "Order Placed",
-      },
+    const gross = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+    await syncAuthoritativePayment({
+      orderId: order.id,
+      transactionId: `DEF-${order.trackingNumber || order.id}`,
+      amount: gross,
+      provider: paymentOption.toUpperCase(),
+      channel: order.channel || "WEBSITE",
+      status: "PENDING",
+      companyId: companyId || order.companyId,
     });
 
     return {
