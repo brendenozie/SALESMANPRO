@@ -29,6 +29,7 @@ const serializeConversation = (entry: any) => {
         id: p.user?.id ?? p.userId,
         name: p.user?.name ?? "Unknown User",
         email: p.user?.email ?? "N/A",
+        phone: p.user?.phone ?? null,
         consumer: consumerData
           ? {
               id: consumerData.id,
@@ -123,6 +124,7 @@ async function handleGet(request: Request, context: { user?: any }) {
                   id: true,
                   name: true,
                   email: true,
+                  phone: true,
                   consumerProfile: {
                     where: { companyId },
                     select: {
@@ -155,7 +157,16 @@ async function handleGet(request: Request, context: { user?: any }) {
     },
   });
 
-  const serializedData = participantEntries.map(serializeConversation);
+  // Deduplicate conversations so an admin sees unique conversation threads
+  const seenConversationIds = new Set<string>();
+  const uniqueEntries = participantEntries.filter((entry: any) => {
+    const cid = entry.conversation?.id;
+    if (!cid || seenConversationIds.has(cid)) return false;
+    seenConversationIds.add(cid);
+    return true;
+  });
+
+  const serializedData = uniqueEntries.map(serializeConversation);
 
   try {
     if (serializedData) {

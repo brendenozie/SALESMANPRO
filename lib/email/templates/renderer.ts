@@ -344,6 +344,53 @@ export function renderEmailTemplate(
       };
     }
 
+    case "DIRECT_MESSAGE": {
+      const recipientName = escapeHtml(data.recipientName || data.clientName || "there");
+      const senderName = escapeHtml(data.senderName || branding.brandName);
+      const messageContent = escapeHtml(data.message || data.content || "");
+      const conversationTitle = data.conversationTitle ? escapeHtml(data.conversationTitle) : null;
+      const actionUrl = data.actionUrl || branding.websiteUrl || "#";
+      const subject = data.subject || `New message from ${senderName} - ${branding.brandName}`;
+
+      const htmlContent = `
+        <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #0f172a;">
+          Hello ${recipientName},
+        </h1>
+        <p style="font-size: 15px; line-height: 1.6; color: #475569; margin-bottom: 20px;">
+          You received a direct message from <strong>${senderName}</strong>${
+            conversationTitle ? ` regarding <em>${conversationTitle}</em>` : ""
+          } on <strong>${escapeHtml(branding.brandName)}</strong>:
+        </p>
+        <div style="background-color: #f8fafc; border-left: 4px solid ${branding.primaryColor || "#3b82f6"}; padding: 18px 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">${messageContent}</p>
+        </div>
+        ${
+          actionUrl && actionUrl !== "#"
+            ? `
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 28px 0;">
+          <tr>
+            <td align="center">
+              <a href="${actionUrl}" target="_blank" class="btn-primary">
+                View & Reply in Platform
+              </a>
+            </td>
+          </tr>
+        </table>
+        `
+            : ""
+        }
+        <p style="font-size: 13px; color: #64748b; line-height: 1.5; text-align: center;">
+          You can also reply directly to this email to communicate with ${senderName}.
+        </p>
+      `;
+
+      return {
+        subject,
+        html: wrapInLayout(htmlContent, branding, subject),
+        text: `Hello ${recipientName},\n\nNew message from ${senderName}:\n\n${messageContent}\n\nBest regards,\n${branding.brandName}`,
+      };
+    }
+
     case "CONTACT_SUBMISSION": {
       const name = escapeHtml(data.name || data.clientName || "Visitor");
       const email = escapeHtml(data.email || data.clientEmail || "N/A");

@@ -49,12 +49,11 @@ export const GET = withApiHandler(
       return formatResponse(false, null, "Unauthorized", 401);
     }
 
-    // 🚨 Check Admin Status
+    // Check Admin Status
     const isAdmin =
       currentUser.role === "ADMIN" ||
       currentUser.role?.toLowerCase() === "admin";
 
-    // Use the actual user ID to see if they are formally in the conversation
     const userId = currentUser.id;
 
     // Await params per Next.js 15+ routing rules
@@ -97,7 +96,6 @@ export const GET = withApiHandler(
       }),
     ]);
 
-    // 🚨 ADMIN UPDATE: Only deny access if they are NOT a participant AND NOT an admin
     if (!participant && !isAdmin) {
       return formatResponse(
         false,
@@ -107,8 +105,7 @@ export const GET = withApiHandler(
       );
     }
 
-    // 3️⃣ Mark Unread Messages as Read & Invalidate Inbox Cache if Badges Change
-    // 🚨 ADMIN UPDATE: Only run this if `participant` exists (Admins snooping won't trigger this)
+    // 3️⃣ Mark Unread Messages as Read
     if (
       participant &&
       messages.length > 0 &&
@@ -143,6 +140,7 @@ export const GET = withApiHandler(
       content: msg.content,
       messageType: msg.messageType,
       attachmentUrls: msg.attachmentUrls,
+      channel: (Array.isArray(msg.readBy) && (msg.readBy[0] as any)?.channel) || "PLATFORM",
       createdAt: msg.createdAt ? msg.createdAt.toISOString() : null,
     }));
 
@@ -173,16 +171,23 @@ export const POST = withApiHandler(
     request: Request,
     context: {
       params: { conversationId: string } | Promise<{ conversationId: string }>;
+      user?: VerifiedUser;
     },
   ) => {
     const { conversationId } = await context.params;
     const body = await request.json();
     const {
-      senderId,
+      senderId: rawSenderId,
       content,
       messageType = "TEXT",
       attachmentUrls = [],
+      channel = "PLATFORM", // "PLATFORM" | "EMAIL" | "WHATSAPP" | "BOTH"
+      subject,
+      recipientEmail,
+      recipientPhone,
     } = body;
+
+    const senderId = rawSenderId || context.user?.id;
 
     if (!senderId || !content) {
       return formatResponse(
@@ -203,31 +208,73 @@ export const POST = withApiHandler(
     }
 
     try {
-      // 1️⃣ Atomic Database Operation
-      const { message, companyId, allParticipantUserIds } =
+      // 1️⃣ Atomic Database Operation & Participant Verification
+      const { message, companyId, allParticipantUserIds, otherParticipants } =
         await prisma.$transaction(async (tx) => {
           const conversation = await tx.conversation.findUnique({
             where: { id: conversationId },
             select: {
               companyId: true,
-              participants: { select: { userId: true } },
+              title: true,
+              participants: {
+                select: {
+                  userId: true,
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      phone: true,
+                    },
+                  },
+                },
+              },
             },
           });
 
           if (!conversation) throw new Error("CONVERSATION_NOT_FOUND");
 
-          const isParticipant = conversation.participants.some(
+          let isParticipant = conversation.participants.some(
             (p) => p.userId === senderId,
           );
-          if (!isParticipant) throw new Error("NOT_PARTICIPANT");
+
+          // Allow company staff/admin to participate automatically
+          if (!isParticipant) {
+            const companyUser = await tx.user.findFirst({
+              where: { id: senderId, companyId: conversation.companyId },
+              select: { id: true },
+            });
+            if (companyUser) {
+              await tx.conversationParticipant.create({
+                data: {
+                  conversationId,
+                  userId: senderId,
+                  isArchived: false,
+                  isDeleted: false,
+                  unreadCount: 0,
+                },
+              });
+              isParticipant = true;
+            } else {
+              throw new Error("NOT_PARTICIPANT");
+            }
+          }
+
+          const channelMetadata: any = {
+            channel,
+            dispatchedAt: new Date().toISOString(),
+          };
+          if (recipientEmail) channelMetadata.recipientEmail = recipientEmail;
+          if (recipientPhone) channelMetadata.recipientPhone = recipientPhone;
 
           const newMessage = await tx.message.create({
             data: {
               conversationId,
               senderId,
-              content,
+              content: content.trim(),
               messageType,
               attachmentUrls,
+              readBy: [channelMetadata],
             },
             include: {
               sender: { select: { id: true, name: true, email: true } },
@@ -252,16 +299,22 @@ export const POST = withApiHandler(
             }),
           ]);
 
+          const otherParts = conversation.participants.filter(
+            (p) => p.userId !== senderId,
+          );
+
           return {
             message: newMessage,
             companyId: conversation.companyId,
+            conversationTitle: conversation.title,
             allParticipantUserIds: conversation.participants.map(
               (p) => p.userId,
             ),
+            otherParticipants: otherParts,
           };
         });
 
-      // 2️⃣ Cache Cleans (Message List Cache & Conversation Inbox Cache)
+      // 2️⃣ Cache Cleans
       try {
         await cacheDel(`tenant:${conversationId}:messages:*`);
         await cacheDel(`admin:messages:*`);
@@ -270,7 +323,96 @@ export const POST = withApiHandler(
         console.error("Cache purge error after message creation:", e);
       }
 
-      // 3️⃣ Return Formatted Message
+      let emailSent = false;
+      let whatsappSent = false;
+      let whatsappUrl: string | null = null;
+      const deliveryErrors: string[] = [];
+
+      // 3️⃣ Email Channel Dispatch
+      if (channel === "EMAIL" || channel === "BOTH") {
+        const targetEmail =
+          recipientEmail ||
+          otherParticipants.find((p) => p.user?.email && p.user.email !== "N/A")
+            ?.user?.email;
+
+        const targetName =
+          otherParticipants.find((p) => p.user?.email === targetEmail)?.user
+            ?.name || "Customer";
+
+        if (targetEmail) {
+          try {
+            const { EmailService } = await import("@/lib/email/emailService");
+            const emailResult = await EmailService.sendEmail({
+              tenantType: "STORE",
+              companyId,
+              template: "DIRECT_MESSAGE",
+              recipient: targetEmail,
+              data: {
+                recipientName: targetName,
+                senderName: message.sender?.name || "Store Admin",
+                message: content.trim(),
+                subject:
+                  subject ||
+                  `New message from ${message.sender?.name || "Store Support"}`,
+              },
+              async: true,
+            });
+            emailSent = emailResult.success;
+            if (!emailResult.success && emailResult.error) {
+              deliveryErrors.push(`Email error: ${emailResult.error}`);
+            }
+          } catch (err: any) {
+            deliveryErrors.push(`Email dispatch error: ${err.message}`);
+          }
+        } else {
+          deliveryErrors.push("No recipient email address found on file");
+        }
+      }
+
+      // 4️⃣ WhatsApp Channel Dispatch
+      if (channel === "WHATSAPP" || channel === "BOTH") {
+        const rawPhone =
+          recipientPhone ||
+          otherParticipants.find((p) => Boolean(p.user?.phone))?.user?.phone;
+
+        if (rawPhone) {
+          const cleanPhone = rawPhone.replace(/[^\d]/g, "");
+          whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(content.trim())}`;
+
+          // Attempt automated Meta WhatsApp Cloud API if configured
+          try {
+            const whatsappAccount = await prisma.whatsAppAccount.findFirst({
+              where: { companyId, isActive: true },
+            });
+            if (whatsappAccount?.phoneNumberId) {
+              const { decryptWhatsAppAccessToken } = await import(
+                "@/lib/whatsapp/credentials"
+              );
+              const { MetaWhatsAppClient } = await import(
+                "@/lib/whatsapp/metaClient"
+              );
+              const accessToken = decryptWhatsAppAccessToken(whatsappAccount);
+              if (accessToken) {
+                const meta = new MetaWhatsAppClient({
+                  accessToken,
+                  phoneNumberId: whatsappAccount.phoneNumberId,
+                });
+                await meta.sendTextMessage({
+                  to: cleanPhone,
+                  body: content.trim(),
+                });
+                whatsappSent = true;
+              }
+            }
+          } catch (err: any) {
+            console.error("Meta WhatsApp dispatch error:", err.message);
+          }
+        } else {
+          deliveryErrors.push("No recipient phone number found on file");
+        }
+      }
+
+      // 5️⃣ Return Formatted Message
       const serializedMessage = {
         id: message.id,
         conversationId: message.conversationId,
@@ -280,6 +422,11 @@ export const POST = withApiHandler(
         content: message.content,
         messageType: message.messageType,
         attachmentUrls: message.attachmentUrls,
+        channel,
+        emailSent,
+        whatsappSent,
+        whatsappUrl,
+        deliveryErrors: deliveryErrors.length ? deliveryErrors : undefined,
         createdAt: message.createdAt ? message.createdAt.toISOString() : null,
       };
 

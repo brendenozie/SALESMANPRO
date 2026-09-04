@@ -16,6 +16,7 @@ export type EmailTemplateId =
   | "ORDER_CONFIRMED"
   | "ORDER_STATUS_UPDATE"
   | "INQUIRY_REPLY"
+  | "DIRECT_MESSAGE"
   | "CONTACT_SUBMISSION"
   | "BACKUP_ALERT"
   | "TEST_EMAIL";
