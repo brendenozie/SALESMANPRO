@@ -286,8 +286,15 @@ export interface GenerateCampaignOutput {
   endDate: string;
   contentPillars: ContentPillar[];
   scheduleOverview: ScheduledCampaignPostItem[];
+  scheduledPosts?: ScheduledCampaignPostItem[];
   createdPostsCount: number;
   creditsConsumed: number;
+  campaign?: {
+    id: string;
+    name: string;
+    postCount: number;
+    status: string;
+  };
 }
 
 // ----------------------------------------------------------------------
