@@ -1,6 +1,8 @@
 /* File: app/stores/create/page.tsx */
 import React, { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
+
+export const dynamic = "force-dynamic";
 
 // 1. Ingest ultra-fast data services directly (Bypasses local HTTP loops)
 import { 
@@ -10,7 +12,7 @@ import {
 } from '@/lib/services/store-data';
 
 // 2. Progressive Code Splitting: Lazy load the heavy client-side multi-step form UI shell
-const CreateStoreForm = dynamic(
+const CreateStoreForm = nextDynamic(
   () => import('../../../components/stores/create/CreateStoreForm/CreateStoreForm'),
   {
     ssr: true, // Keep true to render HTML elements cleanly into initial payload

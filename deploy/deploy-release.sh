@@ -35,9 +35,14 @@ echo "======================================================================"
 mkdir -p "${RELEASES_DIR}" "${ARCHIVES_DIR}" "${SHARED_DIR}" "${SHARED_DIR}/uploads"
 
 # 2. Migrate legacy in-place configuration if shared/.env does not exist yet
-if [ ! -f "${SHARED_DIR}/.env" ] && [ -f "${BASE_DIR}/.env" ]; then
-  echo "📋 Migrating existing production .env to shared storage..."
-  cp "${BASE_DIR}/.env" "${SHARED_DIR}/.env"
+if [ ! -f "${SHARED_DIR}/.env" ]; then
+  for candidate in "${BASE_DIR}/.env" "${BASE_DIR}/current/.env" "${BASE_DIR}/.env.production"; do
+    if [ -f "${candidate}" ] && [ ! -L "${candidate}" ]; then
+      echo "📋 Migrating existing production .env from ${candidate} to ${SHARED_DIR}/.env..."
+      cp "${candidate}" "${SHARED_DIR}/.env"
+      break
+    fi
+  done
 fi
 
 # 3. Verify release archive exists
@@ -56,6 +61,7 @@ tar -xzf "${ARCHIVE_FILE}" -C "${TARGET_DIR}"
 echo "🔗 Linking persistent shared resources..."
 if [ -f "${SHARED_DIR}/.env" ]; then
   ln -sfn "${SHARED_DIR}/.env" "${TARGET_DIR}/.env"
+  echo "✅ Linked ${SHARED_DIR}/.env -> ${TARGET_DIR}/.env"
 else
   echo "⚠️ Warning: No ${SHARED_DIR}/.env found. Ensure environment variables are configured."
 fi
@@ -78,7 +84,7 @@ mv -Tf "${BASE_DIR}/current_tmp" "${CURRENT_LINK}"
 echo "🔁 Reloading PM2 processes..."
 cd "${CURRENT_LINK}"
 export NODE_ENV="production"
-pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+pm2 startOrReload ecosystem.config.js --update-env || pm2 restart ecosystem.config.js --update-env
 pm2 save
 
 # 9. Automated Health Check Verification
@@ -98,20 +104,23 @@ for i in $(seq 1 ${MAX_RETRIES}); do
     break
   fi
 
-  echo "⏳ Status: ${HTTP_STATUS}. Waiting ${RETRY_DELAY}s before next probe..."
+  RESPONSE_BODY=$(curl -s "${HEALTH_URL}" 2>/dev/null | head -c 200 || echo "")
+  echo "⏳ Status: ${HTTP_STATUS}. Response: ${RESPONSE_BODY}. Waiting ${RETRY_DELAY}s before next probe..."
   sleep ${RETRY_DELAY}
 done
 
 # 10. Rollback if health check failed
 if [ "${HEALTH_PASSED}" != "true" ]; then
   echo "🚨 CRITICAL: Health check FAILED after ${MAX_RETRIES} attempts!"
+  echo "📋 Diagnostics: Dumping last 40 lines of PM2 logs..."
+  pm2 logs --lines 40 --nostream || true
 
   if [ -n "${PREVIOUS_RELEASE}" ] && [ -d "${PREVIOUS_RELEASE}" ]; then
     echo "⏪ Executing INSTANT ROLLBACK to previous release: ${PREVIOUS_RELEASE}..."
     ln -sfn "${PREVIOUS_RELEASE}" "${BASE_DIR}/current_tmp"
     mv -Tf "${BASE_DIR}/current_tmp" "${CURRENT_LINK}"
     cd "${CURRENT_LINK}"
-    pm2 reload ecosystem.config.js --update-env
+    pm2 startOrReload ecosystem.config.js --update-env || pm2 restart ecosystem.config.js --update-env
     pm2 save
     echo "✅ Rollback completed. Live service restored to previous release."
   else

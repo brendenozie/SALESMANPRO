@@ -51,21 +51,36 @@ if (!fs.existsSync(STANDALONE_DIR)) {
   process.exit(1);
 }
 
-// 1. Copy Next.js static assets (.next/static -> .next/standalone/.next/static)
+// 1. Promote nested standalone output to root if Next.js created a subdirectory
+if (!fs.existsSync(path.join(STANDALONE_DIR, 'server.js'))) {
+  const entries = fs.readdirSync(STANDALONE_DIR, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      const nestedServerJs = path.join(STANDALONE_DIR, entry.name, 'server.js');
+      if (fs.existsSync(nestedServerJs)) {
+        console.log(`-> Found nested standalone output in ${entry.name}, promoting to root...`);
+        copyDirRecursive(path.join(STANDALONE_DIR, entry.name), STANDALONE_DIR);
+        break;
+      }
+    }
+  }
+}
+
+// 2. Copy Next.js static assets (.next/static -> .next/standalone/.next/static)
 console.log('-> Copying .next/static...');
 copyDirRecursive(
   path.join(ROOT_DIR, '.next', 'static'),
   path.join(STANDALONE_DIR, '.next', 'static')
 );
 
-// 2. Copy public directory (public -> .next/standalone/public)
+// 3. Copy public directory (public -> .next/standalone/public)
 console.log('-> Copying public directory...');
 copyDirRecursive(
   path.join(ROOT_DIR, 'public'),
   path.join(STANDALONE_DIR, 'public')
 );
 
-// 3. Copy compiled background workers (dist-worker -> .next/standalone/dist-worker)
+// 4. Copy compiled background workers (dist-worker -> .next/standalone/dist-worker)
 if (fs.existsSync(path.join(ROOT_DIR, 'dist-worker'))) {
   console.log('-> Copying dist-worker...');
   copyDirRecursive(
@@ -74,20 +89,64 @@ if (fs.existsSync(path.join(ROOT_DIR, 'dist-worker'))) {
   );
 }
 
-// 4. Copy PM2 ecosystem configuration
+// 5. Copy PM2 ecosystem configuration
 console.log('-> Copying ecosystem.config.js...');
 copyFile(
   path.join(ROOT_DIR, 'ecosystem.config.js'),
   path.join(STANDALONE_DIR, 'ecosystem.config.js')
 );
 
-// 5. Copy Prisma schema
+// 6. Copy Prisma schema
 if (fs.existsSync(path.join(ROOT_DIR, 'prisma', 'schema.prisma'))) {
   console.log('-> Copying prisma/schema.prisma...');
   copyFile(
     path.join(ROOT_DIR, 'prisma', 'schema.prisma'),
     path.join(STANDALONE_DIR, 'prisma', 'schema.prisma')
   );
+}
+
+// 7. Inject auto-loading of .env at the top of server.js
+const serverJsPath = path.join(STANDALONE_DIR, 'server.js');
+if (fs.existsSync(serverJsPath)) {
+  console.log('-> Injecting .env auto-loader into standalone server.js...');
+  const serverContent = fs.readFileSync(serverJsPath, 'utf8');
+  const envLoader = `// [Standalone Bootstrap] Auto-load environment variables from .env
+(function() {
+  const fs = require('fs');
+  const path = require('path');
+  const candidates = [
+    path.join(__dirname, '.env'),
+    '/var/www/salesmanpro/shared/.env',
+    '/var/www/salesmanpro/.env'
+  ];
+  for (const envFile of candidates) {
+    if (fs.existsSync(envFile)) {
+      try {
+        const lines = fs.readFileSync(envFile, 'utf8').split('\\n');
+        for (const line of lines) {
+          const t = line.trim();
+          if (!t || t.startsWith('#')) continue;
+          const idx = t.indexOf('=');
+          if (idx > 0) {
+            const k = t.slice(0, idx).trim();
+            let v = t.slice(idx + 1).trim();
+            if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+              v = v.slice(1, -1);
+            }
+            if (!process.env[k]) {
+              process.env[k] = v;
+            }
+          }
+        }
+        break;
+      } catch (err) {}
+    }
+  }
+})();
+`;
+  if (!serverContent.includes('[Standalone Bootstrap]')) {
+    fs.writeFileSync(serverJsPath, envLoader + '\n' + serverContent, 'utf8');
+  }
 }
 
 console.log('✅ Standalone production bundle assembled successfully at .next/standalone');

@@ -49,6 +49,9 @@ jobs:
         run: npx tsc --project tsconfig.worker.json
 
       - name: Build Next.js Standalone
+        env:
+          NEXT_IS_BUILD_PHASE: 'true'
+          DATABASE_URL: 'mongodb://localhost:27017/build_placeholder'
         run: |
           export NODE_OPTIONS="--max-old-space-size=6144"
           npx next build --no-lint

@@ -10,8 +10,6 @@
  */
 
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb";
-import redisConnection, { isRedisAvailable } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +17,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type");
 
-  // 1. Lightweight Liveness Probe
+  // 1. Lightweight Liveness Probe - purely verifies HTTP process is alive
   if (type === "liveness" || type === "live") {
     return NextResponse.json(
       { status: "ALIVE", timestamp: new Date().toISOString() },
@@ -34,6 +32,7 @@ export async function GET(req: Request) {
 
   const mongoStart = Date.now();
   try {
+    const { default: prisma } = await import("@/server/db/prismadb");
     // Run lightweight admin ping command on MongoDB
     await (prisma as any).$runCommandRaw({ ping: 1 });
     mongoOk = true;
@@ -50,6 +49,7 @@ export async function GET(req: Request) {
 
   const redisStart = Date.now();
   try {
+    const { isRedisAvailable, default: redisConnection } = await import("@/lib/redis");
     if (isRedisAvailable()) {
       const pong = await redisConnection.ping();
       redisOk = pong === "PONG";
