@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mediaAIWorker = void 0;
+exports.mediaAIWorker = exports.createMediaAIWorker = void 0;
 const bullmq_1 = require("bullmq");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const client_1 = require("@prisma/client");
@@ -15,77 +15,88 @@ const connection = {
     host: process.env.REDIS_HOST || "localhost",
     port: parseInt(process.env.REDIS_PORT || "6379"),
 };
-exports.mediaAIWorker = new bullmq_1.Worker("media-ai-jobs", async (job) => {
-    const { mediaJobId } = job.data;
-    // 1. Fetch Job & Context
-    const mediaJob = await prismadb_1.default.mediaJob.findUnique({
-        where: { id: mediaJobId },
-        include: { media: true },
-    });
-    if (!mediaJob || !mediaJob.media)
-        throw new Error("Job or Media not found");
-    await prismadb_1.default.mediaJob.update({
-        where: { id: mediaJobId },
-        data: {
-            status: client_1.MediaJobStatus.PROCESSING,
-            progress: 10,
-            startedAt: new Date(),
-        },
-    });
-    try {
-        // 2. Execute AI Action
-        const result = await action_router_1.aiRouter.execute(mediaJob.action, mediaJob.config, {
-            jobId: mediaJob.id,
-            tenantId: mediaJob.companyId || undefined,
-            mediaAsset: mediaJob.media,
+const isBuildPhase = process.env.NEXT_IS_BUILD_PHASE === "true" ||
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.npm_lifecycle_event === "build" ||
+    process.env.NEXT_BUILD === "1" ||
+    (Array.isArray(process.argv) && process.argv.some(arg => typeof arg === "string" && arg.includes("build")));
+function createMediaAIWorker() {
+    if (isBuildPhase)
+        return null;
+    return new bullmq_1.Worker("media-ai-jobs", async (job) => {
+        const { mediaJobId } = job.data;
+        // 1. Fetch Job & Context
+        const mediaJob = await prismadb_1.default.mediaJob.findUnique({
+            where: { id: mediaJobId },
+            include: { media: true },
         });
-        await job.updateProgress(70);
-        // 3. (Mock) Download result from provider & upload to your Storage Provider
-        // const permanentUrl = await storageProvider.uploadFromUrl(result.url, ...);
-        const permanentUrl = result.url;
-        // 4. Create new Immutable Version
-        const newVersion = await prismadb_1.default.mediaVersion.create({
-            data: {
-                mediaId: mediaJob.mediaId,
-                parentVersionId: mediaJob.inputVersionId,
-                version: (await prismadb_1.default.mediaVersion.count({
-                    where: { mediaId: mediaJob.mediaId },
-                })) + 1,
-                source: "AI_GENERATED",
-                operation: mediaJob.action,
-                prompt: mediaJob.config?.prompt,
-                provider: result.provider,
-                model: result.model,
-                url: permanentUrl,
-                mimeType: result.mimeType,
-            },
-        });
-        // 5. Update Asset and Job
-        await prismadb_1.default.mediaAsset.update({
-            where: { id: mediaJob.mediaId },
-            data: { currentVersionId: newVersion.id },
-        });
+        if (!mediaJob || !mediaJob.media)
+            throw new Error("Job or Media not found");
         await prismadb_1.default.mediaJob.update({
             where: { id: mediaJobId },
             data: {
-                status: client_1.MediaJobStatus.COMPLETED,
-                progress: 100,
-                completedAt: new Date(),
-                outputVersionId: newVersion.id,
+                status: client_1.MediaJobStatus.PROCESSING,
+                progress: 10,
+                startedAt: new Date(),
             },
         });
-    }
-    catch (error) {
-        await prismadb_1.default.mediaJob.update({
-            where: { id: mediaJobId },
-            data: {
-                status: client_1.MediaJobStatus.FAILED,
-                error: error.message,
-            },
-        });
-        throw error;
-    }
-}, { connection });
+        try {
+            // 2. Execute AI Action
+            const result = await action_router_1.aiRouter.execute(mediaJob.action, mediaJob.config, {
+                jobId: mediaJob.id,
+                tenantId: mediaJob.companyId || undefined,
+                mediaAsset: mediaJob.media,
+            });
+            await job.updateProgress(70);
+            // 3. (Mock) Download result from provider & upload to your Storage Provider
+            // const permanentUrl = await storageProvider.uploadFromUrl(result.url, ...);
+            const permanentUrl = result.url;
+            // 4. Create new Immutable Version
+            const newVersion = await prismadb_1.default.mediaVersion.create({
+                data: {
+                    mediaId: mediaJob.mediaId,
+                    parentVersionId: mediaJob.inputVersionId,
+                    version: (await prismadb_1.default.mediaVersion.count({
+                        where: { mediaId: mediaJob.mediaId },
+                    })) + 1,
+                    source: "AI_GENERATED",
+                    operation: mediaJob.action,
+                    prompt: mediaJob.config?.prompt,
+                    provider: result.provider,
+                    model: result.model,
+                    url: permanentUrl,
+                    mimeType: result.mimeType,
+                },
+            });
+            // 5. Update Asset and Job
+            await prismadb_1.default.mediaAsset.update({
+                where: { id: mediaJob.mediaId },
+                data: { currentVersionId: newVersion.id },
+            });
+            await prismadb_1.default.mediaJob.update({
+                where: { id: mediaJobId },
+                data: {
+                    status: client_1.MediaJobStatus.COMPLETED,
+                    progress: 100,
+                    completedAt: new Date(),
+                    outputVersionId: newVersion.id,
+                },
+            });
+        }
+        catch (error) {
+            await prismadb_1.default.mediaJob.update({
+                where: { id: mediaJobId },
+                data: {
+                    status: client_1.MediaJobStatus.FAILED,
+                    error: error.message,
+                },
+            });
+            throw error;
+        }
+    }, { connection });
+}
+exports.createMediaAIWorker = createMediaAIWorker;
+exports.mediaAIWorker = !isBuildPhase ? createMediaAIWorker() : null;
 // export async function POST(req: Request) {
 //   try {
 //     const body = await req.json();

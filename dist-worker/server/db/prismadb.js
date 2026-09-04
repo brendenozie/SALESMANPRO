@@ -8,6 +8,5 @@ exports.client = globalThis.prisma ||
             ? ["query", "error", "warn"]
             : ["error"],
     });
-if (process.env.NODE_ENV !== "production")
-    globalThis.prisma = exports.client;
+globalThis.prisma = exports.client;
 exports.default = exports.client;

@@ -6,6 +6,7 @@
  * Run with PM2 or Docker.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./resolve-alias");
 const worker_1 = require("@/lib/whatsapp/queue/worker");
 console.log("🚀 Starting SalesmanPro WhatsApp AI Worker...");
 const worker = (0, worker_1.createWhatsAppWorker)();

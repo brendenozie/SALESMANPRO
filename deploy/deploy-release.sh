@@ -84,6 +84,13 @@ mv -Tf "${BASE_DIR}/current_tmp" "${CURRENT_LINK}"
 echo "🔁 Reloading PM2 processes..."
 cd "${CURRENT_LINK}"
 export NODE_ENV="production"
+
+# If salesmanpro is currently running in legacy cluster mode, delete it so it starts cleanly in fork mode without port collision
+if pm2 describe salesmanpro 2>/dev/null | grep -qi "cluster"; then
+  echo "🔄 Migrating salesmanpro from cluster to fork mode..."
+  pm2 delete salesmanpro || true
+fi
+
 pm2 startOrReload ecosystem.config.js --update-env || pm2 restart ecosystem.config.js --update-env
 pm2 save
 

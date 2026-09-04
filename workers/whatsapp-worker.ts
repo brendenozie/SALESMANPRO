@@ -5,6 +5,7 @@
  * Run with PM2 or Docker.
  */
 
+import "./resolve-alias";
 import { createWhatsAppWorker } from "@/lib/whatsapp/queue/worker";
 
 console.log("🚀 Starting SalesmanPro WhatsApp AI Worker...");

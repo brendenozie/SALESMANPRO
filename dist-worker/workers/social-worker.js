@@ -6,6 +6,7 @@
  * Runs alongside the AI job worker and WhatsApp worker (e.g. via PM2 / Docker).
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./resolve-alias");
 const socialWorker_1 = require("@/lib/social/queue/socialWorker");
 console.log("🚀 Starting SalesmanPro Social Media Publishing Worker...");
 const worker = (0, socialWorker_1.createSocialJobWorker)();

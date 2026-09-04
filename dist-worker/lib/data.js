@@ -1,10 +1,13 @@
 "use strict";
 // lib/data.ts
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStudentsByTarget = exports.batchApplySpecificFees = exports.applyFeeItemsToStudentsInBatch = exports.deleteStudentFeeRecord = exports.addPaymentToStudentFeeRecord = exports.generateInvoiceNumber = exports.updateStudentFeeRecord = exports.createStudentFeeRecord = exports.getStudentFeeRecordById = exports.getStudentFeeRecords = exports.deleteFeeItem = exports.updateFeeItem = exports.createFeeItem = exports.getFeeItemById = exports.getFeeItems = exports.getFeeItemsByCompany = exports.deleteStudent = exports.updateStudent = exports.createStudent = exports.getStudentById = exports.getStudents = void 0;
 const client_1 = require("@prisma/client");
 const uuid_1 = require("uuid");
-const prisma = new client_1.PrismaClient();
+const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 // Helper function to calculate payment status and balance
 const calculateFeeStatusAndBalance = (totalFeesDue, amountPaid) => {
     const balanceDue = totalFeesDue - amountPaid;
@@ -38,20 +41,20 @@ const mapPrismaFeeRecordToAppType = (prismaRecord) => {
 };
 // --- Student Operations ---
 const getStudents = async () => {
-    return prisma.student.findMany();
+    return prismadb_1.default.student.findMany();
 };
 exports.getStudents = getStudents;
 const getStudentById = async (id) => {
-    return prisma.student.findUnique({ where: { id } });
+    return prismadb_1.default.student.findUnique({ where: { id } });
 };
 exports.getStudentById = getStudentById;
 const createStudent = async (data) => {
-    return prisma.student.create({ data });
+    return prismadb_1.default.student.create({ data });
 };
 exports.createStudent = createStudent;
 const updateStudent = async (id, data) => {
     try {
-        return prisma.student.update({ where: { id }, data });
+        return prismadb_1.default.student.update({ where: { id }, data });
     }
     catch (error) {
         console.error("Error updating student:", error);
@@ -61,7 +64,7 @@ const updateStudent = async (id, data) => {
 exports.updateStudent = updateStudent;
 const deleteStudent = async (id) => {
     try {
-        await prisma.student.delete({ where: { id } });
+        await prismadb_1.default.student.delete({ where: { id } });
         return true;
     }
     catch (error) {
@@ -72,25 +75,25 @@ const deleteStudent = async (id) => {
 exports.deleteStudent = deleteStudent;
 // --- FeeItem Operations ---
 const getFeeItemsByCompany = async (companyId) => {
-    return prisma.feeItem.findMany({
+    return prismadb_1.default.feeItem.findMany({
         where: { companyId },
         orderBy: { createdAt: "desc" },
     });
 };
 exports.getFeeItemsByCompany = getFeeItemsByCompany;
 const getFeeItems = async () => {
-    return prisma.feeItem.findMany();
+    return prismadb_1.default.feeItem.findMany();
 };
 exports.getFeeItems = getFeeItems;
 const getFeeItemById = async (id) => {
-    return prisma.feeItem.findUnique({ where: { id } });
+    return prismadb_1.default.feeItem.findUnique({ where: { id } });
 };
 exports.getFeeItemById = getFeeItemById;
 // export const createFeeItem = async (data: Omit<FeeItem, 'id'>): Promise<FeeItem> => {
 //   return prisma.feeItem.create({ data });
 // };
 async function createFeeItem(data) {
-    return prisma.feeItem.create({
+    return prismadb_1.default.feeItem.create({
         data: {
             name: data.name,
             description: data.description,
@@ -116,7 +119,7 @@ exports.createFeeItem = createFeeItem;
 //   }
 // };
 async function updateFeeItem(id, data) {
-    return prisma.feeItem.update({
+    return prismadb_1.default.feeItem.update({
         where: { id },
         data: {
             name: data.name,
@@ -135,7 +138,7 @@ async function updateFeeItem(id, data) {
 exports.updateFeeItem = updateFeeItem;
 const deleteFeeItem = async (id) => {
     try {
-        await prisma.feeItem.delete({ where: { id } });
+        await prismadb_1.default.feeItem.delete({ where: { id } });
         return true;
     }
     catch (error) {
@@ -146,7 +149,7 @@ const deleteFeeItem = async (id) => {
 exports.deleteFeeItem = deleteFeeItem;
 // --- StudentFeeRecord Operations ---
 const getStudentFeeRecords = async (schoolId) => {
-    const records = await prisma.studentFeeRecord.findMany({
+    const records = await prismadb_1.default.studentFeeRecord.findMany({
         where: { student: {
                 companyId: schoolId
             }
@@ -159,7 +162,7 @@ const getStudentFeeRecords = async (schoolId) => {
 };
 exports.getStudentFeeRecords = getStudentFeeRecords;
 const getStudentFeeRecordById = async (id) => {
-    const record = await prisma.studentFeeRecord.findUnique({
+    const record = await prismadb_1.default.studentFeeRecord.findUnique({
         where: { id },
         include: {
             student: true,
@@ -170,13 +173,13 @@ const getStudentFeeRecordById = async (id) => {
 exports.getStudentFeeRecordById = getStudentFeeRecordById;
 // Function to create a new StudentFeeRecord by applying FeeItems
 const createStudentFeeRecord = async (studentId, academicYear, term) => {
-    const student = await prisma.student.findUnique({ where: { id: studentId } });
+    const student = await prismadb_1.default.student.findUnique({ where: { id: studentId } });
     if (!student) {
         console.error(`Student with ID ${studentId} not found.`);
         return null;
     }
     // Check if a record for this student, year, and term already exists
-    const existingRecord = await prisma.studentFeeRecord.findUnique({
+    const existingRecord = await prismadb_1.default.studentFeeRecord.findUnique({
         where: {
             studentId_academicYear_term: {
                 studentId,
@@ -194,7 +197,7 @@ const createStudentFeeRecord = async (studentId, academicYear, term) => {
         console.error(`Student ${studentId} does not have a companyId.`);
         return null;
     }
-    const applicableFeeItems = await prisma.feeItem.findMany({
+    const applicableFeeItems = await prismadb_1.default.feeItem.findMany({
         where: {
             companyId: student.companyId,
             OR: [
@@ -265,7 +268,7 @@ const createStudentFeeRecord = async (studentId, academicYear, term) => {
     const initialTotalFeesDue = appliedFeeItemsSnapshot.reduce((sum, item) => sum + item.amount, 0);
     const initialAmountPaid = 0; // Always 0 when creating a new record
     const { balanceDue, paymentStatus } = calculateFeeStatusAndBalance(initialTotalFeesDue, initialAmountPaid);
-    const newRecord = await prisma.studentFeeRecord.create({
+    const newRecord = await prismadb_1.default.studentFeeRecord.create({
         data: {
             studentId: student.id,
             academicYear,
@@ -283,11 +286,11 @@ const createStudentFeeRecord = async (studentId, academicYear, term) => {
 exports.createStudentFeeRecord = createStudentFeeRecord;
 const updateStudentFeeRecord = async (id, data) => {
     try {
-        const currentRecord = await prisma.studentFeeRecord.findUnique({ where: { id } });
+        const currentRecord = await prismadb_1.default.studentFeeRecord.findUnique({ where: { id } });
         if (!currentRecord)
             return null;
         // Only update fields that are not automatically calculated or managed by payments
-        const updatedPrismaRecord = await prisma.studentFeeRecord.update({
+        const updatedPrismaRecord = await prismadb_1.default.studentFeeRecord.update({
             where: { id },
             data: {
                 dueDate: data.dueDate,
@@ -308,7 +311,7 @@ async function generateInvoiceNumber(academicYear, term) {
     const year = academicYear.replace("/", "").slice(-4); // "2026"
     const termCode = term.replace(/\s+/g, "").toUpperCase(); // "TERM1"
     // Count existing invoices for this year + term
-    const count = await prisma.studentFeeRecord.count({
+    const count = await prismadb_1.default.studentFeeRecord.count({
         where: {
             academicYear,
             term,
@@ -319,13 +322,13 @@ async function generateInvoiceNumber(academicYear, term) {
 }
 exports.generateInvoiceNumber = generateInvoiceNumber;
 const addPaymentToStudentFeeRecord = async (recordId, payment) => {
-    const record = await prisma.studentFeeRecord.findUnique({ where: { id: recordId } });
+    const record = await prismadb_1.default.studentFeeRecord.findUnique({ where: { id: recordId } });
     if (!record)
         return null;
     const invoiceNumber = record.invoiceNumber || await generateInvoiceNumber(record.academicYear, record.term);
     // Update invoiceNumber if it was previously null
     if (!record.invoiceNumber) {
-        await prisma.studentFeeRecord.update({
+        await prismadb_1.default.studentFeeRecord.update({
             where: { id: recordId },
             data: { invoiceNumber },
         });
@@ -337,7 +340,7 @@ const addPaymentToStudentFeeRecord = async (recordId, payment) => {
     const newAmountPaid = record.amountPaid + payment.amount;
     const calculatedTotalFeesDue = record.appliedFeeItems.reduce((sum, item) => sum + item.amount, 0);
     const { balanceDue, paymentStatus } = calculateFeeStatusAndBalance(calculatedTotalFeesDue, newAmountPaid);
-    const updatedPrismaRecord = await prisma.studentFeeRecord.update({
+    const updatedPrismaRecord = await prismadb_1.default.studentFeeRecord.update({
         where: { id: recordId },
         data: {
             amountPaid: newAmountPaid,
@@ -352,7 +355,7 @@ const addPaymentToStudentFeeRecord = async (recordId, payment) => {
 exports.addPaymentToStudentFeeRecord = addPaymentToStudentFeeRecord;
 const deleteStudentFeeRecord = async (id) => {
     try {
-        await prisma.studentFeeRecord.delete({ where: { id } });
+        await prismadb_1.default.studentFeeRecord.delete({ where: { id } });
         return true;
     }
     catch (error) {
@@ -365,10 +368,10 @@ const applyFeeItemsToStudentsInBatch = async (params) => {
     const { academicYear, term, targetType, targetValue } = params;
     let studentsToTarget = [];
     if (targetType === "ALL") {
-        studentsToTarget = await prisma.student.findMany();
+        studentsToTarget = await prismadb_1.default.student.findMany();
     }
     else if (targetType === "CLASS" && targetValue) {
-        studentsToTarget = await prisma.student.findMany({
+        studentsToTarget = await prismadb_1.default.student.findMany({
             where: {
                 StudentAcademicLevel: {
                     some: {
@@ -383,7 +386,7 @@ const applyFeeItemsToStudentsInBatch = async (params) => {
     else if (targetType === "ACADEMIC_LEVEL" && targetValue) {
         // Ensure targetValue matches StudentLevelStatus enum values
         if (Object.values(client_1.StudentLevelStatus).includes(targetValue)) {
-            studentsToTarget = await prisma.student.findMany({
+            studentsToTarget = await prismadb_1.default.student.findMany({
                 where: {
                     StudentAcademicLevel: {
                         some: {
@@ -412,7 +415,7 @@ const applyFeeItemsToStudentsInBatch = async (params) => {
             const result = await (0, exports.createStudentFeeRecord)(student.id, academicYear, term);
             if (result) {
                 // createStudentFeeRecord returns existing record if it already exists
-                const existingRecord = await prisma.studentFeeRecord.findUnique({
+                const existingRecord = await prismadb_1.default.studentFeeRecord.findUnique({
                     where: { studentId_academicYear_term: { studentId: student.id, academicYear, term } }
                 });
                 if (existingRecord && existingRecord.id === result.id) { // Check if it's the same record, implying it existed
@@ -437,7 +440,7 @@ exports.applyFeeItemsToStudentsInBatch = applyFeeItemsToStudentsInBatch;
 const batchApplySpecificFees = async (params) => {
     const { schoolId, studentIds, feeItemIds, academicYear, term } = params;
     // 1. Fetch FeeItem templates to get the price/name snapshot
-    const feeTemplates = await prisma.feeItem.findMany({
+    const feeTemplates = await prismadb_1.default.feeItem.findMany({
         where: {
             id: { in: feeItemIds },
             companyId: schoolId
@@ -455,7 +458,7 @@ const batchApplySpecificFees = async (params) => {
     // 2. Iterate and Upsert
     for (const studentId of studentIds) {
         try {
-            const existingRecord = await prisma.studentFeeRecord.findUnique({
+            const existingRecord = await prismadb_1.default.studentFeeRecord.findUnique({
                 where: {
                     studentId_academicYear_term: { studentId, academicYear, term }
                 }
@@ -469,7 +472,7 @@ const batchApplySpecificFees = async (params) => {
                     // Recalculate status based on new total
                     const totalAmount = updatedItems.reduce((sum, item) => sum + item.amount, 0);
                     const { paymentStatus } = calculateFeeStatusAndBalance(totalAmount, existingRecord.amountPaid);
-                    await prisma.studentFeeRecord.update({
+                    await prismadb_1.default.studentFeeRecord.update({
                         where: { id: existingRecord.id },
                         data: {
                             appliedFeeItems: updatedItems,
@@ -483,7 +486,7 @@ const batchApplySpecificFees = async (params) => {
                 // CREATE LOGIC: New record
                 const totalAmount = feeSnapshots.reduce((sum, item) => sum + item.amount, 0);
                 const { paymentStatus } = calculateFeeStatusAndBalance(totalAmount, 0);
-                await prisma.studentFeeRecord.create({
+                await prismadb_1.default.studentFeeRecord.create({
                     data: {
                         studentId,
                         academicYear,
@@ -507,14 +510,14 @@ const batchApplySpecificFees = async (params) => {
 exports.batchApplySpecificFees = batchApplySpecificFees;
 // Disconnect Prisma Client when the process exits
 process.on('beforeExit', async () => {
-    await prisma.$disconnect();
+    await prismadb_1.default.$disconnect();
 });
 // import { Student } from "@prisma/client";
 // import prisma from "@/server/db/prismadb";
 const getStudentsByTarget = async (schoolId, targetType, targetValue, academicYear, term) => {
     switch (targetType) {
         case "ALL":
-            return prisma.student.findMany({
+            return prismadb_1.default.student.findMany({
                 where: {
                     companyId: schoolId,
                 },
@@ -522,7 +525,7 @@ const getStudentsByTarget = async (schoolId, targetType, targetValue, academicYe
         case "ACADEMIC_LEVEL":
             if (!targetValue)
                 return [];
-            return prisma.student.findMany({
+            return prismadb_1.default.student.findMany({
                 where: {
                     companyId: schoolId,
                     StudentAcademicLevel: {
@@ -545,7 +548,7 @@ const getStudentsByTarget = async (schoolId, targetType, targetValue, academicYe
         case "CLASS":
             if (!targetValue)
                 return [];
-            return prisma.student.findMany({
+            return prismadb_1.default.student.findMany({
                 where: {
                     companyId: schoolId,
                     StudentAcademicLevel: {

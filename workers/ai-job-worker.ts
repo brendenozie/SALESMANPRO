@@ -5,6 +5,7 @@
  * Runs alongside the WhatsApp worker in production (via PM2).
  */
 
+import "./resolve-alias";
 import { createAIJobWorker } from "@/lib/ai/queue/aiWorker";
 
 console.log("🚀 Starting SalesmanPro Central AI Job Worker...");

@@ -1,5 +1,9 @@
 // app/layout.tsx
-// @ts-ignore
+import "leaflet/dist/leaflet.css";
+import "react-time-picker/dist/TimePicker.css";
+import "react-clock/dist/Clock.css";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import "./globals.css";
 
 import Providers from "./providers";

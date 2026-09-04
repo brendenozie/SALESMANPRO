@@ -87,6 +87,11 @@ if (fs.existsSync(path.join(ROOT_DIR, 'dist-worker'))) {
     path.join(ROOT_DIR, 'dist-worker'),
     path.join(STANDALONE_DIR, 'dist-worker')
   );
+  const aliasSrc = path.join(ROOT_DIR, 'workers', 'resolve-alias.js');
+  if (fs.existsSync(aliasSrc)) {
+    copyFile(aliasSrc, path.join(STANDALONE_DIR, 'dist-worker', 'workers', 'resolve-alias.js'));
+    copyFile(aliasSrc, path.join(STANDALONE_DIR, 'dist-worker', 'resolve-alias.js'));
+  }
 }
 
 // 5. Copy PM2 ecosystem configuration

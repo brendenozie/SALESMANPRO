@@ -1,3 +1,4 @@
+import "./resolve-alias";
 import { Worker } from "bullmq";
 
 import prisma from "@/server/db/prismadb";

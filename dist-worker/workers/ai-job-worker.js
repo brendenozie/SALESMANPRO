@@ -6,6 +6,7 @@
  * Runs alongside the WhatsApp worker in production (via PM2).
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./resolve-alias");
 const aiWorker_1 = require("@/lib/ai/queue/aiWorker");
 console.log("🚀 Starting SalesmanPro Central AI Job Worker...");
 const worker = (0, aiWorker_1.createAIJobWorker)();

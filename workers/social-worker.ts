@@ -5,6 +5,7 @@
  * Runs alongside the AI job worker and WhatsApp worker (e.g. via PM2 / Docker).
  */
 
+import "./resolve-alias";
 import { createSocialJobWorker } from "@/lib/social/queue/socialWorker";
 
 console.log("🚀 Starting SalesmanPro Social Media Publishing Worker...");

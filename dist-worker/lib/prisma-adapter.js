@@ -1,12 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomPrismaAdapter = void 0;
 const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 function CustomPrismaAdapter() {
     return {
         async createUser(user) {
-            const existingAdmin = await prisma.user.findUnique({ where: { email: user.email } });
+            const existingAdmin = await prismadb_1.default.user.findUnique({ where: { email: user.email } });
             if (existingAdmin) {
                 return {
                     id: existingAdmin.id,
@@ -23,7 +26,7 @@ function CustomPrismaAdapter() {
             else if (user.email?.endsWith("@admin.com")) {
                 role = client_1.ROLES.ADMIN;
             }
-            const createdUser = await prisma.user.create({
+            const createdUser = await prismadb_1.default.user.create({
                 data: {
                     name: user.name,
                     email: user.email,
@@ -41,7 +44,7 @@ function CustomPrismaAdapter() {
             };
         },
         async getUser(id) {
-            const user = await prisma.user.findUnique({ where: { id } });
+            const user = await prismadb_1.default.user.findUnique({ where: { id } });
             if (!user)
                 return null;
             return {
@@ -53,7 +56,7 @@ function CustomPrismaAdapter() {
             };
         },
         async getUserByEmail(email) {
-            const user = await prisma.user.findUnique({ where: { email } });
+            const user = await prismadb_1.default.user.findUnique({ where: { email } });
             if (!user)
                 return null;
             return {
@@ -65,7 +68,7 @@ function CustomPrismaAdapter() {
             };
         },
         async getUserByAccount({ provider, providerAccountId }) {
-            const account = await prisma.account.findUnique({
+            const account = await prismadb_1.default.account.findUnique({
                 where: {
                     provider_providerAccountId: {
                         provider,
@@ -86,7 +89,7 @@ function CustomPrismaAdapter() {
         },
         async updateUser(user) {
             const { emailVerified, ...restUser } = user;
-            const updatedUser = await prisma.user.update({
+            const updatedUser = await prismadb_1.default.user.update({
                 where: { id: user.id },
                 data: {
                     ...restUser,
@@ -103,16 +106,16 @@ function CustomPrismaAdapter() {
             };
         },
         async deleteUser(id) {
-            await prisma.user.deleteMany({ where: { id } });
+            await prismadb_1.default.user.deleteMany({ where: { id } });
         },
         async createVerificationToken({ identifier, token, expires }) {
-            return prisma.verificationToken.create({
+            return prismadb_1.default.verificationToken.create({
                 data: { identifier, token, expires },
             });
         },
         async useVerificationToken({ identifier, token }) {
             try {
-                return await prisma.verificationToken.delete({
+                return await prismadb_1.default.verificationToken.delete({
                     where: { identifier_token: { identifier, token } },
                 });
             }
@@ -122,7 +125,7 @@ function CustomPrismaAdapter() {
         },
         async linkAccount(account) {
             const { ...accountData } = account;
-            await prisma.account.create({
+            await prismadb_1.default.account.create({
                 data: {
                     ...accountData,
                     user: { connect: { id: account.userId } },
@@ -131,7 +134,7 @@ function CustomPrismaAdapter() {
             return account;
         },
         async unlinkAccount({ provider, providerAccountId }) {
-            await prisma.account.delete({
+            await prismadb_1.default.account.delete({
                 where: {
                     provider_providerAccountId: {
                         provider,
@@ -141,7 +144,7 @@ function CustomPrismaAdapter() {
             });
         },
         async getSessionAndUser(sessionToken) {
-            const userAndSession = await prisma.session.findUnique({
+            const userAndSession = await prismadb_1.default.session.findUnique({
                 where: { sessionToken },
                 include: { user: true },
             });
@@ -165,18 +168,18 @@ function CustomPrismaAdapter() {
             };
         },
         async createSession({ sessionToken, userId, expires }) {
-            return prisma.session.create({
+            return prismadb_1.default.session.create({
                 data: { sessionToken, userId, expires },
             });
         },
         async updateSession({ sessionToken, expires }) {
-            return prisma.session.update({
+            return prismadb_1.default.session.update({
                 where: { sessionToken },
                 data: { expires },
             });
         },
         async deleteSession(sessionToken) {
-            await prisma.session.delete({ where: { sessionToken } });
+            await prismadb_1.default.session.delete({ where: { sessionToken } });
         },
     };
 }
