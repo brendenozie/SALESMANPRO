@@ -1,9 +1,8 @@
 // lib/data.ts
 
-import { PrismaClient, Student, FeeItem, StudentFeeRecord as PrismaStudentFeeRecord, StudentLevelStatus } from '@prisma/client';
+import { Student, FeeItem, StudentFeeRecord as PrismaStudentFeeRecord, StudentLevelStatus } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // Re-export types from Prisma Client for consistency and direct use in frontend
 export type { Student, FeeItem, StudentLevelStatus };

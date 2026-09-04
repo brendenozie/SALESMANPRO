@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
 const path = require('path');
+const fs = require('fs');
+
+try {
+  require('graceful-fs').gracefulify(fs);
+} catch (e) {}
+
+// Ensure build phase is marked across all compiler workers and child processes
+process.env.NEXT_IS_BUILD_PHASE = "true";
 
 module.exports = {
-  // Opt into output tracing for lightweight builds
+  // Opt into output tracing for lightweight standalone production builds
   output: 'standalone',
 
   eslint: {
@@ -14,8 +22,55 @@ module.exports = {
   
   productionBrowserSourceMaps: false,
   reactStrictMode: false,
+  poweredByHeader: false,
 
-  // Combined env object (fixed duplicate override)
+  // Externalize heavy backend packages so Webpack avoids parsing/bundling them
+  serverExternalPackages: [
+    '@prisma/client',
+    'prisma',
+    'ioredis',
+    'bullmq',
+    'bcryptjs',
+    'nodemailer',
+    'cloudinary',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/s3-request-presigner',
+    'openai',
+    'groq-sdk',
+    '@ai-sdk/google',
+    'ai',
+    'formidable',
+    'multer',
+    'micro',
+  ],
+
+  experimental: {
+    // Transform barrel imports to direct paths, cutting AST size dramatically
+    optimizePackageImports: [
+      '@heroicons/react',
+      'react-icons',
+      'date-fns',
+      'lodash',
+      '@tanstack/react-query',
+      'framer-motion',
+      'chart.js',
+      'react-chartjs-2',
+      'apexcharts',
+      'react-apexcharts',
+      '@fullcalendar/react',
+      'react-dropzone',
+      'react-datepicker',
+      'react-time-picker',
+      'zod',
+    ],
+    // Allow Next.js 15 webpack worker to isolate client/server memory heaps
+    webpackBuildWorker: true,
+    cpus: process.env.BUILD_CPUS ? parseInt(process.env.BUILD_CPUS) : 1,
+    staticGenerationMaxConcurrency: 1,
+    staticGenerationMinPagesPerWorker: 1000,
+  },
+
+  // Combined env object
   env: {
     DATABASE_URL: process.env.DATABASE_URL ?? "",
     stripe_public_key: process.env.STRIPE_PUBLIC_KEY ?? "",
@@ -34,15 +89,5 @@ module.exports = {
       "salesmanpro.site",
       "dozi4r4ug9739.cloudfront.net",
     ],
-  },
-
-  // Let Next.js handle aliases via tsconfig.json automatically.
-  // Kept intact in case custom fallback paths are strictly required:
-  webpack(config) {
-    config.resolve.alias['@'] = path.resolve(__dirname);
-    config.resolve.alias['@/types'] = path.resolve(__dirname, 'types');
-    config.resolve.alias['@/lib'] = path.resolve(__dirname, 'lib');
-
-    return config;
   },
 };

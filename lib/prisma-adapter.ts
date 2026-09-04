@@ -1,7 +1,6 @@
-import { PrismaClient, ROLES } from "@prisma/client";
+import { ROLES } from "@prisma/client";
 import { Adapter, AdapterAccount, AdapterSession, AdapterUser } from "next-auth/adapters";
-
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 export function CustomPrismaAdapter(): Adapter {
   return {

@@ -7,6 +7,8 @@
     "rootDir": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./dist-worker/.tsbuildinfo",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
@@ -15,5 +17,6 @@
   "ts-node": {
     "transpileOnly": true
   },
-  "include": ["workers/**/*.ts", "tests/**/*.ts", "lib/**/*.ts", "server/db/prismadb.ts"]
+  "include": ["workers/**/*.ts", "lib/**/*.ts", "server/db/prismadb.ts"],
+  "exclude": ["node_modules", "tests", "scratch", ".next"]
 }

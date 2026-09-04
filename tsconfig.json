@@ -51,6 +51,11 @@
     "app/api/optimize-routes.mjs", 
   ],
   "exclude": [
-    "node_modules"
-  ],
+    "node_modules",
+    ".next",
+    "dist-worker",
+    "scratch",
+    "deploy",
+    "tests"
+  ]
 }

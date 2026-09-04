@@ -1,118 +1,117 @@
-name: 🚀 Auto Deploy SalesmanPro to VPS
+name: 🚀 Build & Deploy SalesmanPro (Atomic Release)
 
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  # ============================================================================
+  # 1. CI BUILD JOB: All expensive compilation runs on GitHub Actions runners
+  # ============================================================================
+  build:
+    name: 🏗️ CI Build & Artifact Creation
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install SSH key
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('app/**/*', 'components/**/*', 'lib/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build Worker Services
+        run: npx tsc --project tsconfig.worker.json
+
+      - name: Build Next.js Standalone
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=6144"
+          npx next build --no-lint
+
+      - name: Assemble Standalone Bundle
+        run: node scripts/pack-standalone.js
+
+      - name: Create Release Archive
+        run: |
+          cd .next/standalone
+          tar -czf ${{ github.workspace }}/release-${{ github.sha }}.tar.gz .
+          cd ${{ github.workspace }}
+          ls -lh release-${{ github.sha }}.tar.gz
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: release-${{ github.sha }}.tar.gz
+          retention-days: 7
+
+  # ============================================================================
+  # 2. DEPLOY JOB: Lightweight transfer, atomic symlink switch, PM2 reload, health check
+  # ============================================================================
+  deploy:
+    name: 🚀 Production Server Deployment & Verification
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository for deploy scripts
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+
+      - name: Configure SSH Key
         run: |
           install -m 0700 -d ~/.ssh
-          # Use 'printf' to preserve newlines in the private key
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          # Add the host to known_hosts to prevent the "Host verification" hang
           ssh-keyscan -p 2222 -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 🚀 Deploy to VPS
+      - name: Transfer Release Artifact & Deployment Script
+        run: |
+          # Ensure remote archives and script directories exist
+          ssh -p 2222 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "mkdir -p /var/www/salesmanpro/releases/archives /var/www/salesmanpro/deploy"
+
+          # Upload the compiled artifact
+          scp -P 2222 release-${{ github.sha }}.tar.gz \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/salesmanpro/releases/archives/
+
+          # Upload the deploy-release script
+          scp -P 2222 deploy/deploy-release.sh \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/salesmanpro/deploy/deploy-release.sh
+
+      - name: Execute Atomic Release on VPS
         run: |
           ssh -p 2222 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            # 1. KILL THE MALWARE IMMEDIATELY ON THE SERVER
-            echo "🛡️ Cleaning malware..."
-            sudo chattr -ai /tmp/kdevtmpfsi /tmp/libsystem.so /etc/cron.d/kinsing /var/tmp/.unix/javae || true
-            sudo pkill -9 kinsing || true
-            sudo pkill -9 kdevtmpfsi || true
-            sudo pkill -9 javae || true
-            sudo rm -rf /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix /etc/cron.d/kinsing
-
-            # 2. VACCINATE (Lock the paths so it can't come back mid-build)
-            # sudo mkdir -p /var/tmp/.unix
-            # sudo touch /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
-            # sudo chmod 000 /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
-            # sudo chattr +i /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
-
-            # 3. Standard Deployment
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd /var/www/salesmanpro
-            
-            echo "📥 Cleaning project and pulling code..."
-            # Remove the miner files if they were staged in the app folder
-            rm -rf xmrig* njs_monitor.log
-            git fetch --all
-            git reset --hard origin/main
-
-            echo "📦 Installing dependencies..."
-            npm ci --legacy-peer-deps
-
-            ## 1. Free up RAM for the build
-            #echo "📉 Scaling down PM2 to 1 instance..."
-            pm2 scale salesmanpro 1
-            pm2 scale ssl-worker 0
-
-            echo "🏗️ Building Next.js app..."
-            export NODE_OPTIONS="--max-old-space-size=6144"
-            npm run build
-
-            echo "🔁 Reloading PM2..."
-            pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
-            
-            # 2. Scale back up to 2 instances now that build is done
-            # pm2 scale salesmanpro 2
-
-            pm2 save
-            echo "🎉 Deployment successful!"
+            chmod +x /var/www/salesmanpro/deploy/deploy-release.sh
+            /var/www/salesmanpro/deploy/deploy-release.sh ${{ github.sha }}
           EOF
-
-      # - name: 🚀 Deploy to VPS
-      #   run: |
-      #     ssh -p 2222 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-      #       # Load NVM/Node paths (Critical for non-root users)
-      #       export NVM_DIR="$HOME/.nvm"
-      #       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-      #       echo "🔐 Changing to project directory..."
-      #       cd /var/www/salesmanpro
-
-      #       echo "📥 Pulling latest code..."
-      #       git pull origin main
-
-      #       echo "📦 Installing dependencies..."
-      #       # 'npm ci' is faster and more reliable for production
-      #       # npm ci
-      #       # 'ci' stands for Clean Install
-      #       npm ci --legacy-peer-deps
-
-      #       # 1. Free up RAM for the build
-      #       echo "📉 Scaling down PM2 to 1 instance..."
-      #       pm2 scale salesmanpro 1
-
-      #       echo "🏗️ Building Next.js app..."
-      #       # Leveraging your 8GB RAM capacity
-      #       export NODE_OPTIONS="--max-old-space-size=6144"
-      #       npm run build
-
-      #       echo "🔁 Reloading Server..."
-      #       cd /var/www/salesmanpro
-
-      #       # 2. Run an explicit check to see if the file exists (for debugging logs)
-      #       # Using reload instead of restart for zero-downtime
-      #       # This looks for the name defined in your ecosystem.config.js
-      #       pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
-
-      #       # 2. Scale back up to 2 instances now that build is done
-      #       pm2 scale salesmanpro 2
-
-      #       # Save the PM2 state to ensure it persists after a reboot
-      #       pm2 save
-
-      #       echo "🎉 Deployment successful!"
-      #     EOF

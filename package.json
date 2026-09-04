@@ -2,7 +2,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
-    "build": "npx prisma generate && node --max-old-space-size=6144 node_modules/next/dist/bin/next build --no-lint && tsc --project tsconfig.worker.json",
+    "build": "cross-env NEXT_IS_BUILD_PHASE=true NODE_OPTIONS=\"--require ./scripts/patch-fs.js --max-old-space-size=6144\" node node_modules/next/dist/bin/next build --no-lint",
+    "build:all": "npx prisma generate && npm run build && tsc --project tsconfig.worker.json",
+    "build:standalone-pack": "node scripts/pack-standalone.js",
     "start": "next start",
     "vercel-build": "npx prisma generate && next build",
     "test": "ts-node --project tsconfig.worker.json tests/whatsapp-integration.test.ts",

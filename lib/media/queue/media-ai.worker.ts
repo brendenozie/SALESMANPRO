@@ -12,9 +12,18 @@ const connection = {
   port: parseInt(process.env.REDIS_PORT || "6379"),
 };
 
-export const mediaAIWorker = new Worker(
-  "media-ai-jobs",
-  async (job: Job) => {
+const isBuildPhase =
+  process.env.NEXT_IS_BUILD_PHASE === "true" ||
+  process.env.NEXT_PHASE === "phase-production-build" ||
+  process.env.npm_lifecycle_event === "build" ||
+  process.env.NEXT_BUILD === "1" ||
+  (Array.isArray(process.argv) && process.argv.some(arg => typeof arg === "string" && arg.includes("build")));
+
+export function createMediaAIWorker(): Worker | null {
+  if (isBuildPhase) return null;
+  return new Worker(
+    "media-ai-jobs",
+    async (job: Job) => {
     const { mediaJobId } = job.data;
 
     // 1. Fetch Job & Context
@@ -98,7 +107,10 @@ export const mediaAIWorker = new Worker(
     }
   },
   { connection },
-);
+  );
+}
+
+export const mediaAIWorker = !isBuildPhase ? createMediaAIWorker() : null;
 
 
 // export async function POST(req: Request) {

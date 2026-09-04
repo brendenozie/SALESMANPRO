@@ -4,4 +4,5 @@
  * GET: Compatibility alias for restore progress polling.
  */
 
-export { GET, runtime } from "../../db/restore/progress/route";
+export const runtime = "nodejs";
+export { GET } from "../../db/restore/progress/route";

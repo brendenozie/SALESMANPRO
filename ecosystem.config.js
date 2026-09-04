@@ -1,21 +1,26 @@
+const fs = require('fs');
+const path = require('path');
+
+const isStandalone = fs.existsSync(path.join(__dirname, 'server.js'));
+
 module.exports = {
   apps: [
     {
       name: 'salesmanpro',
-      script: 'node_modules/.bin/next',
-      args: 'start -p 3000',
+      script: isStandalone ? 'server.js' : 'node_modules/.bin/next',
+      args: isStandalone ? '' : 'start -p 3000',
       instances: 3,
       exec_mode: 'cluster',
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
       },
-      max_memory_restart: '4G',
+      max_memory_restart: '2G',
       restart_delay: 5000,
       exp_backoff_restart_delay: 100,
       max_restarts: 10,
       autorestart: true,
-      kill_timeout: 3000,
+      kill_timeout: 5000,
       watch: false,
     },
     {
