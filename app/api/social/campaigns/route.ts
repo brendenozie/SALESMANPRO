@@ -39,7 +39,26 @@ export async function POST(req: Request) {
     const auth = await resolveAIAuth(req);
     const body = await req.json();
 
-    const { name, objective, productId, targetPlatforms, contentPillars, durationDays, budget } = body;
+    const {
+      name,
+      objective,
+      productId,
+      productIds,
+      targetPlatforms,
+      contentPillars,
+      durationDays,
+      planningMode,
+      startDate,
+      endDate,
+      postingFrequency,
+      preferredPostingTimes,
+      contentMix,
+      tone,
+      promotionOrOffer,
+      callToAction,
+      includeMediaGeneration,
+      budget,
+    } = body;
 
     if (!name || !objective || !targetPlatforms?.length || !contentPillars?.length) {
       return NextResponse.json(
@@ -53,9 +72,20 @@ export async function POST(req: Request) {
       name,
       objective,
       productId,
+      productIds,
       targetPlatforms,
       contentPillars,
       durationDays,
+      planningMode,
+      startDate,
+      endDate,
+      postingFrequency,
+      preferredPostingTimes,
+      contentMix,
+      tone,
+      promotionOrOffer,
+      callToAction,
+      includeMediaGeneration,
       budget,
     });
 

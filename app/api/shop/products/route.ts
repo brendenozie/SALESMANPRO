@@ -62,6 +62,12 @@ export async function GET(req: Request) {
 
     const where: Prisma.marketplaceListingsWhereInput = {
       ...(agentId && { companyId: agentId }),
+      company: {
+        OR: [
+          { showOnGhuba: true },
+          { showOnGhuba: { isSet: false } },
+        ],
+      },
       ...(isAvailable && { isAvailable: true }),
       ...(search && {
         OR: [
@@ -84,7 +90,7 @@ export async function GET(req: Request) {
 
     const [field, direction] = sortParam.split(":");
     const orderBy: Prisma.marketplaceListingsOrderByWithRelationInput =
-      field === "sellingPrice" || field === "createdAt"
+      field === "sellingPrice" || field === "finalPrice" || field === "createdAt"
         ? { [field]: direction === "asc" ? "asc" : "desc" }
         : { createdAt: "desc" };
 
@@ -99,7 +105,7 @@ export async function GET(req: Request) {
         sellingPrice: true,
         finalPrice: true,
         createdAt: true,
-        // If you need flags:
+        // Flags & display data
         isFeatured: true,
         name: true,
         images: true,
@@ -113,13 +119,20 @@ export async function GET(req: Request) {
         brand: true,
         productCategoryId: true,
         option: true,
+        // Store attribution
+        company: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+            site: true,
+          },
+        },
         // Nested selection instead of full 'include'
         product: {
           select: {
             id: true,
-            // name: true,
-            // image: true,
-            // slug: true,
           },
         },
       },

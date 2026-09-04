@@ -13,7 +13,15 @@ import {
   AIPlatformError,
   AIPackageDTO,
 } from "./types";
+import {
+  WELCOME_AI_CREDITS,
+  MAX_WELCOME_GRANTS_PER_USER,
+  WELCOME_CREDIT_REASON,
+  WELCOME_CREDIT_DESCRIPTION,
+} from "./aiConfig";
 import { Prisma } from "@prisma/client";
+
+const TRANSACTION_OPTIONS = { maxWait: 20000, timeout: 60000 };
 
 export const DEFAULT_AI_PACKAGES: Array<{
   name: string;
@@ -199,7 +207,7 @@ export class AICreditLedger {
         transactionId: transaction.id,
         balanceAfter: updatedCompany.aiCreditBalance,
       };
-    });
+    }, TRANSACTION_OPTIONS);
   }
 
   /**
@@ -369,7 +377,7 @@ export class AICreditLedger {
         transactionId: usageId || referenceId || `tx_${Date.now()}`,
         balanceAfter: currentBalance,
       };
-    });
+    }, TRANSACTION_OPTIONS);
   }
 
   /**
@@ -431,7 +439,7 @@ export class AICreditLedger {
         transactionId: transaction.id,
         balanceAfter: updated.aiCreditBalance,
       };
-    });
+    }, TRANSACTION_OPTIONS);
   }
 
   /**
@@ -508,7 +516,106 @@ export class AICreditLedger {
         transactionId: transaction.id,
         newBalance: updatedCompany.aiCreditBalance,
       };
+    }, TRANSACTION_OPTIONS);
+  }
+
+  /**
+   * Grants introductory trial credits to a newly created store company.
+   * Guarantees exact-once idempotency, anti-abuse checks, and audit logging.
+   */
+  public async grantWelcomeCredits(params: {
+    companyId: string;
+    userId?: string;
+    amount?: number;
+  }): Promise<{ granted: boolean; amount: number; balance: number; transactionId?: string; reason?: string }> {
+    const { companyId, userId } = params;
+    const creditAmount = params.amount ?? WELCOME_AI_CREDITS;
+
+    if (!companyId) {
+      return { granted: false, amount: 0, balance: 0, reason: "MISSING_COMPANY_ID" };
+    }
+
+    const idempotencyKey = `welcome_credit_${companyId}`;
+
+    // 1. Check idempotency: Has this company already received welcome credits?
+    const existingTx = await prisma.aICreditTransaction.findUnique({
+      where: { idempotencyKey },
     });
+
+    if (existingTx) {
+      const balance = await this.getBalance(companyId);
+      return {
+        granted: false,
+        amount: existingTx.amount,
+        balance,
+        transactionId: existingTx.id,
+        reason: "ALREADY_GRANTED",
+      };
+    }
+
+    // 2. Abuse prevention check: Has this user already claimed max welcome grants?
+    if (userId) {
+      const userWelcomeGrantsCount = await prisma.aICreditTransaction.count({
+        where: {
+          userId,
+          type: "PROMOTIONAL",
+          idempotencyKey: { startsWith: "welcome_credit_" },
+        },
+      });
+
+      if (userWelcomeGrantsCount >= MAX_WELCOME_GRANTS_PER_USER) {
+        const balance = await this.getBalance(companyId);
+        return {
+          granted: false,
+          amount: 0,
+          balance,
+          reason: "USER_WELCOME_LIMIT_REACHED",
+        };
+      }
+    }
+
+    // 3. Atomically grant credits and record in immutable ledger
+    return prisma.$transaction(async (tx) => {
+      const updatedCompany = await tx.company.update({
+        where: { id: companyId },
+        data: {
+          aiCreditBalance: { increment: creditAmount },
+        },
+        select: { aiCreditBalance: true },
+      });
+
+      // Ensure WhatsApp AI is enabled so new store can test WhatsApp AI Studio
+      await tx.whatsAppAIConfig.upsert({
+        where: { companyId },
+        update: { enabled: true },
+        create: { companyId, enabled: true },
+      });
+
+      const transaction = await tx.aICreditTransaction.create({
+        data: {
+          companyId,
+          userId,
+          amount: creditAmount,
+          type: "PROMOTIONAL",
+          status: "COMPLETED",
+          description: WELCOME_CREDIT_DESCRIPTION,
+          referenceId: companyId,
+          idempotencyKey,
+          balanceAfter: updatedCompany.aiCreditBalance,
+          metadata: {
+            reason: WELCOME_CREDIT_REASON,
+            grantedAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      return {
+        granted: true,
+        amount: creditAmount,
+        balance: updatedCompany.aiCreditBalance,
+        transactionId: transaction.id,
+      };
+    }, TRANSACTION_OPTIONS);
   }
 
   /**
@@ -691,3 +798,8 @@ export class AICreditLedger {
 }
 
 export const creditLedger = new AICreditLedger();
+export const grantWelcomeCredits = (params: {
+  companyId: string;
+  userId?: string;
+  amount?: number;
+}) => creditLedger.grantWelcomeCredits(params);

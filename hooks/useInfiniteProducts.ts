@@ -2,8 +2,12 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const getApiBaseUrl = () => {
+  if (typeof window !== "undefined") return "/api";
+  if (process.env.NEXT_PUBLIC_BASE_URL) return `${process.env.NEXT_PUBLIC_BASE_URL}/api`;
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  return "/api";
+};
 
 export function useInfiniteProducts({ searchTerm, filters }) {
   const queryKey = [
@@ -37,7 +41,7 @@ export function useInfiniteProducts({ searchTerm, filters }) {
       filters.category.forEach((c) => params.append("category", c));
       filters.subCategory.forEach((s) => params.append("subCategory", s));
 
-      const response = await fetch(`${apiBaseUrl}/shop/products?${params}`, {
+      const response = await fetch(`${getApiBaseUrl()}/shop/products?${params}`, {
         signal,
       });
 

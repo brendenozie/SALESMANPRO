@@ -45,7 +45,19 @@ export default async function Page({ params }: PageProps) {
 
   const listing = await prisma.marketplaceListings.findUnique({
     where: { id: id },
-    include: { product: true, productCategory: true },
+    include: {
+      product: true,
+      productCategory: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          logoUrl: true,
+          site: true,
+        },
+      },
+    },
   });
 
   if (!listing) return <div>Product not found</div>;
@@ -59,14 +71,34 @@ export default async function Page({ params }: PageProps) {
       productCategoryId: listing.productCategoryId,
       id: { not: id },
     },
-    include: { product: true },
+    include: {
+      product: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          logoUrl: true,
+        },
+      },
+    },
     take: 4,
   });
 
   if (similar.length === 0) {
     similar = await prisma.marketplaceListings.findMany({
       where: { ...listingWhere, id: { not: id } },
-      include: { product: true },
+      include: {
+        product: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+          },
+        },
+      },
       take: 4,
     });
   }  

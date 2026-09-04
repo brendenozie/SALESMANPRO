@@ -161,6 +161,13 @@ export const socialClient = {
     return data.advice;
   },
 
+  async getProducts(): Promise<any[]> {
+    const res = await fetch("/api/social/products");
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || "Failed to fetch products");
+    return data.products || [];
+  },
+
   async getSuperAdminConfigs(): Promise<any[]> {
     const res = await fetch("/api/super-admin/social/config");
     const data = await res.json();

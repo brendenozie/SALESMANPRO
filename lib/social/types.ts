@@ -221,33 +221,71 @@ export interface GenerateSocialContentOutput {
   creditsConsumed: number;
 }
 
+export type CampaignPlanningMode =
+  | "SINGLE_DAY"
+  | "ONE_WEEK"
+  | "TWO_WEEKS"
+  | "ONE_MONTH"
+  | "CUSTOM_RANGE";
+
+export interface ContentMixConfig {
+  promotional?: number; // e.g. 40%
+  educational?: number; // e.g. 20%
+  engagement?: number;  // e.g. 15%
+  brand?: number;        // e.g. 15%
+  offers?: number;       // e.g. 10%
+}
+
 export interface GenerateCampaignInput {
   companyId: string;
   name: string;
   objective: string;
   productId?: string;
+  productIds?: string[];
   targetPlatforms: SocialPlatform[];
   contentPillars: ContentPillar[];
   durationDays?: number;
-  postingFrequency?: "DAILY" | "TWICE_WEEKLY" | "WEEKLY" | "CUSTOM";
+  planningMode?: CampaignPlanningMode;
+  startDate?: string | Date;
+  endDate?: string | Date;
+  postingFrequency?: "DAILY" | "TWICE_DAILY" | "TWICE_WEEKLY" | "WEEKLY" | "CUSTOM";
+  preferredPostingTimes?: string[];
+  contentMix?: ContentMixConfig;
   targetAudience?: TargetAudienceContext;
+  tone?: string;
+  promotionOrOffer?: string;
+  callToAction?: string;
+  includeMediaGeneration?: boolean;
   budget?: number;
+}
+
+export interface ScheduledCampaignPostItem {
+  dayNumber: number;
+  scheduledDate: string;
+  scheduledTime: string;
+  platform: SocialPlatform;
+  contentType: SocialContentType;
+  pillar: ContentPillar;
+  productName?: string;
+  productId?: string;
+  title: string;
+  hook: string;
+  content: string;
+  hashtags: string[];
+  callToAction: string;
+  postId?: string;
+  status?: string;
 }
 
 export interface GenerateCampaignOutput {
   campaignId: string;
   name: string;
   strategySummary: string;
+  planningMode: CampaignPlanningMode;
+  startDate: string;
+  endDate: string;
   contentPillars: ContentPillar[];
-  scheduleOverview: Array<{
-    dayNumber: number;
-    platform: SocialPlatform;
-    contentType: SocialContentType;
-    pillar: ContentPillar;
-    title: string;
-    hook: string;
-    previewCopy: string;
-  }>;
+  scheduleOverview: ScheduledCampaignPostItem[];
   createdPostsCount: number;
   creditsConsumed: number;
 }

@@ -248,6 +248,7 @@ model Company {
   description String?
 
   hasWebsite Boolean? @default(false)
+  showOnGhuba Boolean? @default(true)
 
   companyCategoryId String?          @db.ObjectId
   companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])

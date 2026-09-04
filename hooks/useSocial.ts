@@ -15,6 +15,7 @@ export const SOCIAL_QUERY_KEYS = {
   campaigns: () => ["social", "campaigns"],
   brandProfile: () => ["social", "brandProfile"],
   analytics: () => ["social", "analytics"],
+  products: () => ["social", "products"],
   adminConfigs: () => ["social", "superAdminConfigs"],
 };
 
@@ -101,6 +102,18 @@ export function useRetryPublication() {
   });
 }
 
+export function useCreateSocialCampaign() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: any) => socialClient.createCampaign(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SOCIAL_QUERY_KEYS.campaigns() });
+      queryClient.invalidateQueries({ queryKey: SOCIAL_QUERY_KEYS.posts() });
+      queryClient.invalidateQueries({ queryKey: AI_QUERY_KEYS.credits() });
+    },
+  });
+}
+
 export function useSuperAdminSocialConfigs() {
   return useQuery({
     queryKey: SOCIAL_QUERY_KEYS.adminConfigs(),
@@ -108,3 +121,12 @@ export function useSuperAdminSocialConfigs() {
     staleTime: 60 * 1000,
   });
 }
+
+export function useSocialProducts() {
+  return useQuery({
+    queryKey: SOCIAL_QUERY_KEYS.products(),
+    queryFn: () => socialClient.getProducts(),
+    staleTime: 60 * 1000,
+  });
+}
+

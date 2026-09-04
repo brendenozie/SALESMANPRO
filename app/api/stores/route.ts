@@ -7,6 +7,7 @@ import { VerifiedUser } from "@/lib/verifyAuth";
 import { revalidateCompanyCache, revalidateStore } from "@/lib/company-fetcher"; // 👈 Imported revalidateStore
 import { encrypt } from "@/lib/crypto/aes";
 import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import { creditLedger } from "@/lib/ai/creditLedger";
 
 export const dynamic = "force-dynamic";
 
@@ -341,7 +342,26 @@ async function createCompany(req: Request, context: HandlerContext) {
       },
     });
 
-    // Replace the end of your createCompany function (inside the try block) with this:
+    // ⚡ Automatic introductory AI credit grant for new store onboarding
+    let welcomeCreditsInfo: { granted: boolean; amount: number; balance: number } = {
+      granted: false,
+      amount: 0,
+      balance: 0,
+    };
+
+    try {
+      const grantResult = await creditLedger.grantWelcomeCredits({
+        companyId: newCompany.id,
+        userId: user.id,
+      });
+      welcomeCreditsInfo = {
+        granted: grantResult.granted,
+        amount: grantResult.amount,
+        balance: grantResult.balance,
+      };
+    } catch (creditErr) {
+      console.error("⚠️ Failed to grant welcome AI credits:", creditErr);
+    }
 
     await cacheDel(`user:${user.id}:companies`);
 
@@ -353,10 +373,19 @@ async function createCompany(req: Request, context: HandlerContext) {
       await revalidateCompanyCache(newCompany.domain);
     }
 
+    const responsePayload = {
+      ...newCompany,
+      aiCreditBalance: welcomeCreditsInfo.balance,
+      welcomeCreditsGranted: welcomeCreditsInfo.granted,
+      welcomeCreditsAmount: welcomeCreditsInfo.amount,
+    };
+
     return formatResponse(
       true,
-      newCompany,
-      "Company created successfully",
+      responsePayload,
+      welcomeCreditsInfo.granted
+        ? `Company created successfully! Introductory allowance of ${welcomeCreditsInfo.amount} AI credits has been granted.`
+        : "Company created successfully",
       201,
     );
   } catch (error) {

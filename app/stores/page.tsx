@@ -11,7 +11,8 @@ import {
   ArrowRightIcon,
   ExclamationTriangleIcon,
   XMarkIcon,
-  PlusIcon
+  PlusIcon,
+  SparklesIcon
 } from "@heroicons/react/24/outline";
 
 // Assuming these are imported from your components directory
@@ -217,6 +218,77 @@ const PricingModal = ({ isOpen, onClose, companyId, email, category, onSubscript
 };
 
 // ------------------------------------------------------------------
+// --- 2.5 WELCOME CREDITS ONBOARDING MODAL ---
+// ------------------------------------------------------------------
+
+const WelcomeCreditsModal = ({
+  isOpen,
+  onClose,
+  credits,
+  storeSlug,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  credits: number;
+  storeSlug?: string;
+}) => {
+  const router = useRouter();
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative p-6 sm:p-8 bg-white dark:bg-slate-900 w-full max-w-md shadow-2xl rounded-3xl text-center border border-slate-100 dark:border-slate-800"
+      >
+        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white mb-5 shadow-lg shadow-orange-500/20">
+          <SparklesIcon className="h-8 w-8" />
+        </div>
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 mb-3">
+          Starter AI Onboarding Gift
+        </span>
+        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          Welcome to SalesmanPro!
+        </h3>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          Your store has received <strong className="text-orange-600 font-black">{credits} introductory AI credits</strong> so you can immediately explore SalesmanPro AI Studio, generate marketing campaigns, and automate customer responses.
+        </p>
+        <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-xs text-slate-500 text-left space-y-1">
+          <p className="font-semibold text-slate-700 dark:text-slate-200">What you can test with your trial credits:</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>AI-assisted product descriptions & SEO tags</li>
+            <li>Multi-day social media marketing campaigns</li>
+            <li>Automated WhatsApp concierge auto-replies</li>
+          </ul>
+        </div>
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm transition-all"
+          >
+            Explore Dashboard
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              if (storeSlug) {
+                router.push(`/admin/${storeSlug}/social`);
+              }
+            }}
+            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 font-bold text-white shadow-lg shadow-orange-500/20 text-sm transition-all"
+          >
+            Launch Marketing AI
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// ------------------------------------------------------------------
 // --- 3. MAIN STORES DASHBOARD ENGINE ---
 // ------------------------------------------------------------------
 
@@ -232,6 +304,7 @@ export default function StoresPage() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [isSubscriptionActive, setIsSubscriptionActive] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -276,6 +349,12 @@ export default function StoresPage() {
       sessionStorage.setItem('storesLastPage', pageParam);
     }
   }, [pageParam, pathname, router]);
+
+  useEffect(() => {
+    if (searchParams.get('welcome') === 'true') {
+      setIsWelcomeModalOpen(true);
+    }
+  }, [searchParams]);
 
   // --- SWR Data Fetching Engine ---
   // Don't fetch if we don't have a user ID yet
@@ -490,6 +569,14 @@ export default function StoresPage() {
         category={selectedCategory}
         onSubscriptionSuccess={handleSubscriptionSuccess}
         isSubscriptionActive={false}
+      />
+
+      {/* Introductory AI Credits Onboarding Modal */}
+      <WelcomeCreditsModal
+        isOpen={isWelcomeModalOpen}
+        onClose={() => setIsWelcomeModalOpen(false)}
+        credits={parseInt(searchParams.get('credits') || '50', 10)}
+        storeSlug={searchParams.get('slug') || undefined}
       />
     </>
   );

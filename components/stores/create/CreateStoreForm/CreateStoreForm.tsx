@@ -1889,8 +1889,14 @@ export default function CreateStoreForm({
       //on successful update clear or empty local cache 
       localStorage.removeItem("storeForm");
 
-      toast.success(isEdit ? "Store updated successfully!" : "Store created!");
-      router.push("/stores");
+      if (isEdit) {
+        toast.success("Store updated successfully!");
+        router.push("/stores");
+      } else {
+        const welcomeCredits = data?.data?.welcomeCreditsAmount || 50;
+        toast.success(`🎉 Store created! You received ${welcomeCredits} introductory AI credits.`);
+        router.push(`/stores?welcome=true&credits=${welcomeCredits}&slug=${data?.data?.slug || ''}`);
+      }
     } catch (err: any) {
       console.error("❌ Error uploading or saving store:", err);
       toast.error(`Error: ${err.message}`);

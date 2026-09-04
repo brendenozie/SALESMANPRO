@@ -140,7 +140,18 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
 
   // --- DATA NORMALIZATION ---
   const displayTitle = itemType === "AUTO" && product.make ? `${product.make} ${product.model}` : product.name || product.title;
-  const primaryImage = product.images?.length > 0 ? product.images[0] : 'https://via.placeholder.com/400x400?text=No+Image';
+
+  const normalizeImageUrl = (img: any): string => {
+    if (!img) return 'https://via.placeholder.com/400x400?text=No+Image';
+    if (typeof img === 'string') return img;
+    if (typeof img === 'object') {
+      return img.url || img.secure_url || img.src || 'https://via.placeholder.com/400x400?text=No+Image';
+    }
+    return 'https://via.placeholder.com/400x400?text=No+Image';
+  };
+
+  const rawImage = product.images?.length > 0 ? product.images[0] : null;
+  const primaryImage = normalizeImageUrl(rawImage);
   
   const whatsappNumber = `${storeFormData?.contactPhone || "254700000000"}`;
   const message = encodeURIComponent(`I'm interested in: ${displayTitle}. Could you provide more details?`);
@@ -295,6 +306,23 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
               </div>
               
               {renderQuickStats()}
+
+              {product.company && (
+                <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold truncate pt-1">
+                  <span className="text-zinc-400">Sold by:</span>
+                  <span 
+                    onClick={(e) => {
+                      if (product.company?.slug) {
+                        e.stopPropagation();
+                        router.push(`/site/${product.company.slug}/ghuba`);
+                      }
+                    }}
+                    className="text-zinc-700 dark:text-zinc-300 font-bold hover:underline truncate"
+                  >
+                    {product.company.name || "Verified Store"}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto">

@@ -34,6 +34,13 @@ import {
   XMarkIcon,
   ArrowUturnLeftIcon,
   CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PencilSquareIcon,
+  ListBulletIcon,
+  Squares2X2Icon,
+  ViewColumnsIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import {
   useSocialAccounts,
@@ -45,9 +52,18 @@ import {
   usePublishPostNow,
   useScheduleSocialPost,
   useRetryPublication,
+  useCreateSocialCampaign,
+  useSocialProducts,
 } from "@/hooks/useSocial";
 import { useAICredits } from "@/hooks/useAI";
-import { SocialPlatform, SocialContentType, ContentPillar, CONTENT_PILLARS } from "@/lib/social/types";
+import {
+  SocialPlatform,
+  SocialContentType,
+  ContentPillar,
+  CONTENT_PILLARS,
+  CampaignPlanningMode,
+  ContentMixConfig,
+} from "@/lib/social/types";
 import { socialClient } from "@/lib/api/socialClient";
 
 interface Props {
@@ -122,7 +138,161 @@ export default function SocialDashboardClient({ companyId, slug, initialProduct 
   const [advisorLoading, setAdvisorLoading] = useState(false);
   const [advisorResponse, setAdvisorResponse] = useState<any>(null);
 
+  // Store Products for Catalog-Aware Campaigns & Posts
+  const { data: storeProducts = [] } = useSocialProducts();
+
+  // Multi-Day Campaign Planner State
+  const createCampaignMutation = useCreateSocialCampaign();
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+  const [campName, setCampName] = useState("");
+  const [campObjective, setCampObjective] = useState("INCREASE SALES & AWARENESS");
+  const [campPlanningMode, setCampPlanningMode] = useState<CampaignPlanningMode>("ONE_WEEK");
+  const [campStartDate, setCampStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [campEndDate, setCampEndDate] = useState(new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0]);
+  const [campPlatforms, setCampPlatforms] = useState<SocialPlatform[]>(["FACEBOOK", "INSTAGRAM"]);
+  const [campPillars, setCampPillars] = useState<ContentPillar[]>(["PRODUCT_SHOWCASE", "EDUCATIONAL", "PROMOTIONAL", "SOCIAL_PROOF"]);
+  const [campFrequency, setCampFrequency] = useState<"DAILY" | "TWICE_DAILY" | "TWICE_WEEKLY" | "WEEKLY">("DAILY");
+  const [campTone, setCampTone] = useState("Engaging, authoritative and persuasive");
+  const [campOffer, setCampOffer] = useState("");
+  const [campCta, setCampCta] = useState("Shop Now");
+  const [campSelectedProducts, setCampSelectedProducts] = useState<string[]>([]);
+  const [campPreferredTimes, setCampPreferredTimes] = useState<string[]>(["10:00", "18:00"]);
+  const [campIncludeMediaGen, setCampIncludeMediaGen] = useState(false);
+  const [isCreatingCampaign, setIsCreatingCampaign] = useState(false);
+  const [campContentMix, setCampContentMix] = useState<ContentMixConfig>({
+    promotional: 40,
+    educational: 20,
+    engagement: 15,
+    brand: 15,
+    offers: 10,
+  });
+
+  // Calendar View State
+  const [calendarView, setCalendarView] = useState<"month" | "week" | "list">("month");
+  const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
+  const [selectedPostForEdit, setSelectedPostForEdit] = useState<any>(null);
+  const [isPostEditModalOpen, setIsPostEditModalOpen] = useState(false);
+  const [postEditCopy, setPostEditCopy] = useState("");
+  const [postEditScheduledAt, setPostEditScheduledAt] = useState("");
+  const [isSavingPostEdit, setIsSavingPostEdit] = useState(false);
+
   const posts = postsData?.posts || [];
+
+  // Helper: Handle Planning Mode Switch
+  const handlePlanningModeChange = (mode: CampaignPlanningMode) => {
+    setCampPlanningMode(mode);
+    const start = new Date(campStartDate);
+    let days = 7;
+    if (mode === "SINGLE_DAY") days = 1;
+    else if (mode === "ONE_WEEK") days = 7;
+    else if (mode === "TWO_WEEKS") days = 14;
+    else if (mode === "ONE_MONTH") days = 30;
+    if (mode !== "CUSTOM_RANGE") {
+      const end = new Date(start.getTime() + days * 86400000);
+      setCampEndDate(end.toISOString().split("T")[0]);
+    }
+  };
+
+  // Helper: Estimated credit cost calculation
+  const getDaysBetween = (d1: string, d2: string) => {
+    const start = new Date(d1).getTime();
+    const end = new Date(d2).getTime();
+    return Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+  };
+
+  const estimatedDays = campPlanningMode === "SINGLE_DAY" ? 1 : getDaysBetween(campStartDate, campEndDate);
+  const postsPerDay = campFrequency === "TWICE_DAILY" ? 2 : campFrequency === "DAILY" ? 1 : 0.5;
+  const estimatedPostCount = Math.max(1, Math.round(estimatedDays * postsPerDay));
+  const estimatedCreditsCost = estimatedPostCount * 5 + (campIncludeMediaGen ? estimatedPostCount * 5 : 0);
+  const userCreditBalance = creditsData?.balance ?? 0;
+  const hasSufficientCredits = userCreditBalance >= estimatedCreditsCost;
+
+  // Handler: Submit Multi-Day Campaign Creation
+  const handleCreateCampaignSubmit = async () => {
+    if (!campName.trim()) {
+      alert("Please provide a name for your campaign.");
+      return;
+    }
+    if (campPlatforms.length === 0) {
+      alert("Please select at least one social platform.");
+      return;
+    }
+    if (!hasSufficientCredits) {
+      alert(`Insufficient AI credits. This campaign requires ~${estimatedCreditsCost} credits, but your balance is ${userCreditBalance}.`);
+      return;
+    }
+
+    setIsCreatingCampaign(true);
+    try {
+      const res = await createCampaignMutation.mutateAsync({
+        name: campName,
+        objective: campObjective,
+        planningMode: campPlanningMode,
+        startDate: new Date(campStartDate),
+        endDate: new Date(campEndDate),
+        targetPlatforms: campPlatforms,
+        contentPillars: campPillars,
+        postingFrequency: campFrequency,
+        preferredPostingTimes: campPreferredTimes,
+        contentMix: campContentMix,
+        tone: campTone,
+        promotionOrOffer: campOffer,
+        callToAction: campCta,
+        productIds: campSelectedProducts,
+        includeMediaGeneration: campIncludeMediaGen,
+      });
+
+      setIsCampaignModalOpen(false);
+      setActionSuccessMsg(`Campaign "${res.campaign.name}" created successfully with ${res.campaign.postCount} scheduled multi-day posts!`);
+      refetchCampaigns();
+      refetchPosts();
+      setActiveTab("calendar");
+    } catch (err: any) {
+      alert(err.message || "Failed to generate campaign");
+    } finally {
+      setIsCreatingCampaign(false);
+    }
+  };
+
+  // Handler: Open Post Detail / Edit Modal
+  const handleOpenPostEdit = (post: any) => {
+    setSelectedPostForEdit(post);
+    setPostEditCopy(post.content || "");
+    setPostEditScheduledAt(post.scheduledAt ? new Date(post.scheduledAt).toISOString().slice(0, 16) : "");
+    setIsPostEditModalOpen(true);
+  };
+
+  // Handler: Save Post Edit Changes
+  const handleSavePostEdit = async () => {
+    if (!selectedPostForEdit) return;
+    setIsSavingPostEdit(true);
+    try {
+      await socialClient.updatePost(selectedPostForEdit.id, {
+        content: postEditCopy,
+        scheduledAt: postEditScheduledAt ? new Date(postEditScheduledAt).toISOString() : null,
+      });
+      setIsPostEditModalOpen(false);
+      setActionSuccessMsg("Post updated successfully!");
+      refetchPosts();
+    } catch (err: any) {
+      alert(err.message || "Failed to update post");
+    } finally {
+      setIsSavingPostEdit(false);
+    }
+  };
+
+  // Handler: Delete Post
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this scheduled post?")) return;
+    try {
+      await socialClient.deletePost(postId);
+      setIsPostEditModalOpen(false);
+      setActionSuccessMsg("Post deleted.");
+      refetchPosts();
+    } catch (err: any) {
+      alert(err.message || "Failed to delete post");
+    }
+  };
 
   // Handle Generating Content
   const handleGenerate = async () => {
@@ -1003,52 +1173,416 @@ export default function SocialDashboardClient({ companyId, slug, initialProduct 
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: CONTENT CALENDAR */}
+        {/* TAB 4: CONTENT CALENDAR (MONTH, WEEK, LIST VIEWS) */}
         {/* ========================================================================= */}
         {activeTab === "calendar" && (
-          <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <CalendarDaysIcon className="w-4 h-4 text-amber-600" />
-                Content Schedule Calendar
-              </h2>
-            </div>
+          <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm space-y-5">
+            {/* Calendar Controls Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-zinc-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
+                  <CalendarDaysIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    Marketing Content Calendar
+                    <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">
+                      ({posts.length} total posts)
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    {currentCalendarDate.toLocaleString("default", { month: "long", year: "numeric" })}
+                  </p>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold border-b border-slate-100 dark:border-zinc-800 pb-2">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                <div key={d} className="text-slate-500">{d}</div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-2 min-h-[360px]">
-              {Array.from({ length: 28 }).map((_, idx) => {
-                const dayNum = idx + 1;
-                const dayPosts = posts.filter((p: any) => {
-                  if (!p.scheduledAt && !p.publishedAt) return false;
-                  const date = new Date(p.scheduledAt || p.publishedAt);
-                  return date.getDate() === dayNum;
-                });
-
-                return (
-                  <div
-                    key={idx}
-                    className="p-2 rounded-lg border border-slate-100 dark:border-zinc-800/80 bg-slate-50/50 dark:bg-zinc-900/40 text-left flex flex-col justify-between min-h-[80px]"
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Month Navigation */}
+                <div className="flex items-center bg-slate-100 dark:bg-zinc-800/80 rounded-lg p-0.5 border border-slate-200 dark:border-zinc-700">
+                  <button
+                    onClick={() => {
+                      const prev = new Date(currentCalendarDate);
+                      prev.setMonth(prev.getMonth() - 1);
+                      setCurrentCalendarDate(prev);
+                    }}
+                    className="p-1 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white rounded"
+                    title="Previous Month"
                   >
-                    <span className="text-[10px] font-bold text-slate-400">{dayNum}</span>
-                    <div className="space-y-1 mt-1">
-                      {dayPosts.map((dp: any) => (
-                        <div
-                          key={dp.id}
-                          className="px-1.5 py-0.5 rounded text-[9px] font-bold truncate bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
-                        >
-                          {dp.title || dp.content.slice(0, 15)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                    <ChevronLeftIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentCalendarDate(new Date())}
+                    className="px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-700 rounded transition-colors"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => {
+                      const next = new Date(currentCalendarDate);
+                      next.setMonth(next.getMonth() + 1);
+                      setCurrentCalendarDate(next);
+                    }}
+                    className="p-1 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white rounded"
+                    title="Next Month"
+                  >
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* View Switcher Toggle */}
+                <div className="flex items-center bg-slate-100 dark:bg-zinc-800/80 rounded-lg p-0.5 border border-slate-200 dark:border-zinc-700">
+                  <button
+                    onClick={() => setCalendarView("month")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                      calendarView === "month"
+                        ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-white shadow-xs"
+                        : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Squares2X2Icon className="w-3.5 h-3.5" />
+                    Month
+                  </button>
+                  <button
+                    onClick={() => setCalendarView("week")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                      calendarView === "week"
+                        ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-white shadow-xs"
+                        : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <ViewColumnsIcon className="w-3.5 h-3.5" />
+                    Week
+                  </button>
+                  <button
+                    onClick={() => setCalendarView("list")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                      calendarView === "list"
+                        ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-white shadow-xs"
+                        : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <ListBulletIcon className="w-3.5 h-3.5" />
+                    List
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setIsCampaignModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all"
+                >
+                  <SparklesIcon className="w-3.5 h-3.5" />
+                  Plan Multi-Day Campaign
+                </button>
+              </div>
             </div>
+
+            {/* VIEW 1: MONTH GRID */}
+            {calendarView === "month" && (() => {
+              const year = currentCalendarDate.getFullYear();
+              const month = currentCalendarDate.getMonth();
+              const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 is Sunday
+              const daysInMonth = new Date(year, month + 1, 0).getDate();
+              const todayStr = new Date().toDateString();
+
+              return (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-slate-500 dark:text-zinc-400 py-1 border-b border-slate-100 dark:border-zinc-800">
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                      <div key={d}>{d}</div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-2 min-h-[480px]">
+                    {/* Blank offset days */}
+                    {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                      <div
+                        key={`empty-${i}`}
+                        className="p-2 rounded-xl border border-slate-100/50 dark:border-zinc-800/30 bg-slate-50/30 dark:bg-zinc-900/20 opacity-40 min-h-[90px]"
+                      />
+                    ))}
+
+                    {/* Real month days */}
+                    {Array.from({ length: daysInMonth }).map((_, idx) => {
+                      const dayNum = idx + 1;
+                      const cellDate = new Date(year, month, dayNum);
+                      const isToday = cellDate.toDateString() === todayStr;
+
+                      const dayPosts = posts.filter((p: any) => {
+                        const targetTime = p.scheduledAt || p.publishedAt || p.createdAt;
+                        if (!targetTime) return false;
+                        return new Date(targetTime).toDateString() === cellDate.toDateString();
+                      });
+
+                      return (
+                        <div
+                          key={`day-${dayNum}`}
+                          className={`p-2 rounded-xl border text-left flex flex-col justify-between min-h-[95px] transition-all hover:border-blue-400 dark:hover:border-blue-500 ${
+                            isToday
+                              ? "border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-xs"
+                              : "border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={`text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full ${
+                                isToday
+                                  ? "bg-blue-600 text-white shadow-xs"
+                                  : "text-slate-700 dark:text-zinc-300"
+                              }`}
+                            >
+                              {dayNum}
+                            </span>
+                            {dayPosts.length > 0 && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                                {dayPosts.length}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="space-y-1.5 mt-1.5 flex-1 overflow-y-auto max-h-[85px] pr-0.5">
+                            {dayPosts.map((dp: any) => {
+                              const timeStr = dp.scheduledAt
+                                ? new Date(dp.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                                : dp.publishedAt
+                                ? new Date(dp.publishedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                                : "";
+
+                              return (
+                                <button
+                                  key={dp.id}
+                                  onClick={() => handleOpenPostEdit(dp)}
+                                  className={`w-full text-left p-1.5 rounded-lg border text-[10px] font-semibold transition-transform hover:scale-[1.02] shadow-2xs block truncate ${
+                                    dp.status === "PUBLISHED"
+                                      ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200"
+                                      : dp.status === "SCHEDULED"
+                                      ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200"
+                                      : "bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="truncate">{dp.title || dp.content.slice(0, 20)}</span>
+                                    {timeStr && <span className="text-[9px] opacity-75 shrink-0">{timeStr}</span>}
+                                  </div>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    {dp.publications?.slice(0, 3).map((pub: any) => (
+                                      <span
+                                        key={pub.id}
+                                        className="text-[8px] uppercase px-1 py-0.2 rounded bg-black/10 dark:bg-white/10 font-bold"
+                                      >
+                                        {pub.platform.slice(0, 2)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* VIEW 2: WEEK VIEW */}
+            {calendarView === "week" && (() => {
+              const startOfWeek = new Date(currentCalendarDate);
+              const day = startOfWeek.getDay();
+              const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Monday
+              startOfWeek.setDate(diff);
+
+              const weekDays = Array.from({ length: 7 }).map((_, i) => {
+                const d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                return d;
+              });
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-3 min-h-[420px]">
+                  {weekDays.map((d, i) => {
+                    const dateStr = d.toDateString();
+                    const isToday = dateStr === new Date().toDateString();
+                    const dayPosts = posts.filter((p: any) => {
+                      const t = p.scheduledAt || p.publishedAt || p.createdAt;
+                      return t && new Date(t).toDateString() === dateStr;
+                    });
+
+                    return (
+                      <div
+                        key={i}
+                        className={`p-3 rounded-xl border flex flex-col ${
+                          isToday
+                            ? "border-blue-500 bg-blue-50/30 dark:bg-blue-950/20"
+                            : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40"
+                        }`}
+                      >
+                        <div className="border-b border-slate-200 dark:border-zinc-800 pb-2 mb-2">
+                          <p className="text-xs font-bold text-slate-500 dark:text-zinc-400">
+                            {d.toLocaleString("default", { weekday: "short" })}
+                          </p>
+                          <p className="text-sm font-extrabold text-slate-900 dark:text-white">
+                            {d.toLocaleString("default", { month: "short", day: "numeric" })}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2 flex-1 overflow-y-auto max-h-[380px]">
+                          {dayPosts.length === 0 ? (
+                            <p className="text-[11px] text-slate-400 dark:text-zinc-500 italic py-4 text-center">
+                              No posts
+                            </p>
+                          ) : (
+                            dayPosts.map((p: any) => (
+                              <div
+                                key={p.id}
+                                onClick={() => handleOpenPostEdit(p)}
+                                className="p-2.5 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:shadow-md cursor-pointer transition-all space-y-1.5"
+                              >
+                                <div className="flex items-center justify-between text-[10px]">
+                                  <span className="font-bold text-slate-500 flex items-center gap-1">
+                                    <ClockIcon className="w-3 h-3" />
+                                    {p.scheduledAt
+                                      ? new Date(p.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                                      : "Immediate"}
+                                  </span>
+                                  <span
+                                    className={`px-1.5 py-0.2 rounded font-bold text-[9px] ${
+                                      p.status === "PUBLISHED"
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : "bg-blue-100 text-blue-700"
+                                    }`}
+                                  >
+                                    {p.status}
+                                  </span>
+                                </div>
+                                <p className="text-xs font-semibold text-slate-900 dark:text-white line-clamp-2">
+                                  {p.title || p.content}
+                                </p>
+                                <div className="flex items-center gap-1 flex-wrap pt-1">
+                                  {p.publications?.map((pub: any) => (
+                                    <span
+                                      key={pub.id}
+                                      className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-700 font-bold uppercase"
+                                    >
+                                      {pub.platform}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* VIEW 3: LIST VIEW */}
+            {calendarView === "list" && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-zinc-800 text-slate-500">
+                      <th className="py-2.5 px-3">Date & Time</th>
+                      <th className="py-2.5 px-3">Post Preview</th>
+                      <th className="py-2.5 px-3">Platforms</th>
+                      <th className="py-2.5 px-3">Pillar & Goal</th>
+                      <th className="py-2.5 px-3">Status</th>
+                      <th className="py-2.5 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+                    {posts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          No scheduled or published posts found.
+                        </td>
+                      </tr>
+                    ) : (
+                      posts.map((post: any) => (
+                        <tr key={post.id} className="hover:bg-slate-50 dark:hover:bg-zinc-800/40">
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <p className="font-bold text-slate-900 dark:text-white">
+                              {post.scheduledAt
+                                ? new Date(post.scheduledAt).toLocaleDateString()
+                                : post.publishedAt
+                                ? new Date(post.publishedAt).toLocaleDateString()
+                                : "Unscheduled"}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              {post.scheduledAt
+                                ? new Date(post.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                                : post.publishedAt
+                                ? new Date(post.publishedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                                : "Draft"}
+                            </p>
+                          </td>
+                          <td className="py-3 px-3 max-w-sm">
+                            <p className="font-bold text-slate-900 dark:text-white truncate">
+                              {post.title || post.content.slice(0, 40)}
+                            </p>
+                            <p className="text-[11px] text-slate-500 truncate">{post.content}</p>
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex gap-1 flex-wrap">
+                              {post.publications?.map((pub: any) => (
+                                <span
+                                  key={pub.id}
+                                  className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 dark:bg-zinc-800 uppercase"
+                                >
+                                  {pub.platform}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300">
+                              {post.contentPillars?.join(", ") || "General"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span
+                              className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                                post.status === "PUBLISHED"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : post.status === "SCHEDULED"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : post.status === "FAILED"
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-slate-100 text-slate-700"
+                              }`}
+                            >
+                              {post.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleOpenPostEdit(post)}
+                                className="px-2.5 py-1 text-[11px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded flex items-center gap-1"
+                              >
+                                <PencilSquareIcon className="w-3.5 h-3.5" />
+                                Edit
+                              </button>
+                              {post.status !== "PUBLISHED" && (
+                                <button
+                                  onClick={() => handlePublishNow(post.id)}
+                                  className="px-2.5 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded shadow-xs"
+                                >
+                                  Publish
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -1056,33 +1590,102 @@ export default function SocialDashboardClient({ companyId, slug, initialProduct 
         {/* TAB 5: SOCIAL CAMPAIGNS */}
         {/* ========================================================================= */}
         {activeTab === "campaigns" && (
-          <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <PaperAirplaneIcon className="w-4 h-4 text-purple-600" />
-              Active Campaigns ({campaigns.length})
-            </h2>
+          <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-zinc-800 pb-4">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <PaperAirplaneIcon className="w-4 h-4 text-purple-600" />
+                  Multi-Day AI Campaigns ({campaigns.length})
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Plan, sequence, and automate multi-day marketing campaigns across Facebook, Instagram, TikTok & YouTube.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsCampaignModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                Plan Multi-Day Campaign
+              </button>
+            </div>
 
             {campaigns.length === 0 ? (
-              <div className="text-center py-12 text-xs text-slate-500">
-                No active multi-post campaigns. Use the wizard to generate a 7-day social campaign!
+              <div className="text-center py-12 rounded-xl border border-dashed border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/30 p-8 space-y-3">
+                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 mx-auto flex items-center justify-center">
+                  <PaperAirplaneIcon className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  No active multi-day campaigns yet
+                </h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Launch an orchestrated 1-day flash sale, 1-week launch, 2-week awareness sprint, or 1-month seasonal campaign with automated sequencing and catalog promotion.
+                </p>
+                <button
+                  onClick={() => setIsCampaignModalOpen(true)}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow-sm"
+                >
+                  Create Your First Campaign
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {campaigns.map((camp: any) => (
-                  <div key={camp.id} className="p-4 border rounded-xl border-slate-200 dark:border-zinc-800 space-y-2">
+                  <div
+                    key={camp.id}
+                    className="p-4 border rounded-xl border-slate-200 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/40 space-y-3 hover:border-purple-300 dark:hover:border-purple-800 transition-all"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-slate-900 dark:text-white">{camp.name}</span>
+                      <div>
+                        <span className="font-bold text-sm text-slate-900 dark:text-white">
+                          {camp.name}
+                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 rounded-full">
+                            {camp.planningMode || "CAMPAIGN"}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {camp.durationDays ? `${camp.durationDays} Days` : ""}
+                          </span>
+                        </div>
+                      </div>
                       <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full">
                         {camp.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500">Objective: {camp.objective}</p>
-                    <div className="flex gap-1">
-                      {camp.platforms.map((p: string) => (
-                        <span key={p} className="px-1.5 py-0.5 text-[9px] font-bold bg-slate-100 dark:bg-zinc-800 rounded">
-                          {p}
+
+                    <p className="text-xs text-slate-600 dark:text-zinc-300">
+                      <strong className="text-slate-700 dark:text-zinc-200">Objective:</strong> {camp.objective}
+                    </p>
+
+                    {camp.product && (
+                      <div className="flex items-center gap-2 text-xs text-slate-500 bg-white dark:bg-zinc-800/80 p-2 rounded-lg border border-slate-200 dark:border-zinc-700">
+                        <TagIcon className="w-3.5 h-3.5 text-blue-500" />
+                        <span className="truncate font-medium text-slate-800 dark:text-zinc-200">
+                          {camp.product.name} ({camp.product.category || "Catalog Item"})
                         </span>
-                      ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800 text-xs">
+                      <div className="flex gap-1">
+                        {camp.platforms.map((p: string) => (
+                          <span
+                            key={p}
+                            className="px-1.5 py-0.5 text-[9px] font-bold bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded text-slate-700 dark:text-zinc-300 uppercase"
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => setActiveTab("calendar")}
+                        className="text-xs text-purple-600 dark:text-purple-400 font-bold hover:underline"
+                      >
+                        View in Calendar →
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -1329,6 +1932,558 @@ export default function SocialDashboardClient({ companyId, slug, initialProduct 
           </div>
         )}
       </div>
+
+      {/* ========================================================================= */}
+      {/* MODAL 1: MULTI-DAY CAMPAIGN PLANNER */}
+      {/* ========================================================================= */}
+      {isCampaignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl max-w-3xl w-full my-8 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-900/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-300 flex items-center justify-center">
+                  <SparklesIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    Plan Multi-Day AI Marketing Campaign
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Automated, narrative-sequenced content planning across multiple days and platforms.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCampaignModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs flex-1">
+              {/* Step 1: Planning Mode */}
+              <div className="space-y-2">
+                <label className="block font-bold text-slate-900 dark:text-white">
+                  1. Select Campaign Duration & Mode
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {[
+                    { mode: "SINGLE_DAY", label: "Single Day", desc: "1 Day Flash / Event" },
+                    { mode: "ONE_WEEK", label: "1 Week", desc: "7 Days Sequence" },
+                    { mode: "TWO_WEEKS", label: "2 Weeks", desc: "14 Days Sprint" },
+                    { mode: "ONE_MONTH", label: "1 Month", desc: "30 Days Calendar" },
+                    { mode: "CUSTOM_RANGE", label: "Custom Range", desc: "Flexible Dates" },
+                  ].map((item) => (
+                    <button
+                      key={item.mode}
+                      type="button"
+                      onClick={() => handlePlanningModeChange(item.mode as CampaignPlanningMode)}
+                      className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                        campPlanningMode === item.mode
+                          ? "border-purple-600 bg-purple-50 dark:bg-purple-950/50 text-purple-900 dark:text-purple-200 ring-2 ring-purple-400"
+                          : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:border-slate-300"
+                      }`}
+                    >
+                      <span className="font-bold text-xs">{item.label}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-zinc-400 mt-1">{item.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Campaign Identity */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Campaign Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={campName}
+                    onChange={(e) => setCampName(e.target.value)}
+                    placeholder="e.g. Spring Inventory Launch & Flash Deal"
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Primary Objective
+                  </label>
+                  <select
+                    value={campObjective}
+                    onChange={(e) => setCampObjective(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  >
+                    <option value="INCREASE SALES & AWARENESS">Increase Sales & Store Conversions</option>
+                    <option value="PRODUCT LAUNCH">New Product Launch & Features</option>
+                    <option value="HOLIDAY / FLASH SALE">Holiday Promo or Flash Clearance</option>
+                    <option value="BRAND ENGAGEMENT">Community Engagement & Brand Story</option>
+                    <option value="EDUCATIONAL / EXPERT">Educational & Problem Solving</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Step 3: Dates & Platforms */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={campStartDate}
+                      onChange={(e) => {
+                        setCampStartDate(e.target.value);
+                        if (campPlanningMode !== "CUSTOM_RANGE") {
+                          const start = new Date(e.target.value);
+                          let days = 7;
+                          if (campPlanningMode === "SINGLE_DAY") days = 1;
+                          if (campPlanningMode === "TWO_WEEKS") days = 14;
+                          if (campPlanningMode === "ONE_MONTH") days = 30;
+                          setCampEndDate(new Date(start.getTime() + days * 86400000).toISOString().split("T")[0]);
+                        }
+                      }}
+                      className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={campEndDate}
+                      disabled={campPlanningMode !== "CUSTOM_RANGE"}
+                      onChange={(e) => setCampEndDate(e.target.value)}
+                      className={`w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 ${
+                        campPlanningMode !== "CUSTOM_RANGE" ? "opacity-70 cursor-not-allowed" : ""
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Target Platforms *
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {(["FACEBOOK", "INSTAGRAM", "TIKTOK", "YOUTUBE"] as SocialPlatform[]).map((plat) => {
+                      const isSelected = campPlatforms.includes(plat);
+                      return (
+                        <button
+                          key={plat}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setCampPlatforms(campPlatforms.filter((p) => p !== plat));
+                            } else {
+                              setCampPlatforms([...campPlatforms, plat]);
+                            }
+                          }}
+                          className={`px-3 py-2 rounded-lg border font-bold text-[11px] transition-all ${
+                            isSelected
+                              ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                              : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                          }`}
+                        >
+                          {plat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4: Content Mix Configuration */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-slate-900 dark:text-white">
+                    4. Content Mix Strategy (Must equal 100%)
+                  </label>
+                  <span
+                    className={`font-bold text-xs ${
+                      campContentMix.promotional +
+                        campContentMix.educational +
+                        campContentMix.engagement +
+                        campContentMix.brand +
+                        campContentMix.offers ===
+                      100
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-rose-600 dark:text-rose-400"
+                    }`}
+                  >
+                    Total:{" "}
+                    {campContentMix.promotional +
+                      campContentMix.educational +
+                      campContentMix.engagement +
+                      campContentMix.brand +
+                      campContentMix.offers}
+                    %
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
+                      Product Promo: {campContentMix.promotional}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={campContentMix.promotional}
+                      onChange={(e) =>
+                        setCampContentMix({ ...campContentMix, promotional: parseInt(e.target.value) || 0 })
+                      }
+                      className="w-full mt-1 accent-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
+                      Educational: {campContentMix.educational}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={campContentMix.educational}
+                      onChange={(e) =>
+                        setCampContentMix({ ...campContentMix, educational: parseInt(e.target.value) || 0 })
+                      }
+                      className="w-full mt-1 accent-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
+                      Engagement: {campContentMix.engagement}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={campContentMix.engagement}
+                      onChange={(e) =>
+                        setCampContentMix({ ...campContentMix, engagement: parseInt(e.target.value) || 0 })
+                      }
+                      className="w-full mt-1 accent-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
+                      Brand Story: {campContentMix.brand}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={campContentMix.brand}
+                      onChange={(e) =>
+                        setCampContentMix({ ...campContentMix, brand: parseInt(e.target.value) || 0 })
+                      }
+                      className="w-full mt-1 accent-purple-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
+                      Offers / Urgency: {campContentMix.offers}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={campContentMix.offers}
+                      onChange={(e) =>
+                        setCampContentMix({ ...campContentMix, offers: parseInt(e.target.value) || 0 })
+                      }
+                      className="w-full mt-1 accent-purple-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 5: Inventory-Aware Product Selection */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-slate-900 dark:text-white">
+                    5. Select In-Stock Catalog Products to Feature
+                  </label>
+                  <span className="text-[11px] text-slate-500">
+                    {campSelectedProducts.length === 0
+                      ? "All store products available will be used by AI"
+                      : `${campSelectedProducts.length} specific product(s) selected`}
+                  </span>
+                </div>
+
+                {storeProducts.length === 0 ? (
+                  <p className="text-slate-400 italic">No in-stock products found in store catalog.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto p-2 border border-slate-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-800/40">
+                    {storeProducts.map((p: any) => {
+                      const isChecked = campSelectedProducts.includes(p.id);
+                      return (
+                        <label
+                          key={p.id}
+                          className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
+                            isChecked
+                              ? "border-purple-500 bg-purple-50/50 dark:bg-purple-950/30"
+                              : "border-slate-100 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setCampSelectedProducts([...campSelectedProducts, p.id]);
+                              } else {
+                                setCampSelectedProducts(campSelectedProducts.filter((id) => id !== p.id));
+                              }
+                            }}
+                            className="rounded text-purple-600 focus:ring-purple-500"
+                          />
+                          <div className="truncate flex-1">
+                            <span className="font-bold text-slate-900 dark:text-white truncate block">
+                              {p.name}
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              KES {p.price?.toLocaleString()} • {p.quantity} in stock
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Step 6: Offer & Call to Action */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Special Offer / Discount (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={campOffer}
+                    onChange={(e) => setCampOffer(e.target.value)}
+                    placeholder="e.g. Free shipping this weekend with code SAVE20"
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Call to Action (CTA)
+                  </label>
+                  <input
+                    type="text"
+                    value={campCta}
+                    onChange={(e) => setCampCta(e.target.value)}
+                    placeholder="e.g. Shop Now, Order via WhatsApp, Visit Us"
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  />
+                </div>
+              </div>
+
+              {/* Pre-Flight AI Credit Estimation & Ledger Box */}
+              <div className="p-4 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 space-y-2">
+                <div className="flex items-center justify-between font-bold text-xs text-purple-900 dark:text-purple-200">
+                  <span className="flex items-center gap-1.5">
+                    <SparklesIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    AI Credit Estimation & Pre-Flight Ledger
+                  </span>
+                  <span>
+                    Your Balance: <strong className="text-emerald-600 dark:text-emerald-400">{userCreditBalance} Credits</strong>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-purple-200/50 dark:border-purple-800/40 text-[11px]">
+                  <div>
+                    <span className="text-slate-500 dark:text-zinc-400">Duration:</span>
+                    <p className="font-bold text-slate-900 dark:text-white">{estimatedDays} Days</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 dark:text-zinc-400">Planned Posts:</span>
+                    <p className="font-bold text-slate-900 dark:text-white">~{estimatedPostCount} Posts</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 dark:text-zinc-400">Required Credits:</span>
+                    <p className="font-bold text-purple-700 dark:text-purple-300">{estimatedCreditsCost} Credits</p>
+                  </div>
+                </div>
+
+                {!hasSufficientCredits && (
+                  <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-[11px] font-semibold flex items-center gap-2">
+                    <ExclamationTriangleIcon className="w-4 h-4 text-rose-600 shrink-0" />
+                    Insufficient AI credits. You need {estimatedCreditsCost} credits for this campaign, but your current balance is {userCreditBalance}.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-900/50">
+              <button
+                type="button"
+                onClick={() => setIsCampaignModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCreateCampaignSubmit}
+                disabled={isCreatingCampaign || !hasSufficientCredits}
+                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm disabled:opacity-50 flex items-center gap-2"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                {isCreatingCampaign ? "Synthesizing Multi-Day Sequence..." : "Generate & Schedule Campaign"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 2: POST DETAIL & SCHEDULE EDIT MODAL */}
+      {/* ========================================================================= */}
+      {isPostEditModalOpen && selectedPostForEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl max-w-2xl w-full my-8 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                  <PencilSquareIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    Edit Scheduled Social Post
+                  </h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                      {selectedPostForEdit.status}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      ID: {selectedPostForEdit.id.slice(0, 10)}...
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsPostEditModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-4 text-xs flex-1">
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                  Post Copy & Captions
+                </label>
+                <textarea
+                  rows={6}
+                  value={postEditCopy}
+                  onChange={(e) => setPostEditCopy(e.target.value)}
+                  className="w-full text-xs p-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-normal leading-relaxed"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Scheduled Date & Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={postEditScheduledAt}
+                    onChange={(e) => setPostEditScheduledAt(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-zinc-300 mb-1">
+                    Target Platforms
+                  </label>
+                  <div className="flex gap-1.5 flex-wrap pt-1">
+                    {selectedPostForEdit.publications?.map((pub: any) => (
+                      <span
+                        key={pub.id}
+                        className="px-2 py-1 rounded bg-slate-100 dark:bg-zinc-800 font-bold text-[10px] text-slate-700 dark:text-zinc-300 uppercase"
+                      >
+                        {pub.platform}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {selectedPostForEdit.adaptations && (
+                <div className="p-3 bg-slate-50 dark:bg-zinc-800/50 rounded-xl border border-slate-200 dark:border-zinc-700 space-y-2">
+                  <span className="font-bold text-slate-800 dark:text-zinc-200">Platform Adaptations</span>
+                  <div className="text-[11px] text-slate-600 dark:text-zinc-300 space-y-1">
+                    {Object.entries(selectedPostForEdit.adaptations).map(([plat, adap]: any) => (
+                      <div key={plat} className="p-2 bg-white dark:bg-zinc-900 rounded border border-slate-100 dark:border-zinc-800">
+                        <strong className="text-slate-900 dark:text-white uppercase">{plat}:</strong>{" "}
+                        {adap.caption || adap.title || "Standard caption"}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-900/50">
+              <button
+                type="button"
+                onClick={() => handleDeletePost(selectedPostForEdit.id)}
+                className="px-3 py-2 text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1"
+              >
+                <TrashIcon className="w-4 h-4" />
+                Delete Post
+              </button>
+
+              <div className="flex items-center gap-2">
+                {selectedPostForEdit.status !== "PUBLISHED" && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handlePublishNow(selectedPostForEdit.id);
+                      setIsPostEditModalOpen(false);
+                    }}
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-xs"
+                  >
+                    Publish Now
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSavePostEdit}
+                  disabled={isSavingPostEdit}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs disabled:opacity-50"
+                >
+                  {isSavingPostEdit ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
