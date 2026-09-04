@@ -79,3 +79,86 @@ export async function consumeVerificationToken(
   await markEmailVerified(email);
   return true;
 }
+
+export interface ResendVerificationResult {
+  success: boolean;
+  message: string;
+  alreadyVerified?: boolean;
+  cooldownRemainingSeconds?: number;
+}
+
+export async function resendVerificationEmail(
+  email: string,
+  callbackUrl?: string,
+): Promise<ResendVerificationResult> {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail || !normalizedEmail.includes("@")) {
+    return { success: false, message: "A valid email address is required." };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true, email: true, emailVerified: true, companyId: true },
+  });
+
+  if (!user) {
+    // Return friendly generic success to prevent email enumeration
+    return {
+      success: true,
+      message: "If an account with this email exists and requires verification, a new link has been sent.",
+    };
+  }
+
+  if (user.emailVerified === true) {
+    return {
+      success: true,
+      alreadyVerified: true,
+      message: "This email address is already verified. You can sign in now.",
+    };
+  }
+
+  // Rate-limiting check: if a token exists and was created less than 60s ago
+  const existing = await prisma.verificationToken.findFirst({
+    where: { identifier: normalizedEmail },
+    orderBy: { expires: "desc" },
+  });
+
+  if (existing) {
+    const expiresMs = existing.expires.getTime();
+    const approxCreatedMs = expiresMs - VERIFY_TTL_MS;
+    const elapsedMs = Date.now() - approxCreatedMs;
+    const cooldownMs = 60 * 1000;
+
+    if (elapsedMs < cooldownMs && elapsedMs >= 0) {
+      const remainingSeconds = Math.ceil((cooldownMs - elapsedMs) / 1000);
+      return {
+        success: false,
+        cooldownRemainingSeconds: remainingSeconds,
+        message: `Please wait ${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""} before requesting another verification email.`,
+      };
+    }
+  }
+
+  const token = await createEmailVerificationToken(normalizedEmail);
+  const sendResult = await sendVerificationEmail(
+    normalizedEmail,
+    token,
+    callbackUrl,
+    user.companyId
+      ? { tenantType: "STORE", companyId: user.companyId }
+      : { tenantType: "PLATFORM" }
+  );
+
+  if (!sendResult.sent) {
+    return {
+      success: false,
+      message: "Failed to dispatch verification email. Please try again shortly.",
+    };
+  }
+
+  return {
+    success: true,
+    message: "A new verification email has been sent. Please check your inbox.",
+  };
+}
+

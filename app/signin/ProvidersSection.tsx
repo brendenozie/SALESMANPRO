@@ -258,15 +258,25 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           </form>
         )}
 
-        <div className="text-sm text-center text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
-          <button
-            onClick={handleRegister}
-            disabled={loadingProvider !== null}
-            className={`font-medium text-yellow-500 hover:text-yellow-600 ${loadingProvider !== null && "opacity-60 cursor-not-allowed"}`}
-          >
-            Sign Up
-          </button>
+        <div className="text-sm text-center text-gray-600 dark:text-gray-400 space-y-2">
+          <div>
+            Don't have an account?{" "}
+            <button
+              onClick={handleRegister}
+              disabled={loadingProvider !== null}
+              className={`font-medium text-yellow-500 hover:text-yellow-600 ${loadingProvider !== null && "opacity-60 cursor-not-allowed"}`}
+            >
+              Sign Up
+            </button>
+          </div>
+          <div>
+            <a
+              href={`/verify-email?${data.email ? `email=${encodeURIComponent(data.email)}&` : ""}callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              className="text-xs text-gray-500 hover:text-yellow-600 dark:text-gray-400 dark:hover:text-yellow-400 underline transition"
+            >
+              Account not verified? Resend verification email
+            </a>
+          </div>
         </div>
         
       </div>
