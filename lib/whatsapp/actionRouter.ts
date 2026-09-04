@@ -59,6 +59,12 @@ import {
 // Support Actions
 import { escalateToHuman, createSupportRequest } from "./actions/support/escalateToHuman";
 
+// AI Workforce Orchestrator Bindings
+import { WorkforceOrchestrator } from "@/lib/ai/workforce/orchestrator";
+import { AgentWorkforceLevel } from "@/lib/ai/workforce/types";
+
+const workforceOrchestrator = new WorkforceOrchestrator();
+
 export async function actionRouter(params: {
   action: unknown;
   context: WhatsAppActionContext;
@@ -221,6 +227,77 @@ export async function actionRouter(params: {
       case "get_support_status":
         result = await getCustomerOrders({ limit: 1 }, params.context);
         break;
+
+      // ======================================================================
+      // AI WORKFORCE DIRECT AGENT BINDINGS
+      // ======================================================================
+      case "route_to_sales_agent": {
+        try {
+          const runResult = await workforceOrchestrator.execute(
+            {
+              agentKey: "SALES_AGENT",
+              prompt: `Customer WhatsApp inquiry: "${(action.arguments as any).inquiry}". Use catalog search and authoritative pricing to assist and offer recommendations.`,
+              channel: "WHATSAPP",
+            },
+            {
+              companyId: params.context.companyId,
+              companyName: params.context.customerName || "Store Customer",
+              level: AgentWorkforceLevel.STORE,
+              traceId: `wa_sales_${Date.now()}`,
+              channel: "WHATSAPP",
+            },
+          );
+
+          result = {
+            success: true,
+            action: "route_to_sales_agent",
+            message: runResult.reply,
+            shouldRespond: true,
+            data: {
+              creditsUsed: runResult.creditsUsed,
+              steps: runResult.stepsExecuted,
+            },
+          };
+        } catch (err: any) {
+          console.error("[WORKFORCE_WHATSAPP_SALES_ERROR]", err);
+          result = await searchProducts({ query: (action.arguments as any).inquiry }, params.context);
+        }
+        break;
+      }
+
+      case "route_to_support_agent": {
+        try {
+          const runResult = await workforceOrchestrator.execute(
+            {
+              agentKey: "SUPPORT_AGENT",
+              prompt: `Customer WhatsApp support inquiry: "${(action.arguments as any).inquiry}". Order context: ${(action.arguments as any).orderId || "None specified"}. Check order status and store policies accurately.`,
+              channel: "WHATSAPP",
+            },
+            {
+              companyId: params.context.companyId,
+              companyName: params.context.customerName || "Store Customer",
+              level: AgentWorkforceLevel.STORE,
+              traceId: `wa_support_${Date.now()}`,
+              channel: "WHATSAPP",
+            },
+          );
+
+          result = {
+            success: true,
+            action: "route_to_support_agent",
+            message: runResult.reply,
+            shouldRespond: true,
+            data: {
+              creditsUsed: runResult.creditsUsed,
+              steps: runResult.stepsExecuted,
+            },
+          };
+        } catch (err: any) {
+          console.error("[WORKFORCE_WHATSAPP_SUPPORT_ERROR]", err);
+          result = await escalateToHuman({ reason: (action.arguments as any).inquiry }, params.context);
+        }
+        break;
+      }
 
       default:
         result = {

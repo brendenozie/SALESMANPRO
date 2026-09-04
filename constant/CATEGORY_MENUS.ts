@@ -336,6 +336,11 @@ const commonEcommerce = (
       minTier: "Ghuba Basic",
       subItems: [
         {
+          label: "AI Workforce (28 Agents)",
+          href: `/admin/${adminSlug}/ai-workforce`,
+          minTier: "Ghuba Basic",
+        },
+        {
           label: "AI Studio (Full Suite)",
           href: `/admin/${adminSlug}/ai-studio`,
           minTier: "Ghuba Basic",
@@ -3818,6 +3823,12 @@ export const getCategoryMenus = (
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "AI Workforce",
+        href: `/admin/${adminSlug}/ai-workforce`,
+        icon: SparklesIcon,
         minTier: "Ghuba Starter",
       },
       {

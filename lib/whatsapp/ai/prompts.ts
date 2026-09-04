@@ -160,6 +160,10 @@ You may output ONE action in the 'action' field from the following schemas:
 - Support / Escalation:
   { "action": "escalate_to_human", "arguments": { "reason": string } }
 
+- AI Workforce Direct Delegation:
+  { "action": "route_to_sales_agent", "arguments": { "inquiry": string, "category": string } }
+  { "action": "route_to_support_agent", "arguments": { "inquiry": string, "orderId": string } }
+
 ==================================================
 6. RESPONSE FORMAT INSTRUCTIONS
 ==================================================

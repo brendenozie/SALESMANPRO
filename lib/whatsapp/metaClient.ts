@@ -381,4 +381,104 @@ export class MetaWhatsAppClient {
       body,
     });
   }
+
+  // ─── Template & Outreach Messages ──────────────────────────────────────────
+
+  async sendTemplateMessage(params: {
+    to: string;
+    templateName: string;
+    languageCode?: string;
+    bodyParameters?: string[];
+    buttonPayload?: string;
+  }): Promise<MetaSendMessageResponse> {
+    const components: any[] = [];
+
+    if (params.bodyParameters && params.bodyParameters.length > 0) {
+      components.push({
+        type: "body",
+        parameters: params.bodyParameters.map((text) => ({
+          type: "text",
+          text,
+        })),
+      });
+    }
+
+    if (params.buttonPayload) {
+      components.push({
+        type: "button",
+        sub_type: "quick_reply",
+        index: "0",
+        parameters: [{ type: "payload", payload: params.buttonPayload }],
+      });
+    }
+
+    return this.request<MetaSendMessageResponse>(
+      `/${this.phoneNumberId}/messages`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: params.to,
+          type: "template",
+          template: {
+            name: params.templateName,
+            language: {
+              code: params.languageCode || "en_US",
+            },
+            components: components.length > 0 ? components : undefined,
+          },
+        }),
+      },
+    );
+  }
+
+  async registerOutreachTemplate(params: {
+    wabaId: string;
+    templateName?: string;
+  }): Promise<any> {
+    const name = params.templateName || "salesmanpro_merchant_outreach";
+    return this.request<any>(
+      `/${params.wabaId}/message_templates`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          category: "MARKETING",
+          language: "en_US",
+          components: [
+            {
+              type: "HEADER",
+              format: "TEXT",
+              text: "SalesmanPro Merchant Growth",
+            },
+            {
+              type: "BODY",
+              text: "Hello {{1}}, we noticed {{2}} and wanted to show you how our mobile storefront, WhatsApp commerce, and M-Pesa automated ordering can boost your sales. Reply YES to see a quick 2-minute demo!",
+              example: {
+                body_text: [["Merchant Partner", "your business presence in Kenya"]],
+              },
+            },
+            {
+              type: "FOOTER",
+              text: "SalesmanPro Merchant Solutions",
+            },
+            {
+              type: "BUTTONS",
+              buttons: [
+                {
+                  type: "QUICK_REPLY",
+                  text: "Request Demo",
+                },
+                {
+                  type: "QUICK_REPLY",
+                  text: "Not Interested",
+                },
+              ],
+            },
+          ],
+        }),
+      },
+    );
+  }
 }

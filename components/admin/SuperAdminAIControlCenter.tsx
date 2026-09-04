@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   ShieldCheckIcon,
   CpuChipIcon,
@@ -326,7 +327,15 @@ export default function SuperAdminAIControlCenter() {
           </div>
 
           {/* GLOBAL KILL SWITCH & REFRESH */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/super-admin/ai-workforce"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-semibold transition-colors"
+            >
+              <Squares2X2Icon className="w-4 h-4" />
+              <span>AI Workforce (28 Agents)</span>
+            </Link>
+
             <button
               onClick={handleToggleGlobalKillSwitch}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs tracking-wide transition-colors ${globalKillSwitch

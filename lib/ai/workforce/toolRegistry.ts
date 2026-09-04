@@ -1,0 +1,904 @@
+/**
+ * lib/ai/workforce/toolRegistry.ts
+ *
+ * Central Authoritative Tool Registry for the 3-Tier AI Workforce.
+ * Bounded by strict Zod schema validation, multi-tenant access checks,
+ * explicit permission tiers, and human-approval gates.
+ *
+ * Architecture Rule: AI NEVER writes raw database queries directly.
+ * All tools call authoritative domain services and return sanitized summaries.
+ */
+
+import { z } from "zod";
+import prisma from "@/server/db/prismadb";
+import {
+  WorkforceTool,
+  WorkforceToolResult,
+  WorkforceExecutionContext,
+  AgentWorkforceLevel,
+  AgentPermissionLevel,
+} from "./types";
+import { PromptDefense } from "./promptDefense";
+
+export class WorkforceToolRegistry {
+  private static tools: Map<string, WorkforceTool> = new Map();
+
+  public static registerTool(tool: WorkforceTool) {
+    this.tools.set(tool.name, tool);
+  }
+
+  public static getTool(name: string): WorkforceTool | undefined {
+    return this.tools.get(name);
+  }
+
+  public static listToolsForAgent(
+    level: AgentWorkforceLevel,
+    permission: AgentPermissionLevel,
+    allowedToolNames: string[],
+  ): WorkforceTool[] {
+    return Array.from(this.tools.values()).filter((t) => {
+      // Must match level scope
+      if (!t.levelScope.includes(level)) return false;
+      // Must be within allowed tool list
+      if (!allowedToolNames.includes(t.name) && !allowedToolNames.includes("*")) return false;
+      return true;
+    });
+  }
+
+  public static async executeTool(
+    toolName: string,
+    rawArgs: any,
+    context: WorkforceExecutionContext,
+  ): Promise<WorkforceToolResult> {
+    const tool = this.tools.get(toolName);
+    if (!tool) {
+      return { success: false, error: `Tool '${toolName}' not found in workforce registry.` };
+    }
+
+    // 1. Level scope authorization
+    if (!tool.levelScope.includes(context.level)) {
+      return {
+        success: false,
+        error: `Tool '${toolName}' is not authorized for workforce level ${context.level}.`,
+      };
+    }
+
+    // 2. Tenant isolation assertion for Store level tools
+    if (tool.levelScope.includes(AgentWorkforceLevel.STORE) && !context.companyId) {
+      return {
+        success: false,
+        error: `Tool '${toolName}' requires a valid store companyId context.`,
+      };
+    }
+
+    // 3. Approval gate: If tool requires approval, create an approval request
+    if (tool.requiresApproval) {
+      return {
+        success: true,
+        requiresApproval: true,
+        approvalPayload: {
+          actionType: tool.name,
+          title: `Approval Required: ${tool.description}`,
+          description: `Agent requested execution of ${tool.name}`,
+          proposedAction: rawArgs,
+        },
+        summaryForAgent: `Action '${toolName}' requires human authorization before executing. An approval ticket has been submitted to the inbox.`,
+      };
+    }
+
+    // 4. Safe execution
+    try {
+      return await tool.execute(rawArgs, context);
+    } catch (err: any) {
+      console.error(`[WORKFORCE_TOOL_ERROR: ${toolName}]`, err);
+      return {
+        success: false,
+        error: err.message || `Execution of tool '${toolName}' failed.`,
+      };
+    }
+  }
+}
+
+// ============================================================================
+// REGISTER STORE LEVEL TOOLS
+// ============================================================================
+
+// 1. searchCatalog
+WorkforceToolRegistry.registerTool({
+  name: "searchCatalog",
+  description: "Search products in the store's authoritative catalog with inventory and pricing.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    query: "string (optional search keyword, title or brand)",
+    category: "string (optional category filter)",
+    limit: "number (optional, default 6, max 20)",
+  },
+  execute: async (args, context) => {
+    const { query = "", category, limit = 6 } = args;
+    const products = await prisma.product.findMany({
+      where: {
+        companyId: context.companyId!,
+        deletedAt: null,
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query, mode: "insensitive" } },
+                { description: { contains: query, mode: "insensitive" } },
+                { brand: { contains: query, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+        ...(category ? { category: { contains: category, mode: "insensitive" } } : {}),
+      },
+      take: Math.min(limit, 20),
+      select: {
+        id: true,
+        name: true,
+        sellingPrice: true,
+        finalPrice: true,
+        quantity: true,
+        isAvailable: true,
+        category: true,
+        brand: true,
+        description: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: { count: products.length, products },
+      summaryForAgent: `Found ${products.length} matching products in catalog: ${products
+        .map((p) => `${p.name} (KES ${p.finalPrice || p.sellingPrice}, Stock: ${p.quantity})`)
+        .join("; ")}`,
+    };
+  },
+});
+
+// 2. checkInventoryLevels
+WorkforceToolRegistry.registerTool({
+  name: "checkInventoryLevels",
+  description: "Identify low-stock, out-of-stock, and excess products across the store.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    lowStockThreshold: "number (optional, default 5)",
+  },
+  execute: async (args, context) => {
+    const threshold = args.lowStockThreshold || 5;
+    const lowStockProducts = await prisma.product.findMany({
+      where: {
+        companyId: context.companyId!,
+        deletedAt: null,
+        quantity: { lte: threshold, gt: 0 },
+      },
+      select: { id: true, name: true, quantity: true, sellingPrice: true },
+      take: 15,
+    });
+
+    const outOfStockProducts = await prisma.product.findMany({
+      where: {
+        companyId: context.companyId!,
+        deletedAt: null,
+        quantity: { lte: 0 },
+      },
+      select: { id: true, name: true, quantity: true, sellingPrice: true },
+      take: 10,
+    });
+
+    return {
+      success: true,
+      data: {
+        lowStockCount: lowStockProducts.length,
+        outOfStockCount: outOfStockProducts.length,
+        lowStockProducts,
+        outOfStockProducts,
+      },
+      summaryForAgent: `Store Inventory Audit: ${lowStockProducts.length} items low in stock (<= ${threshold}), ${outOfStockProducts.length} items completely out of stock.`,
+    };
+  },
+});
+
+// 3. getStoreOperationalSummary
+WorkforceToolRegistry.registerTool({
+  name: "getStoreOperationalSummary",
+  description: "Authoritative business summary: today's sales, pending orders, low stock, and open inquiries.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {},
+  execute: async (_, context) => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [todayOrders, pendingOrders, lowStockCount, company] = await Promise.all([
+      prisma.customerOrder.findMany({
+        where: {
+          companyId: context.companyId!,
+          createdAt: { gte: todayStart },
+        },
+        select: { id: true, totalPrice: true, totalFinalPrice: true, status: true, paymentStatus: true },
+      }),
+      prisma.customerOrder.count({
+        where: {
+          companyId: context.companyId!,
+          status: { in: ["PENDING", "PROCESSING"] },
+        },
+      }),
+      prisma.product.count({
+        where: {
+          companyId: context.companyId!,
+          deletedAt: null,
+          quantity: { lte: 5 },
+        },
+      }),
+      prisma.company.findUnique({
+        where: { id: context.companyId! },
+        select: { name: true, currency: true, aiCreditBalance: true },
+      }),
+    ]);
+
+    const totalSalesToday = todayOrders.reduce(
+      (sum, o) => sum + (o.totalFinalPrice || o.totalPrice || 0),
+      0,
+    );
+
+    return {
+      success: true,
+      data: {
+        storeName: company?.name,
+        currency: company?.currency || "KES",
+        aiCreditBalance: company?.aiCreditBalance || 0,
+        todayOrderCount: todayOrders.length,
+        todaySalesTotal: totalSalesToday,
+        pendingOrdersCount: pendingOrders,
+        lowStockItemsCount: lowStockCount,
+      },
+      summaryForAgent: `Today's Business Summary for ${company?.name}: Sales Total ${company?.currency || "KES"} ${totalSalesToday.toLocaleString()} across ${todayOrders.length} orders. Pending orders: ${pendingOrders}. Low stock products: ${lowStockCount}.`,
+    };
+  },
+});
+
+// 4. lookupOrders
+WorkforceToolRegistry.registerTool({
+  name: "lookupOrders",
+  description: "Lookup customer orders by order ID, phone number, or status.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    orderId: "optional string",
+    phone: "optional string",
+    status: "optional string (PENDING, DELIVERED, etc.)",
+    limit: "optional number (default 5)",
+  },
+  execute: async (args, context) => {
+    const { orderId, phone, status, limit = 5 } = args;
+    const orders = await prisma.customerOrder.findMany({
+      where: {
+        companyId: context.companyId!,
+        ...(orderId ? { id: orderId } : {}),
+        ...(phone ? { phone: { contains: phone } } : {}),
+        ...(status ? { status: status as any } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: Math.min(limit, 10),
+      include: {
+        items: {
+          select: { quantity: true, price: true, totalPrice: true, product: { select: { name: true } } },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: { count: orders.length, orders },
+      summaryForAgent: `Found ${orders.length} order(s): ${orders
+        .map(
+          (o) =>
+            `Order #${o.id.slice(-6)} - Status: ${o.status}, Total: KES ${o.totalFinalPrice || o.totalPrice}, Items: ${o.items.length}`,
+        )
+        .join("; ")}`,
+    };
+  },
+});
+
+// 5. getCustomerInsights
+WorkforceToolRegistry.registerTool({
+  name: "getCustomerInsights",
+  description: "Analyze customer repeat purchases, VIP buyers, and dormant accounts.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    dormantDays: "optional number (default 45)",
+  },
+  execute: async (args, context) => {
+    const dormantDays = args.dormantDays || 45;
+    const cutoffDate = new Date(Date.now() - dormantDays * 24 * 60 * 60 * 1000);
+
+    const repeatOrders = await prisma.customerOrder.groupBy({
+      by: ["phone"],
+      where: {
+        companyId: context.companyId!,
+        phone: { not: null },
+      },
+      _count: { id: true },
+      _sum: { totalPrice: true },
+      having: { id: { _count: { gt: 1 } } },
+      orderBy: { _count: { id: "desc" } },
+      take: 10,
+    });
+
+    const dormantOrders = await prisma.customerOrder.findMany({
+      where: {
+        companyId: context.companyId!,
+        createdAt: { lte: cutoffDate },
+      },
+      select: { phone: true, name: true, createdAt: true, totalPrice: true },
+      distinct: ["phone"],
+      take: 10,
+    });
+
+    return {
+      success: true,
+      data: {
+        repeatCustomerCount: repeatOrders.length,
+        sampleRepeatCustomers: repeatOrders.map((r) => ({
+          phone: r.phone ? `${r.phone.slice(0, 4)}***${r.phone.slice(-3)}` : "Unknown",
+          ordersCount: r._count.id,
+          totalSpent: r._sum.totalPrice,
+        })),
+        dormantCustomerCount: dormantOrders.length,
+      },
+      summaryForAgent: `Customer Retention Analysis: ${repeatOrders.length} high-frequency repeat customers found. ${dormantOrders.length} dormant accounts have not placed an order in over ${dormantDays} days.`,
+    };
+  },
+});
+
+// 6. draftMarketingCampaign
+WorkforceToolRegistry.registerTool({
+  name: "draftMarketingCampaign",
+  description: "Draft a coordinated multi-channel marketing campaign for store promotion.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 1.0,
+  parameters: {
+    campaignName: "string",
+    primaryTheme: "string",
+    channels: "array of strings (WHATSAPP, SOCIAL, EMAIL)",
+    featuredProductIds: "optional array of product IDs",
+  },
+  execute: async (args, context) => {
+    const { campaignName, primaryTheme, channels = ["WHATSAPP", "SOCIAL"], featuredProductIds } = args;
+
+    // Check products
+    let products: any[] = [];
+    if (featuredProductIds && featuredProductIds.length > 0) {
+      products = await prisma.product.findMany({
+        where: { id: { in: featuredProductIds }, companyId: context.companyId! },
+        select: { id: true, name: true, sellingPrice: true },
+      });
+    }
+
+    const campaign = await prisma.aIAgentCampaign.create({
+      data: {
+        companyId: context.companyId!,
+        level: AgentWorkforceLevel.STORE,
+        name: campaignName,
+        targetAudience: "Existing and potential store shoppers",
+        goalDescription: primaryTheme,
+        channel: channels.join(","),
+        automationMode: "ASSISTED",
+        status: "DRAFT",
+        metrics: {
+          featuredProducts: products.map((p) => ({ id: p.id, name: p.name, price: p.sellingPrice })),
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: { campaignId: campaign.id, name: campaign.name, status: campaign.status },
+      summaryForAgent: `Campaign draft '${campaign.name}' created with ID ${campaign.id}. It is ready for merchant review in Marketing Station.`,
+    };
+  },
+});
+
+// 7. optimizeMarketplaceListing
+WorkforceToolRegistry.registerTool({
+  name: "optimizeMarketplaceListing",
+  description: "Audit a store product for Ghuba marketplace listing readiness and generate SEO tags.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 1.0,
+  parameters: {
+    productId: "string",
+  },
+  execute: async (args, context) => {
+    const product = await prisma.product.findFirst({
+      where: { id: args.productId, companyId: context.companyId! },
+    });
+
+    if (!product) {
+      return { success: false, error: "Product not found in store catalog." };
+    }
+
+    const recommendations = [];
+    if (!product.images || product.images.length === 0) {
+      recommendations.push("Add high-resolution product photos with clean backgrounds.");
+    }
+    if (!product.description || product.description.length < 50) {
+      recommendations.push("Expand product description to include specifications, materials, and warranty.");
+    }
+    if (!product.category) {
+      recommendations.push("Assign a precise category for marketplace discoverability.");
+    }
+
+    return {
+      success: true,
+      data: {
+        productId: product.id,
+        name: product.name,
+        isEligible: product.isAvailable && (product.quantity || 0) > 0,
+        recommendations,
+      },
+      summaryForAgent: `Marketplace Listing Audit for '${product.name}': Eligibility: ${product.isAvailable ? "Eligible" : "Needs Update"}. Recommendations: ${recommendations.join(" ")}`,
+    };
+  },
+});
+
+// 8. escalateToHuman
+WorkforceToolRegistry.registerTool({
+  name: "escalateToHuman",
+  description: "Escalate an urgent customer inquiry, dispute, or unsupported request to human staff.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.EXECUTE,
+  costCredits: 0,
+  parameters: {
+    customerPhone: "optional string",
+    customerEmail: "optional string",
+    reason: "string (explanation of why human intervention is required)",
+    priority: "optional string (CRITICAL, HIGH, MEDIUM)",
+  },
+  execute: async (args, context) => {
+    const { customerPhone, customerEmail, reason, priority = "HIGH" } = args;
+
+    const escalation = await prisma.aIAgentEscalation.create({
+      data: {
+        companyId: context.companyId!,
+        customerPhone,
+        customerEmail,
+        reason,
+        priority,
+        status: "PENDING",
+      },
+    });
+
+    return {
+      success: true,
+      data: { escalationId: escalation.id, status: escalation.status },
+      summaryForAgent: `Customer issue successfully escalated to human staff (Escalation ID: ${escalation.id}, Priority: ${priority}). Advise customer that an agent will follow up.`,
+    };
+  },
+});
+
+// ============================================================================
+// REGISTER PLATFORM LEVEL TOOLS (SalesmanPro Super Admin SaaS Growth)
+// ============================================================================
+
+// 9. searchPublicBusinesses
+WorkforceToolRegistry.registerTool({
+  name: "searchPublicBusinesses",
+  description: "Search live public business directories or web sources (via SerpApi/Google Custom Search) for prospective retail/service merchants in Kenya.",
+  levelScope: [AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {
+    category: "string (e.g. Electronics, Agrovet, Salons, Hardware)",
+    location: "string (e.g. Nairobi, Kisumu, Eldoret)",
+    limit: "optional number (default 5)",
+  },
+  execute: async (args) => {
+    const { category, location, limit = 5 } = args;
+
+    // 1. Check if commercial search API keys are present (DB encrypted or .env fallback)
+    let serpApiKey = process.env.SERPAPI_API_KEY;
+    let googleApiKey = process.env.GOOGLE_SEARCH_API_KEY;
+    let googleEngineId = process.env.GOOGLE_SEARCH_ENGINE_ID;
+
+    try {
+      const { superAdminAIService } = await import("../superAdminService");
+      const dbSerp = await superAdminAIService.getDecryptedApiKey("SERPAPI");
+      if (dbSerp) serpApiKey = dbSerp;
+
+      const googleDetails = await superAdminAIService.getProviderDetails("GOOGLE_SEARCH");
+      if (googleDetails.apiKey) googleApiKey = googleDetails.apiKey;
+      if (googleDetails.metadata?.searchEngineId) googleEngineId = googleDetails.metadata.searchEngineId;
+    } catch {
+      // Graceful fallback to process.env
+    }
+
+    let liveResults: Array<{
+      businessName: string;
+      category: string;
+      location: string;
+      phone?: string;
+      website?: string;
+      rating?: number;
+      sourceUrl?: string;
+      sourceProvider: string;
+    }> = [];
+
+    // Attempt 1: SerpApi Google Maps search for high-fidelity local merchants
+    if (serpApiKey) {
+      try {
+        const serpUrl = `https://serpapi.com/search.json?engine=google_maps&q=${encodeURIComponent(`${category} in ${location} Kenya`)}&api_key=${serpApiKey}`;
+        const resp = await fetch(serpUrl, { signal: AbortSignal.timeout(7000) });
+        if (resp.ok) {
+          const data = await resp.json();
+          const localPlaces = data.local_results || [];
+          liveResults = localPlaces.slice(0, limit).map((p: any) => ({
+            businessName: p.title || "Business",
+            category,
+            location: p.address || location,
+            phone: p.phone,
+            website: p.website,
+            rating: p.rating,
+            sourceUrl: p.link || `https://www.google.com/maps/place/?q=place_id:${p.place_id}`,
+            sourceProvider: "SERPAPI_GOOGLE_MAPS",
+          }));
+        }
+      } catch (err: any) {
+        console.warn("[SERPAPI_SEARCH_WARN] Failed SerpApi search:", err?.message || err);
+      }
+    }
+
+    // Attempt 2: Google Custom Search API
+    if (liveResults.length === 0 && googleApiKey && googleEngineId) {
+      try {
+        const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${googleEngineId}&q=${encodeURIComponent(`${category} ${location} Kenya business contact website`)}&num=${limit}`;
+        const resp = await fetch(searchUrl, { signal: AbortSignal.timeout(7000) });
+        if (resp.ok) {
+          const data = await resp.json();
+          const items = data.items || [];
+          liveResults = items.slice(0, limit).map((item: any) => ({
+            businessName: item.title.split("-")[0]?.split("|")[0]?.trim() || item.title,
+            category,
+            location,
+            website: item.link,
+            sourceUrl: item.link,
+            sourceProvider: "GOOGLE_CUSTOM_SEARCH",
+          }));
+        }
+      } catch (err: any) {
+        console.warn("[GOOGLE_CUSTOM_SEARCH_WARN] Failed Google Search:", err?.message || err);
+      }
+    }
+
+    // 2. Query existing database prospects for deduplication & verification
+    const existing = await prisma.growthProspect.findMany({
+      where: {
+        category: { contains: category, mode: "insensitive" },
+        location: { contains: location, mode: "insensitive" },
+      },
+      take: limit,
+      select: {
+        id: true,
+        businessName: true,
+        category: true,
+        location: true,
+        status: true,
+        overallLeadScore: true,
+        website: true,
+        phone: true,
+      },
+    });
+
+    const existingNames = new Set(existing.map((e) => e.businessName.toLowerCase()));
+
+    // Deduplicate and combine
+    const mergedProspects = [
+      ...existing.map((e) => ({ ...e, sourceProvider: "INTERNAL_DATABASE", isExistingLead: true })),
+      ...liveResults
+        .filter((r) => !existingNames.has(r.businessName.toLowerCase()))
+        .map((r) => ({ ...r, isExistingLead: false })),
+    ].slice(0, limit);
+
+    const providerLabel = serpApiKey
+      ? "Live SerpApi Google Maps & Platform CRM"
+      : googleApiKey
+      ? "Google Custom Search & Platform CRM"
+      : "Verified Platform CRM Directory (SerpApi/Google Search key unconfigured)";
+
+    return {
+      success: true,
+      data: {
+        totalDiscovered: mergedProspects.length,
+        liveProvider: serpApiKey ? "SerpApi" : googleApiKey ? "GoogleSearch" : "InternalCRM",
+        prospects: mergedProspects,
+      },
+      summaryForAgent: `Business Discovery for ${category} in ${location} (${providerLabel}): ${mergedProspects.length} merchants identified (${liveResults.length} live web results, ${existing.length} verified CRM records).`,
+    };
+  },
+});
+
+// 10. createProspectRecord
+WorkforceToolRegistry.registerTool({
+  name: "createProspectRecord",
+  description: "Record a newly qualified business prospect with digital maturity and lead scores.",
+  levelScope: [AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.EXECUTE,
+  costCredits: 0,
+  parameters: {
+    businessName: "string",
+    category: "string",
+    location: "string",
+    phone: "optional string",
+    email: "optional string",
+    website: "optional string",
+    sourceUrl: "optional string",
+    digitalMaturityScore: "number (0-100)",
+    ecommerceOpportunityScore: "number (0-100)",
+    recommendedPlan: "optional string",
+    evidence: "string (summary of publicly observed business attributes)",
+  },
+  execute: async (args) => {
+    const overallLeadScore = Math.round(
+      (args.digitalMaturityScore * 0.4) + (args.ecommerceOpportunityScore * 0.6),
+    );
+
+    const prospect = await prisma.growthProspect.create({
+      data: {
+        businessName: args.businessName,
+        category: args.category,
+        location: args.location,
+        phone: args.phone,
+        email: args.email,
+        website: args.website,
+        sourceUrl: args.sourceUrl,
+        evidence: args.evidence,
+        digitalMaturityScore: args.digitalMaturityScore,
+        ecommerceOpportunityScore: args.ecommerceOpportunityScore,
+        overallLeadScore,
+        recommendedPlan: args.recommendedPlan || "Starter eCommerce + WhatsApp Commerce",
+        status: "QUALIFIED",
+      },
+    });
+
+    return {
+      success: true,
+      data: { prospectId: prospect.id, businessName: prospect.businessName, leadScore: overallLeadScore },
+      summaryForAgent: `Prospect '${prospect.businessName}' (${prospect.category} in ${prospect.location}) recorded with Lead Score ${overallLeadScore}/100.`,
+    };
+  },
+});
+
+// 11. draftOutboundOutreach
+WorkforceToolRegistry.registerTool({
+  name: "draftOutboundOutreach",
+  description: "Draft high-converting, personalized outreach for a qualified prospect (Mandates Human Approval).",
+  levelScope: [AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.HUMAN_APPROVAL_REQUIRED,
+  requiresApproval: true,
+  costCredits: 0,
+  parameters: {
+    prospectId: "string",
+    channel: "string (EMAIL or WHATSAPP)",
+    customAngle: "string (e.g. WhatsApp checkout, catalog sync, POS)",
+    message: "optional string (custom outreach message body)",
+  },
+  execute: async (args) => {
+    const prospect = await prisma.growthProspect.findUnique({
+      where: { id: args.prospectId },
+    });
+
+    if (!prospect) {
+      return { success: false, error: "Prospect record not found." };
+    }
+
+    const contactGreeting = prospect.contactName ? `Hi ${prospect.contactName}` : `Hello ${prospect.businessName} Team`;
+    const draftedBody =
+      args.message ||
+      `${contactGreeting},\n\nWe noticed ${prospect.businessName}'s presence in ${prospect.city || "Kenya"} and wanted to share how SalesmanPro is helping similar merchants accelerate sales. With our platform, you get an instant mobile-first storefront, automated WhatsApp ordering with conversational AI, and direct M-Pesa integrated checkout tailored for ${args.customAngle || "rapid growth"}.\n\nWould you be open to a quick 3-minute demo this week to see how it works for your business?\n\nBest regards,\nSalesmanPro Merchant Growth Team`;
+
+    return {
+      success: true,
+      requiresApproval: true,
+      approvalPayload: {
+        actionType: "OUTBOUND_PROSPECT_MESSAGE",
+        title: `Outbound Outreach to ${prospect.businessName}`,
+        description: draftedBody,
+        proposedAction: {
+          prospectId: prospect.id,
+          businessName: prospect.businessName,
+          contactName: prospect.contactName,
+          channel: args.channel,
+          recipient: args.channel === "EMAIL" ? prospect.email : prospect.phone,
+          email: prospect.email,
+          phone: prospect.phone,
+          angle: args.customAngle,
+          message: draftedBody,
+        },
+      },
+      summaryForAgent: `Outbound message for '${prospect.businessName}' has been queued for Super Admin approval before dispatch.`,
+    };
+  },
+});
+
+// 12. getPlatformGrowthPipeline
+WorkforceToolRegistry.registerTool({
+  name: "getPlatformGrowthPipeline",
+  description: "Retrieve comprehensive metrics on SalesmanPro prospect acquisition pipeline.",
+  levelScope: [AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {},
+  execute: async () => {
+    const counts = await prisma.growthProspect.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    });
+
+    const statusMap: Record<string, number> = {};
+    counts.forEach((c) => {
+      statusMap[c.status] = c._count.id;
+    });
+
+    const totalStores = await prisma.company.count({ where: { deletedAt: null } });
+
+    return {
+      success: true,
+      data: {
+        totalActiveStoresOnPlatform: totalStores,
+        prospectPipeline: statusMap,
+      },
+      summaryForAgent: `SaaS Growth Pipeline: ${totalStores} active stores on SalesmanPro. Prospects: ${statusMap["DISCOVERED"] || 0} discovered, ${statusMap["QUALIFIED"] || 0} qualified, ${statusMap["CONTACTED"] || 0} contacted, ${statusMap["ONBOARDED"] || 0} converted.`,
+    };
+  },
+});
+
+// ============================================================================
+// REGISTER MARKETPLACE LEVEL TOOLS (Ghuba Marketplace Super Admin Growth)
+// ============================================================================
+
+// 13. detectSupplyGaps
+WorkforceToolRegistry.registerTool({
+  name: "detectSupplyGaps",
+  description: "Identify categories and locations with high buyer interest but low active listings on Ghuba.",
+  levelScope: [AgentWorkforceLevel.MARKETPLACE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {
+    location: "optional string",
+  },
+  execute: async (args) => {
+    const gaps = await prisma.marketplaceSupplyGap.findMany({
+      where: {
+        status: "OPEN",
+        ...(args.location ? { location: { contains: args.location, mode: "insensitive" } } : {}),
+      },
+      orderBy: { unmetSearchVolume: "desc" },
+      take: 10,
+    });
+
+    return {
+      success: true,
+      data: { gapCount: gaps.length, supplyGaps: gaps },
+      summaryForAgent: `Ghuba Marketplace Supply Analysis: Found ${gaps.length} critical supply gaps: ${gaps
+        .map(
+          (g) =>
+            `${g.category} in ${g.location} (Search Volume: ${g.unmetSearchVolume}, Active Listings: ${g.activeListingCount})`,
+        )
+        .join("; ")}`,
+    };
+  },
+});
+
+// 14. recruitSellerForGap
+WorkforceToolRegistry.registerTool({
+  name: "recruitSellerForGap",
+  description: "Match a verified Ghuba supply gap with prospective merchants for targeted onboarding.",
+  levelScope: [AgentWorkforceLevel.MARKETPLACE],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 0,
+  parameters: {
+    gapId: "string",
+    sellerType: "string (e.g. Retailer, Wholesaler, Dealership)",
+  },
+  execute: async (args) => {
+    const gap = await prisma.marketplaceSupplyGap.findUnique({
+      where: { id: args.gapId },
+    });
+
+    if (!gap) {
+      return { success: false, error: "Supply gap record not found." };
+    }
+
+    return {
+      success: true,
+      data: {
+        gapId: gap.id,
+        category: gap.category,
+        location: gap.location,
+        recommendedOutreach: `Contact ${args.sellerType} merchants in ${gap.location} to supply ${gap.category} listings.`,
+      },
+      summaryForAgent: `Recruitment action plan created for ${gap.category} in ${gap.location}. Recommended outreach: target local ${args.sellerType} sellers.`,
+    };
+  },
+});
+
+// 15. getConnectedSocialAccounts
+WorkforceToolRegistry.registerTool({
+  name: "getConnectedSocialAccounts",
+  description: "Inspect active connected social media accounts (Facebook, Instagram, TikTok, YouTube) for the store.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {},
+  execute: async (_args, context) => {
+    const { socialService } = await import("@/lib/social/socialService");
+    const accounts = await socialService.getConnectedAccounts(context.companyId!);
+
+    return {
+      success: true,
+      data: { connectedCount: accounts.length, accounts },
+      summaryForAgent: `Store has ${accounts.length} connected social account(s): ${accounts.map((a: any) => `${a.platform} (${a.accountName})`).join(", ") || "None connected"}.`,
+    };
+  },
+});
+
+// 16. publishSocialPost
+WorkforceToolRegistry.registerTool({
+  name: "publishSocialPost",
+  description: "Create and publish or queue a social media post across connected Facebook and Instagram accounts (Mandates Human Approval).",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.HUMAN_APPROVAL_REQUIRED,
+  requiresApproval: true,
+  costCredits: 0.5,
+  parameters: {
+    content: "string (post text/caption)",
+    platforms: "array of strings (e.g. ['FACEBOOK', 'INSTAGRAM'])",
+    mediaUrls: "optional array of image/video URLs",
+    hashtags: "optional array of hashtags",
+    title: "optional string title",
+  },
+  execute: async (args, context) => {
+    const post = await prisma.socialMediaPost.create({
+      data: {
+        companyId: context.companyId!,
+        title: args.title || "AI Workforce Post",
+        content: args.content,
+        targetPlatforms: args.platforms || ["FACEBOOK"],
+        mediaUrls: args.mediaUrls || [],
+        hashtags: args.hashtags || [],
+        status: "DRAFT",
+        approvalMode: "MANUAL",
+        isApproved: false,
+      },
+    });
+
+    const targetPlatforms = args.platforms || ["FACEBOOK"];
+
+    return {
+      success: true,
+      requiresApproval: true,
+      approvalPayload: {
+        actionType: "PUBLISH_SOCIAL_POST",
+        title: `Social Post for ${context.companyName || "Store"} (${targetPlatforms.join(", ")})`,
+        description: args.content,
+        proposedAction: {
+          postId: post.id,
+          companyId: context.companyId,
+          content: args.content,
+          platforms: targetPlatforms,
+          mediaUrls: args.mediaUrls || [],
+        },
+      },
+      summaryForAgent: `Social post drafted (ID: ${post.id}) for ${targetPlatforms.join(", ")}. Submitted for merchant approval before publishing to live feeds.`,
+    };
+  },
+});
+

@@ -513,6 +513,14 @@ model Company {
   aiUsages               AIUsage[]
   aiGenerationJobs       AIGenerationJob[]
 
+  // AI Agent Workforce
+  aiAgents               AIAgent[]
+  aiAgentTasks           AIAgentTask[]
+  aiAgentApprovals       AIAgentApproval[]
+  aiAgentEscalations     AIAgentEscalation[]
+  aiAgentMemories        AIAgentMemory[]
+  aiAgentCampaigns       AIAgentCampaign[]
+
   // Social Media Platform
   socialAccounts         SocialAccount[]
   socialCampaigns        SocialCampaign[]
@@ -2993,6 +3001,8 @@ model User {
   aiCreditTransactions    AICreditTransaction[]
   aiUsages                AIUsage[]
   aiGenerationJobs        AIGenerationJob[]
+  aiAgentTasks            AIAgentTask[]
+  aiAgentEscalations      AIAgentEscalation[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -10125,6 +10135,299 @@ model BackupSystemConfig {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
+
+// =========================================================================
+// AI AGENT WORKFORCE & USER ACQUISITION SYSTEM
+// =========================================================================
+
+enum AgentWorkforceLevel {
+  STORE
+  PLATFORM
+  MARKETPLACE
+}
+
+enum AgentPermissionLevel {
+  READ
+  RECOMMEND
+  EXECUTE
+  AUTONOMOUS
+  HUMAN_APPROVAL_REQUIRED
+}
+
+enum AgentTaskStatus {
+  QUEUED
+  RUNNING
+  WAITING_APPROVAL
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum AgentApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum AgentMemoryScope {
+  CONVERSATION
+  BUSINESS
+  AGENT
+  PLATFORM_INTELLIGENCE
+}
+
+enum ProspectStatus {
+  DISCOVERED
+  QUALIFIED
+  CONTACTED
+  ENGAGED
+  DEMO_SCHEDULED
+  TRIAL
+  ONBOARDED
+  UNQUALIFIED
+  OPTED_OUT
+}
+
+enum ProspectOutreachChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+  LINKEDIN
+  CALL
+}
+
+model AIAgent {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  agentKey         String               // e.g. "STORE_MANAGER", "SALES_AGENT", "GROWTH_AGENT", "DEMAND_INTEL"
+  name             String
+  description      String?
+  level            AgentWorkforceLevel  @default(STORE)
+  companyId        String?              @db.ObjectId
+  company          Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  enabled          Boolean              @default(true)
+  permissionLevel  AgentPermissionLevel @default(RECOMMEND)
+  allowedTools     String[]
+  allowedChannels  String[]
+  systemPrompt     String?
+  dailyCreditLimit Float                @default(100)
+  creditsUsedToday Float                @default(0)
+  lastActiveAt     DateTime?
+  config           Json?
+  tasks            AIAgentTask[]
+  memories         AIAgentMemory[]
+  approvals        AIAgentApproval[]
+  escalations      AIAgentEscalation[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@unique([companyId, agentKey])
+  @@index([level])
+  @@index([enabled])
+}
+
+model AIAgentTask {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  agentId          String               @db.ObjectId
+  agent            AIAgent              @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  companyId        String?              @db.ObjectId
+  company          Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId           String?              @db.ObjectId
+  user             User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  taskType         String
+  title            String
+  priority         Int                  @default(2)
+  status           AgentTaskStatus      @default(QUEUED)
+  input            Json?
+  output           Json?
+  toolCalls        Json?
+  cost             Float                @default(0)
+  creditsUsed      Float                @default(0)
+  requiresApproval Boolean              @default(false)
+  approvedBy       String?              @db.ObjectId
+  approvedAt       DateTime?
+  failureReason    String?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  executions       AIAgentExecution[]
+  approvals        AIAgentApproval[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([agentId])
+  @@index([companyId])
+  @@index([status])
+  @@index([taskType])
+  @@index([createdAt])
+}
+
+model AIAgentExecution {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  taskId           String       @db.ObjectId
+  task             AIAgentTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  stepNumber       Int          @default(1)
+  toolName         String?
+  toolInput        Json?
+  toolOutput       Json?
+  thought          String?
+  promptTokens     Int          @default(0)
+  completionTokens Int          @default(0)
+  creditsConsumed  Float        @default(0)
+  latencyMs        Int          @default(0)
+  model            String?
+  status           String       @default("SUCCESS")
+  error            String?
+  createdAt        DateTime     @default(now())
+
+  @@index([taskId])
+  @@index([toolName])
+  @@index([createdAt])
+}
+
+model AIAgentApproval {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  agentId          String               @db.ObjectId
+  agent            AIAgent              @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  taskId           String?              @db.ObjectId
+  task             AIAgentTask?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  companyId        String?              @db.ObjectId
+  company          Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actionType       String
+  title            String
+  description      String?
+  proposedAction   Json
+  status           AgentApprovalStatus  @default(PENDING)
+  reviewedBy       String?              @db.ObjectId
+  reviewedAt       DateTime?
+  rejectionReason  String?
+  expiresAt        DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([agentId])
+  @@index([companyId])
+  @@index([status])
+  @@index([actionType])
+  @@index([createdAt])
+}
+
+model AIAgentEscalation {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  agentId          String?      @db.ObjectId
+  agent            AIAgent?     @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  companyId        String?      @db.ObjectId
+  company          Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  conversationId   String?      @db.ObjectId
+  customerPhone    String?
+  customerEmail    String?
+  reason           String
+  priority         String       @default("HIGH")
+  status           String       @default("PENDING")
+  assignedUserId   String?      @db.ObjectId
+  assignedUser     User?        @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  resolutionNote   String?
+  resolvedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model AIAgentMemory {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  agentId     String?          @db.ObjectId
+  agent       AIAgent?         @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  companyId   String?          @db.ObjectId
+  company     Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scope       AgentMemoryScope @default(BUSINESS)
+  key         String
+  content     String
+  metadata    Json?
+  expiresAt   DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([companyId, scope])
+  @@index([key])
+  @@index([createdAt])
+}
+
+model GrowthProspect {
+  id                        String                  @id @default(auto()) @map("_id") @db.ObjectId
+  businessName              String
+  category                  String
+  location                  String
+  country                   String                  @default("Kenya")
+  phone                     String?
+  email                     String?
+  website                   String?
+  socialChannels            Json?
+  sourceUrl                 String?
+  evidence                  String?
+  digitalMaturityScore      Int                     @default(30)
+  ecommerceOpportunityScore Int                     @default(50)
+  overallLeadScore          Int                     @default(40)
+  status                    ProspectStatus          @default(DISCOVERED)
+  recommendedPlan           String?
+  lastContactedAt           DateTime?
+  outreachCount             Int                     @default(0)
+  optedOut                  Boolean                 @default(false)
+  notes                     String?
+  createdById               String?                 @db.ObjectId
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+
+  @@index([category])
+  @@index([location])
+  @@index([status])
+  @@index([overallLeadScore])
+  @@index([createdAt])
+}
+
+model MarketplaceSupplyGap {
+  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
+  category                String
+  location                String
+  unmetSearchVolume       Int      @default(0)
+  activeListingCount      Int      @default(0)
+  averagePriceKES         Float?
+  urgencyLevel            String   @default("MEDIUM")
+  recommendedSellersCount Int      @default(5)
+  status                  String   @default("OPEN")
+  discoveredAt            DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([category])
+  @@index([location])
+  @@index([urgencyLevel])
+}
+
+model AIAgentCampaign {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  companyId        String?              @db.ObjectId
+  company          Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  level            AgentWorkforceLevel  @default(STORE)
+  name             String
+  targetAudience   String
+  goalDescription  String
+  channel          String
+  automationMode   String               @default("ASSISTED")
+  status           String               @default("DRAFT")
+  prospectCount    Int                  @default(0)
+  contactedCount   Int                  @default(0)
+  conversionCount  Int                  @default(0)
+  metrics          Json?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([companyId])
+  @@index([level])
+  @@index([status])
+}
+
 
 
 

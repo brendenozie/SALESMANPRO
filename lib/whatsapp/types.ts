@@ -598,6 +598,22 @@ export const getSupportStatusActionSchema = z.object({
   arguments: z.object({}),
 });
 
+export const routeToSalesAgentActionSchema = z.object({
+  action: z.literal("route_to_sales_agent"),
+  arguments: z.object({
+    inquiry: z.string().min(1),
+    category: z.string().optional(),
+  }),
+});
+
+export const routeToSupportAgentActionSchema = z.object({
+  action: z.literal("route_to_support_agent"),
+  arguments: z.object({
+    inquiry: z.string().min(1),
+    orderId: z.string().optional(),
+  }),
+});
+
 // Backward-compatible alias
 export const getOrderStatusActionSchema = trackOrderActionSchema;
 export const calculateCheckoutActionSchema = calculateCheckoutTotalActionSchema;
@@ -661,6 +677,10 @@ export const whatsappActionSchema = z.discriminatedUnion("action", [
   escalateToHumanActionSchema,
   createSupportRequestActionSchema,
   getSupportStatusActionSchema,
+
+  // AI Workforce Direct Bindings
+  routeToSalesAgentActionSchema,
+  routeToSupportAgentActionSchema,
 ]);
 
 export type WhatsAppAction = z.infer<typeof whatsappActionSchema>;

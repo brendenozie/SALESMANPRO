@@ -130,5 +130,22 @@ module.exports = {
       kill_timeout: 10000,
       watch: false,
     },
+    {
+      name: 'ai-workforce-worker',
+      cwd: APP_DIR,
+      script: './dist-worker/workers/ai-workforce-worker.js',
+      node_args: '--require ./dist-worker/workers/resolve-alias.js --max-old-space-size=512',
+      interpreter: 'node',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        ...baseEnv,
+      },
+      restart_delay: 3000,
+      max_memory_restart: '600M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
+    },
   ],
 };
