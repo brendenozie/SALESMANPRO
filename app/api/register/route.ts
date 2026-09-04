@@ -84,6 +84,7 @@ export async function POST(req: Request) {
       },
     });
 
+    let registeredCompanyId: string | undefined;
     if (!isBusinessAdminSignupKind(ctx.kind)) {
       const host = ctx.returnHost;
       const slug = ctx.tenantSlug;
@@ -98,12 +99,20 @@ export async function POST(req: Request) {
         select: { id: true },
       });
       if (company) {
+        registeredCompanyId = company.id;
         await ensureConsumerForCompany(newUser.id, company.id);
       }
     }
 
     const token = await createEmailVerificationToken(email);
-    await sendVerificationEmail(email, token, ctx.returnUrl).catch(() => null);
+    await sendVerificationEmail(
+      email,
+      token,
+      ctx.returnUrl,
+      registeredCompanyId
+        ? { tenantType: "STORE", companyId: registeredCompanyId }
+        : { tenantType: "PLATFORM" }
+    ).catch(() => null);
 
     return withCors(
       {

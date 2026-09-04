@@ -14,6 +14,8 @@ import {
   EyeIcon,
   SparklesIcon,
   ArrowPathIcon,
+  PaperAirplaneIcon,
+  EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import toast, { Toaster } from 'react-hot-toast';
@@ -85,8 +87,50 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
   // Client-side loading state is now used only for actions (like updates) or re-fetches
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(serverLoadError);
- 
-  
+
+  // Reply Modal State
+  const [replyInquiry, setReplyInquiry] = useState<Inquiry | null>(null);
+  const [replyChannel, setReplyChannel] = useState<'EMAIL' | 'WHATSAPP' | 'BOTH'>('EMAIL');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
+
+  const handleSendReply = async () => {
+    if (!replyInquiry) return;
+    if (!replyMessage.trim()) {
+      toast.error('Please enter a response message.');
+      return;
+    }
+
+    setIsSendingReply(true);
+    const toastId = toast.loading(`Sending reply via ${replyChannel}...`);
+
+    try {
+      const res = await fetch(`/api/admin/inquiries/${encodeURIComponent(replyInquiry.id)}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: replyChannel,
+          replyMessage: replyMessage.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to dispatch reply');
+      }
+
+      toast.success(data.message || 'Reply sent successfully!', { id: toastId });
+      setInquiries((prev) =>
+        prev.map((inq) => (inq.id === replyInquiry.id ? { ...inq, status: 'Responded' } : inq))
+      );
+      setReplyInquiry(null);
+      setReplyMessage('');
+    } catch (err: any) {
+      toast.error(err.message || 'Error sending reply', { id: toastId });
+    } finally {
+      setIsSendingReply(false);
+    }
+  };
   const updateInquiryStatus = useCallback(async (id: string, newStatus: Inquiry['status']) => {
     setIsLoading(true);
     const toastId = toast.loading(`Updating status to ${newStatus}...`);
@@ -333,6 +377,17 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
                             <ArchiveBoxIcon className="h-5 w-5" />
                           </button>
                         )}
+                        <button
+                          onClick={() => {
+                            setReplyInquiry(inquiry);
+                            setReplyChannel(inquiry.clientPhone ? 'BOTH' : 'EMAIL');
+                            setReplyMessage('');
+                          }}
+                          className="text-orange-600 hover:text-orange-800 p-2.5 rounded-full hover:bg-orange-50 transition-all duration-200 transform hover:scale-110"
+                          title="Reply via Email / WhatsApp"
+                        >
+                          <PaperAirplaneIcon className="h-5 w-5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -342,6 +397,110 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
           )}
         </div>
       </div>
+
+      {/* Reply Modal */}
+      {replyInquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Reply to Customer</h3>
+                <p className="text-xs text-gray-500">
+                  Responding to <strong>{replyInquiry.clientName}</strong> ({replyInquiry.clientEmail})
+                </p>
+              </div>
+              <button
+                onClick={() => setReplyInquiry(null)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-xs text-gray-700">
+              <span className="font-semibold text-gray-500 block mb-1">Customer Inquiry:</span>
+              <p className="italic">{replyInquiry.message}</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                Dispatch Channel
+              </label>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setReplyChannel('EMAIL')}
+                  className={`py-2 px-3 rounded-lg border font-semibold ${
+                    replyChannel === 'EMAIL'
+                      ? 'border-orange-500 bg-orange-50 text-orange-600'
+                      : 'border-gray-200 hover:bg-gray-50 text-gray-600'
+                  }`}
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReplyChannel('WHATSAPP')}
+                  disabled={!replyInquiry.clientPhone}
+                  className={`py-2 px-3 rounded-lg border font-semibold ${
+                    replyChannel === 'WHATSAPP'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-600'
+                      : 'border-gray-200 hover:bg-gray-50 text-gray-600 disabled:opacity-40'
+                  }`}
+                  title={!replyInquiry.clientPhone ? 'No phone number on inquiry' : ''}
+                >
+                  WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReplyChannel('BOTH')}
+                  disabled={!replyInquiry.clientPhone}
+                  className={`py-2 px-3 rounded-lg border font-semibold ${
+                    replyChannel === 'BOTH'
+                      ? 'border-purple-500 bg-purple-50 text-purple-600'
+                      : 'border-gray-200 hover:bg-gray-50 text-gray-600 disabled:opacity-40'
+                  }`}
+                  title={!replyInquiry.clientPhone ? 'No phone number on inquiry' : ''}
+                >
+                  Both
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                Your Response Message
+              </label>
+              <textarea
+                rows={4}
+                value={replyMessage}
+                onChange={(e) => setReplyMessage(e.target.value)}
+                placeholder="Type your message here..."
+                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setReplyInquiry(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSendReply}
+                disabled={isSendingReply}
+                className="px-5 py-2 text-xs font-semibold rounded-xl bg-orange-600 hover:bg-orange-700 text-white transition-all disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <PaperAirplaneIcon className="w-4 h-4" />
+                {isSendingReply ? 'Transmitting...' : 'Send Response'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

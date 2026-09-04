@@ -428,6 +428,9 @@ model Company {
   shippingSettingsId String?           @unique @db.ObjectId
   ShippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id], onDelete: NoAction)
 
+  emailConfigurations EmailConfiguration[]
+  emailDeliveryLogs   EmailDeliveryLog[]
+
   Subscription          Subscription[]
   CoreValues            CoreValues[]
   Destination           Destination[]
@@ -1932,6 +1935,72 @@ model ShippingSettings {
   expressRate        Float?   @default(0.00)
 
   @@index([id])
+}
+
+model EmailConfiguration {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  scope     String   @default("STORE") // "PLATFORM" | "GHUBA" | "STORE"
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  provider  String   @default("SMTP") // "SMTP" | "RESEND" | "SENDGRID"
+  fromName  String
+  fromEmail String
+  replyTo   String?
+
+  // SMTP Settings
+  host     String?
+  port     Int?     @default(587)
+  secure   Boolean? @default(false)
+
+  // Encrypted Credentials (AES-256-GCM)
+  usernameEncrypted String?
+  usernameIv        String?
+  usernameTag       String?
+
+  passwordEncrypted String?
+  passwordIv        String?
+  passwordTag       String?
+
+  // API Key for providers like Resend, SendGrid (Encrypted AES-256-GCM)
+  apiKeyEncrypted   String?
+  apiKeyIv          String?
+  apiKeyTag         String?
+
+  enabled            Boolean   @default(true)
+  verified           Boolean   @default(false)
+  verificationStatus String    @default("UNVERIFIED") // "UNVERIFIED" | "VERIFIED" | "FAILED"
+  lastVerifiedAt     DateTime?
+  lastError          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([scope])
+}
+
+model EmailDeliveryLog {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  scope             String    @default("STORE") // "PLATFORM" | "GHUBA" | "STORE"
+  companyId         String?   @db.ObjectId
+  company           Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  recipient         String
+  template          String
+  provider          String
+  fromAddress       String
+  status            String    @default("QUEUED") // "QUEUED" | "PROCESSING" | "SENT" | "FAILED"
+  providerMessageId String?
+  error             String?
+  attempts          Int       @default(0)
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  sentAt            DateTime?
+
+  @@index([companyId])
+  @@index([scope])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model PageSection {

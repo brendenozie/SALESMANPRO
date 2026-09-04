@@ -1,12 +1,9 @@
-// app/api/contact/route.ts
-import prisma from "@/server/db/prismadb"; // Adjust if not used
-import SendMail from "@/service/mailservice";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { EmailService } from "@/lib/email/emailService";
 
 async function postHandler(request: Request) {
   try {
-    
     const body = await request.json();
     const { fname, lname, email, phone, company, message } = body;
 
@@ -14,22 +11,27 @@ async function postHandler(request: Request) {
       return formatResponse(false, null, "Email and message are required", 400);
     }
 
-    const result = await SendMail({
-      to: email,
-      subject: "Contact Form Submission",
-      text: message,
-      html: `<p>${message}</p>`,
-      fname,
-      lname,
-      email,
-      phone,
-      company,
-      message,
+    const fullName = [fname, lname].filter(Boolean).join(" ") || "Contact Submitter";
+
+    await EmailService.sendEmail({
+      tenantType: "PLATFORM",
+      template: "CONTACT_SUBMISSION",
+      recipient: email,
+      replyTo: email,
+      data: {
+        name: fullName,
+        clientName: fullName,
+        email,
+        phone,
+        company,
+        message,
+      },
+      async: true,
     });
 
-    return formatResponse(true, result, "Message sent successfully");
+    return formatResponse(true, { delivered: true }, "Message sent successfully");
   } catch (err: any) {
-    console.error("GET /api/contact error:", err);
+    console.error("POST /api/post-email error:", err);
     return formatResponse(
       false,
       null,
