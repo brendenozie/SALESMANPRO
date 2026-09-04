@@ -157,6 +157,13 @@ exports.socialClient = {
             throw new Error(data.error || "Failed to query advisor");
         return data.advice;
     },
+    async getProducts() {
+        const res = await fetch("/api/social/products");
+        const data = await res.json();
+        if (!res.ok || !data.success)
+            throw new Error(data.error || "Failed to fetch products");
+        return data.products || [];
+    },
     async getSuperAdminConfigs() {
         const res = await fetch("/api/super-admin/social/config");
         const data = await res.json();

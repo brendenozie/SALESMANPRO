@@ -9,9 +9,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.creditLedger = exports.AICreditLedger = exports.DEFAULT_AI_PACKAGES = void 0;
+exports.grantWelcomeCredits = exports.creditLedger = exports.AICreditLedger = exports.DEFAULT_AI_PACKAGES = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const types_1 = require("./types");
+const aiConfig_1 = require("./aiConfig");
+const TRANSACTION_OPTIONS = { maxWait: 20000, timeout: 60000 };
 exports.DEFAULT_AI_PACKAGES = [
     {
         name: "Starter AI",
@@ -161,7 +163,7 @@ class AICreditLedger {
                 transactionId: transaction.id,
                 balanceAfter: updatedCompany.aiCreditBalance,
             };
-        });
+        }, TRANSACTION_OPTIONS);
     }
     /**
      * Direct atomic charge for fixed-cost AI operations (e.g., store setup wizard, 1-click apply).
@@ -292,7 +294,7 @@ class AICreditLedger {
                 transactionId: usageId || referenceId || `tx_${Date.now()}`,
                 balanceAfter: currentBalance,
             };
-        });
+        }, TRANSACTION_OPTIONS);
     }
     /**
      * Refunds reserved credits when generation fails or is cancelled.
@@ -340,7 +342,7 @@ class AICreditLedger {
                 transactionId: transaction.id,
                 balanceAfter: updated.aiCreditBalance,
             };
-        });
+        }, TRANSACTION_OPTIONS);
     }
     /**
      * Top up tenant credits upon payment confirmation or promotional grant.
@@ -392,7 +394,91 @@ class AICreditLedger {
                 transactionId: transaction.id,
                 newBalance: updatedCompany.aiCreditBalance,
             };
+        }, TRANSACTION_OPTIONS);
+    }
+    /**
+     * Grants introductory trial credits to a newly created store company.
+     * Guarantees exact-once idempotency, anti-abuse checks, and audit logging.
+     */
+    async grantWelcomeCredits(params) {
+        const { companyId, userId } = params;
+        const creditAmount = params.amount ?? aiConfig_1.WELCOME_AI_CREDITS;
+        if (!companyId) {
+            return { granted: false, amount: 0, balance: 0, reason: "MISSING_COMPANY_ID" };
+        }
+        const idempotencyKey = `welcome_credit_${companyId}`;
+        // 1. Check idempotency: Has this company already received welcome credits?
+        const existingTx = await prismadb_1.default.aICreditTransaction.findUnique({
+            where: { idempotencyKey },
         });
+        if (existingTx) {
+            const balance = await this.getBalance(companyId);
+            return {
+                granted: false,
+                amount: existingTx.amount,
+                balance,
+                transactionId: existingTx.id,
+                reason: "ALREADY_GRANTED",
+            };
+        }
+        // 2. Abuse prevention check: Has this user already claimed max welcome grants?
+        if (userId) {
+            const userWelcomeGrantsCount = await prismadb_1.default.aICreditTransaction.count({
+                where: {
+                    userId,
+                    type: "PROMOTIONAL",
+                    idempotencyKey: { startsWith: "welcome_credit_" },
+                },
+            });
+            if (userWelcomeGrantsCount >= aiConfig_1.MAX_WELCOME_GRANTS_PER_USER) {
+                const balance = await this.getBalance(companyId);
+                return {
+                    granted: false,
+                    amount: 0,
+                    balance,
+                    reason: "USER_WELCOME_LIMIT_REACHED",
+                };
+            }
+        }
+        // 3. Atomically grant credits and record in immutable ledger
+        return prismadb_1.default.$transaction(async (tx) => {
+            const updatedCompany = await tx.company.update({
+                where: { id: companyId },
+                data: {
+                    aiCreditBalance: { increment: creditAmount },
+                },
+                select: { aiCreditBalance: true },
+            });
+            // Ensure WhatsApp AI is enabled so new store can test WhatsApp AI Studio
+            await tx.whatsAppAIConfig.upsert({
+                where: { companyId },
+                update: { enabled: true },
+                create: { companyId, enabled: true },
+            });
+            const transaction = await tx.aICreditTransaction.create({
+                data: {
+                    companyId,
+                    userId,
+                    amount: creditAmount,
+                    type: "PROMOTIONAL",
+                    status: "COMPLETED",
+                    description: aiConfig_1.WELCOME_CREDIT_DESCRIPTION,
+                    referenceId: companyId,
+                    idempotencyKey,
+                    balanceAfter: updatedCompany.aiCreditBalance,
+                    metadata: {
+                        reason: aiConfig_1.WELCOME_CREDIT_REASON,
+                        grantedAt: new Date().toISOString(),
+                    },
+                },
+            });
+            return {
+                granted: true,
+                amount: creditAmount,
+                balance: updatedCompany.aiCreditBalance,
+                transactionId: transaction.id,
+            };
+        }, TRANSACTION_OPTIONS);
     }
     /**
      * Retrieves paginated transaction history for tenant credit accounting.
@@ -552,3 +638,5 @@ class AICreditLedger {
 }
 exports.AICreditLedger = AICreditLedger;
 exports.creditLedger = new AICreditLedger();
+const grantWelcomeCredits = (params) => exports.creditLedger.grantWelcomeCredits(params);
+exports.grantWelcomeCredits = grantWelcomeCredits;
