@@ -110,7 +110,21 @@ const SlideCard = ({ slide, isPriority }: any) => {
 
           <div className={`flex flex-wrap items-center gap-6 ${!isPriority ? 'animate-fade-in-up' : ''}`}>
             <button
-              onClick={() => router.push(slide.ctaLink || '/shop')}
+              onClick={() => {
+                if (slide.trackingPayload) {
+                  fetch('/api/ads/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      type: 'CLICK',
+                      campaignId: slide.trackingPayload.campaignId,
+                      creativeId: slide.trackingPayload.creativeId,
+                      placementCode: slide.trackingPayload.placementCode || 'GHUBA_HOMEPAGE_HERO',
+                    }),
+                  }).catch(() => {});
+                }
+                router.push(slide.ctaLink || '/shop');
+              }}
               className="w-full sm:w-auto px-8 py-4 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-transform duration-300"
             >
               <span>{slide.ctaText || "Shop Now"}</span>

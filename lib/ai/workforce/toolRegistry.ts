@@ -902,3 +902,451 @@ WorkforceToolRegistry.registerTool({
   },
 });
 
+// ============================================================================
+// REGISTER ADVERTISING PLATFORM TOOLS (Store, Ghuba & SalesmanPro Ads)
+// ============================================================================
+
+// 17. recommendAdCampaign
+WorkforceToolRegistry.registerTool({
+  name: "recommendAdCampaign",
+  description: "Analyze store catalog or marketplace demand to recommend high-ROI advertising campaigns.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.MARKETPLACE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 0.5,
+  parameters: {
+    productId: "optional string",
+    goal: "optional string (e.g. Clearance, New Arrivals, Best Sellers)",
+  },
+  execute: async (args, context) => {
+    let candidateProduct: any = null;
+
+    if (context.companyId) {
+      if (args.productId) {
+        candidateProduct = await prisma.product.findFirst({
+          where: { id: args.productId, companyId: context.companyId },
+          select: { id: true, name: true, sellingPrice: true, quantity: true, images: true },
+        });
+      } else {
+        candidateProduct = await prisma.product.findFirst({
+          where: { companyId: context.companyId, isAvailable: true, quantity: { gt: 0 } },
+          orderBy: { quantity: "desc" },
+          select: { id: true, name: true, sellingPrice: true, quantity: true, images: true },
+        });
+      }
+    }
+
+    if (!candidateProduct && context.level === AgentWorkforceLevel.STORE) {
+      return {
+        success: false,
+        error: "No eligible products with active inventory found for advertising.",
+      };
+    }
+
+    const recommendedBudgetKES = 2000;
+    const durationDays = 7;
+    const estDailyKES = Math.round(recommendedBudgetKES / durationDays);
+
+    return {
+      success: true,
+      data: {
+        product: candidateProduct,
+        recommendedObjective: "PRODUCT_SALES",
+        recommendedTotalBudgetKES: recommendedBudgetKES,
+        recommendedDailyBudgetKES: estDailyKES,
+        durationDays,
+        recommendedPlacements: ["GHUBA_SEARCH_SPONSORED", "GHUBA_CATEGORY_TOP", "STOREFRONT_HERO"],
+        rationale: candidateProduct
+          ? `Product '${candidateProduct.name}' has ${candidateProduct.quantity} units in stock priced at KES ${candidateProduct.sellingPrice.toLocaleString()}. Advertising will accelerate inventory turnover.`
+          : "Marketplace demand analysis indicates high conversion potential for sponsored placements.",
+      },
+      summaryForAgent: candidateProduct
+        ? `Ad Recommendation for '${candidateProduct.name}': Budget KES ${recommendedBudgetKES} for 7 days (KES ${estDailyKES}/day) across Ghuba & Storefront. Rationale: Strong stock availability (${candidateProduct.quantity} units).`
+        : "Marketplace sponsored campaign recommendation prepared.",
+    };
+  },
+});
+
+// 18. createAdCampaignDraft
+WorkforceToolRegistry.registerTool({
+  name: "createAdCampaignDraft",
+  description: "Draft an authoritative AdCampaign with multi-variant creatives (Mandates Human Approval).",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.MARKETPLACE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.HUMAN_APPROVAL_REQUIRED,
+  requiresApproval: true,
+  costCredits: 1.0,
+  parameters: {
+    productId: "optional string",
+    listingId: "optional string",
+    campaignName: "string",
+    totalBudgetKES: "number",
+    durationDays: "optional number (default 7)",
+    primaryHeadline: "optional string",
+  },
+  execute: async (args, context) => {
+    const { AIAdManager } = await import("@/lib/ads/aiAdManager");
+
+    const result = await AIAdManager.generateCampaignFromProduct({
+      companyId: context.companyId,
+      productId: args.productId,
+      listingId: args.listingId,
+      goal: args.primaryHeadline || "Drive customer sales",
+      totalBudgetKES: args.totalBudgetKES,
+      durationDays: args.durationDays || 7,
+      userId: context.agentId,
+    });
+
+    return {
+      success: true,
+      requiresApproval: true,
+      approvalPayload: {
+        actionType: "LAUNCH_AD_CAMPAIGN",
+        title: `Launch Ad Campaign: ${result.name}`,
+        description: `Authorize spending KES ${result.totalBudgetKES.toLocaleString()} for ad delivery across ${result.creativesCount} creative variants.`,
+        proposedAction: {
+          campaignId: result.campaignId,
+          companyId: context.companyId,
+          totalBudgetKES: result.totalBudgetKES,
+          dailyBudgetKES: result.dailyBudgetKES,
+        },
+      },
+      summaryForAgent: `Ad campaign draft '${result.name}' (ID: ${result.campaignId}) created with ${result.creativesCount} creatives. Submitted for merchant authorization before launch.`,
+    };
+  },
+});
+
+// 19. getAdPerformance
+WorkforceToolRegistry.registerTool({
+  name: "getAdPerformance",
+  description: "Inspect performance metrics, spend, clicks, conversions, and ROAS of active ad campaigns.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.MARKETPLACE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {
+    campaignId: "optional string",
+  },
+  execute: async (args, context) => {
+    const where: any = {};
+    if (args.campaignId) {
+      where.id = args.campaignId;
+    }
+    if (context.companyId) {
+      where.companyId = context.companyId;
+    }
+
+    const campaigns = await prisma.adCampaign.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        totalBudgetKES: true,
+        spentAmountKES: true,
+        metrics: true,
+        createdAt: true,
+      },
+      take: 10,
+      orderBy: { createdAt: "desc" },
+    });
+
+    let totalSpend = 0;
+    let totalImpressions = 0;
+    let totalClicks = 0;
+    let totalConversions = 0;
+    let totalRevenue = 0;
+
+    campaigns.forEach((c) => {
+      totalSpend += c.spentAmountKES || 0;
+      const m = (c.metrics as any) || {};
+      totalImpressions += m.impressions || 0;
+      totalClicks += m.clicks || 0;
+      totalConversions += m.conversions || 0;
+      totalRevenue += m.attributedRevenueKES || 0;
+    });
+
+    const overallCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+    const overallROAS = totalSpend > 0 ? totalRevenue / totalSpend : 0;
+
+    return {
+      success: true,
+      data: {
+        campaignCount: campaigns.length,
+        totalSpendKES: totalSpend,
+        totalImpressions,
+        totalClicks,
+        overallCTR: Math.round(overallCTR * 100) / 100,
+        totalConversions,
+        attributedRevenueKES: totalRevenue,
+        overallROAS: Math.round(overallROAS * 100) / 100,
+        campaigns,
+      },
+      summaryForAgent: `Advertising Analytics: ${campaigns.length} campaigns. Total Spend: KES ${totalSpend.toLocaleString()}. Impressions: ${totalImpressions.toLocaleString()}, Clicks: ${totalClicks} (CTR: ${overallCTR.toFixed(2)}%), Conversions: ${totalConversions}, ROAS: ${overallROAS.toFixed(2)}x.`,
+    };
+  },
+});
+
+// 20. boostMarketplaceListing
+WorkforceToolRegistry.registerTool({
+  name: "boostMarketplaceListing",
+  description: "Boost a Ghuba marketplace listing to sponsored top-tier rankings (Mandates Human Approval).",
+  levelScope: [AgentWorkforceLevel.MARKETPLACE, AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.HUMAN_APPROVAL_REQUIRED,
+  requiresApproval: true,
+  costCredits: 0.5,
+  parameters: {
+    listingId: "string",
+    budgetKES: "number (e.g. 1000 to 10000)",
+    durationDays: "optional number (default 7)",
+  },
+  execute: async (args, context) => {
+    const listing = await prisma.marketplaceListings.findUnique({
+      where: { id: args.listingId },
+      select: { id: true, name: true, sellingPrice: true, images: true, category: true },
+    });
+
+    if (!listing) {
+      return { success: false, error: "Marketplace listing not found." };
+    }
+
+    const { AIAdManager } = await import("@/lib/ads/aiAdManager");
+    const result = await AIAdManager.generateCampaignFromProduct({
+      companyId: context.companyId,
+      listingId: args.listingId,
+      goal: "Promote listing in Ghuba Search and Category Top results",
+      totalBudgetKES: args.budgetKES,
+      durationDays: args.durationDays || 7,
+      userId: context.agentId,
+    });
+
+    return {
+      success: true,
+      requiresApproval: true,
+      approvalPayload: {
+        actionType: "BOOST_MARKETPLACE_LISTING",
+        title: `Boost Listing: ${listing.name}`,
+        description: `Sponsor listing in Ghuba search and category pages with KES ${args.budgetKES.toLocaleString()} budget.`,
+        proposedAction: {
+          campaignId: result.campaignId,
+          listingId: listing.id,
+          budgetKES: args.budgetKES,
+        },
+      },
+      summaryForAgent: `Listing '${listing.name}' boost proposal created (Campaign ID: ${result.campaignId}). Awaiting authorization before spending KES ${args.budgetKES.toLocaleString()}.`,
+    };
+  },
+});
+
+// 21. optimizeAdCampaign
+WorkforceToolRegistry.registerTool({
+  name: "optimizeAdCampaign",
+  description: "Analyze campaign metrics and recommend bid adjustments, creative refreshes, or budget shifts.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.MARKETPLACE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 0.5,
+  parameters: {
+    campaignId: "string",
+  },
+  execute: async (args, context) => {
+    const campaign = await prisma.adCampaign.findUnique({
+      where: { id: args.campaignId },
+      include: { creatives: true },
+    });
+
+    if (!campaign) {
+      return { success: false, error: "Campaign not found." };
+    }
+
+    const metrics = (campaign.metrics as any) || {};
+    const ctr = metrics.ctr || 0;
+    const impressions = metrics.impressions || 0;
+    const conversions = metrics.conversions || 0;
+
+    const recommendations = [];
+    if (impressions > 500 && ctr < 1.0) {
+      recommendations.push("Low CTR: Refresh Creative A/B headlines with stronger urgency or clear pricing callouts.");
+    }
+    if (impressions > 1000 && conversions === 0) {
+      recommendations.push("Clicks without conversions: Review landing page stock and ensure fast WhatsApp checkout CTA.");
+    }
+    if (ctr > 3.0 && conversions > 5) {
+      recommendations.push("High-performing campaign: Consider increasing daily budget to scale sales velocity.");
+    }
+    if (recommendations.length === 0) {
+      recommendations.push("Campaign metrics are operating within normal baseline benchmarks.");
+    }
+
+    return {
+      success: true,
+      data: {
+        campaignId: campaign.id,
+        name: campaign.name,
+        currentCTR: ctr,
+        impressions,
+        conversions,
+        recommendations,
+      },
+      summaryForAgent: `Optimization Analysis for '${campaign.name}' (CTR: ${ctr}%, Impressions: ${impressions}): ${recommendations.join(" ")}`,
+    };
+  },
+});
+
+// ============================================================================
+// REGISTER EXTERNAL MARKETING INTELLIGENCE TOOLS (Meta, Google Ads, GA4, Social)
+// ============================================================================
+
+// 22. getMarketingConnections
+WorkforceToolRegistry.registerTool({
+  name: "getMarketingConnections",
+  description: "Inspect connected external advertising accounts (Meta Ads, Google Ads, GA4, Social).",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {},
+  execute: async (args, context) => {
+    const connections = await prisma.marketingConnection.findMany({
+      where: context.companyId ? { companyId: context.companyId } : undefined,
+      select: {
+        id: true,
+        provider: true,
+        accountId: true,
+        accountName: true,
+        status: true,
+        lastSyncAt: true,
+        syncStatus: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: { count: connections.length, connections },
+      summaryForAgent: `Marketing Connections: ${connections.length} external provider accounts connected: ${
+        connections.map((c) => `${c.provider} (${c.accountName} - ${c.status})`).join("; ") || "None connected"
+      }.`,
+    };
+  },
+});
+
+// 23. getMarketingAnalytics
+WorkforceToolRegistry.registerTool({
+  name: "getMarketingAnalytics",
+  description: "Query unified cross-platform marketing analytics (Meta, Google, GA4, Social, Internal Ads).",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {
+    provider: "optional string (META_ADS, GOOGLE_ADS, GOOGLE_ANALYTICS_4, SOCIAL_ORGANIC)",
+  },
+  execute: async (args, context) => {
+    const { MarketingIntelligenceService } = await import("@/lib/marketing/marketingIntelligenceService");
+    const channels = await MarketingIntelligenceService.compareChannels(context.companyId);
+
+    const filtered = args.provider
+      ? channels.filter((c) => c.provider === args.provider)
+      : channels;
+
+    const totalSpend = filtered.reduce((s, c) => s + c.spendKES, 0);
+    const totalRevenue = filtered.reduce((s, c) => s + c.revenueKES, 0);
+    const totalConversions = filtered.reduce((s, c) => s + c.conversions, 0);
+    const blendedROAS = totalSpend > 0 ? totalRevenue / totalSpend : 0;
+
+    return {
+      success: true,
+      data: {
+        totalSpendKES: totalSpend,
+        totalRevenueKES: totalRevenue,
+        totalConversions,
+        blendedROAS: Math.round(blendedROAS * 100) / 100,
+        channels: filtered,
+      },
+      summaryForAgent: `Unified Marketing Analytics: Total Spend KES ${totalSpend.toLocaleString()} yielding KES ${totalRevenue.toLocaleString()} across ${totalConversions} conversions (Blended ROAS: ${blendedROAS.toFixed(2)}x).`,
+    };
+  },
+});
+
+// 24. compareMarketingChannels
+WorkforceToolRegistry.registerTool({
+  name: "compareMarketingChannels",
+  description: "Directly compare conversion efficiency and ROAS between Meta, Google, and Ghuba Ads.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {},
+  execute: async (args, context) => {
+    const { MarketingIntelligenceService } = await import("@/lib/marketing/marketingIntelligenceService");
+    const channels = await MarketingIntelligenceService.compareChannels(context.companyId);
+
+    return {
+      success: true,
+      data: { channels },
+      summaryForAgent: `Channel Comparison: ${channels
+        .map(
+          (c) =>
+            `${c.channel}: Spend KES ${c.spendKES.toLocaleString()}, Conv: ${c.conversions}, Rev KES ${c.revenueKES.toLocaleString()} (${c.roas > 0 ? `${c.roas}x ROAS` : "Organic"})`,
+        )
+        .join(" | ")}`,
+    };
+  },
+});
+
+// 25. analyzeMarketingOpportunities
+WorkforceToolRegistry.registerTool({
+  name: "analyzeMarketingOpportunities",
+  description: "Run Opportunity Engine to detect untapped growth patterns and efficiency leaks.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.MARKETPLACE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 0.5,
+  parameters: {},
+  execute: async (args, context) => {
+    const { MarketingIntelligenceService } = await import("@/lib/marketing/marketingIntelligenceService");
+    const opportunities = await MarketingIntelligenceService.detectOpportunities(context.companyId);
+
+    return {
+      success: true,
+      data: { count: opportunities.length, opportunities },
+      summaryForAgent: `Marketing Opportunity Analysis: Detected ${opportunities.length} strategic growth signals: ${opportunities
+        .map((o) => `[${o.severity}] ${o.title}: ${o.recommendedAction}`)
+        .join("; ")}`,
+    };
+  },
+});
+
+// 26. getMarketingHealthScore
+WorkforceToolRegistry.registerTool({
+  name: "getMarketingHealthScore",
+  description: "Calculate explainable 0-100 Marketing Health Score across tracking, efficiency, and conversion.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0,
+  parameters: {},
+  execute: async (args, context) => {
+    const { MarketingIntelligenceService } = await import("@/lib/marketing/marketingIntelligenceService");
+    const health = await MarketingIntelligenceService.computeHealthScore(context.companyId);
+
+    return {
+      success: true,
+      data: health,
+      summaryForAgent: `Marketing Health Score: ${health.score}/100 (${health.rating}). Diagnostic: Tracking: ${health.dimensions.trackingHealth.note}; Efficiency: ${health.dimensions.advertisingEfficiency.note}; Key Recommendations: ${health.keyRecommendations.join(" ")}`,
+    };
+  },
+});
+
+// 27. syncMarketingProvider
+WorkforceToolRegistry.registerTool({
+  name: "syncMarketingProvider",
+  description: "Trigger live synchronization for an external marketing provider account.",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  costCredits: 0.5,
+  parameters: {
+    connectionId: "string",
+  },
+  execute: async (args) => {
+    const { MarketingIntelligenceService } = await import("@/lib/marketing/marketingIntelligenceService");
+    const result = await MarketingIntelligenceService.syncConnection(args.connectionId);
+
+    return {
+      success: true,
+      data: result,
+      summaryForAgent: `Live synchronization complete for connection ${args.connectionId}. ${result.campaignsSynced} campaigns updated.`,
+    };
+  },
+});

@@ -237,6 +237,35 @@ export async function POST(
           }
         }
       }
+
+      // 4. Advertising Campaign Launch on Approval
+      else if (
+        (approval.actionType === "LAUNCH_AD_CAMPAIGN" || approval.actionType === "BOOST_MARKETPLACE_LISTING") &&
+        proposed.campaignId
+      ) {
+        try {
+          await prisma.adCampaign.update({
+            where: { id: proposed.campaignId },
+            data: {
+              status: "ACTIVE",
+              approvalStatus: "APPROVED",
+              reviewedBy: auth.userId,
+            },
+          });
+          dispatchResult = {
+            dispatched: true,
+            channel: "AD_CAMPAIGN",
+            recipient: `Campaign ID: ${proposed.campaignId}`,
+          };
+        } catch (adErr: any) {
+          console.error("[WORKFORCE_AD_APPROVAL_ERROR]", adErr);
+          dispatchResult = {
+            dispatched: false,
+            channel: "AD_CAMPAIGN",
+            error: adErr.message || "Failed to activate ad campaign",
+          };
+        }
+      }
     }
 
     return NextResponse.json({

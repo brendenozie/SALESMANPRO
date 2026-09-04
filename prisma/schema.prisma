@@ -10428,6 +10428,301 @@ model AIAgentCampaign {
   @@index([status])
 }
 
+// ============================================================================
+// UNIFIED ADVERTISING PLATFORM DOMAIN
+// ============================================================================
 
+enum AdvertiserType {
+  STORE_ADVERTISER
+  GHUBA_ADVERTISER
+  SALESMANPRO_ADVERTISER
+  PLATFORM_SPONSORED
+}
 
+enum AdCampaignStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
 
+enum AdObjective {
+  AWARENESS
+  TRAFFIC
+  PRODUCT_SALES
+  LEAD_GENERATION
+  STORE_ACQUISITION
+  SELLER_ACQUISITION
+  BUYER_ACQUISITION
+}
+
+enum AdBiddingStrategy {
+  CPM
+  CPC
+  FLAT_DAILY
+}
+
+enum AdCreativeType {
+  IMAGE
+  VIDEO
+  TEXT
+  CAROUSEL
+  NATIVE_LISTING
+}
+
+enum AdEventType {
+  IMPRESSION
+  CLICK
+  CONVERSION
+}
+
+enum AdTransactionType {
+  AD_BUDGET_ADDED
+  AD_SPEND
+  AD_REFUND
+  AD_ADJUSTMENT
+  AD_RESERVATION
+  AD_RELEASE
+}
+
+model AdCampaign {
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId        String?           @db.ObjectId
+  advertiserType   AdvertiserType    @default(STORE_ADVERTISER)
+  level            AgentWorkforceLevel @default(STORE)
+  name             String
+  status           AdCampaignStatus  @default(DRAFT)
+  objective        AdObjective       @default(PRODUCT_SALES)
+  currency         String            @default("KES")
+  totalBudgetKES   Float             @default(0)
+  dailyBudgetKES   Float             @default(0)
+  spentAmountKES   Float             @default(0)
+  startDate        DateTime?
+  endDate          DateTime?
+  biddingStrategy  AdBiddingStrategy @default(CPM)
+  bidAmountKES     Float             @default(0)
+  targetAudience   Json?
+  targetingRules   Json?
+  automationMode   String            @default("ASSISTED")
+  approvalStatus   String            @default("DRAFT")
+  reviewedBy       String?
+  moderationNotes  String?
+  listingId        String?           @db.ObjectId
+  productId        String?           @db.ObjectId
+  metrics          Json?
+  creatives        AdCreative[]
+  events           AdEvent[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([companyId])
+  @@index([advertiserType])
+  @@index([level])
+  @@index([status])
+  @@index([listingId])
+  @@index([productId])
+  @@index([startDate, endDate])
+}
+
+model AdCreative {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId      String         @db.ObjectId
+  campaign        AdCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  type            AdCreativeType @default(IMAGE)
+  title           String
+  headline        String?
+  body            String?
+  ctaText         String         @default("Learn More")
+  ctaUrl          String?
+  mediaUrl        String?
+  thumbnailUrl    String?
+  aspectRatio     String         @default("1:1")
+  variantTag      String?        @default("A")
+  status          String         @default("ACTIVE")
+  impressions     Int            @default(0)
+  clicks          Int            @default(0)
+  conversions     Int            @default(0)
+  metrics         Json?
+  events          AdEvent[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([campaignId])
+  @@index([type])
+  @@index([status])
+}
+
+model AdPlacement {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  code                 String   @unique
+  name                 String
+  platform             String   @default("GHUBA")
+  pageType             String   @default("HOMEPAGE")
+  status               String   @default("ACTIVE")
+  allowedCreativeTypes String[]
+  baseCpmKES           Float    @default(50.0)
+  baseCpcKES           Float    @default(5.0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([platform])
+  @@index([status])
+}
+
+model AdEvent {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  type             AdEventType
+  campaignId       String       @db.ObjectId
+  campaign         AdCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adCreativeId     String?      @db.ObjectId
+  adCreative       AdCreative?  @relation(fields: [adCreativeId], references: [id], onDelete: SetNull)
+  placementCode    String
+  companyId        String?      @db.ObjectId
+  listingId        String?      @db.ObjectId
+  productId        String?      @db.ObjectId
+  viewerSessionId  String?
+  costKES          Float        @default(0)
+  metadata         Json?
+  createdAt        DateTime     @default(now())
+
+  @@index([campaignId])
+  @@index([adCreativeId])
+  @@index([placementCode])
+  @@index([companyId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([viewerSessionId, placementCode, createdAt])
+}
+
+model AdWallet {
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  companyId    String?         @unique @db.ObjectId
+  balance      Float           @default(0)
+  currency     String          @default("KES")
+  transactions AdTransaction[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model AdTransaction {
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  walletId         String            @db.ObjectId
+  wallet           AdWallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  companyId        String?           @db.ObjectId
+  campaignId       String?           @db.ObjectId
+  type             AdTransactionType
+  amount           Float
+  currency         String            @default("KES")
+  paymentReference String?
+  paymentGateway   String?           @default("MPESA")
+  description      String
+  status           String            @default("COMPLETED")
+  createdAt        DateTime          @default(now())
+
+  @@index([walletId])
+  @@index([companyId])
+  @@index([campaignId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// EXTERNAL MARKETING INTELLIGENCE DOMAIN
+// ============================================================================
+
+enum MarketingProviderType {
+  META_ADS
+  GOOGLE_ADS
+  GOOGLE_ANALYTICS_4
+  TIKTOK_ADS
+  SOCIAL_ORGANIC
+}
+
+enum MarketingConnectionStatus {
+  CONNECTED
+  EXPIRED
+  REVOKED
+  ERROR
+  DISCONNECTED
+}
+
+model MarketingConnection {
+  id                    String                    @id @default(auto()) @map("_id") @db.ObjectId
+  companyId             String?                   @db.ObjectId
+  provider              MarketingProviderType
+  accountId             String                    // Ad Account ID or GA4 Property ID
+  accountName           String
+  accessTokenEncrypted  String?
+  accessTokenIv         String?
+  accessTokenTag        String?
+  refreshTokenEncrypted String?
+  refreshTokenIv        String?
+  refreshTokenTag       String?
+  tokenExpiresAt        DateTime?
+  scopes                String[]
+  status                MarketingConnectionStatus @default(CONNECTED)
+  lastSyncAt            DateTime?
+  syncStatus            String                    @default("IDLE") // IDLE, SYNCING, SUCCESS, ERROR
+  syncError             String?
+  metadata              Json?
+  campaigns             ExternalMarketingCampaign[]
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  @@unique([companyId, provider, accountId])
+  @@index([companyId])
+  @@index([provider])
+  @@index([status])
+}
+
+model ExternalMarketingCampaign {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  connectionId       String              @db.ObjectId
+  connection         MarketingConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  companyId          String?             @db.ObjectId
+  provider           MarketingProviderType
+  externalCampaignId String
+  name               String
+  status             String              @default("ACTIVE")
+  objective          String?
+  dailyBudgetKES     Float?
+  lifetimeBudgetKES  Float?
+  currency           String              @default("KES")
+  startDate          DateTime?
+  endDate            DateTime?
+  metrics            Json?               // { impressions, clicks, spendKES, conversions, revenueKES, ctr, cpc, cpa, roas }
+  lastSyncedAt       DateTime            @default(now())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([connectionId, externalCampaignId])
+  @@index([companyId])
+  @@index([provider])
+  @@index([status])
+}
+
+model MarketingMetricSnapshot {
+  id           String                @id @default(auto()) @map("_id") @db.ObjectId
+  companyId    String?               @db.ObjectId
+  provider     MarketingProviderType
+  date         DateTime
+  channel      String                @default("PAID") // PAID or ORGANIC
+  spendKES     Float                 @default(0)
+  impressions  Int                   @default(0)
+  clicks       Int                   @default(0)
+  conversions  Int                   @default(0)
+  revenueKES   Float                 @default(0)
+  sessions     Int                   @default(0)
+  bounceRate   Float                 @default(0)
+  metadata     Json?
+  createdAt    DateTime              @default(now())
+
+  @@index([companyId, provider, date])
+  @@index([companyId, date])
+  @@index([provider])
+}
