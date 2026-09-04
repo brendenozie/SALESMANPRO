@@ -340,7 +340,7 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
           </motion.div>
         </div>
       )}
-    </>
+    </AnimatePresence>
   );
 
   return createPortal(modalContent, document.body);
