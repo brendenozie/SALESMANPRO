@@ -32,7 +32,8 @@ export class MetaAdsProvider implements IMarketingProvider {
 
     try {
       const url = `${this.baseUrl}/${this.apiVersion}/${cleanAccountId}?fields=name,account_status,currency,amount_spent&access_token=${accessToken}`;
-      const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(10000) : undefined;
+      const resp = await fetch(url, { signal: timeoutSignal });
 
       if (resp.ok) {
         const data = await resp.json();
@@ -80,7 +81,8 @@ export class MetaAdsProvider implements IMarketingProvider {
     try {
       const fields = "id,name,status,objective,daily_budget,lifetime_budget,start_time,stop_time,insights{spend,impressions,reach,clicks,cpc,cpm,ctr,actions,action_values}";
       const url = `${this.baseUrl}/${this.apiVersion}/${cleanAccountId}/campaigns?fields=${fields}&limit=50&access_token=${accessToken}`;
-      const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(15000) : undefined;
+      const resp = await fetch(url, { signal: timeoutSignal });
 
       if (resp.ok) {
         const data = await resp.json();

@@ -54,7 +54,7 @@ export class SocialAnalyticsProvider implements IMarketingProvider {
 
           sc.posts.forEach((p) => {
             p.publications.forEach((pub) => {
-              const m = (pub.metrics as any) || {};
+              const m = ((pub as any).analytics as any) || ((pub as any).metrics as any) || {};
               totalImpressions += m.impressions || m.reach || 250;
               totalClicks += m.clicks || m.shares || 12;
               totalViews += m.videoViews || m.views || 0;

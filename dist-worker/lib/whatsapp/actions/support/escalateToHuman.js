@@ -23,6 +23,17 @@ async function escalateToHuman(args, context) {
             read: false,
         },
     }).catch(() => undefined);
+    // Link to AI Workforce Human Escalation queue
+    await prismadb_1.default.aIAgentEscalation.create({
+        data: {
+            companyId: context.companyId,
+            customerPhone: context.phoneNumber,
+            customerEmail: context.customerEmail,
+            reason: args.reason,
+            priority: "HIGH",
+            status: "PENDING",
+        },
+    }).catch(() => undefined);
     return {
         success: true,
         action: "escalate_to_human",

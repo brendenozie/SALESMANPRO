@@ -67,9 +67,29 @@ class SuperAdminAIService {
                 return process.env.GROQ_API_KEY || null;
             case "ANTHROPIC":
                 return process.env.ANTHROPIC_API_KEY || null;
+            case "SERPAPI":
+                return process.env.SERPAPI_API_KEY || null;
+            case "GOOGLE_SEARCH":
+                return process.env.GOOGLE_SEARCH_API_KEY || null;
+            case "META_WHATSAPP":
+                return process.env.WHATSAPP_ACCESS_TOKEN || process.env.META_WA_ACCESS_TOKEN || null;
             default:
                 return null;
         }
+    }
+    /**
+     * Get full provider configuration details including decrypted key and metadata.
+     */
+    async getProviderDetails(providerKey) {
+        const record = await prismadb_1.default.platformAIProvider.findUnique({
+            where: { provider: providerKey.toUpperCase() },
+        });
+        const decryptedKey = await this.getDecryptedApiKey(providerKey);
+        return {
+            record,
+            apiKey: decryptedKey,
+            metadata: record?.metadata || {},
+        };
     }
     /**
      * Upsert an AI provider and securely encrypt the API key if provided.
@@ -91,6 +111,9 @@ class SuperAdminAIService {
             data.apiKeyIv = encryptedData.iv;
             data.apiKeyTag = encryptedData.tag;
         }
+        if (input.metadata !== undefined) {
+            data.metadata = input.metadata;
+        }
         const provider = await prismadb_1.default.platformAIProvider.upsert({
             where: { provider: providerKey },
             create: {
@@ -105,6 +128,7 @@ class SuperAdminAIService {
             name: provider.name,
             enabled: provider.enabled,
             hasKey: Boolean(provider.apiKeyEncrypted),
+            metadata: provider.metadata,
         };
     }
     /**

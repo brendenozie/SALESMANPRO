@@ -64,7 +64,7 @@ export class AIAdManager {
       targetPrice = product.sellingPrice || 0;
       targetCategory = (product as any).category || "General Retail";
       targetDescription = product.description || "";
-      targetImages = product.images || [];
+      targetImages = Array.isArray(product.images) ? (product.images as any[]).map(String) : [];
     } else if (listingId) {
       const listing = await prisma.marketplaceListings.findUnique({
         where: { id: listingId },
@@ -75,30 +75,12 @@ export class AIAdManager {
       targetPrice = listing.finalPrice || listing.sellingPrice || 0;
       targetCategory = (listing as any).category || "Marketplace";
       targetDescription = listing.description || "";
-      targetImages = listing.images || [];
+      targetImages = Array.isArray(listing.images) ? (listing.images as any[]).map(String) : [];
     } else {
       throw new Error("Either productId or listingId must be provided for ad generation.");
     }
 
-    // 2. Reserve AI credits for computation (Strictly separated from Ad Budget)
-    const computeCredits = 2.0; // Standard generation cost
-    let reservation: any = null;
-
-    if (companyId) {
-      try {
-        reservation = await creditLedger.reserveCredits({
-          companyId,
-          userId,
-          capability: AICapability.CAMPAIGN_AD_COPY,
-          estimatedCredits: computeCredits,
-          metadata: { operation: "PRODUCT_TO_AD_GENERATION", targetItemName },
-        });
-      } catch (err: any) {
-        console.warn("[AI_AD_CREDIT_WARN] Could not reserve credits:", err?.message || err);
-      }
-    }
-
-    // 3. Prompt AI for high-converting commercial copy with zero-hallucination context
+    // 2. Prompt AI for high-converting commercial copy with zero-hallucination context
     const systemPrompt = `You are the Principal Advertising Architect and Performance Copywriter for SalesmanPro and Ghuba.
 Generate a structured JSON response containing 3 high-converting ad creative variants (Creative A: Direct Product/Benefit, Creative B: Urgency/Offer, Creative C: Story/Educational) and an audience targeting recommendation.
 
@@ -143,39 +125,34 @@ You MUST respond strictly in valid JSON format with this exact schema:
 
     let generatedStrategy: any;
     try {
-      const aiResponse = await centralAIService.generateText({
-        companyId: companyId || "system",
-        userId,
-        capability: AICapability.CAMPAIGN_AD_COPY,
-        prompt: `Generate an ad campaign strategy and copy for: ${targetItemName}`,
-        systemPrompt,
-        temperature: 0.7,
-      });
+      if (companyId) {
+        const aiResponse = await centralAIService.generateText(
+          {
+            prompt: `Generate an ad campaign strategy and copy for: ${targetItemName}`,
+            systemPrompt,
+            temperature: 0.7,
+          },
+          {
+            companyId,
+            userId,
+            capability: AICapability.SOCIAL_MARKETING,
+            feature: "ad_campaign_generation",
+            source: "AGENT",
+          },
+        );
 
-      // Parse JSON from output
-      const jsonMatch = aiResponse.text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        generatedStrategy = JSON.parse(jsonMatch[0]);
+        // Parse JSON from output
+        const jsonMatch = aiResponse.text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          generatedStrategy = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("AI returned non-JSON structure.");
+        }
       } else {
-        throw new Error("AI returned non-JSON structure.");
-      }
-
-      // Finalize AI Credit Charge
-      if (reservation) {
-        await creditLedger.finalizeCharge({
-          reservationId: reservation.reservationId,
-          actualCredits: computeCredits,
-          tokensUsed: aiResponse.usage?.totalTokens || 350,
-          rawUsage: aiResponse.usage,
-        });
+        throw new Error("No companyId provided for AI generation");
       }
     } catch (err: any) {
-      if (reservation) {
-        await creditLedger.refundCredits({
-          reservationId: reservation.reservationId,
-          reason: `AI Ad Generation Failure: ${err?.message || "Internal error"}`,
-        });
-      }
+      console.warn("[AI_AD_GENERATION_FALLBACK] Using deterministic template:", err?.message || err);
 
       // Fallback deterministic copy
       generatedStrategy = {

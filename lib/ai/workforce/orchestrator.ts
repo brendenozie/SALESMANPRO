@@ -24,6 +24,7 @@ import {
   AgentWorkforceLevel,
   AgentTaskStatus,
   AgentApprovalStatus,
+  AnyAgentKey,
 } from "./types";
 import { AIPlatformError } from "@/lib/ai/types";
 
@@ -58,7 +59,7 @@ export class WorkforceOrchestrator {
         title: input.prompt.slice(0, 100),
         priority: input.priority || 2,
         status: AgentTaskStatus.RUNNING,
-        input: { prompt: input.prompt, contextOverrides: input.contextOverrides },
+        input: { prompt: input.prompt, contextOverrides: input.contextOverrides } as any,
         startedAt: new Date(),
       },
     });
@@ -160,7 +161,7 @@ Workflow Instructions:
           {
             companyId: context.companyId || "PLATFORM_SUPER_ADMIN",
             userId: context.userId,
-            source: context.source || "AGENT",
+            source: (context.source as any) || "AGENT",
             feature: `workforce_${input.agentKey.toLowerCase()}`,
           },
         );
@@ -207,7 +208,7 @@ Workflow Instructions:
                 actionType: toolResult.approvalPayload.actionType,
                 title: toolResult.approvalPayload.title,
                 description: toolResult.approvalPayload.description,
-                proposedAction: toolResult.approvalPayload.proposedAction,
+                proposedAction: toolResult.approvalPayload.proposedAction as any,
                 status: AgentApprovalStatus.PENDING,
               },
             });
@@ -263,6 +264,14 @@ Workflow Instructions:
 
           // Feed tool summary back into conversation for next step
           currentPrompt = `Tool '${toolName}' execution result:\n${toolResult.summaryForAgent || JSON.stringify(toolResult.data || toolResult.error)}\n\nPlease now formulate your final response or take the next necessary step.`;
+          conversationHistory.push({
+            role: "assistant",
+            content: JSON.stringify(parsed),
+          });
+          conversationHistory.push({
+            role: "user",
+            content: currentPrompt,
+          });
           currentStep++;
         } else {
           // If neither structured action nor finalResponse, use raw text as fallback
@@ -276,7 +285,7 @@ Workflow Instructions:
         finalReply = "Agent finished reasoning steps with available data.";
       }
 
-      // 8. Settle credit ledger
+      // 8. Settle credits
       await WorkforceCreditPolicy.settleBudget({
         context,
         reservationId,
@@ -289,8 +298,8 @@ Workflow Instructions:
         where: { id: task.id },
         data: {
           status,
-          output: { reply: finalReply, approvalId, escalationId },
-          toolCalls: toolCallsExecuted,
+          output: { reply: finalReply, approvalId, escalationId } as any,
+          toolCalls: toolCallsExecuted as any,
           creditsUsed: totalCreditsConsumed,
           completedAt: new Date(),
         },
@@ -312,6 +321,8 @@ Workflow Instructions:
         reply: finalReply,
         toolCallsExecuted,
         creditsConsumed: totalCreditsConsumed,
+        creditsUsed: totalCreditsConsumed,
+        stepsExecuted: toolCallsExecuted.length,
         latencyMs: Date.now() - startTime,
         requiresApproval: status === AgentTaskStatus.WAITING_APPROVAL,
         approvalId,

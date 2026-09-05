@@ -76,11 +76,45 @@ exports.getGhubaHomepageCached = (0, cache_1.unstable_cache)(async () => {
             })
             : Promise.resolve([]),
     ]);
+    // Query active sponsored listing campaigns for Ghuba homepage top placements
+    let sponsoredListings = [];
+    try {
+        const activeSponsoredCampaigns = await prismadb_1.default.adCampaign.findMany({
+            where: {
+                status: "ACTIVE",
+                listingId: { not: null },
+            },
+            select: {
+                id: true,
+                listingId: true,
+                bidAmountKES: true,
+            },
+            orderBy: { bidAmountKES: "desc" },
+            take: 6,
+        });
+        const sponsoredListingIds = activeSponsoredCampaigns
+            .map((c) => c.listingId)
+            .filter((id) => Boolean(id));
+        if (sponsoredListingIds.length > 0) {
+            const rawSponsored = await prismadb_1.default.marketplaceListings.findMany({
+                where: { id: { in: sponsoredListingIds }, ...listingWhere },
+                select: listingSelect,
+            });
+            sponsoredListings = rawSponsored.map((l) => ({
+                ...l,
+                isSponsored: true,
+            }));
+        }
+    }
+    catch {
+        // Fallback gracefully if ad tables are being seeded
+    }
     return {
         generatedAt: new Date().toISOString(),
         categories,
         featuredCategory,
         sections: {
+            sponsored: sponsoredListings,
             featured,
             flashDeals,
             newArrivals,
@@ -88,7 +122,7 @@ exports.getGhubaHomepageCached = (0, cache_1.unstable_cache)(async () => {
             featuredCategoryProducts,
         },
     };
-}, ["ghuba:homepage:data:v2"], // Stable cache key
+}, ["ghuba:homepage:data:v3"], // Updated cache key
 {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300

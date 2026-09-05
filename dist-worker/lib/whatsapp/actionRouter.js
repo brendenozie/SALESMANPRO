@@ -40,6 +40,10 @@ const getServiceAvailability_1 = require("./actions/services/getServiceAvailabil
 const initiateMpesa_1 = require("./actions/payments/initiateMpesa");
 // Support Actions
 const escalateToHuman_1 = require("./actions/support/escalateToHuman");
+// AI Workforce Orchestrator Bindings
+const orchestrator_1 = require("@/lib/ai/workforce/orchestrator");
+const types_2 = require("@/lib/ai/workforce/types");
+const workforceOrchestrator = new orchestrator_1.WorkforceOrchestrator();
 async function actionRouter(params) {
     const parsed = types_1.whatsappActionSchema.safeParse(params.action);
     if (!parsed.success) {
@@ -187,6 +191,69 @@ async function actionRouter(params) {
             case "get_support_status":
                 result = await (0, getCustomerOrders_1.getCustomerOrders)({ limit: 1 }, params.context);
                 break;
+            // ======================================================================
+            // AI WORKFORCE DIRECT AGENT BINDINGS
+            // ======================================================================
+            case "route_to_sales_agent": {
+                try {
+                    const runResult = await workforceOrchestrator.execute({
+                        agentKey: "SALES_AGENT",
+                        prompt: `Customer WhatsApp inquiry: "${action.arguments.inquiry}". Use catalog search and authoritative pricing to assist and offer recommendations.`,
+                        channel: "WHATSAPP",
+                    }, {
+                        companyId: params.context.companyId,
+                        companyName: params.context.customerName || "Store Customer",
+                        level: types_2.AgentWorkforceLevel.STORE,
+                        traceId: `wa_sales_${Date.now()}`,
+                        channel: "WHATSAPP",
+                    });
+                    result = {
+                        success: true,
+                        action: "route_to_sales_agent",
+                        message: runResult.reply,
+                        shouldRespond: true,
+                        data: {
+                            creditsUsed: runResult.creditsUsed,
+                            steps: runResult.stepsExecuted,
+                        },
+                    };
+                }
+                catch (err) {
+                    console.error("[WORKFORCE_WHATSAPP_SALES_ERROR]", err);
+                    result = await (0, searchProducts_1.searchProducts)({ query: action.arguments.inquiry }, params.context);
+                }
+                break;
+            }
+            case "route_to_support_agent": {
+                try {
+                    const runResult = await workforceOrchestrator.execute({
+                        agentKey: "SUPPORT_AGENT",
+                        prompt: `Customer WhatsApp support inquiry: "${action.arguments.inquiry}". Order context: ${action.arguments.orderId || "None specified"}. Check order status and store policies accurately.`,
+                        channel: "WHATSAPP",
+                    }, {
+                        companyId: params.context.companyId,
+                        companyName: params.context.customerName || "Store Customer",
+                        level: types_2.AgentWorkforceLevel.STORE,
+                        traceId: `wa_support_${Date.now()}`,
+                        channel: "WHATSAPP",
+                    });
+                    result = {
+                        success: true,
+                        action: "route_to_support_agent",
+                        message: runResult.reply,
+                        shouldRespond: true,
+                        data: {
+                            creditsUsed: runResult.creditsUsed,
+                            steps: runResult.stepsExecuted,
+                        },
+                    };
+                }
+                catch (err) {
+                    console.error("[WORKFORCE_WHATSAPP_SUPPORT_ERROR]", err);
+                    result = await (0, escalateToHuman_1.escalateToHuman)({ reason: action.arguments.inquiry }, params.context);
+                }
+                break;
+            }
             default:
                 result = {
                     success: false,

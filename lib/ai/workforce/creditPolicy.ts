@@ -87,13 +87,15 @@ export class WorkforceCreditPolicy {
       if (params.reservationId) {
         await creditLedger.finalizeCharge({
           companyId: params.context.companyId,
-          reservationId: params.reservationId,
-          finalAmount: params.actualCredits,
+          userId: params.context.userId,
+          reservedAmount: params.actualCredits,
+          actualAmount: params.actualCredits,
           description: params.description,
-          metadata: {
-            agentKey: params.context.agentKey,
-            level: params.context.level,
-            taskId: params.context.taskId,
+          referenceId: params.reservationId,
+          usageData: {
+            capability: "AGENT" as any,
+            provider: "WORKFORCE",
+            model: params.context.agentKey || "agent",
           },
         });
       } else if (params.actualCredits > 0) {
@@ -101,12 +103,8 @@ export class WorkforceCreditPolicy {
           companyId: params.context.companyId,
           userId: params.context.userId,
           amount: params.actualCredits,
+          feature: params.context.agentKey || "WORKFORCE",
           description: params.description,
-          metadata: {
-            agentKey: params.context.agentKey,
-            level: params.context.level,
-            taskId: params.context.taskId,
-          },
         });
       }
     }
@@ -123,8 +121,10 @@ export class WorkforceCreditPolicy {
     if (params.reservationId && params.context.companyId) {
       await creditLedger.refundCredits({
         companyId: params.context.companyId,
-        reservationId: params.reservationId,
-        reason: params.reason,
+        userId: params.context.userId,
+        amount: params.context.estimatedCredits || 1,
+        description: params.reason,
+        referenceId: params.reservationId,
       });
     }
   }

@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processOrderPayment = void 0;
+const syncPayment_1 = require("@/lib/payments/syncPayment");
 const index_1 = require("@/lib/paymentsv2/index");
 const mpesa_1 = require("@/lib/paymentsv2/mpesa");
 const paystack_1 = require("@/lib/paymentsv2/paystack");
@@ -20,16 +21,16 @@ async function processOrderPayment(input) {
      * ---------------------------------------------------------
      */
     if (paymentOption === "cash" || paymentOption === "split") {
-        await prismadb_1.default.customerOrder.update({
-            where: {
-                id: order.id,
-            },
-            data: {
-                paymentStatus: "COMPLETED",
-                status: "PAID",
-                paymentMethod: paymentOption.toUpperCase(),
-                deliveryStatus: "Processing",
-            },
+        const gross = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+        await (0, syncPayment_1.syncAuthoritativePayment)({
+            orderId: order.id,
+            transactionId: `CASH-${order.trackingNumber || order.id}`,
+            amount: gross,
+            provider: paymentOption.toUpperCase(),
+            channel: order.channel || "POS",
+            status: "COMPLETED",
+            companyId: companyId || order.companyId,
+            paidAt: new Date(),
         });
         return {
             success: true,
@@ -46,18 +47,15 @@ async function processOrderPayment(input) {
     if (paymentOption === "cod" ||
         paymentOption === "pending" ||
         paymentOption === "pickupatshop") {
-        await prismadb_1.default.customerOrder.update({
-            where: {
-                id: order.id,
-            },
-            data: {
-                paymentStatus: "PENDING",
-                status: "PENDING",
-                paymentMethod: paymentOption.toUpperCase(),
-                deliveryStatus: paymentOption === "pickupatshop"
-                    ? "Ready for Pickup"
-                    : "Order Placed",
-            },
+        const gross = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+        await (0, syncPayment_1.syncAuthoritativePayment)({
+            orderId: order.id,
+            transactionId: `DEF-${order.trackingNumber || order.id}`,
+            amount: gross,
+            provider: paymentOption.toUpperCase(),
+            channel: order.channel || "WEBSITE",
+            status: "PENDING",
+            companyId: companyId || order.companyId,
         });
         return {
             success: true,

@@ -3,25 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.consumeVerificationToken = exports.markEmailVerified = exports.sendVerificationEmail = exports.createEmailVerificationToken = void 0;
-//@ts-ignore
+exports.resendVerificationEmail = exports.consumeVerificationToken = exports.markEmailVerified = exports.sendVerificationEmail = exports.createEmailVerificationToken = void 0;
 const crypto_1 = require("crypto");
-const nodemailer_1 = __importDefault(require("nodemailer"));
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const domain_1 = require("./domain");
+const emailService_1 = require("@/lib/email/emailService");
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
-function transporter() {
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER)
-        return null;
-    return nodemailer_1.default.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
-}
 async function createEmailVerificationToken(email) {
     const token = (0, crypto_1.randomBytes)(32).toString("hex");
     const expires = new Date(Date.now() + VERIFY_TTL_MS);
@@ -32,103 +19,31 @@ async function createEmailVerificationToken(email) {
     return token;
 }
 exports.createEmailVerificationToken = createEmailVerificationToken;
-async function sendVerificationEmail(email, token, callbackUrl) {
-    const mailer = transporter();
+async function sendVerificationEmail(email, token, callbackUrl, options) {
     const verifyUrl = new URL("/verify-email", domain_1.AUTH_URL);
     verifyUrl.searchParams.set("token", token);
     verifyUrl.searchParams.set("email", email);
     if (callbackUrl)
         verifyUrl.searchParams.set("callbackUrl", callbackUrl);
     const verificationLink = verifyUrl.toString();
-    if (!mailer) {
+    const tenantType = options?.tenantType || (options?.companyId ? "STORE" : "PLATFORM");
+    try {
+        const result = await emailService_1.EmailService.sendEmail({
+            tenantType,
+            companyId: options?.companyId,
+            template: "ACCOUNT_VERIFICATION",
+            recipient: email,
+            data: {
+                verificationLink,
+            },
+            async: false,
+        });
+        return { sent: result.success, verifyUrl: verificationLink };
+    }
+    catch (err) {
+        console.error("[VerificationEmail] Dispatch error:", err.message);
         return { sent: false, verifyUrl: verificationLink };
     }
-    const htmlTemplate = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify your Account email</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 40px 16px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; border-spacing: 0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-          
-          <!-- Header Banner -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 32px 40px; text-align: center;">
-              <span style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-                Salesman<span style="color: #f97316;">Pro</span>
-              </span>
-            </td>
-          </tr>
-
-          <!-- Main Content Body -->
-          <tr>
-            <td style="padding: 40px 40px 32px 40px;">
-              <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #0f172a; text-align: center; letter-spacing: -0.3px;">
-                Verify your email address
-              </h1>
-              <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #475569; text-align: center;">
-                Welcome to SalesmanPro! Please confirm your email address to complete your account activation and access your dashboard.
-              </p>
-
-              <!-- Call To Action Button -->
-              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0;">
-                <tr>
-                  <td align="center">
-                    <a href="${verificationLink}" target="_blank" style="display: inline-block; background-color: #ea580c; background-image: linear-gradient(to right, #ea580c, #f59e0b); color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 10px; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);">
-                      Verify Email Address
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin: 0 0 24px 0; font-size: 13px; line-height: 1.5; color: #64748b; text-align: center;">
-                This link will expire in <strong>24 hours</strong>.
-              </p>
-
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0 24px 0;" />
-
-              <!-- Fallback Direct Link -->
-              <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #64748b; text-align: left;">
-                Button not working? Copy and paste this link into your browser:
-              </p>
-              <p style="margin: 0; font-size: 12px; line-height: 1.5; word-break: break-all; color: #ea580c;">
-                <a href="${verificationLink}" style="color: #ea580c; text-decoration: underline;">${verificationLink}</a>
-              </p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 24px 40px; border-top: 1px solid #e2e8f0; text-align: center;">
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #94a3b8;">
-                If you didn't create an account with SalesmanPro, you can safely ignore this email.
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #cbd5e1;">
-                &copy; ${new Date().getFullYear()} SalesmanPro. All rights reserved.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `;
-    await mailer.sendMail({
-        from: process.env.EMAIL_FROM || '"SalesmanPro" <no-reply@salesmanpro.site>',
-        to: email,
-        subject: "Verify your SalesmanPro email",
-        html: htmlTemplate,
-    });
-    return { sent: true, verifyUrl: verificationLink };
 }
 exports.sendVerificationEmail = sendVerificationEmail;
 async function markEmailVerified(email) {
@@ -155,3 +70,61 @@ async function consumeVerificationToken(email, token) {
     return true;
 }
 exports.consumeVerificationToken = consumeVerificationToken;
+async function resendVerificationEmail(email, callbackUrl) {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !normalizedEmail.includes("@")) {
+        return { success: false, message: "A valid email address is required." };
+    }
+    const user = await prismadb_1.default.user.findUnique({
+        where: { email: normalizedEmail },
+        select: { id: true, email: true, emailVerified: true, companyId: true },
+    });
+    if (!user) {
+        // Return friendly generic success to prevent email enumeration
+        return {
+            success: true,
+            message: "If an account with this email exists and requires verification, a new link has been sent.",
+        };
+    }
+    if (user.emailVerified === true) {
+        return {
+            success: true,
+            alreadyVerified: true,
+            message: "This email address is already verified. You can sign in now.",
+        };
+    }
+    // Rate-limiting check: if a token exists and was created less than 60s ago
+    const existing = await prismadb_1.default.verificationToken.findFirst({
+        where: { identifier: normalizedEmail },
+        orderBy: { expires: "desc" },
+    });
+    if (existing) {
+        const expiresMs = existing.expires.getTime();
+        const approxCreatedMs = expiresMs - VERIFY_TTL_MS;
+        const elapsedMs = Date.now() - approxCreatedMs;
+        const cooldownMs = 60 * 1000;
+        if (elapsedMs < cooldownMs && elapsedMs >= 0) {
+            const remainingSeconds = Math.ceil((cooldownMs - elapsedMs) / 1000);
+            return {
+                success: false,
+                cooldownRemainingSeconds: remainingSeconds,
+                message: `Please wait ${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""} before requesting another verification email.`,
+            };
+        }
+    }
+    const token = await createEmailVerificationToken(normalizedEmail);
+    const sendResult = await sendVerificationEmail(normalizedEmail, token, callbackUrl, user.companyId
+        ? { tenantType: "STORE", companyId: user.companyId }
+        : { tenantType: "PLATFORM" });
+    if (!sendResult.sent) {
+        return {
+            success: false,
+            message: "Failed to dispatch verification email. Please try again shortly.",
+        };
+    }
+    return {
+        success: true,
+        message: "A new verification email has been sent. Please check your inbox.",
+    };
+}
+exports.resendVerificationEmail = resendVerificationEmail;

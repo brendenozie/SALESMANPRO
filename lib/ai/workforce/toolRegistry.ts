@@ -120,7 +120,6 @@ WorkforceToolRegistry.registerTool({
     const products = await prisma.product.findMany({
       where: {
         companyId: context.companyId!,
-        deletedAt: null,
         ...(query
           ? {
               OR: [
@@ -171,7 +170,6 @@ WorkforceToolRegistry.registerTool({
     const lowStockProducts = await prisma.product.findMany({
       where: {
         companyId: context.companyId!,
-        deletedAt: null,
         quantity: { lte: threshold, gt: 0 },
       },
       select: { id: true, name: true, quantity: true, sellingPrice: true },
@@ -181,7 +179,6 @@ WorkforceToolRegistry.registerTool({
     const outOfStockProducts = await prisma.product.findMany({
       where: {
         companyId: context.companyId!,
-        deletedAt: null,
         quantity: { lte: 0 },
       },
       select: { id: true, name: true, quantity: true, sellingPrice: true },
@@ -230,7 +227,6 @@ WorkforceToolRegistry.registerTool({
       prisma.product.count({
         where: {
           companyId: context.companyId!,
-          deletedAt: null,
           quantity: { lte: 5 },
         },
       }),
@@ -536,7 +532,8 @@ WorkforceToolRegistry.registerTool({
     if (serpApiKey) {
       try {
         const serpUrl = `https://serpapi.com/search.json?engine=google_maps&q=${encodeURIComponent(`${category} in ${location} Kenya`)}&api_key=${serpApiKey}`;
-        const resp = await fetch(serpUrl, { signal: AbortSignal.timeout(7000) });
+        const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(7000) : undefined;
+        const resp = await fetch(serpUrl, { signal: timeoutSignal });
         if (resp.ok) {
           const data = await resp.json();
           const localPlaces = data.local_results || [];
@@ -560,7 +557,8 @@ WorkforceToolRegistry.registerTool({
     if (liveResults.length === 0 && googleApiKey && googleEngineId) {
       try {
         const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${googleApiKey}&cx=${googleEngineId}&q=${encodeURIComponent(`${category} ${location} Kenya business contact website`)}&num=${limit}`;
-        const resp = await fetch(searchUrl, { signal: AbortSignal.timeout(7000) });
+        const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(7000) : undefined;
+        const resp = await fetch(searchUrl, { signal: timeoutSignal });
         if (resp.ok) {
           const data = await resp.json();
           const items = data.items || [];
@@ -699,10 +697,12 @@ WorkforceToolRegistry.registerTool({
       return { success: false, error: "Prospect record not found." };
     }
 
-    const contactGreeting = prospect.contactName ? `Hi ${prospect.contactName}` : `Hello ${prospect.businessName} Team`;
+    const pContact = (prospect as any).contactName;
+    const pLocation = (prospect as any).city || prospect.location || "Kenya";
+    const contactGreeting = pContact ? `Hi ${pContact}` : `Hello ${prospect.businessName} Team`;
     const draftedBody =
       args.message ||
-      `${contactGreeting},\n\nWe noticed ${prospect.businessName}'s presence in ${prospect.city || "Kenya"} and wanted to share how SalesmanPro is helping similar merchants accelerate sales. With our platform, you get an instant mobile-first storefront, automated WhatsApp ordering with conversational AI, and direct M-Pesa integrated checkout tailored for ${args.customAngle || "rapid growth"}.\n\nWould you be open to a quick 3-minute demo this week to see how it works for your business?\n\nBest regards,\nSalesmanPro Merchant Growth Team`;
+      `${contactGreeting},\n\nWe noticed ${prospect.businessName}'s presence in ${pLocation} and wanted to share how SalesmanPro is helping similar merchants accelerate sales. With our platform, you get an instant mobile-first storefront, automated WhatsApp ordering with conversational AI, and direct M-Pesa integrated checkout tailored for ${args.customAngle || "rapid growth"}.\n\nWould you be open to a quick 3-minute demo this week to see how it works for your business?\n\nBest regards,\nSalesmanPro Merchant Growth Team`;
 
     return {
       success: true,
@@ -714,7 +714,7 @@ WorkforceToolRegistry.registerTool({
         proposedAction: {
           prospectId: prospect.id,
           businessName: prospect.businessName,
-          contactName: prospect.contactName,
+          contactName: pContact,
           channel: args.channel,
           recipient: args.channel === "EMAIL" ? prospect.email : prospect.phone,
           email: prospect.email,

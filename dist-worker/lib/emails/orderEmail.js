@@ -1,28 +1,26 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendOrderConfirmationEmail = void 0;
-const nodemailer_1 = __importDefault(require("nodemailer"));
+const emailService_1 = require("@/lib/email/emailService");
 async function sendOrderConfirmationEmail(order) {
-    const transporter = nodemailer_1.default.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+    if (!order || !order.email) {
+        console.warn("[OrderEmail] Cannot send confirmation email: missing recipient email");
+        return;
+    }
+    const isGhuba = Boolean(order.isGhuba || order.marketplaceListingId);
+    const tenantType = isGhuba ? "GHUBA" : "STORE";
+    return emailService_1.EmailService.sendEmail({
+        tenantType,
+        companyId: order.companyId,
+        template: "ORDER_CONFIRMED",
+        recipient: order.email,
+        data: {
+            orderId: order.id,
+            totalAmount: order.totalFinalPrice || order.totalPrice || "0.00",
+            currency: order.currency || "KES",
+            items: order.orderItems || order.items || [],
         },
-    });
-    await transporter.sendMail({
-        from: '"Kapu Orders" <no-reply@kapu.com>',
-        to: order.email,
-        subject: "Your Order Confirmation",
-        html: `
-      <h3>Order Confirmed</h3>
-      <p>Thank you for shopping with us. Your order ID is <b>${order.id}</b>.</p>
-      <p>Total: KES ${order.totalFinalPrice}</p>
-    `,
+        async: true,
     });
 }
 exports.sendOrderConfirmationEmail = sendOrderConfirmationEmail;

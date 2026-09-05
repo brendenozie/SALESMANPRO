@@ -33,12 +33,13 @@ export class GoogleAdsProvider implements IMarketingProvider {
     try {
       if (accessToken && developerToken) {
         const url = `${this.baseUrl}/${this.apiVersion}/customers/${cleanCustomerId}`;
+        const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(10000) : undefined;
         const resp = await fetch(url, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             "developer-token": developerToken,
           },
-          signal: AbortSignal.timeout(10000),
+          signal: timeoutSignal,
         });
 
         if (resp.ok) {
@@ -101,6 +102,7 @@ export class GoogleAdsProvider implements IMarketingProvider {
         `;
 
         const url = `${this.baseUrl}/${this.apiVersion}/customers/${cleanCustomerId}/googleAds:searchStream`;
+        const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(15000) : undefined;
         const resp = await fetch(url, {
           method: "POST",
           headers: {
@@ -109,7 +111,7 @@ export class GoogleAdsProvider implements IMarketingProvider {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ query: gaql }),
-          signal: AbortSignal.timeout(15000),
+          signal: timeoutSignal,
         });
 
         if (resp.ok) {

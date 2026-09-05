@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processMpesaCallback = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+const syncPayment_1 = require("@/lib/payments/syncPayment");
 const metaClient_1 = require("../metaClient");
 const repository_1 = require("../repository");
 const crypto_1 = require("@/lib/crypto");
@@ -63,27 +64,18 @@ async function processMpesaCallback(payload) {
         const amount = Number(meta.find((x) => x.Name === "Amount")?.Value ?? order.totalFinalPrice ?? 0);
         const receipt = String(meta.find((x) => x.Name === "MpesaReceiptNumber")?.Value ?? CheckoutRequestID);
         const phone = String(meta.find((x) => x.Name === "PhoneNumber")?.Value ?? order.mpesaPhone ?? order.phone);
-        // Create Payment record linked to order
-        await prismadb_1.default.payment.create({
-            data: {
-                userId: order.consumerId ?? order.Company?.id ?? "unknown",
-                orderId: order.id,
-                amount,
-                status: "COMPLETED",
-                transactionId: receipt,
-            },
-        });
-        // Update CustomerOrder to COMPLETED / PAID
-        await prismadb_1.default.customerOrder.update({
-            where: { id: order.id },
-            data: {
-                paymentStatus: "COMPLETED",
-                paymentMethod: "MPESA",
-                transactionId: receipt,
-                transactionDate: new Date(),
-                deliveryStatus: "Payment Received",
-                status: "PAID",
-            },
+        // Create/update authoritative Payment record linked to order
+        await (0, syncPayment_1.syncAuthoritativePayment)({
+            orderId: order.id,
+            transactionId: receipt,
+            providerTransactionId: receipt,
+            internalReference: CheckoutRequestID || order.trackingNumber,
+            amount,
+            provider: "MPESA",
+            channel: order.channel || "WHATSAPP",
+            status: "COMPLETED",
+            companyId: order.companyId,
+            paidAt: new Date(),
         });
         // 4. Proactively send WhatsApp notification to customer if ordered via WhatsApp
         if (order.whatsappConversation && order.whatsappConversation.WhatsAppAccount) {

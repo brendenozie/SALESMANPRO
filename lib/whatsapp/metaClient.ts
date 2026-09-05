@@ -297,21 +297,45 @@ export class MetaWhatsAppClient {
   async sendTemplateMessage(params: {
     to: string;
     templateName: string;
-    languageCode: string;
-    components?: unknown[];
+    languageCode?: string;
+    components?: any[];
+    bodyParameters?: string[];
+    buttonPayload?: string;
   }): Promise<MetaSendMessageResponse> {
+    const components: any[] = params.components ? [...params.components] : [];
+
+    if (params.bodyParameters && params.bodyParameters.length > 0) {
+      components.push({
+        type: "body",
+        parameters: params.bodyParameters.map((text) => ({
+          type: "text",
+          text,
+        })),
+      });
+    }
+
+    if (params.buttonPayload) {
+      components.push({
+        type: "button",
+        sub_type: "quick_reply",
+        index: "0",
+        parameters: [{ type: "payload", payload: params.buttonPayload }],
+      });
+    }
+
     return this.request<MetaSendMessageResponse>(
       `/${this.phoneNumberId}/messages`,
       {
         method: "POST",
         body: JSON.stringify({
           messaging_product: "whatsapp",
+          recipient_type: "individual",
           to: params.to,
           type: "template",
           template: {
             name: params.templateName,
-            language: { code: params.languageCode },
-            components: params.components,
+            language: { code: params.languageCode || "en_US" },
+            components: components.length > 0 ? components : undefined,
           },
         }),
       },
@@ -380,57 +404,6 @@ export class MetaWhatsAppClient {
       to: params.phone,
       body,
     });
-  }
-
-  // ─── Template & Outreach Messages ──────────────────────────────────────────
-
-  async sendTemplateMessage(params: {
-    to: string;
-    templateName: string;
-    languageCode?: string;
-    bodyParameters?: string[];
-    buttonPayload?: string;
-  }): Promise<MetaSendMessageResponse> {
-    const components: any[] = [];
-
-    if (params.bodyParameters && params.bodyParameters.length > 0) {
-      components.push({
-        type: "body",
-        parameters: params.bodyParameters.map((text) => ({
-          type: "text",
-          text,
-        })),
-      });
-    }
-
-    if (params.buttonPayload) {
-      components.push({
-        type: "button",
-        sub_type: "quick_reply",
-        index: "0",
-        parameters: [{ type: "payload", payload: params.buttonPayload }],
-      });
-    }
-
-    return this.request<MetaSendMessageResponse>(
-      `/${this.phoneNumberId}/messages`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to: params.to,
-          type: "template",
-          template: {
-            name: params.templateName,
-            language: {
-              code: params.languageCode || "en_US",
-            },
-            components: components.length > 0 ? components : undefined,
-          },
-        }),
-      },
-    );
   }
 
   async registerOutreachTemplate(params: {

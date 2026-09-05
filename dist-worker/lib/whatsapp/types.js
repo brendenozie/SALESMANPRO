@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.whatsappActionSchema = exports.calculateCheckoutActionSchema = exports.getOrderStatusActionSchema = exports.getSupportStatusActionSchema = exports.createSupportRequestActionSchema = exports.escalateToHumanActionSchema = exports.retryPaymentActionSchema = exports.checkPaymentStatusActionSchema = exports.initiateMpesaActionSchema = exports.initiatePaymentActionSchema = exports.getPaymentMethodsActionSchema = exports.cancelServiceBookingActionSchema = exports.confirmServiceBookingActionSchema = exports.createServiceBookingActionSchema = exports.getServiceAvailabilityActionSchema = exports.getServiceActionSchema = exports.searchServicesActionSchema = exports.requestOrderChangeActionSchema = exports.cancelOrderActionSchema = exports.trackOrderActionSchema = exports.getOrderActionSchema = exports.createOrderActionSchema = exports.confirmCheckoutActionSchema = exports.updateCheckoutActionSchema = exports.getCheckoutActionSchema = exports.createCheckoutActionSchema = exports.calculateCheckoutTotalActionSchema = exports.validateDiscountActionSchema = exports.calculateShippingActionSchema = exports.calculatePriceActionSchema = exports.getCustomerProfileActionSchema = exports.getCustomerOrdersActionSchema = exports.updateCustomerActionSchema = exports.createCustomerActionSchema = exports.identifyCustomerActionSchema = exports.checkInventoryActionSchema = exports.getStoreInformationActionSchema = exports.getCategoriesActionSchema = exports.getListingActionSchema = exports.getProductActionSchema = exports.searchProductsActionSchema = exports.paymentOptionEnum = exports.cartItemInputSchema = exports.pricingOptionSchema = void 0;
+exports.whatsappActionSchema = exports.calculateCheckoutActionSchema = exports.getOrderStatusActionSchema = exports.routeToSupportAgentActionSchema = exports.routeToSalesAgentActionSchema = exports.getSupportStatusActionSchema = exports.createSupportRequestActionSchema = exports.escalateToHumanActionSchema = exports.retryPaymentActionSchema = exports.checkPaymentStatusActionSchema = exports.initiateMpesaActionSchema = exports.initiatePaymentActionSchema = exports.getPaymentMethodsActionSchema = exports.cancelServiceBookingActionSchema = exports.confirmServiceBookingActionSchema = exports.createServiceBookingActionSchema = exports.getServiceAvailabilityActionSchema = exports.getServiceActionSchema = exports.searchServicesActionSchema = exports.requestOrderChangeActionSchema = exports.cancelOrderActionSchema = exports.trackOrderActionSchema = exports.getOrderActionSchema = exports.createOrderActionSchema = exports.confirmCheckoutActionSchema = exports.updateCheckoutActionSchema = exports.getCheckoutActionSchema = exports.createCheckoutActionSchema = exports.calculateCheckoutTotalActionSchema = exports.validateDiscountActionSchema = exports.calculateShippingActionSchema = exports.calculatePriceActionSchema = exports.getCustomerProfileActionSchema = exports.getCustomerOrdersActionSchema = exports.updateCustomerActionSchema = exports.createCustomerActionSchema = exports.identifyCustomerActionSchema = exports.checkInventoryActionSchema = exports.getStoreInformationActionSchema = exports.getCategoriesActionSchema = exports.getListingActionSchema = exports.getProductActionSchema = exports.searchProductsActionSchema = exports.paymentOptionEnum = exports.cartItemInputSchema = exports.pricingOptionSchema = void 0;
 const zod_1 = require("zod");
 /**
  * ============================================================
@@ -334,6 +334,20 @@ exports.getSupportStatusActionSchema = zod_1.z.object({
     action: zod_1.z.literal("get_support_status"),
     arguments: zod_1.z.object({}),
 });
+exports.routeToSalesAgentActionSchema = zod_1.z.object({
+    action: zod_1.z.literal("route_to_sales_agent"),
+    arguments: zod_1.z.object({
+        inquiry: zod_1.z.string().min(1),
+        category: zod_1.z.string().optional(),
+    }),
+});
+exports.routeToSupportAgentActionSchema = zod_1.z.object({
+    action: zod_1.z.literal("route_to_support_agent"),
+    arguments: zod_1.z.object({
+        inquiry: zod_1.z.string().min(1),
+        orderId: zod_1.z.string().optional(),
+    }),
+});
 // Backward-compatible alias
 exports.getOrderStatusActionSchema = exports.trackOrderActionSchema;
 exports.calculateCheckoutActionSchema = exports.calculateCheckoutTotalActionSchema;
@@ -389,4 +403,7 @@ exports.whatsappActionSchema = zod_1.z.discriminatedUnion("action", [
     exports.escalateToHumanActionSchema,
     exports.createSupportRequestActionSchema,
     exports.getSupportStatusActionSchema,
+    // AI Workforce Direct Bindings
+    exports.routeToSalesAgentActionSchema,
+    exports.routeToSupportAgentActionSchema,
 ]);

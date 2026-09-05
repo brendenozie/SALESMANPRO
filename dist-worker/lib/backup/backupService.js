@@ -11,7 +11,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.backupService = exports.BackupService = void 0;
 const prismadb_1 = __importDefault(require("../../server/db/prismadb"));
-const nodemailer_1 = __importDefault(require("nodemailer"));
+const emailService_1 = require("@/lib/email/emailService");
 const backupQueue_1 = require("./queue/backupQueue");
 const storageProvider_1 = require("./storage/storageProvider");
 const cryptoPipeline_1 = require("./crypto/cryptoPipeline");
@@ -319,36 +319,21 @@ class BackupService {
         if (!alertEmail || process.env.BACKUP_ALERTS_ENABLED === "false") {
             return;
         }
-        if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-            console.warn(`[BackupAlert] SMTP credentials missing. Alert message: ${subject}`);
-            return;
-        }
         try {
-            const transporter = nodemailer_1.default.createTransport({
-                host: process.env.SMTP_HOST,
-                port: Number(process.env.SMTP_PORT || 587),
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS,
+            await emailService_1.EmailService.sendEmail({
+                tenantType: "PLATFORM",
+                template: "BACKUP_ALERT",
+                recipient: alertEmail,
+                data: {
+                    subject,
+                    message,
                 },
+                async: true,
             });
-            await transporter.sendMail({
-                from: process.env.EMAIL_FROM || '"SalesmanPro Alert" <no-reply@salesmanpro.com>',
-                to: alertEmail,
-                subject: `[SalesmanPro DB Alert] ${subject}`,
-                html: `
-          <div style="font-family: sans-serif; padding: 20px;">
-            <h2 style="color: #dc2626;">Database Reliability Alert</h2>
-            <p><b>Event:</b> ${subject}</p>
-            <p style="background: #f3f4f6; padding: 15px; border-radius: 8px;">${message}</p>
-            <p><small>Timestamp: ${new Date().toISOString()}</small></p>
-          </div>
-        `,
-            });
-            console.log(`[BackupAlert] Alert sent to ${alertEmail}: ${subject}`);
+            console.log(`[BackupAlert] Alert enqueued for ${alertEmail}: ${subject}`);
         }
         catch (err) {
-            console.error("[BackupAlert] Failed to send email alert:", err.message);
+            console.error("[BackupAlert] Failed to dispatch email alert:", err.message);
         }
     }
 }

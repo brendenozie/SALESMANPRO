@@ -11,8 +11,9 @@ import {
   AgentApprovalStatus,
   AgentMemoryScope,
   ProspectStatus,
-  ProspectOutreachChannel,
 } from "@prisma/client";
+
+export type ProspectOutreachChannel = "EMAIL" | "WHATSAPP" | "PHONE" | "SMS";
 
 export {
   AgentWorkforceLevel,
@@ -21,7 +22,6 @@ export {
   AgentApprovalStatus,
   AgentMemoryScope,
   ProspectStatus,
-  ProspectOutreachChannel,
 };
 
 // ============================================================================
@@ -88,17 +88,22 @@ export interface AgentDefinition {
 // ============================================================================
 
 export interface WorkforceExecutionContext {
-  agentKey: AnyAgentKey;
+  agentKey?: AnyAgentKey;
+  agentId?: string;
   level: AgentWorkforceLevel;
   companyId?: string;       // Required for STORE level; optional for PLATFORM / MARKETPLACE
+  companyName?: string;
   userId?: string;
   userRole?: string;
   userEmail?: string;
   isSuperAdmin?: boolean;
   taskId?: string;
-  source?: "WEB" | "WHATSAPP" | "API" | "WORKER" | "SUPER_ADMIN";
+  traceId?: string;
+  source?: "WEB" | "WHATSAPP" | "API" | "WORKER" | "SUPER_ADMIN" | "AGENT";
   creditBudget?: number;
   channel?: string;
+  permissionLevel?: AgentPermissionLevel;
+  estimatedCredits?: number;
 }
 
 export interface WorkforceToolResult {
@@ -133,6 +138,7 @@ export interface WorkforceTool {
 export interface AgentRunInput {
   agentKey: AnyAgentKey;
   prompt: string;
+  channel?: string;
   conversationHistory?: Array<{ role: "system" | "user" | "assistant"; content: string }>;
   contextOverrides?: Record<string, unknown>;
   maxSteps?: number;
@@ -154,6 +160,8 @@ export interface AgentRunResult {
     latencyMs: number;
   }>;
   creditsConsumed: number;
+  creditsUsed?: number;
+  stepsExecuted?: number;
   latencyMs: number;
   requiresApproval: boolean;
   approvalId?: string;

@@ -42,7 +42,7 @@ export class GoogleAnalyticsProvider implements IMarketingProvider {
             dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
             metrics: [{ name: "activeUsers" }],
           }),
-          signal: AbortSignal.timeout(10000),
+          signal: (AbortSignal as any).timeout ? (AbortSignal as any).timeout(10000) : undefined,
         });
 
         if (resp.ok) {
@@ -78,6 +78,7 @@ export class GoogleAnalyticsProvider implements IMarketingProvider {
     try {
       if (accessToken) {
         const url = `${this.baseUrl}/properties/${cleanPropertyId}:runReport`;
+        const timeoutSignal = (AbortSignal as any).timeout ? (AbortSignal as any).timeout(15000) : undefined;
         const resp = await fetch(url, {
           method: "POST",
           headers: {
@@ -95,7 +96,7 @@ export class GoogleAnalyticsProvider implements IMarketingProvider {
             ],
             limit: 25,
           }),
-          signal: AbortSignal.timeout(15000),
+          signal: timeoutSignal,
         });
 
         if (resp.ok) {

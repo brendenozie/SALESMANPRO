@@ -127,28 +127,54 @@ export async function triggerDailyStoreBriefings(): Promise<{
  */
 export async function registerWorkforceSchedulers() {
   try {
-    await workforceQueue.add(
-      "daily-store-briefing-cron",
-      {
-        input: {
-          agentKey: "STORE_MANAGER",
-          prompt: "CRON_TRIGGER_DAILY_BRIEFINGS",
-          channel: "WEB",
+    if (typeof (workforceQueue as any).upsertJobScheduler === "function") {
+      await (workforceQueue as any).upsertJobScheduler(
+        "daily-store-briefing-cron",
+        { pattern: DAILY_BRIEFING_CRON_PATTERN },
+        {
+          name: "daily-store-briefing-cron",
+          data: {
+            input: {
+              agentKey: "STORE_MANAGER",
+              prompt: "CRON_TRIGGER_DAILY_BRIEFINGS",
+              channel: "WEB",
+            },
+            context: {
+              level: AgentWorkforceLevel.STORE,
+              traceId: "cron_scheduler_register",
+              channel: "WEB",
+            },
+          },
+          opts: {
+            removeOnComplete: 10,
+            removeOnFail: 50,
+          },
         },
-        context: {
-          level: AgentWorkforceLevel.STORE,
-          traceId: "cron_scheduler_register",
-          channel: "WEB",
+      );
+    } else {
+      await (workforceQueue as any).add(
+        "daily-store-briefing-cron",
+        {
+          input: {
+            agentKey: "STORE_MANAGER",
+            prompt: "CRON_TRIGGER_DAILY_BRIEFINGS",
+            channel: "WEB",
+          },
+          context: {
+            level: AgentWorkforceLevel.STORE,
+            traceId: "cron_scheduler_register",
+            channel: "WEB",
+          },
         },
-      },
-      {
-        repeat: {
-          pattern: DAILY_BRIEFING_CRON_PATTERN, // 07:00 EAT
-        },
-        removeOnComplete: 10,
-        removeOnFail: 50,
-      },
-    );
+        {
+          repeat: {
+            pattern: DAILY_BRIEFING_CRON_PATTERN,
+          },
+          removeOnComplete: 10,
+          removeOnFail: 50,
+        } as any,
+      );
+    }
     console.log(`✅ [WORKFORCE_SCHEDULER] Registered Daily Briefing Cron (${DAILY_BRIEFING_CRON_PATTERN} = 07:00 EAT) in BullMQ.`);
   } catch (err) {
     console.warn("[WORKFORCE_SCHEDULER_WARNING] Could not register BullMQ repeatable cron:", err);
