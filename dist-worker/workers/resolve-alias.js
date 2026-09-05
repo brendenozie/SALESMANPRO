@@ -7,7 +7,9 @@
  */
 const path = require("path");
 const Module = require("module");
-const distWorkerRoot = path.resolve(__dirname, "..");
+const distWorkerRoot = __dirname.endsWith("workers")
+    ? path.resolve(__dirname, "..")
+    : path.resolve(__dirname);
 // @ts-ignore
 const origResolveFilename = Module._resolveFilename;
 // @ts-ignore

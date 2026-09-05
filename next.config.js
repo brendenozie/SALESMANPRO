@@ -12,6 +12,7 @@ process.env.NEXT_IS_BUILD_PHASE = "true";
 module.exports = {
   // Opt into output tracing for lightweight standalone production builds
   output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname),
 
   eslint: {
     ignoreDuringBuilds: true,

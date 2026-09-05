@@ -7,6 +7,7 @@
  * Runs alongside the AI job worker, WhatsApp worker, and Next.js in production (via PM2).
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+require("./resolve-alias");
 const backupWorker_1 = require("../lib/backup/queue/backupWorker");
 const backupQueue_1 = require("../lib/backup/queue/backupQueue");
 console.log("🚀 Starting SalesmanPro Database Backup & Disaster Recovery Worker...");

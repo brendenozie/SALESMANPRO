@@ -6,6 +6,7 @@
  * Runs alongside the AI job worker, WhatsApp worker, and Next.js in production (via PM2).
  */
 
+import "./resolve-alias";
 import { createBackupWorker } from "../lib/backup/queue/backupWorker";
 import { setupBackupSchedules } from "../lib/backup/queue/backupQueue";
 

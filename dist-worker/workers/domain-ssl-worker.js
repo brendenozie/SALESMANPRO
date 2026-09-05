@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processCompanySSL = void 0;
+require("./resolve-alias");
 const prismadb_1 = __importDefault(require("../server/db/prismadb"));
 const child_process_1 = require("child_process");
 const fs_1 = __importDefault(require("fs"));

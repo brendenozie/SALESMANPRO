@@ -51,20 +51,41 @@ if (!fs.existsSync(STANDALONE_DIR)) {
   process.exit(1);
 }
 
-// 1. Promote nested standalone output to root if Next.js created a subdirectory
-if (!fs.existsSync(path.join(STANDALONE_DIR, 'server.js'))) {
-  const entries = fs.readdirSync(STANDALONE_DIR, { withFileTypes: true });
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      const nestedServerJs = path.join(STANDALONE_DIR, entry.name, 'server.js');
-      if (fs.existsSync(nestedServerJs)) {
-        console.log(`-> Found nested standalone output in ${entry.name}, promoting to root...`);
-        copyDirRecursive(path.join(STANDALONE_DIR, entry.name), STANDALONE_DIR);
-        break;
+// Helper to recursively locate a specific file within a directory tree
+function findFileRecursive(dir, targetFile, maxDepth = 8, currentDepth = 0) {
+  if (currentDepth > maxDepth || !fs.existsSync(dir)) return null;
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (!entry.isDirectory() && entry.name === targetFile) {
+        return fullPath;
+      }
+      if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== '.next') {
+        const found = findFileRecursive(fullPath, targetFile, maxDepth, currentDepth + 1);
+        if (found) return found;
       }
     }
+  } catch (e) {}
+  return null;
+}
+
+// 1. Promote nested standalone output to root if Next.js created a subdirectory
+if (!fs.existsSync(path.join(STANDALONE_DIR, 'server.js'))) {
+  const foundServerJs = findFileRecursive(STANDALONE_DIR, 'server.js');
+  if (foundServerJs) {
+    const nestedDir = path.dirname(foundServerJs);
+    console.log(`-> Found nested standalone server.js at ${nestedDir}, promoting to root...`);
+    copyDirRecursive(nestedDir, STANDALONE_DIR);
   }
 }
+
+if (!fs.existsSync(path.join(STANDALONE_DIR, 'server.js'))) {
+  console.error(`❌ Error: server.js not found in standalone output at ${STANDALONE_DIR}`);
+  console.error('Make sure Next.js build completed with output: "standalone".');
+  process.exit(1);
+}
+
 
 // 2. Copy Next.js static assets (.next/static -> .next/standalone/.next/static)
 console.log('-> Copying .next/static...');
@@ -91,6 +112,7 @@ if (fs.existsSync(path.join(ROOT_DIR, 'dist-worker'))) {
   if (fs.existsSync(aliasSrc)) {
     copyFile(aliasSrc, path.join(STANDALONE_DIR, 'dist-worker', 'workers', 'resolve-alias.js'));
     copyFile(aliasSrc, path.join(STANDALONE_DIR, 'dist-worker', 'resolve-alias.js'));
+    copyFile(aliasSrc, path.join(STANDALONE_DIR, 'workers', 'resolve-alias.js'));
   }
 }
 

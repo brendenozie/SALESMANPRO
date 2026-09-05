@@ -11,6 +11,7 @@
  * - Includes automated certificate renewal checking for certificates nearing expiry.
  */
 
+import "./resolve-alias";
 import prisma from "../server/db/prismadb";
 import { spawn } from "child_process";
 import fs from "fs";

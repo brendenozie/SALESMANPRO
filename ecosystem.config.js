@@ -3,6 +3,7 @@ const path = require('path');
 
 const APP_DIR = path.resolve(__dirname);
 const isStandalone = fs.existsSync(path.join(APP_DIR, 'server.js'));
+const aliasScript = path.join(APP_DIR, 'dist-worker', 'workers', 'resolve-alias.js');
 
 /**
  * Robust zero-dependency .env parser.
@@ -50,7 +51,7 @@ module.exports = {
     {
       name: 'salesmanpro',
       cwd: APP_DIR,
-      script: isStandalone ? 'server.js' : 'node_modules/.bin/next',
+      script: isStandalone ? path.join(APP_DIR, 'server.js') : 'node_modules/.bin/next',
       args: isStandalone ? '' : 'start -p 3000',
       instances: 1,
       exec_mode: 'fork',
@@ -69,8 +70,8 @@ module.exports = {
     {
       name: 'ssl-worker',
       cwd: APP_DIR,
-      script: './dist-worker/workers/domain-ssl-worker.js',
-      node_args: '--require ./dist-worker/workers/resolve-alias.js --max-old-space-size=150',
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'domain-ssl-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=150`,
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
@@ -82,8 +83,8 @@ module.exports = {
     {
       name: 'whatsapp-worker',
       cwd: APP_DIR,
-      script: './dist-worker/workers/whatsapp-worker.js',
-      node_args: '--require ./dist-worker/workers/resolve-alias.js --max-old-space-size=512',
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'whatsapp-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=512`,
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
@@ -99,8 +100,8 @@ module.exports = {
     {
       name: 'ai-job-worker',
       cwd: APP_DIR,
-      script: './dist-worker/workers/ai-job-worker.js',
-      node_args: '--require ./dist-worker/workers/resolve-alias.js --max-old-space-size=512',
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'ai-job-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=512`,
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
@@ -116,8 +117,8 @@ module.exports = {
     {
       name: 'backup-worker',
       cwd: APP_DIR,
-      script: './dist-worker/workers/backup-worker.js',
-      node_args: '--require ./dist-worker/workers/resolve-alias.js --max-old-space-size=512',
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'backup-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=512`,
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
@@ -133,8 +134,8 @@ module.exports = {
     {
       name: 'ai-workforce-worker',
       cwd: APP_DIR,
-      script: './dist-worker/workers/ai-workforce-worker.js',
-      node_args: '--require ./dist-worker/workers/resolve-alias.js --max-old-space-size=512',
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'ai-workforce-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=512`,
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',

@@ -91,13 +91,22 @@ if pm2 describe salesmanpro 2>/dev/null | grep -qi "cluster"; then
   pm2 delete salesmanpro || true
 fi
 
+# Clean up duplicate PM2 instances if registered multiple times
+for app_name in salesmanpro ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker; do
+  COUNT=$(pm2 jlist 2>/dev/null | grep -o "\"name\":\"${app_name}\"" | wc -l || echo "0")
+  if [ "${COUNT}" -gt 1 ]; then
+    echo "⚠️ Detected ${COUNT} duplicate instances for ${app_name}, resetting..."
+    pm2 delete "${app_name}" || true
+  fi
+done
+
 pm2 startOrReload ecosystem.config.js --update-env || pm2 restart ecosystem.config.js --update-env
 pm2 save
 
 # 9. Automated Health Check Verification
 echo "🩺 Verifying application health..."
 HEALTH_URL="http://127.0.0.1:3000/api/health?type=liveness"
-MAX_RETRIES=10
+MAX_RETRIES=12
 RETRY_DELAY=3
 HEALTH_PASSED=false
 
@@ -119,7 +128,9 @@ done
 # 10. Rollback if health check failed
 if [ "${HEALTH_PASSED}" != "true" ]; then
   echo "🚨 CRITICAL: Health check FAILED after ${MAX_RETRIES} attempts!"
-  echo "📋 Diagnostics: Dumping last 40 lines of PM2 logs..."
+  echo "📋 Diagnostics: Dumping salesmanpro application logs..."
+  pm2 logs salesmanpro --lines 40 --nostream || true
+  echo "📋 Diagnostics: Dumping general PM2 logs..."
   pm2 logs --lines 40 --nostream || true
 
   if [ -n "${PREVIOUS_RELEASE}" ] && [ -d "${PREVIOUS_RELEASE}" ]; then
