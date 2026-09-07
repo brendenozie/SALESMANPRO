@@ -157,7 +157,9 @@ const PublicSpeakingLayout = dynamic(
   () =>
     import("@/components/site/layouts/PublicSpeakingLayout/PublicSpeakingLayout"),
 );
-// const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
+const SaaSLayout = dynamic(
+  () => import("@/components/site/layouts/SaaSLayout/SaaSLayout"),
+);
 const ConsultancyLayout = dynamic(
   () => import("@/components/site/layouts/ConsultancyLayout/ConsultancyLayout"),
 );
@@ -318,10 +320,69 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
   "company portfolio light": CompanyPortfolioLightLayout,
   "automotive store": EcommerceAccessoriesLayout,
 
+  // Direct PascalCase shellLayout mappings for 100% deterministic resolution by template.shellLayout
+  GhubaLayout: GhubaLayout,
+  PublicSpeakingLayout: PublicSpeakingLayout,
+  AutomotiveLayout: AutomotiveLayout,
+  Automotive2Layout: Automotive2Layout,
+  EcommerceLayout: EcommerceLayout,
+  EcommerceShoesLayout: EcommerceShoesLayout,
+  EcommerceAgrovetLayout: EcommerceAgrovetLayout,
+  EcommerceMeatLayout: EcommerceMeatLayout,
+  EcommerceHardwareLayout: EcommerceHardwareLayout,
+  EcommerceGamingLayout: EcommerceGamingLayout,
+  EcommerceEarphonesLayout: EcommerceEarphonesLayout,
+  EcommerceGlassesLayout: EcommerceGlassesLayout,
+  EcommerceFlowersLayout: EcommerceFlowersLayout,
+  EcommerceHoneyLayout: EcommerceHoneyLayout,
+  EcommercePeanutsLayout: EcommercePeanutsLayout,
+  EcommerceWatchLayout: EcommerceWatchLayout,
+  EcommerceBabyLayout: EcommerceBabyLayout,
+  EcommerceCakeLayout: EcommerceCakeLayout,
+  EcommercePetsLayout: EcommercePetsLayout,
+  EcommerceGroceriesLayout: EcommerceGroceriesLayout,
+  EcommerceBikeLayout: EcommerceBikeLayout,
+  EcommerceMotorCycleLayout: EcommerceMotorCycleLayout,
+  EcommerceBookLayout: EcommerceBookLayout,
+  EcommerceAccessoriesLayout: EcommerceAccessoriesLayout,
+  ConsultancyLayout: ConsultancyLayout,
+  RealEstateLayout: RealEstateLayout,
+  PropertyManagementLayout: PropertyManagementLayout,
+  CompanyPortfolioLayout: CompanyPortfolioLayout,
+  CompanyPortfolioLightLayout: CompanyPortfolioLightLayout,
+  BlogLayout: BlogLayout,
+  CoursesLayout: CoursesLayout,
+  CoursesLayout2: CoursesLayout2,
+  CoursesLayout3: CoursesLayout3,
+  DeliveryLayout: DeliveryLayout,
+  FitnessLayout: FitnessLayout,
+  FinanceLayout: FinanceLayout,
+  ServicesLayout: ServicesLayout,
+  BookingsLayout: BookingsLayout,
+  BarbershopBookingsLayout: BarbershopBookingsLayout,
+  PortfolioLayout: PortfolioLayout,
+  DirectoryLayout: DirectoryLayout,
+  NonprofitLayout: NonprofitLayout,
+  EventsLayout: EventsLayout,
+  HealthcareLayout: HealthcareLayout,
+  MediaLayout: MediaLayout,
+  TravelLayout: TravelLayout,
+  MarketplaceLayout: MarketplaceLayout,
+  RestaurantLayout: RestaurantLayout,
+  SecurityLayout: SecurityLayout,
+  Security2Layout: Security2Layout,
+  FurnitureLayout: FurnitureLayout,
+  FashionLayout: FashionLayout,
+  DrycleaningBookingsLayout: DrycleaningBookingsLayout,
+  SaaSLayout: SaaSLayout,
+  saas: SaaSLayout,
+  DefaultLayout: DefaultLayout,
+
   other: DefaultLayout,
   Other: DefaultLayout,
 
   default: DefaultLayout,
 };
+
 
 export default categoryHeaderFooterLayoutMap;

@@ -12,6 +12,7 @@ import React, {
   SetStateAction,
 } from 'react';
 import { StoreForm } from '../types/typings'; // Ensure StoreForm is correctly imported
+import { buildTenantUrl } from '@/lib/tenant/tenant-router';
 
 //
 // 1. Define the shape of what our context will provide.
@@ -34,6 +35,12 @@ interface StoreContextType {
   userRole: string;
   
   userId: string;
+
+  // Tenant-aware URL builder
+  buildUrl: (path: string, query?: Record<string, any> | string) => string;
+
+  // Non-destructive component overrides
+  componentOverrides?: Record<string, any>;
 }
 
 //
@@ -67,6 +74,7 @@ interface StoreContextProviderProps {
   initialStore: StoreForm | null; // The initial store data, can be null if not available
   userRole: string; // New prop for the user's role
   userId: string; // New prop for the user's ID
+  componentOverrides?: Record<string, any>;
 }
 
 export function StoreContextProvider({
@@ -74,6 +82,7 @@ export function StoreContextProvider({
   initialStore,
   userRole, // Destructure userRole from props
   userId, // New prop for the user's ID
+  componentOverrides = {},
 }: StoreContextProviderProps) {
   const [storeFormData, setStoreFormData] = useState<StoreForm | null>(initialStore);
   const [inquiryServiceId, setInquiryServiceId] = useState<string | number | null>(null);
@@ -84,6 +93,12 @@ export function StoreContextProvider({
     }
   }, [initialStore]);
 
+  const buildUrl = useMemo(() => {
+    const slug = storeFormData?.slug || 'store';
+    return (path: string, query?: Record<string, any> | string) =>
+      buildTenantUrl({ slug, path, query });
+  }, [storeFormData?.slug]);
+
   // Memoize context value to prevent unnecessary re-rendering across storefront tree
   const value = useMemo<StoreContextType>(
     () => ({
@@ -93,8 +108,10 @@ export function StoreContextProvider({
       setInquiryServiceId,
       userRole,
       userId,
+      buildUrl,
+      componentOverrides,
     }),
-    [storeFormData, inquiryServiceId, userRole, userId],
+    [storeFormData, inquiryServiceId, userRole, userId, buildUrl, componentOverrides],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

@@ -48,61 +48,79 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
     <div className="bg-white dark:bg-[#080a0c] selection:bg-teal-100 selection:text-teal-900 transition-colors duration-500">
       
       {/* 01. Hero: The Impression Layer */}
-      <Hero 
+      <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
+        <Hero 
         name={name} 
         description={description} 
         bannerUrl={bannerUrl} 
         marketplaceListings={marketplaceListings} 
         heroSlides={heroSlides} 
       />
+      </div>
 
       {/* 02. Core Philosophy & Values */}
-      <FeaturesSection 
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection 
         name={name} 
         description={description} 
         themeSettings={themeSettings} 
         CoreValues={CoreValues} 
       />
+      </div>
       
       {/* 03. Service Deep-Dive */}
-      <MassageFeatures 
+      <div id="section-massage-features" data-editor-section="massage-features" data-editor-component="MassageFeatures">
+        <MassageFeatures 
         marketplaceListings={marketplaceListings} 
         slug={slug} 
         themeSettings={themeSettings} 
       />
+      </div>
       
       {/* 04. Pricing & Scale: The Menu of Care */}
-      <PricingAndStatsSection 
+      <div id="section-pricing-and-stats" data-editor-section="pricing-and-stats" data-editor-component="PricingAndStatsSection">
+        <PricingAndStatsSection 
         stats={stats} 
         pricingTiers={pricingTiers} 
         themeSettings={themeSettings} 
       />
+      </div>
 
       {/* 05. Visual Portfolio: The Gallery */}
-      <StyleGallerySection />
+      <div id="section-style-gallery" data-editor-section="style-gallery" data-editor-component="StyleGallerySection">
+        <StyleGallerySection />
+      </div>
 
       {/* 06. Strategic Advantages & Promotions */}
-      <BenefitsSection 
+      <div id="section-benefits" data-editor-section="benefits" data-editor-component="BenefitsSection">
+        <BenefitsSection 
         name={name} 
         description={description} 
         bannerUrl={bannerUrl} 
         themeSettings={themeSettings} 
         promotions={promotions} 
       />
+      </div>
 
       {/* 07. Social Proof: The Collective Voice */}
-      <TestimonialsSection />
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection />
+      </div>
 
       {/* 08. Direct Connection: The Concierge Desk */}
-      <CtaSection />
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection />
+      </div>
 
       {/* 09. Knowledge Suite: Common Queries */}
       {faqsData?.data && (
-        <FAQsSection 
+        <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
+          <FAQsSection 
           faqs={faqsData.data} 
           name={name} 
           themeSettings={themeSettings} 
         />
+        </div>
       )}
       
     </div>

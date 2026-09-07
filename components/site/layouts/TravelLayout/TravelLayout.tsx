@@ -16,9 +16,13 @@ export default function TravelLayout({ params, children }: TravelLayoutProps) {
 
   return (
     <>
-      <Header/>
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header/>
+      </div>
       <section >{children}</section>
-      <Footer/>
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer/>
+      </div>
     </>
   );
 }

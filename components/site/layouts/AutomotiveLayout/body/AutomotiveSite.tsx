@@ -87,8 +87,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
       setTestimonials(testimonialsData.data);
     }
   }, [testimonialsData]);
-  
-  const [filters, setFilters] = useState<SearchFilters>({
+    const [filters, setFilters] = useState<SearchFilters>({
     location: "",
     vehicleType: "",
     make: "",
@@ -117,78 +116,76 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
     <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
       {/* Hero */}
-      <HeroSection
-        store={storeFormData}
-        trendingLocations={storeFormData?.CompanyLocation
-          ? storeFormData?.CompanyLocation.map((loc: any) => ({
-            // Map/transform to Location type as needed
-            name: loc.name,
-            slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-            metaKeywords: loc.metaKeywords || "",
-            status: loc.status || "active",
-            parentId: loc.parentId || null,
-            // Spread any additional fields if needed
-            ...loc,
-          }))
-          : []} 
-          // filters={filters}
-          // setFilters={setFilters}
-          onSearch={() => {}} // No-op since search is handled in FilterBarSection
-      />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection
+          store={storeFormData}
+          trendingLocations={storeFormData?.CompanyLocation
+            ? storeFormData?.CompanyLocation.map((loc: any) => ({
+              // Map/transform to Location type as needed
+              name: loc.name,
+              slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+              metaKeywords: loc.metaKeywords || "",
+              status: loc.status || "active",
+              parentId: loc.parentId || null,
+              // Spread any additional fields if needed
+              ...loc,
+            }))
+            : []} 
+            // filters={filters}
+            // setFilters={setFilters}
+            onSearch={() => {}} // No-op since search is handled in FilterBarSection
+        />
+      </div>
 
-      <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
+      <div id="section-automotive-featured-listings" data-editor-section="automotive-featured-listings" data-editor-component="AutomotiveFeaturedListingsWrapper">
+        <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
+      </div>
 
-      <HowItWorks />
+      <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorks">
+        <HowItWorks />
+      </div>
 
-      <BrowseByCategory store={ storeFormData }/>
-
-      {/* <FilterBarSection  
-        store={storeFormData}
-        trendingLocations={storeFormData?.CompanyLocation
-          ? storeFormData?.CompanyLocation.map((loc: any) => ({
-            // Map/transform to Location type as needed
-            name: loc.name,
-            slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-            metaKeywords: loc.metaKeywords || "",
-            status: loc.status || "active",
-            parentId: loc.parentId || null,
-            // Spread any additional fields if needed
-            ...loc,
-          }))
-          : []} 
-          filters={filters || {}} 
-          setFilters={setFilters}
-          onSearch={handleSearch}    
-        /> */}
+      <div id="section-browse-by-category" data-editor-section="browse-by-category" data-editor-component="BrowseByCategory">
+        <BrowseByCategory store={ storeFormData }/>
+      </div>
 
       {/* Trending Locations Section */}
-      <TrendingLocations
-        locations={
-          storeFormData?.CompanyLocation
-            ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                // Map/transform to Location type as needed
-                name: loc.name,
-                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-                metaKeywords: loc.metaKeywords || "",
-                status: loc.status || "active",
-                parentId: loc.parentId || null,
-                // Spread any additional fields if needed
-                ...loc,
-              }))
-            : []
-        }
-        slug={"slug"}
-      />      
+      <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
+        <TrendingLocations
+          locations={
+            storeFormData?.CompanyLocation
+              ? storeFormData?.CompanyLocation.map((loc: any) => ({
+                  // Map/transform to Location type as needed
+                  name: loc.name,
+                  slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                  metaKeywords: loc.metaKeywords || "",
+                  status: loc.status || "active",
+                  parentId: loc.parentId || null,
+                  // Spread any additional fields if needed
+                  ...loc,
+                }))
+              : []
+          }
+          slug={"slug"}
+        />
+      </div>      
 
       {/* Featured Vehicles */}
-      <PopularVehiclesWrapper  companyId={pageData.id} />
-
+      <div id="section-popular-vehicles" data-editor-section="popular-vehicles" data-editor-component="PopularVehiclesWrapper">
+        <PopularVehiclesWrapper  companyId={pageData.id} />
+      </div>
       {/* If videos are stored under latestVideos */}
-      {blogsData?.data && <VideoShowcaseSection blogs={blogsData.data || []} />}
+      {blogsData?.data && <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
+   <VideoShowcaseSection blogs={blogsData.data || []} />
+ </div>}
 
-      <MarketInsightsSection />
+      <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsightsSection">
+        <MarketInsightsSection />
+      </div>
 
-      {testimonialsData?.data && <TestimonialsCarouselSection  testimonials={testimonials} />}
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
+   <TestimonialsCarouselSection  testimonials={testimonials} />
+ </div>}
 
     </div>
   );

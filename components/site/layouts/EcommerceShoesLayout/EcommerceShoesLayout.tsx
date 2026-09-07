@@ -21,9 +21,13 @@ const EcommerceShoesHeaderLayout: React.FC<EcommerceShoesHeaderLayoutProps> = (
 
   return (
     <>
-      <Header/>
-        {children}
-      <Footer/>
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header/>
+      </div>
+      {children}
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer/>
+      </div>
     </>
   );
 };

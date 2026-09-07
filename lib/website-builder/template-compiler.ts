@@ -14,6 +14,7 @@ import {
   NavigationConfig,
   SECTION_REGISTRY,
 } from "@/types/website-builder";
+import { getTemplateForCompany } from "./template-registry";
 
 // Category-based color schemes for instant premium branding
 const CATEGORY_THEME_PALETTES: Record<string, Partial<ThemeTokens>> = {
@@ -100,14 +101,11 @@ const CATEGORY_THEME_PALETTES: Record<string, Partial<ThemeTokens>> = {
 };
 
 /**
- * Build initial theme tokens by blending category defaults with store's themeSettings
+ * Build initial theme tokens by blending template defaults with store's themeSettings
  */
 export function compileThemeTokens(company: any): ThemeTokens {
-  const categoryKey = (company.category || "default").toLowerCase();
-  const matchedPalette = Object.entries(CATEGORY_THEME_PALETTES).find(([k]) =>
-    categoryKey.includes(k)
-  )?.[1] || CATEGORY_THEME_PALETTES.default;
-
+  const canonicalTemplate = getTemplateForCompany(company);
+  const matchedPalette = canonicalTemplate?.defaultTheme || CATEGORY_THEME_PALETTES.default;
   const userTheme = company.themeSettings || {};
 
   return {
@@ -120,10 +118,10 @@ export function compileThemeTokens(company: any): ThemeTokens {
     mutedTextColor: userTheme.mutedTextColor || "#64748B",
     borderColor: userTheme.borderColor || "#E2E8F0",
     headingFont: userTheme.fontFamily || matchedPalette.headingFont || "Inter, sans-serif",
-    bodyFont: userTheme.bodyFont || "Inter, sans-serif",
+    bodyFont: userTheme.bodyFont || matchedPalette.bodyFont || "Inter, sans-serif",
     baseFontSize: "md",
-    buttonRadius: (matchedPalette.buttonRadius as any) || "lg",
-    cardRadius: (matchedPalette.cardRadius as any) || "xl",
+    buttonRadius: (userTheme.buttonRadius as any) || (matchedPalette.buttonRadius as any) || "lg",
+    cardRadius: (userTheme.cardRadius as any) || (matchedPalette.cardRadius as any) || "xl",
     inputRadius: "lg",
     containerWidth: "standard",
     sectionSpacing: "comfortable",
@@ -137,19 +135,27 @@ export function compileThemeTokens(company: any): ThemeTokens {
  * Build initial navigation configuration from company metadata
  */
 export function compileNavigation(company: any): NavigationConfig {
+  const canonicalTemplate = getTemplateForCompany(company);
   const brandName = company.name || "Store";
   const primaryPhone = company.contactPhone || "";
   const primaryEmail = company.contactEmail || "";
   const address = company.address || company.addresses?.[0]?.address || "Nairobi, Kenya";
 
+  // Use authentic template-specific navigation items if defined in its shell
+  const templateNavItems = canonicalTemplate?.shell?.defaultNavItems;
+  const headerItems =
+    templateNavItems && templateNavItems.length > 0
+      ? templateNavItems.map((item) => ({ ...item }))
+      : [
+          { id: "nav-home", label: "Home", url: "/" },
+          { id: "nav-shop", label: "Shop", url: "/shop" },
+          { id: "nav-categories", label: "Categories", url: "/categories" },
+          { id: "nav-about", label: "Our Story", url: "/about" },
+          { id: "nav-contact", label: "Contact", url: "/contact" },
+        ];
+
   return {
-    headerItems: [
-      { id: "nav-home", label: "Home", url: "/" },
-      { id: "nav-shop", label: "Shop", url: "/shop" },
-      { id: "nav-categories", label: "Categories", url: "/categories" },
-      { id: "nav-about", label: "Our Story", url: "/about" },
-      { id: "nav-contact", label: "Contact", url: "/contact" },
-    ],
+    headerItems,
     footerColumns: [
       {
         id: "col-shop",
@@ -202,9 +208,85 @@ export function compileNavigation(company: any): NavigationConfig {
 }
 
 /**
- * Generate default homepage sections from company data
+ * Generate default homepage sections from company data and authentic template tree
  */
 export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
+  const canonicalTemplate = getTemplateForCompany(company);
+
+  // If the template defines authentic sections, preserve its exact component hierarchy
+  if (canonicalTemplate?.authenticSections && canonicalTemplate.authenticSections.length > 0) {
+    const rawSlides = Array.isArray(company.heroSlides) && company.heroSlides.length > 0
+      ? company.heroSlides
+      : [
+          {
+            id: "slide-1",
+            imageUrl: company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+            headline: company.name ? `Welcome to ${company.name}` : canonicalTemplate.name,
+            subline: company.tagline || "Curated Quality & Exceptional Value",
+            badgeText: "Official Collection",
+            ctaText: "Explore Shop",
+            ctaLink: "/products",
+          },
+        ];
+
+    return canonicalTemplate.authenticSections.map((sec, idx) => {
+      const content = { ...(sec.defaultContent || {}) };
+
+      if (sec.type === "hero") {
+        content.variant = "slider";
+        content.autoplay = true;
+        content.autoplayIntervalMs = 5000;
+        content.slides = rawSlides.map((s: any, sIdx: number) => ({
+          id: s.id || `slide-${sIdx}`,
+          eyebrow: s.subline || "Official Collection",
+          title: s.headline || company.name || canonicalTemplate.name,
+          description: s.badgeText || company.description || "Discover verified products backed by exceptional customer service.",
+          primaryButtonText: s.ctaText || "Shop Now",
+          primaryButtonUrl: s.ctaLink || "/products",
+          secondaryButtonText: "About Us",
+          secondaryButtonUrl: "/about",
+          imageUrl: s.imageUrl || company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+          badgeText: "Handpicked Deals",
+        }));
+      } else if (sec.type === "testimonials" && Array.isArray(company.testimonials) && company.testimonials.length > 0) {
+        content.testimonials = company.testimonials.map((t: any) => ({
+          id: t.id,
+          author: t.author?.name || t.authorName || "Verified Customer",
+          role: t.role || "Shopper",
+          quote: t.content || t.quote,
+          rating: t.rating || 5,
+        }));
+      } else if (sec.type === "ctaBanner" && Array.isArray(company.promotions) && company.promotions.length > 0) {
+        const promo = company.promotions[0];
+        content.title = promo.title || content.title;
+        content.description = promo.description || content.description;
+        content.buttonText = promo.ctaText || content.buttonText;
+        content.buttonUrl = promo.ctaLink || content.buttonUrl;
+      }
+
+      return {
+        id: `sec-${sec.id}-${Date.now() + idx}`,
+        type: sec.type as any,
+        order: idx,
+        isVisible: true,
+        content,
+        styles: sec.defaultStyles || {
+          paddingTop: "xl",
+          paddingBottom: "xl",
+          textAlign: "left",
+        },
+        responsive: {
+          columnsMobile: 1,
+          columnsTablet: 2,
+          columnsDesktop: 4,
+          hideOnMobile: false,
+          hideOnDesktop: false,
+        },
+        dataSource: sec.dataSource,
+      };
+    });
+  }
+
   const sections: WebsiteSectionConfig[] = [];
   let order = 0;
 
@@ -575,43 +657,41 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
 }
 
 /**
- * Generate default subpages (Shop, About, Contact, FAQ)
+ * Generate default subpages based on the canonical template's explicit page list
  */
 export function compileDefaultPages(company: any, homepageSections: WebsiteSectionConfig[]): WebsitePageConfig[] {
-  return [
-    {
-      id: "page-home",
-      title: "Home",
-      slug: "home",
-      isHomepage: true,
-      isVisible: true,
-      order: 0,
-      seo: {
-        metaTitle: company.SEO?.title || `${company.name} | Official Storefront`,
-        metaDescription: company.SEO?.description || company.description || "Browse our catalog of verified products.",
-      },
-      sections: homepageSections,
-    },
-    {
-      id: "page-shop",
-      title: "Shop",
-      slug: "shop",
-      isHomepage: false,
-      isVisible: true,
-      order: 1,
-      seo: {
-        metaTitle: `Shop Products | ${company.name}`,
-        metaDescription: `Discover the full catalog at ${company.name}.`,
-      },
-      sections: [
+  const canonicalTemplate = getTemplateForCompany(company);
+  const templatePages = canonicalTemplate.defaultPages || [];
+
+  return templatePages.map((tp, idx) => {
+    if (tp.isHomepage || tp.slug === "home") {
+      return {
+        id: `page-${tp.slug}`,
+        title: tp.title,
+        slug: tp.slug,
+        isHomepage: true,
+        isVisible: true,
+        order: idx,
+        seo: {
+          metaTitle: company.SEO?.title || `${company.name} | Official Storefront`,
+          metaDescription: company.SEO?.description || company.description || "Browse our catalog of verified products.",
+        },
+        sections: homepageSections,
+      };
+    }
+
+    // Build specialized page section based on pageType
+    let sections: WebsiteSectionConfig[] = [];
+    if (tp.pageType === "PRODUCT_LIST" || tp.slug === "products" || tp.slug === "shop" || tp.slug === "inventory" || tp.slug === "menu") {
+      sections = [
         {
-          id: `sec-shop-grid-${Date.now()}`,
+          id: `sec-${tp.slug}-grid-${Date.now()}`,
           type: "productGrid",
           order: 0,
           isVisible: true,
           content: {
-            title: "All Products",
-            subtitle: "Browse our complete catalog with live availability and pricing",
+            title: tp.title,
+            subtitle: `Browse our ${company.name || "catalog"} collection with live pricing and availability`,
             viewAllUrl: "",
             viewAllText: "",
             showRating: true,
@@ -624,22 +704,29 @@ export function compileDefaultPages(company: any, homepageSections: WebsiteSecti
           responsive: { columnsMobile: 1, columnsTablet: 2, columnsDesktop: 4, hideOnMobile: false, hideOnDesktop: false },
           dataSource: { type: "products", filter: "latest", limit: 24 },
         },
-      ],
-    },
-    {
-      id: "page-about",
-      title: "About Us",
-      slug: "about",
-      isHomepage: false,
-      isVisible: true,
-      order: 2,
-      seo: {
-        metaTitle: `About Us | ${company.name}`,
-        metaDescription: `Learn about our heritage and values at ${company.name}.`,
-      },
-      sections: [
+      ];
+    } else if (tp.pageType === "CATEGORY_LIST" || tp.slug === "categories") {
+      sections = [
         {
-          id: `sec-about-story-${Date.now()}`,
+          id: `sec-${tp.slug}-grid-${Date.now()}`,
+          type: "categoryGrid",
+          order: 0,
+          isVisible: true,
+          content: {
+            title: "Explore by Department",
+            subtitle: "Find exactly what you are looking for",
+            layout: "grid",
+            showProductCount: true,
+          },
+          styles: { paddingTop: "xl", paddingBottom: "xl", textAlign: "left" },
+          responsive: { columnsMobile: 2, columnsTablet: 3, columnsDesktop: 6, hideOnMobile: false, hideOnDesktop: false },
+          dataSource: { type: "categories" },
+        },
+      ];
+    } else if (tp.pageType === "ABOUT" || tp.slug === "about") {
+      sections = [
+        {
+          id: `sec-${tp.slug}-story-${Date.now()}`,
           type: "imageWithText",
           order: 0,
           isVisible: true,
@@ -650,7 +737,7 @@ export function compileDefaultPages(company: any, homepageSections: WebsiteSecti
             imageUrl: company.bannerUrl || "https://images.unsplash.com/photo-1556742049-0a67c5574f73?q=80&w=1200&auto=format&fit=crop",
             imagePosition: "left",
             buttonText: "Shop Collection",
-            buttonUrl: "/shop",
+            buttonUrl: "/products",
             founderName: company.founderName || undefined,
             founderQuote: company.founderQuote || undefined,
           },
@@ -658,7 +745,7 @@ export function compileDefaultPages(company: any, homepageSections: WebsiteSecti
           responsive: { columnsMobile: 1, columnsTablet: 1, columnsDesktop: 2, hideOnMobile: false, hideOnDesktop: false },
         },
         {
-          id: `sec-about-features-${Date.now()}`,
+          id: `sec-${tp.slug}-features-${Date.now()}`,
           type: "featuresBadges",
           order: 1,
           isVisible: true,
@@ -666,22 +753,11 @@ export function compileDefaultPages(company: any, homepageSections: WebsiteSecti
           styles: { paddingTop: "lg", paddingBottom: "lg", textAlign: "center", backgroundColor: "#F8FAFC" },
           responsive: { columnsMobile: 2, columnsTablet: 2, columnsDesktop: 4, hideOnMobile: false, hideOnDesktop: false },
         },
-      ],
-    },
-    {
-      id: "page-contact",
-      title: "Contact",
-      slug: "contact",
-      isHomepage: false,
-      isVisible: true,
-      order: 3,
-      seo: {
-        metaTitle: `Contact Us | ${company.name}`,
-        metaDescription: `Reach out to our customer support team at ${company.name}.`,
-      },
-      sections: [
+      ];
+    } else if (tp.pageType === "CONTACT" || tp.slug === "contact") {
+      sections = [
         {
-          id: `sec-contact-main-${Date.now()}`,
+          id: `sec-${tp.slug}-main-${Date.now()}`,
           type: "contact",
           order: 0,
           isVisible: true,
@@ -696,9 +772,41 @@ export function compileDefaultPages(company: any, homepageSections: WebsiteSecti
           styles: { paddingTop: "xl", paddingBottom: "xl", textAlign: "left" },
           responsive: { columnsMobile: 1, columnsTablet: 1, columnsDesktop: 2, hideOnMobile: false, hideOnDesktop: false },
         },
-      ],
-    },
-  ];
+      ];
+    } else {
+      sections = [
+        {
+          id: `sec-${tp.slug}-content-${Date.now()}`,
+          type: "imageWithText",
+          order: 0,
+          isVisible: true,
+          content: {
+            title: tp.title,
+            subtitle: company.name,
+            description: `Welcome to the ${tp.title} page for ${company.name || "our store"}.`,
+            imageUrl: company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop",
+            imagePosition: "left",
+          },
+          styles: { paddingTop: "xl", paddingBottom: "xl", textAlign: "left" },
+          responsive: { columnsMobile: 1, columnsTablet: 1, columnsDesktop: 2, hideOnMobile: false, hideOnDesktop: false },
+        },
+      ];
+    }
+
+    return {
+      id: `page-${tp.slug}`,
+      title: tp.title,
+      slug: tp.slug,
+      isHomepage: false,
+      isVisible: true,
+      order: idx,
+      seo: {
+        metaTitle: `${tp.title} | ${company.name}`,
+        metaDescription: `${tp.title} at ${company.name}.`,
+      },
+      sections,
+    };
+  });
 }
 
 /**
@@ -706,6 +814,7 @@ export function compileDefaultPages(company: any, homepageSections: WebsiteSecti
  * produces a validated CompiledWebsiteConfig.
  */
 export function compileWebsiteFromCompany(company: any): CompiledWebsiteConfig {
+  const canonicalTemplate = getTemplateForCompany(company);
   const theme = compileThemeTokens(company);
   const navigation = compileNavigation(company);
   const homepageSections = compileHomepageSections(company);
@@ -713,7 +822,7 @@ export function compileWebsiteFromCompany(company: any): CompiledWebsiteConfig {
 
   return {
     version: 1,
-    templateKey: company.variant || company.category || "ecommerce",
+    templateKey: canonicalTemplate.id,
     storeName: company.name || "Store",
     storeSlug: company.slug || "store",
     theme,

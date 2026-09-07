@@ -253,26 +253,36 @@ export default function SaaSSite({ pageData, companyId }: { pageData: StoreForm,
   return (
     <div className="space-y-28 font-sans"> {/* Increased space-y for more visual breathing room */}
       {/* Hero Section */}
-      <EnhancedHeroSection
+      <div id="section-enhanced-hero" data-editor-section="enhanced-hero" data-editor-component="EnhancedHeroSection">
+        <EnhancedHeroSection
         store={siteStoreData}
         loader={loader}
         handleSignup={handleSignup}
       />
+      </div>
 
       {/* Features Section */}
-      <FeaturesSection features={siteStoreData.features} />
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection features={siteStoreData.features} />
+      </div>
 
       {/* Pricing Plans Section */}
-      <EnhancedPricingSection
+      <div id="section-enhanced-pricing" data-editor-section="enhanced-pricing" data-editor-component="EnhancedPricingSection">
+        <EnhancedPricingSection
         plans={siteStoreData.plans}
         handleSignup={handleSignup}
       />
+      </div>
 
       {/* Testimonials Section */}
-      <EnhancedTestimonialsSection testimonials={siteStoreData.testimonials} />
+      <div id="section-enhanced-testimonials" data-editor-section="enhanced-testimonials" data-editor-component="EnhancedTestimonialsSection">
+        <EnhancedTestimonialsSection testimonials={siteStoreData.testimonials} />
+      </div>
 
       {/* FAQs Section */}
-      <EnhancedFAQsSection faqs={siteStoreData.faqs} />
+      <div id="section-enhanced-faqs" data-editor-section="enhanced-faqs" data-editor-component="EnhancedFAQsSection">
+        <EnhancedFAQsSection faqs={siteStoreData.faqs} />
+      </div>
     </div>
   );
 }

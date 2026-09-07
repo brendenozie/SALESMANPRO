@@ -23,9 +23,13 @@ const PublicSpeakingLayout: React.FC<PublicSpeakingLayoutProps> = (
 
   return (
     <>
-      <Header storeFormData={params.storeFormData as any} />
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header storeFormData={params.storeFormData as any} />
+      </div>
       <section >{children}</section>
-      <Footer storeFormData={params.storeFormData} />
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer storeFormData={params.storeFormData} />
+      </div>
     </>
   );
 };

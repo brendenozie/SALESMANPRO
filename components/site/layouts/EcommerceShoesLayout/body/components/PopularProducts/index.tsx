@@ -11,6 +11,7 @@ import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 import QuickViewModal from '../QuickViewModal';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -346,6 +347,7 @@ const ProductGridItem = ({
 
 export default function PopularProducts({ id, themeSettings, marketplaceListings, slug = 'store' }: any) {
   const { storeFormData } = useStoreContext();
+  const { buildUrl } = useEditableContent();
   
   const primary = themeSettings?.primaryColor || '#6366f1'; 
   const secondary = themeSettings?.secondaryColor || '#f43f5e';
@@ -373,20 +375,54 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative z-10">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 shadow-sm mb-5">
-               <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
-               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400">Trending Now</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[1.05] tracking-tight">
-              DRIP OR <br /><span style={{ color: primary }}>DROWN.</span>
-            </h2>
-            <p className="mt-5 text-zinc-500 dark:text-zinc-400 text-base md:text-lg font-medium max-w-xl leading-relaxed">
-              Curated street essentials designed for those who walk different. Hand-picked quality, certified original.
-            </p>
+            <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="Trending Badge"
+              defaultValue="Trending Now"
+              inline
+            >
+              {(val) => (
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 shadow-sm mb-5">
+                   <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+                   <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400">{val}</span>
+                </div>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="Section Headline"
+              defaultValue="DRIP OR DROWN."
+            >
+              {(val) => (
+                <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[1.05] tracking-tight">
+                  {val}
+                </h2>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="home.popular-products.description"
+              componentKey="PopularProducts"
+              elementKey="description"
+              label="Section Description"
+              type="textarea"
+              defaultValue="Curated street essentials designed for those who walk different. Hand-picked quality, certified original."
+            >
+              {(val) => (
+                <p className="mt-5 text-zinc-500 dark:text-zinc-400 text-base md:text-lg font-medium max-w-xl leading-relaxed">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
           </div>
           
           <Link 
-            href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} 
+            href={buildUrl('/ecommerceshoes/products', { companyId: id, flag: 'isFeatured' })} 
             className="group inline-flex items-center gap-3 font-bold text-xs uppercase tracking-[0.2em] text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
              Browse All 

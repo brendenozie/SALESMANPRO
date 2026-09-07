@@ -470,7 +470,8 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
     return (
         <div className={'relative w-full overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100'}>
             {/* Hero Section */}
-            <HeroSection store={pageData} 
+            <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+              <HeroSection store={pageData} 
             onSearch={handleSearch}
             trendingLocations={
             CompanyLocation
@@ -486,42 +487,67 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
                 }))
                 : []
             } />
+            </div>
 
             {/* --- 02. NAVIGATION NODES (Categories) --- */}
-            <CategorySection store={pageData} />
+            <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
+              <CategorySection store={pageData} />
+            </div>
 
             {/* Listings Grid */}
-            <ListingsGrid programs={featured}/>
+            <div id="section-listings-grid" data-editor-section="listings-grid" data-editor-component="ListingsGrid">
+              <ListingsGrid programs={featured}/>
+            </div>
 
             {/* Listings Grid */}
-            <ClassesGrid courses={siteData?.courses}/>
+            <div id="section-classes-grid" data-editor-section="classes-grid" data-editor-component="ClassesGrid">
+              <ClassesGrid courses={siteData?.courses}/>
+            </div>
 
             {/* Trending Locations */}
-            <LocationsSection  />
+            <div id="section-locations" data-editor-section="locations" data-editor-component="LocationsSection">
+              <LocationsSection  />
+            </div>
 
             {/* Virtual Tours */}
-            <VirtualTours videos={[]} />
+            <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
+              <VirtualTours videos={[]} />
+            </div>
             {/* siteData?.virtualTours */}
 
             {/* Experts Section */}
-            <ExpertsSection educators={siteData?.Educator} />
+            <div id="section-experts" data-editor-section="experts" data-editor-component="ExpertsSection">
+              <ExpertsSection educators={siteData?.Educator} />
+            </div>
 
             {/* Insights Section */}
-            <MarketInsights blogs={storeFormData?.blogs} />
+            <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
+              <MarketInsights blogs={storeFormData?.blogs} />
+            </div>
 
-            <GallerySection/>
+            <div id="section-gallery" data-editor-section="gallery" data-editor-component="GallerySection">
+              <GallerySection/>
+            </div>
 
             {/* Testimonials */}
-            <TestimonialsSection testimonials={storeFormData?.testimonials} />
+            <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+              <TestimonialsSection testimonials={storeFormData?.testimonials} />
+            </div>
 
             {/* App Promotion (no props needed as it uses internal dummy data or generic content) */}
-            <AppPromotionSection />
+            <div id="section-app-promotion" data-editor-section="app-promotion" data-editor-component="AppPromotionSection">
+              <AppPromotionSection />
+            </div>
 
             {/* Newsletter (no props needed as it manages its own state) */}
-            <NewsletterSection />
+            <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+              <NewsletterSection />
+            </div>
 
             {/* FAQs */}
-            <FaqsSection faqs={storeFormData?.faqs} />
+            <div id="section-faqs" data-editor-section="faqs" data-editor-component="FaqsSection">
+              <FaqsSection faqs={storeFormData?.faqs} />
+            </div>
         </div>
     );
 }

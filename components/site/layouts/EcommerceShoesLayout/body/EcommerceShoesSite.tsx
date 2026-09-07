@@ -106,21 +106,51 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteShoe
 
   return (
     <div>
-      <HeroSlider heroSlides={heroSlides} />
-      <FeaturesSection features={features} themeSettings={themeSettings} />
-      <CategoriesSection StoreCategory={StoreCategory} themeSettings={themeSettings} />
-      <CategorySection promotions={promotions} themeSettings={themeSettings} />
-      <PromoSection promotions={promotions} />
-      <DynamicPopularProducts id={id} themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
-      <MetricsSection  coreValues={CoreValues} />
-      <DynamicDailyBestSells id={id} />
-      <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
-      <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
-      <TrendingPromotion promotions={promotions} themeSettings={themeSettings}  />
-      <AwardsSection awards={awards} />
-      <BannerSection promotions={promotions} themeSettings={themeSettings}/>
-      <TestimonialsSection testimonials={testimonials} />
-      <NewsletterSection />  
+      <div id="section-hero-slider" data-editor-section="hero-slider" data-editor-component="HeroSlider">
+        <HeroSlider heroSlides={heroSlides} />
+      </div>
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection features={features} themeSettings={themeSettings} />
+      </div>
+      <div id="section-categories" data-editor-section="categories" data-editor-component="CategoriesSection">
+        <CategoriesSection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      </div>
+      <div id="section-category-section" data-editor-section="category-section" data-editor-component="CategorySection">
+        <CategorySection promotions={promotions} themeSettings={themeSettings} />
+      </div>
+      <div id="section-promo" data-editor-section="promo" data-editor-component="PromoSection">
+        <PromoSection promotions={promotions} />
+      </div>
+      <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="PopularProducts">
+        <DynamicPopularProducts id={id} themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
+      </div>
+      <div id="section-metrics" data-editor-section="metrics" data-editor-component="MetricsSection">
+        <MetricsSection coreValues={CoreValues} />
+      </div>
+      <div id="section-daily-best-sells" data-editor-section="daily-best-sells" data-editor-component="DailyBestSells">
+        <DynamicDailyBestSells id={id} />
+      </div>
+      <div id="section-sleep-tape-ad" data-editor-section="sleep-tape-ad" data-editor-component="SleepTapeAd">
+        <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
+      </div>
+      <div id="section-all-products" data-editor-section="all-products" data-editor-component="AllProducts">
+        <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
+      </div>
+      <div id="section-trending-promo" data-editor-section="trending-promo" data-editor-component="TrendingPromotion">
+        <TrendingPromotion promotions={promotions} themeSettings={themeSettings} />
+      </div>
+      <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
+        <AwardsSection awards={awards} />
+      </div>
+      <div id="section-banner" data-editor-section="banner" data-editor-component="BannerSection">
+        <BannerSection promotions={promotions} themeSettings={themeSettings} />
+      </div>
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection testimonials={testimonials} />
+      </div>
+      <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+        <NewsletterSection />
+      </div>
     </div>
   );
 }

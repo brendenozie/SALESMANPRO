@@ -16,12 +16,16 @@ export default function FinanceHeaderLayout({ params, children }: FinanceLayoutP
 
   return (
     <>
-      <Header />
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header />
+      </div>
 
       {/* Child Content */}
       <section >{children}</section>
 
-      <Footer/>
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer/>
+      </div>
     </>
   );
 }

@@ -21,11 +21,15 @@ export default function RealEstateHeaderLayout({ params, children }: RealEstateL
 
   return (
     <>
-      <Header/>
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header/>
+      </div>
       {/* Main Content Area */}
       <section >{children}</section>
 
-      <Footer/>
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer/>
+      </div>
     </>
   );
 }

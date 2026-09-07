@@ -35,7 +35,7 @@ export default function DefaultSite({
     message || messages[status] || "Something unexpected happened.";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-6">
+    <div id="section-default" data-editor-section="default" data-editor-component="DefaultSite" className="min-h-screen flex items-center justify-center bg-neutral-50 px-6">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}

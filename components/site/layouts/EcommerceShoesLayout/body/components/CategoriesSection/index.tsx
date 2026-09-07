@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ArrowRightIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import { IStoreCategory, ISubcategory } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface CategorySectionProps {
   StoreCategory: IStoreCategory[] | null;
@@ -45,9 +46,10 @@ const itemVariants: Variants = {
  * Subcategory Tile matching ProductCard's layout aesthetics
  */
 function SubcategoryTile({ sub, idx }: { sub: ISubcategory; idx: number }) {
+  const { buildUrl } = useEditableContent();
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/ecommerceshoes/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={buildUrl('/ecommerceshoes/products', { subcategory: sub.slug || sub.name })}>
         <div className="group flex items-center justify-between p-5 rounded-[1.75rem] bg-white dark:bg-zinc-900 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all duration-500 hover:shadow-[0_24px_48px_-10px_rgba(0,0,0,0.08)]">
           <div className="flex items-center gap-4 min-w-0">
             <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-black text-xs">
@@ -72,6 +74,7 @@ function SubcategoryTile({ sub, idx }: { sub: ISubcategory; idx: number }) {
 /* -------------------------------------------------------------------------- */
 
 export default function CategorySection({ StoreCategory, themeSettings }: CategorySectionProps) {
+  const { buildUrl } = useEditableContent();
   const [activeOverlayId, setActiveOverlayId] = useState<string | null>(null);
   const primary = themeSettings?.primaryColor || '#18181b';
 
@@ -103,30 +106,47 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <motion.span 
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-zinc-400 font-black uppercase tracking-[0.2em] text-[10px] mb-3 block"
+            <EditableElement
+              targetId="home.categories-section.eyebrow"
+              componentKey="CategoriesSection"
+              elementKey="eyebrow"
+              label="Eyebrow Text"
+              defaultValue={isFew ? "Curated Silhouette Segments" : "Product Tier Classifications"}
             >
-              {isFew ? "Curated Silhouette Segments" : "Product Tier Classifications"}
-            </motion.span>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white leading-none uppercase"
-            >
-              {isFew ? (
-                 <>Premium <span className="text-zinc-400 dark:text-zinc-500 font-normal italic font-serif">Capsule Feeds</span></>
-              ) : (
-                 <>Engineered <span className="text-zinc-400 dark:text-zinc-500 font-normal italic font-serif">Design Spaces</span></>
+              {(val) => (
+                <motion.span 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-zinc-400 font-black uppercase tracking-[0.2em] text-[10px] mb-3 block"
+                >
+                  {val}
+                </motion.span>
               )}
-            </motion.h2>
+            </EditableElement>
+
+            <EditableElement
+              targetId="home.categories-section.title"
+              componentKey="CategoriesSection"
+              elementKey="title"
+              label="Section Heading"
+              defaultValue={isFew ? "Premium Capsule Feeds" : "Engineered Design Spaces"}
+            >
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white leading-none uppercase"
+                >
+                  {val}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
           <Link 
-            href="/ecommerceshoes/categories" 
+            href={buildUrl('/ecommerceshoes/categories')} 
             className="group flex items-center gap-2 text-[11px] font-black uppercase tracking-widest pb-1 border-b-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white transition-colors"
           >
             View All Categories
@@ -175,7 +195,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
 
               {/* Image Area matching the 72h aspect container */}
               <div className="relative h-80 w-full overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-800/50">
-                <Link href={`/ecommerceshoes/products?category=${cat.category?.slug || cat.id}`} className="block h-full w-full">
+                <Link href={buildUrl('/ecommerceshoes/products', { category: cat.category?.slug || cat.id })} className="block h-full w-full">
                   <Image
                     src={FALLBACK_IMAGES[idx % 3]}
                     alt={cat.displayName || 'Category Collection'}
@@ -208,7 +228,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
                         {cat.subcategories?.slice(0, 6).map((sub) => (
                           <Link 
                             key={sub.id} 
-                            href={`/ecommerceshoes/products?subcategory=${sub.slug || sub.name}`}
+                            href={buildUrl('/ecommerceshoes/products', { subcategory: sub.slug || sub.name })}
                             className="py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-[11px] font-black text-center text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 transition-all hover:border-zinc-900 dark:hover:border-white"
                           >
                             {sub.name}
@@ -217,7 +237,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
                       </div>
 
                       <Link
-                        href={`/ecommerceshoes/products?category=${cat.category?.slug || cat.id}`}
+                        href={buildUrl('/ecommerceshoes/products', { category: cat.category?.slug || cat.id })}
                         className="mt-5 w-full py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-center rounded-2xl font-black text-[10px] uppercase tracking-widest block transition-all hover:opacity-90"
                       >
                         View Full Concept
@@ -240,7 +260,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
 
                 <div className="mt-auto pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
                   <Link 
-                    href={`/ecommerceshoes/products?category=${cat.category?.slug || cat.id}`}
+                    href={buildUrl('/ecommerceshoes/products', { category: cat.category?.slug || cat.id })}
                     className="w-full flex items-center justify-center gap-3 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest transition-all hover:shadow-lg hover:shadow-zinc-500/10"
                   >
                     <span>Browse Collection</span>

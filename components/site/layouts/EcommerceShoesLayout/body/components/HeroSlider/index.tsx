@@ -12,6 +12,7 @@ import {
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const defaultSlides: HeroSlide[] = [
   {
@@ -56,6 +57,7 @@ const slideVariants = {
 };
 
 export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] }) {
+  const { buildUrl } = useEditableContent();
   const slides = (heroSlides?.length ? heroSlides : defaultSlides).map((s, i) => ({
     ...s,
     imageUrl: s.productImageUrl || s.imageUrl || defaultSlides[i % defaultSlides.length].imageUrl,
@@ -134,24 +136,70 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
             {/* TYPOGRAPHY DESCRIPTION MATRIX (Order 1) */}
             <div className="w-full lg:col-span-6 flex flex-col justify-center items-center lg:items-start text-center lg:text-left order-1 z-10 space-y-4 lg:space-y-6 pt-10 sm:pt-0">
               <div>
-                <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-black/5 dark:bg-white/10 text-red-600 dark:text-red-500 mb-2 sm:mb-3">
-                  {slides[current].subline}
-                </span>
-                <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black leading-[1.1] tracking-tight italic uppercase max-w-xl">
-                  {slides[current].headline}
-                </h2>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.subline`}
+                  componentKey="HeroSlider"
+                  elementKey="subline"
+                  label="Eyebrow / Subline"
+                  defaultValue={slides[current].subline}
+                  inline
+                >
+                  {(val) => (
+                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-black/5 dark:bg-white/10 text-red-600 dark:text-red-500 mb-2 sm:mb-3">
+                      {val}
+                    </span>
+                  )}
+                </EditableElement>
+
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.headline`}
+                  componentKey="HeroSlider"
+                  elementKey="headline"
+                  label="Headline"
+                  defaultValue={slides[current].headline}
+                >
+                  {(val) => (
+                    <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black leading-[1.1] tracking-tight italic uppercase max-w-xl">
+                      {val}
+                    </h2>
+                  )}
+                </EditableElement>
               </div>
               
-              <p className="text-xs sm:text-sm lg:text-base opacity-75 font-medium max-w-sm sm:max-w-md">
-                {slides[current].badgeText}
-              </p>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.badgeText`}
+                componentKey="HeroSlider"
+                elementKey="badgeText"
+                label="Slide Subtitle / Badge"
+                type="textarea"
+                defaultValue={slides[current].badgeText}
+              >
+                {(val) => (
+                  <p className="text-xs sm:text-sm lg:text-base opacity-75 font-medium max-w-sm sm:max-w-md">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
 
               <div className="pt-2 w-full sm:w-auto">
                 <Link
-                  href={slides[current].ctaLink || '#'}
+                  href={
+                    slides[current].ctaLink?.startsWith("#") || slides[current].ctaLink?.startsWith("http")
+                      ? (slides[current].ctaLink || "#")
+                      : buildUrl(slides[current].ctaLink || "/products")
+                  }
                   className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-black text-xs uppercase tracking-widest rounded-xl sm:rounded-full shadow-lg shadow-black/10 hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 transition-all duration-200"
                 >
-                  {slides[current].ctaText}
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.ctaText`}
+                    componentKey="HeroSlider"
+                    elementKey="ctaText"
+                    label="CTA Button Text"
+                    defaultValue={slides[current].ctaText}
+                    inline
+                  >
+                    {(val) => <span>{val}</span>}
+                  </EditableElement>
                   <ChevronRightIcon className="h-4 w-4 stroke-[2.5]" />
                 </Link>
               </div>
@@ -166,15 +214,27 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
                 transition={{ duration: 0.6, type: "spring" }}
                 className="relative w-full h-full max-w-[280px] sm:max-w-[360px] lg:max-w-[500px]"
               >
-                <Image
-                  src={slides[current].imageUrl || ''}
-                  alt={slides[current].headline || ''}
-                  fill
-                  priority
-                  className="object-contain drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)] select-none pointer-events-none transform transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-2"
-                  sizes="(max-width: 768px) 80vw, 40vw"
-                  loader={({ src }) => src}
-                />
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                  componentKey="HeroSlider"
+                  elementKey="imageUrl"
+                  label="Slide Image URL"
+                  type="image"
+                  defaultValue={slides[current].imageUrl || ""}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <Image
+                      src={val || slides[current].imageUrl || ""}
+                      alt={slides[current].headline || ""}
+                      fill
+                      priority
+                      className="object-contain drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)] select-none pointer-events-none transform transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-2"
+                      sizes="(max-width: 768px) 80vw, 40vw"
+                      loader={({ src }) => src}
+                    />
+                  )}
+                </EditableElement>
               </motion.div>
             </div>
 

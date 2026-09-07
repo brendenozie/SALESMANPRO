@@ -31,19 +31,33 @@ export default function BlogSite({ pageData, companyId }: { pageData: StoreForm,
   return (
     <>
 
-      <HeroSection heroSlides={pageData.heroSlides} />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection heroSlides={pageData.heroSlides} />
+      </div>
 
-      <FeaturedCategoriesSection StoreCategory={pageData.StoreCategory} />
+      <div id="section-featured-categories" data-editor-section="featured-categories" data-editor-component="FeaturedCategoriesSection">
+        <FeaturedCategoriesSection StoreCategory={pageData.StoreCategory} />
+      </div>
 
-      {blogsData?.data && <LatestNewsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />}
+      {blogsData?.data && <div id="section-latest-news" data-editor-section="latest-news" data-editor-component="LatestNewsSection">
+   <LatestNewsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />
+ </div>}
 
-      <StaffWritersSection Writer={pageData.Writer} />
+      <div id="section-staff-writers" data-editor-section="staff-writers" data-editor-component="StaffWritersSection">
+        <StaffWritersSection Writer={pageData.Writer} />
+      </div>
 
-      {blogsData?.data && <PopularBlogsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />}
+      {blogsData?.data && <div id="section-popular-blogs" data-editor-section="popular-blogs" data-editor-component="PopularBlogsSection">
+   <PopularBlogsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />
+ </div>}
 
-      <LatestPodcastSection Podcast={pageData.Podcast} />
+      <div id="section-latest-podcast" data-editor-section="latest-podcast" data-editor-component="LatestPodcastSection">
+        <LatestPodcastSection Podcast={pageData.Podcast} />
+      </div>
 
-      <CtaSection/>
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection/>
+      </div>
       
     </>
   );

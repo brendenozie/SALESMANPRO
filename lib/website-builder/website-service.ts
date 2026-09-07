@@ -12,6 +12,7 @@ import {
   CompiledWebsiteConfigSchema,
 } from "@/types/website-builder";
 import { compileWebsiteFromCompany } from "./template-compiler";
+import { resolveCanonicalTemplate } from "./template-registry";
 
 /**
  * Get or automatically synthesize a tenant's editable Website configuration.
@@ -48,12 +49,44 @@ export async function getOrCreateWebsite(companySlugOrId: string): Promise<{
     throw new Error(`Company '${companySlugOrId}' not found.`);
   }
 
+  // Deterministically resolve canonical template for this tenant
+  const canonical = resolveCanonicalTemplate(
+    company.category,
+    company.variant,
+    company.website?.templateKey
+  );
+
   // 2. If Website already exists, return draftConfig or publishedConfig
   if (company.website) {
     const rawConfig = company.website.draftConfig || company.website.publishedConfig;
     if (rawConfig) {
       try {
         const parsed = CompiledWebsiteConfigSchema.parse(rawConfig);
+
+        let needsDbSync = false;
+
+        // If parsed.templateKey is missing or mismatched with canonical, migrate it
+        if (!parsed.templateKey || parsed.templateKey !== canonical.id) {
+          parsed.templateKey = canonical.id;
+          needsDbSync = true;
+        }
+
+        // If website.templateKey is not canonical, sync it
+        if (company.website.templateKey !== canonical.id) {
+          needsDbSync = true;
+        }
+
+        if (needsDbSync) {
+          await prisma.website.update({
+            where: { id: company.website.id },
+            data: {
+              templateKey: canonical.id,
+              draftConfig: parsed as any,
+            },
+          });
+          company.website.templateKey = canonical.id;
+        }
+
         return {
           website: company.website,
           config: parsed,
@@ -67,6 +100,8 @@ export async function getOrCreateWebsite(companySlugOrId: string): Promise<{
 
   // 3. Otherwise, run the compiler to create the initial website
   const compiledConfig = compileWebsiteFromCompany(company);
+  compiledConfig.templateKey = canonical.id;
+
 
   // Save to database
   const createdWebsite = await prisma.website.upsert({
@@ -149,6 +184,7 @@ export async function saveWebsiteDraft(
   await prisma.website.update({
     where: { companyId },
     data: {
+      templateKey: validated.templateKey,
       draftConfig: validated as any,
       theme: validated.theme as any,
       navigation: validated.navigation as any,
@@ -197,6 +233,7 @@ export async function publishWebsite(
     prisma.website.update({
       where: { companyId },
       data: {
+        templateKey: validatedConfig.templateKey,
         publishedConfig: validatedConfig as any,
         status: "PUBLISHED",
         publishedAt: new Date(),
@@ -221,6 +258,8 @@ export async function publishWebsite(
     try {
       revalidatePath(`/site/${website.company.slug}`);
       revalidatePath(`/site/${website.company.slug}/[...pageSlug]`);
+      revalidatePath(`/${website.company.slug}`);
+      revalidatePath(`/${website.company.slug}/[...pageSlug]`);
     } catch (e) {
       // Ignore during build / SSR edge
     }

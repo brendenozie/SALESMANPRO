@@ -37,21 +37,37 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   return (
     <>
       {/* Hero */}
-      <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
+        <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
+      </div>
 
-      <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />
+      </div>
       
-      <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />
+      <div id="section-massage-features" data-editor-section="massage-features" data-editor-component="MassageFeatures">
+        <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />
+      </div>
       
-      <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />
+      <div id="section-pricing-and-stats" data-editor-section="pricing-and-stats" data-editor-component="PricingAndStatsSection">
+        <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />
+      </div>
 
-      <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
+      <div id="section-benefits" data-editor-section="benefits" data-editor-component="BenefitsSection">
+        <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
+      </div>
 
-      {testimonialsData?.data && <TestimonialsSection name={name} testimonials={testimonialsData.data} themeSettings={themeSettings} />}
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+   <TestimonialsSection name={name} testimonials={testimonialsData.data} themeSettings={themeSettings} />
+ </div>}
 
-      <CtaSection />
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection />
+      </div>
 
-      {faqsData?.data && <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} />}
+      {faqsData?.data && <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
+   <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} />
+ </div>}
       
     </>
   );

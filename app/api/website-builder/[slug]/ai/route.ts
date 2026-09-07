@@ -11,6 +11,7 @@ import {
   SectionType,
 } from "@/types/website-builder";
 import { saveWebsiteDraft, getOrCreateWebsite } from "@/lib/website-builder/website-service";
+import { resolveCanonicalTemplate } from "@/lib/website-builder/template-registry";
 import { GoogleGenAI } from "@google/genai";
 
 interface RouteParams {
@@ -67,9 +68,13 @@ export async function POST(req: Request, { params }: RouteParams) {
     }
 
     // 3. Compact state summary for model context
+    const canonicalTemplate = resolveCanonicalTemplate(company.category, undefined, config.templateKey);
     const activePage = config.pages.find((p) => p.slug === activePageSlug) || config.pages[0];
     const contextSummary = {
       storeName: config.storeName,
+      templateName: canonicalTemplate.name,
+      templateId: canonicalTemplate.id,
+      capabilities: canonicalTemplate.capabilities,
       activePageSlug: activePage?.slug || "home",
       themeTokens: config.theme,
       pages: config.pages.map((p) => ({ slug: p.slug, title: p.title })),
@@ -87,11 +92,18 @@ export async function POST(req: Request, { params }: RouteParams) {
     const systemInstruction = `You are the Expert AI Website Designer for SalesmanPro.
 Your job is to translate the store owner's design request into STRICT STRUCTURED MUTATION ACTIONS.
 
-Store Information:
+Template & Store Context:
 - Store Name: "${contextSummary.storeName}"
+- Active Template: "${contextSummary.templateName}" (ID: ${contextSummary.templateId})
+- Capabilities: ${contextSummary.capabilities.join(", ")}
 - Active Page: "${contextSummary.activePageSlug}"
 - Current Colors: Primary: ${contextSummary.themeTokens.primaryColor}, Secondary: ${contextSummary.themeTokens.secondaryColor}
 - Sections on page: ${JSON.stringify(contextSummary.sectionsOnActivePage)}
+
+CRITICAL PRESERVATION DIRECTIVE:
+SalesmanPro templates are intentionally specialized, high-converting designs. 
+NEVER flatten or destroy the template's authentic design by replacing it with generic sections.
+Instead, modify existing section content, headings, colors, and order to fulfill the merchant's request while maintaining the unique visual identity of the "${contextSummary.templateName}".
 
 You MUST respond with a JSON object in this exact format:
 {

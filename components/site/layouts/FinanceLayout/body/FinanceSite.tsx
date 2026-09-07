@@ -183,15 +183,33 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
   return (
     <div className="min-h-screen relative">
        {/* Add padding-top to account for fixed navbar */}
-        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />        
-        <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>
-        <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />
-        {testimonialsData?.data && <CaseStudiesTestimonials testimonials={testimonials} />}
-        <ProcessWorkflowSection />
-        <MeetOurExperts experts={experts} />
-        <ConsultationPackagesSection packages={packages} />
-        {faqsData?.data && <FAQSection faqs={faqs} />}
-        <ContactSection />
+        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+          <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />
+        </div>        
+        <div id="section-practice-areas" data-editor-section="practice-areas" data-editor-component="PracticeAreasSection">
+          <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>
+        </div>
+        <div id="section-why-choose-us" data-editor-section="why-choose-us" data-editor-component="WhyChooseUsSection">
+          <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />
+        </div>
+        {testimonialsData?.data && <div id="section-case-studies-testimonials" data-editor-section="case-studies-testimonials" data-editor-component="CaseStudiesTestimonials">
+   <CaseStudiesTestimonials testimonials={testimonials} />
+ </div>}
+        <div id="section-process-workflow" data-editor-section="process-workflow" data-editor-component="ProcessWorkflowSection">
+          <ProcessWorkflowSection />
+        </div>
+        <div id="section-meet-our-experts" data-editor-section="meet-our-experts" data-editor-component="MeetOurExperts">
+          <MeetOurExperts experts={experts} />
+        </div>
+        <div id="section-consultation-packages" data-editor-section="consultation-packages" data-editor-component="ConsultationPackagesSection">
+          <ConsultationPackagesSection packages={packages} />
+        </div>
+        {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+   <FAQSection faqs={faqs} />
+ </div>}
+        <div id="section-contact" data-editor-section="contact" data-editor-component="ContactSection">
+          <ContactSection />
+        </div>
     </div>
   );
 }

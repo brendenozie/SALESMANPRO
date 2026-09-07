@@ -153,55 +153,73 @@ export default function MediaSite({ pageData, companyId }: { pageData: StoreForm
   return (
     <div className="font-sans relative"> {/* Increased space-y, set global background */}
       {/* Hero Section */}
-      <MediaHeroSection
+      <div id="section-media-hero" data-editor-section="media-hero" data-editor-component="MediaHeroSection">
+        <MediaHeroSection
         slideData={displayData.heroSlides}
         onPlay={(slide: any) =>
           router.push(`/${displayData.slug}/video/${slide.slug}`)
         }
       />
+      </div>
 
       {/* Categories Section */}
-      <EnhancedCategoriesSection
+      <div id="section-enhanced-categories" data-editor-section="enhanced-categories" data-editor-component="EnhancedCategoriesSection">
+        <EnhancedCategoriesSection
         categories={displayData.StoreCategory}
         slug={displayData.slug}
       />
+      </div>
 
       {/* Top Picks Carousel */}
-      <TopPicksCarousel
+      <div id="section-top-picks" data-editor-section="top-picks" data-editor-component="TopPicksCarousel">
+        <TopPicksCarousel
         picks={displayData.topPicks}
         // Assuming TopPicksCarousel might also have an onPlay or onClick for navigation
         onSelect={(item: any) => router.push(item.ctaLink)}
       />
+      </div>
 
       {/* Latest Releases Section */}
-      <LatestReleasesSection
+      <div id="section-latest-releases" data-editor-section="latest-releases" data-editor-component="LatestReleasesSection">
+        <LatestReleasesSection
         releases={displayData.latestReleases}
         onPlay={(item: any) => router.push(item.videoSlug ? `/${displayData.slug}/video/${item.videoSlug}` : `/${displayData.slug}/media/${item.slug}`)}
       />
+      </div>
 
       {/* Featured Articles Section */}
-      <FeaturedArticlesSection
+      <div id="section-featured-articles" data-editor-section="featured-articles" data-editor-component="FeaturedArticlesSection">
+        <FeaturedArticlesSection
         featured={displayData.featuredArticles || displayData.blogs}
         storeSlug={displayData.slug}
       />
+      </div>
 
       {/* Latest Videos Section */}
-      <LatestVideosSection
+      <div id="section-latest-videos" data-editor-section="latest-videos" data-editor-component="LatestVideosSection">
+        <LatestVideosSection
         videos={displayData.latestVideos}
       />
+      </div>
 
       {/* Testimonials Slider */}
-      <TestimonialsSlider
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSlider">
+        <TestimonialsSlider
         testimonials={displayData.testimonials}
       />
+      </div>
 
       {/* Newsletter Signup */}
-      <NewsletterSignup />
+      <div id="section-newsletter-signup" data-editor-section="newsletter-signup" data-editor-component="NewsletterSignup">
+        <NewsletterSignup />
+      </div>
 
       {/* FAQs Section */}
-      <FAQsSection
+      <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
+        <FAQsSection
         faqs={displayData.faqs}
       />
+      </div>
 
       {/* Scroll to Top Button */}
       <AnimatePresence>

@@ -13,6 +13,7 @@ import WhatsAppBubble from '@/components/WhatsAppBubble';
 import siteMetadata from '@/data/siteMetadata';
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
 import { SubscriptionGraceBanner, SubscriptionInactiveView } from './SubscriptionGraceBanner';
+import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registry';
 
 export const revalidate = 60;
 
@@ -155,7 +156,18 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   const variant = normalize(storeFormData.variant || '');
   const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
 
-  let LayoutComponent = categoryHeaderFooterLayoutMap[variant] 
+  // Resolve canonical template identity deterministically
+  const canonicalTemplate = resolveCanonicalTemplate(
+    raw.category,
+    raw.variant,
+    raw.website?.templateKey
+  );
+
+  let LayoutComponent = 
+    categoryHeaderFooterLayoutMap[canonicalTemplate.shellLayout]
+    || categoryHeaderFooterLayoutMap[canonicalTemplate.variant] 
+    || categoryHeaderFooterLayoutMap[canonicalTemplate.category]
+    || categoryHeaderFooterLayoutMap[variant] 
     || categoryHeaderFooterLayoutMap[category]
     || (() => {
       const matchedCategory = categoryMap.get(category);
@@ -184,8 +196,6 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
     jsonLd.logo = raw.logoUrl;
   }
 
-  const hasPublishedWebsite = !!raw.website?.publishedConfig;
-
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
       <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
@@ -195,31 +205,17 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
           <SubscriptionGraceBanner storeName={raw.name} daysLeft={graceDaysLeft} />
         )}
 
-        {hasPublishedWebsite ? (
-          <>
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <Suspense fallback={<LoadingSpinner />}>
-              {children}
-            </Suspense>
-            <WhatsAppBubble productName={''} />
-            <AnalyticsProvider config={raw.AnalyticsConfig} />
-          </>
-        ) : (
-          <LayoutComponent params={{ storeFormData }}>
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <Suspense fallback={<LoadingSpinner />}>
-              {children}
-            </Suspense>
-            <WhatsAppBubble productName={''} />
-            <AnalyticsProvider config={raw.AnalyticsConfig} />
-          </LayoutComponent>
-        )}
+        <LayoutComponent params={{ storeFormData }}>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+          <Suspense fallback={<LoadingSpinner />}>
+            {children}
+          </Suspense>
+          <WhatsAppBubble productName={''} />
+          <AnalyticsProvider config={raw.AnalyticsConfig} />
+        </LayoutComponent>
       </div>
     </StoreContextProvider>
   );

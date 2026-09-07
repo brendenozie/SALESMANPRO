@@ -49,26 +49,48 @@ export default function ConsultancySite({ pageData, companyId }: { pageData: Sto
       <div className="bg-gradient-to-br from-gray-50 to-orange-50 font-sans antialiased">
       
       {/* Hero */}
-      <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
+      </div>
 
-      <SocialProofSection />
+      <div id="section-social-proof" data-editor-section="social-proof" data-editor-component="SocialProofSection">
+        <SocialProofSection />
+      </div>
       
-      <AboutSection />
+      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+        <AboutSection />
+      </div>
 
-      <ServicesSection />  
+      <div id="section-services" data-editor-section="services" data-editor-component="ServicesSection">
+        <ServicesSection />
+      </div>  
       
-      <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+      <div id="section-featured-listings" data-editor-section="featured-listings" data-editor-component="FeaturedListings">
+        <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+      </div>
 
-      <HowItWorks />
+      <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorks">
+        <HowItWorks />
+      </div>
 
-      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />   
+      <div id="section-browse-by-category" data-editor-section="browse-by-category" data-editor-component="BrowseByCategory">
+        <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />
+      </div>   
 
       {/* If videos are stored under latestVideos */}
-      {blogsData?.data && <VideoShowcaseSection blogs={(blogsData.data || []).map((b: any) => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
+      {blogsData?.data && (
+        <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
+          <VideoShowcaseSection blogs={(blogsData.data || []).map((b: any) => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />
+        </div>
+      )}
 
-      {testimonialsData?.data && <TestimonialsCarouselSection  testimonials={testimonialsData.data || []} />}
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
+   <TestimonialsCarouselSection  testimonials={testimonialsData.data || []} />
+ </div>}
 
-      <CallToActionSection />
+      <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
+        <CallToActionSection />
+      </div>
 
     </div>
      

@@ -23,12 +23,16 @@ export default function DefaultHeaderLayout({ params, children }: DefaultHeaderL
 
   return (
     <>
-      {/* <Header storeFormData={storeFormData} /> */}
+      {/* <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header storeFormData={storeFormData} />
+      </div> */}
 
       {/* Main Content */}
       <section >{children}</section>
 
-      {/* <Footer storeFormData={storeFormData} /> */}
+      {/* <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer storeFormData={storeFormData} />
+      </div> */}
     </>
   );
 }

@@ -200,24 +200,54 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
 
   return (
     <div>
-      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSlider">
+        <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+      </div>
       {/* USP Section */}
-      <USPSlider  coreValues={CoreValues} themeSettings={themeSettings} />      
-      <CategorySection store={pageData} />      
+      <div id="section-usp" data-editor-section="usp" data-editor-component="USPSlider">
+        <USPSlider  coreValues={CoreValues} themeSettings={themeSettings} />
+      </div>      
+      <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
+        <CategorySection store={pageData} />
+      </div>      
       {/* Product Grid */}
-      <WeeklyProducts id={id} />
+      <div id="section-weekly-products" data-editor-section="weekly-products" data-editor-component="WeeklyProducts">
+        <WeeklyProducts id={id} />
+      </div>
       {/* Featured Categories */}
-      <RoomSection store={pageData}  themeSettings={themeSettings} />
-      <DynamicPopularProducts id={id} />
-      <PromoSection promotions={promotions} />
-      <DynamicTrending id={id} />
-      <DynamicDailyBestSells id={id} />
-      <SecondPromoSection promotions={promotions} />
-      <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
-      <MetricsSection coreValues={CoreValues} />
-      <AwardsSection awards={awards} />
-      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
-      <NewsletterSection />
+      <div id="section-room" data-editor-section="room" data-editor-component="RoomSection">
+        <RoomSection store={pageData}  themeSettings={themeSettings} />
+      </div>
+      <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="DynamicPopularProducts">
+        <DynamicPopularProducts id={id} />
+      </div>
+      <div id="section-promo" data-editor-section="promo" data-editor-component="PromoSection">
+        <PromoSection promotions={promotions} />
+      </div>
+      <div id="section-trending" data-editor-section="trending" data-editor-component="DynamicTrending">
+        <DynamicTrending id={id} />
+      </div>
+      <div id="section-daily-best-sells" data-editor-section="daily-best-sells" data-editor-component="DynamicDailyBestSells">
+        <DynamicDailyBestSells id={id} />
+      </div>
+      <div id="section-second-promo" data-editor-section="second-promo" data-editor-component="SecondPromoSection">
+        <SecondPromoSection promotions={promotions} />
+      </div>
+      <div id="section-all-products" data-editor-section="all-products" data-editor-component="AllProducts">
+        <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
+      </div>
+      <div id="section-metrics" data-editor-section="metrics" data-editor-component="MetricsSection">
+        <MetricsSection coreValues={CoreValues} />
+      </div>
+      <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
+        <AwardsSection awards={awards} />
+      </div>
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+   <TestimonialsSection testimonials={testimonialsData.data} />
+ </div>}
+      <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+        <NewsletterSection />
+      </div>
     </div>
   );
 }

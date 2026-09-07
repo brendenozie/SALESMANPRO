@@ -17,9 +17,13 @@ export default function HealthcareHeaderLayout({
 
   return (
     <>
-      <Header />
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header />
+      </div>
       <main >{children}</main>
-      <Footer />
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer />
+      </div>
     </>
   );
 }

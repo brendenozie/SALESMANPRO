@@ -13,9 +13,13 @@ export default function DirectoryHeaderLayout({ params, children }: DirectoryLay
   const { storeFormData } = params;
   return (
     <>
-      <Header/>
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header/>
+      </div>
         <section >{children}</section>
-      <Footer storeFormData={storeFormData} />
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer storeFormData={storeFormData} />
+      </div>
     </>
   );
 }

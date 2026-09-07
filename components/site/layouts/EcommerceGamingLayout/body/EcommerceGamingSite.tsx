@@ -67,12 +67,16 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       
       {/* --- 01. COMMAND CENTER (Hero) --- */}
       <section className="relative">
-        <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSlider">
+          <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+        </div>
       </section>
 
       {/* --- 02. NAVIGATION NODES (Categories) --- */}
       <div className="relative z-20 mt-8">
-        <CategorySection store={pageData} />
+        <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
+          <CategorySection store={pageData} />
+        </div>
       </div>
 
       {/* --- 03. MISSION OBJECTIVES (Products) --- */}
@@ -84,46 +88,66 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
         />
 
         <section className="py-20 border-b border-zinc-100 dark:border-white/5">
-          <DynamicPopularProducts id={id} />
-        </section>
-
-        <section className="relative">
-          <PromoSection promotions={promotions} />
-        </section>
-
-        <section className="py-20 bg-zinc-50 dark:bg-zinc-950/50">
-          <div className="container mx-auto">
-            <DynamicTrending id={id} />
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-red-600/20 to-transparent my-20" />
-            <DynamicDailyBestSells id={id} />
+          <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="DynamicPopularProducts">
+            <DynamicPopularProducts id={id} />
           </div>
         </section>
 
         <section className="relative">
-          <SecondPromoSection promotions={promotions} />
+          <div id="section-promo" data-editor-section="promo" data-editor-component="PromoSection">
+            <PromoSection promotions={promotions} />
+          </div>
+        </section>
+
+        <section className="py-20 bg-zinc-50 dark:bg-zinc-950/50">
+          <div className="container mx-auto">
+            <div id="section-trending" data-editor-section="trending" data-editor-component="DynamicTrending">
+              <DynamicTrending id={id} />
+            </div>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-red-600/20 to-transparent my-20" />
+            <div id="section-daily-best-sells" data-editor-section="daily-best-sells" data-editor-component="DynamicDailyBestSells">
+              <DynamicDailyBestSells id={id} />
+            </div>
+          </div>
+        </section>
+
+        <section className="relative">
+          <div id="section-second-promo" data-editor-section="second-promo" data-editor-component="SecondPromoSection">
+            <SecondPromoSection promotions={promotions} />
+          </div>
         </section>
 
         <section className="py-24 border-t border-zinc-100 dark:border-white/5 bg-white dark:bg-black">
-          <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
+          <div id="section-all-products" data-editor-section="all-products" data-editor-component="AllProducts">
+            <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
+          </div>
         </section>
       </main>
 
       {/* --- 04. SYSTEM PROTOCOLS (Metrics & Awards) --- */}
       <div className="relative">
-        <MetricsSection coreValues={CoreValues} />
+        <div id="section-metrics" data-editor-section="metrics" data-editor-component="MetricsSection">
+          <MetricsSection coreValues={CoreValues} />
+        </div>
         <div className="bg-zinc-100 dark:bg-zinc-950">
-          <AwardsSection awards={awards} />
+          <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
+            <AwardsSection awards={awards} />
+          </div>
         </div>
       </div>
 
       {/* --- 05. COMMS & INTEL (Social) --- */}
       <div className="relative bg-white dark:bg-black border-t border-red-600/10">
         {testimonialsData?.data && (
-          <TestimonialsSection testimonials={testimonialsData.data} />
+          <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+            <TestimonialsSection testimonials={testimonialsData.data} />
+          </div>
         )}
         
         <div className="relative z-10">
-          <NewsletterSection />
+          <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+            <NewsletterSection />
+          </div>
         </div>
       </div>
 

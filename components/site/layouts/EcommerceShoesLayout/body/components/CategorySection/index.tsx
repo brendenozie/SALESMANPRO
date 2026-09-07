@@ -6,6 +6,8 @@ import { ArrowUpRightIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
@@ -31,6 +33,7 @@ const dummyPromotionData = {
 };
 
 export default function PopularSection({ promotions, themeSettings }: any) {
+  const { buildUrl } = useEditableContent();
   const primary = themeSettings?.primaryColor || '#18181b'; // Aligned back to zinc aesthetic or dynamic overrides
 
   const categoryData = promotions && promotions.length > 0
@@ -103,13 +106,34 @@ export default function PopularSection({ promotions, themeSettings }: any) {
               </span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-[1.05]">
-              {categoryData.title}
-            </h2>
+            <EditableElement
+              targetId="home.category-section.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="Collection Title"
+              defaultValue={categoryData.title}
+            >
+              {(val) => (
+                <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-[1.05]">
+                  {val}
+                </h2>
+              )}
+            </EditableElement>
             
-            <p className="mt-4 text-zinc-500 dark:text-zinc-400 text-base md:text-lg leading-relaxed font-medium">
-              {categoryData.description}
-            </p>
+            <EditableElement
+              targetId="home.category-section.description"
+              componentKey="CategorySection"
+              elementKey="description"
+              label="Collection Description"
+              type="textarea"
+              defaultValue={categoryData.description}
+            >
+              {(val) => (
+                <p className="mt-4 text-zinc-500 dark:text-zinc-400 text-base md:text-lg leading-relaxed font-medium">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
 
             {/* Split Display Panel Block */}
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
@@ -128,7 +152,7 @@ export default function PopularSection({ promotions, themeSettings }: any) {
               </div>
 
               {/* Action Button - Converted from rotated text to dynamic tactile container */}
-              <Link href={categoryData.ctaLink || '/ecommerceshoes/products'} className="w-full sm:w-1/2 group">
+              <Link href={buildUrl(categoryData.ctaLink || '/ecommerceshoes/products')} className="w-full sm:w-1/2 group">
                 <div 
                   style={{ backgroundColor: primary === '#18181b' ? undefined : primary }}
                   className="h-36 w-full rounded-[2rem] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex flex-col justify-between p-6 cursor-pointer transition-all duration-300 shadow-xl shadow-zinc-950/10 dark:shadow-none hover:opacity-90 hover:scale-[1.02]"
@@ -140,9 +164,20 @@ export default function PopularSection({ promotions, themeSettings }: any) {
                   </div>
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-0.5">Secure Launch Access</p>
-                    <span className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                      {categoryData.ctaText}
-                    </span>
+                    <EditableElement
+                      targetId="home.category-section.ctaText"
+                      componentKey="CategorySection"
+                      elementKey="ctaText"
+                      label="Button Text"
+                      defaultValue={categoryData.ctaText}
+                      inline
+                    >
+                      {(val) => (
+                        <span className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                          {val}
+                        </span>
+                      )}
+                    </EditableElement>
                   </div>
                 </div>
               </Link>

@@ -50,30 +50,48 @@ export default function EventsSite({ pageData, companyId }: { pageData: StoreFor
   return (
     <div className="font-sans">
       {/* Hero */}
-      <HeroComponent storeFormData={pageData} />
+      <div id="section-hero-component" data-editor-section="hero-component" data-editor-component="HeroComponent">
+        <HeroComponent storeFormData={pageData} />
+      </div>
 
       {/* About */}
-      <AboutSection storeFormData={pageData}/>
+      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+        <AboutSection storeFormData={pageData}/>
+      </div>
 
       {/* Features */}
-      <FeaturesSection promotions={pageData.promotions} description={pageData.description} />
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection promotions={pageData.promotions} description={pageData.description} />
+      </div>
 
       {/* How It Works */}
-      <HowItWorksSection />
+      <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorksSection">
+        <HowItWorksSection />
+      </div>
 
       {/* Live Events - Render when data is ready */}
-      {eventsData?.data && <LiveEventsSection events={eventsData.data} />}
+      {eventsData?.data && <div id="section-live-events" data-editor-section="live-events" data-editor-component="LiveEventsSection">
+   <LiveEventsSection events={eventsData.data} />
+ </div>}
 
       {/* Testimonials - Render when data is ready */}
-      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+   <TestimonialsSection testimonials={testimonialsData.data} />
+ </div>}
 
       {/* Pricing (for event organizers) */}
-      <PricingSection />
+      <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
+        <PricingSection />
+      </div>
 
       {/* FAQ - Render when data is ready */}
-      {faqsData?.data && <FAQSection />}
+      {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+   <FAQSection />
+ </div>}
 
-      <CallToActionSection />
+      <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
+        <CallToActionSection />
+      </div>
 
     </div>
   );

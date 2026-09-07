@@ -436,7 +436,8 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
     <div className="font-sans text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 min-h-screen">
 
       {/* Hero Section */}
-      <HeroSection
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection
         store={storeData}
         onSearch={handleSearch}
         trendingLocations={
@@ -454,15 +455,21 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
             : []
           }
       />
+      </div>
 
       {/* Property Categories Section */}
-      <CategoriesSection store={storeData} />
+      <div id="section-categories" data-editor-section="categories" data-editor-component="CategoriesSection">
+        <CategoriesSection store={storeData} />
+      </div>
 
       {/* Featured Listings Section (using marketplaceListings as source) storeData.featuredListings || */}
-      <FeaturedListingsWrapper companyId={id} />
+      <div id="section-featured-listings" data-editor-section="featured-listings" data-editor-component="FeaturedListingsWrapper">
+        <FeaturedListingsWrapper companyId={id} />
+      </div>
 
       {/* Trending Locations Section */}
-      <TrendingLocations
+      <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
+        <TrendingLocations
         locations={
           CompanyLocation
             ? CompanyLocation.map((loc: any) => ({
@@ -479,24 +486,37 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
         }
         slug={slug}
       />
+      </div>
 
       {/* All Listings Section (using marketplaceListings as source) */}
-      <ListingsSection products={marketplaceListings} slug={slug} />
+      <div id="section-listings" data-editor-section="listings" data-editor-component="ListingsSection">
+        <ListingsSection products={marketplaceListings} slug={slug} />
+      </div>
 
       {/* Why Choose Us Section */}
-      <WhyChooseUs CoreValues={CoreValues} metrics={metrics} awards={awards} />
+      <div id="section-why-choose-us" data-editor-section="why-choose-us" data-editor-component="WhyChooseUs">
+        <WhyChooseUs CoreValues={CoreValues} metrics={metrics} awards={awards} />
+      </div>
 
       {/* Agents Section */}
-      <AgentsSection agents={salesAgents} slug={slug} />
+      <div id="section-agents" data-editor-section="agents" data-editor-component="AgentsSection">
+        <AgentsSection agents={salesAgents} slug={slug} />
+      </div>
 
       {/* Testimonials Carousel Section */}
-      <TestimonialsSection testimonials={testimonials} />
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection testimonials={testimonials} />
+      </div>
 
       {/* FAQ Section */}
-      <FAQSection faqs={faqs} />
+      <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+        <FAQSection faqs={faqs} />
+      </div>
 
       {/* Blog Posts Section */}
-      <BlogSection posts={blogs} slug={slug} />
+      <div id="section-blog" data-editor-section="blog" data-editor-component="BlogSection">
+        <BlogSection posts={blogs} slug={slug} />
+      </div>
 
       {/* Newsletter Signup Section (conditionally rendered) */}
       <AnimatePresence>
@@ -507,7 +527,9 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
             exit={{ opacity: 0, y: 50 }}
             transition={{ duration: 0.5 }}
           >
-            <NewsletterSection handleNewsletter={handleNewsletter} />
+            <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+              <NewsletterSection handleNewsletter={handleNewsletter} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -16,12 +16,16 @@ export default function MarketplaceHeaderLayout({ params, children }: Marketplac
   
   return (
     <>
-      <Header />
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header />
+      </div>
 
       {/* Child Content (Category/Product Pages) */}
       <section >{children}</section>
 
-      <Footer storeFormData={params.storeFormData} />
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer storeFormData={params.storeFormData} />
+      </div>
     </>
   );
 }

@@ -21,9 +21,13 @@ const GhubaHeaderLayout: React.FC<GhubaHeaderLayoutProps> = (
 
   return (
     <>
-      <Header/>
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header/>
+      </div>
         {children}
-      <Footer/>
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer/>
+      </div>
     </>
   );
 };

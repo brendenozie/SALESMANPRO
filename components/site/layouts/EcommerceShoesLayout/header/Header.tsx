@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
 
@@ -32,6 +33,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
 export default function Header() {
   const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const { buildUrl } = useEditableContent();
   const router = useRouter();
 
   const { data: session, status } = useSession();
@@ -51,9 +53,9 @@ export default function Header() {
   const primaryColor = themeSettings?.primaryColor || '#ef4444';
 
   const navLinks = [
-    { label: 'Drops', href: `/ecommerceshoes/products` },
-    { label: 'Vault', href: `/ecommerceshoes/categories` },
-    { label: 'Story', href: `/ecommerceshoes/about` },
+    { label: 'Drops', href: buildUrl(`/ecommerceshoes/products`) },
+    { label: 'Vault', href: buildUrl(`/ecommerceshoes/categories`) },
+    { label: 'Story', href: buildUrl(`/ecommerceshoes/about`) },
   ];
 
   // --- Handlers ---
@@ -105,7 +107,7 @@ export default function Header() {
           
           {/* Logo Section */}
           <div className="flex items-center gap-12">
-            <Link href="/" className="group relative flex items-center gap-2">
+            <Link href={buildUrl('/')} className="group relative flex items-center gap-2">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
@@ -116,9 +118,20 @@ export default function Header() {
                   loader={imageLoader}
                 />
               ) : (
-                <span className="text-xl font-black italic tracking-tighter uppercase dark:text-white">
-                  {name}
-                </span>
+                <EditableElement
+                  targetId="header.storeName"
+                  componentKey="Header"
+                  elementKey="storeName"
+                  label="Store Brand Name"
+                  defaultValue={name}
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-xl font-black italic tracking-tighter uppercase dark:text-white">
+                      {val}
+                    </span>
+                  )}
+                </EditableElement>
               )}
             </Link>
 

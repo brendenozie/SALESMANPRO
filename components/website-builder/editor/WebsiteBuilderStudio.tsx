@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   CompiledWebsiteConfig,
   SectionType,
@@ -8,9 +8,15 @@ import {
   ThemeTokens,
 } from "@/types/website-builder";
 import WebsiteRenderer from "../WebsiteRenderer";
+import TemplateDiagnosticHud from "../TemplateDiagnosticHud";
 import SectionPickerModal from "./SectionPickerModal";
 import AIAssistantModal from "./AIAssistantModal";
 import VersionHistoryModal from "./VersionHistoryModal";
+import {
+  resolveCanonicalTemplate,
+  getAllTemplates,
+  TemplateDefinition,
+} from "@/lib/website-builder/template-registry";
 import {
   ComputerDesktopIcon,
   DeviceTabletIcon,
@@ -32,7 +38,18 @@ import {
   Bars3Icon,
   XMarkIcon,
   GlobeAltIcon,
+  SwatchIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
+import { SelectedElementInfo, HierarchyItem } from "@/contexts/EditableContentContext";
+import {
+  parseTargetId,
+  getEditableComponent,
+  buildUniversalComponentAdapter,
+} from "@/lib/website-builder/editable-adapters";
+import { buildTenantUrl } from "@/lib/tenant/tenant-router";
 import toast from "react-hot-toast";
 
 interface WebsiteBuilderStudioProps {
@@ -40,6 +57,11 @@ interface WebsiteBuilderStudioProps {
   storeSlug: string;
   storeName: string;
   companyId: string;
+  category?: string;
+  variant?: string;
+  storeFormData?: any;
+  paymentMethods?: any[];
+  ghubaData?: any;
   storeLogoUrl?: string | null;
   contactPhone?: string | null;
   contactEmail?: string | null;
@@ -49,7 +71,7 @@ interface WebsiteBuilderStudioProps {
 }
 
 type ViewportMode = "desktop" | "tablet" | "mobile";
-type SidebarTab = "sections" | "pages" | "theme" | "navigation";
+type SidebarTab = "sections" | "pages" | "theme" | "navigation" | "templates";
 
 const GOOGLE_FONTS = [
   "Inter, sans-serif",
@@ -76,6 +98,11 @@ export default function WebsiteBuilderStudio({
   storeSlug,
   storeName,
   companyId,
+  category,
+  variant,
+  storeFormData,
+  paymentMethods,
+  ghubaData,
   storeLogoUrl,
   contactPhone,
   contactEmail,
@@ -94,6 +121,129 @@ export default function WebsiteBuilderStudio({
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [revisions, setRevisions] = useState<any[]>(initialRevisions);
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [templateCategoryFilter, setTemplateCategoryFilter] = useState("all");
+
+  // Element-level selection & override state
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
+  const [selectedElement, setSelectedElement] = useState<SelectedElementInfo | null>(null);
+
+  // Undo / Redo History Stack
+  const [history, setHistory] = useState<CompiledWebsiteConfig[]>([initialConfig]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
+
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      setHistoryIndex(prevIndex);
+      setConfig(history[prevIndex]);
+      setHasUnsavedChanges(true);
+      toast.success("Undo", { id: "undo-toast", duration: 1000 });
+    }
+  }, [historyIndex, history]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1;
+      setHistoryIndex(nextIndex);
+      setConfig(history[nextIndex]);
+      setHasUnsavedChanges(true);
+      toast.success("Redo", { id: "redo-toast", duration: 1000 });
+    }
+  }, [historyIndex, history]);
+
+  // Keyboard shortcut listener for Undo / Redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        if (e.shiftKey) {
+          e.preventDefault();
+          handleRedo();
+        } else {
+          e.preventDefault();
+          handleUndo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleUndo, handleRedo]);
+
+  // Active canonical template resolved with full category, variant, and config.templateKey
+  const activeTemplate = useMemo(() => {
+    return resolveCanonicalTemplate(category, variant, config.templateKey);
+  }, [category, variant, config.templateKey]);
+
+  const allTemplates = useMemo(() => getAllTemplates(), []);
+
+  // Handler to switch template in the builder
+  const handleSwitchTemplate = (tpl: TemplateDefinition) => {
+    // Reset element selection to prevent cross-template dangling pointers
+    setSelectedSectionId(null);
+    setSelectedElement(null);
+    setSelectedTargetId(null);
+
+    updateConfig((prev) => {
+      prev.templateKey = tpl.id;
+
+      // Blend template default palette and typography
+      prev.theme = {
+        ...prev.theme,
+        primaryColor: tpl.defaultTheme.primaryColor || prev.theme.primaryColor,
+        secondaryColor: tpl.defaultTheme.secondaryColor || prev.theme.secondaryColor,
+        accentColor: tpl.defaultTheme.accentColor || prev.theme.accentColor,
+        headingFont: tpl.defaultTheme.headingFont || prev.theme.headingFont,
+        bodyFont: tpl.defaultTheme.bodyFont || prev.theme.bodyFont,
+        buttonRadius: (tpl.defaultTheme.buttonRadius as any) || prev.theme.buttonRadius,
+        cardRadius: (tpl.defaultTheme.cardRadius as any) || prev.theme.cardRadius,
+      };
+
+      // Populate navigation from template shell if available
+      if (tpl.shell?.defaultNavItems && tpl.shell.defaultNavItems.length > 0) {
+        prev.navigation.headerItems = tpl.shell.defaultNavItems.map((item) => ({ ...item }));
+      }
+
+      // Recompile homepage sections with authentic section set for the new template
+      if (tpl.authenticSections && tpl.authenticSections.length > 0) {
+        const homePage = prev.pages.find((p) => p.isHomepage || p.slug === "home") || prev.pages[0];
+        if (homePage) {
+          homePage.sections = tpl.authenticSections.map((sec, idx) => ({
+            id: `sec-${sec.id}-${Date.now() + idx}`,
+            type: sec.type as any,
+            order: idx,
+            isVisible: true,
+            content: { ...(sec.defaultContent || {}) },
+            styles: sec.defaultStyles || {
+              paddingTop: "xl",
+              paddingBottom: "xl",
+              textAlign: "left",
+            },
+            responsive: {
+              columnsMobile: 1,
+              columnsTablet: 2,
+              columnsDesktop: 4,
+              hideOnMobile: false,
+              hideOnDesktop: false,
+            },
+            dataSource: sec.dataSource,
+          }));
+        }
+      }
+
+      return prev;
+    });
+    toast.success(`Active template switched to ${tpl.name}!`);
+  };
 
   // Modals
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -107,19 +257,139 @@ export default function WebsiteBuilderStudio({
 
   // Auto-select first section if none selected
   useEffect(() => {
-    if (!selectedSectionId && activePage?.sections?.length) {
+    if (!selectedSectionId && !selectedElement && activePage?.sections?.length) {
       setSelectedSectionId(activePage.sections[0].id);
     }
-  }, [activePageSlug]);
+  }, [activePageSlug, selectedSectionId, selectedElement, activePage]);
 
-  // Track edits
+  // Track edits and push snapshots into history
   const updateConfig = useCallback((updater: (prev: CompiledWebsiteConfig) => CompiledWebsiteConfig) => {
     setConfig((prev) => {
       const next = updater(JSON.parse(JSON.stringify(prev)));
+      setHistory((h) => {
+        const sliced = h.slice(0, historyIndex + 1);
+        const updated = [...sliced, next];
+        if (updated.length > 50) updated.shift();
+        return updated;
+      });
+      setHistoryIndex((idx) => Math.min(idx + 1, 49));
       setHasUnsavedChanges(true);
       return next;
     });
-  }, []);
+  }, [historyIndex]);
+
+  // Handle element-level property override updates
+  const handleUpdateOverride = useCallback((targetId: string, value: any) => {
+    updateConfig((prev) => {
+      if (!prev.componentOverrides) {
+        prev.componentOverrides = {};
+      }
+      prev.componentOverrides[targetId] = value;
+      return prev;
+    });
+    setSelectedElement((prev) => (prev && prev.targetId === targetId ? { ...prev, value } : prev));
+  }, [updateConfig]);
+
+  // Reset an override back to authentic template default
+  const handleResetOverride = useCallback((targetId: string) => {
+    updateConfig((prev) => {
+      if (prev.componentOverrides && prev.componentOverrides[targetId] !== undefined) {
+        delete prev.componentOverrides[targetId];
+      }
+      return prev;
+    });
+    toast.success("Reset to authentic template default!");
+  }, [updateConfig]);
+
+  // Global Canvas Click Interception for Edit Mode
+  const handleCanvasClickCapture = useCallback(
+    (e: React.MouseEvent) => {
+      // In Preview/Interact mode, do NOT intercept clicks so the user can test authentic links
+      if (isPreviewMode) return;
+
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      const editableEl = target.closest("[data-editable-id], [data-editor-target]") as HTMLElement | null;
+      const componentEl = target.closest("[data-editor-component]") as HTMLElement | null;
+      const sectionEl = target.closest("[data-editor-section]") as HTMLElement | null;
+      const anchorEl = target.closest("a, button, [role='button']") as HTMLElement | null;
+
+      // In Edit Mode, ALWAYS prevent default navigation for links, buttons, and editable elements!
+      if (anchorEl || editableEl || componentEl || sectionEl) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Priority 1: Direct editable element
+      if (editableEl) {
+        const targetId = editableEl.getAttribute("data-editable-id") || editableEl.getAttribute("data-editor-target") || "";
+        const componentKey = editableEl.getAttribute("data-editor-component") || "Component";
+        const label = editableEl.getAttribute("data-editor-label") || "";
+        const type = (editableEl.getAttribute("data-editor-type") || "text") as any;
+        const parsed = parseTargetId(targetId);
+
+        const hierarchy: HierarchyItem[] = [
+          { level: "page", id: parsed.pageSlug || "home", label: (parsed.pageSlug || "home").toUpperCase() },
+          { level: "component", id: componentKey, label: componentKey },
+        ];
+        if (parsed.itemIndex !== undefined) {
+          hierarchy.push({ level: "item", id: `${componentKey}.${parsed.itemIndex}`, label: `Item #${parsed.itemIndex + 1}` });
+        }
+        hierarchy.push({ level: "element", id: targetId, label: label || parsed.fieldKey });
+
+        const val = config.componentOverrides?.[targetId];
+        setSelectedTargetId(targetId);
+        setSelectedElement({
+          targetId,
+          componentKey,
+          elementKey: parsed.fieldKey,
+          label: label || parsed.fieldKey,
+          type,
+          value: val,
+          editabilityStatus: "FULLY_EDITABLE",
+          hierarchy,
+        });
+        setSelectedSectionId(null);
+        return;
+      }
+
+      // Priority 2: Authentic Component Level
+      if (componentEl) {
+        const componentKey = componentEl.getAttribute("data-editor-component") || "";
+        const sectionKey = componentEl.getAttribute("data-editor-section") || componentKey;
+        const adapter = getEditableComponent(componentKey);
+        const status = adapter?.status || (adapter ? "FULLY_EDITABLE" : "VIEW_ONLY");
+
+        const hierarchy: HierarchyItem[] = [
+          { level: "page", id: "home", label: "HOME" },
+          { level: "section", id: sectionKey, label: sectionKey },
+          { level: "component", id: componentKey, label: adapter?.label || componentKey },
+        ];
+
+        setSelectedTargetId(null);
+        setSelectedElement({
+          targetId: `component.${componentKey}`,
+          componentKey,
+          sectionId: sectionKey,
+          label: adapter?.label || componentKey,
+          editabilityStatus: status,
+          hierarchy,
+        });
+        setSelectedSectionId(sectionKey);
+        return;
+      }
+
+      // Priority 3: Section Level
+      if (sectionEl) {
+        const sectionKey = sectionEl.getAttribute("data-editor-section") || "";
+        setSelectedTargetId(null);
+        setSelectedElement(null);
+        setSelectedSectionId(sectionKey);
+      }
+    },
+    [isPreviewMode, config.componentOverrides]
+  );
 
   // Section Manipulation
   const handleAddSection = (sectionType: SectionType) => {
@@ -320,7 +590,7 @@ export default function WebsiteBuilderStudio({
   }[viewport];
 
   return (
-    <div className="flex flex-col h-screen w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden select-none">
+    <div className="flex flex-col h-[100dvh] w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden select-none">
       {/* 1. TOP HEADER APP BAR */}
       <header className="h-16 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 z-30 shadow-xs">
         {/* Left: Store Name & Page Selector */}
@@ -331,6 +601,10 @@ export default function WebsiteBuilderStudio({
             </span>
             <span className="text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               Website Builder
+            </span>
+            <span className="hidden md:flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+              {activeTemplate.name}
             </span>
           </div>
 
@@ -356,48 +630,115 @@ export default function WebsiteBuilderStudio({
           </div>
         </div>
 
-        {/* Center: Breakpoint Viewport Switcher */}
-        <div className="hidden sm:flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
-          <button
-            type="button"
-            onClick={() => setViewport("desktop")}
-            className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-              viewport === "desktop"
-                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-            }`}
-          >
-            <ComputerDesktopIcon className="w-4 h-4" />
-            <span>Desktop</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewport("tablet")}
-            className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-              viewport === "tablet"
-                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-            }`}
-          >
-            <DeviceTabletIcon className="w-4 h-4" />
-            <span>Tablet</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewport("mobile")}
-            className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
-              viewport === "mobile"
-                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-            }`}
-          >
-            <DevicePhoneMobileIcon className="w-4 h-4" />
-            <span>Mobile</span>
-          </button>
+        {/* Center: Interaction Mode & Breakpoint Viewport Switcher */}
+        <div className="hidden sm:flex items-center gap-2">
+          {/* Mode Switcher: Edit vs Preview */}
+          <div className="flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onClick={() => {
+                setIsPreviewMode(false);
+                toast.success("Edit Mode: Click any element to select & customize", { id: "mode-toast", duration: 1500 });
+              }}
+              className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                !isPreviewMode
+                  ? "bg-rose-600 text-white shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <PencilSquareIcon className="w-3.5 h-3.5" />
+              <span>Edit</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPreviewMode(true);
+                toast.success("Preview Mode: Real link navigation & interaction active", { id: "mode-toast", duration: 1500 });
+              }}
+              className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                isPreviewMode
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <EyeIcon className="w-3.5 h-3.5" />
+              <span>Preview / Interact</span>
+            </button>
+          </div>
+
+          {/* Viewport Switcher */}
+          <div className="flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onClick={() => setViewport("desktop")}
+              className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                viewport === "desktop"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <ComputerDesktopIcon className="w-4 h-4" />
+              <span>Desktop</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("tablet")}
+              className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                viewport === "tablet"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <DeviceTabletIcon className="w-4 h-4" />
+              <span>Tablet</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("mobile")}
+              className={`p-1.5 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                viewport === "mobile"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <DevicePhoneMobileIcon className="w-4 h-4" />
+              <span>Mobile</span>
+            </button>
+          </div>
         </div>
 
         {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Undo Button */}
+          <button
+            type="button"
+            onClick={handleUndo}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+            className={`p-2 rounded-xl border transition ${
+              canUndo
+                ? "text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-300 dark:text-zinc-600 border-zinc-100 dark:border-zinc-800 cursor-not-allowed opacity-50"
+            }`}
+          >
+            <ArrowUturnLeftIcon className="w-4 h-4" />
+          </button>
+
+          {/* Redo Button */}
+          <button
+            type="button"
+            onClick={handleRedo}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+            className={`p-2 rounded-xl border transition ${
+              canRedo
+                ? "text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                : "text-zinc-300 dark:text-zinc-600 border-zinc-100 dark:border-zinc-800 cursor-not-allowed opacity-50"
+            }`}
+          >
+            <ArrowUturnRightIcon className="w-4 h-4" />
+          </button>
+
           {/* AI Assistant Button */}
           <button
             type="button"
@@ -416,20 +757,6 @@ export default function WebsiteBuilderStudio({
             className="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
             <ClockIcon className="w-5 h-5" />
-          </button>
-
-          {/* Preview Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
-              isPreviewMode
-                ? "bg-zinc-900 text-white border-zinc-900"
-                : "text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            }`}
-          >
-            <EyeIcon className="w-4 h-4" />
-            <span className="hidden md:inline">{isPreviewMode ? "Exit Preview" : "Preview"}</span>
           </button>
 
           {/* Save Draft */}
@@ -510,6 +837,17 @@ export default function WebsiteBuilderStudio({
               >
                 Nav
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("templates")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
+                  activeTab === "templates"
+                    ? "bg-white dark:bg-zinc-800 text-rose-600 dark:text-rose-400 shadow-xs"
+                    : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                }`}
+              >
+                Template
+              </button>
             </div>
 
             {/* TAB CONTENT */}
@@ -532,6 +870,51 @@ export default function WebsiteBuilderStudio({
                   </div>
 
                   <div className="space-y-2">
+                    {/* Universal Header Item */}
+                    <div
+                      onClick={() => {
+                        setSelectedSectionId("header");
+                        setSelectedTargetId("component.Header");
+                        setSelectedElement({
+                          targetId: "component.Header",
+                          componentKey: "Header",
+                          sectionId: "header",
+                          label: "Store Navigation & Header",
+                          editabilityStatus: "FULLY_EDITABLE",
+                          hierarchy: [
+                            { level: "page", id: "global", label: "GLOBAL" },
+                            { level: "component", id: "Header", label: "Header" },
+                          ],
+                        });
+                        const el =
+                          document.getElementById("section-header") ||
+                          document.querySelector('[data-editor-section="header"]');
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${
+                        selectedElement?.componentKey === "Header" || selectedSectionId === "header"
+                          ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-xs"
+                          : "border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-5 h-5 rounded-md bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-[10px] font-black">
+                          H
+                        </div>
+                        <div className="truncate">
+                          <h4 className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                            Header & Navigation
+                          </h4>
+                          <span className="text-[10px] text-zinc-400">
+                            Global Shell Header
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                        Customize
+                      </span>
+                    </div>
+
                     {(activePage?.sections || []).map((sec, idx) => {
                       const isSelected = selectedSectionId === sec.id;
                       const regItem = SECTION_REGISTRY[sec.type as SectionType];
@@ -539,7 +922,41 @@ export default function WebsiteBuilderStudio({
                       return (
                         <div
                           key={sec.id}
-                          onClick={() => setSelectedSectionId(sec.id)}
+                          onClick={() => {
+                            const rawId = sec.id.replace(/^sec-/, "").replace(/-\d+$/, "");
+                            const matchedAuthSec = (activeTemplate.authenticSections || []).find(
+                              (s) => s.id === sec.id || s.id === rawId || sec.id.includes(s.id) || rawId.includes(s.id)
+                            );
+                            const compName = matchedAuthSec?.component || (sec as any).componentName || rawId;
+                            const adapter = getEditableComponent(compName);
+
+                            setSelectedSectionId(sec.id);
+                            setSelectedTargetId(`component.${compName}`);
+                            setSelectedElement({
+                              targetId: `component.${compName}`,
+                              componentKey: compName,
+                              sectionId: sec.id,
+                              label: matchedAuthSec?.name || adapter?.label || compName,
+                              editabilityStatus: adapter?.status || "FULLY_EDITABLE",
+                              hierarchy: [
+                                { level: "page", id: activePage?.slug || "home", label: (activePage?.slug || "home").toUpperCase() },
+                                { level: "section", id: rawId, label: matchedAuthSec?.name || rawId },
+                                { level: "component", id: compName, label: matchedAuthSec?.name || compName },
+                              ],
+                            });
+
+                            const el =
+                              document.getElementById(`section-${rawId}`) ||
+                              document.getElementById(`section-${sec.id}`) ||
+                              document.getElementById(sec.id) ||
+                              document.getElementById(rawId) ||
+                              document.querySelector(`[data-editor-section="${rawId}"]`) ||
+                              document.querySelector(`[data-editor-section="${sec.id}"]`) ||
+                              document.querySelector(`[data-editor-component="${compName}"]`);
+                            if (el) {
+                              el.scrollIntoView({ behavior: "smooth", block: "start" });
+                            }
+                          }}
                           className={`flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${
                             isSelected
                               ? "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 shadow-xs"
@@ -611,6 +1028,51 @@ export default function WebsiteBuilderStudio({
                         </div>
                       );
                     })}
+
+                    {/* Universal Footer Item */}
+                    <div
+                      onClick={() => {
+                        setSelectedSectionId("footer");
+                        setSelectedTargetId("component.Footer");
+                        setSelectedElement({
+                          targetId: "component.Footer",
+                          componentKey: "Footer",
+                          sectionId: "footer",
+                          label: "Global Store Footer",
+                          editabilityStatus: "FULLY_EDITABLE",
+                          hierarchy: [
+                            { level: "page", id: "global", label: "GLOBAL" },
+                            { level: "component", id: "Footer", label: "Footer" },
+                          ],
+                        });
+                        const el =
+                          document.getElementById("section-footer") ||
+                          document.querySelector('[data-editor-section="footer"]');
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "end" });
+                      }}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition cursor-pointer ${
+                        selectedElement?.componentKey === "Footer" || selectedSectionId === "footer"
+                          ? "border-purple-500 bg-purple-50/50 dark:bg-purple-950/20 shadow-xs"
+                          : "border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center text-[10px] font-black">
+                          F
+                        </div>
+                        <div className="truncate">
+                          <h4 className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                            Footer & Contact Info
+                          </h4>
+                          <span className="text-[10px] text-zinc-400">
+                            Global Shell Footer
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                        Customize
+                      </span>
+                    </div>
                   </div>
 
                   <button
@@ -947,15 +1409,155 @@ export default function WebsiteBuilderStudio({
                   </div>
                 </div>
               )}
+
+              {/* TAB 5: TEMPLATES BROWSER & SWITCHER */}
+              {activeTab === "templates" && (
+                <div className="space-y-4">
+                  {/* Current Active Template Card */}
+                  <div className="p-3.5 rounded-xl border-2 border-rose-500/50 bg-rose-50/50 dark:bg-rose-950/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-rose-600 dark:text-rose-400">
+                        Active Authentic Template
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-200/60 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 font-bold">
+                        {activeTemplate.id}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      {activeTemplate.name}
+                    </h4>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                      {activeTemplate.description}
+                    </p>
+                    <div className="pt-2 border-t border-rose-200 dark:border-rose-900/40 text-[11px] text-zinc-600 dark:text-zinc-400 space-y-1 font-mono">
+                      <div>Shell: <span className="font-semibold text-zinc-900 dark:text-zinc-200">{activeTemplate.shellLayout}</span></div>
+                      <div>Body: <span className="font-semibold text-zinc-900 dark:text-zinc-200">{activeTemplate.bodyComponent}</span></div>
+                      <div>Sections: <span className="font-semibold text-zinc-900 dark:text-zinc-200">{activeTemplate.authenticSections.length}</span></div>
+                    </div>
+                  </div>
+
+                  {/* Template Catalog Search & Filter */}
+                  <div className="space-y-2 pt-2">
+                    <span className="text-xs uppercase font-bold tracking-wider text-zinc-400">
+                      Switch Template ({allTemplates.length})
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search templates (e.g. Shoes, Gym, Automotive)..."
+                      value={templateSearch}
+                      onChange={(e) => setTemplateSearch(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                    />
+                    <select
+                      value={templateCategoryFilter}
+                      onChange={(e) => setTemplateCategoryFilter(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs capitalize"
+                    >
+                      <option value="all">All Categories ({allTemplates.length})</option>
+                      <option value="ecommerce">Ecommerce</option>
+                      <option value="automotive">Automotive</option>
+                      <option value="courses">Courses / Education</option>
+                      <option value="services">Services / Bookings</option>
+                      <option value="real-estate">Real Estate</option>
+                      <option value="healthcare">Healthcare</option>
+                      <option value="portfolio">Portfolio</option>
+                      <option value="fitness">Fitness</option>
+                      <option value="restaurant">Restaurant</option>
+                    </select>
+                  </div>
+
+                  {/* Template Catalog List */}
+                  <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                    {allTemplates
+                      .filter((tpl) => {
+                        const matchesCat =
+                          templateCategoryFilter === "all" ||
+                          tpl.category === templateCategoryFilter;
+                        const q = templateSearch.toLowerCase().trim();
+                        const matchesSearch =
+                          !q ||
+                          tpl.name.toLowerCase().includes(q) ||
+                          tpl.id.toLowerCase().includes(q) ||
+                          tpl.variant.toLowerCase().includes(q) ||
+                          tpl.category.toLowerCase().includes(q);
+                        return matchesCat && matchesSearch;
+                      })
+                      .map((tpl) => {
+                        const isCurrent = tpl.id === activeTemplate.id;
+                        return (
+                          <div
+                            key={tpl.id}
+                            className={`p-3 rounded-xl border transition flex flex-col justify-between gap-2 ${
+                              isCurrent
+                                ? "border-rose-500 bg-rose-50/30 dark:bg-rose-950/20"
+                                : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 bg-white dark:bg-zinc-900"
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                                  {tpl.name}
+                                </span>
+                                {isCurrent ? (
+                                  <span className="text-[10px] font-bold text-rose-600 bg-rose-100 dark:bg-rose-900/60 px-1.5 py-0.5 rounded">
+                                    Current
+                                  </span>
+                                ) : null}
+                              </div>
+                              <div className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                                {tpl.id} &bull; {tpl.category}
+                              </div>
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">
+                                {tpl.description}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                              <span className="text-[10px] text-zinc-400">
+                                {tpl.authenticSections.length} sections
+                              </span>
+                              {!isCurrent ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSwitchTemplate(tpl)}
+                                  className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-rose-600 text-white dark:bg-zinc-800 dark:hover:bg-rose-600 text-[11px] font-bold transition"
+                                >
+                                  Apply Template
+                                </button>
+                              ) : (
+                                <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                                  <CheckIcon className="w-3.5 h-3.5" /> Active
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
         )}
 
         {/* CENTER INTERACTIVE CANVAS */}
-        <main className="grow overflow-y-auto bg-zinc-200/70 dark:bg-zinc-950 flex flex-col items-center">
-          <div className={`transition-all duration-300 bg-white dark:bg-zinc-900 ${viewportWidthClass}`}>
+        <main
+          onClickCapture={handleCanvasClickCapture}
+          className="grow overflow-y-auto bg-zinc-200/70 dark:bg-zinc-950 flex flex-col items-center relative"
+        >
+          <div
+            className={`transition-all duration-300 bg-white dark:bg-zinc-900 relative ${viewportWidthClass}`}
+            style={{
+              transform: "translate3d(0, 0, 0)",
+              isolation: "isolate",
+            }}
+          >
             <WebsiteRenderer
               config={config}
+              category={category}
+              variant={variant}
+              storeFormData={storeFormData}
+              paymentMethods={paymentMethods}
+              ghubaData={ghubaData}
               pageSlug={activePageSlug}
               companyId={companyId}
               storeLogoUrl={storeLogoUrl}
@@ -964,38 +1566,506 @@ export default function WebsiteBuilderStudio({
               address={address}
               socialLinks={socialLinks}
               isEditorPreview={true}
+              isPreviewMode={isPreviewMode}
               selectedSectionId={selectedSectionId}
-              onSelectSection={(secId) => setSelectedSectionId(secId)}
+              onSelectSection={(secId) => {
+                setSelectedSectionId(secId);
+                setSelectedElement(null);
+                setSelectedTargetId(null);
+              }}
+              selectedTargetId={selectedTargetId}
+              selectedElement={selectedElement}
+              onSelectElement={(info) => {
+                setSelectedElement(info);
+                setSelectedTargetId(info ? info.targetId : null);
+                if (info) {
+                  setSelectedSectionId(null);
+                }
+              }}
+              onUpdateOverride={handleUpdateOverride}
               onNavigatePage={(slug) => {
                 const cleanSlug = slug.replace(/^\//, "") || "home";
                 setActivePageSlug(cleanSlug);
                 setSelectedSectionId(null);
+                setSelectedElement(null);
+                setSelectedTargetId(null);
               }}
             />
           </div>
         </main>
 
-        {/* RIGHT INSPECTOR PANEL (When Section is Selected) */}
-        {!isPreviewMode && selectedSection && (
+        {/* RIGHT INSPECTOR PANEL (When Element or Section is Selected) */}
+        {!isPreviewMode && (selectedElement || selectedSection) && (
           <aside className="w-80 shrink-0 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-20 animate-fadeIn">
-            {/* Inspector Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                  Inspector
-                </span>
-                <h3 className="text-sm font-black text-zinc-900 dark:text-white capitalize">
-                  {selectedSection.type} Section
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedSectionId(null)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
-            </div>
+            {selectedElement ? (
+              // ELEMENT-LEVEL PROPERTY INSPECTOR
+              <>
+                {/* Inspector Header */}
+                <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 bg-rose-50/40 dark:bg-rose-950/20">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[10px] uppercase font-bold text-rose-600 dark:text-rose-400 tracking-wider">
+                        Element Inspector
+                      </span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 font-bold">
+                        {selectedElement.componentKey}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-black text-zinc-900 dark:text-white capitalize">
+                      {selectedElement.label || selectedElement.elementKey || "Element"}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedElement(null);
+                      setSelectedTargetId(null);
+                    }}
+                    className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Hierarchy Breadcrumbs Bar */}
+                {selectedElement.hierarchy && selectedElement.hierarchy.length > 0 && (
+                  <div className="px-4 py-2 bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-1 overflow-x-auto text-[10px]">
+                    {selectedElement.hierarchy.map((item, idx) => {
+                      const isLast = idx === selectedElement.hierarchy!.length - 1;
+                      return (
+                        <React.Fragment key={item.id + idx}>
+                          {idx > 0 && <span className="text-zinc-400">&gt;</span>}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (item.level === "page") {
+                                setSelectedElement(null);
+                                setSelectedTargetId(null);
+                              } else if (item.level === "section") {
+                                setSelectedTargetId(null);
+                                setSelectedElement(null);
+                                setSelectedSectionId(item.id);
+                                const el =
+                                  document.getElementById(`section-${item.id}`) ||
+                                  document.getElementById(item.id);
+                                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                              } else if (item.level === "component") {
+                                const adapter = getEditableComponent(item.id);
+                                setSelectedTargetId(null);
+                                setSelectedElement({
+                                  targetId: `component.${item.id}`,
+                                  componentKey: item.id,
+                                  label: adapter?.label || item.id,
+                                  editabilityStatus: adapter?.status || "FULLY_EDITABLE",
+                                  hierarchy: selectedElement.hierarchy!.slice(0, idx + 1),
+                                });
+                              }
+                            }}
+                            disabled={isLast}
+                            className={`font-semibold shrink-0 transition ${
+                              isLast
+                                ? "text-rose-600 dark:text-rose-400 font-bold"
+                                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:underline cursor-pointer"
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Inspector Content */}
+                <div className="p-4 overflow-y-auto grow space-y-4 text-xs">
+                  {/* Editability Status Badge */}
+                  {selectedElement.editabilityStatus && (
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 text-[9px] uppercase font-bold px-2 py-0.5 rounded-full border ${
+                          selectedElement.editabilityStatus === "FULLY_EDITABLE"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                            : selectedElement.editabilityStatus === "PARTIALLY_EDITABLE"
+                            ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                            : "bg-zinc-100 text-zinc-600 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            selectedElement.editabilityStatus === "FULLY_EDITABLE"
+                              ? "bg-emerald-500"
+                              : selectedElement.editabilityStatus === "PARTIALLY_EDITABLE"
+                              ? "bg-amber-500"
+                              : "bg-zinc-400"
+                          }`}
+                        />
+                        {selectedElement.editabilityStatus === "FULLY_EDITABLE"
+                          ? "Fully Editable"
+                          : selectedElement.editabilityStatus === "PARTIALLY_EDITABLE"
+                          ? "Partially Editable"
+                          : "View Only (Read Only)"}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* View-Only Component Explanatory Notice */}
+                  {selectedElement.editabilityStatus === "VIEW_ONLY" && (
+                    <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/70 border border-zinc-200 dark:border-zinc-700 space-y-1">
+                      <div className="font-bold text-[11px] text-zinc-700 dark:text-zinc-200">
+                        Authentic Component (View Only)
+                      </div>
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                        This authentic storefront component is currently rendered with its authentic presentation layout. Content edits for this component are preserved in template defaults.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-[11px] font-mono text-zinc-600 dark:text-zinc-300 break-all border border-zinc-200/60 dark:border-zinc-700">
+                    <span className="text-zinc-400 text-[10px] block uppercase font-sans font-bold mb-0.5">Target Identifier</span>
+                    {selectedElement.targetId}
+                  </div>
+
+                  {/* Input Based on Property Type or Component-Level Multi-Property Adapter */}
+                  {selectedElement.targetId.startsWith("component.") || selectedElement.targetId.startsWith("section.") ? (
+                    <div className="space-y-4">
+                      {(() => {
+                        const adapter =
+                          getEditableComponent(selectedElement.componentKey) ||
+                          buildUniversalComponentAdapter(selectedElement.componentKey);
+                        if (!adapter || Object.keys(adapter.properties).length === 0) {
+                          return (
+                            <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-500 text-xs">
+                              No additional custom properties declared for this component.
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-3">
+                            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">
+                              Editable Component Properties ({Object.keys(adapter.properties).length})
+                            </span>
+                            {Object.entries(adapter.properties).map(([propKey, propDef]) => {
+                              const targetKey = `${selectedElement.componentKey}.${propKey}`;
+                              const currentVal =
+                                config.componentOverrides?.[targetKey] !== undefined
+                                  ? config.componentOverrides[targetKey]
+                                  : propDef.defaultValue ?? "";
+
+                              return (
+                                <div key={propKey} className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80 space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <label className="font-bold text-zinc-700 dark:text-zinc-300 text-xs">
+                                      {propDef.label}
+                                    </label>
+                                    <span className="text-[9px] font-mono text-zinc-400">
+                                      {propDef.type}
+                                    </span>
+                                  </div>
+
+                                  {propDef.type === "textarea" ? (
+                                    <textarea
+                                      rows={3}
+                                      value={currentVal}
+                                      onChange={(e) => handleUpdateOverride(targetKey, e.target.value)}
+                                      placeholder={propDef.placeholder}
+                                      className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs resize-none"
+                                    />
+                                  ) : propDef.type === "image" ? (
+                                    <div className="space-y-1.5">
+                                      <input
+                                        type="text"
+                                        value={currentVal}
+                                        onChange={(e) => handleUpdateOverride(targetKey, e.target.value)}
+                                        placeholder={propDef.placeholder || "https://..."}
+                                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs"
+                                      />
+                                      {currentVal && (
+                                        <img
+                                          src={currentVal}
+                                          alt="Preview"
+                                          className="w-full h-20 object-contain rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800"
+                                        />
+                                      )}
+                                    </div>
+                                  ) : propDef.type === "boolean" ? (
+                                    <label className="flex items-center gap-2 cursor-pointer pt-1">
+                                      <input
+                                        type="checkbox"
+                                        checked={Boolean(currentVal)}
+                                        onChange={(e) => handleUpdateOverride(targetKey, e.target.checked)}
+                                        className="rounded text-rose-600 focus:ring-rose-500"
+                                      />
+                                      <span className="text-xs text-zinc-600 dark:text-zinc-300">
+                                        Enabled
+                                      </span>
+                                    </label>
+                                  ) : (
+                                    <input
+                                      type={propDef.type === "number" ? "number" : "text"}
+                                      value={currentVal}
+                                      onChange={(e) =>
+                                        handleUpdateOverride(
+                                          targetKey,
+                                          propDef.type === "number" ? Number(e.target.value) : e.target.value
+                                        )
+                                      }
+                                      placeholder={propDef.placeholder}
+                                      className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs"
+                                    />
+                                  )}
+
+                                  {config.componentOverrides?.[targetKey] !== undefined && (
+                                    <div className="flex justify-end pt-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleResetOverride(targetKey)}
+                                        className="text-[10px] text-rose-600 hover:underline font-semibold"
+                                      >
+                                        Reset to Default
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ) : selectedElement.type === "textarea" ? (
+                    <div>
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        {selectedElement.label || "Text Content"}
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={
+                          config.componentOverrides?.[selectedElement.targetId] !== undefined
+                            ? config.componentOverrides[selectedElement.targetId]
+                            : selectedElement.value ?? ""
+                        }
+                        onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs resize-none"
+                      />
+                    </div>
+                  ) : selectedElement.type === "image" ? (
+                    <div className="space-y-2">
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Image URL
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          config.componentOverrides?.[selectedElement.targetId] !== undefined
+                            ? config.componentOverrides[selectedElement.targetId]
+                            : selectedElement.value ?? ""
+                        }
+                        onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
+                        placeholder="https://..."
+                        className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                      />
+                      {(config.componentOverrides?.[selectedElement.targetId] || selectedElement.value) && (
+                        <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 h-32 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                          <img
+                            src={config.componentOverrides?.[selectedElement.targetId] || selectedElement.value}
+                            alt="Preview"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : selectedElement.type === "link" ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Preset Destination
+                        </label>
+                        <select
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleUpdateOverride(selectedElement.targetId, e.target.value);
+                            }
+                          }}
+                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                        >
+                          <option value="">-- Choose Preset Destination --</option>
+                          <option value="/">Home (Storefront)</option>
+                          {config.pages
+                            .filter((p) => !p.isHomepage)
+                            .map((p) => (
+                              <option key={p.id} value={`/${p.slug}`}>
+                                {p.title} (/{p.slug})
+                              </option>
+                            ))}
+                          {activeTemplate.category === "ecommerce" && (
+                            <>
+                              <option value="/products">All Products (/products)</option>
+                              <option value="/categories">Categories (/categories)</option>
+                              <option value="/about">About (/about)</option>
+                              <option value="/contact">Contact (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "restaurant" && (
+                            <>
+                              <option value="/menu">Food & Beverage Menu (/menu)</option>
+                              <option value="/reserve">Table Reservations (/reserve)</option>
+                              <option value="/about">Story & Philosophy (/about)</option>
+                              <option value="/contact">Contact & Location (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "real-estate" && (
+                            <>
+                              <option value="/listings">Property Catalog (/listings)</option>
+                              <option value="/agents">Certified Agents (/agents)</option>
+                              <option value="/contact">Schedule Tour (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "automotive" && (
+                            <>
+                              <option value="/inventory">Vehicle Inventory (/inventory)</option>
+                              <option value="/services">Service Booking (/services)</option>
+                              <option value="/contact">Dealership Contact (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "courses" && (
+                            <>
+                              <option value="/courses">Course Tracks (/courses)</option>
+                              <option value="/instructors">Instructors & Mentors (/instructors)</option>
+                              <option value="/enroll">Enrollment (/enroll)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "bookings" && (
+                            <>
+                              <option value="/book">Book Appointment (/book)</option>
+                              <option value="/services">Services Menu (/services)</option>
+                            </>
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Custom Destination URL / Query
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            config.componentOverrides?.[selectedElement.targetId] !== undefined
+                              ? config.componentOverrides[selectedElement.targetId]
+                              : selectedElement.value ?? ""
+                          }
+                          onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
+                          placeholder="/path or https://..."
+                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                        />
+                      </div>
+
+                      {/* Route Resolution Preview */}
+                      <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 space-y-1">
+                        <div className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300">
+                          Tenant Route Resolution
+                        </div>
+                        <div className="text-[11px] font-mono text-purple-900 dark:text-purple-200 break-all">
+                          {buildTenantUrl({
+                            slug: storeSlug,
+                            path:
+                              config.componentOverrides?.[selectedElement.targetId] !== undefined
+                                ? config.componentOverrides[selectedElement.targetId]
+                                : selectedElement.value || "",
+                          })}
+                        </div>
+                        <div className="text-[9px] text-purple-600/80 dark:text-purple-400">
+                          In preview mode or on live storefront, this button navigates cleanly to this tenant route.
+                        </div>
+                      </div>
+                    </div>
+                  ) : selectedElement.type === "color" ? (
+                    <div className="space-y-2">
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Color Value
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={
+                            config.componentOverrides?.[selectedElement.targetId] !== undefined
+                              ? config.componentOverrides[selectedElement.targetId]
+                              : selectedElement.value ?? "#000000"
+                          }
+                          onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
+                          className="w-10 h-10 rounded-xl cursor-pointer border border-zinc-200 dark:border-zinc-800 p-0.5"
+                        />
+                        <input
+                          type="text"
+                          value={
+                            config.componentOverrides?.[selectedElement.targetId] !== undefined
+                              ? config.componentOverrides[selectedElement.targetId]
+                              : selectedElement.value ?? "#000000"
+                          }
+                          onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                        {selectedElement.label || "Text Value"}
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          config.componentOverrides?.[selectedElement.targetId] !== undefined
+                            ? config.componentOverrides[selectedElement.targetId]
+                            : selectedElement.value ?? ""
+                        }
+                        onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                      />
+                    </div>
+                  )}
+
+                  {/* Reset to Default Action */}
+                  <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                    <span className="text-[11px] text-zinc-400">
+                      {config.componentOverrides?.[selectedElement.targetId] !== undefined
+                        ? "Custom override applied"
+                        : "Using template default"}
+                    </span>
+                    {config.componentOverrides?.[selectedElement.targetId] !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => handleResetOverride(selectedElement.targetId)}
+                        className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition"
+                      >
+                        Reset to Default
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : selectedSection ? (
+              // GENERIC SECTION INSPECTOR
+              <>
+                {/* Inspector Header */}
+                <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                      Inspector
+                    </span>
+                    <h3 className="text-sm font-black text-zinc-900 dark:text-white capitalize">
+                      {selectedSection.type} Section
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSectionId(null)}
+                    className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
 
             {/* Inspector Fields */}
             <div className="p-4 overflow-y-auto grow space-y-4 text-xs">
@@ -1166,8 +2236,10 @@ export default function WebsiteBuilderStudio({
                 </div>
               </div>
             </div>
-          </aside>
-        )}
+          </>
+        ) : null}
+      </aside>
+    )}
       </div>
 
       {/* 3. MODALS */}
@@ -1198,6 +2270,24 @@ export default function WebsiteBuilderStudio({
           setConfig(restoredConfig);
           setHasUnsavedChanges(true);
         }}
+      />
+
+      {/* 4. TEMPLATE DIAGNOSTIC HUD */}
+      <TemplateDiagnosticHud
+        slug={storeSlug}
+        template={activeTemplate}
+        pageSlug={activePageSlug}
+        hasPublishedConfig={!hasUnsavedChanges}
+        sectionsCount={activePage?.sections?.length || activeTemplate.authenticSections.length}
+        category={category}
+        variant={variant}
+        isEditor={true}
+        isPreviewMode={isPreviewMode}
+        selectedTargetId={selectedTargetId}
+        selectedComponentKey={selectedElement?.componentKey}
+        selectedSectionId={selectedSectionId}
+        editabilityStatus={selectedElement?.editabilityStatus}
+        host={typeof window !== "undefined" ? window.location.host : "localhost:3000"}
       />
     </div>
   );

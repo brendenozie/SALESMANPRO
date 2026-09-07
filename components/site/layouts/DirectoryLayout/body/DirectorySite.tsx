@@ -47,27 +47,45 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
 
   return (
     <div className="font-sans">
-      <HeroSection
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         onSearch={handleSearch}
       />
+      </div>
 
-      <PromotionSection promotions={pageData.promotions} />
+      <div id="section-promotion" data-editor-section="promotion" data-editor-component="PromotionSection">
+        <PromotionSection promotions={pageData.promotions} />
+      </div>
 
-      <NewArrivalsSection id={companyId} marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
+      <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivalsSection">
+        <NewArrivalsSection id={companyId} marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
+      </div>
 
-      <CategorySection StoreCategory={pageData.StoreCategory}/>
+      <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
+        <CategorySection StoreCategory={pageData.StoreCategory}/>
+      </div>
 
-      <PopularProductsSection id={pageData.id} currency={pageData.currency} />
+      <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="PopularProductsSection">
+        <PopularProductsSection id={pageData.id} currency={pageData.currency} />
+      </div>
       
-      <FeaturedListingsOverviewSection  marketplaceListings={pageData.marketplaceListings} />
+      <div id="section-featured-listings-overview" data-editor-section="featured-listings-overview" data-editor-component="FeaturedListingsOverviewSection">
+        <FeaturedListingsOverviewSection  marketplaceListings={pageData.marketplaceListings} />
+      </div>
 
-      {testimonialsData?.data && <TestimonialsSection testimonial={testimonialsData?.data} />}
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+   <TestimonialsSection testimonial={testimonialsData?.data} />
+ </div>}
 
-      <CtaSection />
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection />
+      </div>
     
-      {faqsData?.data && <FAQSection faqs={faqsData?.data} />} 
+      {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+   <FAQSection faqs={faqsData?.data} />
+ </div>} 
       
        {/* faqs={customFaqs} */}
     </div>

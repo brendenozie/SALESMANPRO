@@ -384,7 +384,8 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
   return (
     <div className="font-sans">
       {/* Hero Section  */}
-      <Hero 
+      <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
+        <Hero 
         storeFormData={storeFormData}
         filters={filters}
         setFilters={setFilters}
@@ -404,36 +405,55 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
             : []
           }
       />
+      </div>
         {/* Filter Bar */}
-        {/* <FilterBar /> */}
+        {/* <div id="section-filter-bar" data-editor-section="filter-bar" data-editor-component="FilterBar">
+   <FilterBar />
+ </div> */}
 
         {/* Listings Section */}
-        <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
+        <div id="section-listings" data-editor-section="listings" data-editor-component="Listings">
+          <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
+        </div>
 
         {/* Trending Locations */}
-        <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />
+        <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
+          <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />
+        </div>
 
         {/* Meet Agents */}
-        <MeetAgents experts={pageData?.Expert} />
+        <div id="section-meet-agents" data-editor-section="meet-agents" data-editor-component="MeetAgents">
+          <MeetAgents experts={pageData?.Expert} />
+        </div>
 
         {/* Market Insights */}
-        <MarketInsights
+        <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
+          <MarketInsights
           virtualTours={[]}//pageData?.virtualTours
           blogPosts={pageData?.blogs}
           regionCosts={[]}//pageData?.RegionCosts
         />
+        </div>
 
         {/* Virtual Tours */}
-        <VirtualTours />
+        <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
+          <VirtualTours />
+        </div>
 
         {/* Testimonials */}
-        <Testimonials />
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="Testimonials">
+          <Testimonials />
+        </div>
 
         {/* Mobile App Promo */}
-        <MobileAppPromo />
+        <div id="section-mobile-app-promo" data-editor-section="mobile-app-promo" data-editor-component="MobileAppPromo">
+          <MobileAppPromo />
+        </div>
 
         {/* Newsletter Signup */}
-        <NewsletterSignup />
+        <div id="section-newsletter-signup" data-editor-section="newsletter-signup" data-editor-component="NewsletterSignup">
+          <NewsletterSignup />
+        </div>
 
     </div>
   );

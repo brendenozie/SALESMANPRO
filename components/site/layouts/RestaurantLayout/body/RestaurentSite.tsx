@@ -36,17 +36,29 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
         {/* <div className="fixed inset-y-0 left-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div>
         <div className="fixed inset-y-0 right-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div> */}
 
-        <RestaurantHero heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} slug={pageData.slug} />
+        <div id="section-restaurant-hero" data-editor-section="restaurant-hero" data-editor-component="RestaurantHero">
+          <RestaurantHero heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} slug={pageData.slug} />
+        </div>
 
-        <SignatureDishes marketplaceListings={pageData.marketplaceListings} StoreCategory={pageData.StoreCategory} />
+        <div id="section-signature-dishes" data-editor-section="signature-dishes" data-editor-component="SignatureDishes">
+          <SignatureDishes marketplaceListings={pageData.marketplaceListings} StoreCategory={pageData.StoreCategory} />
+        </div>
 
-        <WhyDineWithUs storeFormData={pageData} />
+        <div id="section-why-dine-with-us" data-editor-section="why-dine-with-us" data-editor-component="WhyDineWithUs">
+          <WhyDineWithUs storeFormData={pageData} />
+        </div>
 
-        {testimonialsData?.data && <Testimonials />}
+        {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="Testimonials">
+   <Testimonials />
+ </div>}
         
-        <RestaurantGallery />
+        <div id="section-restaurant-gallery" data-editor-section="restaurant-gallery" data-editor-component="RestaurantGallery">
+          <RestaurantGallery />
+        </div>
 
-        {faqsData?.data && <RestaurantFAQs />}
+        {faqsData?.data && <div id="section-restaurant-faqs" data-editor-section="restaurant-faqs" data-editor-component="RestaurantFAQs">
+   <RestaurantFAQs />
+ </div>}
         
       </div>
   );

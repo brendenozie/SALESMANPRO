@@ -38,34 +38,54 @@ export default function NonProfitSite({ pageData, companyId }: { pageData: Store
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
         {/* Hero Section - Render immediately */}
-        <HeroSection storeFormData={pageData} />
+        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+          <HeroSection storeFormData={pageData} />
+        </div>
 
         {/* Core Highlights / Impact Areas */}
-        <CoreHighlightsSection storeFormData={pageData} />
+        <div id="section-core-highlights" data-editor-section="core-highlights" data-editor-component="CoreHighlightsSection">
+          <CoreHighlightsSection storeFormData={pageData} />
+        </div>
 
         {/* About Us Spotlight */}
-        <AboutUsSpotlight storeFormData={pageData} />
+        <div id="section-about-us-spotlight" data-editor-section="about-us-spotlight" data-editor-component="AboutUsSpotlight">
+          <AboutUsSpotlight storeFormData={pageData} />
+        </div>
 
         {/* Our Programs / Featured Causes */}
-        <ProgramsCausesSection storeFormData={pageData} />
+        <div id="section-programs-causes" data-editor-section="programs-causes" data-editor-component="ProgramsCausesSection">
+          <ProgramsCausesSection storeFormData={pageData} />
+        </div>
 
         {/* Impact Stats */}
-        <ImpactStatsSection storeFormData={pageData} />
+        <div id="section-impact-stats" data-editor-section="impact-stats" data-editor-component="ImpactStatsSection">
+          <ImpactStatsSection storeFormData={pageData} />
+        </div>
 
         {/* Events & Updates - Render when data is ready */}
-        <EventsUpdatesSection storeFormData={pageData} />
+        <div id="section-events-updates" data-editor-section="events-updates" data-editor-component="EventsUpdatesSection">
+          <EventsUpdatesSection storeFormData={pageData} />
+        </div>
 
         {/* News - Render when data is ready */}
-        <NewsSection storeFormData={pageData} />
+        <div id="section-news" data-editor-section="news" data-editor-component="NewsSection">
+          <NewsSection storeFormData={pageData} />
+        </div>
 
         {/* Testimonials & News - Render when data is ready */}
-        <TestimonialsNewsSection storeFormData={pageData} />
+        <div id="section-testimonials-news" data-editor-section="testimonials-news" data-editor-component="TestimonialsNewsSection">
+          <TestimonialsNewsSection storeFormData={pageData} />
+        </div>
 
         {/* Call to Action - Bold */}
-        <CtaBoldSection storeFormData={pageData} />
+        <div id="section-cta-bold" data-editor-section="cta-bold" data-editor-component="CtaBoldSection">
+          <CtaBoldSection storeFormData={pageData} />
+        </div>
 
         {/* FAQs - Render when data is ready */}
-        <FAQSection storeFormData={pageData} />
+        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+          <FAQSection storeFormData={pageData} />
+        </div>
       </main>
   );
 }

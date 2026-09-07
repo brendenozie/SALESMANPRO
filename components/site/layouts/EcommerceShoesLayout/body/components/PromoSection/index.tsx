@@ -1,8 +1,10 @@
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 import { IPromotion } from '@/types/typings';
 import React from 'react';
+import Link from 'next/link';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 
 export interface PromotionsSectionProps {
@@ -11,6 +13,7 @@ export interface PromotionsSectionProps {
 
 export default function PromoSection({ promotions }: PromotionsSectionProps) {
   const { storeFormData } = useStoreContext();
+  const { buildUrl } = useEditableContent();
   const { themeSettings = {} } = storeFormData || {};
 
   // Theme colors
@@ -29,16 +32,28 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             >
               {/* Image Container */}
               <div className="relative h-72 w-full overflow-hidden">
-                <img
-                  src={item.bannerUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+                <EditableElement
+                  targetId={`home.promo-section.promotions.${index}.bannerUrl`}
+                  componentKey="PromoSection"
+                  elementKey="bannerUrl"
+                  label="Promotion Banner"
+                  type="image"
+                  defaultValue={item.bannerUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <img
+                      src={val || item.bannerUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  )}
+                </EditableElement>
                 {/* Subtle Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 dark:opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 dark:opacity-80 pointer-events-none" />
                 
                 {/* Badge/Tag - Optional visual flair */}
-                <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
+                <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm pointer-events-none">
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">
                     Special Offer
                   </span>
@@ -47,24 +62,56 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
 
               {/* Content Area */}
               <div className="p-8 flex flex-col flex-grow">
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-8 flex-grow">
-                  {item.description}
-                </p>
+                <EditableElement
+                  targetId={`home.promo-section.promotions.${index}.title`}
+                  componentKey="PromoSection"
+                  elementKey="title"
+                  label="Promotion Title"
+                  defaultValue={item.title}
+                >
+                  {(val) => (
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3">
+                      {val}
+                    </h3>
+                  )}
+                </EditableElement>
 
-                <a
-                  href={item.ctaLink || '/ecommerceshoes/products'}
+                <EditableElement
+                  targetId={`home.promo-section.promotions.${index}.description`}
+                  componentKey="PromoSection"
+                  elementKey="description"
+                  label="Promotion Description"
+                  type="textarea"
+                  defaultValue={item.description}
+                  className="mb-8 flex-grow"
+                >
+                  {(val) => (
+                    <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed">
+                      {val}
+                    </p>
+                  )}
+                </EditableElement>
+
+                <Link
+                  href={buildUrl(item.ctaLink || '/ecommerceshoes/products')}
                   className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold text-white transition-all hover:brightness-110 active:scale-[0.98] shadow-lg"
                   style={{ 
                     backgroundColor: primary,
                     boxShadow: `0 10px 20px -10px ${primary}66` // Transparent hex shadow
                   }}
                 >
-                  {item.ctaText || 'Shop Now'}
+                  <EditableElement
+                    targetId={`home.promo-section.promotions.${index}.ctaText`}
+                    componentKey="PromoSection"
+                    elementKey="ctaText"
+                    label="Promotion Button Text"
+                    defaultValue={item.ctaText || 'Shop Now'}
+                    inline
+                  >
+                    {(val) => <span>{val}</span>}
+                  </EditableElement>
                   <ArrowRightIcon className="h-4 w-4 stroke-[3]" />
-                </a>
+                </Link>
               </div>
             </div>
           ))}

@@ -25,10 +25,14 @@ if (path.startsWith('/site/educational-online-courses/courses/signup')) return (
 
   return (
     <>
-      <Header/>
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header/>
+      </div>
       {/* Child Content (Course Details) */}
       <section >{children}</section>
-      <Footer/>
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer/>
+      </div>
     </>
   );
 }

@@ -395,6 +395,7 @@ export const CompiledWebsiteConfigSchema = z.object({
   theme: ThemeTokensSchema.default({}),
   navigation: NavigationConfigSchema.default({}),
   pages: z.array(WebsitePageSchema).default([]),
+  componentOverrides: z.record(z.string(), z.any()).default({}),
   publishedAt: z.string().optional(),
 });
 
@@ -908,3 +909,86 @@ export interface AIWebsiteEditResult {
   }[];
   updatedConfig: CompiledWebsiteConfig;
 }
+
+/* =========================================================================
+   10. TEMPLATE ARCHITECTURE & REGISTRY TYPES
+   ========================================================================= */
+
+export type PageType =
+  | "HOME"
+  | "PRODUCT_LIST"
+  | "PRODUCT_DETAIL"
+  | "CATEGORY_LIST"
+  | "ABOUT"
+  | "CONTACT"
+  | "CART"
+  | "CHECKOUT"
+  | "BOOKING"
+  | "COURSE_LIST"
+  | "COURSE_DETAIL"
+  | "PROPERTY_LIST"
+  | "SERVICE_LIST"
+  | "CUSTOM";
+
+export type TemplateCapability =
+  | "products"
+  | "categories"
+  | "cart_checkout"
+  | "courses"
+  | "bookings"
+  | "services"
+  | "properties"
+  | "restaurant_menu"
+  | "vehicles"
+  | "reviews"
+  | "blog"
+  | "donations";
+
+export interface TemplatePageDefinition {
+  id: string;
+  slug: string;
+  title: string;
+  pageType: PageType;
+  isHomepage?: boolean;
+  nativeSubpath?: string; // e.g. "ecommerceshoes/products"
+  description?: string;
+}
+
+export interface AuthenticSectionDefinition {
+  id: string;
+  name: string;
+  component: string;
+  type: SectionType | string;
+  category: "hero" | "commerce" | "content" | "media" | "social" | "conversion";
+  description?: string;
+  editableProps?: string[];
+  defaultContent: Record<string, any>;
+  defaultStyles?: Record<string, any>;
+  dataSource?: {
+    type: "products" | "categories" | "testimonials" | "promotions" | "static";
+    filter?: string;
+    limit?: number;
+  };
+}
+
+export interface TemplateShellDefinition {
+  headerComponent: string;
+  footerComponent: string;
+  defaultNavItems: { id: string; label: string; url: string }[];
+}
+
+export interface TemplateDefinition {
+  id: string; // e.g. "ecommerce-shoes@v1"
+  version: string; // e.g. "1.0.0"
+  name: string;
+  category: string;
+  variant: string;
+  shellLayout: string;
+  bodyComponent: string;
+  shell?: TemplateShellDefinition;
+  capabilities: TemplateCapability[];
+  defaultTheme: Partial<ThemeTokens>;
+  defaultPages: TemplatePageDefinition[];
+  authenticSections: AuthenticSectionDefinition[];
+}
+

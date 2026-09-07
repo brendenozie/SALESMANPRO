@@ -32,31 +32,53 @@ export default function PublicSpeakingSite({ pageData, companyId }: { pageData: 
     <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       
         {/* Hero */}
-        <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
+        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+          <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
+        </div>
 
-        <SocialProofSection />
+        <div id="section-social-proof" data-editor-section="social-proof" data-editor-component="SocialProofSection">
+          <SocialProofSection />
+        </div>
 
-        <ServicesSection />   
+        <div id="section-services" data-editor-section="services" data-editor-component="ServicesSection">
+          <ServicesSection />
+        </div>   
         
-        <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+        <div id="section-featured-listings" data-editor-section="featured-listings" data-editor-component="FeaturedListings">
+          <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+        </div>
 
-        <HowItWorks /> 
+        <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorks">
+          <HowItWorks />
+        </div> 
 
-        <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
+        <div id="section-browse-by-category" data-editor-section="browse-by-category" data-editor-component="BrowseByCategory">
+          <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />
+        </div> 
         
-        <AboutSection />  
+        <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+          <AboutSection />
+        </div>  
 
         {/* <ProgramModulesSection /> */}
 
         {/* Featured  */}
-        {/* <FeaturedProgramsSection  listings={Programslisting} slug=""/> */}
+        {/* <div id="section-featured-programs" data-editor-section="featured-programs" data-editor-component="FeaturedProgramsSection">
+   <FeaturedProgramsSection  listings={Programslisting} slug=""/>
+ </div> */}
 
         {/* If videos are stored under latestVideos */}
-        {/* {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />} */}
+        {/* {<div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
+  <VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />
+</div>} */}
 
-        <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
+          <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
+        </div>
 
-        <CallToActionSection companyId={siteData?.id || ''} />
+        <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
+          <CallToActionSection companyId={siteData?.id || ''} />
+        </div>
 
         {/* <PromotionSection/> */}
 

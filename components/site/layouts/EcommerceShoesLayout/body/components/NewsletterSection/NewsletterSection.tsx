@@ -14,6 +14,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();
@@ -112,12 +113,19 @@ export default function ContactSection() {
                 </span>
               </motion.div>
 
-              <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] mb-8">
-                Drop A <br />
-                <span className="text-transparent" style={{ WebkitTextStroke: `1.5px ${isFocused ? primaryColor : 'currentColor'}` }}>
-                  Line.
-                </span>
-              </h2>
+              <EditableElement
+                targetId="home.newsletter-section.heading"
+                componentKey="NewsletterSection"
+                elementKey="heading"
+                label="Newsletter Heading"
+                defaultValue="Drop A Line."
+              >
+                {(val) => (
+                  <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] mb-8">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
               
               <div className="flex items-center justify-center lg:justify-start gap-4 text-gray-400 dark:text-zinc-400 font-bold mb-4">
                 <div className="flex -space-x-3">
@@ -130,9 +138,20 @@ export default function ContactSection() {
                 <p className="text-[10px] sm:text-xs uppercase tracking-widest">Support crew online — 24/7 Response</p>
               </div>
 
-              <p className="text-gray-500 dark:text-zinc-400 text-lg max-w-sm mx-auto lg:mx-0 leading-relaxed font-medium">
-                Have questions about our store collections, orders, or custom partnerships? We answer 100% of messages in <span className="text-gray-900 dark:text-white font-black underline decoration-2" style={{ textDecorationColor: primaryColor }}>under 24 hours</span>.
-              </p>
+              <EditableElement
+                targetId="home.newsletter-section.subheading"
+                componentKey="NewsletterSection"
+                elementKey="subheading"
+                label="Newsletter Description"
+                type="textarea"
+                defaultValue="Have questions about our store collections, orders, or custom partnerships? We answer 100% of messages in under 24 hours."
+              >
+                {(val) => (
+                  <p className="text-gray-500 dark:text-zinc-400 text-lg max-w-sm mx-auto lg:mx-0 leading-relaxed font-medium">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
             </div>
 
             <div className="relative group">

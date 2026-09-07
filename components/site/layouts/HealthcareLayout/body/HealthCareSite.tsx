@@ -140,29 +140,44 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
   return (
     <>
     
-      <HealthcareHero heroSlides={pageData.heroSlides} slug={pageData.slug} themeSettings={pageData.themeSettings}/>
+      <div id="section-healthcare-hero" data-editor-section="healthcare-hero" data-editor-component="HealthcareHero">
+        <HealthcareHero heroSlides={pageData.heroSlides} slug={pageData.slug} themeSettings={pageData.themeSettings}/>
+      </div>
 
       <div className="font-sans">
         {/* About Section */}
-        <AboutSection />
+        <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+          <AboutSection />
+        </div>
 
         {/* Medical Services Section */}
-        <MedicalServicesSection services={servicesData} storeSlug={slug} />
+        <div id="section-medical-services" data-editor-section="medical-services" data-editor-component="MedicalServicesSection">
+          <MedicalServicesSection services={servicesData} storeSlug={slug} />
+        </div>
 
         {/* Health Tips Section (if you have one, or repurpose 'services' for tips) */}
-        <HealthTipsSection/>
+        <div id="section-health-tips" data-editor-section="health-tips" data-editor-component="HealthTipsSection">
+          <HealthTipsSection/>
+        </div>
 
         {/* Doctors Section */}
-        <DoctorsSection doctors={doctorsData} storeSlug={slug} />
+        <div id="section-doctors" data-editor-section="doctors" data-editor-component="DoctorsSection">
+          <DoctorsSection doctors={doctorsData} storeSlug={slug} />
+        </div>
 
         {/* Patient Testimonials - Render when data is ready */}
-        {testimonialsData?.data && <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} />}
+        {testimonialsData?.data && <div id="section-patient" data-editor-section="patient" data-editor-component="PatientSection">
+   <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} />
+ </div>}
 
         {/* FAQs Section - Render when data is ready */}
-        {faqsData?.data && <FAQsSection name={name} slug={slug} faqs={faqsDataState} />}
+        {faqsData?.data && <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
+   <FAQsSection name={name} slug={slug} faqs={faqsDataState} />
+ </div>}
 
         {/* Contact Section */}
-        <ContactSection
+        <div id="section-contact" data-editor-section="contact" data-editor-component="ContactSection">
+          <ContactSection
           storeSlug={slug}
           phoneNumber={contactInfoData.phoneNumber}
           email={contactInfoData.email}
@@ -170,11 +185,14 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
           openingHours={contactInfoData.openingHours}
           mapLink={contactInfoData.mapLink}
         />
+        </div>
 
         {/* Final Call to Action Section (Generic CTA at the bottom) */}
-        <CTASection
+        <div id="section-cta" data-editor-section="cta" data-editor-component="CTASection">
+          <CTASection
           storeSlug={slug}
         />
+        </div>
       </div>
     </>
   );

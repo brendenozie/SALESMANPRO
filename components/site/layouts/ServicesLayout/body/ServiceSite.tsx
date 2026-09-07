@@ -62,25 +62,45 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
   return (
     <>
       {/* Hero Section */}
-      <HeroSection storeFormData={siteData} heroSlides={siteData.heroSlides}/>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection storeFormData={siteData} heroSlides={siteData.heroSlides}/>
+      </div>
 
-      <AboutSection />
+      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+        <AboutSection />
+      </div>
 
-      <ExcellenceSection slug={siteData.slug} themeSettings={siteData.themeSettings} promotions={siteData.promotions} />
+      <div id="section-excellence" data-editor-section="excellence" data-editor-component="ExcellenceSection">
+        <ExcellenceSection slug={siteData.slug} themeSettings={siteData.themeSettings} promotions={siteData.promotions} />
+      </div>
 
-      <ServicesSection slug={siteData.slug} themeSettings={siteData.themeSettings} marketplaceListings={siteData.marketplaceListings} />
+      <div id="section-services" data-editor-section="services" data-editor-component="ServicesSection">
+        <ServicesSection slug={siteData.slug} themeSettings={siteData.themeSettings} marketplaceListings={siteData.marketplaceListings} />
+      </div>
 
-      <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />
+      <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
+        <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />
+      </div>
 
-      {testimonialsData?.data && <TestimonialSection />}
+      {testimonialsData?.data && <div id="section-testimonial" data-editor-section="testimonial" data-editor-component="TestimonialSection">
+   <TestimonialSection />
+ </div>}
 
-      {faqsData?.data && <FAQSection />}
+      {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+   <FAQSection />
+ </div>}
 
-      <CleaningTipsSection />
+      <div id="section-cleaning-tips" data-editor-section="cleaning-tips" data-editor-component="CleaningTipsSection">
+        <CleaningTipsSection />
+      </div>
      
-      <BookingFormSection />
+      <div id="section-booking-form" data-editor-section="booking-form" data-editor-component="BookingFormSection">
+        <BookingFormSection />
+      </div>
 
-      <GetStartedSection />
+      <div id="section-get-started" data-editor-section="get-started" data-editor-component="GetStartedSection">
+        <GetStartedSection />
+      </div>
      
     </>
   );

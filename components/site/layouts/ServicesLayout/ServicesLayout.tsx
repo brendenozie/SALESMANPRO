@@ -15,9 +15,13 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
 
   return (
     <>
-      <Header storeFormData={storeFormData} />
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header storeFormData={storeFormData} />
+      </div>
       <section >{children}</section>
-      <Footer storeFormData={storeFormData} />
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer storeFormData={storeFormData} />
+      </div>
     </>
   );
 }

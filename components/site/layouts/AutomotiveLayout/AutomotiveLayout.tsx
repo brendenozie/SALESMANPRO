@@ -33,11 +33,15 @@ const AutomotiveLayout: React.FC<AutomotiveLayoutProps> = (
 
   return (
     <>
-      <Header storeFormData={params.storeFormData} />
+      <div id="section-header" data-editor-section="header" data-editor-component="Header">
+        <Header storeFormData={params.storeFormData} />
+      </div>
 
       <section >{children}</section>
 
-      <Footer storeFormData={params.storeFormData} />
+      <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
+        <Footer storeFormData={params.storeFormData} />
+      </div>
     </>
   );
 };

@@ -50,33 +50,57 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
   return (
     <div className=" font-sans text-gray-800">
 
-      <HeroSection name={name} themeSettings={themeSettings} tagline={tagline} heroSlides={heroSlides} testimonials={testimonials} awards={awards} />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection name={name} themeSettings={themeSettings} tagline={tagline} heroSlides={heroSlides} testimonials={testimonials} awards={awards} />
+      </div>
 
-      <BusinessSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />
+      <div id="section-business" data-editor-section="business" data-editor-component="BusinessSection">
+        <BusinessSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />
+      </div>
 
-      <MarketplaceListingsSection name={name} slug={slug} themeSettings={themeSettings} marketplaceListings={marketplaceListings} />
+      <div id="section-marketplace-listings" data-editor-section="marketplace-listings" data-editor-component="MarketplaceListingsSection">
+        <MarketplaceListingsSection name={name} slug={slug} themeSettings={themeSettings} marketplaceListings={marketplaceListings} />
+      </div>
 
-      <GettingStartedSection />
+      <div id="section-getting-started" data-editor-section="getting-started" data-editor-component="GettingStartedSection">
+        <GettingStartedSection />
+      </div>
 
-      <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/> 
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/>
+      </div> 
 
-      <AboutSection  name={name} slug={slug} bannerUrl={bannerUrl} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
+      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+        <AboutSection  name={name} slug={slug} bannerUrl={bannerUrl} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
+      </div>
 
-      <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
+      <div id="section-case-studies" data-editor-section="case-studies" data-editor-component="CaseStudiesSection">
+        <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
+      </div>
 
-      <DiscoveryCallSection/>
+      <div id="section-discovery-call" data-editor-section="discovery-call" data-editor-component="DiscoveryCallSection">
+        <DiscoveryCallSection/>
+      </div>
 
-      <TestimonialsSection themeSettings={themeSettings} testimonials={testimonials} name={name} />
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection themeSettings={themeSettings} testimonials={testimonials} name={name} />
+      </div>
 
       {/* <FeaturedProjects projects={[]} slug={''} loader={function (_: any): string {
         throw new Error('Function not implemented.');
       } } /> */}
 
-      <FAQSection faqs={faqs} themeSettings={themeSettings}/>
+      <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+        <FAQSection faqs={faqs} themeSettings={themeSettings}/>
+      </div>
 
-      <CtaSection/>
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection/>
+      </div>
 
-      <ContactSection />
+      <div id="section-contact" data-editor-section="contact" data-editor-component="ContactSection">
+        <ContactSection />
+      </div>
       
     </div>
   );

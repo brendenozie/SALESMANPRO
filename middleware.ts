@@ -121,6 +121,9 @@ export default async function middleware(
 
   if (isHub && isOperatorPath(pathname) && !isPublicAuthPath(pathname)) {
     if (!session) {
+      if (isLocalHost && pathname.includes("/website-builder")) {
+        return NextResponse.next();
+      }
       const authUrl = new URL("https://auth.salesmanpro.site/signin");
       const canonicalCallbackUrl = isLocalHost
         ? request.url

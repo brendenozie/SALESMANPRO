@@ -71,13 +71,21 @@ export default function MarketPlaceSite({ pageData, companyId }: { pageData: Sto
   return (
     <div>
       
-       <HeroBanner storeFormData={siteData} />
+       <div id="section-hero-banner" data-editor-section="hero-banner" data-editor-component="HeroBanner">
+         <HeroBanner storeFormData={siteData} />
+       </div>
 
-       <CategoryCarousel store={siteData}  />
+       <div id="section-category" data-editor-section="category" data-editor-component="CategoryCarousel">
+         <CategoryCarousel store={siteData}  />
+       </div>
 
-        <StorePageSection products={siteData.marketplaceListings} storeSlug={siteData.slug} />
+        <div id="section-store-page" data-editor-section="store-page" data-editor-component="StorePageSection">
+          <StorePageSection products={siteData.marketplaceListings} storeSlug={siteData.slug} />
+        </div>
           
-        <ReviewsSection />
+        <div id="section-reviews" data-editor-section="reviews" data-editor-component="ReviewsSection">
+          <ReviewsSection />
+        </div>
 
         {/* Promotions Section */}
         <AnimatePresence>

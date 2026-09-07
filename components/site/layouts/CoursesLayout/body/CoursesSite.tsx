@@ -38,23 +38,41 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
   return (
     <div className="font-sans">
       {/* Hero */}
-      <HeroSection storeFormData={pageData} />
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection storeFormData={pageData} />
+      </div>
 
-      <GlassInfoCardsSection storeFormData={pageData} />
+      <div id="section-glass-info-cards" data-editor-section="glass-info-cards" data-editor-component="GlassInfoCardsSection">
+        <GlassInfoCardsSection storeFormData={pageData} />
+      </div>
 
-      <SchoolSection storeFormData={pageData} />
+      <div id="section-school" data-editor-section="school" data-editor-component="SchoolSection">
+        <SchoolSection storeFormData={pageData} />
+      </div>
 
-      <MainCoursesSection  storeFormData={pageData} />
+      <div id="section-main-courses" data-editor-section="main-courses" data-editor-component="MainCoursesSection">
+        <MainCoursesSection  storeFormData={pageData} />
+      </div>
 
-      <AboutSection  storeFormData={pageData} />
+      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+        <AboutSection  storeFormData={pageData} />
+      </div>
 
-      {testimonialsData?.data && <TestimonialsSection  storeFormData={pageData} />}
+      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+   <TestimonialsSection  storeFormData={pageData} />
+ </div>}
 
-      {blogsData?.data && <PopularBlogsSection  storeFormData={pageData} />}
+      {blogsData?.data && <div id="section-popular-blogs" data-editor-section="popular-blogs" data-editor-component="PopularBlogsSection">
+   <PopularBlogsSection  storeFormData={pageData} />
+ </div>}
 
-      <CtaSection />
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection />
+      </div>
 
-      {faqsData?.data && <FAQSection  storeFormData={pageData} />}   
+      {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+   <FAQSection  storeFormData={pageData} />
+ </div>}   
 
     </div>
   );

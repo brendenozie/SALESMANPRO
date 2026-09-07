@@ -41,38 +41,62 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
         {/* Hero Section - Render immediately */}
-        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />
+        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+          <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />
+        </div>
 
         {/* Core Highlights / Impact Areas */}
-        <CoreHighlightsSection pagedata={pageData} />
+        <div id="section-core-highlights" data-editor-section="core-highlights" data-editor-component="CoreHighlightsSection">
+          <CoreHighlightsSection pagedata={pageData} />
+        </div>
 
-        <GreyServicesSection services={pageData.marketplaceListings} storeSlug='' />
+        <div id="section-grey-services" data-editor-section="grey-services" data-editor-component="GreyServicesSection">
+          <GreyServicesSection services={pageData.marketplaceListings} storeSlug='' />
+        </div>
 
         {/* About Us Spotlight */}
-        <AboutUsSpotlight pagedata={pageData} />
+        <div id="section-about-us-spotlight" data-editor-section="about-us-spotlight" data-editor-component="AboutUsSpotlight">
+          <AboutUsSpotlight pagedata={pageData} />
+        </div>
 
         {/* Our Programs / Featured Causes */}
-        <ProgramsCausesSection pagedata={pageData} />
+        <div id="section-programs-causes" data-editor-section="programs-causes" data-editor-component="ProgramsCausesSection">
+          <ProgramsCausesSection pagedata={pageData} />
+        </div>
 
         {/* Impact Stats */}
-        <ImpactStatsSection pagedata={pageData} />
+        <div id="section-impact-stats" data-editor-section="impact-stats" data-editor-component="ImpactStatsSection">
+          <ImpactStatsSection pagedata={pageData} />
+        </div>
 
         {/* Events & Updates - Render when data is ready */}
-        {/* {eventsData?.data && <EventsUpdatesSection />} */}
+        {/* {eventsData?.data && <div id="section-events-updates" data-editor-section="events-updates" data-editor-component="EventsUpdatesSection">
+   <EventsUpdatesSection />
+ </div>} */}
 
         {/* News - Render when data is ready */}
-        {<NewsSection pagedata={pageData} />}
+        {<div id="section-news" data-editor-section="news" data-editor-component="NewsSection">
+  <NewsSection pagedata={pageData} />
+</div>}
 
         {/* Testimonials & News - Render when data is ready */}
-        {<TestimonialsNewsSection pagedata={pageData} />}
+        {<div id="section-testimonials-news" data-editor-section="testimonials-news" data-editor-component="TestimonialsNewsSection">
+  <TestimonialsNewsSection pagedata={pageData} />
+</div>}
 
         {/* Call to Action - Bold */}
-        <CtaBoldSection pagedata={pageData} />
+        <div id="section-cta-bold" data-editor-section="cta-bold" data-editor-component="CtaBoldSection">
+          <CtaBoldSection pagedata={pageData} />
+        </div>
 
         {/* FAQs - Render when data is ready */}
-        {<FAQSection pagedata={pageData} />}
+        {<div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+  <FAQSection pagedata={pageData} />
+</div>}
 
-        <CallToActionSection companyId={companyId} schedulingLink={``} pagedata={pageData}   />
+        <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
+          <CallToActionSection companyId={companyId} schedulingLink={``} pagedata={pageData}   />
+        </div>
       </main>
   );
 }
