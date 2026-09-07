@@ -2,6 +2,7 @@
 /* File: app/stores/[id]/edit/page.tsx */
 import React, { Suspense } from "react";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import prisma from "@/server/db/prismadb";
 
@@ -272,6 +273,31 @@ export default async function EditStorePage({ params }: PageProps) {
   // --------------------
   return (
     <div className="min-h-screen bg-zinc-50/50 dark:bg-zinc-950/20 py-8">
+      {store.slug && (
+        <div className="max-w-4xl mx-auto px-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-linear-to-r from-rose-500/10 via-indigo-500/10 to-purple-500/10 border border-rose-500/20 backdrop-blur-sm shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-sm text-lg">
+                ✨
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  Visual AI Website Builder
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  Customize your storefront visually with sections, multi-page layouts, design tokens, and Gemini AI assistant.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/admin/${store.slug}/website-builder`}
+              className="shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white bg-linear-to-r from-rose-600 to-indigo-600 hover:opacity-90 active:scale-95 shadow-sm transition"
+            >
+              Open Website Builder →
+            </Link>
+          </div>
+        </div>
+      )}
       <Suspense fallback={<FormLoaderFallback />}>
         <CreateStoreForm
           initialData={storeFormData}

@@ -518,6 +518,12 @@ model Company {
   aiAgentTasks           AIAgentTask[]
   aiAgentApprovals       AIAgentApproval[]
   aiAgentEscalations     AIAgentEscalation[]
+
+  // AI-Powered Dynamic Website Builder
+  website                Website?
+  websiteRevisions       WebsiteRevision[]
+  websitePages           WebsitePage[]
+  websiteSections        WebsiteSection[]
   aiAgentMemories        AIAgentMemory[]
   aiAgentCampaigns       AIAgentCampaign[]
 
@@ -10726,3 +10732,88 @@ model MarketingMetricSnapshot {
   @@index([companyId, date])
   @@index([provider])
 }
+
+// -------------------------------------------------------------
+// AI-POWERED DYNAMIC WEBSITE BUILDER MODELS
+// -------------------------------------------------------------
+
+model Website {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String            @unique @db.ObjectId
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  templateKey     String            @default("ecommerce")
+  theme           Json              // Design tokens: colors, typography, radii, spacing, container width
+  navigation      Json              // Header & Footer navigation config
+  draftConfig     Json?             // Live working draft
+  publishedConfig Json?             // Atomic published snapshot served to public visitors
+  status          String            @default("DRAFT") // DRAFT, PUBLISHED
+  publishedAt     DateTime?
+  revisions       WebsiteRevision[]
+  pages           WebsitePage[]
+  sections        WebsiteSection[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model WebsitePage {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId       String           @db.ObjectId
+  website         Website          @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  companyId       String           @db.ObjectId
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String           // "home", "shop", "about", "contact", etc.
+  isHomepage      Boolean          @default(false)
+  isVisible       Boolean          @default(true)
+  order           Int              @default(0)
+  seo             Json?            // { metaTitle, metaDescription, ogImage, canonicalUrl, noIndex }
+  sections        WebsiteSection[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([websiteId, slug])
+  @@index([companyId, slug])
+  @@index([websiteId, order])
+}
+
+model WebsiteSection {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  pageId      String       @db.ObjectId
+  page        WebsitePage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  websiteId   String       @db.ObjectId
+  website     Website      @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  companyId   String       @db.ObjectId
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type        String       // hero, productGrid, categoryGrid, imageWithText, richText, testimonials, faq, ctaBanner, contact, map, newsletter, footer, header
+  order       Int          @default(0)
+  isVisible   Boolean      @default(true)
+  content     Json         // Component specific content
+  styles      Json         // Spacing, background, colors, typography, alignment
+  responsive  Json?        // Breakpoint overrides (columns, padding, heights)
+  dataSource  Json?        // Dynamic commerce bindings (e.g. products, categories)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([pageId, order])
+  @@index([websiteId])
+  @@index([companyId])
+}
+
+model WebsiteRevision {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId       String    @db.ObjectId
+  website         Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  companyId       String    @db.ObjectId
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  versionNumber   Int
+  changeSummary   String
+  source          String    @default("MANUAL") // MANUAL, AI, MIGRATION, ROLLBACK
+  snapshot        Json      // Full compiled website config at time of revision
+  publishedBy     String?   // User ID if authenticated
+  createdAt       DateTime  @default(now())
+
+  @@index([websiteId, versionNumber])
+  @@index([companyId])
+}
+

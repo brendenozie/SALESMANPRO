@@ -170,6 +170,12 @@ const commonEcommerce = (
       icon: HomeIcon,
     },
     {
+      label: "Website Builder",
+      href: `/admin/${adminSlug}/website-builder`,
+      icon: GlobeAltIcon,
+      minTier: "Ghuba Starter",
+    },
+    {
       label: "POS",
       href: `/admin/${adminSlug}/storepos`,
       icon: ClipboardDocumentListIcon,

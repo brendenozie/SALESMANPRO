@@ -222,6 +222,7 @@ export function leanShellInclude() {
 
     addresses: true, // Include the new addresses array for multi-location support
     ShippingSettings: true,
+    website: true,
   };
 }
 
@@ -321,6 +322,7 @@ export function pageDataInclude() {
     PaymentSettings: true,
     ShippingSettings: true,
     addresses: true, // Include the new addresses array for multi-location support
+    website: true,
   };
 }
 

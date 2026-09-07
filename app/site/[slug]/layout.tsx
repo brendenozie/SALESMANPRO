@@ -184,6 +184,8 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
     jsonLd.logo = raw.logoUrl;
   }
 
+  const hasPublishedWebsite = !!raw.website?.publishedConfig;
+
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
       <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
@@ -193,21 +195,31 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
           <SubscriptionGraceBanner storeName={raw.name} daysLeft={graceDaysLeft} />
         )}
 
-        <LayoutComponent params={{ storeFormData }}>
-          
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-          
-          <Suspense fallback={<LoadingSpinner />}>
-            {children}
-          </Suspense>
-          
-          <WhatsAppBubble productName={''} />
-          <AnalyticsProvider config={raw.AnalyticsConfig} />
-          
-        </LayoutComponent>
+        {hasPublishedWebsite ? (
+          <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <Suspense fallback={<LoadingSpinner />}>
+              {children}
+            </Suspense>
+            <WhatsAppBubble productName={''} />
+            <AnalyticsProvider config={raw.AnalyticsConfig} />
+          </>
+        ) : (
+          <LayoutComponent params={{ storeFormData }}>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <Suspense fallback={<LoadingSpinner />}>
+              {children}
+            </Suspense>
+            <WhatsAppBubble productName={''} />
+            <AnalyticsProvider config={raw.AnalyticsConfig} />
+          </LayoutComponent>
+        )}
       </div>
     </StoreContextProvider>
   );
