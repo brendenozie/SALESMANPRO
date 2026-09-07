@@ -122,7 +122,10 @@ export default async function middleware(
   if (isHub && isOperatorPath(pathname) && !isPublicAuthPath(pathname)) {
     if (!session) {
       const authUrl = new URL("https://auth.salesmanpro.site/signin");
-      authUrl.searchParams.set("callbackUrl", request.url);
+      const canonicalCallbackUrl = isLocalHost
+        ? request.url
+        : `${proto}://${host}${pathname}${url.search}`;
+      authUrl.searchParams.set("callbackUrl", canonicalCallbackUrl);
       return NextResponse.redirect(authUrl);
     }
     if (session.emailVerified === false) {

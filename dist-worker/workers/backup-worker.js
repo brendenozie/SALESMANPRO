@@ -17,6 +17,14 @@ const workerInstance = (0, backupWorker_1.createBackupWorker)();
     console.error("❌ Failed to initialize backup schedules:", err);
 });
 console.log("✅ SalesmanPro Database Backup Worker running and listening for jobs.");
+// Top-level unhandled exception / rejection guard to prevent PM2 flapping
+process.on("unhandledRejection", (reason) => {
+    console.error("⚠️ [BACKUP_WORKER] Unhandled Rejection (non-fatal):", reason?.message || reason);
+});
+process.on("uncaughtException", (error) => {
+    console.error("🚨 [BACKUP_WORKER] Uncaught Exception:", error.message);
+    setTimeout(() => process.exit(1), 5000);
+});
 // Graceful shutdown handling
 const shutdown = async (signal) => {
     console.log(`\n🛑 Received ${signal}. Shutting down Backup Worker gracefully...`);

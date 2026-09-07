@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isRedisAvailable = exports.redisConnection = void 0;
+exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = void 0;
 // lib/redis.ts
 const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
@@ -53,7 +53,7 @@ function createBuildMockRedis() {
     };
     return new Proxy({}, handler);
 }
-function createRedisClient() {
+function createRedisClient(customOptions) {
     if (isBuildPhase) {
         return createBuildMockRedis();
     }
@@ -61,21 +61,24 @@ function createRedisClient() {
         maxRetriesPerRequest: null,
         enableReadyCheck: false,
         connectTimeout: 5000,
-        commandTimeout: 3000,
+        commandTimeout: 5000,
         retryStrategy(times) {
-            if (isBuildPhase || times > 5)
+            if (isBuildPhase)
                 return null;
-            const delay = Math.min(times * 100, 2000);
+            // Exponential backoff capped at 5000ms. Never return null in runtime/production
+            // to avoid triggering fatal unhandled error crashes in BullMQ workers.
+            const delay = Math.min(times * 200, 5000);
             return delay;
         },
         reconnectOnError(err) {
             const targetError = "READONLY";
-            if (err.message.includes(targetError)) {
+            if (err.message && err.message.includes(targetError)) {
                 return true;
             }
             return false;
         },
         lazyConnect: true,
+        ...customOptions,
     };
     const client = new ioredis_1.default(REDIS_URL, options);
     client.on("connect", () => {
@@ -89,8 +92,9 @@ function createRedisClient() {
         }
     });
     if (!isBuildPhase) {
-        client.connect().catch(() => {
+        client.connect().catch((err) => {
             // Non-fatal on startup; client will retry via retryStrategy
+            console.warn("[Redis] Initial connect warning (will retry):", err.message);
         });
     }
     return client;
@@ -98,14 +102,31 @@ function createRedisClient() {
 exports.redisConnection = isBuildPhase
     ? createBuildMockRedis()
     : globalThis.__redisClient || createRedisClient();
-if (process.env.NODE_ENV !== "production" && !isBuildPhase) {
+if (!isBuildPhase) {
     globalThis.__redisClient = exports.redisConnection;
 }
 function isRedisAvailable() {
     if (isBuildPhase)
         return false;
-    return exports.redisConnection.status === "ready";
+    return exports.redisConnection.status === "ready" || exports.redisConnection.status === "connect";
 }
 exports.isRedisAvailable = isRedisAvailable;
+/**
+ * Returns clean connection options for BullMQ queues and workers.
+ */
+function getBullMQConnectionOptions() {
+    return {
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        connectTimeout: 5000,
+        commandTimeout: 5000,
+        retryStrategy(times) {
+            if (isBuildPhase)
+                return null;
+            return Math.min(times * 200, 5000);
+        },
+    };
+}
+exports.getBullMQConnectionOptions = getBullMQConnectionOptions;
 const redis = exports.redisConnection;
 exports.default = redis;

@@ -1,87 +1,172 @@
+const fs = require('fs');
+const path = require('path');
+
+const APP_DIR = path.resolve(__dirname, '..');
+const isStandalone = fs.existsSync(path.join(APP_DIR, 'server.js'));
+const aliasScript = path.join(APP_DIR, 'dist-worker', 'workers', 'resolve-alias.js');
+
 /**
- * deploy/ecosystem.config.js
- *
- * PM2 Production Ecosystem Configuration for SalesmanPro.
- *
- * Supports:
- * - Zero-downtime rolling reload: `pm2 reload ecosystem.config.js`
- * - Graceful connection draining (`kill_timeout: 10000`)
- * - Unified supervision of Next.js web process and standalone BullMQ workers.
+ * Robust zero-dependency .env parser.
+ * Reads environment variables from shared and local .env files and ensures
+ * they are available to PM2 cluster instances and background worker processes.
  */
+function loadDotEnv(envPath) {
+  const env = {};
+  if (fs.existsSync(envPath)) {
+    try {
+      const content = fs.readFileSync(envPath, 'utf8');
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const idx = trimmed.indexOf('=');
+        if (idx > 0) {
+          const key = trimmed.slice(0, idx).trim();
+          let val = trimmed.slice(idx + 1).trim();
+          if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+          }
+          env[key] = val;
+          if (!process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[ecosystem] Warning reading .env from', envPath, err.message);
+    }
+  }
+  return env;
+}
+
+const sharedEnv = loadDotEnv('/var/www/salesmanpro/shared/.env');
+const localEnv = loadDotEnv(path.join(APP_DIR, '.env'));
+const baseEnv = {
+  ...sharedEnv,
+  ...localEnv,
+  NODE_ENV: 'production',
+};
 
 module.exports = {
   apps: [
-    // 1. Next.js Web Application
     {
-      name: "salesmanpro-web",
-      script: "node_modules/next/dist/bin/next",
-      args: "start -p 3000",
-      instances: 1, // Or "max" for cluster mode per server
-      exec_mode: "fork",
-      watch: false,
-      max_memory_restart: "2048M",
-      kill_timeout: 10000,
-      listen_timeout: 8000,
+      name: 'salesmanpro',
+      cwd: APP_DIR,
+      script: isStandalone ? path.join(APP_DIR, 'server.js') : 'node_modules/.bin/next',
+      args: isStandalone ? '' : 'start -p 3000',
+      node_args: '--max-old-space-size=2560',
+      instances: 1,
+      exec_mode: 'fork',
       env: {
-        NODE_ENV: "production",
+        ...baseEnv,
         PORT: 3000,
       },
-    },
-
-    // 2. Domain & SSL Worker
-    {
-      name: "salesmanpro-ssl-worker",
-      script: "dist-worker/workers/domain-ssl-worker.js",
-      instances: 1,
-      exec_mode: "fork",
-      watch: false,
-      max_memory_restart: "512M",
-      kill_timeout: 5000,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-
-    // 3. Automated Database Backup & Disaster Recovery Worker
-    {
-      name: "salesmanpro-backup-worker",
-      script: "dist-worker/workers/backup-worker.js",
-      instances: 1,
-      exec_mode: "fork",
-      watch: false,
-      max_memory_restart: "1024M",
+      min_uptime: '15s',
+      max_memory_restart: '2500M',
+      restart_delay: 4000,
+      exp_backoff_restart_delay: 500,
+      max_restarts: 20,
+      autorestart: true,
       kill_timeout: 10000,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-
-    // 4. WhatsApp AI Worker
-    {
-      name: "salesmanpro-whatsapp-worker",
-      script: "dist-worker/workers/whatsapp-worker.js",
-      instances: 1,
-      exec_mode: "fork",
+      listen_timeout: 10000,
       watch: false,
-      max_memory_restart: "1024M",
-      kill_timeout: 5000,
-      env: {
-        NODE_ENV: "production",
-      },
     },
-
-    // 5. Central AI Job Worker (Images & Videos)
     {
-      name: "salesmanpro-ai-worker",
-      script: "dist-worker/workers/ai-job-worker.js",
+      name: 'ssl-worker',
+      cwd: APP_DIR,
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'domain-ssl-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=200`,
+      interpreter: 'node',
       instances: 1,
-      exec_mode: "fork",
-      watch: false,
-      max_memory_restart: "1536M",
-      kill_timeout: 5000,
+      exec_mode: 'fork',
       env: {
-        NODE_ENV: "production",
+        ...baseEnv,
       },
+      min_uptime: '15s',
+      restart_delay: 5000,
+      max_memory_restart: '300M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
+    },
+    {
+      name: 'whatsapp-worker',
+      cwd: APP_DIR,
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'whatsapp-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=512`,
+      interpreter: 'node',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        ...baseEnv,
+      },
+      min_uptime: '15s',
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 30,
+      max_memory_restart: '700M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
+    },
+    {
+      name: 'ai-job-worker',
+      cwd: APP_DIR,
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'ai-job-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=512`,
+      interpreter: 'node',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        ...baseEnv,
+      },
+      min_uptime: '15s',
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 30,
+      max_memory_restart: '700M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
+    },
+    {
+      name: 'backup-worker',
+      cwd: APP_DIR,
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'backup-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=768`,
+      interpreter: 'node',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        ...baseEnv,
+      },
+      min_uptime: '15s',
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 30,
+      max_memory_restart: '1000M',
+      autorestart: true,
+      kill_timeout: 10000,
+      watch: false,
+    },
+    {
+      name: 'ai-workforce-worker',
+      cwd: APP_DIR,
+      script: path.join(APP_DIR, 'dist-worker', 'workers', 'ai-workforce-worker.js'),
+      node_args: `--require ${aliasScript} --max-old-space-size=768`,
+      interpreter: 'node',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        ...baseEnv,
+      },
+      min_uptime: '15s',
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 30,
+      max_memory_restart: '1000M',
+      autorestart: true,
+      kill_timeout: 5000,
+      watch: false,
     },
   ],
 };

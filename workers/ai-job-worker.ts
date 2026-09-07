@@ -14,6 +14,16 @@ const worker = createAIJobWorker();
 
 console.log("✅ SalesmanPro AI Job Worker running and listening for jobs.");
 
+// Top-level unhandled exception / rejection guard to prevent PM2 flapping
+process.on("unhandledRejection", (reason: any) => {
+  console.error("⚠️ [AI_JOB_WORKER] Unhandled Rejection (non-fatal):", reason?.message || reason);
+});
+
+process.on("uncaughtException", (error: Error) => {
+  console.error("🚨 [AI_JOB_WORKER] Uncaught Exception:", error.message);
+  setTimeout(() => process.exit(1), 5000);
+});
+
 // Graceful shutdown handling
 const shutdown = async (signal: string) => {
   console.log(`\n🛑 Received ${signal}. Shutting down AI Job Worker gracefully...`);

@@ -185,6 +185,18 @@ export function createBackupWorker(): BackupWorkerInstances {
     }
   );
 
+  backupWorker.on("error", (err) => {
+    console.error("[BackupWorker_REDIS_ERROR]", err.message);
+  });
+
+  restoreWorker.on("error", (err) => {
+    console.error("[RestoreWorker_REDIS_ERROR]", err.message);
+  });
+
+  maintenanceWorker.on("error", (err) => {
+    console.error("[MaintenanceWorker_REDIS_ERROR]", err.message);
+  });
+
   return {
     backupWorker,
     restoreWorker,

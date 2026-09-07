@@ -52,7 +52,7 @@ function createBuildMockRedis(): any {
   return new Proxy({}, handler);
 }
 
-function createRedisClient(): Redis {
+function createRedisClient(customOptions?: Partial<RedisOptions>): Redis {
   if (isBuildPhase) {
     return createBuildMockRedis();
   }
@@ -61,20 +61,23 @@ function createRedisClient(): Redis {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
     connectTimeout: 5000,
-    commandTimeout: 3000,
+    commandTimeout: 5000,
     retryStrategy(times) {
-      if (isBuildPhase || times > 5) return null;
-      const delay = Math.min(times * 100, 2000);
+      if (isBuildPhase) return null;
+      // Exponential backoff capped at 5000ms. Never return null in runtime/production
+      // to avoid triggering fatal unhandled error crashes in BullMQ workers.
+      const delay = Math.min(times * 200, 5000);
       return delay;
     },
     reconnectOnError(err) {
       const targetError = "READONLY";
-      if (err.message.includes(targetError)) {
+      if (err.message && err.message.includes(targetError)) {
         return true;
       }
       return false;
     },
     lazyConnect: true,
+    ...customOptions,
   };
 
   const client = new Redis(REDIS_URL, options);
@@ -92,8 +95,9 @@ function createRedisClient(): Redis {
   });
 
   if (!isBuildPhase) {
-    client.connect().catch(() => {
+    client.connect().catch((err) => {
       // Non-fatal on startup; client will retry via retryStrategy
+      console.warn("[Redis] Initial connect warning (will retry):", err.message);
     });
   }
 
@@ -104,13 +108,29 @@ export const redisConnection: Redis = isBuildPhase
   ? createBuildMockRedis()
   : globalThis.__redisClient || createRedisClient();
 
-if (process.env.NODE_ENV !== "production" && !isBuildPhase) {
+if (!isBuildPhase) {
   globalThis.__redisClient = redisConnection;
 }
 
 export function isRedisAvailable(): boolean {
   if (isBuildPhase) return false;
-  return redisConnection.status === "ready";
+  return redisConnection.status === "ready" || redisConnection.status === "connect";
+}
+
+/**
+ * Returns clean connection options for BullMQ queues and workers.
+ */
+export function getBullMQConnectionOptions(): RedisOptions {
+  return {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    connectTimeout: 5000,
+    commandTimeout: 5000,
+    retryStrategy(times) {
+      if (isBuildPhase) return null;
+      return Math.min(times * 200, 5000);
+    },
+  };
 }
 
 const redis = redisConnection;

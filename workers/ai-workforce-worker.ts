@@ -42,9 +42,13 @@ export function createWorkforceWorker() {
     },
     {
       connection: redisConnection,
-      concurrency: 5,
+      concurrency: 3,
     },
   );
+
+  worker.on("error", (err) => {
+    console.error("[WORKFORCE_WORKER_REDIS_ERROR] BullMQ worker connection error:", err.message);
+  });
 
   worker.on("failed", (job, err) => {
     console.error(`[WORKFORCE_JOB_FAILED] Job ${job?.id} failed with error:`, err.message);
@@ -61,6 +65,17 @@ registerWorkforceSchedulers().catch((err) => {
 });
 
 console.log("✅ SalesmanPro AI Workforce Worker running and listening for agent jobs.");
+
+// Top-level unhandled exception / rejection guard to prevent PM2 flapping
+process.on("unhandledRejection", (reason: any) => {
+  console.error("⚠️ [WORKFORCE_WORKER] Unhandled Rejection (non-fatal):", reason?.message || reason);
+});
+
+process.on("uncaughtException", (error: Error) => {
+  console.error("🚨 [WORKFORCE_WORKER] Uncaught Exception:", error.message);
+  // Allow pending jobs to drain or exit gracefully without instantaneous crash
+  setTimeout(() => process.exit(1), 5000);
+});
 
 // Graceful shutdown
 const shutdown = async (signal: string) => {

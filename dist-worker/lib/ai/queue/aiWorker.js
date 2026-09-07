@@ -141,6 +141,9 @@ function createAIJobWorker() {
         connection: redis_1.redisConnection,
         concurrency: 3,
     });
+    worker.on("error", (err) => {
+        console.error("[AI_WORKER_REDIS_ERROR] BullMQ worker connection error:", err.message);
+    });
     worker.on("failed", (job, err) => {
         console.error(`[AI_WORKER_FAILED] Job ${job?.id} error:`, err);
     });
