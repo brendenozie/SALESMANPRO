@@ -66,6 +66,7 @@ const PricingModal = ({
   requiredTier,
   featureName,
   onSubscriptionSuccess,
+  isSubscriptionActive,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -76,6 +77,7 @@ const PricingModal = ({
   requiredTier: string;
   featureName: string;
   onSubscriptionSuccess: () => void;
+  isSubscriptionActive: boolean;
 }) => {
   return (
     <AnimatePresence>
@@ -108,8 +110,9 @@ const PricingModal = ({
                 currentTier={currentTier}
                 requiredTier={requiredTier}
                 featureName={featureName}
-                onSubscriptionSuccess={onSubscriptionSuccess}
-              />
+                onSubscriptionSuccess={onSubscriptionSuccess} 
+                isSubscriptionActive={isSubscriptionActive}             
+                />
             </div>
           </motion.div>
         </motion.div>
@@ -225,6 +228,7 @@ export default function AdminLayout({
       "/fitness-pos",
       "/health-pos",
       "/company-pos",
+      "/website-builder"
     ];
     return posRoutes.some((route) => pathname.endsWith(route));
   }, [pathname]);
@@ -499,7 +503,7 @@ export default function AdminLayout({
           </div>
 
           <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
-            {menuItems.map((item) => {
+            {menuItems.map((item, index) => {
               const isActiveParent = item.subItems
                 ? item.subItems.some(
                     (sub) => sub.href && pathname.startsWith(sub.href)
@@ -509,7 +513,7 @@ export default function AdminLayout({
 
               if (!item.subItems?.length) {
                 return (
-                  <div key={item.label} className="relative group">
+                  <div key={`${item.label}-${item.href || index}`} className="relative group">
                     <Link
                       href={item.href || "#"}
                       onClick={(e) => handleNavigation(e, item)}
@@ -551,7 +555,7 @@ export default function AdminLayout({
               }
 
               return (
-                <div key={item.label} className="relative group">
+                <div key={`${item.label}-${item.href || index}`} className="relative group">
                   <button
                     onClick={(e) => {
                       if (item.isLocked) {
@@ -607,13 +611,13 @@ export default function AdminLayout({
                     (!isCollapsed || mobileOpen) &&
                     !item.isLocked && (
                       <div className="mt-1 ml-4 pl-3 border-l border-slate-700/60 space-y-1">
-                        {item.subItems.map((sub) => {
+                        {item.subItems.map((sub, subIndex) => {
                           const isActiveSub = sub.href
                             ? pathname.startsWith(sub.href)
                             : false;
                           return (
                             <Link
-                              key={sub.label}
+                              key={`${sub.label}-${sub.href || subIndex}`}
                               href={sub.href || "#"}
                               onClick={(e) => handleNavigation(e, sub, item)}
                               className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-all duration-150 ${
@@ -811,6 +815,7 @@ export default function AdminLayout({
         requiredTier={requiredPlan || ""}
         featureName={pathname}
         onSubscriptionSuccess={handleSubscriptionSuccess}
+        isSubscriptionActive={isSubscriptionActive}
       />
     </>
   );

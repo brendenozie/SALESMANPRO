@@ -27,7 +27,7 @@ export async function GET(req: Request, { params }: RouteParams) {
     // Verify tenant access
     const company = await prisma.company.findUnique({
       where: { slug },
-      select: { id: true, userId: true, name: true, logoUrl: true, contactPhone: true, contactEmail: true },
+      select: { id: true, userId: true, name: true, logo: true, phone: true, email: true },
     });
 
     if (!company) {
@@ -43,9 +43,9 @@ export async function GET(req: Request, { params }: RouteParams) {
         websiteId: website.id,
         companyId: company.id,
         storeName: company.name,
-        logoUrl: company.logoUrl,
-        contactPhone: company.contactPhone,
-        contactEmail: company.contactEmail,
+        logoUrl: company.logo,
+        contactPhone: company.phone,
+        contactEmail: company.email,
         status: website.status,
         publishedAt: website.publishedAt,
         config,

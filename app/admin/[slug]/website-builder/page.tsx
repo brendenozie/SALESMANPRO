@@ -3,7 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
 import prisma from "@/server/db/prismadb";
-import { getOrCreateWebsite } from "@/lib/website-builder/website-service";
+import {
+  getOrCreateWebsite,
+  getWebsiteRevisions,
+} from "@/lib/website-builder/website-service";
 import WebsiteBuilderStudio from "@/components/website-builder/editor/WebsiteBuilderStudio";
 
 export const dynamic = "force-dynamic";
@@ -30,18 +33,7 @@ export default async function AdminWebsiteBuilderPage({ params }: Props) {
   const { website, config } = await getOrCreateWebsite(company.id);
 
   // Fetch revisions history for versioning/rollback modal
-  const revisions = await prisma.websiteRevision.findMany({
-    where: { websiteId: website.id },
-    orderBy: { versionNumber: "desc" },
-    take: 20,
-    select: {
-      id: true,
-      versionNumber: true,
-      changeSummary: true,
-      publishedAt: true,
-      publishedBy: true,
-    },
-  });
+  const revisions = await getWebsiteRevisions(company.id);
 
   return (
     <div className="w-full h-[calc(100vh-4.25rem)] overflow-hidden">
@@ -57,7 +49,11 @@ export default async function AdminWebsiteBuilderPage({ params }: Props) {
         socialLinks={company.socialLinks || []}
         initialRevisions={revisions.map((r: any) => ({
           ...r,
-          publishedAt: r.publishedAt ? r.publishedAt.toISOString() : new Date().toISOString(),
+          publishedAt: r.createdAt
+            ? typeof r.createdAt === "string"
+              ? r.createdAt
+              : r.createdAt.toISOString()
+            : new Date().toISOString(),
         }))}
       />
     </div>
