@@ -32,7 +32,7 @@ export default async function LeadsPage({ params }: LeadsPageProps) {
     process.env.NEXT_PUBLIC_API_URL ||
     (process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}/api`
-      : "http://localhost:3000/api");
+      : "/api");
 
   let initialLeads = [];
   let initialPagination = {

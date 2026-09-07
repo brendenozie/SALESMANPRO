@@ -37,7 +37,7 @@ const NextArrow = ({ onClick }: { onClick?: () => void }) => (
 );
 
 export default function DailyBestSells({ id }: { id: string }) {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
   const fetcher = createCachedFetcher(cacheKey);

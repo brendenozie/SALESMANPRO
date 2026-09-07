@@ -16,7 +16,7 @@ import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function HardwareDailyBestSells({ id }: { id: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);

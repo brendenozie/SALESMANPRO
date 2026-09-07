@@ -2,7 +2,7 @@ import React from "react";
 import CompaniesClient from "./CompaniesClient";
 import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default async function CompanyManagementPage() {
   let companies = [];

@@ -34,7 +34,7 @@ export default function NetworkIntegrationSection() {
   });
 
   const [errorMessage, setErrorMessage] = useState('');
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);

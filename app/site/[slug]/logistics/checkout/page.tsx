@@ -24,7 +24,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 const STEPS = ['Billing', 'Schedule', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 type BookingParams = {
   listingId: string;

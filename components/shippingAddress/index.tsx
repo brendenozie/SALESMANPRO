@@ -24,7 +24,7 @@ const Popup = dynamic(() => import("react-leaflet").then((m) => m.Popup), { ssr:
 const Circle = dynamic<any>(() => import("react-leaflet").then((m) => m.Circle), { ssr: false });
 
 const API_BASE = "https://nominatim.openstreetmap.org";
-// const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { lat: number; lng: number }) => void }> = ({ onAddressSelect }) => {
   const { data: session, status } = useSession();
@@ -384,7 +384,7 @@ export default LocationPicker;
 // const Circle = dynamic<any>(() => import("react-leaflet").then((m) => m.Circle), { ssr: false });
 
 // const API_BASE = "https://nominatim.openstreetmap.org";
-// const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// const API_ENDPOINT = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { lat: number; lng: number }) => void }> = ({ onAddressSelect }) => {
 //   const { data: session, status } = useSession();

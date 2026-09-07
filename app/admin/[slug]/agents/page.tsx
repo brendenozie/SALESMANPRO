@@ -4,7 +4,7 @@ import AgentsClient from "./AgentsClient";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // ✨ Updated Agent type to include the loginCode
 export type Agent = {

@@ -75,6 +75,34 @@ module.exports = {
   env: {
     DATABASE_URL: process.env.DATABASE_URL ?? "",
     stripe_public_key: process.env.STRIPE_PUBLIC_KEY ?? "",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api",
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
+  },
+
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self), payment=(self), usb=(), bluetooth=(), serial=(), magnetometer=(), accelerometer=(), gyroscope=(), display-capture=(), browsing-topics=(), local-network-access=()",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+        ],
+      },
+    ];
   },
 
   images: {

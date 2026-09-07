@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { AnnouncementFormModal } from './AnnouncementFormModal';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Type Definitions (Exported for the Server Component) ---
 export type AnnouncementData = {

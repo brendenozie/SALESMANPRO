@@ -22,7 +22,7 @@ import {
 import { ShowingFormModal } from './ShowingFormModal';
 import { ShowingDetailsModal } from './ShowingDetailsModal';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Type Definitions ---
 export type Showing = {

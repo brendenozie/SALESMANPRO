@@ -13,7 +13,7 @@ import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function DailyBestSells({ id }: { id: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);

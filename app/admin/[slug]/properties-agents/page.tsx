@@ -15,7 +15,7 @@ import { findCompanyCached } from '@/lib/company-fetcher';
 import AgentsClientPage from './AgentsClientPage'; 
 import { AgentProfile } from './AgentsClientPage'; // Import the main type from the client module
 
-const apiBaseUrl = process.env.API_BASE_URL || 'http://127.0.0.1:3000/api'; // Replace with your actual API base URL
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api"; // Replace with your actual API base URL
 // --- Interface for Server Component Props ---
 interface AgentsPageProps {
   params:Promise<{ slug: string }>

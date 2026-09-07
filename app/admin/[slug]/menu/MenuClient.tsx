@@ -26,7 +26,7 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Simple image component fallback wrapper — uses <img> for robust external fallbacks
 const SafeImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => {

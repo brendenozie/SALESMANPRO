@@ -90,7 +90,7 @@ export default function ShowingsClientPage({
   const [showingToView, setShowingToView] = useState<Showing | null>(null);
 
   // Set the base URL for client-side API calls
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;
 
   // --- Data Fetching/Refetching (Client-side) ---
   const fetchShowings = useCallback(async () => {

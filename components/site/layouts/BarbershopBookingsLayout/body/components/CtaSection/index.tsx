@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function ContactCTASection() {
     const { storeFormData } = useStoreContext();

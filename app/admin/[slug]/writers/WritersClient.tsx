@@ -22,7 +22,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Modal from "@/components/Modal"; // Assuming you have a generic Modal component
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export type UserForWriter = {
   id: string;

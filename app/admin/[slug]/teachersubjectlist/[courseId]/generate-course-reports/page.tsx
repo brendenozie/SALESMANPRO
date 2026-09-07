@@ -4,7 +4,7 @@ import React from "react";
 import GenerateReportsPage from "./GenerateReportsPage";
 import { findCompanyCached } from '@/lib/company-fetcher';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 import { getAuthSession } from "@/lib/auth";
 import { cookies } from "next/headers";

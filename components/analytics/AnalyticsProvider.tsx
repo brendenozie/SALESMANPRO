@@ -11,17 +11,33 @@ interface AnalyticsProviderProps {
   };
 }
 
+function sanitizeTrackingId(id?: string | null): string | null {
+  if (!id || typeof id !== "string") return null;
+  const trimmed = id.trim();
+  if (!/^[a-zA-Z0-9_\-\.]+$/.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}
+
+function sanitizeNumericId(id?: string | null): string | null {
+  if (!id || typeof id !== "string") return null;
+  const trimmed = id.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}
+
 export default function AnalyticsProvider({ config }: AnalyticsProviderProps) {
   // Master killswitch: If config is missing or tracking is disabled, inject nothing.
   if (!config || !config.isActive) return null;
 
-  const { 
-    googleAnalyticsId, 
-    googleAdsId, 
-    facebookPixelId, 
-    tiktokPixelId, 
-    hotjarSiteId 
-  } = config;
+  const googleAnalyticsId = sanitizeTrackingId(config.googleAnalyticsId);
+  const googleAdsId = sanitizeTrackingId(config.googleAdsId);
+  const facebookPixelId = sanitizeNumericId(config.facebookPixelId);
+  const tiktokPixelId = sanitizeTrackingId(config.tiktokPixelId);
+  const hotjarSiteId = sanitizeNumericId(config.hotjarSiteId);
 
   return (
     <>

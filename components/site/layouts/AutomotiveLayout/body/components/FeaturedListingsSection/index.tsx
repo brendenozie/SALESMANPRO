@@ -7,8 +7,7 @@ import { createCachedFetcher } from "@/lib/swrCachedFetcher";
 import AutomotiveFeatured from "./AutomotiveFeatured";
 import { MarketListingForm } from "@/types/typings";
 
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const buildQuery = (
   companyId: string,

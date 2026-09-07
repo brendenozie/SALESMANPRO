@@ -10,7 +10,7 @@ import { findCompanyCached } from '@/lib/company-fetcher';
 // Import the Type Definition from the new Client Component
 import ShowingsClientPage, { Showing, SelectOption } from './ShowingsClientPage';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;
 
 // --- Interface for Server Component Props ---
 interface ShowingsPageProps {

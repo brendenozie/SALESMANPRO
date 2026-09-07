@@ -14,7 +14,7 @@ const INQUIRY_TOPICS = [
 
 export default function ContactSection() {
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
   const { storeFormData } = useStoreContext();
 

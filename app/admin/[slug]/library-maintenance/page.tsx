@@ -9,7 +9,7 @@ export default async function LibraryMaintenancePage({ params }: { params: Promi
   
   const cookieHeader = (await cookies()).toString();
   
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
   
     const session = await getAuthSession();
   

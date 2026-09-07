@@ -1,8 +1,8 @@
 // /lib/swrCachedFetcher.ts
 
 function normalizeApiUrl(url: string): string {
-  if (typeof window !== "undefined" && url.includes("localhost:3000/api") && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    return url.replace(/^https?:\/\/localhost:3000\/api/, "/api");
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return url.replace(/^https?:\/\/(localhost|127\.0\.0\.1):3000\/api/, "/api");
   }
   return url;
 }

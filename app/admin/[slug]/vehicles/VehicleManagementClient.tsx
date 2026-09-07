@@ -20,7 +20,7 @@ import {
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface VehicleManagementClientProps {
   companyId: string;

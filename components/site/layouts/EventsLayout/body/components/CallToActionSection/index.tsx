@@ -31,7 +31,7 @@ export default function CallToActionSection() {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'error' | 'submitting' | 'success'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

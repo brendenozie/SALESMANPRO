@@ -41,7 +41,7 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

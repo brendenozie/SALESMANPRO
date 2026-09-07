@@ -7,7 +7,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ApexOptions } from "apexcharts"; // Ensure ApexOptions is imported
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import ApexCharts for SSR safety
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });

@@ -24,7 +24,7 @@ import { useRouter } from 'next/navigation';
 // Import types from the server component file
 import type { EventData, CourseInfo } from './page';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Mocking context data for demonstration purposes (replace with actual context in your app)
 const useMockThemeSettings = () => ({

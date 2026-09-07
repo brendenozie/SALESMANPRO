@@ -49,7 +49,7 @@ const calculateProgress = (currentValue: number, goal: number) => {
 export default async function AgentDashboardPage() {
   
   const session = await getAuthSession();
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   if (!session) {
     return (

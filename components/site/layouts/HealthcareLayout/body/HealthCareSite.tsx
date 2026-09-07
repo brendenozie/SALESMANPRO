@@ -11,7 +11,7 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import HealthcareHero from './components/HeroSection';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Loading skeleton
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 

@@ -18,7 +18,7 @@ export default function NewsletterSection() {
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'submitting' | 'error' | 'success'>('idle');
   const [errorMessage, setErrorMessage] = React.useState('');
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
       const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

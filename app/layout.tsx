@@ -12,6 +12,7 @@ import { Metadata } from "next";
 import { getAuthSession } from "@/lib/auth";
 import TokenSignIn from "@/components/TokenSignIn";
 import ThemeProvider from "./theme-provider";
+import ClientSecurityGuard from "@/components/security/ClientSecurityGuard";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
@@ -123,6 +124,7 @@ export default async function RootLayout({
 
       <body>
         <ThemeProvider>
+          <ClientSecurityGuard />
           <Providers session={session}>
             <TokenSignIn />
             <main>{children}</main>

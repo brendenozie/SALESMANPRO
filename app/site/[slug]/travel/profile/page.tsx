@@ -10,7 +10,7 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 import { useStore } from '@/contexts/StoreContext';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface UserProfile {
   id: string;

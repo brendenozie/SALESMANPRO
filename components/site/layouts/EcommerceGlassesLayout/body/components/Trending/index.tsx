@@ -13,7 +13,7 @@ import 'slick-carousel/slick/slick-theme.css';
 // Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
 // based on your project's CSS setup if the imports above don't work globally.
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Custom Arrow Components for Slick ---
 // We'll use these to style the navigation arrows with Heroicons and Tailwind

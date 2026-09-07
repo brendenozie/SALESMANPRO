@@ -28,7 +28,7 @@ import {
 import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;

@@ -8,7 +8,7 @@ import {
   EyeIcon, UserIcon, XMarkIcon
 } from "@heroicons/react/24/solid";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Types
 // Define the Appointment interface based on the expected data from the backend

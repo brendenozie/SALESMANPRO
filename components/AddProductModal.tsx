@@ -28,7 +28,7 @@ import ImageUploader, { UnifiedMediaItem } from './ImageUploader';
 import { ProductForm, IStoreCategory, ILocation } from '@/types/typings';
 
 // NOTE: keep API constants consistent with your app's env
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Fast Mode Section Types

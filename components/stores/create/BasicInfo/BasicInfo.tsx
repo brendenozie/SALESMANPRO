@@ -18,7 +18,7 @@ import {
 import { ArrowPathIcon, StarIcon } from "@heroicons/react/20/solid";
 import { motion, AnimatePresence } from "framer-motion";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export interface BasicInfoProps {
   name: string;

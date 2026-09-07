@@ -28,7 +28,7 @@ import {
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface ClientProps {
   projectsData: Project[];

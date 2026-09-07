@@ -17,7 +17,7 @@ export default function StudentAssignmentsPage({
   enrolledClasses: any[];
 }) {
   // const { adminSlug, studentId } = await params;
-  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
 
   // // Fetch the student's specific class data
   // const response = await fetch(`${baseUrl}/api/parent/student-classes?studentId=${studentId}`, {

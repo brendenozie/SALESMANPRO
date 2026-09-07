@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon, FilmIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image, { ImageLoaderProps } from 'next/image';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Type Definitions ---
 interface Video {

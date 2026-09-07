@@ -26,7 +26,7 @@ import { toast, Toaster } from "react-hot-toast";
 import { PlanItem } from "./page"; // Assuming PlanItem is imported correctly
 import { SITE_TYPES } from "@/constant/SITE_TYPES"; // Assuming SITE_TYPES is an array of strings
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // =================================================================================================
 // TYPE DEFINITIONS (kept the same for brevity)

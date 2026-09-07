@@ -39,7 +39,7 @@ interface StudentAssignmentsPageClientProps {
   courseInfo?: CourseInfo; // Optional: if filtering by a specific course
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function StudentAssignmentsPageClient({
   studentName,

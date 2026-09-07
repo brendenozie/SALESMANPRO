@@ -7,7 +7,7 @@ import {
 import { useSession } from "next-auth/react";
 import axios from "axios";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const ProfileSettings = () => {
   const [isEditing, setIsEditing] = useState(false);

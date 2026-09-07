@@ -2,7 +2,7 @@ import UserLayout from "@/components/UserLayout";
 import UserNav from "@/components/UserNav";
 import DashNativeDND from "./DashNativeDND";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export const metadata = {
   title: "Task Dashboard | Salesman Pro",

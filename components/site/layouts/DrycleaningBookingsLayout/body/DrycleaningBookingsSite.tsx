@@ -11,7 +11,7 @@ import Hero from './components/HeroSection';
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import sections with heavy logic or animations
 const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });

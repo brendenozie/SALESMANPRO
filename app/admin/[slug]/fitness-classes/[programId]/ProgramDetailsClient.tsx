@@ -25,7 +25,7 @@ import AddEditLessonModal from "./AddEditLessonModal";
 import AddEditModuleModal from "./AddEditModuleModal";
 import AddResourceModal from "./AddResourceModal";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- UTILS: S3 UPLOAD HELPER ---
 async function uploadFiles(

@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import Slider from 'react-slick';
 
 // Styles for Slick should be imported in your global.css or layout
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const CustomArrow = ({ onClick, direction }: { onClick?: () => void, direction: 'left' | 'right' }) => (
   <button 

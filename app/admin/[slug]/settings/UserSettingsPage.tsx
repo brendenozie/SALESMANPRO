@@ -23,7 +23,7 @@ import { ProfileTab, SecurityTab, NotificationsTab, DomainTab, AccountTab } from
 import { KraTab } from './components/KraTab';
 import { WhatsAppAiTab } from './components/WhatsAppAiTab';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const A_RECORD_IP = process.env.VPS_IP || '161.97.149.171';
 
 export default function UserSettingsPage({ companyId }: { companyId: string }) {

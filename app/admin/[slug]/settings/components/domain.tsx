@@ -21,7 +21,7 @@ import { useSession, signOut } from 'next-auth/react';
 import clsx from 'clsx'; // Utility for conditional classes
 import { changePassword, deactivateAccount, logoutUser, updateNotificationPreferences, updateUserProfile } from '@/lib/user-actions';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
   
   // --- NEW: Derive CNAME Target and define A Record IP ---
   const A_RECORD_IP = process.env.VPS_IP || '161.97.149.171'; // From your example: A 14400 161.97.149.171
@@ -835,7 +835,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 // import { useSession, signOut } from 'next-auth/react';
 // import clsx from 'clsx'; // Utility for conditional classes
 
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // // --- MOCK CONTEXTS (Keep these for functionality) ---
 // const useMockStoreContext = () => ({

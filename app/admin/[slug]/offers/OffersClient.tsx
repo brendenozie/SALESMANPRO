@@ -25,7 +25,7 @@ import { OfferFormModal } from './OfferFormModal';
 import { OfferDetailsModal } from './OfferDetailsModal';
 
 // Use a proper environment variable for your API base URL
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';; // Ensure this points to your actual backend API
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";; // Ensure this points to your actual backend API
 
 // --- Type Definitions ---
 // Ensure this type matches your backend API's expected structure for OfferContract

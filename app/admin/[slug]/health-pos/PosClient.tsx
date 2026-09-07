@@ -66,7 +66,7 @@ const PosClient: React.FC<{
     
     const { storeFormData } = useStoreContext();
     const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
     // --- State ---
     // const [mode, setMode] = useState<'invoice' | 'appointment'>('invoice');

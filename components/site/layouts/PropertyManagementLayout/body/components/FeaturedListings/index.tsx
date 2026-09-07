@@ -11,8 +11,7 @@ import { useSearchParams } from "next/navigation";
 import PropertyCard from '../PropertyCard';
 
 // API BASE
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Build dynamic search URL for real estate
 const buildQuery = (companyId: string, params: URLSearchParams) => {

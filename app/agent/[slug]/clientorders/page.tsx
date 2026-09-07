@@ -33,7 +33,7 @@ const ProductRequestsPage = () => {
 
   const itemsPerPage = 5;
   const salesAgentId = "63f7c9e2d91b1b2a5e80b016";
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   // --- Fetch Requests ---
   useEffect(() => {

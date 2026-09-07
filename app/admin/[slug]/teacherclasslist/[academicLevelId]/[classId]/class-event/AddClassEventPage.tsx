@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import EventFormModal from './EventFormModal';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Type Definitions (Aligned with Event API Response) ---
 export type EventData = {

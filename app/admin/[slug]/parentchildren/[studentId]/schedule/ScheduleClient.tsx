@@ -19,7 +19,7 @@ export default  function ScheduleClient({adminSlug,
   enrolledClasses: any[]; 
 }) {
   // const { adminSlug, studentId } = await params;
-  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
 
   // const response = await fetch(`${baseUrl}/api/parent/student-classes?studentId=${studentId}`, {
   //   cache: 'no-store',

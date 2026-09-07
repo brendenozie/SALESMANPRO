@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 // Define the API Base URL
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function ContactCTASection() {
   const { storeFormData } = useStoreContext();

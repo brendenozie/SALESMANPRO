@@ -14,7 +14,7 @@ import {
   MagnifyingGlassCircleIcon 
 } from "@heroicons/react/24/outline";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const FiltersV1 = ({ filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);

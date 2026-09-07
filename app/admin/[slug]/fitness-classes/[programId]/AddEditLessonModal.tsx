@@ -10,7 +10,7 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const AddEditLessonModal = ({ isOpen, onClose, moduleId, onAdded, editData, course }: any) => {
   const [title, setTitle] = useState("");

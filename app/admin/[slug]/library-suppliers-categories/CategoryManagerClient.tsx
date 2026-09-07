@@ -23,7 +23,7 @@ interface Props {
   schoolId: string;
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const CategoryManagerClient: React.FC<Props> = ({ initialCategories, schoolId }) => {
   const [categories, setCategories] = useState<Category[]>(initialCategories);

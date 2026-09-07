@@ -20,7 +20,7 @@ interface Props {
   categories: IStoreCategory[];
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 /**
  * REFINED UPLOAD UTILITY: Handles S3 rate limits via Concurrency Control

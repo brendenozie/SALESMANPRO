@@ -12,7 +12,7 @@ import {
   AcademicCapIcon, // For class count
 } from '@heroicons/react/24/outline';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Define the shape of department data received from API
 export type DepartmentData = {

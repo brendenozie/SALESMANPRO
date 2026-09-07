@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Helper to determine color based on grade
 const getGradeColor = (grade: string) => {
@@ -23,7 +23,7 @@ export default function AcademicsClient({
   adminSlug, studentId, studentName, studentGradeLevel, enrolledClasses 
 }:any) {
   // const { adminSlug, studentId } = await params;
-  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
 
   // 1. Fetch data from our student-classes API
   // const response = await fetch(`${apiBaseUrl}/parent/student-classes?studentId=${studentId}`, {

@@ -14,7 +14,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default async function AdminCheckinPage({ params }: Props) {
   const { slug } = await params;

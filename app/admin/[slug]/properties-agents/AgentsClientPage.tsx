@@ -27,7 +27,7 @@ import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
 
 
 // --- Type Definitions (Defined here for the client's internal use and export to parent) ---

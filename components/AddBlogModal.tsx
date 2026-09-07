@@ -26,7 +26,7 @@ const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 // @ts-expect-error CSS side-effect import handled by bundler
 import "react-quill-new/dist/quill.snow.css";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const modules = {
   toolbar: [

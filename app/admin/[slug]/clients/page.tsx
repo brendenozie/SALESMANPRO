@@ -13,7 +13,7 @@ import ClientsClientPage, { ClientProfile } from './ClientsClientPage';
 import { findCompanyCached } from '@/lib/company-fetcher';
 import { getAuthSession } from '@/lib/auth';
 
-const apiBaseUrl = process.env.INTERNAL_API_URL || 'http://localhost:3000/api';
+const apiBaseUrl = process.env.INTERNAL_API_URL || "/api";
 
 
 // --- Interface for Server Component Props ---

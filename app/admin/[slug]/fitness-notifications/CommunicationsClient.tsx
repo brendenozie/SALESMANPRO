@@ -18,7 +18,7 @@ import toast from 'react-hot-toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import CommunicationModal, { CommunicationData } from './CommunicationModal';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const containerVariants = {
   hidden: { opacity: 0 },

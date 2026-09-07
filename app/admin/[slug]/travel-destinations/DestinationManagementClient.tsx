@@ -17,7 +17,7 @@ import {
 
 import { DestinationFormModal, DeleteConfirmModal, Destination } from './DestinationFormModal';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface Location {
   id: string;

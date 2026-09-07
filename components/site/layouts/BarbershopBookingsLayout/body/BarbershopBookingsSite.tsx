@@ -13,7 +13,7 @@ import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 // Updated Skeleton: Adaptive colors for light/dark transition
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import below-the-fold components
 const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });

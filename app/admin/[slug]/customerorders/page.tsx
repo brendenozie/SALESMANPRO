@@ -14,7 +14,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const { page = "1", search = "" } = await searchParams;
   const cookieStore = (await cookies()).toString();
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   let orders = [];
   let riders = [];

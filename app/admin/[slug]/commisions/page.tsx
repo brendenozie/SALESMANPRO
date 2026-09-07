@@ -27,7 +27,7 @@ export default async function TasksPage({ params }: PageProps) {
     // Use the actual database ID for your API calls, ensuring consistency
     const companyId = company.id;
 
-  const url = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const url = process.env.NEXT_PUBLIC_API_URL || "/api";
   let tasksData = [];
 
   try {

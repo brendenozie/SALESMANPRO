@@ -32,7 +32,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 // Assuming this is still used from the outer component's type definition
 // export type Rider = { /* ... */ }; 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Basic Modal Component (Kept same) ---
 interface ModalProps {

@@ -33,7 +33,7 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
   // Transformed corporate copy matrix with definitive rollbacks
   const ctaTitle = 'Optimize Your Cash Flow & Trade Speed';

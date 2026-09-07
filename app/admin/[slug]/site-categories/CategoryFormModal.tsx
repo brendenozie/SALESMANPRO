@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface ModalProps {
   isOpen: boolean;
@@ -283,7 +283,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
 // import { motion } from 'framer-motion';
 
 
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // // Import your helpers (ensure these are exported from your client page or a utils file)
 // // For this block, I'm assuming they are available or defined in the same scope.

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import ClientsContent from "./ClientsContent";
 
 async function getClientsData() {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const url = process.env.NEXT_PUBLIC_API_URL || "/api";
   try {
     const res = await fetch(`${url}/agent/clients`, {
       next: { revalidate: 60 }, // revalidate data every 1 minute

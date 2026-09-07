@@ -10,7 +10,7 @@ import { StoreForm } from '@/types/typings';
 import HeroSection from './components/HeroSection';
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Loading skeleton
 
 // Dynamically import below-the-fold components

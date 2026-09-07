@@ -31,7 +31,7 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default async function ClientInventoryPage({ params }: PageProps) {
 

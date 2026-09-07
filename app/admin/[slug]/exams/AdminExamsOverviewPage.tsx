@@ -25,7 +25,7 @@ import Link from 'next/link';
 import { ClassRoomOption } from '../students/StudentsClient';
 import { AcademicYear } from '../academic-years/page';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Type Definitions ---
 export type ExamData = {

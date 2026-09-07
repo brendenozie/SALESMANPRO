@@ -12,7 +12,7 @@ import { StoreForm } from '@/types/typings';
 import HeroSection from './components/HeroSection';
 import PopularProductsSection from './components/PopularSection';
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
-const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Loading skeleton
 

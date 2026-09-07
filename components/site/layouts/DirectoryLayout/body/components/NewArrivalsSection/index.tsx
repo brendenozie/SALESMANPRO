@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { MarketListingForm } from "@/types/typings";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;

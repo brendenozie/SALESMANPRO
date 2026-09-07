@@ -17,7 +17,7 @@ import {
 import toast from 'react-hot-toast';
 import { TravelBookingData } from './page';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface ClientOption {
   id: string;

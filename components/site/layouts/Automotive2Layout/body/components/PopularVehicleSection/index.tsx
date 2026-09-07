@@ -8,8 +8,7 @@ import { MarketListingForm } from "@/types/typings";
 import PopularVehiclesSection from "./PopularVehiclesSection";
 
 // API base
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Build dynamic URL for vehicle search
 const buildQuery = (companyId: string, params: URLSearchParams) => {

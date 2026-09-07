@@ -17,7 +17,7 @@ import {
   CheckIcon
 } from "@heroicons/react/24/outline";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Types & Interfaces ---
 
@@ -434,7 +434,7 @@ export default function CategoryManager() {
 // import { useState, useEffect } from "react";
 // import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // interface Subcategory {
 //   id: string | null;

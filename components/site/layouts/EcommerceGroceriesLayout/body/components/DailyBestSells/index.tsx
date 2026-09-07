@@ -20,7 +20,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Sophisticated Custom Arrows ---
 const SlickArrow = ({ direction, onClick }: { direction: 'left' | 'right', onClick?: () => void }) => (

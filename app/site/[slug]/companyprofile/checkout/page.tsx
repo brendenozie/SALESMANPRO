@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useStoreContext } from '@/contexts/StoreContext';
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const steps = ["Billing", "Payment", "Review"];
 
 export default function CheckoutPage() {
@@ -495,7 +495,7 @@ export default function CheckoutPage() {
 //   },
 // };
 
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // export default function CheckoutPage() {
 //   const store = useStore();

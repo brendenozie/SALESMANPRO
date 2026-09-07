@@ -4,7 +4,7 @@ import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
 import { EmailConfigDTO } from "@/lib/email/types";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const defaultSettings: EmailConfigDTO = {
   scope: "STORE",

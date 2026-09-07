@@ -19,7 +19,7 @@ import AddDonationForm from "./AddDonationForm";
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Placeholder types for dropdowns - In a real app, these would be fetched from your APIs
 type UserOption = { id: string; name: string; email: string };

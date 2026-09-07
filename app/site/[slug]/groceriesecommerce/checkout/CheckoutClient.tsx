@@ -42,7 +42,7 @@ const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: stri
 
 const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Types ---
 interface PublicPaymentMethod {

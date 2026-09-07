@@ -15,7 +15,7 @@ const AssignCustomerProductModal = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [assignQuantity, setAssignQuantity] = useState(0);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   useEffect(() => {
     const fetchCustomers = async () => {

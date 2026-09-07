@@ -5,7 +5,7 @@ import React, { useState, useMemo } from "react";
 import { Member, ProjectOption, ProjectMember } from "./page";
 import Modal from "@/components/Modal"; // Adjust path as needed
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface ClientProps {
   membersData: Member[];

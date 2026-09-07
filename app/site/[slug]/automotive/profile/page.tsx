@@ -37,7 +37,7 @@ interface AutomotiveListing {
   year: number | null;
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const AutomotiveDashboard = () => {
   const { data: session, status } = useSession();

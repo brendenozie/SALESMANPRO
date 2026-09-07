@@ -21,7 +21,7 @@ import {
 // Dynamic import for ApexCharts
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const apiBaseUrl = 'http://127.0.0.1:3000/api';
+const apiBaseUrl = "/api";
 
 // --- APEX CHART COMPONENTS ---
 

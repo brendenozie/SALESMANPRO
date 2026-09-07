@@ -6,7 +6,7 @@ import { findCompanyCached } from '@/lib/company-fetcher';
 
 import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Define nested types for User and Company as they will be included by Prisma
 export type UserForWriter = {

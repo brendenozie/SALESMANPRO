@@ -60,6 +60,12 @@ export async function GET(req: Request) {
       searchParams.get("json") === "true" ||
       req.headers.get("accept")?.includes("application/json");
 
+    const hostHeader = req.headers.get("x-forwarded-host") || req.headers.get("host");
+    const protoHeader = req.headers.get("x-forwarded-proto") || "https";
+    const resolvedBaseUrl = hostHeader && !hostHeader.includes("localhost") && !hostHeader.includes("127.0.0.1")
+      ? `${protoHeader}://${hostHeader}`
+      : (process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "production" ? "https://salesmanpro.site" : "http://localhost:3000"));
+
     /* -------------------------------------------------------------------------- */
     /*                              PAYSTACK VERIFICATION                         */
     /* -------------------------------------------------------------------------- */
@@ -68,7 +74,7 @@ export async function GET(req: Request) {
         if (wantsJson) {
           return withCors({ success: false, message: "Missing Paystack reference" }, 400);
         }
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+        const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set("message", "Missing Paystack reference");
         return NextResponse.redirect(failureUrl);
       }
@@ -92,7 +98,7 @@ export async function GET(req: Request) {
         if (wantsJson) {
           return withCors({ success: false, message: "Failed to verify Paystack payment", data }, 400);
         }
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+        const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
           `Failed to verify Paystack payment: ${data.message || 'Unknown error'}`
@@ -123,7 +129,7 @@ export async function GET(req: Request) {
         if (wantsJson) {
           return withCors({ success: false, message: "Order not found for provided Paystack reference" }, 404);
         }
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+        const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
           "Order not found for provided Paystack reference"
@@ -185,7 +191,7 @@ export async function GET(req: Request) {
         if (wantsJson) {
           return withCors({ success: false, message: "Missing M-Pesa checkoutRequestId" }, 400);
         }
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+        const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set("message", "Missing M-Pesa checkoutRequestId");
         return NextResponse.redirect(failureUrl);
       }
@@ -208,7 +214,7 @@ export async function GET(req: Request) {
         if (wantsJson) {
           return withCors({ success: false, message: "Order not found for provided CheckoutRequestID" }, 404);
         }
-        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+        const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
           "Order not found for provided M-Pesa CheckoutRequestID"
@@ -232,7 +238,7 @@ export async function GET(req: Request) {
       if (wantsJson) {
         return withCors({ success: false, message: "Unsupported provider (use paystack or mpesa)" }, 400);
       }
-      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+      const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
       failureUrl.searchParams.set("message", "Unsupported provider (use paystack or mpesa)");
       return NextResponse.redirect(failureUrl);
     }
@@ -243,20 +249,20 @@ export async function GET(req: Request) {
 
     if (result.companySlug && result.orderTracking) {
       const storeSuccessUrl = new URL(
-        `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/site/${result.companySlug}/ecommerce/track`
+        `${resolvedBaseUrl}/site/${result.companySlug}/ecommerce/track`
       );
       storeSuccessUrl.searchParams.set("trackingNumber", result.orderTracking);
       return NextResponse.redirect(storeSuccessUrl);
     }
 
-    const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/success`);
+    const successUrl = new URL(`${resolvedBaseUrl}/subscription/success`);
     if (result.orderTracking) {
       successUrl.searchParams.set("trackingNumber", result.orderTracking);
     }
     return NextResponse.redirect(successUrl);
   } catch (error: any) {
     console.error("Payment verification error:", error);
-    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/subscription/failed`);
+    const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
     failureUrl.searchParams.set("message", error.message || "Internal server error");
     return NextResponse.redirect(failureUrl);
   }

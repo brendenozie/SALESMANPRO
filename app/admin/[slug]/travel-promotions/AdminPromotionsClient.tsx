@@ -15,7 +15,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import PromotionModal, { PromotionData } from './PromotionModal';
 import toast from 'react-hot-toast';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Accessible status styling for both light and dark backgrounds
 const getStatusClasses = (status: PromotionData['status']) => {

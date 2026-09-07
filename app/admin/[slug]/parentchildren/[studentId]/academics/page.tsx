@@ -5,11 +5,11 @@ import { getAuthSession } from '@/lib/auth';
 import AcademicsClient from './AcademicsClient';
 import { findCompanyCached } from '@/lib/company-fetcher';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default async function StudentAcademicsPage({ params }: { params: Promise<{ adminSlug: string; studentId: string }>}) {
   const { adminSlug, studentId } = await params;
-  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
   const cookieheader = (await cookies()).toString();
   const MOCK_PARENT_ID = "685084cc4da288b5c3156e4a"; // Replace with actual parent ID from session or params
 

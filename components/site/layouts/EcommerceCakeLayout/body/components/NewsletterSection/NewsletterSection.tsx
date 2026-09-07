@@ -14,7 +14,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();

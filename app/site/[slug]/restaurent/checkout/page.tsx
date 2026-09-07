@@ -32,7 +32,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function CheckoutPage(): JSX.Element {
   const { data: session } = useSession();

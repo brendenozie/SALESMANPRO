@@ -28,7 +28,7 @@ interface PropertyClientPageProps {
   serverLoadError: string | null;
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function PropertyClientPage({
   companyId,
@@ -46,7 +46,7 @@ export default function PropertyClientPage({
   const [selectedProperty, setSelectedProperty] = useState<MarketListingForm | null>(null);
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   // --- Logic ---
   const stats = useMemo(() => ({

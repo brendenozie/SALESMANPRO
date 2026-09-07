@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { IStoreCategory } from "@/types/typings";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // S3 File Upload Handler
 export async function uploadFiles(

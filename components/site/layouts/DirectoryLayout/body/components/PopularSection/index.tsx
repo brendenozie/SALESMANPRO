@@ -53,8 +53,7 @@ export default function PopularProductsSection({
   id: string;
   currency?: string;
 }) {
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isPopular&limit=12`;
   const cacheKey = `popular-products-${id}`;

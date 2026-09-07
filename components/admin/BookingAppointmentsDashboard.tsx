@@ -18,7 +18,7 @@ import { useParams } from 'next/navigation';
 // Dynamically import ApexCharts
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- FUNCTIONAL APEX CHART COMPONENTS ---
 

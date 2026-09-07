@@ -79,7 +79,7 @@ export default function HeroCtaSection({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
   // Select the first AppPromo if available, or use a default structure
   const mainAppPromo = (Array.isArray(appPromos) && appPromos.length > 0)

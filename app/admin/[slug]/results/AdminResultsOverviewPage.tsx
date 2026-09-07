@@ -19,7 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- Type Definitions (Aligned with ExamSubmission GET for Admin Overview) ---
 export type ExamSubmissionDataForAdmin = {

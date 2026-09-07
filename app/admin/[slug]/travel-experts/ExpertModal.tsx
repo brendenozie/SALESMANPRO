@@ -7,7 +7,7 @@ import { BriefcaseIcon, GlobeAltIcon, EnvelopeIcon, PhoneIcon, ChatBubbleBottomC
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Define the ExpertData interface to match the expected API response
 export interface ExpertData {

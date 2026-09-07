@@ -27,7 +27,7 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1); // New state for stepper
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
   // --- Data Fetching ---
   useEffect(() => {
