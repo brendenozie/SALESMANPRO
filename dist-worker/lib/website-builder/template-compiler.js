@@ -1077,6 +1077,7 @@ function compileDefaultPages(company, homepageSections) {
                 seo: {
                     metaTitle: company.SEO?.title || `${company.name} | Official Storefront`,
                     metaDescription: company.SEO?.description || company.description || "Browse our catalog of verified products.",
+                    noIndex: false,
                 },
                 sections: homepageSections,
             };
@@ -1122,7 +1123,7 @@ function compileDefaultPages(company, homepageSections) {
                     },
                     styles: { paddingTop: "xl", paddingBottom: "xl", textAlign: "left" },
                     responsive: { columnsMobile: 2, columnsTablet: 3, columnsDesktop: 6, hideOnMobile: false, hideOnDesktop: false },
-                    dataSource: { type: "categories" },
+                    dataSource: { type: "categories", filter: "featured", limit: 6 },
                 },
             ];
         }
@@ -1207,6 +1208,7 @@ function compileDefaultPages(company, homepageSections) {
             seo: {
                 metaTitle: `${tp.title} | ${company.name}`,
                 metaDescription: `${tp.title} at ${company.name}.`,
+                noIndex: false,
             },
             sections,
         };
@@ -1231,6 +1233,7 @@ function compileWebsiteFromCompany(company) {
         theme,
         navigation,
         pages,
+        componentOverrides: {},
         publishedAt: new Date().toISOString(),
     };
 }

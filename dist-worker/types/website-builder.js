@@ -105,16 +105,13 @@ exports.NavigationConfigSchema = zod_1.z.object({
         copyrightText: zod_1.z.string().default("All rights reserved."),
     }).default({}),
 });
-/* =========================================================================
-   3. SECTION DEFINITIONS & COMMERCE DATA SOURCES
-   ========================================================================= */
 exports.CommerceDataSourceSchema = zod_1.z.object({
     type: zod_1.z.enum(["products", "categories", "promotions", "testimonials", "manual", "static"]),
     filter: zod_1.z.string().optional().default("featured"),
     categoryId: zod_1.z.string().optional(),
     manualIds: zod_1.z.array(zod_1.z.string()).optional(),
-    limit: zod_1.z.number().min(1).max(24).default(8),
-});
+    limit: zod_1.z.number().min(1).max(24).optional().default(8),
+}).passthrough();
 exports.SectionStyleSchema = zod_1.z.object({
     paddingTop: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).optional().default("lg"),
     paddingBottom: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).optional().default("lg"),
@@ -307,16 +304,13 @@ exports.WebsiteSectionSchema = zod_1.z.object({
     responsive: exports.SectionResponsiveSchema.default({}),
     dataSource: exports.CommerceDataSourceSchema.optional(),
 });
-/* =========================================================================
-   6. PAGE MODEL
-   ========================================================================= */
 exports.PageSeoSchema = zod_1.z.object({
     metaTitle: zod_1.z.string().optional(),
     metaDescription: zod_1.z.string().optional(),
     ogImage: zod_1.z.string().optional(),
     canonicalUrl: zod_1.z.string().optional(),
-    noIndex: zod_1.z.boolean().default(false),
-});
+    noIndex: zod_1.z.boolean().optional().default(false),
+}).passthrough();
 exports.WebsitePageSchema = zod_1.z.object({
     id: zod_1.z.string(),
     title: zod_1.z.string(),
@@ -327,9 +321,6 @@ exports.WebsitePageSchema = zod_1.z.object({
     seo: exports.PageSeoSchema.default({}),
     sections: zod_1.z.array(exports.WebsiteSectionSchema).default([]),
 });
-/* =========================================================================
-   7. COMPLETE WEBSITE DRAFT / PUBLISHED COMPILED CONFIG
-   ========================================================================= */
 exports.CompiledWebsiteConfigSchema = zod_1.z.object({
     version: zod_1.z.literal(1).default(1),
     templateKey: zod_1.z.string().default("ecommerce"),
@@ -338,9 +329,9 @@ exports.CompiledWebsiteConfigSchema = zod_1.z.object({
     theme: exports.ThemeTokensSchema.default({}),
     navigation: exports.NavigationConfigSchema.default({}),
     pages: zod_1.z.array(exports.WebsitePageSchema).default([]),
-    componentOverrides: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).default({}),
+    componentOverrides: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).optional().default({}),
     publishedAt: zod_1.z.string().optional(),
-});
+}).passthrough();
 exports.SECTION_REGISTRY = {
     hero: {
         type: "hero",
