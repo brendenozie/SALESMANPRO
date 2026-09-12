@@ -115,9 +115,22 @@ export async function GET(req: Request) {
         isFlashDeal: true,
         isDiscounted: true,
         category: true,
+        subCategory: true,
         subCategoryName: true,
         brand: true,
         productCategoryId: true,
+        productCategory: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        make: true,
+        model: true,
+        vin: true,
+        bedrooms: true,
+        duration: true,
         option: true,
         // Store attribution
         company: {

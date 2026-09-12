@@ -59,8 +59,15 @@ const DynamicGhubaProductCard = dynamic(
   }
 );
 
-// --- TYPE DEFINITIONS ---
-export type ProductType = "PROPERTY" | "AUTO" | "SERVICE" | "ECOMMERCE";
+import {
+  ProductType,
+  ProductCapabilities,
+  ProductWithCapabilities,
+  resolveProductType,
+  withCapabilities,
+} from "@/lib/ghuba-product-type";
+
+export type { ProductType, ProductCapabilities, ProductWithCapabilities };
 
 export interface OptionItem {
   category: string;
@@ -84,180 +91,10 @@ export interface ImageObject {
   url?: string;
 }
 
-
-
-export interface ProductCapabilities {
-  canAddToCart: boolean;
-  canBookSession: boolean;
-  canInquire: boolean;
-  isPhysicalAsset: boolean;
-}
-
-export interface ProductWithCapabilities extends MarketListingForm {
-  capabilities: ProductCapabilities;
-}
-
 export interface ProductPageProps {
   listing: MarketListingForm;
   related?: MarketListingForm[];
 }
-
-
-  // --- DYNAMIC TYPE DETECTION ---
-  // const itemType = useMemo(() => {
-  //   // Flatten category data for comprehensive checking
-  //   const cat = [
-  //     product.category, 
-  //     product.productCategory?.name, 
-  //     product.subCategoryName, 
-  //     product.subCategory?.name
-  //   ].filter(Boolean).join(" ").toLowerCase();
-    
-  //   // 1. EXPLICIT E-COMMERCE OVERRIDES (Intercepts Agricultural, Tools, Brands, etc.)
-  //   const explicitEcommerceKeywords = [
-  //     "seeds", "fertilizers", "animal feeds", "veterinary", "farm tools", "equipment",
-  //     "pest control", "irrigation", "greenhouse", "agricultural", "livestock", "medicine",
-  //     "farm machinery", "agribusiness", "farming", "agroforestry", "hydroponics",
-  //     "aquaponics", "agro-processing", "agro-inputs", "ppe", "agro"
-  //   ];
-    
-  //   const isExplicitEcommerce = explicitEcommerceKeywords.some(k => cat.includes(k));
-
-  //   // 2. AUTO ACCESSORY OVERRIDES (Intercepts Parts, Care, etc.)
-  //   const autoAccessoryKeywords = [
-  //     "accessories", "performance parts", "car care", "charging stations", "tires", "wheels",
-  //     "audio", "navigation", "interior", "exterior", "safety", "emergency", "fluids", "oils",
-  //     "batteries", "power systems", "lighting", "bulbs", "dash cams", "cameras", "security",
-  //     "tracking", "diagnostic", "electronics", "tools", "parts", "camper", "sunroof", "wipers",
-  //     "washers", "steering", "pedals", "seat covers", "mats", "wraps", "decals", "towing", 
-  //     "trailers", "exhaust", "mufflers", "transmission", "drivetrain", "cooling", "radiators", 
-  //     "suspension", "engine"
-  //   ];
-    
-  //   const isAutoAccessory = autoAccessoryKeywords.some(k => cat.includes(k));
-
-  //   if (isExplicitEcommerce || isAutoAccessory) {
-  //     return "ECOMMERCE";
-  //   }
-
-  //   // 3. Property Listings
-  //   if (cat.includes("property") || cat.includes("real estate") || cat.includes("land") || cat.includes("apartments") || Boolean(product.bedrooms)) return "PROPERTY";
-    
-  //   // 4. Automotive (Stricter physical vehicle check, removed generic mileage)
-  //   if (cat.includes("auto") || cat.includes("cars") || cat.includes("vehicle") || cat.includes("motorcycle") || Boolean(product.vin) || Boolean(product.logbookStatus)) return "AUTO";
-    
-  //   // 5. Services & Booking
-  //   if (cat.includes("service") || cat.includes("consulting") || cat.includes("cleaning") || cat.includes("plumbing") || cat.includes("tutoring") || cat.includes("coaching") || Boolean(product.duration)) return "SERVICE";
-    
-  //   // 6. Default to Standard E-Commerce
-  //   return "ECOMMERCE";
-  // }, [product]);
-
-  // // --- CART & OPTIONS LOGIC (ECOMMERCE ONLY) ---
-  // const hasOptions = itemType === "ECOMMERCE" && (product.hasOptions || (product.options && product.options.length > 0));
-
-
-// --- UTILITY & RESOLUTION FUNCTIONS ---
-const resolveProductType = (listing: MarketListingForm): ProductType => {
-
-  // const cat = (listing.category?.toLowerCase() === "cars" || listing.productCategory?.name?.toLowerCase() === "cars")
-  //   ? (listing.subCategoryName || listing.subCategory.name || listing.subCategory.displayName || listing.productCategory?.name || "").toLowerCase()
-  //   : (listing.productCategory?.name || listing.category || "").toLowerCase();
-
-  // Flatten category data for comprehensive checking
-  const cat = [
-    listing.category, 
-    listing.productCategory?.name, 
-    listing.subCategoryName, 
-    listing.subCategory?.name
-  ].filter(Boolean).join(" ").toLowerCase();
-
-  // 1. EXPLICIT E-COMMERCE OVERRIDES
-  // Forces agricultural items, farm inputs, and specific brands to always show "Add to Cart"
-  const explicitEcommerceKeywords = [
-    "seeds", "fertilizers", "animal feeds", "veterinary", "farm tools", "equipment",
-    "pest control", "irrigation", "greenhouse", "agricultural", "livestock", "medicine",
-    "farm machinery", "agribusiness", "farming", "agroforestry", "hydroponics",
-    "aquaponics", "agro-processing", "agro-inputs", "ppe", "agro"
-  ];
-  
-  const isExplicitEcommerce = explicitEcommerceKeywords.some(k => cat.includes(k));
-
-  // Auto accessories override
-  const autoAccessoryKeywords = [
-    "accessories", "performance parts", "car care", "charging stations", "tires", "wheels",
-    "audio", "navigation", "interior", "exterior", "safety", "emergency", "fluids", "oils",
-    "batteries", "power systems", "lighting", "bulbs", "dash cams", "cameras", "security",
-    "tracking", "diagnostic", "electronics", "tools", "parts", "camper", "sunroof", "wipers",
-    "washers", "steering", "pedals", "seat covers", "mats", "wraps", "decals", "towing", 
-    "trailers", "exhaust", "mufflers", "transmission", "drivetrain", "cooling", "radiators", 
-    "suspension", "engine"
-  ];
-  
-  const isAutoAccessory = autoAccessoryKeywords.some(k => cat.includes(k));
-
-  // Priority Interception: If it's an accessory or explicitly agriculture/ecommerce, return immediately
-  if (isExplicitEcommerce || isAutoAccessory) {
-    return "ECOMMERCE";
-  }
-
-  // 2. STANDARD CATEGORY KEYWORDS
-  const propertyKeywords = [
-    "real estate", "property", "houses", "land", "commercial", "apartments", 
-    "vacation rentals", "warehouses", "gated communities", "offices", 
-    "serviced apartments", "hostels", "shared housing", "shops", "farms", 
-    "hotels", "event spaces"
-  ];
-  
-  const autoKeywords = [
-    "automotive", "cars", "motorcycles", "electric vehicles", "luxury cars", 
-    "off-road vehicles", "classic & vintage cars", "used cars", "salvage vehicles", 
-    "new cars", "pickup trucks", "commercial vehicles", "sports cars", "vans", 
-    "delivery trucks", "buses"
-  ];
-  
-  const serviceKeywords = [
-    "services", "company services", "cleaning", "drycleaning", "plumbing", 
-    "electrical", "landscaping", "catering", "transportation", "it services", 
-    "beauty services", "barbershop", "tutoring", "event planning", "tutors", 
-    "travel & experiences", "tour packages", "consulting", "coaching", "consultant", 
-    "coach", "therapist", "security services", "fitness & wellness", "delivery & logistics", 
-    "logistics & delivery", "booking"
-  ];
-
-  // 3. Check for Property (Refined area check to prevent coverage metrics from triggering property)
-  if (propertyKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.bedrooms)) {
-    return "PROPERTY";
-  }
-
-  // 4. Check for Auto
-  if (
-    autoKeywords.some(k => cat === k || cat.includes(k)) || 
-    (cat.includes("automotive")) || 
-    Boolean(listing.vin) || 
-    Boolean(listing.logbookStatus)
-  ) {
-    return "AUTO";
-  }
-
-  // 5. Check for Service
-  if (serviceKeywords.some(k => cat.includes(k) || cat === k) || Boolean(listing.duration)) {
-    return "SERVICE";
-  }
-
-  // 6. Default to Ecommerce
-  return "ECOMMERCE";
-};
-
-const withCapabilities = (listing: MarketListingForm, type: ProductType): ProductWithCapabilities => ({
-  ...listing,
-  capabilities: {
-    canAddToCart: type === "ECOMMERCE",
-    canBookSession: type === "PROPERTY" || type === "SERVICE",
-    canInquire: type === "AUTO" || type === "PROPERTY" || type === "SERVICE",
-    isPhysicalAsset: type === "PROPERTY" || type === "AUTO",
-  },
-});
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   if (src.startsWith("http://") || src.startsWith("https://")) {

@@ -16,6 +16,20 @@ const listingSelect = {
   isNewArrival: true,
   brand: true,
   productCategoryId: true,
+  category: true,
+  subCategoryName: true,
+  subCategory: true,
+  productCategory: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  make: true,
+  model: true,
+  vin: true,
+  bedrooms: true,
+  duration: true,
 };
 
 const listingWhere = {
