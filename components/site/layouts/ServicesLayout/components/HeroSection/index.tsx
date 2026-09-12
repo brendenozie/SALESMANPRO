@@ -15,6 +15,7 @@ import {
   ClockIcon
 } from "@heroicons/react/24/outline";
 import { HeroSlide, MarketListingForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 import bannerLaundry from "@/assets/homebanner.png";
 
@@ -159,21 +160,55 @@ export default function HeroSection({
             {/* Interactive Concept Sub-Badge */}
             <div className="mb-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white shadow-sm border border-gray-100 text-xs font-bold uppercase tracking-widest text-gray-700">
               <SparklesIcon className="h-3.5 w-3.5" style={{ color: primaryColor }} />
-              <span>{firstSlide.badgeText || description}</span>
+              <EditableElement
+                targetId="services.home.hero.HeroSection.main.badgeText"
+                componentKey="HeroSection"
+                elementKey="badgeText"
+                label="Badge Text"
+                defaultValue={firstSlide.badgeText || description}
+                inline
+              >
+                {(val) => <span>{val}</span>}
+              </EditableElement>
             </div>
 
             {/* Dynamic Headline Composition */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tight text-gray-900 uppercase">
-              {firstSlide.headline?.split(" ")[0]} <br />
-              <span className="font-light italic lowercase tracking-normal" style={{ color: primaryColor }}>
-                {firstSlide.headline?.split(" ").slice(1).join(" ") || "Redefined."}
-              </span>
-            </h1>
+            <EditableElement
+              targetId="services.home.hero.HeroSection.main.headline"
+              componentKey="HeroSection"
+              elementKey="headline"
+              label="Headline"
+              defaultValue={firstSlide.headline}
+            >
+              {(val) => {
+                const hl = typeof val === "string" ? val : (firstSlide.headline || "");
+                const firstWord = hl.split(" ")[0] || "";
+                const restWords = hl.split(" ").slice(1).join(" ");
+                return (
+                  <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tight text-gray-900 uppercase">
+                    {firstWord} <br />
+                    <span className="font-light italic lowercase tracking-normal" style={{ color: primaryColor }}>
+                      {restWords || "Redefined."}
+                    </span>
+                  </h1>
+                );
+              }}
+            </EditableElement>
 
             {/* Narrative Sub-Description */}
-            <p className="mt-6 text-lg sm:text-xl font-normal text-gray-600 leading-relaxed max-w-md">
-              {firstSlide.subline || "Experience customized operational perfection built cleanly around your custom calendar framework."}
-            </p>
+            <EditableElement
+              targetId="services.home.hero.HeroSection.main.subline"
+              componentKey="HeroSection"
+              elementKey="subline"
+              label="Subline"
+              defaultValue={firstSlide.subline || "Experience customized operational perfection built cleanly around your custom calendar framework."}
+            >
+              {(val) => (
+                <p className="mt-6 text-lg sm:text-xl font-normal text-gray-600 leading-relaxed max-w-md">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
 
             {/* Cinematic Interaction Trigger Button */}
             <div className="mt-10 w-full sm:w-auto">
@@ -184,10 +219,21 @@ export default function HeroSection({
                 whileHover={{ scale: 1.03, boxShadow: `0 20px 35px -10px ${primaryColor}50` }}
                 whileTap={{ scale: 0.98 }}
               >
-                <span className="relative z-10 flex items-center justify-center gap-3">
-                  {firstSlide.ctaText || "Secure Your Session"} 
-                  <ArrowRightIcon className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-2" />
-                </span>
+                <EditableElement
+                  targetId="services.home.hero.HeroSection.main.ctaText"
+                  componentKey="HeroSection"
+                  elementKey="ctaText"
+                  label="Button Text"
+                  defaultValue={firstSlide.ctaText || "Secure Your Session"}
+                  inline
+                >
+                  {(val) => (
+                    <span className="relative z-10 flex items-center justify-center gap-3">
+                      {val} 
+                      <ArrowRightIcon className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-2" />
+                    </span>
+                  )}
+                </EditableElement>
                 {/* Micro Glare Shimmer Track Effect */}
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 ease-out" />
               </motion.button>

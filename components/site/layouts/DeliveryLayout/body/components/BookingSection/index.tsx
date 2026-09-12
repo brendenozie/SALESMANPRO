@@ -20,9 +20,23 @@ import { PlayIcon as PlayIconSolid } from "@heroicons/react/24/solid";
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export function BookingSection({ storeFormData }: {storeFormData?: any}) {
+import { EditableElement } from "@/contexts/EditableContentContext";
+
+export interface BookingSectionProps {
+  storeFormData?: any;
+  config?: any;
+  sectionId?: string;
+}
+
+export function BookingSection({ storeFormData, config, sectionId }: BookingSectionProps) {
   const [activeTab, setActiveTab] = useState("quote");
   const marketplaceListings = storeFormData?.marketplaceListings || [];
+  const sId = sectionId || "booking";
+
+  const badgeText = config?.badge || "Global Logistics Hub";
+  const titleText = config?.title || "Streamline Your Supply Chain";
+  const descriptionText = config?.description || "Get instant access to real-time quotes and tracking. We don't just move freight; we move your business forward with precision.";
+  const buttonText = config?.buttonText || "Get Estimate";
 
   const tabs = [
     { id: "quote", label: "Request a Quote", icon: <PaperAirplaneIcon className="w-4 h-4" />, color: "bg-blue-700" },
@@ -77,28 +91,69 @@ export function BookingSection({ storeFormData }: {storeFormData?: any}) {
               className="inline-flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md"
             >
               <GlobeAltIcon className="w-4 h-4 text-[#f7941d] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80">Global Logistics Hub</span>
+              <EditableElement
+                targetId={`delivery.home.${sId}.BookingSection.badge`}
+                componentKey="BookingSection"
+                elementKey="badge"
+                label="Badge Text"
+                defaultValue={badgeText}
+                type="text"
+              >
+                {(val) => (
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80">
+                    {val !== undefined && val !== null ? val : badgeText}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
 
-            <motion.h2 
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black text-white leading-none uppercase italic"
             >
-              Streamline <br />
-              <span className="text-[#f7941d] not-italic">Your Supply</span> <br />
-              Chain
-            </motion.h2>
+              <EditableElement
+                targetId={`delivery.home.${sId}.BookingSection.title`}
+                componentKey="BookingSection"
+                elementKey="title"
+                label="Headline"
+                defaultValue={titleText}
+                type="text"
+              >
+                {(val) => (
+                  <h2 className="text-5xl md:text-7xl font-black text-white leading-none uppercase italic">
+                    {val !== undefined && val !== null ? val : (
+                      <>
+                        Streamline <br />
+                        <span className="text-[#f7941d] not-italic">Your Supply</span> <br />
+                        Chain
+                      </>
+                    )}
+                  </h2>
+                )}
+              </EditableElement>
+            </motion.div>
 
-            <motion.p 
+            <motion.div 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-gray-400 max-w-md text-lg leading-relaxed font-light"
             >
-              Get instant access to real-time quotes and tracking. We don&apos;t just move freight; we move your business forward with precision.
-            </motion.p>
+              <EditableElement
+                targetId={`delivery.home.${sId}.BookingSection.description`}
+                componentKey="BookingSection"
+                elementKey="description"
+                label="Description"
+                defaultValue={descriptionText}
+                type="textarea"
+              >
+                {(val) => (
+                  <p className="text-gray-400 max-w-md text-lg leading-relaxed font-light">
+                    {val !== undefined && val !== null ? val : descriptionText}
+                  </p>
+                )}
+              </EditableElement>
+            </motion.div>
           </div>
 
           {/* Right Side: Interactive Card */}
@@ -161,10 +216,21 @@ export function BookingSection({ storeFormData }: {storeFormData?: any}) {
                         </div>
                       </div>
 
-                      <button className="w-full py-5 bg-[#f7941d] hover:bg-white hover:text-black text-white font-black uppercase text-xs tracking-[0.3em] rounded-xl transition-all flex items-center justify-center gap-3 group/btn">
-                        Get Estimate 
-                        <PaperAirplaneIcon className="w-4 h-4 group-hover/btn:translate-x-2 group-hover/btn:-translate-y-1 transition-transform" />
-                      </button>
+                      <EditableElement
+                        targetId={`delivery.home.${sId}.BookingSection.buttonText`}
+                        componentKey="BookingSection"
+                        elementKey="buttonText"
+                        label="Estimate Button Text"
+                        defaultValue={buttonText}
+                        type="text"
+                      >
+                        {(val) => (
+                          <button className="w-full py-5 bg-[#f7941d] hover:bg-white hover:text-black text-white font-black uppercase text-xs tracking-[0.3em] rounded-xl transition-all flex items-center justify-center gap-3 group/btn">
+                            {val !== undefined && val !== null ? val : buttonText}
+                            <PaperAirplaneIcon className="w-4 h-4 group-hover/btn:translate-x-2 group-hover/btn:-translate-y-1 transition-transform" />
+                          </button>
+                        )}
+                      </EditableElement>
                     </motion.div>
                   )}
 

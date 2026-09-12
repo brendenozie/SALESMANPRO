@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useMemo, useCallback, ReactNode } from "react";
 import { EditablePropertyType, parseTargetId } from "@/lib/website-builder/editable-adapters";
+import { getCanonicalLookupKeys, parseCanonicalTargetId } from "@/lib/website-builder/canonical-target-id";
 import { buildTenantUrl } from "@/lib/tenant/tenant-router";
 
 export interface HierarchyItem {
@@ -18,7 +19,8 @@ export interface SelectedElementInfo {
   label?: string;
   type?: EditablePropertyType;
   value?: any;
-  editabilityStatus?: "FULLY_EDITABLE" | "PARTIALLY_EDITABLE" | "VIEW_ONLY";
+  defaultValue?: any;
+  editabilityStatus?: "FULLY_EDITABLE" | "PARTIALLY_EDITABLE" | "VIEW_ONLY" | "REGISTERED_SCHEMA_FIELD";
   hierarchy?: HierarchyItem[];
 }
 
@@ -120,10 +122,23 @@ export function EditableContentProvider({
 
   const getOverride = useCallback(
     <T,>(targetId: string, defaultValue: T): T => {
-      if (componentOverrides && componentOverrides[targetId] !== undefined) {
+      if (!componentOverrides) return defaultValue;
+
+      // 1. Direct exact lookup
+      if (componentOverrides[targetId] !== undefined) {
         const val = componentOverrides[targetId];
         return (val && typeof val === "object" && "value" in val ? val.value : val) as T;
       }
+
+      // 2. Candidate keys lookup (canonical & legacy aliases)
+      const candidateKeys = getCanonicalLookupKeys(targetId);
+      for (const key of candidateKeys) {
+        if (componentOverrides[key] !== undefined) {
+          const val = componentOverrides[key];
+          return (val && typeof val === "object" && "value" in val ? val.value : val) as T;
+        }
+      }
+
       return defaultValue;
     },
     [componentOverrides]
@@ -337,6 +352,7 @@ export function EditableElement({
 }: EditableElementProps) {
   const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement } = useEditableContent();
   const resolvedValue = getOverride(targetId, defaultValue);
+  const parsed = useMemo(() => parseCanonicalTargetId(targetId), [targetId]);
 
   const renderedContent = typeof children === "function" ? children(resolvedValue) : children;
 
@@ -350,7 +366,6 @@ export function EditableElement({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const parsed = parseTargetId(targetId);
     const hierarchy: HierarchyItem[] = [
       { level: "page", id: parsed.pageSlug || "home", label: (parsed.pageSlug || "home").toUpperCase() },
       { level: "component", id: componentKey, label: componentKey },
@@ -378,8 +393,12 @@ export function EditableElement({
       data-editable-id={targetId}
       data-editor-target={targetId}
       data-editor-component={componentKey}
+      data-editor-element={elementKey || parsed.fieldKey}
       data-editor-label={label || elementKey || "Element"}
       data-editor-type={type}
+      data-editor-value={typeof resolvedValue === "string" || typeof resolvedValue === "number" ? String(resolvedValue) : ""}
+      data-editor-default={typeof defaultValue === "string" || typeof defaultValue === "number" ? String(defaultValue) : ""}
+      data-editor-binding="VERIFIED_RENDER_BINDING"
       className={`relative group transition-all duration-150 cursor-pointer ${
         inline ? "inline-block" : "block"
       } ${

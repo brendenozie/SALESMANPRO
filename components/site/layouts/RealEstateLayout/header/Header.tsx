@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { useRouter } from "next/navigation";
 
 // AUTH
@@ -144,7 +145,18 @@ export default function Header() {
                 priority
               />
             ) : (
-              <span className="text-3xl font-extrabold text-emerald-600">{name}</span>
+              <EditableElement
+                targetId="header.storeName"
+                componentKey="Header"
+                elementKey="storeName"
+                label="Store / Brand Name"
+                defaultValue={name}
+                inline
+              >
+                {(val) => (
+                  <span className="text-3xl font-extrabold text-emerald-600">{val}</span>
+                )}
+              </EditableElement>
             )}
           </Link>
         </motion.div>
@@ -158,15 +170,26 @@ export default function Header() {
             { label: "About", path: `/realestate/about` },
             { label: "Blog", path: `/realestate/blog` },
             { label: "Contact", path: `/realestate/contact` },
-          ].map((item) => (
-            <Link
+          ].map((item, idx) => (
+            <EditableElement
               key={item.label}
-              href={`${item.path}`}
-              className="relative text-gray-700 uppercase tracking-wide font-medium text-lg group hover:text-emerald-600"
+              targetId={`header.nav.${idx}.label`}
+              componentKey="Header"
+              elementKey={`nav.${idx}.label`}
+              label={`Nav ${item.label}`}
+              defaultValue={item.label}
+              inline
             >
-              {item.label}
-              <motion.span className="absolute left-0 bottom-[-4px] h-[3px] bg-emerald-600" variants={linkVariants} initial="initial" whileHover="hover" />
-            </Link>
+              {(val) => (
+                <Link
+                  href={`${item.path}`}
+                  className="relative text-gray-700 uppercase tracking-wide font-medium text-lg group hover:text-emerald-600"
+                >
+                  {val}
+                  <motion.span className="absolute left-0 bottom-[-4px] h-[3px] bg-emerald-600" variants={linkVariants} initial="initial" whileHover="hover" />
+                </Link>
+              )}
+            </EditableElement>
           ))}
 
           {/* SEARCH */}

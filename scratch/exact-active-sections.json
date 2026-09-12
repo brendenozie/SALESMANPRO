@@ -1,0 +1,1015 @@
+{
+  "ecommerce-shoes@v1": {
+    "templateKey": "ecommerce-shoes@v1",
+    "shellLayout": "EcommerceShoesLayout",
+    "bodyComponent": "EcommerceShoesSite",
+    "components": [
+      "HeroSlider",
+      "FeaturesSection",
+      "CategoriesSection",
+      "CategorySection",
+      "PromoSection",
+      "PopularProducts",
+      "DynamicPopularProducts",
+      "MetricsSection",
+      "DailyBestSells",
+      "DynamicDailyBestSells",
+      "SleepTapeAd",
+      "AllProducts",
+      "TrendingPromotion",
+      "AwardsSection",
+      "BannerSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-default@v1": {
+    "templateKey": "ecommerce-default@v1",
+    "shellLayout": "EcommerceLayout",
+    "bodyComponent": "EcommerceSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-gaming@v1": {
+    "templateKey": "ecommerce-gaming@v1",
+    "shellLayout": "EcommerceGamingLayout",
+    "bodyComponent": "EcommerceGamingSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-agrovet@v1": {
+    "templateKey": "ecommerce-agrovet@v1",
+    "shellLayout": "EcommerceAgrovetLayout",
+    "bodyComponent": "EcommerceAgrovetSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "AgroCTA"
+    ]
+  },
+  "ecommerce-meat@v1": {
+    "templateKey": "ecommerce-meat@v1",
+    "shellLayout": "EcommerceMeatLayout",
+    "bodyComponent": "EcommerceMeatSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "AgroCTA"
+    ]
+  },
+  "ecommerce-hardware@v1": {
+    "templateKey": "ecommerce-hardware@v1",
+    "shellLayout": "EcommerceHardwareLayout",
+    "bodyComponent": "EcommerceHardwareSite",
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-watch@v1": {
+    "templateKey": "ecommerce-watch@v1",
+    "shellLayout": "EcommerceWatchLayout",
+    "bodyComponent": "EcommerceWatchSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-flowers@v1": {
+    "templateKey": "ecommerce-flowers@v1",
+    "shellLayout": "EcommerceFlowersLayout",
+    "bodyComponent": "EcommerceFlowersSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-groceries@v1": {
+    "templateKey": "ecommerce-groceries@v1",
+    "shellLayout": "EcommerceGroceriesLayout",
+    "bodyComponent": "EcommerceGroceriesSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-earphones@v1": {
+    "templateKey": "ecommerce-earphones@v1",
+    "shellLayout": "EcommerceEarphonesLayout",
+    "bodyComponent": "EcommerceEarphonesSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection",
+      "ContactSection"
+    ]
+  },
+  "ecommerce-glasses@v1": {
+    "templateKey": "ecommerce-glasses@v1",
+    "shellLayout": "EcommerceGlassesLayout",
+    "bodyComponent": "EcommerceGlassesSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureGrid",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "QualityStandards",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AppointmentSection",
+      "LatestUpdates",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-honey@v1": {
+    "templateKey": "ecommerce-honey@v1",
+    "shellLayout": "EcommerceHoneyLayout",
+    "bodyComponent": "EcommerceHoneySite",
+    "components": [
+      "HeroSlider",
+      "MissionNewsSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "ProductCommunitySection",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-peanuts@v1": {
+    "templateKey": "ecommerce-peanuts@v1",
+    "shellLayout": "EcommercePeanutsLayout",
+    "bodyComponent": "EcommercePeanutsSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "ProductShowcaseSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-baby@v1": {
+    "templateKey": "ecommerce-baby@v1",
+    "shellLayout": "EcommerceBabyLayout",
+    "bodyComponent": "EcommerceBabySite",
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-cake@v1": {
+    "templateKey": "ecommerce-cake@v1",
+    "shellLayout": "EcommerceCakeLayout",
+    "bodyComponent": "EcommerceCakeSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-pets@v1": {
+    "templateKey": "ecommerce-pets@v1",
+    "shellLayout": "EcommercePetsLayout",
+    "bodyComponent": "EcommercePetsSite",
+    "components": [
+      "HeroSlider",
+      "StoreFeatures",
+      "CategorySection",
+      "PromoBanners",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-bike@v1": {
+    "templateKey": "ecommerce-bike@v1",
+    "shellLayout": "EcommerceBikeLayout",
+    "bodyComponent": "EcommerceBikeSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-motorcycle@v1": {
+    "templateKey": "ecommerce-motorcycle@v1",
+    "shellLayout": "EcommerceMotorCycleLayout",
+    "bodyComponent": "EcommerceMotorCycleSite",
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-book@v1": {
+    "templateKey": "ecommerce-book@v1",
+    "shellLayout": "EcommerceBookLayout",
+    "bodyComponent": "EcommerceBookSite",
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "ecommerce-accessories@v1": {
+    "templateKey": "ecommerce-accessories@v1",
+    "shellLayout": "EcommerceAccessoriesLayout",
+    "bodyComponent": "EcommerceAccessoriesSite",
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "fashion@v1": {
+    "templateKey": "fashion@v1",
+    "shellLayout": "FashionLayout",
+    "bodyComponent": "FashionSite",
+    "components": [
+      "FireIcon",
+      "HeartIcon",
+      "StarIconSolid",
+      "HeroSlider",
+      "FeaturesSection",
+      "CategoriesSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "furniture@v1": {
+    "templateKey": "furniture@v1",
+    "shellLayout": "FurnitureLayout",
+    "bodyComponent": "FurnitureSite",
+    "components": [
+      "HeroSlider",
+      "USPSlider",
+      "CategorySection",
+      "WeeklyProducts",
+      "RoomSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  "courses@v1": {
+    "templateKey": "courses@v1",
+    "shellLayout": "CoursesLayout",
+    "bodyComponent": "CoursesSite",
+    "components": [
+      "HeroSection",
+      "GlassInfoCardsSection",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  "courses-2@v1": {
+    "templateKey": "courses-2@v1",
+    "shellLayout": "CoursesLayout2",
+    "bodyComponent": "CoursesSite2",
+    "components": [
+      "HeroSection",
+      "ProfessionalInfoGrid",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  "courses-3@v1": {
+    "templateKey": "courses-3@v1",
+    "shellLayout": "CoursesLayout3",
+    "bodyComponent": "CoursesSite3",
+    "components": [
+      "HeroSection",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  "automotive@v1": {
+    "templateKey": "automotive@v1",
+    "shellLayout": "AutomotiveLayout",
+    "bodyComponent": "AutomotiveSite",
+    "components": [
+      "HeroSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "HowItWorks",
+      "BrowseByCategory",
+      "TrendingLocations",
+      "PopularVehiclesWrapper",
+      "VideoShowcaseSection",
+      "MarketInsightsSection",
+      "TestimonialsCarouselSection"
+    ]
+  },
+  "automotive-2@v1": {
+    "templateKey": "automotive-2@v1",
+    "shellLayout": "Automotive2Layout",
+    "bodyComponent": "Automotive2Site",
+    "components": [
+      "HeroSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "HowItWorks",
+      "BrowseByCategory",
+      "TrendingLocations",
+      "PopularVehiclesWrapper",
+      "VideoShowcaseSection",
+      "MarketInsightsSection",
+      "TestimonialsCarouselSection"
+    ]
+  },
+  "security@v1": {
+    "templateKey": "security@v1",
+    "shellLayout": "SecurityLayout",
+    "bodyComponent": "SecuritySite",
+    "components": [
+      "HeroSection",
+      "ServicesSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "CaseStudiesSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection",
+      "MarketListingForm",
+      "FeaturedProjectsProps"
+    ]
+  },
+  "security-2@v1": {
+    "templateKey": "security-2@v1",
+    "shellLayout": "Security2Layout",
+    "bodyComponent": "Security2Site",
+    "components": [
+      "HeroSection",
+      "ServicesSection",
+      "CaseStudiesSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection",
+      "MarketListingForm",
+      "FeaturedProjectsProps"
+    ]
+  },
+  "consultancy@v1": {
+    "templateKey": "consultancy@v1",
+    "shellLayout": "ConsultancyLayout",
+    "bodyComponent": "ConsultancySite",
+    "components": [
+      "HeroSection",
+      "SocialProofSection",
+      "AboutSection",
+      "ServicesSection",
+      "FeaturedListings",
+      "HowItWorks",
+      "BrowseByCategory",
+      "VideoShowcaseSection",
+      "TestimonialsCarouselSection",
+      "CallToActionSection"
+    ]
+  },
+  "public-speaking@v1": {
+    "templateKey": "public-speaking@v1",
+    "shellLayout": "PublicSpeakingLayout",
+    "bodyComponent": "PublicSpeakingSite",
+    "components": [
+      "HeroSection",
+      "SocialProofSection",
+      "ServicesSection",
+      "FeaturedListings",
+      "HowItWorks",
+      "BrowseByCategory",
+      "AboutSection",
+      "TestimonialsCarouselSection",
+      "CallToActionSection"
+    ]
+  },
+  "services@v1": {
+    "templateKey": "services@v1",
+    "shellLayout": "ServicesLayout",
+    "bodyComponent": "ServiceSite",
+    "components": [
+      "HeroSection",
+      "AboutSection",
+      "ExcellenceSection",
+      "ServicesSection",
+      "PricingSection",
+      "TestimonialSection",
+      "FAQSection",
+      "CleaningTipsSection",
+      "BookingFormSection",
+      "GetStartedSection"
+    ]
+  },
+  "bookings@v1": {
+    "templateKey": "bookings@v1",
+    "shellLayout": "BookingsLayout",
+    "bodyComponent": "BookingsSite",
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  "barbershop@v1": {
+    "templateKey": "barbershop@v1",
+    "shellLayout": "BarbershopBookingsLayout",
+    "bodyComponent": "BarbershopBookingsSite",
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  "drycleaning@v1": {
+    "templateKey": "drycleaning@v1",
+    "shellLayout": "DrycleaningBookingsLayout",
+    "bodyComponent": "DrycleaningBookingsSite",
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  "real-estate@v1": {
+    "templateKey": "real-estate@v1",
+    "shellLayout": "RealEstateLayout",
+    "bodyComponent": "RealEstateSite",
+    "components": [
+      "HeroSection",
+      "CategoriesSection",
+      "FeaturedListingsWrapper",
+      "TrendingLocations",
+      "ListingsSection",
+      "WhyChooseUs",
+      "AgentsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "BlogSection",
+      "NewsletterSection"
+    ]
+  },
+  "property-management@v1": {
+    "templateKey": "property-management@v1",
+    "shellLayout": "PropertyManagementLayout",
+    "bodyComponent": "PropertyManagementSite",
+    "components": [
+      "HeroSection",
+      "CategoriesSection",
+      "FeaturedListingsWrapper",
+      "TrendingLocations",
+      "ListingsSection",
+      "WhyChooseUs",
+      "AgentsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "BlogSection",
+      "NewsletterSection"
+    ]
+  },
+  "restaurant@v1": {
+    "templateKey": "restaurant@v1",
+    "shellLayout": "RestaurantLayout",
+    "bodyComponent": "RestaurentSite",
+    "components": [
+      "RestaurantHero",
+      "SignatureDishes",
+      "WhyDineWithUs",
+      "Testimonials",
+      "RestaurantGallery",
+      "RestaurantFAQs"
+    ]
+  },
+  "healthcare@v1": {
+    "templateKey": "healthcare@v1",
+    "shellLayout": "HealthcareLayout",
+    "bodyComponent": "HealthCareSite",
+    "components": [
+      "HealthcareHero",
+      "AboutSection",
+      "MedicalServicesSection",
+      "HealthTipsSection",
+      "DoctorsSection",
+      "PatientSection",
+      "FAQsSection",
+      "ContactSection",
+      "CTASection"
+    ]
+  },
+  "fitness@v1": {
+    "templateKey": "fitness@v1",
+    "shellLayout": "FitnessLayout",
+    "bodyComponent": "FitnessSite",
+    "components": [
+      "HeroSection",
+      "CategorySection",
+      "ListingsGrid",
+      "ClassesGrid",
+      "LocationsSection",
+      "VirtualTours",
+      "ExpertsSection",
+      "MarketInsights",
+      "GallerySection",
+      "TestimonialsSection",
+      "AppPromotionSection",
+      "NewsletterSection",
+      "FaqsSection"
+    ]
+  },
+  "finance@v1": {
+    "templateKey": "finance@v1",
+    "shellLayout": "FinanceLayout",
+    "bodyComponent": "FinanceSite",
+    "components": [
+      "HeroSection",
+      "PracticeAreasSection",
+      "WhyChooseUsSection",
+      "CaseStudiesTestimonials",
+      "ProcessWorkflowSection",
+      "MeetOurExperts",
+      "ConsultationPackagesSection",
+      "FAQSection",
+      "ContactSection"
+    ]
+  },
+  "travel@v1": {
+    "templateKey": "travel@v1",
+    "shellLayout": "TravelLayout",
+    "bodyComponent": "TravelSite",
+    "components": [
+      "Hero",
+      "Listings",
+      "TrendingLocations",
+      "MeetAgents",
+      "MarketInsights",
+      "VirtualTours",
+      "Testimonials",
+      "MobileAppPromo",
+      "NewsletterSignup"
+    ]
+  },
+  "saas@v1": {
+    "templateKey": "saas@v1",
+    "shellLayout": "SaaSLayout",
+    "bodyComponent": "SaaSSite",
+    "components": [
+      "EnhancedHeroSection",
+      "FeaturesSection",
+      "EnhancedPricingSection",
+      "EnhancedTestimonialsSection",
+      "EnhancedFAQsSection"
+    ]
+  },
+  "marketplace@v1": {
+    "templateKey": "marketplace@v1",
+    "shellLayout": "MarketplaceLayout",
+    "bodyComponent": "MarketPlaceSite",
+    "components": [
+      "HeroBanner",
+      "CategoryCarousel",
+      "StorePageSection",
+      "ReviewsSection",
+      "MiniCartPreview",
+      "Bars3CenterLeftIcon",
+      "MagnifyingGlassCircleIcon",
+      "ShoppingBagIcon",
+      "BellIcon",
+      "UserCircleIcon",
+      "StarSolid",
+      "StarOutline",
+      "ReviewItem",
+      "XMarkIcon",
+      "TrashIcon"
+    ]
+  },
+  "portfolio@v1": {
+    "templateKey": "portfolio@v1",
+    "shellLayout": "PortfolioLayout",
+    "bodyComponent": "PortfolioSite",
+    "components": [
+      "HeroSection",
+      "BusinessSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "CaseStudiesSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection",
+      "MarketListingForm",
+      "FeaturedProjectsProps"
+    ]
+  },
+  "company-portfolio@v1": {
+    "templateKey": "company-portfolio@v1",
+    "shellLayout": "CompanyPortfolioLayout",
+    "bodyComponent": "CompanyPortfolioSite",
+    "components": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "GreyServicesSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  "company-portfolio-light@v1": {
+    "templateKey": "company-portfolio-light@v1",
+    "shellLayout": "CompanyPortfolioLightLayout",
+    "bodyComponent": "CompanyPortfolioLightSite",
+    "components": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "GreyServicesSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  "blog@v1": {
+    "templateKey": "blog@v1",
+    "shellLayout": "BlogLayout",
+    "bodyComponent": "BlogSite",
+    "components": [
+      "HeroSection",
+      "FeaturedCategoriesSection",
+      "LatestNewsSection",
+      "StaffWritersSection",
+      "PopularBlogsSection",
+      "LatestPodcastSection",
+      "CtaSection"
+    ]
+  },
+  "media@v1": {
+    "templateKey": "media@v1",
+    "shellLayout": "MediaLayout",
+    "bodyComponent": "MediaSite",
+    "components": [
+      "MediaHeroSection",
+      "EnhancedCategoriesSection",
+      "TopPicksCarousel",
+      "LatestReleasesSection",
+      "FeaturedArticlesSection",
+      "LatestVideosSection",
+      "TestimonialsSlider",
+      "NewsletterSignup",
+      "FAQsSection",
+      "ArrowUpCircleIcon"
+    ]
+  },
+  "nonprofit@v1": {
+    "templateKey": "nonprofit@v1",
+    "shellLayout": "NonprofitLayout",
+    "bodyComponent": "NonProfitSite",
+    "components": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection"
+    ]
+  },
+  "delivery@v1": {
+    "templateKey": "delivery@v1",
+    "shellLayout": "DeliveryLayout",
+    "bodyComponent": "DeliverySite",
+    "components": [
+      "HeroSlider",
+      "AbSection",
+      "TeamSection",
+      "ServicesSection",
+      "BookingSection",
+      "TestimonialsCarouselSection",
+      "WorkShowcase",
+      "ProcessTimeline",
+      "SocialProofSection",
+      "NetworkMap",
+      "BlogSection",
+      "ContactSection"
+    ]
+  },
+  "directory@v1": {
+    "templateKey": "directory@v1",
+    "shellLayout": "DirectoryLayout",
+    "bodyComponent": "DirectorySite",
+    "components": [
+      "HeroSection",
+      "PromotionSection",
+      "NewArrivalsSection",
+      "CategorySection",
+      "PopularProductsSection",
+      "FeaturedListingsOverviewSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  "events@v1": {
+    "templateKey": "events@v1",
+    "shellLayout": "EventsLayout",
+    "bodyComponent": "EventsSite",
+    "components": [
+      "HeroComponent",
+      "AboutSection",
+      "FeaturesSection",
+      "HowItWorksSection",
+      "LiveEventsSection",
+      "TestimonialsSection",
+      "PricingSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  "ghuba@v1": {
+    "templateKey": "ghuba@v1",
+    "shellLayout": "GhubaLayout",
+    "bodyComponent": "GhubaSite",
+    "components": [
+      "BannerSlider",
+      "FlashDeals",
+      "TopCate",
+      "NewArrivals",
+      "Discount",
+      "Shop",
+      "Annocument",
+      "Wrapper"
+    ]
+  },
+  "default-site@v1": {
+    "templateKey": "default-site@v1",
+    "shellLayout": "DefaultLayout",
+    "bodyComponent": "DefaultSite",
+    "components": [
+      "DefaultSite",
+      "HomeIcon",
+      "ArrowPathIcon",
+      "EnvelopeIcon"
+    ]
+  }
+}

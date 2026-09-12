@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 import { 
   GlobeAltIcon, 
   PhoneIcon, 
@@ -72,12 +73,35 @@ export default function Footer() {
           
           {/* Brand & Manifesto */}
           <div className="space-y-6">
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-900 dark:text-white">
-              {name || 'Storefront'}
-            </h3>
-            <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 leading-relaxed max-w-xs">
-              {description || 'Redefining the pace of modern performance and street aesthetics. Join the evolution of elite footwear.'}
-            </p>
+            <EditableElement
+              targetId="footer.brandName"
+              componentKey="Footer"
+              elementKey="brandName"
+              label="Brand Name"
+              defaultValue={name}
+              inline
+            >
+              {(val) => (
+                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-900 dark:text-white">
+                  {val || 'Storefront'}
+                </h3>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="footer.bio"
+              componentKey="Footer"
+              elementKey="bio"
+              label="Brand Bio / Description"
+              type="textarea"
+              defaultValue={description}
+            >
+              {(val) => (
+                <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 leading-relaxed max-w-xs">
+                  {val || 'Redefining the pace of modern performance and street aesthetics. Join the evolution of elite footwear.'}
+                </p>
+              )}
+            </EditableElement>
             <div className="flex gap-3">
               {socialLinks.map((s, idx) => (
                 <motion.a
@@ -247,9 +271,20 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-gray-100 dark:border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-6">
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-              &copy; {new Date().getFullYear()} {name || 'STOREFRONT'}
-            </p>
+            <EditableElement
+              targetId="footer.copyrightText"
+              componentKey="Footer"
+              elementKey="copyrightText"
+              label="Copyright Notice"
+              defaultValue={`© ${new Date().getFullYear()} ${name || 'STOREFRONT'}`}
+              inline
+            >
+              {(val) => (
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
             <div className="hidden md:flex gap-4">
               <Link href="/privacy" className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white">Privacy</Link>
               <Link href="/terms" className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 dark:hover:text-white">Terms</Link>

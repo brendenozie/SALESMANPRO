@@ -35,168 +35,158 @@ type EcommerceSiteProps = {
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-// --- 1. Interface (As Provided) ---
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-}
-
-const MOCK_FURNITURE: MarketListingForm[] = [
-  {
-    id: 'f1',
-    name: 'Oslo Lounge Chair',
-    description: 'Mid-century modern aesthetic with premium ash wood structure.',
-    sellingPrice: 450,
-    finalPrice: 399,
-    isDiscounted: true,
-    discount: 12,
-    isNewArrival: true,
-    isOnOffer: true,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: ['https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=1000&auto=format&fit=crop'],
-    tags: ['Living Room', 'Scandi'],
-    brand: 'NordicHome',
-    color: ['Beige', 'Walnut'],
-    size: [],
-    material: ['Ash Wood', 'Linen'],
-    dimensions: 'H: 80cm x W: 75cm',
-    condition: 'New',
-    quantity: 5,
-    category: 'Furniture',
-    subCategory: 'Chairs',
-    productCategoryId: 'cat_f1',
-    option: [],
-    weight: [],
-    pricingTiers: [],
-    features: [],
-    bedrooms: [],
-    studios: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: true,
-    paymentOption: 'Online',
-    status: 'ACTIVE',
-    location: {},
-    duration: null,
-    buyingPrice: 0,
-    bookingSlots: undefined,
-    listingMarketStatus: ListingMarketStatus.AVAILABLE,
-    listingSystemStatus: ListingSystemStatus.DRAFT,
-    listingTransactionType: ListingTransactionType.SALE
-  },
-  {
-    id: 'f2',
-    name: 'Marble Coffee Table',
-    description: 'Solid Carrara marble top with industrial steel legs.',
-    sellingPrice: 800,
-    finalPrice: 800,
-    isDiscounted: false,
-    isNewArrival: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: ['https://images.unsplash.com/photo-1634646477375-586b0208ba51?q=80&w=1000&auto=format&fit=crop'],
-    tags: ['Minimalist', 'Luxury'],
-    brand: 'StoneCraft',
-    color: ['White', 'Black'],
-    size: [],
-    material: ['Marble', 'Steel'],
-    dimensions: 'D: 90cm x H: 45cm',
-    condition: 'New',
-    quantity: 2,
-    category: 'Furniture',
-    subCategory: 'Tables',
-    productCategoryId: 'cat_f2',
-    option: [],
-    weight: [],
-    pricingTiers: [],
-    features: [],
-    bedrooms: [],
-    studios: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: true,
-    paymentOption: 'Online',
-    status: 'ACTIVE',
-    location: {},
-    duration: null,
-    buyingPrice: 0,
-    bookingSlots: undefined,
-    listingMarketStatus: ListingMarketStatus.AVAILABLE,
-    listingSystemStatus: ListingSystemStatus.DRAFT,
-    listingTransactionType: ListingTransactionType.SALE
-  },
-  {
-    id: 'f3',
-    name: 'Velvet Sectional Sofa',
-    description: 'Plush velvet finish in deep emerald green. Modular design.',
-    sellingPrice: 2100,
-    finalPrice: 2100,
-    isDiscounted: false,
-    isNewArrival: true,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop'],
-    tags: ['Living Room', 'Comfort'],
-    brand: 'LuxeLiving',
-    color: ['Green'],
-    size: [],
-    material: ['Velvet', 'Pine'],
-    dimensions: 'W: 280cm x D: 160cm',
-    condition: 'New',
-    quantity: 10,
-    category: 'Furniture',
-    subCategory: 'Sofas',
-    productCategoryId: 'cat_f3',
-    option: [],
-    weight: [],
-    pricingTiers: [],
-    features: [],
-    bedrooms: [],
-    studios: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: true,
-    paymentOption: 'Online',
-    status: 'ACTIVE',
-    location: {},
-    duration: null,
-    buyingPrice: 0,
-    bookingSlots: undefined,
-    listingMarketStatus: ListingMarketStatus.AVAILABLE,
-    listingSystemStatus: ListingSystemStatus.DRAFT,
-    listingTransactionType: ListingTransactionType.SALE
-  }
-];
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
     heroSlides,
     id,
     themeSettings = {},
-    StoreCategory = [],
     marketplaceListings = [],
     testimonials = [],
     awards = [],
     promotions = [],
-    bannerUrl,
     CoreValues = [],
   } = pageData;
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL || "/api"}/site/testimonials?id=${companyId}`, fetcher);
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
     () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),
     [marketplaceListings]
   );
+
+  const getSectionKey = (sec: any): string => {
+    if (sec.component) return sec.component;
+    const sId = (sec.id || "").toLowerCase();
+    if (sId.includes("heroslider") || sId.includes("hero")) return "HeroSlider";
+    if (sId.includes("uspslider") || sId.includes("usp") || sId.includes("features") || sId.includes("values")) return "USPSlider";
+    if (sId.includes("categorysection") || sId.includes("category")) return "CategorySection";
+    if (sId.includes("weeklyproducts") || sId.includes("weekly")) return "WeeklyProducts";
+    if (sId.includes("roomsection") || sId.includes("room")) return "RoomSection";
+    if (sId.includes("dynamicpopularproducts") || sId.includes("popular")) return "DynamicPopularProducts";
+    if (sId.includes("secondpromo") || sId.includes("second-promo")) return "SecondPromoSection";
+    if (sId.includes("promosection") || sId.includes("promo")) return "PromoSection";
+    if (sId.includes("dynamictrending") || sId.includes("trending")) return "DynamicTrending";
+    if (sId.includes("dynamicdailybestsells") || sId.includes("daily-best-sells") || sId.includes("bestsell")) return "DynamicDailyBestSells";
+    if (sId.includes("allproducts") || sId.includes("all-products")) return "AllProducts";
+    if (sId.includes("metricssection") || sId.includes("metrics")) return "MetricsSection";
+    if (sId.includes("awardssection") || sId.includes("awards")) return "AwardsSection";
+    if (sId.includes("testimonialssection") || sId.includes("testimonial")) return "TestimonialsSection";
+    if (sId.includes("newslettersection") || sId.includes("newsletter")) return "NewsletterSection";
+
+    if (sec.type === "hero") return "HeroSlider";
+    if (sec.type === "featuresBadges") return "USPSlider";
+    if (sec.type === "categoryGrid") return "CategorySection";
+    if (sec.type === "testimonials") return "TestimonialsSection";
+    if (sec.type === "newsletter") return "NewsletterSection";
+
+    return "";
+  };
+
+  const renderSectionComponent = (sec: any, index: number) => {
+    const compKey = getSectionKey(sec);
+    const secId = sec.id || `sec-${index}`;
+    const domId = secId.startsWith("section-") ? secId : `section-${secId}`;
+
+    let childNode: React.ReactNode = null;
+
+    switch (compKey) {
+      case "HeroSlider":
+        childNode = <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />;
+        break;
+      case "USPSlider":
+        childNode = (
+          <USPSlider
+            coreValues={CoreValues}
+            themeSettings={themeSettings}
+            config={sec.content}
+            sectionId={sec.id}
+          />
+        );
+        break;
+      case "CategorySection":
+        childNode = <CategorySection store={pageData} />;
+        break;
+      case "WeeklyProducts":
+        childNode = <WeeklyProducts id={id} />;
+        break;
+      case "RoomSection":
+        childNode = <RoomSection store={pageData} themeSettings={themeSettings} />;
+        break;
+      case "DynamicPopularProducts":
+        childNode = <DynamicPopularProducts id={id} />;
+        break;
+      case "PromoSection":
+        childNode = <PromoSection promotions={promotions} />;
+        break;
+      case "DynamicTrending":
+        childNode = <DynamicTrending id={id} />;
+        break;
+      case "DynamicDailyBestSells":
+        childNode = <DynamicDailyBestSells id={id} />;
+        break;
+      case "SecondPromoSection":
+        childNode = <SecondPromoSection promotions={promotions} />;
+        break;
+      case "AllProducts":
+        childNode = <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />;
+        break;
+      case "MetricsSection":
+        childNode = <MetricsSection coreValues={CoreValues} />;
+        break;
+      case "AwardsSection":
+        childNode = <AwardsSection awards={awards} />;
+        break;
+      case "TestimonialsSection":
+        childNode = (testimonialsData?.data || testimonials?.length > 0) ? (
+          <TestimonialsSection testimonials={testimonialsData?.data || testimonials} />
+        ) : null;
+        break;
+      case "NewsletterSection":
+        childNode = <NewsletterSection />;
+        break;
+      default:
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[FurnitureSite] Unresolved section component: "${compKey || sec.component || sec.type}" for section "${sec.id}"`
+          );
+        }
+        childNode = (
+          <div className="p-8 my-4 border-2 border-dashed border-amber-500 bg-amber-50/10 text-amber-600 dark:text-amber-400 text-center font-mono text-xs rounded-xl">
+            <span className="font-bold">[Unresolved Section Component: {sec.name || sec.component || sec.type || sec.id}]</span>
+            <div className="text-[10px] text-zinc-500 mt-1">Section ID: {sec.id} &bull; Type: {sec.type}</div>
+          </div>
+        );
+        break;
+    }
+
+    if (!childNode) return null;
+
+    return (
+      <div
+        key={sec.id || index}
+        id={domId}
+        data-editor-section={sec.id}
+        data-editor-component={compKey}
+      >
+        {childNode}
+      </div>
+    );
+  };
+
+  const activeSections = (pageData as any).sections;
+  const hasTenantSections = Array.isArray(activeSections);
+
+  if (hasTenantSections) {
+    return (
+      <div>
+        {activeSections
+          .filter((sec: any) => sec.isVisible !== false)
+          .map((sec: any, idx: number) => renderSectionComponent(sec, idx))}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -205,7 +195,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       </div>
       {/* USP Section */}
       <div id="section-usp" data-editor-section="usp" data-editor-component="USPSlider">
-        <USPSlider  coreValues={CoreValues} themeSettings={themeSettings} />
+        <USPSlider coreValues={CoreValues} themeSettings={themeSettings} />
       </div>      
       <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
         <CategorySection store={pageData} />
@@ -216,7 +206,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       </div>
       {/* Featured Categories */}
       <div id="section-room" data-editor-section="room" data-editor-component="RoomSection">
-        <RoomSection store={pageData}  themeSettings={themeSettings} />
+        <RoomSection store={pageData} themeSettings={themeSettings} />
       </div>
       <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="DynamicPopularProducts">
         <DynamicPopularProducts id={id} />
@@ -242,9 +232,11 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
         <AwardsSection awards={awards} />
       </div>
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-   <TestimonialsSection testimonials={testimonialsData.data} />
- </div>}
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+          <TestimonialsSection testimonials={testimonialsData.data} />
+        </div>
+      )}
       <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
         <NewsletterSection />
       </div>

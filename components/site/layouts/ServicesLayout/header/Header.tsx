@@ -18,6 +18,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { clsx } from 'clsx';
 import CartDrawer from './CartDrawer';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -208,12 +209,23 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
                   className="h-20 w-32 object-contain"
                 />
               ) : (
-                <span className={clsx(
-                  "text-2xl font-extrabold tracking-tight",
-                  isScrolled ? "text-gray-900 dark:text-white" : "text-white"
-                )}>
-                  {storeFormData.name}
-                </span>
+                <EditableElement
+                  targetId="global.global.header.Header.main.storeName"
+                  componentKey="Header"
+                  elementKey="storeName"
+                  label="Store Brand Name"
+                  defaultValue={storeFormData.name}
+                  inline
+                >
+                  {(val) => (
+                    <span className={clsx(
+                      "text-2xl font-extrabold tracking-tight",
+                      isScrolled ? "text-gray-900 dark:text-white" : "text-white"
+                    )}>
+                      {val || storeFormData.name}
+                    </span>
+                  )}
+                </EditableElement>
               )}
             </Link>
           </div>
@@ -224,7 +236,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
               "flex items-center gap-1 px-2 py-1.5 rounded-full transition-colors",
               isScrolled ? "bg-gray-100/50 dark:bg-gray-800/50" : "bg-black/20 backdrop-blur-sm"
             )}>
-              {sections.map((section) => {
+              {sections.map((section, idx) => {
                  const isActive = (isHomePath && section.id === 'hero') || pathname === section.href;
                  // Override styling for Transparent Header mode
                  const labelClass = isActive ? "font-semibold" : (isScrolled ? "text-gray-600" : "text-white/90 hover:text-white");
@@ -242,11 +254,22 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
                           transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                         />
                       )}
-                      <span className={clsx("relative z-10 transition-colors", isActive ? (isScrolled ? "text-[var(--primary)]" : "text-gray-900") : labelClass)}
-                            style={isActive && isScrolled ? { color: primaryColor } : {}}
+                      <EditableElement
+                        targetId={`global.global.header.Header.nav-${idx}.label`}
+                        componentKey="Header"
+                        elementKey={`nav.${idx}.label`}
+                        label={`Navigation Link ${idx + 1}`}
+                        defaultValue={section.label}
+                        inline
                       >
-                        {section.label}
-                      </span>
+                        {(val) => (
+                          <span className={clsx("relative z-10 transition-colors", isActive ? (isScrolled ? "text-[var(--primary)]" : "text-gray-900") : labelClass)}
+                                style={isActive && isScrolled ? { color: primaryColor } : {}}
+                          >
+                            {val || section.label}
+                          </span>
+                        )}
+                      </EditableElement>
                     </Link>
                  );
               })}

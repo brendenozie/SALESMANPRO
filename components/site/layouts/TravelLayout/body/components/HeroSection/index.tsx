@@ -21,6 +21,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import {  HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 /* ----------------------------- Types ----------------------------------- */
 // interface HeroSlide {
@@ -256,19 +257,50 @@ export default function HeroSection({
         >
           <div className="flex items-center justify-center gap-2 mb-4">
             <span className="h-px w-10 bg-white/60" />
-            <span className="text-white/80 uppercase tracking-[0.2em] text-xs font-bold">
-               Explore The World
-            </span>
+            <EditableElement
+              targetId="travel.home.travelHero.TravelHero.main.badgeText"
+              componentKey="TravelHero"
+              elementKey="badgeText"
+              label="Badge Text"
+              defaultValue="Explore The World"
+              inline
+            >
+              {(val) => (
+                <span className="text-white/80 uppercase tracking-[0.2em] text-xs font-bold">
+                  {val}
+                </span>
+              )}
+            </EditableElement>
             <span className="h-px w-10 bg-white/60" />
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 drop-shadow-2xl leading-[1.1]">
-            {heroSlides[currentSlide]?.headline}
-          </h1>
+          <EditableElement
+            targetId="travel.home.travelHero.TravelHero.main.headline"
+            componentKey="TravelHero"
+            elementKey="headline"
+            label="Headline"
+            defaultValue={heroSlides[currentSlide]?.headline || "Wanderlust Awaits"}
+          >
+            {(val) => (
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 drop-shadow-2xl leading-[1.1]">
+                {val}
+              </h1>
+            )}
+          </EditableElement>
           
-          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            {heroSlides[currentSlide]?.subline}
-          </p>
+          <EditableElement
+            targetId="travel.home.travelHero.TravelHero.main.subline"
+            componentKey="TravelHero"
+            elementKey="subline"
+            label="Subline"
+            defaultValue={heroSlides[currentSlide]?.subline || "Discover the world's most breathtaking hidden gems."}
+          >
+            {(val) => (
+              <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed mb-10">
+                {val}
+              </p>
+            )}
+          </EditableElement>
         </motion.div>
 
         {/* 3. THE SEARCH "TRIGGER" BAR (Simulated Input) */}

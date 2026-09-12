@@ -1,0 +1,1654 @@
+[
+  {
+    "layout": "Automotive2Layout",
+    "file": "Automotive2Site.tsx",
+    "sections": [
+      "hero",
+      "automotive-featured-listings",
+      "how-it-works",
+      "browse-by-category",
+      "trending-locations",
+      "popular-vehicles",
+      "video-showcase",
+      "market-insights",
+      "testimonials"
+    ],
+    "components": [
+      "HeroSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "HowItWorks",
+      "BrowseByCategory",
+      "TrendingLocations",
+      "PopularVehiclesWrapper",
+      "VideoShowcaseSection",
+      "MarketInsightsSection",
+      "TestimonialsCarouselSection"
+    ]
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "file": "AutomotiveSite.tsx",
+    "sections": [
+      "hero",
+      "automotive-featured-listings",
+      "how-it-works",
+      "browse-by-category",
+      "trending-locations",
+      "popular-vehicles",
+      "video-showcase",
+      "market-insights",
+      "testimonials"
+    ],
+    "components": [
+      "HeroSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "HowItWorks",
+      "BrowseByCategory",
+      "TrendingLocations",
+      "PopularVehiclesWrapper",
+      "VideoShowcaseSection",
+      "MarketInsightsSection",
+      "TestimonialsCarouselSection"
+    ]
+  },
+  {
+    "layout": "BarbershopBookingsLayout",
+    "file": "BarbershopBookingsSite.tsx",
+    "sections": [
+      "hero",
+      "features",
+      "massage-features",
+      "pricing-and-stats",
+      "style-gallery",
+      "benefits",
+      "testimonials",
+      "cta",
+      "faqs"
+    ],
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "layout": "BlogLayout",
+    "file": "BlogSite.tsx",
+    "sections": [
+      "hero",
+      "featured-categories",
+      "latest-news",
+      "staff-writers",
+      "popular-blogs",
+      "latest-podcast",
+      "cta"
+    ],
+    "components": [
+      "HeroSection",
+      "FeaturedCategoriesSection",
+      "LatestNewsSection",
+      "StaffWritersSection",
+      "PopularBlogsSection",
+      "LatestPodcastSection",
+      "CtaSection"
+    ]
+  },
+  {
+    "layout": "BookingsLayout",
+    "file": "BookingsSite.tsx",
+    "sections": [
+      "hero",
+      "features",
+      "massage-features",
+      "pricing-and-stats",
+      "benefits",
+      "testimonials",
+      "cta",
+      "faqs"
+    ],
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "layout": "CompanyPortfolioLayout",
+    "file": "CompanyPortfolioSite.tsx",
+    "sections": [
+      "hero",
+      "core-highlights",
+      "grey-services",
+      "about-us-spotlight",
+      "programs-causes",
+      "impact-stats",
+      "events-updates",
+      "news",
+      "testimonials-news",
+      "cta-bold",
+      "faq",
+      "call-to-action"
+    ],
+    "components": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "GreyServicesSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "layout": "CompanyPortfolioLightLayout",
+    "file": "CompanyPortfolioLightSite.tsx",
+    "sections": [
+      "hero",
+      "core-highlights",
+      "grey-services",
+      "about-us-spotlight",
+      "programs-causes",
+      "impact-stats",
+      "events-updates",
+      "news",
+      "testimonials-news",
+      "cta-bold",
+      "faq",
+      "call-to-action"
+    ],
+    "components": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "GreyServicesSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "file": "ConsultancySite.tsx",
+    "sections": [
+      "hero",
+      "social-proof",
+      "about",
+      "services",
+      "featured-listings",
+      "how-it-works",
+      "browse-by-category",
+      "video-showcase",
+      "testimonials",
+      "call-to-action"
+    ],
+    "components": [
+      "HeroSection",
+      "SocialProofSection",
+      "AboutSection",
+      "ServicesSection",
+      "FeaturedListings",
+      "HowItWorks",
+      "BrowseByCategory",
+      "VideoShowcaseSection",
+      "TestimonialsCarouselSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "layout": "CoursesLayout",
+    "file": "CoursesSite.tsx",
+    "sections": [
+      "hero",
+      "glass-info-cards",
+      "school",
+      "main-courses",
+      "about",
+      "testimonials",
+      "popular-blogs",
+      "cta",
+      "faq"
+    ],
+    "components": [
+      "HeroSection",
+      "GlassInfoCardsSection",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "layout": "CoursesLayout2",
+    "file": "CoursesSite2.tsx",
+    "sections": [],
+    "components": []
+  },
+  {
+    "layout": "CoursesLayout3",
+    "file": "CoursesSite3.tsx",
+    "sections": [],
+    "components": []
+  },
+  {
+    "layout": "DefaultLayout",
+    "file": "DefaultSite.tsx",
+    "sections": [
+      "default"
+    ],
+    "components": [
+      "DefaultSite"
+    ]
+  },
+  {
+    "layout": "DeliveryLayout",
+    "file": "DeliverySite.tsx",
+    "sections": [
+      "hero",
+      "ab",
+      "team",
+      "services",
+      "testimonials",
+      "social-proof",
+      "categories-section-v5",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "AbSection",
+      "TeamSection",
+      "ServicesSection",
+      "TestimonialsCarouselSection",
+      "SocialProofSection",
+      "CategoriesSectionV5",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "DirectoryLayout",
+    "file": "DirectorySite.tsx",
+    "sections": [
+      "hero",
+      "promotion",
+      "new-arrivals",
+      "category",
+      "popular-products",
+      "featured-listings-overview",
+      "testimonials",
+      "cta",
+      "faq"
+    ],
+    "components": [
+      "HeroSection",
+      "PromotionSection",
+      "NewArrivalsSection",
+      "CategorySection",
+      "PopularProductsSection",
+      "FeaturedListingsOverviewSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "layout": "DrycleaningBookingsLayout",
+    "file": "DrycleaningBookingsSite.tsx",
+    "sections": [
+      "hero",
+      "features",
+      "massage-features",
+      "pricing-and-stats",
+      "style-gallery",
+      "benefits",
+      "testimonials",
+      "cta",
+      "faqs"
+    ],
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "file": "EcommerceAccessoriesSite.tsx",
+    "sections": [
+      "hero",
+      "features-bar",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "newsletter-promo-grid",
+      "product-showcase-grid",
+      "promo-banner-grid",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "file": "EcommerceAgrovetSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "agro-cta"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "AgroCTA"
+    ]
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "file": "EcommerceBabySite.tsx",
+    "sections": [
+      "hero",
+      "features-bar",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "newsletter-promo-grid",
+      "product-showcase-grid",
+      "promo-banner-grid",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "file": "EcommerceBikeSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "feature",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "meet-the-watchmaker",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "file": "EcommerceBookSite.tsx",
+    "sections": [
+      "hero",
+      "features-bar",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "newsletter-promo-grid",
+      "product-showcase-grid",
+      "promo-banner-grid",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "file": "EcommerceCakeSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "file": "EcommerceEarphonesSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter",
+      "contact"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "file": "EcommerceFlowersSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "file": "EcommerceGamingSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "file": "EcommerceGlassesSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "feature-grid",
+      "popular-products",
+      "promo",
+      "trending",
+      "quality-standards",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "appointment",
+      "latest-updates",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureGrid",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "QualityStandards",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AppointmentSection",
+      "LatestUpdates",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "file": "EcommerceGroceriesSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "faq",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "file": "EcommerceHardwareSite.tsx",
+    "sections": [
+      "hero",
+      "features-bar",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "newsletter-promo-grid",
+      "product-showcase-grid",
+      "promo-banner-grid",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "file": "EcommerceHoneySite.tsx",
+    "sections": [
+      "hero",
+      "mission-news",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "product-community",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "MissionNewsSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "ProductCommunitySection",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceLayout",
+    "file": "EcommerceSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "file": "EcommerceMeatSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "agro-cta"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "AgroCTA"
+    ]
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "file": "EcommerceMotorCycleSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "feature",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "meet-the-watchmaker",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "file": "EcommercePeanutsSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "product-showcase",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "ProductShowcaseSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "file": "EcommercePetsSite.tsx",
+    "sections": [
+      "hero",
+      "store-features",
+      "category",
+      "promo-banners",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "StoreFeatures",
+      "CategorySection",
+      "PromoBanners",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "file": "EcommerceShoesSite.tsx",
+    "sections": [
+      "hero-slider",
+      "features",
+      "categories",
+      "category-section",
+      "promo",
+      "popular-products",
+      "metrics",
+      "daily-best-sells",
+      "sleep-tape-ad",
+      "all-products",
+      "trending-promo",
+      "awards",
+      "banner",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "FeaturesSection",
+      "CategoriesSection",
+      "CategorySection",
+      "PromoSection",
+      "PopularProducts",
+      "MetricsSection",
+      "DailyBestSells",
+      "SleepTapeAd",
+      "AllProducts",
+      "TrendingPromotion",
+      "AwardsSection",
+      "BannerSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "file": "EcommerceWatchSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "feature",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "meet-the-watchmaker",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "EventsLayout",
+    "file": "EventsSite.tsx",
+    "sections": [
+      "hero-component",
+      "about",
+      "features",
+      "how-it-works",
+      "live-events",
+      "testimonials",
+      "pricing",
+      "faq",
+      "call-to-action"
+    ],
+    "components": [
+      "HeroComponent",
+      "AboutSection",
+      "FeaturesSection",
+      "HowItWorksSection",
+      "LiveEventsSection",
+      "TestimonialsSection",
+      "PricingSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "layout": "FashionLayout",
+    "file": "FashionSite.tsx",
+    "sections": [
+      "hero",
+      "features",
+      "categories",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "FeaturesSection",
+      "CategoriesSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "FinanceLayout",
+    "file": "FinanceSite.tsx",
+    "sections": [
+      "hero",
+      "practice-areas",
+      "why-choose-us",
+      "case-studies-testimonials",
+      "process-workflow",
+      "meet-our-experts",
+      "consultation-packages",
+      "faq",
+      "contact"
+    ],
+    "components": [
+      "HeroSection",
+      "PracticeAreasSection",
+      "WhyChooseUsSection",
+      "CaseStudiesTestimonials",
+      "ProcessWorkflowSection",
+      "MeetOurExperts",
+      "ConsultationPackagesSection",
+      "FAQSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "layout": "FitnessLayout",
+    "file": "FitnessSite.tsx",
+    "sections": [
+      "hero",
+      "category",
+      "listings-grid",
+      "classes-grid",
+      "locations",
+      "virtual-tours",
+      "experts",
+      "market-insights",
+      "gallery",
+      "testimonials",
+      "app-promotion",
+      "newsletter",
+      "faqs"
+    ],
+    "components": [
+      "HeroSection",
+      "CategorySection",
+      "ListingsGrid",
+      "ClassesGrid",
+      "LocationsSection",
+      "VirtualTours",
+      "ExpertsSection",
+      "MarketInsights",
+      "GallerySection",
+      "TestimonialsSection",
+      "AppPromotionSection",
+      "NewsletterSection",
+      "FaqsSection"
+    ]
+  },
+  {
+    "layout": "FurnitureLayout",
+    "file": "FurnitureSite.tsx",
+    "sections": [
+      "hero",
+      "usp",
+      "category",
+      "weekly-products",
+      "room",
+      "popular-products",
+      "promo",
+      "trending",
+      "daily-best-sells",
+      "second-promo",
+      "all-products",
+      "metrics",
+      "awards",
+      "testimonials",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSlider",
+      "USPSlider",
+      "CategorySection",
+      "WeeklyProducts",
+      "RoomSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "GhubaLayout",
+    "file": "GhubaSite.tsx",
+    "sections": [
+      "banner",
+      "flash-deals",
+      "top-cate",
+      "new-arrivals",
+      "discount",
+      "shop",
+      "annocument",
+      "wrapper"
+    ],
+    "components": [
+      "BannerSlider",
+      "FlashDeals",
+      "TopCate",
+      "NewArrivals",
+      "Discount",
+      "Shop",
+      "Annocument",
+      "Wrapper"
+    ]
+  },
+  {
+    "layout": "HealthcareLayout",
+    "file": "HealthCareSite.tsx",
+    "sections": [
+      "healthcare-hero",
+      "about",
+      "medical-services",
+      "health-tips",
+      "doctors",
+      "patient",
+      "faqs",
+      "contact",
+      "cta"
+    ],
+    "components": [
+      "HealthcareHero",
+      "AboutSection",
+      "MedicalServicesSection",
+      "HealthTipsSection",
+      "DoctorsSection",
+      "PatientSection",
+      "FAQsSection",
+      "ContactSection",
+      "CTASection"
+    ]
+  },
+  {
+    "layout": "MarketplaceLayout",
+    "file": "MarketPlaceSite.tsx",
+    "sections": [
+      "hero-banner",
+      "category",
+      "store-page",
+      "reviews"
+    ],
+    "components": [
+      "HeroBanner",
+      "CategoryCarousel",
+      "StorePageSection",
+      "ReviewsSection"
+    ]
+  },
+  {
+    "layout": "MediaLayout",
+    "file": "MediaSite.tsx",
+    "sections": [
+      "media-hero",
+      "enhanced-categories",
+      "top-picks",
+      "latest-releases",
+      "featured-articles",
+      "latest-videos",
+      "testimonials",
+      "newsletter-signup",
+      "faqs"
+    ],
+    "components": [
+      "MediaHeroSection",
+      "EnhancedCategoriesSection",
+      "TopPicksCarousel",
+      "LatestReleasesSection",
+      "FeaturedArticlesSection",
+      "LatestVideosSection",
+      "TestimonialsSlider",
+      "NewsletterSignup",
+      "FAQsSection"
+    ]
+  },
+  {
+    "layout": "NonprofitLayout",
+    "file": "NonProfitSite.tsx",
+    "sections": [
+      "hero",
+      "core-highlights",
+      "about-us-spotlight",
+      "programs-causes",
+      "impact-stats",
+      "events-updates",
+      "news",
+      "testimonials-news",
+      "cta-bold",
+      "faq"
+    ],
+    "components": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "layout": "PortfolioLayout",
+    "file": "PortfolioSite.tsx",
+    "sections": [
+      "hero",
+      "business",
+      "marketplace-listings",
+      "getting-started",
+      "features",
+      "about",
+      "case-studies",
+      "discovery-call",
+      "testimonials",
+      "faq",
+      "cta",
+      "contact"
+    ],
+    "components": [
+      "HeroSection",
+      "BusinessSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "CaseStudiesSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "file": "PropertyManagementSite.tsx",
+    "sections": [
+      "hero",
+      "categories",
+      "featured-listings",
+      "trending-locations",
+      "listings",
+      "why-choose-us",
+      "agents",
+      "testimonials",
+      "faq",
+      "blog",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSection",
+      "CategoriesSection",
+      "FeaturedListingsWrapper",
+      "TrendingLocations",
+      "ListingsSection",
+      "WhyChooseUs",
+      "AgentsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "BlogSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "file": "PublicSpeakingSite.tsx",
+    "sections": [
+      "hero",
+      "social-proof",
+      "services",
+      "featured-listings",
+      "how-it-works",
+      "browse-by-category",
+      "about",
+      "featured-programs",
+      "video-showcase",
+      "testimonials",
+      "call-to-action"
+    ],
+    "components": [
+      "HeroSection",
+      "SocialProofSection",
+      "ServicesSection",
+      "FeaturedListings",
+      "HowItWorks",
+      "BrowseByCategory",
+      "AboutSection",
+      "FeaturedProgramsSection",
+      "VideoShowcaseSection",
+      "TestimonialsCarouselSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "layout": "RealEstateLayout",
+    "file": "RealEstateSite.tsx",
+    "sections": [
+      "hero",
+      "categories",
+      "featured-listings",
+      "trending-locations",
+      "listings",
+      "why-choose-us",
+      "agents",
+      "testimonials",
+      "faq",
+      "blog",
+      "newsletter"
+    ],
+    "components": [
+      "HeroSection",
+      "CategoriesSection",
+      "FeaturedListingsWrapper",
+      "TrendingLocations",
+      "ListingsSection",
+      "WhyChooseUs",
+      "AgentsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "BlogSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "layout": "RestaurantLayout",
+    "file": "RestaurentSite.tsx",
+    "sections": [
+      "restaurant-hero",
+      "signature-dishes",
+      "why-dine-with-us",
+      "testimonials",
+      "restaurant-gallery",
+      "restaurant-faqs"
+    ],
+    "components": [
+      "RestaurantHero",
+      "SignatureDishes",
+      "WhyDineWithUs",
+      "Testimonials",
+      "RestaurantGallery",
+      "RestaurantFAQs"
+    ]
+  },
+  {
+    "layout": "SaaSLayout",
+    "file": "SaasSite.tsx",
+    "sections": [
+      "enhanced-hero",
+      "features",
+      "enhanced-pricing",
+      "enhanced-testimonials",
+      "enhanced-faqs"
+    ],
+    "components": [
+      "EnhancedHeroSection",
+      "FeaturesSection",
+      "EnhancedPricingSection",
+      "EnhancedTestimonialsSection",
+      "EnhancedFAQsSection"
+    ]
+  },
+  {
+    "layout": "SalonBookingsLayout",
+    "file": "BookingsSite.tsx",
+    "sections": [
+      "hero",
+      "features",
+      "massage-features",
+      "pricing-and-stats",
+      "benefits",
+      "testimonials",
+      "cta",
+      "faqs"
+    ],
+    "components": [
+      "Hero",
+      "FeaturesSection",
+      "MassageFeatures",
+      "PricingAndStatsSection",
+      "BenefitsSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "layout": "Security2Layout",
+    "file": "Security2Site.tsx",
+    "sections": [
+      "hero",
+      "services",
+      "case-studies",
+      "marketplace-listings",
+      "getting-started",
+      "features",
+      "about",
+      "discovery-call",
+      "testimonials",
+      "faq",
+      "cta",
+      "contact"
+    ],
+    "components": [
+      "HeroSection",
+      "ServicesSection",
+      "CaseStudiesSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "layout": "SecurityLayout",
+    "file": "SecuritySite.tsx",
+    "sections": [
+      "hero",
+      "services",
+      "marketplace-listings",
+      "getting-started",
+      "features",
+      "about",
+      "case-studies",
+      "discovery-call",
+      "testimonials",
+      "faq",
+      "cta",
+      "contact"
+    ],
+    "components": [
+      "HeroSection",
+      "ServicesSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "CaseStudiesSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "layout": "ServicesLayout",
+    "file": "ServiceSite.tsx",
+    "sections": [
+      "hero",
+      "about",
+      "excellence",
+      "services",
+      "pricing",
+      "testimonial",
+      "faq",
+      "cleaning-tips",
+      "booking-form",
+      "get-started"
+    ],
+    "components": [
+      "HeroSection",
+      "AboutSection",
+      "ExcellenceSection",
+      "ServicesSection",
+      "PricingSection",
+      "TestimonialSection",
+      "FAQSection",
+      "CleaningTipsSection",
+      "BookingFormSection",
+      "GetStartedSection"
+    ]
+  },
+  {
+    "layout": "TravelLayout",
+    "file": "TravelSite.tsx",
+    "sections": [
+      "hero",
+      "filter-bar",
+      "listings",
+      "trending-locations",
+      "meet-agents",
+      "market-insights",
+      "virtual-tours",
+      "testimonials",
+      "mobile-app-promo",
+      "newsletter-signup"
+    ],
+    "components": [
+      "Hero",
+      "FilterBar",
+      "Listings",
+      "TrendingLocations",
+      "MeetAgents",
+      "MarketInsights",
+      "VirtualTours",
+      "Testimonials",
+      "MobileAppPromo",
+      "NewsletterSignup"
+    ]
+  }
+]

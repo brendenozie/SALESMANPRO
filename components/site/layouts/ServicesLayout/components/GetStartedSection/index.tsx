@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { LightBulbIcon, SparklesIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 85}`;
@@ -85,29 +86,60 @@ export default function GetStartedSection() {
                 className="inline-flex items-center gap-2 mb-6 px-3 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
               >
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-                <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">
-                  Exclusive Invitation
-                </span>
+                <EditableElement
+                  targetId="services.home.getStartedSection.GetStartedSection.main.badgeText"
+                  componentKey="GetStartedSection"
+                  elementKey="badgeText"
+                  label="Badge Text"
+                  defaultValue="Exclusive Invitation"
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">
+                      {val}
+                    </span>
+                  )}
+                </EditableElement>
               </motion.div>
 
               {/* Clean Stark Typography Heading */}
-              <motion.h2 
-                variants={structuralVariants}
-                className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.05] mb-6"
+              <EditableElement
+                targetId="services.home.getStartedSection.GetStartedSection.main.title"
+                componentKey="GetStartedSection"
+                elementKey="title"
+                label="Heading"
+                defaultValue="Ready for a Sparkling New Beginning?"
               >
-                Ready for a <br />
-                <span style={{ color: primaryColor }}>
-                  Sparkling New Beginning?
-                </span>
-              </motion.h2>
+                {(val) => {
+                  const t = typeof val === "string" ? val : "Ready for a Sparkling New Beginning?";
+                  return (
+                    <motion.h2 
+                      variants={structuralVariants}
+                      className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.05] mb-6"
+                    >
+                      {t}
+                    </motion.h2>
+                  );
+                }}
+              </EditableElement>
 
               {/* Descriptive Paragraph Block */}
-              <motion.p 
-                variants={elementVariants}
-                className="text-base sm:text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-xl font-medium leading-relaxed"
+              <EditableElement
+                targetId="services.home.getStartedSection.GetStartedSection.main.subtitle"
+                componentKey="GetStartedSection"
+                elementKey="subtitle"
+                label="Subtitle"
+                defaultValue="Unlock the comfort and confidence of a professionally cleaned environment. Our seamless digital process makes mapping out your service simple and execution flawless."
               >
-                Unlock the comfort and confidence of a professionally cleaned environment. Our seamless digital process makes mapping out your service simple and execution flawless.
-              </motion.p>
+                {(val) => (
+                  <motion.p 
+                    variants={elementVariants}
+                    className="text-base sm:text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-xl font-medium leading-relaxed"
+                  >
+                    {val}
+                  </motion.p>
+                )}
+              </EditableElement>
 
               {/* Solid High-Contrast Feature List */}
               <motion.div variants={elementVariants} className="mb-10 max-w-md">
@@ -136,7 +168,18 @@ export default function GetStartedSection() {
                   style={{ backgroundColor: primaryColor }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <span className="relative z-10">Get Your Free Quote</span>
+                  <EditableElement
+                    targetId="services.home.getStartedSection.GetStartedSection.main.buttonText"
+                    componentKey="GetStartedSection"
+                    elementKey="buttonText"
+                    label="Button Text"
+                    defaultValue="Get Your Free Quote"
+                    inline
+                  >
+                    {(val) => (
+                      <span className="relative z-10">{val}</span>
+                    )}
+                  </EditableElement>
                   <ChevronRightIcon className="w-4 h-4 relative z-10 transform translate-x-0 group-hover:translate-x-1.5 transition-transform duration-300 ease-out" />
                   
                   {/* Subtle clean absolute layer swap on hover instead of heavy shadows */}

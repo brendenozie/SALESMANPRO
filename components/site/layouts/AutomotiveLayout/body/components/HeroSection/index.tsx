@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { IStoreCategory, ISubcategory, StoreForm, HeroSlide } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 export interface SearchFilters {
   location: string;
@@ -159,21 +160,41 @@ export default function LuxuryCommandHero({
               className="flex flex-col items-center gap-6"
             >
               {/* Scaled Responsive Headline */}
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-[900] leading-[0.95] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 uppercase drop-shadow-2xl whitespace-pre-line">
-                {heroSlides[current].headline}
-              </h1>
+              <EditableElement
+                targetId={`home.hero.LuxuryCommandHero.${current}.headline`}
+                componentKey="LuxuryCommandHero"
+                elementKey="headline"
+                label="Main Headline"
+                defaultValue={heroSlides[current].headline}
+              >
+                {(val) => (
+                  <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-[900] leading-[0.95] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 uppercase drop-shadow-2xl whitespace-pre-line">
+                    {val}
+                  </h1>
+                )}
+              </EditableElement>
 
               {/* Added Subline for Better Engagement */}
-              {heroSlides[current].subline && (
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.8 }}
-                  className="text-base sm:text-lg md:text-xl font-medium text-white/80 max-w-2xl leading-relaxed tracking-wide drop-shadow-md"
-                >
-                  {heroSlides[current].subline}
-                </motion.p>
-              )}
+              <EditableElement
+                targetId={`home.hero.LuxuryCommandHero.${current}.subline`}
+                componentKey="LuxuryCommandHero"
+                elementKey="subline"
+                label="Eyebrow / Subline"
+                defaultValue={heroSlides[current].subline}
+              >
+                {(val) => (
+                  val ? (
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
+                      className="text-base sm:text-lg md:text-xl font-medium text-white/80 max-w-2xl leading-relaxed tracking-wide drop-shadow-md"
+                    >
+                      {val}
+                    </motion.p>
+                  ) : null
+                )}
+              </EditableElement>
             </motion.div>
           </AnimatePresence>
         </div>

@@ -13,6 +13,7 @@ import {
   ChartBarIcon
 } from "@heroicons/react/24/outline";
 import { IPromotion } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
   `${src}?w=${width}&q=${quality || 85}`;
@@ -94,22 +95,54 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
             viewport={{ once: true }}
             className="max-w-2xl"
           >
-            <span className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-3">
-              Core Framework
-            </span>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900">
-              {promotion?.title || "The Pillars of Excellence"}
-            </h2>
+            <EditableElement
+              targetId="services.home.excellenceSection.ExcellenceSection.main.badgeText"
+              componentKey="ExcellenceSection"
+              elementKey="badgeText"
+              label="Badge Text"
+              defaultValue="Core Framework"
+              inline
+            >
+              {(val) => (
+                <span className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-3">
+                  {val}
+                </span>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="services.home.excellenceSection.ExcellenceSection.main.title"
+              componentKey="ExcellenceSection"
+              elementKey="title"
+              label="Section Title"
+              defaultValue={promotion?.title || "The Pillars of Excellence"}
+            >
+              {(val) => (
+                <h2 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900">
+                  {val}
+                </h2>
+              )}
+            </EditableElement>
           </motion.div>
           
-          <motion.p 
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="text-slate-600 text-base md:text-lg max-w-md font-medium leading-relaxed"
+          <EditableElement
+            targetId="services.home.excellenceSection.ExcellenceSection.main.description"
+            componentKey="ExcellenceSection"
+            elementKey="description"
+            label="Section Narrative"
+            defaultValue={promotion?.description || "True quality does not shout; it is engineered directly into execution. Here is how we uphold our elite operational standards."}
           >
-            {promotion?.description || "True quality does not shout; it is engineered directly into execution. Here is how we uphold our elite operational standards."}
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="text-slate-600 text-base md:text-lg max-w-md font-medium leading-relaxed"
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* --- ACCORDION SYSTEM --- */}

@@ -30,6 +30,11 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
   const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
+  // Extract structured tenant section configuration
+  const heroConfig =
+    (pageData as any)?.heroConfig ||
+    (pageData as any)?.sections?.find((s: any) => s.type === "hero" || s.id?.includes("hero"))?.content;
+
   return (
       <div className="relative bg-cream min-h-screen text-gray-900">
         {/* Patterned Frame */}
@@ -37,7 +42,12 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
         <div className="fixed inset-y-0 right-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div> */}
 
         <div id="section-restaurant-hero" data-editor-section="restaurant-hero" data-editor-component="RestaurantHero">
-          <RestaurantHero heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} slug={pageData.slug} />
+          <RestaurantHero 
+            config={heroConfig}
+            heroSlides={pageData.heroSlides} 
+            themeSettings={pageData.themeSettings} 
+            slug={pageData.slug} 
+          />
         </div>
 
         <div id="section-signature-dishes" data-editor-section="signature-dishes" data-editor-component="SignatureDishes">

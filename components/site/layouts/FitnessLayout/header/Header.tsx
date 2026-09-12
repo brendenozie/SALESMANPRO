@@ -11,6 +11,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -105,34 +106,56 @@ export default function Header() {
                 className={`object-contain transition-all duration-300  h-20 w-32 ${scrolled ? 'scale-95' : 'scale-100'}`}
               />
             ) : (
-              <span className="text-xl font-black tracking-tight text-neutral-900 dark:text-white transition-colors duration-300">
-                {name}<span style={{ color: primaryColor }} className="animate-pulse">.</span>
-              </span>
+              <EditableElement
+                targetId="header.storeName"
+                componentKey="Header"
+                elementKey="storeName"
+                label="Store / Brand Name"
+                defaultValue={name}
+                inline
+              >
+                {(val) => (
+                  <span className="text-xl font-black tracking-tight text-neutral-900 dark:text-white transition-colors duration-300">
+                    {val}<span style={{ color: primaryColor }} className="animate-pulse">.</span>
+                  </span>
+                )}
+              </EditableElement>
             )}
           </Link>
 
           {/* CENTER NAV: INTEGRATED LAYOUT PILL SLIDER */}
           <nav className="hidden lg:flex items-center space-x-1 bg-neutral-100/60 dark:bg-neutral-800/40 border border-neutral-200/40 dark:border-neutral-700/30 p-1.5 rounded-full relative">
             {navLinks.map((link, idx) => (
-              <Link
+              <EditableElement
                 key={link.name}
-                href={link.href}
-                onMouseEnter={() => setHoveredIndex(idx)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide relative text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors duration-200"
+                targetId={`header.nav.${idx}.label`}
+                componentKey="Header"
+                elementKey={`nav.${idx}.label`}
+                label={`Nav ${link.name}`}
+                defaultValue={link.name}
+                inline
               >
-                {hoveredIndex === idx && (
-                  <motion.span
-                    layoutId="navHoverBg"
-                    className="absolute inset-0 bg-white dark:bg-neutral-800 shadow-sm rounded-full z-[-1]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  />
+                {(val) => (
+                  <Link
+                    href={link.href}
+                    onMouseEnter={() => setHoveredIndex(idx)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide relative text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors duration-200"
+                  >
+                    {hoveredIndex === idx && (
+                      <motion.span
+                        layoutId="navHoverBg"
+                        className="absolute inset-0 bg-white dark:bg-neutral-800 shadow-sm rounded-full z-[-1]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      />
+                    )}
+                    {val}
+                  </Link>
                 )}
-                {link.name}
-              </Link>
+              </EditableElement>
             ))}
           </nav>
 

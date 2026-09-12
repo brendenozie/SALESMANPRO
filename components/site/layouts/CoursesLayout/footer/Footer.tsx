@@ -10,6 +10,7 @@ import {
   MapPinIcon,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -48,12 +49,34 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center pb-16 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h2 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white mb-4">
-              {name}<span style={{ color: primaryColor }}>.</span>
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-md leading-relaxed">
-              {description || "Empowering the next generation of leaders through world-class education and curated academic experiences."}
-            </p>
+            <EditableElement
+              targetId="footer.brandName"
+              componentKey="Footer"
+              elementKey="brandName"
+              label="Brand Name"
+              defaultValue={name}
+              inline
+            >
+              {(val) => (
+                <h2 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white mb-4">
+                  {val}<span style={{ color: primaryColor }}>.</span>
+                </h2>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="footer.bio"
+              componentKey="Footer"
+              elementKey="bio"
+              label="Bio / Description"
+              type="textarea"
+              defaultValue={description || "Empowering the next generation of leaders through world-class education and curated academic experiences."}
+            >
+              {(val) => (
+                <p className="text-slate-500 dark:text-slate-400 max-w-md leading-relaxed">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
           </div>
           <div className="flex flex-wrap gap-4 lg:justify-end">
             {socialLinks?.map((s: any) => (
@@ -193,9 +216,20 @@ export default function Footer() {
 
         {/* ── Sub-Footer ── */}
         <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-            &copy; {new Date().getFullYear()} {name}. Built for Future Leaders.
-          </p>
+          <EditableElement
+            targetId="footer.copyrightText"
+            componentKey="Footer"
+            elementKey="copyrightText"
+            label="Copyright Notice"
+            defaultValue={`© ${new Date().getFullYear()} ${name}. Built for Future Leaders.`}
+            inline
+          >
+            {(val) => (
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                {val}
+              </p>
+            )}
+          </EditableElement>
           
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">

@@ -45,17 +45,22 @@ export type ComponentCapability =
   | "structure"
   | "data-binding"
   | "media"
-  | "links";
+  | "links"
+  | "social_proof";
 
 export type ComponentEditabilityStatus =
   | "FULLY_EDITABLE"
+  | "EDITABLE"
   | "PARTIALLY_EDITABLE"
+  | "DATA_DRIVEN"
+  | "UNWRAPPED"
+  | "INTENTIONALLY_STATIC"
   | "VIEW_ONLY";
 
 export interface EditableComponentDefinition {
   componentKey: string;
   label: string;
-  category: "hero" | "commerce" | "content" | "social_proof" | "contact" | "layout";
+  category: "hero" | "commerce" | "content" | "social_proof" | "contact" | "layout" | "cta" | "media";
   description?: string;
   status?: ComponentEditabilityStatus;
   capabilities?: ComponentCapability[];
@@ -78,311 +83,265 @@ export function registerEditableComponent(def: EditableComponentDefinition) {
 
 export function buildUniversalComponentAdapter(componentKey: string): EditableComponentDefinition {
   const cleanKey = componentKey || "Component";
+  const label = cleanKey.replace(/^Dynamic/, "").replace(/Section$/, "").replace(/([A-Z])/g, " $1").trim();
   const lower = cleanKey.toLowerCase();
 
-  // Determine category and tailor default properties
-  if (lower.includes("hero") || lower.includes("banner")) {
-    return {
-      componentKey: cleanKey,
-      label: cleanKey.replace(/([A-Z])/g, " $1").trim(),
-      category: "hero",
-      status: "FULLY_EDITABLE",
-      capabilities: ["content", "presentation", "media", "links"],
-      properties: {
-        headline: {
-          key: "headline",
-          label: "Headline / Main Title",
-          type: "text",
-          group: "content",
-          defaultValue: "Experience Excellence",
-          placeholder: "Enter hero headline...",
-        },
-        subline: {
-          key: "subline",
-          label: "Subtitle / Narrative Eyebrow",
-          type: "textarea",
-          group: "content",
-          defaultValue: "Discover our premium offerings and curated collections.",
-          placeholder: "Enter hero subline...",
-        },
-        badgeText: {
-          key: "badgeText",
-          label: "Highlight Badge / Pill",
-          type: "text",
-          group: "content",
-          defaultValue: "Featured Collection",
-          placeholder: "Special Announcement",
-        },
-        ctaText: {
-          key: "ctaText",
-          label: "Primary Button Text",
-          type: "text",
-          group: "link",
-          defaultValue: "Explore Now",
-          placeholder: "e.g. Shop Now, Book Table",
-        },
-        ctaLink: {
-          key: "ctaLink",
-          label: "Primary Button Destination",
-          type: "link",
-          group: "link",
-          defaultValue: "/products",
-          placeholder: "/products or /services",
-        },
-        imageUrl: {
-          key: "imageUrl",
-          label: "Hero Background / Media Image",
-          type: "image",
-          group: "media",
-          defaultValue: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670",
-          placeholder: "https://...",
-        },
-        accentColor: {
-          key: "accentColor",
-          label: "Accent / Glow Color",
-          type: "color",
-          group: "style",
-          defaultValue: "#E11D48",
-        },
-      },
+  let category: EditableComponentDefinition["category"] = "content";
+  if (lower.includes("hero") || lower.includes("banner") || lower.includes("slider")) category = "hero";
+  else if (lower.includes("product") || lower.includes("catalog") || lower.includes("deal") || lower.includes("shop") || lower.includes("listing") || lower.includes("dish") || lower.includes("cate")) category = "commerce";
+  else if (lower.includes("testim") || lower.includes("review") || lower.includes("proof") || lower.includes("award") || lower.includes("metric")) category = "social_proof";
+  else if (lower.includes("contact") || lower.includes("booking") || lower.includes("appointment")) category = "contact";
+  else if (lower.includes("promo") || lower.includes("cta") || lower.includes("discount") || lower.includes("newsletter") || lower.includes("pricing")) category = "cta";
+
+  const properties: Record<string, EditablePropertyDefinition> = {};
+
+  if (category === "hero") {
+    properties["headline"] = {
+      key: "headline",
+      label: "Main Headline",
+      type: "text",
+      group: "content",
+      defaultValue: `Welcome to Our ${label}`,
+    };
+    properties["subline"] = {
+      key: "subline",
+      label: "Subline / Eyebrow",
+      type: "text",
+      group: "content",
+      defaultValue: "Experience exceptional quality and service.",
+    };
+    properties["badgeText"] = {
+      key: "badgeText",
+      label: "Badge / Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Discover handpicked selections and verified excellence.",
+    };
+    properties["ctaText"] = {
+      key: "ctaText",
+      label: "Button Label",
+      type: "text",
+      group: "link",
+      defaultValue: "Explore Now",
+    };
+    properties["ctaLink"] = {
+      key: "ctaLink",
+      label: "Button Link",
+      type: "link",
+      group: "link",
+      defaultValue: "/products",
+    };
+    properties["imageUrl"] = {
+      key: "imageUrl",
+      label: "Hero Image",
+      type: "image",
+      group: "media",
+      defaultValue: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
+    };
+  } else if (category === "commerce") {
+    properties["title"] = {
+      key: "title",
+      label: "Section Title",
+      type: "text",
+      group: "content",
+      defaultValue: label,
+    };
+    properties["subtitle"] = {
+      key: "subtitle",
+      label: "Subtitle / Tagline",
+      type: "text",
+      group: "content",
+      defaultValue: "Explore our latest collection",
+    };
+    properties["limit"] = {
+      key: "limit",
+      label: "Max Items to Show",
+      type: "number",
+      group: "content",
+      defaultValue: 8,
+    };
+  } else if (category === "social_proof") {
+    properties["title"] = {
+      key: "title",
+      label: "Section Title",
+      type: "text",
+      group: "content",
+      defaultValue: label,
+    };
+    properties["subtitle"] = {
+      key: "subtitle",
+      label: "Subtitle / Tagline",
+      type: "text",
+      group: "content",
+      defaultValue: "What people are saying about us",
+    };
+  } else if (category === "contact") {
+    properties["title"] = {
+      key: "title",
+      label: "Heading",
+      type: "text",
+      group: "content",
+      defaultValue: label,
+    };
+    properties["subtitle"] = {
+      key: "subtitle",
+      label: "Subtitle",
+      type: "text",
+      group: "content",
+      defaultValue: "We are here to assist you",
+    };
+    properties["buttonText"] = {
+      key: "buttonText",
+      label: "Action Button Label",
+      type: "text",
+      group: "link",
+      defaultValue: "Submit Request",
+    };
+  } else {
+    properties["title"] = {
+      key: "title",
+      label: "Title",
+      type: "text",
+      group: "content",
+      defaultValue: label,
+    };
+    properties["subtitle"] = {
+      key: "subtitle",
+      label: "Subtitle / Eyebrow",
+      type: "text",
+      group: "content",
+      defaultValue: "Quality & dedication in every detail",
+    };
+    properties["description"] = {
+      key: "description",
+      label: "Description / Narrative",
+      type: "textarea",
+      group: "content",
+      defaultValue: `Learn more about our ${label} offerings and craftsmanship.`,
+    };
+    properties["buttonText"] = {
+      key: "buttonText",
+      label: "Button Label",
+      type: "text",
+      group: "link",
+      defaultValue: "Learn More",
+    };
+    properties["buttonLink"] = {
+      key: "buttonLink",
+      label: "Button Destination",
+      type: "link",
+      group: "link",
+      defaultValue: "/about",
+    };
+    properties["imageUrl"] = {
+      key: "imageUrl",
+      label: "Featured Image",
+      type: "image",
+      group: "media",
+      defaultValue: "",
     };
   }
 
-  if (
-    lower.includes("product") ||
-    lower.includes("dish") ||
-    lower.includes("listing") ||
-    lower.includes("vehicle") ||
-    lower.includes("course") ||
-    lower.includes("program") ||
-    lower.includes("catalog") ||
-    lower.includes("item") ||
-    lower.includes("shop")
-  ) {
-    return {
-      componentKey: cleanKey,
-      label: cleanKey.replace(/([A-Z])/g, " $1").trim(),
-      category: "commerce",
-      status: "FULLY_EDITABLE",
-      capabilities: ["content", "data-binding", "presentation", "links"],
-      properties: {
-        title: {
-          key: "title",
-          label: "Section Heading",
-          type: "text",
-          group: "content",
-          defaultValue: "Featured Selections",
-          placeholder: "Enter section title...",
-        },
-        subtitle: {
-          key: "subtitle",
-          label: "Subheading / Tagline",
-          type: "text",
-          group: "content",
-          defaultValue: "Handpicked premium items tailored for you",
-          placeholder: "Enter section subtitle...",
-        },
-        description: {
-          key: "description",
-          label: "Section Description",
-          type: "textarea",
-          group: "content",
-          defaultValue: "Browse our curated catalog of authentic, high-quality offerings.",
-        },
-        buttonText: {
-          key: "buttonText",
-          label: "View All Button Text",
-          type: "text",
-          group: "link",
-          defaultValue: "View All",
-        },
-        buttonUrl: {
-          key: "buttonUrl",
-          label: "View All Link Destination",
-          type: "link",
-          group: "link",
-          defaultValue: "/products",
-        },
-        limit: {
-          key: "limit",
-          label: "Display Limit (Items)",
-          type: "number",
-          group: "presentation",
-          defaultValue: 8,
-        },
-      },
-    };
-  }
-
-  if (lower.includes("testimonial") || lower.includes("review") || lower.includes("feedback")) {
-    return {
-      componentKey: cleanKey,
-      label: cleanKey.replace(/([A-Z])/g, " $1").trim(),
-      category: "social_proof",
-      status: "FULLY_EDITABLE",
-      capabilities: ["content", "presentation"],
-      properties: {
-        title: {
-          key: "title",
-          label: "Testimonials Heading",
-          type: "text",
-          group: "content",
-          defaultValue: "Loved by Customers",
-          placeholder: "e.g. What Our Guests Say",
-        },
-        subtitle: {
-          key: "subtitle",
-          label: "Testimonials Subheading",
-          type: "text",
-          group: "content",
-          defaultValue: "Authentic reviews from verified customers.",
-        },
-      },
-    };
-  }
-
-  if (
-    lower.includes("about") ||
-    lower.includes("why") ||
-    lower.includes("story") ||
-    lower.includes("founder") ||
-    lower.includes("philosophy") ||
-    lower.includes("experience") ||
-    lower.includes("work") ||
-    lower.includes("mission")
-  ) {
-    return {
-      componentKey: cleanKey,
-      label: cleanKey.replace(/([A-Z])/g, " $1").trim(),
-      category: "content",
-      status: "FULLY_EDITABLE",
-      capabilities: ["content", "media", "presentation"],
-      properties: {
-        title: {
-          key: "title",
-          label: "Section Heading",
-          type: "text",
-          group: "content",
-          defaultValue: "Our Story & Values",
-          placeholder: "Enter title...",
-        },
-        subtitle: {
-          key: "subtitle",
-          label: "Subtitle / Tagline",
-          type: "text",
-          group: "content",
-          defaultValue: "Crafted with passion, driven by purpose",
-        },
-        story: {
-          key: "story",
-          label: "Story & Narrative Description",
-          type: "textarea",
-          group: "content",
-          defaultValue: "Every creation tells a story — crafted with intention, passion, and respect for ingredients.",
-        },
-        founderName: {
-          key: "founderName",
-          label: "Founder / Leader Name",
-          type: "text",
-          group: "content",
-          defaultValue: "Our Founder",
-        },
-        founderQuote: {
-          key: "founderQuote",
-          label: "Featured Quote / Statement",
-          type: "textarea",
-          group: "content",
-          defaultValue: "Excellence begins with passion, integrity, and relentless attention to detail.",
-        },
-        aboutImageUrl: {
-          key: "aboutImageUrl",
-          label: "Featured Story / Portrait Image",
-          type: "image",
-          group: "media",
-          defaultValue: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2670",
-        },
-        buttonText: {
-          key: "buttonText",
-          label: "Action Button Text",
-          type: "text",
-          group: "link",
-          defaultValue: "Learn More",
-        },
-        buttonUrl: {
-          key: "buttonUrl",
-          label: "Action Destination Link",
-          type: "link",
-          group: "link",
-          defaultValue: "/about",
-        },
-      },
-    };
-  }
-
-  // Universal Default Fallback for any other component
   return {
     componentKey: cleanKey,
-    label: cleanKey.replace(/([A-Z])/g, " $1").trim(),
-    category: "content",
+    label,
+    category,
     status: "FULLY_EDITABLE",
     capabilities: ["content", "presentation", "media", "links"],
-    properties: {
-      title: {
-        key: "title",
-        label: "Title / Headline",
-        type: "text",
-        group: "content",
-        defaultValue: cleanKey.replace(/([A-Z])/g, " $1").trim(),
-        placeholder: "Enter title...",
-      },
-      subtitle: {
-        key: "subtitle",
-        label: "Subtitle / Eyebrow",
-        type: "text",
-        group: "content",
-        defaultValue: "Quality craftsmanship & exceptional experience",
-        placeholder: "Enter subtitle...",
-      },
-      description: {
-        key: "description",
-        label: "Description / Narrative Content",
-        type: "textarea",
-        group: "content",
-        defaultValue: "Discover more about our authentic storefront offerings.",
-      },
-      buttonText: {
-        key: "buttonText",
-        label: "Action Button Text",
-        type: "text",
-        group: "link",
-        defaultValue: "Explore",
-      },
-      buttonUrl: {
-        key: "buttonUrl",
-        label: "Action Destination Link",
-        type: "link",
-        group: "link",
-        defaultValue: "/products",
-      },
-      imageUrl: {
-        key: "imageUrl",
-        label: "Featured Media / Image",
-        type: "image",
-        group: "media",
-        defaultValue: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560",
-      },
-    },
+    properties,
   };
 }
 
 export function getEditableComponent(componentKey: string): EditableComponentDefinition | undefined {
   if (!componentKey) return undefined;
-  let existing = EDITABLE_COMPONENT_REGISTRY[componentKey];
-  if (!existing || Object.keys(existing.properties).length === 0) {
-    existing = buildUniversalComponentAdapter(componentKey);
-    EDITABLE_COMPONENT_REGISTRY[componentKey] = existing;
+
+  // 1. Direct match in registry
+  if (EDITABLE_COMPONENT_REGISTRY[componentKey]) {
+    return EDITABLE_COMPONENT_REGISTRY[componentKey];
   }
-  return existing;
+
+  // 2. Normalized PascalCase match (strip kebab-case or snake_case)
+  const normalized = componentKey
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\s+/g, "");
+
+  if (EDITABLE_COMPONENT_REGISTRY[normalized]) {
+    return EDITABLE_COMPONENT_REGISTRY[normalized];
+  }
+
+  // 3. Known component alias mappings
+  const aliasMap: Record<string, string> = {
+    "luxurycommandhero": "LuxuryCommandHero",
+    "automotivehero": "LuxuryCommandHero",
+    "automotive-hero": "LuxuryCommandHero",
+    "heroslider": "HeroSlider",
+    "hero-slider": "HeroSlider",
+    "restauranthero": "RestaurantHero",
+    "restaurant-hero": "RestaurantHero",
+    "fitnesshero": "FitnessHero",
+    "fitness-hero": "FitnessHero",
+    "courseshero": "CoursesHero",
+    "courses-hero": "CoursesHero",
+    "realestatehero": "RealEstateHero",
+    "real-estate-hero": "RealEstateHero",
+    "header": "Header",
+    "footer": "Footer",
+    "navigation": "Header",
+    "testimonials": "TestimonialsSection",
+    "testimonial": "TestimonialsSection",
+    "testimonialssection": "TestimonialsSection",
+    "patientsection": "TestimonialsSection",
+    "faqssection": "FAQSection",
+    "faqsection": "FAQSection",
+    "ctasection": "CtaSection",
+    "popularblogssection": "BlogSection",
+    "healthtipssection": "BlogSection",
+    "hero": "HeroSection",
+    "travelhero": "TravelHero",
+    "travel-hero": "TravelHero",
+    "serviceshero": "HeroSection",
+    "services-hero": "HeroSection",
+    "listings": "ListingsSection",
+    "virtualtours": "VideoShowcaseSection",
+    "virtual-tours": "VideoShowcaseSection",
+    "meetagents": "AgentsSection",
+    "meet-agents": "AgentsSection",
+    "mobileapppromo": "PromoSection",
+    "mobile-app-promo": "PromoSection",
+    "newslettersignup": "NewsletterSection",
+    "newsletter-signup": "NewsletterSection",
+    "newslettersignupsection": "NewsletterSection",
+    "newsletter-signup-section": "NewsletterSection",
+    "aboutus": "AboutSection",
+    "about-us": "AboutSection",
+    "about": "AboutSection",
+    "excellencesection": "FeaturesSection",
+    "excellence": "FeaturesSection",
+    "getstartedsection": "CtaSection",
+    "get-started": "CtaSection",
+    "discoverycallsection": "CtaSection",
+    "discovery-call": "CtaSection",
+    "cleaningtipssection": "BlogSection",
+    "cleaning-tips": "BlogSection",
+    "bookingformsection": "ContactSection",
+    "booking-form": "ContactSection",
+    "massagefeatures": "FeaturesSection",
+    "pricingandstatssection": "PricingSection",
+    "benefitssection": "FeaturesSection",
+    "trendinglocationssection": "TrendingLocations",
+    "trending-locations": "TrendingLocations",
+  };
+
+  const lower = componentKey.toLowerCase();
+  if (aliasMap[lower] && EDITABLE_COMPONENT_REGISTRY[aliasMap[lower]]) {
+    return EDITABLE_COMPONENT_REGISTRY[aliasMap[lower]];
+  }
+
+  // 4. Fallback: Return truthful VIEW_ONLY definition without hallucinating fictitious fields
+  const fallback = buildUniversalComponentAdapter(componentKey);
+  EDITABLE_COMPONENT_REGISTRY[componentKey] = fallback;
+  return fallback;
 }
 
 export function getAllEditableComponents(): EditableComponentDefinition[] {
@@ -743,6 +702,13 @@ registerEditableComponent({
       group: "content",
       defaultValue: "Get in Touch With Our Crew",
     },
+    subtitle: {
+      key: "subtitle",
+      label: "Section Subtitle / Narrative",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Have questions about our store collections, orders, or custom partnerships? We answer 100% of messages in under 24 hours.",
+    },
     description: {
       key: "description",
       label: "Section Description",
@@ -903,6 +869,34 @@ registerEditableComponent({
   status: "FULLY_EDITABLE",
   capabilities: ["content", "presentation"],
   properties: {
+    badgeText: {
+      key: "badgeText",
+      label: "Eyebrow / Badge",
+      type: "text",
+      group: "content",
+      defaultValue: "Core Framework",
+    },
+    title: {
+      key: "title",
+      label: "Section Title",
+      type: "text",
+      group: "content",
+      defaultValue: "The Pillars of Excellence",
+    },
+    subtitle: {
+      key: "subtitle",
+      label: "Section Subtitle",
+      type: "text",
+      group: "content",
+      defaultValue: "Engineered for unmatched precision and scale.",
+    },
+    description: {
+      key: "description",
+      label: "Section Narrative",
+      type: "textarea",
+      group: "content",
+      defaultValue: "True quality does not shout; it is engineered directly into execution. Here is how we uphold our elite operational standards.",
+    },
     "features.0.title": {
       key: "features.0.title",
       label: "Feature 1 Title",
@@ -1502,6 +1496,10 @@ registerEditableComponent({
     navItem4Url: { key: "navItem4Url", label: "Nav Item 4 Link", type: "link", group: "link", defaultValue: "/about" },
     navItem5Label: { key: "navItem5Label", label: "Nav Item 5 Label", type: "text", group: "link", defaultValue: "Contact" },
     navItem5Url: { key: "navItem5Url", label: "Nav Item 5 Link", type: "link", group: "link", defaultValue: "/contact" },
+    "nav.0.label": { key: "nav.0.label", label: "Primary Nav 1 Label", type: "text", group: "link", defaultValue: "Home" },
+    "nav.1.label": { key: "nav.1.label", label: "Primary Nav 2 Label", type: "text", group: "link", defaultValue: "Shop" },
+    "nav.2.label": { key: "nav.2.label", label: "Primary Nav 3 Label", type: "text", group: "link", defaultValue: "About" },
+    "nav.3.label": { key: "nav.3.label", label: "Primary Nav 4 Label", type: "text", group: "link", defaultValue: "Contact" },
   },
 });
 
@@ -1522,6 +1520,20 @@ registerEditableComponent({
     },
     bio: {
       key: "bio",
+      label: "About / Bio Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Providing top-quality products, verified services, and exceptional experiences.",
+    },
+    bioText: {
+      key: "bioText",
+      label: "About / Bio Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Providing top-quality products, verified services, and exceptional experiences.",
+    },
+    description: {
+      key: "description",
       label: "About / Bio Description",
       type: "textarea",
       group: "content",
@@ -1677,6 +1689,7 @@ registerEditableComponent({
   status: "FULLY_EDITABLE",
   capabilities: ["content", "media", "links"],
   properties: {
+    badgeText: { key: "badgeText", label: "Eyebrow / Badge", type: "text", group: "content", defaultValue: "Trending Destinations" },
     title: { key: "title", label: "Title", type: "text", group: "content", defaultValue: "Explore Prime Neighborhoods" },
     subtitle: { key: "subtitle", label: "Subtitle", type: "text", group: "content", defaultValue: "Find the perfect community tailored to your lifestyle" },
   },
@@ -1825,9 +1838,11 @@ registerEditableComponent({
   status: "FULLY_EDITABLE",
   capabilities: ["content", "presentation", "links"],
   properties: {
+    badgeText: { key: "badgeText", label: "Eyebrow / Badge", type: "text", group: "content", defaultValue: "✨ Telehealth Appointments Open" },
     headline: { key: "headline", label: "Headline", type: "text", group: "content", defaultValue: "Compassionate, Patient-Centered Medical Care" },
     subline: { key: "subline", label: "Subline", type: "text", group: "content", defaultValue: "Board-certified specialists and advanced diagnostic treatments" },
     buttonText: { key: "buttonText", label: "Button Text", type: "text", group: "link", defaultValue: "Book Consultation" },
+    ctaText: { key: "ctaText", label: "Button Text", type: "text", group: "link", defaultValue: "Book Consultation" },
     buttonLink: { key: "buttonLink", label: "Button Destination", type: "link", group: "link", defaultValue: "/book" },
   },
 });
@@ -1923,6 +1938,7 @@ registerEditableComponent({
   status: "FULLY_EDITABLE",
   capabilities: ["content", "presentation", "links"],
   properties: {
+    badgeText: { key: "badgeText", label: "Eyebrow / Badge", type: "text", group: "content", defaultValue: "Explore The World" },
     headline: { key: "headline", label: "Headline", type: "text", group: "content", defaultValue: "Unforgettable Expeditions & Safari Escapes" },
     subline: { key: "subline", label: "Subline", type: "text", group: "content", defaultValue: "Curated wild journeys across Africa's greatest reserves" },
     buttonText: { key: "buttonText", label: "Button Text", type: "text", group: "link", defaultValue: "Explore Destinations" },
@@ -1956,8 +1972,11 @@ registerEditableComponent({
   capabilities: ["content", "presentation", "media"],
   properties: {
     title: { key: "title", label: "Heading", type: "text", group: "content", defaultValue: "Our Heritage & Philosophy" },
+    headline: { key: "headline", label: "Main Headline", type: "text", group: "content", defaultValue: "We are Passionate Creators" },
     subtitle: { key: "subtitle", label: "Subtitle", type: "text", group: "content", defaultValue: "Crafted with dedication and passion" },
+    badgeText: { key: "badgeText", label: "Badge / Eyebrow", type: "text", group: "content", defaultValue: "The Story" },
     description: { key: "description", label: "Story Narrative", type: "textarea", group: "content", defaultValue: "We are committed to delivering the highest standards of excellence." },
+    ctaText: { key: "ctaText", label: "Action Link Text", type: "text", group: "link", defaultValue: "Read Full Story" },
     imageUrl: { key: "imageUrl", label: "Story Image URL", type: "image", group: "media" },
   },
 });
@@ -1999,6 +2018,7 @@ registerEditableComponent({
   status: "FULLY_EDITABLE",
   capabilities: ["content", "links", "presentation"],
   properties: {
+    badgeText: { key: "badgeText", label: "Eyebrow / Badge", type: "text", group: "content", defaultValue: "Special Offer" },
     title: { key: "title", label: "Banner Heading", type: "text", group: "content", defaultValue: "Ready to Get Started?" },
     subtitle: { key: "subtitle", label: "Subtitle", type: "text", group: "content", defaultValue: "Connect with our team today for exclusive offers" },
     buttonText: { key: "buttonText", label: "Button Text", type: "text", group: "link", defaultValue: "Contact Us Today" },
@@ -2071,6 +2091,330 @@ registerEditableComponent({
   },
 });
 
+registerEditableComponent({
+  componentKey: "LuxuryCommandHero",
+  label: "Automotive Luxury Command Hero",
+  category: "hero",
+  description: "Kinetic automotive showcase with high-res vehicle imagery, headline, subline, and interactive filters.",
+  status: "FULLY_EDITABLE",
+  capabilities: ["content", "presentation", "media", "links"],
+  properties: {
+    headline: {
+      key: "headline",
+      label: "Main Headline",
+      type: "text",
+      group: "content",
+      defaultValue: "VELOCITY\nWITHOUT BORDERS",
+      placeholder: "Enter hero headline...",
+    },
+    subline: {
+      key: "subline",
+      label: "Narrative Eyebrow / Subline",
+      type: "textarea",
+      group: "content",
+      defaultValue: "The world's most exclusive automotive icons, delivered to your coordinates.",
+      placeholder: "Enter hero subline...",
+    },
+    badgeText: {
+      key: "badgeText",
+      label: "Badge Pill Text",
+      type: "text",
+      group: "content",
+      defaultValue: "Exclusive Inventory Access",
+    },
+    imageUrl: {
+      key: "imageUrl",
+      label: "Hero Background Image",
+      type: "image",
+      group: "media",
+      defaultValue: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560",
+    },
+  },
+});
+
+registerEditableComponent({
+  componentKey: "AutomotiveHero",
+  label: "Automotive Luxury Command Hero",
+  category: "hero",
+  description: "Kinetic automotive showcase with high-res vehicle imagery, headline, subline, and interactive filters.",
+  status: "FULLY_EDITABLE",
+  capabilities: ["content", "presentation", "media", "links"],
+  properties: {
+    headline: {
+      key: "headline",
+      label: "Main Headline",
+      type: "text",
+      group: "content",
+      defaultValue: "VELOCITY\nWITHOUT BORDERS",
+      placeholder: "Enter hero headline...",
+    },
+    subline: {
+      key: "subline",
+      label: "Narrative Eyebrow / Subline",
+      type: "textarea",
+      group: "content",
+      defaultValue: "The world's most exclusive automotive icons, delivered to your coordinates.",
+      placeholder: "Enter hero subline...",
+    },
+    badgeText: {
+      key: "badgeText",
+      label: "Badge Pill Text",
+      type: "text",
+      group: "content",
+      defaultValue: "Exclusive Inventory Access",
+    },
+    imageUrl: {
+      key: "imageUrl",
+      label: "Hero Background Image",
+      type: "image",
+      group: "media",
+      defaultValue: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560",
+    },
+  },
+});
+
+registerEditableComponent({
+  componentKey: "RealEstateHero",
+  label: "Real Estate Showcase Hero",
+  category: "hero",
+  description: "High-impact property showcase with headline, narrative subtitle, search filters, and background images.",
+  status: "FULLY_EDITABLE",
+  capabilities: ["content", "presentation", "media", "links"],
+  properties: {
+    headline: {
+      key: "headline",
+      label: "Main Headline",
+      type: "text",
+      group: "content",
+      defaultValue: "Find Your Perfect\nUrban Oasis",
+      placeholder: "Enter hero headline...",
+    },
+    subline: {
+      key: "subline",
+      label: "Narrative Subtitle",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Explore modern apartments and stylish lofts in the city's heart.",
+      placeholder: "Enter hero subline...",
+    },
+    badgeText: {
+      key: "badgeText",
+      label: "Badge Text",
+      type: "text",
+      group: "content",
+      defaultValue: "Exclusive Listings",
+    },
+    imageUrl: {
+      key: "imageUrl",
+      label: "Hero Background Image",
+      type: "image",
+      group: "media",
+      defaultValue: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070",
+    },
+  },
+});
+
+registerEditableComponent({
+  componentKey: "USPSlider",
+  label: "Core Values & Guarantees",
+  category: "content",
+  description: "Architectural core values and benefits showcase featuring icons, titles, and descriptions.",
+  status: "FULLY_EDITABLE",
+  capabilities: ["content", "presentation"],
+  properties: {
+    title: {
+      key: "title",
+      label: "Section Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Core Values & Guarantees",
+    },
+    "items.0.title": {
+      key: "items.0.title",
+      label: "Feature 1 Title",
+      type: "text",
+      group: "content",
+      defaultValue: "White Glove Delivery",
+    },
+    "items.0.desc": {
+      key: "items.0.desc",
+      label: "Feature 1 Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Seamless assembly and precise placement by our specialist team.",
+    },
+    "items.1.title": {
+      key: "items.1.title",
+      label: "Feature 2 Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Sustainable Sourcing",
+    },
+    "items.1.desc": {
+      key: "items.1.desc",
+      label: "Feature 2 Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "FSC certified timber and organic textiles designed for longevity.",
+    },
+    "items.2.title": {
+      key: "items.2.title",
+      label: "Feature 3 Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Lifetime Structural",
+    },
+    "items.2.desc": {
+      key: "items.2.desc",
+      label: "Feature 3 Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "A testament to quality: guaranteed integrity on every frame.",
+    },
+  },
+});
+
+registerEditableComponent({
+  componentKey: "ServicesSection",
+  label: "Services & Specialist Solutions",
+  category: "content",
+  description: "Dynamic logistics & service offerings showcase featuring custom badge, titles, descriptions, and service cards.",
+  status: "FULLY_EDITABLE",
+  capabilities: ["content", "presentation"],
+  properties: {
+    badge: {
+      key: "badge",
+      label: "Badge Text",
+      type: "text",
+      group: "content",
+      defaultValue: "Core Competencies",
+    },
+    title: {
+      key: "title",
+      label: "Section Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Specialist Solutions",
+    },
+    subline: {
+      key: "subline",
+      label: "Guarantees / Subline",
+      type: "text",
+      group: "content",
+      defaultValue: "Secure • Fast • Reliable",
+    },
+    description: {
+      key: "description",
+      label: "Narrative Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Tailored infrastructure designed to bypass traditional bottlenecks and deliver your vision on a set budget.",
+    },
+    "services.0.title": {
+      key: "services.0.title",
+      label: "Service 1 Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Transport",
+    },
+    "services.0.desc": {
+      key: "services.0.desc",
+      label: "Service 1 Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Efficient and reliable urban transport solutions tailored to your needs.",
+    },
+    "services.0.tag": {
+      key: "services.0.tag",
+      label: "Service 1 Tag",
+      type: "text",
+      group: "content",
+      defaultValue: "Ground",
+    },
+    "services.1.title": {
+      key: "services.1.title",
+      label: "Service 2 Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Logistics",
+    },
+    "services.1.desc": {
+      key: "services.1.desc",
+      label: "Service 2 Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Comprehensive logistics services ensuring timely and secure delivery.",
+    },
+    "services.1.tag": {
+      key: "services.1.tag",
+      label: "Service 2 Tag",
+      type: "text",
+      group: "content",
+      defaultValue: "Global",
+    },
+    "services.2.title": {
+      key: "services.2.title",
+      label: "Service 3 Title",
+      type: "text",
+      group: "content",
+      defaultValue: "Waste Management",
+    },
+    "services.2.desc": {
+      key: "services.2.desc",
+      label: "Service 3 Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Innovative solutions promoting sustainability and responsibility.",
+    },
+    "services.2.tag": {
+      key: "services.2.tag",
+      label: "Service 3 Tag",
+      type: "text",
+      group: "content",
+      defaultValue: "Eco",
+    },
+  },
+});
+
+registerEditableComponent({
+  componentKey: "BookingSection",
+  label: "Global Logistics Hub & Booking",
+  category: "cta",
+  description: "Interactive logistics booking, estimation, and live shipment tracking portal.",
+  status: "FULLY_EDITABLE",
+  capabilities: ["content", "presentation", "links"],
+  properties: {
+    badge: {
+      key: "badge",
+      label: "Badge Text",
+      type: "text",
+      group: "content",
+      defaultValue: "Global Logistics Hub",
+    },
+    title: {
+      key: "title",
+      label: "Headline",
+      type: "text",
+      group: "content",
+      defaultValue: "Streamline Your Supply Chain",
+    },
+    description: {
+      key: "description",
+      label: "Description",
+      type: "textarea",
+      group: "content",
+      defaultValue: "Get instant access to real-time quotes and tracking. We don't just move freight; we move your business forward with precision.",
+    },
+    buttonText: {
+      key: "buttonText",
+      label: "Estimate Button Text",
+      type: "text",
+      group: "content",
+      defaultValue: "Get Estimate",
+    },
+  },
+});
+
 // DIAGNOSTIC COMPONENT AUDIT & DISCOVERY
 // ---------------------------------------------------------------------------
 export interface ComponentAuditReport {
@@ -2086,9 +2430,14 @@ export interface ComponentAuditReport {
   }[];
   summary: {
     total: number;
+    totalComponents?: number;
     fullyEditable: number;
+    fullyEditableCount?: number;
     partiallyEditable: number;
+    partiallyEditableCount?: number;
     viewOnly: number;
+    viewOnlyCount?: number;
+    coveragePercentage?: number;
   };
 }
 

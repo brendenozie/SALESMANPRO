@@ -11,6 +11,7 @@ import {
   ArrowUpRightIcon,
 } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface AddressItem {
   label?: string;
@@ -93,15 +94,35 @@ export default function Footer() {
                 className="object-contain cursor-pointer"
               />
             ) : (
-              <span className="text-2xl font-bold text-white cursor-pointer">
-                {name}
-              </span>
+              <EditableElement
+                targetId="global.global.footer.Footer.main.brandName"
+                componentKey="Footer"
+                elementKey="brandName"
+                label="Brand Name"
+                defaultValue={name}
+                inline
+              >
+                {(val) => (
+                  <span className="text-2xl font-bold text-white cursor-pointer">
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
             )}
           </Link>
-          <p className="text-sm leading-relaxed text-gray-400">
-            {description ||
-              "Explore unique travel experiences, curated itineraries, and expert guidance."}
-          </p>
+          <EditableElement
+            targetId="global.global.footer.Footer.main.bioText"
+            componentKey="Footer"
+            elementKey="bioText"
+            label="Brand Bio"
+            defaultValue={description || "Explore unique travel experiences, curated itineraries, and expert guidance."}
+          >
+            {(val) => (
+              <p className="text-sm leading-relaxed text-gray-400">
+                {val}
+              </p>
+            )}
+          </EditableElement>
           <div className="space-y-2 text-sm pt-2">
             {contactEmail && (
               <div className="flex items-center space-x-2">
@@ -266,9 +287,20 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-xs text-gray-500">
-            &copy; {new Date().getFullYear()} {name}. All rights reserved.
-          </p>
+          <EditableElement
+            targetId="global.global.footer.Footer.main.copyrightText"
+            componentKey="Footer"
+            elementKey="copyrightText"
+            label="Copyright Notice"
+            defaultValue={`All rights reserved. Powered by ${name}.`}
+            inline
+          >
+            {(val) => (
+              <p className="text-xs text-gray-500">
+                &copy; {new Date().getFullYear()} {val}
+              </p>
+            )}
+          </EditableElement>
         </div>
       </div>
 

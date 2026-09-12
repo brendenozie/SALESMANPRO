@@ -12,6 +12,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 // import { IDestination } from "@/types/typings"; // Uncomment if you have this type file
 
 // --- Types (Inline for portability, replace with your global types) ---
@@ -191,19 +192,40 @@ export default function TrendingLocations({ destinations = [], name }: TrendingL
                 className="flex items-center gap-2 mb-3"
             >
                 <MapPinIcon className="h-5 w-5 text-indigo-600" />
-                <span className="text-sm font-bold text-indigo-600 uppercase tracking-wider">
-                    {name} Awaits
-                </span>
+                <EditableElement
+                  targetId="travel.home.trendingLocationsSection.TrendingLocationsSection.main.badgeText"
+                  componentKey="TrendingLocationsSection"
+                  elementKey="badgeText"
+                  label="Badge Text"
+                  defaultValue={`${name} Awaits`}
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-sm font-bold text-indigo-600 uppercase tracking-wider">
+                      {val}
+                    </span>
+                  )}
+                </EditableElement>
             </motion.div>
-            <motion.h2 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+            <EditableElement
+              targetId="travel.home.trendingLocationsSection.TrendingLocationsSection.main.title"
+              componentKey="TrendingLocationsSection"
+              elementKey="title"
+              label="Section Title"
+              defaultValue="Trending Destinations"
             >
-              Trending Destinations
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+                >
+                  {val}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
 
           {/* Custom Navigation Arrows */}

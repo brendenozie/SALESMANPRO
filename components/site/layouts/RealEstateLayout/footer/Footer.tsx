@@ -12,6 +12,7 @@ import {
   InformationCircleIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface StoreAddress {
   id?: string | number;
@@ -67,16 +68,38 @@ export default function Footer() {
           {/* ── About & Logo ── */}
           <div className="space-y-4">
             <Link href="/" className="inline-flex items-center space-x-2">
-              <span
-                className="text-2xl font-extrabold text-white uppercase tracking-tight"
-                style={{ textShadow: "1px 1px rgba(0,0,0,0.2)" }}
+              <EditableElement
+                targetId="footer.brandName"
+                componentKey="Footer"
+                elementKey="brandName"
+                label="Brand Name"
+                defaultValue={name}
+                inline
               >
-                {name}
-              </span>
+                {(val) => (
+                  <span
+                    className="text-2xl font-extrabold text-white uppercase tracking-tight"
+                    style={{ textShadow: "1px 1px rgba(0,0,0,0.2)" }}
+                  >
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
             </Link>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Delivering exceptional properties and personalized service to help you find your dream home.
-            </p>
+            <EditableElement
+              targetId="footer.bio"
+              componentKey="Footer"
+              elementKey="bio"
+              label="Bio / Description"
+              type="textarea"
+              defaultValue="Delivering exceptional properties and personalized service to help you find your dream home."
+            >
+              {(val) => (
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
             
             {/* Social Links */}
             {socialLinks && socialLinks.length > 0 && (
@@ -253,7 +276,18 @@ export default function Footer() {
       {/* ── Bottom Bar ── */}
       <div className="border-t border-gray-800 py-6">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm gap-4">
-          <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
+          <EditableElement
+            targetId="footer.copyrightText"
+            componentKey="Footer"
+            elementKey="copyrightText"
+            label="Copyright Notice"
+            defaultValue={`© ${new Date().getFullYear()} ${name}. All rights reserved.`}
+            inline
+          >
+            {(val) => (
+              <p>{val}</p>
+            )}
+          </EditableElement>
           <div className="flex items-center space-x-6">
             <Link
               href={`/${baseSlug}/privacy`}

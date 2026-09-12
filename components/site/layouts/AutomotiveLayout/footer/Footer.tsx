@@ -11,6 +11,7 @@ import {
   BuildingOffice2Icon,
 } from "@heroicons/react/24/solid";
 import { StoreForm } from "../../../../../types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface FooterProps {
   storeFormData: StoreForm;
@@ -52,13 +53,35 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
         
         {/* Col 1: About Us & Branding */}
         <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-xl font-bold text-white tracking-tight">
-            {storeFormData?.name || "Commercial Fleets"}
-          </h3>
-          <p className="text-sm leading-relaxed text-gray-400 max-w-sm">
-            {storeFormData?.description ||
-              "Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day."}
-          </p>
+          <EditableElement
+            targetId="footer.brandName"
+            componentKey="Footer"
+            elementKey="brandName"
+            label="Brand Name"
+            defaultValue={storeFormData?.name || "Commercial Fleets"}
+            inline
+          >
+            {(val) => (
+              <h3 className="text-xl font-bold text-white tracking-tight">
+                {val}
+              </h3>
+            )}
+          </EditableElement>
+
+          <EditableElement
+            targetId="footer.bio"
+            componentKey="Footer"
+            elementKey="bio"
+            label="Bio / Description"
+            type="textarea"
+            defaultValue={storeFormData?.description || "Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day."}
+          >
+            {(val) => (
+              <p className="text-sm leading-relaxed text-gray-400 max-w-sm">
+                {val}
+              </p>
+            )}
+          </EditableElement>
 
           {/* Quick Contact Links */}
           <div className="space-y-2 text-xs pt-2">
@@ -219,9 +242,18 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
 
       {/* Bottom Legal & Attribution */}
       <div className="pt-8 flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-gray-500 gap-4">
-        <p className="text-center sm:text-left">
-          &copy; {new Date().getFullYear()} <span className="font-semibold text-gray-300">{storeFormData?.name || "Commercial Fleets"}</span>. All rights reserved.
-        </p>
+        <EditableElement
+          targetId="footer.copyrightText"
+          componentKey="Footer"
+          elementKey="copyrightText"
+          label="Copyright Notice"
+          defaultValue={`© ${new Date().getFullYear()} ${storeFormData?.name || "Commercial Fleets"}. All rights reserved.`}
+          inline
+        >
+          {(val) => (
+            <p className="text-center sm:text-left">{val}</p>
+          )}
+        </EditableElement>
 
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">

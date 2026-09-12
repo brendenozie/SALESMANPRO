@@ -11,6 +11,7 @@ import {
   FaceSmileIcon,
   ArrowUpRightIcon,
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface AddressItem {
   label?: string;
@@ -114,10 +115,32 @@ const Footer: React.FC<FooterProps> = ({ storeFormData = {} }) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-12 border-b border-gray-100">
           {/* Logo and About */}
           <div>
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">{name}</h2>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {tagline || description || "Your trusted platform for innovative digital solutions."}
-            </p>
+            <EditableElement
+              targetId="global.global.footer.Footer.main.brandName"
+              componentKey="Footer"
+              elementKey="brandName"
+              label="Footer Brand Name"
+              defaultValue={name}
+              inline
+            >
+              {(val) => (
+                <h2 className="text-2xl font-bold mb-4 text-gray-900">{val || name}</h2>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="global.global.footer.Footer.main.bioText"
+              componentKey="Footer"
+              elementKey="bioText"
+              label="Brand Bio / Mission"
+              defaultValue={tagline || description || "Your trusted platform for innovative digital solutions."}
+              type="textarea"
+            >
+              {(val) => (
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {val || tagline || description || "Your trusted platform for innovative digital solutions."}
+                </p>
+              )}
+            </EditableElement>
             <div className="flex mt-5 space-x-3">
               {formattedSocialLinks.map((s, idx) => {
                 const channel = String(s.channel || "").toLowerCase();
@@ -302,7 +325,18 @@ const Footer: React.FC<FooterProps> = ({ storeFormData = {} }) => {
 
         {/* Footer Base */}
         <div className="border-t border-gray-100 mt-6 pt-6 text-sm text-center text-gray-500">
-          © {new Date().getFullYear()} {name}. All rights reserved.
+          <EditableElement
+            targetId="global.global.footer.Footer.main.copyrightText"
+            componentKey="Footer"
+            elementKey="copyrightText"
+            label="Copyright Text"
+            defaultValue={`© ${new Date().getFullYear()} ${name}. All rights reserved.`}
+            inline
+          >
+            {(val) => (
+              <span>{val || `© ${new Date().getFullYear()} ${name}. All rights reserved.`}</span>
+            )}
+          </EditableElement>
         </div>
       </div>
 

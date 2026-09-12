@@ -13,6 +13,7 @@ import {
   ArrowUpRightIcon
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface AddressItem {
   label?: string;
@@ -68,12 +69,35 @@ export default function Footer() {
           {/* BRAND COLUMN: Identity & Interactive Status Deck */}
           <div className="md:col-span-4 space-y-6 text-center sm:text-left">
             <div>
-              <h4 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase mb-3">
-                {storeFormData.name}<span style={{ color: primaryColor }}>.</span>
-              </h4>
-              <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium uppercase tracking-widest leading-relaxed max-w-xs mx-auto sm:mx-0">
-                {storeFormData.description || "Architecting elite human performance through neural and physical recalibration."}
-              </p>
+              <EditableElement
+                targetId="footer.brandName"
+                componentKey="Footer"
+                elementKey="brandName"
+                label="Brand Name"
+                defaultValue={storeFormData.name}
+                inline
+              >
+                {(val) => (
+                  <h4 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase mb-3">
+                    {val}<span style={{ color: primaryColor }}>.</span>
+                  </h4>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="footer.bio"
+                componentKey="Footer"
+                elementKey="bio"
+                label="Brand Bio / Description"
+                type="textarea"
+                defaultValue={storeFormData.description || "Architecting elite human performance through neural and physical recalibration."}
+              >
+                {(val) => (
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium uppercase tracking-widest leading-relaxed max-w-xs mx-auto sm:mx-0">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
             </div>
 
             {/* Embedded Live Network Diagnostics Grid Module */}
@@ -229,9 +253,20 @@ export default function Footer() {
 
         {/* COMPLIANCE META FOOTER ROW PLATE */}
         <div className="pt-10 border-t border-neutral-200/60 dark:border-neutral-900/60 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
-          <div className="text-[10px] font-black text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.4em]">
-            &copy; {currentYear} {storeFormData.name} // Neural Dynamics Inc.
-          </div>
+          <EditableElement
+            targetId="footer.copyrightText"
+            componentKey="Footer"
+            elementKey="copyrightText"
+            label="Copyright Notice"
+            defaultValue={`© ${currentYear} ${storeFormData.name} // Neural Dynamics Inc.`}
+            inline
+          >
+            {(val) => (
+              <div className="text-[10px] font-black text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.4em]">
+                {val}
+              </div>
+            )}
+          </EditableElement>
 
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8">
             <div className="flex items-center gap-2">

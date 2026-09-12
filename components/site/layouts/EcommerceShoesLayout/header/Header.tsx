@@ -137,14 +137,25 @@ export default function Header() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
+              {navLinks.map((link, idx) => (
+                <EditableElement
                   key={link.label}
-                  href={link.href}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  targetId={`header.nav.${idx}.label`}
+                  componentKey="Header"
+                  elementKey={`nav.${idx}.label`}
+                  label={`Nav ${link.label}`}
+                  defaultValue={link.label}
+                  inline
                 >
-                  {link.label}
-                </Link>
+                  {(val) => (
+                    <Link
+                      href={link.href}
+                      className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                    >
+                      {val}
+                    </Link>
+                  )}
+                </EditableElement>
               ))}
             </nav>
           </div>

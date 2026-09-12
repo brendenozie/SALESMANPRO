@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { HeartIcon, ShieldCheckIcon, UsersIcon, AcademicCapIcon, StarIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICoreValue } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -133,24 +134,55 @@ export default function AboutSection() {
           >
             {/* Header / Meta Segment */}
             <motion.div variants={fadeInScaleUp} className="mb-8">
-              <span 
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest mb-4 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 shadow-sm"
-                style={{ color: primaryColor }}
+              <EditableElement
+                targetId="healthcare.home.aboutSection.AboutSection.main.badgeText"
+                componentKey="AboutSection"
+                elementKey="badgeText"
+                label="Badge Text"
+                defaultValue="Clinical Mission"
+                inline
               >
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                Clinical Mission
-              </span>
+                {(val) => (
+                  <span 
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest mb-4 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 shadow-sm"
+                    style={{ color: primaryColor }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.15] mb-6">
-                Dedicated to Advancing Your <span className="relative inline-block px-1">
-                  <span className="relative z-10" style={{ color: primaryColor }}>Health</span>
-                  <span className="absolute bottom-1 left-0 w-full h-2 rounded bg-teal-500/10 dark:bg-teal-500/20 -z-0"></span>
-                </span> & Lasting Vitality.
-              </h2>
+              <EditableElement
+                targetId="healthcare.home.aboutSection.AboutSection.main.title"
+                componentKey="AboutSection"
+                elementKey="title"
+                label="Section Title"
+                defaultValue="Dedicated to Advancing Your Health & Lasting Vitality."
+              >
+                {(val) => {
+                  const titleStr = typeof val === 'string' ? val : "Dedicated to Advancing Your Health & Lasting Vitality.";
+                  return (
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.15] mb-6">
+                      {titleStr}
+                    </h2>
+                  );
+                }}
+              </EditableElement>
 
-              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                {aboutText}
-              </p>
+              <EditableElement
+                targetId="healthcare.home.aboutSection.AboutSection.main.description"
+                componentKey="AboutSection"
+                elementKey="description"
+                label="Section Description"
+                defaultValue={aboutText}
+              >
+                {(val) => (
+                  <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
             </motion.div>
 
             {/* Premium Micro-Bento Core Values Layout */}

@@ -208,27 +208,478 @@ export function compileNavigation(company: any): NavigationConfig {
 }
 
 /**
+ * Resolves authentic category seed slides for all theme families
+ */
+export function resolveCategorySeedSlides(company: any, canonicalTemplate: any): Array<any> {
+  if (Array.isArray(company.heroSlides) && company.heroSlides.length > 0) {
+    return company.heroSlides;
+  }
+
+  const cat = (company.category || "").toLowerCase();
+  const variant = (company.variant || "").toLowerCase();
+  const tId = (canonicalTemplate?.id || "").toLowerCase();
+  const brandName = company.name || canonicalTemplate?.name || "Official Store";
+
+  // 1. AUTOMOTIVE
+  const isAutoVariant = variant === "car" || variant.startsWith("car-") || variant.endsWith("-car") || variant.includes("auto") || variant.includes("dealership");
+  const isAutoCat = cat === "car" || cat.startsWith("car-") || cat.endsWith("-car") || cat.includes("auto");
+  if (isAutoCat || isAutoVariant || tId.includes("automotive")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Find Your Dream Vehicle",
+        title: company.name ? `Welcome to ${company.name}` : "Find Your Dream Vehicle",
+        subline: "Browse our showroom of verified premium luxury, performance, and certified pre-owned vehicles.",
+        eyebrow: "Browse our showroom of verified premium luxury, performance, and certified pre-owned vehicles.",
+        badgeText: "Certified Pre-Owned & New",
+        ctaText: "Browse Inventory",
+        primaryButtonText: "Browse Inventory",
+        ctaLink: "/inventory",
+        primaryButtonUrl: "/inventory",
+        secondaryButtonText: "Book Test Drive",
+        secondaryButtonUrl: "/test-drive",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2670",
+        headline: "Excellence in Motion",
+        title: "Excellence in Motion",
+        subline: "Uncompromising performance, transparent vehicle histories, and tailored competitive financing.",
+        eyebrow: "Uncompromising performance, transparent vehicle histories, and tailored competitive financing.",
+        badgeText: "Flexible Financing Available",
+        ctaText: "View Featured Cars",
+        primaryButtonText: "View Featured Cars",
+        ctaLink: "/featured",
+        primaryButtonUrl: "/featured",
+        secondaryButtonText: "Trade-In Appraisal",
+        secondaryButtonUrl: "/trade-in",
+      },
+    ];
+  }
+
+  // 2. REAL ESTATE & PROPERTY MANAGEMENT
+  if (cat.includes("real") || cat.includes("property") || variant.includes("property") || variant.includes("real") || tId.includes("real-estate") || tId.includes("property")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Modern Living, Exceptional Spaces",
+        title: company.name ? `Welcome to ${company.name}` : "Modern Living, Exceptional Spaces",
+        subline: "Discover exclusive luxury residences, modern suburban estates, and high-yield commercial investments.",
+        eyebrow: "Discover exclusive luxury residences, modern suburban estates, and high-yield commercial investments.",
+        badgeText: "Verified Prime Listings",
+        ctaText: "Explore Properties",
+        primaryButtonText: "Explore Properties",
+        ctaLink: "/properties",
+        primaryButtonUrl: "/properties",
+        secondaryButtonText: "Schedule a Tour",
+        secondaryButtonUrl: "/schedule-tour",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2670",
+        headline: "Your Gateway to Home",
+        title: "Your Gateway to Home",
+        subline: "Expert property advisors guiding your purchase, leasing, and residential portfolio management.",
+        eyebrow: "Expert property advisors guiding your purchase, leasing, and residential portfolio management.",
+        badgeText: "Premier Locations",
+        ctaText: "Meet Our Agents",
+        primaryButtonText: "Meet Our Agents",
+        ctaLink: "/agents",
+        primaryButtonUrl: "/agents",
+        secondaryButtonText: "List Your Home",
+        secondaryButtonUrl: "/list-property",
+      },
+    ];
+  }
+
+  // 3. COURSES & EDUCATION
+  if (cat.includes("course") || cat.includes("edu") || variant.includes("course") || variant.includes("academy") || tId.includes("courses")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Master In-Demand Skills",
+        title: company.name ? `Welcome to ${company.name}` : "Master In-Demand Skills",
+        subline: "Learn from recognized industry experts with practical accredited courses and career-launching mentorship.",
+        eyebrow: "Learn from recognized industry experts with practical accredited courses and career-launching mentorship.",
+        badgeText: "Accredited Professional Training",
+        ctaText: "Explore Courses",
+        primaryButtonText: "Explore Courses",
+        ctaLink: "/courses",
+        primaryButtonUrl: "/courses",
+        secondaryButtonText: "Free Trial Class",
+        secondaryButtonUrl: "/free-trial",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=2670",
+        headline: "Learn at Your Own Pace",
+        title: "Learn at Your Own Pace",
+        subline: "Flexible, project-driven curriculums designed to elevate your career and unlock new opportunities.",
+        eyebrow: "Flexible, project-driven curriculums designed to elevate your career and unlock new opportunities.",
+        badgeText: "Certificate Included",
+        ctaText: "Enroll Today",
+        primaryButtonText: "Enroll Today",
+        ctaLink: "/enroll",
+        primaryButtonUrl: "/enroll",
+        secondaryButtonText: "View Curriculum",
+        secondaryButtonUrl: "/curriculum",
+      },
+    ];
+  }
+
+  // 4. HEALTHCARE & CLINIC
+  if (cat.includes("health") || cat.includes("medic") || cat.includes("clinic") || variant.includes("clinic") || tId.includes("healthcare")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "World-Class Healthcare",
+        title: company.name ? `Welcome to ${company.name}` : "World-Class Healthcare",
+        subline: "Comprehensive diagnostic, therapeutic, and preventive care delivered by compassionate specialists.",
+        eyebrow: "Comprehensive diagnostic, therapeutic, and preventive care delivered by compassionate specialists.",
+        badgeText: "Trusted Medical Specialists",
+        ctaText: "Book Appointment",
+        primaryButtonText: "Book Appointment",
+        ctaLink: "/appointments",
+        primaryButtonUrl: "/appointments",
+        secondaryButtonText: "Our Services",
+        secondaryButtonUrl: "/services",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=2670",
+        headline: "Dedicated to Your Well-being",
+        title: "Dedicated to Your Well-being",
+        subline: "Modern clinical facilities, personalized wellness treatments, and rapid consultations.",
+        eyebrow: "Modern clinical facilities, personalized wellness treatments, and rapid consultations.",
+        badgeText: "Same-Day Consultations",
+        ctaText: "Meet the Doctors",
+        primaryButtonText: "Meet the Doctors",
+        ctaLink: "/doctors",
+        primaryButtonUrl: "/doctors",
+        secondaryButtonText: "Emergency Info",
+        secondaryButtonUrl: "/contact",
+      },
+    ];
+  }
+
+  // 5. FITNESS & GYM
+  if (cat.includes("fit") || cat.includes("gym") || variant.includes("gym") || variant.includes("fitness") || tId.includes("fitness")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Unleash Your Strength",
+        title: company.name ? `Welcome to ${company.name}` : "Unleash Your Strength",
+        subline: "High-performance equipment, energizing group fitness classes, and dedicated personal coaches.",
+        eyebrow: "High-performance equipment, energizing group fitness classes, and dedicated personal coaches.",
+        badgeText: "Elite Performance Training",
+        ctaText: "Claim Free Pass",
+        primaryButtonText: "Claim Free Pass",
+        ctaLink: "/free-pass",
+        primaryButtonUrl: "/free-pass",
+        secondaryButtonText: "View Class Schedule",
+        secondaryButtonUrl: "/classes",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=2670",
+        headline: "Transform Body & Mind",
+        title: "Transform Body & Mind",
+        subline: "Custom workout regimens, body composition tracking, and nutrition guidance tailored to your goals.",
+        eyebrow: "Custom workout regimens, body composition tracking, and nutrition guidance tailored to your goals.",
+        badgeText: "All Levels Welcome",
+        ctaText: "Membership Options",
+        primaryButtonText: "Membership Options",
+        ctaLink: "/membership",
+        primaryButtonUrl: "/membership",
+        secondaryButtonText: "Meet Coaches",
+        secondaryButtonUrl: "/trainers",
+      },
+    ];
+  }
+
+  // 6. TRAVEL & SAFARI
+  if (cat.includes("travel") || cat.includes("safari") || cat.includes("tour") || variant.includes("travel") || tId.includes("travel")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Extraordinary Journeys Await",
+        title: company.name ? `Welcome to ${company.name}` : "Extraordinary Journeys Await",
+        subline: "Immersive wildlife safaris, scenic wilderness escapes, and curated luxury adventure expeditions.",
+        eyebrow: "Immersive wildlife safaris, scenic wilderness escapes, and curated luxury adventure expeditions.",
+        badgeText: "Bespoke Travel Expeditions",
+        ctaText: "Explore Destinations",
+        primaryButtonText: "Explore Destinations",
+        ctaLink: "/destinations",
+        primaryButtonUrl: "/destinations",
+        secondaryButtonText: "Custom Itinerary",
+        secondaryButtonUrl: "/custom-safari",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2670",
+        headline: "Pure Luxury in Nature",
+        title: "Pure Luxury in Nature",
+        subline: "Five-star eco lodges, knowledgeable naturalist guides, and seamless private transfer arrangements.",
+        eyebrow: "Five-star eco lodges, knowledgeable naturalist guides, and seamless private transfer arrangements.",
+        badgeText: "Handpicked Luxury Camps",
+        ctaText: "Book Your Safari",
+        primaryButtonText: "Book Your Safari",
+        ctaLink: "/booking",
+        primaryButtonUrl: "/booking",
+        secondaryButtonText: "Seasonal Offers",
+        secondaryButtonUrl: "/offers",
+      },
+    ];
+  }
+
+  // 7. RESTAURANT & DINING
+  if (cat.includes("restaur") || cat.includes("dine") || cat.includes("cafe") || cat.includes("food") || variant.includes("restaur") || tId.includes("restaurant")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "The Art of Gourmet Dining",
+        title: company.name ? `Welcome to ${company.name}` : "The Art of Gourmet Dining",
+        subline: "Experience an explosion of flavors crafted by world-class chefs in the heart of the city.",
+        eyebrow: "Experience an explosion of flavors crafted by world-class chefs in the heart of the city.",
+        badgeText: "Experience Excellence",
+        ctaText: "Reserve a Table",
+        primaryButtonText: "Reserve a Table",
+        ctaLink: "/restaurent/products",
+        primaryButtonUrl: "/restaurent/products",
+        secondaryButtonText: "Explore Menu",
+        secondaryButtonUrl: "/restaurent/products",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2670",
+        headline: "Savor Every Moment",
+        title: "Savor Every Moment",
+        subline: "From farm to fork, we bring you the freshest seasonal ingredients prepared with passion.",
+        eyebrow: "From farm to fork, we bring you the freshest seasonal ingredients prepared with passion.",
+        badgeText: "Seasonal Specials",
+        ctaText: "Explore Menu",
+        primaryButtonText: "Explore Menu",
+        ctaLink: "/restaurent/products",
+        primaryButtonUrl: "/restaurent/products",
+        secondaryButtonText: "Private Events",
+        secondaryButtonUrl: "/events",
+      },
+    ];
+  }
+
+  // 8. BARBERSHOP & SALON
+  if (cat.includes("barber") || cat.includes("salon") || cat.includes("spa") || variant.includes("barber") || tId.includes("barbershop")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Classic Grooming Experience",
+        title: company.name ? `Welcome to ${company.name}` : "Classic Grooming Experience",
+        subline: "Precision haircuts, hot-towel straight-razor shaves, and modern gentleman grooming treatments.",
+        eyebrow: "Precision haircuts, hot-towel straight-razor shaves, and modern gentleman grooming treatments.",
+        badgeText: "Artisan Barber Experience",
+        ctaText: "Book Appointment",
+        primaryButtonText: "Book Appointment",
+        ctaLink: "/booking",
+        primaryButtonUrl: "/booking",
+        secondaryButtonText: "View Services",
+        secondaryButtonUrl: "/services",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2670",
+        headline: "Crafted with Precision",
+        title: "Crafted with Precision",
+        subline: "Relax in vintage luxury while our master stylists deliver timeless cuts and signature beard grooming.",
+        eyebrow: "Relax in vintage luxury while our master stylists deliver timeless cuts and signature beard grooming.",
+        badgeText: "Walk-Ins & Appointments",
+        ctaText: "Services & Pricing",
+        primaryButtonText: "Services & Pricing",
+        ctaLink: "/services",
+        primaryButtonUrl: "/services",
+        secondaryButtonText: "Our Team",
+        secondaryButtonUrl: "/team",
+      },
+    ];
+  }
+
+  // 9. PROFESSIONAL SERVICES & CONSULTING
+  if (cat.includes("service") || cat.includes("consult") || cat.includes("secur") || variant.includes("service") || variant.includes("consult") || tId.includes("services") || tId.includes("security")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Strategic Excellence",
+        title: company.name ? `Welcome to ${company.name}` : "Strategic Excellence",
+        subline: "Empowering modern enterprises with expert consulting, innovative execution, and digital transformation.",
+        eyebrow: "Empowering modern enterprises with expert consulting, innovative execution, and digital transformation.",
+        badgeText: "Trusted Strategic Advisors",
+        ctaText: "Schedule Consultation",
+        primaryButtonText: "Schedule Consultation",
+        ctaLink: "/consultation",
+        primaryButtonUrl: "/consultation",
+        secondaryButtonText: "Our Capabilities",
+        secondaryButtonUrl: "/services",
+      },
+      {
+        id: "slide-2",
+        imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2670",
+        headline: "Accelerate Your Growth",
+        title: "Accelerate Your Growth",
+        subline: "Tailored enterprise solutions backed by deep domain expertise, proven methodologies, and measurable ROI.",
+        eyebrow: "Tailored enterprise solutions backed by deep domain expertise, proven methodologies, and measurable ROI.",
+        badgeText: "End-to-End Solutions",
+        ctaText: "Explore Solutions",
+        primaryButtonText: "Explore Solutions",
+        ctaLink: "/services",
+        primaryButtonUrl: "/services",
+        secondaryButtonText: "Case Studies",
+        secondaryButtonUrl: "/case-studies",
+      },
+    ];
+  }
+
+  // 10. FASHION
+  if (cat.includes("fashion") || cat.includes("cloth") || cat.includes("apparel") || variant.includes("fashion") || tId.includes("fashion")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Refined Modern Elegance",
+        title: company.name ? `Welcome to ${company.name}` : "Refined Modern Elegance",
+        subline: "Discover modern seasonal collections tailored with premium fabrics, architectural silhouettes, and effortless style.",
+        eyebrow: "Discover modern seasonal collections tailored with premium fabrics, architectural silhouettes, and effortless style.",
+        badgeText: "New Season Arrivals",
+        ctaText: "Shop Collection",
+        primaryButtonText: "Shop Collection",
+        ctaLink: "/shop",
+        primaryButtonUrl: "/shop",
+        secondaryButtonText: "Lookbook",
+        secondaryButtonUrl: "/lookbook",
+      },
+    ];
+  }
+
+  // 11. ELECTRONICS & GADGETS
+  if (cat.includes("electr") || cat.includes("gadget") || cat.includes("tech") || variant.includes("electron") || variant.includes("gaming") || tId.includes("electronic") || tId.includes("gaming")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Next-Generation Technology",
+        title: company.name ? `Welcome to ${company.name}` : "Next-Generation Technology",
+        subline: "Upgrade your lifestyle with cutting-edge smart devices, high-fidelity audio, and pro-grade performance hardware.",
+        eyebrow: "Upgrade your lifestyle with cutting-edge smart devices, high-fidelity audio, and pro-grade performance hardware.",
+        badgeText: "Official Warranty Guaranteed",
+        ctaText: "Explore Tech Deals",
+        primaryButtonText: "Explore Tech Deals",
+        ctaLink: "/shop",
+        primaryButtonUrl: "/shop",
+        secondaryButtonText: "New Releases",
+        secondaryButtonUrl: "/shop?filter=new",
+      },
+    ];
+  }
+
+  // 12. GROCERIES & FRESH FOOD
+  if (cat.includes("groc") || cat.includes("fresh") || cat.includes("supermarket") || variant.includes("grocer") || tId.includes("groceries")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Farm-Fresh Organics Delivered",
+        title: company.name ? `Welcome to ${company.name}` : "Farm-Fresh Organics Delivered",
+        subline: "Locally sourced organic produce, daily bakery items, and household essentials dispatched directly to your kitchen.",
+        eyebrow: "Locally sourced organic produce, daily bakery items, and household essentials dispatched directly to your kitchen.",
+        badgeText: "100% Certified Organic",
+        ctaText: "Shop Fresh Today",
+        primaryButtonText: "Shop Fresh Today",
+        ctaLink: "/shop",
+        primaryButtonUrl: "/shop",
+        secondaryButtonText: "Weekly Specials",
+        secondaryButtonUrl: "/deals",
+      },
+    ];
+  }
+
+  // 13. FURNITURE & LIVING
+  if (cat.includes("furnitur") || cat.includes("decor") || cat.includes("home") || variant.includes("furniture") || tId.includes("furniture")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Artisan Furniture for Living",
+        title: company.name ? `Welcome to ${company.name}` : "Artisan Furniture for Living",
+        subline: "Handcrafted hardwood furniture, comfortable minimalist sofas, and contemporary lighting made for beautiful living.",
+        eyebrow: "Handcrafted hardwood furniture, comfortable minimalist sofas, and contemporary lighting made for beautiful living.",
+        badgeText: "Sustainable Solid Wood",
+        ctaText: "Explore Furniture",
+        primaryButtonText: "Explore Furniture",
+        ctaLink: "/shop",
+        primaryButtonUrl: "/shop",
+        secondaryButtonText: "Custom Design",
+        secondaryButtonUrl: "/custom",
+      },
+    ];
+  }
+
+  // 14. BEAUTY & COSMETICS
+  if (cat.includes("beauty") || cat.includes("skin") || cat.includes("cosmetic") || variant.includes("beauty") || tId.includes("beauty")) {
+    return [
+      {
+        id: "slide-1",
+        imageUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2670",
+        headline: company.name ? `Welcome to ${company.name}` : "Radiant Natural Beauty",
+        title: company.name ? `Welcome to ${company.name}` : "Radiant Natural Beauty",
+        subline: "Pure botanical skincare, clean cosmetics, and dermatologically tested treatments crafted to enhance your natural glow.",
+        eyebrow: "Pure botanical skincare, clean cosmetics, and dermatologically tested treatments crafted to enhance your natural glow.",
+        badgeText: "Cruelty-Free & Pure",
+        ctaText: "Shop Skincare",
+        primaryButtonText: "Shop Skincare",
+        ctaLink: "/shop",
+        primaryButtonUrl: "/shop",
+        secondaryButtonText: "Skin Quiz",
+        secondaryButtonUrl: "/quiz",
+      },
+    ];
+  }
+
+  // 15. DEFAULT / GENERAL ECOMMERCE
+  return [
+    {
+      id: "slide-1",
+      imageUrl: company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+      headline: company.name ? `Welcome to ${company.name}` : canonicalTemplate?.name || "Elevate Your Lifestyle",
+      title: company.name ? `Welcome to ${company.name}` : canonicalTemplate?.name || "Elevate Your Lifestyle",
+      subline: company.tagline || "Curated Quality, Exceptional Value & Reliable Customer Service",
+      eyebrow: company.tagline || "Curated Quality, Exceptional Value & Reliable Customer Service",
+      badgeText: "Official Collection",
+      ctaText: "Explore Shop",
+      primaryButtonText: "Explore Shop",
+      ctaLink: "/products",
+      primaryButtonUrl: "/products",
+      secondaryButtonText: "About Us",
+      secondaryButtonUrl: "/about",
+    },
+  ];
+}
+
+/**
  * Generate default homepage sections from company data and authentic template tree
  */
 export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
   const canonicalTemplate = getTemplateForCompany(company);
+  const rawSlides = resolveCategorySeedSlides(company, canonicalTemplate);
 
   // If the template defines authentic sections, preserve its exact component hierarchy
   if (canonicalTemplate?.authenticSections && canonicalTemplate.authenticSections.length > 0) {
-    const rawSlides = Array.isArray(company.heroSlides) && company.heroSlides.length > 0
-      ? company.heroSlides
-      : [
-          {
-            id: "slide-1",
-            imageUrl: company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-            headline: company.name ? `Welcome to ${company.name}` : canonicalTemplate.name,
-            subline: company.tagline || "Curated Quality & Exceptional Value",
-            badgeText: "Official Collection",
-            ctaText: "Explore Shop",
-            ctaLink: "/products",
-          },
-        ];
-
     return canonicalTemplate.authenticSections.map((sec, idx) => {
       const content = { ...(sec.defaultContent || {}) };
 
@@ -237,16 +688,20 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
         content.autoplay = true;
         content.autoplayIntervalMs = 5000;
         content.slides = rawSlides.map((s: any, sIdx: number) => ({
-          id: s.id || `slide-${sIdx}`,
-          eyebrow: s.subline || "Official Collection",
-          title: s.headline || company.name || canonicalTemplate.name,
-          description: s.badgeText || company.description || "Discover verified products backed by exceptional customer service.",
-          primaryButtonText: s.ctaText || "Shop Now",
-          primaryButtonUrl: s.ctaLink || "/products",
-          secondaryButtonText: "About Us",
-          secondaryButtonUrl: "/about",
+          id: s.id || `slide-${sIdx + 1}`,
+          headline: s.headline || s.title || company.name || canonicalTemplate?.name || "Official Store",
+          title: s.headline || s.title || company.name || canonicalTemplate?.name || "Official Store",
+          subline: s.subline || s.eyebrow || "Experience exceptional quality and service.",
+          eyebrow: s.subline || s.eyebrow || "Experience exceptional quality and service.",
+          description: s.badgeText || s.description || company.description || "Discover verified selections.",
+          badgeText: s.badgeText || "Official Collection",
+          primaryButtonText: s.ctaText || s.primaryButtonText || "Explore",
+          ctaText: s.ctaText || s.primaryButtonText || "Explore",
+          primaryButtonUrl: s.ctaLink || s.primaryButtonUrl || "/products",
+          ctaLink: s.ctaLink || s.primaryButtonUrl || "/products",
+          secondaryButtonText: s.secondaryButtonText || "About Us",
+          secondaryButtonUrl: s.secondaryButtonUrl || "/about",
           imageUrl: s.imageUrl || company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-          badgeText: "Handpicked Deals",
         }));
       } else if (sec.type === "testimonials" && Array.isArray(company.testimonials) && company.testimonials.length > 0) {
         content.testimonials = company.testimonials.map((t: any) => ({
@@ -267,6 +722,8 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
       return {
         id: `sec-${sec.id}-${Date.now() + idx}`,
         type: sec.type as any,
+        name: sec.name,
+        component: sec.component,
         order: idx,
         isVisible: true,
         content,
@@ -291,19 +748,6 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
   let order = 0;
 
   // 1. HERO SECTION
-  const rawSlides = Array.isArray(company.heroSlides) && company.heroSlides.length > 0
-    ? company.heroSlides
-    : [
-        {
-          id: "slide-1",
-          imageUrl: company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-          headline: company.name ? `Welcome to ${company.name}` : "Elevate Your Lifestyle",
-          subline: company.tagline || "Curated Quality & Exceptional Value",
-          badgeText: "Exclusive Collection",
-          ctaText: "Explore Shop",
-          ctaLink: "/shop",
-        },
-      ];
 
   sections.push({
     id: `sec-hero-${Date.now()}`,
@@ -315,16 +759,20 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
       autoplay: true,
       autoplayIntervalMs: 5000,
       slides: rawSlides.map((s: any, idx: number) => ({
-        id: s.id || `slide-${idx}`,
-        eyebrow: s.subline || "Official Store Collection",
-        title: s.headline || company.name || "Modern Quality Goods",
-        description: s.badgeText || company.description || "Discover verified products backed by exceptional customer service.",
-        primaryButtonText: s.ctaText || "Shop Now",
-        primaryButtonUrl: s.ctaLink || "/shop",
-        secondaryButtonText: "About Us",
-        secondaryButtonUrl: "/about",
+        id: s.id || `slide-${idx + 1}`,
+        headline: s.headline || s.title || company.name || "Official Store",
+        title: s.headline || s.title || company.name || "Official Store",
+        subline: s.subline || s.eyebrow || s.description || "Experience exceptional quality and service.",
+        eyebrow: s.subline || s.eyebrow || s.description || "Experience exceptional quality and service.",
+        description: s.badgeText || s.description || company.description || "Experience Excellence",
+        badgeText: s.badgeText || "Official Collection",
+        primaryButtonText: s.ctaText || s.primaryButtonText || "Explore",
+        ctaText: s.ctaText || s.primaryButtonText || "Explore",
+        primaryButtonUrl: s.ctaLink || s.primaryButtonUrl || "/products",
+        ctaLink: s.ctaLink || s.primaryButtonUrl || "/products",
+        secondaryButtonText: s.secondaryButtonText || "About Us",
+        secondaryButtonUrl: s.secondaryButtonUrl || "/about",
         imageUrl: s.imageUrl || company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-        badgeText: "Handpicked Deals",
       })),
     },
     styles: {

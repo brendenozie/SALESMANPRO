@@ -12,6 +12,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface CTASectionProps {
   storeSlug: string;
@@ -131,32 +132,63 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
         >
           {/* MICRO TAG OVERLAY */}
           <motion.div variants={itemVariants} className="inline-block mb-6">
-            <span 
-              className="text-[10px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10"
-              style={{ color: primaryColor }}
+            <EditableElement
+              targetId="healthcare.home.ctaSection.CtaSection.main.badgeText"
+              componentKey="CtaSection"
+              elementKey="badgeText"
+              label="Badge Text"
+              defaultValue="Secure Communication Gateway"
+              inline
             >
-              Secure Communication Gateway
-            </span>
+              {(val) => (
+                <span 
+                  className="text-[10px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10"
+                  style={{ color: primaryColor }}
+                >
+                  {val}
+                </span>
+              )}
+            </EditableElement>
           </motion.div>
 
           {/* HIGH-IMPACT TYPOGRAPHIC HEADER */}
-          <motion.h2
-            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1]"
-            variants={itemVariants}
+          <EditableElement
+            targetId="healthcare.home.ctaSection.CtaSection.main.title"
+            componentKey="CtaSection"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="Ready to Prioritize Your Clinical Well-Being?"
           >
-            Ready to Prioritize <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">
-              Your Clinical Well-Being?
-            </span>
-          </motion.h2>
+            {(val) => {
+              const text = typeof val === 'string' ? val : "Ready to Prioritize Your Clinical Well-Being?";
+              return (
+                <motion.h2
+                  className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1]"
+                  variants={itemVariants}
+                >
+                  {text}
+                </motion.h2>
+              );
+            }}
+          </EditableElement>
 
           {/* BALANCED SUBTEXT */}
-          <motion.p
-            className="mt-6 text-base sm:text-lg font-medium text-slate-400 max-w-xl mx-auto leading-relaxed"
-            variants={itemVariants}
+          <EditableElement
+            targetId="healthcare.home.ctaSection.CtaSection.main.subtitle"
+            componentKey="CtaSection"
+            elementKey="subtitle"
+            label="Section Subtitle"
+            defaultValue="Reach out directly to establish secure contact. Our dedicated medical professionals are available to clarify clinical structures and pathing."
           >
-            Reach out directly to establish secure contact. Our dedicated medical professionals are available to clarify clinical structures and pathing.
-          </motion.p>
+            {(val) => (
+              <motion.p
+                className="mt-6 text-base sm:text-lg font-medium text-slate-400 max-w-xl mx-auto leading-relaxed"
+                variants={itemVariants}
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
 
           {/* COMPACT & INTUITIVE CONTACT CONSOLE */}
           <motion.div

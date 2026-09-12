@@ -3,6 +3,7 @@ import { ReactNode, Suspense } from 'react';
 import type { Metadata, ResolvingMetadata } from 'next';
 
 import { StoreContextProvider } from '@/contexts/StoreContext';
+import { EditableContentProvider } from '@/contexts/EditableContentContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 import LoadingSpinner from '@/components/site/LoadingSpinner';
@@ -152,6 +153,40 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   }
 
   const storeFormData = transformCompanyToStoreForm(raw);
+
+  // Blend published website component overrides if available
+  const publishedConfig = raw?.website?.publishedConfig as any;
+  const overrides: Record<string, any> = publishedConfig?.componentOverrides || {};
+
+  const headerBrand =
+    overrides["Header.brandName"] ||
+    overrides["Header.storeName"] ||
+    overrides["header.brandName"] ||
+    overrides["header.storeName"] ||
+    overrides["header.title"] ||
+    overrides["global.global.header.Header.main.storeName"];
+  if (headerBrand) storeFormData.name = String(headerBrand);
+
+  const headerLogo = overrides["Header.logoUrl"] || overrides["header.logoUrl"] || overrides["global.global.header.Header.main.logoUrl"];
+  if (headerLogo) storeFormData.logoUrl = String(headerLogo);
+
+  const footerBio = overrides["Footer.bio"] || overrides["footer.bio"] || overrides["footer.description"] || overrides["global.global.footer.Footer.main.description"];
+  if (footerBio) storeFormData.description = String(footerBio);
+
+  const footerPhone = overrides["Footer.contactPhone"] || overrides["footer.contactPhone"] || overrides["footer.phone"];
+  if (footerPhone) (storeFormData as any).contactPhone = String(footerPhone);
+
+  const footerEmail = overrides["Footer.contactEmail"] || overrides["footer.contactEmail"] || overrides["footer.email"];
+  if (footerEmail) (storeFormData as any).contactEmail = String(footerEmail);
+
+  const footerAddr = overrides["Footer.address"] || overrides["footer.address"];
+  if (footerAddr) (storeFormData as any).address = String(footerAddr);
+
+  const announcement = overrides["Header.announcementText"] || overrides["header.announcementText"];
+  if (announcement) (storeFormData as any).tagline = String(announcement);
+
+  (storeFormData as any).componentOverrides = overrides;
+
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
   const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
@@ -170,7 +205,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
     || categoryHeaderFooterLayoutMap[variant] 
     || categoryHeaderFooterLayoutMap[category]
     || (() => {
-      const matchedCategory = categoryMap.get(category);
+      const matchedCategory = categoryMap.get(category) as any;
       if (matchedCategory?.variants?.length) {
         const firstVariant = normalize(matchedCategory.variants[0].name);
         return categoryHeaderFooterLayoutMap[firstVariant];
@@ -197,26 +232,33 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   }
 
   return (
-    <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-      <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
-        
-        {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
-        {isPastDueGracePeriod && (
-          <SubscriptionGraceBanner storeName={raw.name} daysLeft={graceDaysLeft} />
-        )}
+    <EditableContentProvider
+      componentOverrides={overrides}
+      tenantSlug={slug}
+      isEditorMode={false}
+      isPreviewMode={true}
+    >
+      <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
+        <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
+          
+          {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
+          {isPastDueGracePeriod && (
+            <SubscriptionGraceBanner storeName={raw.name} daysLeft={graceDaysLeft} />
+          )}
 
-        <LayoutComponent params={{ storeFormData }}>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-          <Suspense fallback={<LoadingSpinner />}>
-            {children}
-          </Suspense>
-          <WhatsAppBubble productName={''} />
-          <AnalyticsProvider config={raw.AnalyticsConfig} />
-        </LayoutComponent>
-      </div>
-    </StoreContextProvider>
+          <LayoutComponent params={{ storeFormData }}>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <Suspense fallback={<LoadingSpinner />}>
+              {children}
+            </Suspense>
+            <WhatsAppBubble productName={''} />
+            <AnalyticsProvider config={raw.AnalyticsConfig} />
+          </LayoutComponent>
+        </div>
+      </StoreContextProvider>
+    </EditableContentProvider>
   );
-}
+}

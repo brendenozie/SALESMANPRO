@@ -4,39 +4,6 @@ import React from 'react';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm } from '@/types/typings';
 
-// Above-the-fold components - statically imported
-// import CategorySection from './components/CategorySection';
-// import CategoriesSectionV5 from './components/CategorySection';
-
-// Loading skeleton
-// const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-}
-
-// 🧠 Dynamically import client-side sections (with skeleton fallback)
-// const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
-//   loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-//   ssr: false,
-// });
-
-// const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
-//   loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-//   ssr: false,
-// });
-
-// const DynamicTrending = dynamic(() => import('./components/Trending'), {
-//   loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-//   ssr: false,
-// });
-
-// const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-// const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-// const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-// const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-// const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-// const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-// const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 import TestimonialsCarouselSection from "./components/TestimonialsCarouselSection";
 import SocialProofSection from "./components/SocialProofSection";
 import ServicesSection from "./components/ServicesSection";
@@ -55,26 +22,135 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
     heroSlides,
-    id,
     themeSettings = {},
-    StoreCategory = [],
-    marketplaceListings = [],
-    testimonials = [],
-    awards = [],
-    promotions = [],
-    bannerUrl,
-    CoreValues = [],
   } = pageData;
-    // Use pageData for all content
-  const siteData = pageData;// || storeFormData;
+  const siteData = pageData;
+
+  const getSectionKey = (sec: any): string => {
+    if (sec.component) return sec.component;
+
+    // Semantic normalization based on ID and type
+    const sId = (sec.id || "").toLowerCase();
+    if (sId.includes("heroslider") || sId.includes("hero")) return "HeroSlider";
+    if (sId.includes("absection") || sId.includes("about")) return "AbSection";
+    if (sId.includes("teamsection") || sId.includes("team")) return "TeamSection";
+    if (sId.includes("servicessection") || sId.includes("service")) return "ServicesSection";
+    if (sId.includes("bookingsection") || sId.includes("booking")) return "BookingSection";
+    if (sId.includes("testimonialscarousel") || sId.includes("testimonials")) return "TestimonialsCarouselSection";
+    if (sId.includes("workshowcase") || sId.includes("portfolio")) return "WorkShowcase";
+    if (sId.includes("processtimeline") || sId.includes("timeline") || sId.includes("process")) return "ProcessTimeline";
+    if (sId.includes("socialproof") || sId.includes("partners")) return "SocialProofSection";
+    if (sId.includes("networkmap") || sId.includes("coverage") || sId.includes("map")) return "NetworkMap";
+    if (sId.includes("blogsection") || sId.includes("articles") || sId.includes("blog")) return "BlogSection";
+    if (sId.includes("contactsection") || sId.includes("contact")) return "ContactSection";
+
+    if (sec.type === "hero") return "HeroSlider";
+    if (sec.type === "contact") return "ContactSection";
+    if (sec.type === "testimonials") return "TestimonialsCarouselSection";
+
+    return "";
+  };
+
+  const renderSectionComponent = (sec: any, index: number) => {
+    const compKey = getSectionKey(sec);
+    const secId = sec.id || `sec-${index}`;
+    const domId = secId.startsWith("section-") ? secId : `section-${secId}`;
+
+    let childNode: React.ReactNode = null;
+
+    switch (compKey) {
+      case "HeroSlider":
+        childNode = <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />;
+        break;
+      case "AbSection":
+        childNode = <AbSection storeFormData={siteData} />;
+        break;
+      case "TeamSection":
+        childNode = <TeamSection storeFormData={siteData} />;
+        break;
+      case "ServicesSection":
+        childNode = (
+          <ServicesSection
+            storeFormData={siteData}
+            config={sec.content}
+            sectionId={sec.id}
+          />
+        );
+        break;
+      case "BookingSection":
+        childNode = (
+          <BookingSection
+            storeFormData={siteData}
+            config={sec.content}
+            sectionId={sec.id}
+          />
+        );
+        break;
+      case "TestimonialsCarouselSection":
+        childNode = <TestimonialsCarouselSection testimonials={pageData?.testimonials || []} />;
+        break;
+      case "WorkShowcase":
+        childNode = <WorkShowcase />;
+        break;
+      case "ProcessTimeline":
+        childNode = <ProcessTimeline />;
+        break;
+      case "SocialProofSection":
+        childNode = <SocialProofSection />;
+        break;
+      case "NetworkMap":
+        childNode = <NetworkMap />;
+        break;
+      case "BlogSection":
+        childNode = <BlogSection />;
+        break;
+      case "ContactSection":
+        childNode = <ContactSection companyId={siteData?.id || companyId || ''} />;
+        break;
+      default:
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[DeliverySite] Unresolved section component: "${compKey || sec.component || sec.type}" for section "${sec.id}"`
+          );
+        }
+        childNode = (
+          <div className="p-8 my-4 border-2 border-dashed border-amber-500 bg-amber-50/10 text-amber-600 dark:text-amber-400 text-center font-mono text-xs rounded-xl">
+            <span className="font-bold">[Unresolved Section Component: {sec.name || sec.component || sec.type || sec.id}]</span>
+            <div className="text-[10px] text-zinc-500 mt-1">Section ID: {sec.id} &bull; Type: {sec.type}</div>
+          </div>
+        );
+        break;
+    }
+
+    if (!childNode) return null;
+
+    return (
+      <div
+        key={sec.id || index}
+        id={domId}
+        data-editor-section={sec.id}
+        data-editor-component={compKey}
+      >
+        {childNode}
+      </div>
+    );
+  };
+
+  const activeSections = (pageData as any).sections;
+  const hasTenantSections = Array.isArray(activeSections);
+
+  if (hasTenantSections) {
+    return (
+      <div>
+        {activeSections
+          .filter((sec: any) => sec.isVisible !== false)
+          .map((sec: any, idx: number) => renderSectionComponent(sec, idx))}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -97,12 +173,12 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <BookingSection storeFormData={siteData} />
 
       <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
-        <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
+        <TestimonialsCarouselSection testimonials={pageData?.testimonials || []} />
       </div>
 
       <WorkShowcase />
 
-      <ProcessTimeline/>
+      <ProcessTimeline />
 
       <div id="section-social-proof" data-editor-section="social-proof" data-editor-component="SocialProofSection">
         <SocialProofSection />
@@ -110,63 +186,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
 
       <NetworkMap />
 
-       <BlogSection />
-      
-      {/*<FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+      <BlogSection />
 
-      <HowItWorks /> 
-
-      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
-      
-      <AboutSection />   */}
-
-      {/* <ProgramModulesSection /> */}
-
-      {/* Featured  */}
-      {/* <FeaturedProgramsSection  listings={Programslisting} slug=""/> */}
-
-      {/* If videos are stored under latestVideos */}
-      {/* {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />} */}
-
-      <ContactSection companyId={siteData?.id || ''} />
-
-      {/* <PromotionSection/> */}
-
-      {/* <AppPromoSection /> */}
-      {/* <Features />
-      <div id="section-categories-section-v5" data-editor-section="categories-section-v5" data-editor-component="CategoriesSectionV5">
-        <CategoriesSectionV5 store={pageData} />
-      </div>
-      <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="DynamicPopularProducts">
-        <DynamicPopularProducts id={id} />
-      </div>
-      <div id="section-promo" data-editor-section="promo" data-editor-component="PromoSection">
-        <PromoSection promotions={promotions} />
-      </div>
-      <div id="section-trending" data-editor-section="trending" data-editor-component="DynamicTrending">
-        <DynamicTrending id={id} />
-      </div>
-      <div id="section-daily-best-sells" data-editor-section="daily-best-sells" data-editor-component="DynamicDailyBestSells">
-        <DynamicDailyBestSells id={id} />
-      </div>
-      <div id="section-second-promo" data-editor-section="second-promo" data-editor-component="SecondPromoSection">
-        <SecondPromoSection promotions={promotions} />
-      </div>
-      <div id="section-all-products" data-editor-section="all-products" data-editor-component="AllProducts">
-        <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
-      </div>
-      <div id="section-metrics" data-editor-section="metrics" data-editor-component="MetricsSection">
-        <MetricsSection coreValues={CoreValues} />
-      </div>
-      <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
-        <AwardsSection awards={awards} />
-      </div>
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-   <TestimonialsSection testimonials={testimonialsData.data} />
- </div>}
-      <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
-        <NewsletterSection />
-      </div> */}
+      <ContactSection companyId={siteData?.id || companyId || ''} />
     </div>
   );
 }

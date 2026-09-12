@@ -44,20 +44,37 @@ export default async function StorePage({ params }: StorePageProps) {
       };
     }
 
-    // Merge hero overrides if configured
-    const heroSection = (publishedConfig.sections || []).find(
+    // Attach component overrides directly to pageData
+    if (publishedConfig.componentOverrides) {
+      pageData.componentOverrides = {
+        ...(pageData.componentOverrides || {}),
+        ...publishedConfig.componentOverrides,
+      };
+    }
+
+    // Resolve sections from publishedConfig (checking pages[0].sections or top-level sections)
+    const activeSections =
+      publishedConfig.pages?.[0]?.sections || publishedConfig.sections || [];
+    pageData.sections = activeSections;
+    pageData.websiteConfig = publishedConfig;
+
+    // Merge structured hero configuration if present
+    const heroSection = activeSections.find(
       (s: any) => s.type === 'hero' || s.id?.includes('hero')
     );
-    if (heroSection?.content?.slides?.length) {
-      pageData.heroSlides = heroSection.content.slides.map((s: any) => ({
-        id: s.id,
-        imageUrl: s.imageUrl || pageData.bannerUrl,
-        headline: s.title || s.headline,
-        subline: s.eyebrow || s.subline,
-        badgeText: s.badgeText || s.description,
-        ctaText: s.primaryButtonText || s.ctaText || 'Shop Now',
-        ctaLink: s.primaryButtonUrl || s.ctaLink || '/products',
-      }));
+    if (heroSection?.content) {
+      pageData.heroConfig = heroSection.content;
+      if (heroSection.content.slides?.length) {
+        pageData.heroSlides = heroSection.content.slides.map((s: any) => ({
+          id: s.id,
+          imageUrl: s.imageUrl || pageData.bannerUrl,
+          headline: s.headline || s.title,
+          subline: s.subline || s.eyebrow || s.description,
+          badgeText: s.badgeText || s.description,
+          ctaText: s.ctaText || s.primaryButtonText || 'Shop Now',
+          ctaLink: s.ctaLink || s.primaryButtonUrl || '/products',
+        }));
+      }
     }
   }
 

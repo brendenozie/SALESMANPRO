@@ -52,21 +52,43 @@ const SERVICE_IMAGES = [
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
     `${src}?w=${width}&q=${quality || 75}`;
 
-export default function ServicesGrid({storeFormData}: {storeFormData: any}) {
+import { EditableElement } from "@/contexts/EditableContentContext";
+
+export interface ServicesSectionProps {
+    storeFormData?: any;
+    config?: any;
+    sectionId?: string;
+}
+
+export default function ServicesGrid({ storeFormData, config, sectionId }: ServicesSectionProps) {
     
     const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f7941d";
+    const sId = sectionId || "services";
 
-    // --- Data Logic: Filtering Categories/Subcategories ---
-    const { StoreCategory = [], category = "" } = storeFormData || {};
-    const categoryText = category.toLowerCase().trim();
-    const consultingKeywords = ['consultant', 'consulting', 'coach', 'coaching', 'speaker', 'training'];
-    const isConsultingRelated = consultingKeywords.some(kw => categoryText.includes(kw));
+    // --- Data Logic: Filtering Categories/Subcategories or Tenant Services ---
+    const { StoreCategory = [] } = storeFormData || {};
 
-    let offeringsToShow = [];
-    if (StoreCategory.length > 0) {
-        // Dynamic mapping based on context logic provided in original section
-        offeringsToShow = StoreCategory.flatMap(cat => 
-            (cat.subcategories || [{ name: cat.displayName, id: cat.id }]).map(sub => ({
+    const defaultServices = [
+        { title: "Transport", desc: "Efficient and reliable urban transport solutions tailored to your needs.", icon: TruckIcon, image: SERVICE_IMAGES[0], tag: "Ground" },
+        { title: "Logistics", desc: "Comprehensive logistics services ensuring timely and secure delivery.", icon: GlobeAmericasIcon, image: SERVICE_IMAGES[1], tag: "Global" },
+        { title: "Waste Management", desc: "Innovative solutions promoting sustainability and responsibility.", icon: ArrowPathRoundedSquareIcon, image: SERVICE_IMAGES[2], tag: "Eco" },
+    ];
+
+    let baseOfferings: any[] = [];
+    if (Array.isArray(config?.services) && config.services.length > 0) {
+        baseOfferings = config.services.map((svc: any, idx: number) => {
+            const fallback = defaultServices[idx % defaultServices.length];
+            return {
+                title: svc.title ?? fallback.title,
+                desc: svc.desc ?? svc.description ?? fallback.desc,
+                icon: svc.icon ? (dynamicHeroIconMap[svc.title] || CubeIcon) : fallback.icon,
+                image: svc.image || fallback.image,
+                tag: svc.tag || fallback.tag,
+            };
+        });
+    } else if (StoreCategory.length > 0) {
+        baseOfferings = StoreCategory.flatMap((cat: any) => 
+            (cat.subcategories || [{ name: cat.displayName, id: cat.id }]).map((sub: any) => ({
                 title: sub.name,
                 desc: `Specialized ${sub.name} solutions tailored for ${storeFormData?.name || 'your business'}.`,
                 icon: dynamicHeroIconMap[sub.name] || CubeIcon,
@@ -75,13 +97,13 @@ export default function ServicesGrid({storeFormData}: {storeFormData: any}) {
             }))
         ).slice(0, 6);
     } else {
-        // Fallback for Logistics/Default
-        offeringsToShow = [
-            { title: "Transport", desc: "Efficient and reliable urban transport solutions tailored to your needs.", icon: TruckIcon, image: SERVICE_IMAGES[0], tag: "Ground" },
-            { title: "Logistics", desc: "Comprehensive logistics services ensuring timely and secure delivery.", icon: GlobeAmericasIcon, image: SERVICE_IMAGES[1], tag: "Global" },
-            { title: "Waste Management", desc: "Innovative solutions promoting sustainability and responsibility.", icon: ArrowPathRoundedSquareIcon, image: SERVICE_IMAGES[2], tag: "Eco" },
-        ];
+        baseOfferings = defaultServices;
     }
+
+    const badgeText = config?.badge || "Core Competencies";
+    const sectionTitle = config?.title || "Specialist Solutions";
+    const sublineText = config?.subline || "Secure • Fast • Reliable";
+    const descriptionText = config?.description || storeFormData?.description || "Tailored infrastructure designed to bypass traditional bottlenecks and deliver your vision on a set budget.";
 
     return (
         <section id="services" className="py-24 lg:py-40 bg-white relative overflow-hidden">
@@ -101,29 +123,79 @@ export default function ServicesGrid({storeFormData}: {storeFormData: any}) {
                             className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 text-white rounded-full"
                         >
                             <CubeIcon className="w-4 h-4 text-orange-500" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Core Competencies</span>
+                            <EditableElement
+                                targetId={`delivery.home.${sId}.ServicesSection.badge`}
+                                componentKey="ServicesSection"
+                                elementKey="badge"
+                                label="Badge Text"
+                                defaultValue={badgeText}
+                                type="text"
+                            >
+                                {(val) => (
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                                        {val !== undefined && val !== null ? val : badgeText}
+                                    </span>
+                                )}
+                            </EditableElement>
                         </motion.div>
                         
-                        <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.85] uppercase italic">
-                            Specialist <br />
-                            <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Solutions</span>
-                        </h2>
+                        <EditableElement
+                            targetId={`delivery.home.${sId}.ServicesSection.title`}
+                            componentKey="ServicesSection"
+                            elementKey="title"
+                            label="Section Title"
+                            defaultValue={sectionTitle}
+                            type="text"
+                        >
+                            {(val) => (
+                                <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.85] uppercase italic">
+                                    {val !== undefined && val !== null ? val : (
+                                        <>
+                                            Specialist <br />
+                                            <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Solutions</span>
+                                        </>
+                                    )}
+                                </h2>
+                            )}
+                        </EditableElement>
                     </div>
                     
                     <div className="max-w-md space-y-4">
-                        <div className="flex items-center gap-2 font-black text-xs uppercase tracking-widest" style={{ color: primaryColor }}>
-                            <ShieldCheckIcon className="w-4 h-4" /> Secure • Fast • Reliable
-                        </div>
-                        <p className="text-slate-500 font-medium leading-relaxed">
-                            {storeFormData?.description || "Tailored infrastructure designed to bypass traditional bottlenecks and deliver your vision on a set budget."}
-                        </p>
+                        <EditableElement
+                            targetId={`delivery.home.${sId}.ServicesSection.subline`}
+                            componentKey="ServicesSection"
+                            elementKey="subline"
+                            label="Guarantees / Subline"
+                            defaultValue={sublineText}
+                            type="text"
+                        >
+                            {(val) => (
+                                <div className="flex items-center gap-2 font-black text-xs uppercase tracking-widest" style={{ color: primaryColor }}>
+                                    <ShieldCheckIcon className="w-4 h-4" /> {val !== undefined && val !== null ? val : sublineText}
+                                </div>
+                            )}
+                        </EditableElement>
+                        <EditableElement
+                            targetId={`delivery.home.${sId}.ServicesSection.description`}
+                            componentKey="ServicesSection"
+                            elementKey="description"
+                            label="Narrative Description"
+                            defaultValue={descriptionText}
+                            type="textarea"
+                        >
+                            {(val) => (
+                                <p className="text-slate-500 font-medium leading-relaxed">
+                                    {val !== undefined && val !== null ? val : descriptionText}
+                                </p>
+                            )}
+                        </EditableElement>
                     </div>
                 </div>
 
                 {/* --- SERVICE CARDS --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-24 gap-x-12">
-                    {offeringsToShow.map((service, idx) => {
-                        const Icon = service.icon;
+                    {baseOfferings.map((service, idx) => {
+                        const Icon = service.icon || CubeIcon;
                         return (
                             <Link href={`/logistics/products?category=${service.title.toLowerCase().replace(/\s+/g, '-')}`} className="group" key={idx}>
                                 <motion.div
@@ -146,9 +218,20 @@ export default function ServicesGrid({storeFormData}: {storeFormData: any}) {
                                         
                                         {/* Floating Service Tag */}
                                         <div className="absolute top-8 left-8">
-                                            <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest">
-                                                {service.tag}
-                                            </span>
+                                            <EditableElement
+                                                targetId={`delivery.home.${sId}.ServicesSection.services-${idx}.tag`}
+                                                componentKey="ServicesSection"
+                                                elementKey={`services.${idx}.tag`}
+                                                label={`Service ${idx + 1} Tag`}
+                                                defaultValue={service.tag}
+                                                type="text"
+                                            >
+                                                {(val) => (
+                                                    <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest">
+                                                        {val !== undefined && val !== null ? val : service.tag}
+                                                    </span>
+                                                )}
+                                            </EditableElement>
                                         </div>
                                     </div>
 
@@ -162,13 +245,35 @@ export default function ServicesGrid({storeFormData}: {storeFormData: any}) {
                                         </div>
 
                                         <div className="space-y-4">
-                                            <h3 className="text-3xl font-black text-slate-950 uppercase italic leading-none">
-                                                {service.title}
-                                            </h3>
+                                            <EditableElement
+                                                targetId={`delivery.home.${sId}.ServicesSection.services-${idx}.title`}
+                                                componentKey="ServicesSection"
+                                                elementKey={`services.${idx}.title`}
+                                                label={`Service ${idx + 1} Title`}
+                                                defaultValue={service.title}
+                                                type="text"
+                                            >
+                                                {(val) => (
+                                                    <h3 className="text-3xl font-black text-slate-950 uppercase italic leading-none">
+                                                        {val !== undefined && val !== null ? val : service.title}
+                                                    </h3>
+                                                )}
+                                            </EditableElement>
                                             
-                                            <p className="text-slate-500 text-sm leading-relaxed font-medium line-clamp-2">
-                                                {service.desc}
-                                            </p>
+                                            <EditableElement
+                                                targetId={`delivery.home.${sId}.ServicesSection.services-${idx}.desc`}
+                                                componentKey="ServicesSection"
+                                                elementKey={`services.${idx}.desc`}
+                                                label={`Service ${idx + 1} Description`}
+                                                defaultValue={service.desc}
+                                                type="textarea"
+                                            >
+                                                {(val) => (
+                                                    <p className="text-slate-500 text-sm leading-relaxed font-medium line-clamp-2">
+                                                        {val !== undefined && val !== null ? val : service.desc}
+                                                    </p>
+                                                )}
+                                            </EditableElement>
 
                                             <div className="pt-4 flex items-center justify-between group/btn cursor-pointer">
                                                 <span 

@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ArrowRightIcon, ArrowDownIcon } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- UTILS ---
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
@@ -87,10 +88,32 @@ export default function AboutSectionEditorial() {
                  whileInView={{ opacity: 1, y: 0 }}
                  transition={{ duration: 0.8, delay: 0.2 }}
             >
-                <h5 className="uppercase tracking-[0.3em] text-sm font-bold mb-6 opacity-80">The Story</h5>
-                <h2 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-none mb-8">
-                {headline}
-                </h2>
+                <EditableElement
+                  targetId="services.home.aboutUs.AboutUs.main.badgeText"
+                  componentKey="AboutUs"
+                  elementKey="badgeText"
+                  label="Badge Text"
+                  defaultValue="The Story"
+                  inline
+                >
+                  {(val) => (
+                    <h5 className="uppercase tracking-[0.3em] text-sm font-bold mb-6 opacity-80">{val}</h5>
+                  )}
+                </EditableElement>
+
+                <EditableElement
+                  targetId="services.home.aboutUs.AboutUs.main.headline"
+                  componentKey="AboutUs"
+                  elementKey="headline"
+                  label="Headline"
+                  defaultValue={headline}
+                >
+                  {(val) => (
+                    <h2 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-none mb-8">
+                      {val}
+                    </h2>
+                  )}
+                </EditableElement>
                 
                 {/* Decorative Line */}
                 <div className={`h-2 w-24 mb-12 ${contrastMode === 'light' ? 'bg-white' : 'bg-gray-900'}`}></div>
@@ -113,20 +136,52 @@ export default function AboutSectionEditorial() {
                     className="bg-white dark:bg-gray-800 p-8 md:p-12 shadow-2xl lg:-ml-32 rounded-xl border-l-8"
                     style={{ borderLeftColor: primaryColor, y: yText }}
                  >
-                     <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">
-                        Redefining standards through dedication and design.
-                     </h3>
-                    <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-10">
-                        {description || "Our journey began with a singular vision: to create experiences that resonate deeper. We blend meticulous craftsmanship with innovative thinking to deliver results that don't just meet expectations, but shatter them."}
-                    </p>
+                     <EditableElement
+                       targetId="services.home.aboutUs.AboutUs.main.title"
+                       componentKey="AboutUs"
+                       elementKey="title"
+                       label="Story Title"
+                       defaultValue="Redefining standards through dedication and design."
+                     >
+                       {(val) => (
+                         <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">
+                           {val}
+                         </h3>
+                       )}
+                     </EditableElement>
+
+                     <EditableElement
+                       targetId="services.home.aboutUs.AboutUs.main.description"
+                       componentKey="AboutUs"
+                       elementKey="description"
+                       label="Story Description"
+                       defaultValue={description || "Our journey began with a singular vision: to create experiences that resonate deeper. We blend meticulous craftsmanship with innovative thinking to deliver results that don't just meet expectations, but shatter them."}
+                     >
+                       {(val) => (
+                         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-10">
+                           {val}
+                         </p>
+                       )}
+                     </EditableElement>
 
                     <Link href={`/service-provider/about`} className="group inline-flex items-center gap-4 font-bold text-gray-900 dark:text-white">
-                        <span className="relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-in-out group-hover:after:origin-bottom-left group-hover:after:scale-x-100">
-                            Read Full Story
-                        </span>
+                        <EditableElement
+                          targetId="services.home.aboutUs.AboutUs.main.ctaText"
+                          componentKey="AboutUs"
+                          elementKey="ctaText"
+                          label="Action Text"
+                          defaultValue="Read Full Story"
+                          inline
+                        >
+                          {(val) => (
+                            <span className="relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-in-out group-hover:after:origin-bottom-left group-hover:after:scale-x-100">
+                                {val}
+                            </span>
+                          )}
+                        </EditableElement>
                         <ArrowRightIcon className="w-5 h-5 transform group-hover:translate-x-2 transition-transform" style={{ color: primaryColor }}/>
                     </Link>
-                </motion.div>
+                 </motion.div>
             </div>
 
             {/* Image Strip Area */}

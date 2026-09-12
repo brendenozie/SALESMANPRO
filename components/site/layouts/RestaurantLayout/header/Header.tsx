@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { EditableElement } from '@/contexts/EditableContentContext';
 import LiveSearchSideBar from './LiveSearchSideBar';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -94,23 +95,45 @@ export default function Header() {
                   loader={loader}
                 />
               ) : (
-                <span className="text-2xl font-serif italic font-bold text-white tracking-tighter">
-                  {name || 'Gourmet'}
-                </span>
+                <EditableElement
+                  targetId="header.storeName"
+                  componentKey="Header"
+                  elementKey="storeName"
+                  label="Store / Brand Name"
+                  defaultValue={name || 'Gourmet'}
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-2xl font-serif italic font-bold text-white tracking-tighter">
+                      {val || 'Gourmet'}
+                    </span>
+                  )}
+                </EditableElement>
               )}
             </Link>
 
             {/* --- DESKTOP NAV --- */}
             <nav className="hidden lg:flex items-center space-x-10">
-              {navItems.map((item) => (
-                <Link 
-                  key={item.label} 
-                  href={item.href} 
-                  className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-300 hover:text-white transition-colors relative group"
+              {navItems.map((item, idx) => (
+                <EditableElement
+                  key={item.label}
+                  targetId={`header.nav.${idx}.label`}
+                  componentKey="Header"
+                  elementKey={`nav.${idx}.label`}
+                  label={`Nav ${item.label}`}
+                  defaultValue={item.label}
+                  inline
                 >
-                  {item.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all group-hover:w-full" />
-                </Link>
+                  {(val) => (
+                    <Link 
+                      href={item.href} 
+                      className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-300 hover:text-white transition-colors relative group"
+                    >
+                      {val}
+                      <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all group-hover:w-full" />
+                    </Link>
+                  )}
+                </EditableElement>
               ))}
             </nav>
 

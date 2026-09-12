@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { useSession, signOut } from "next-auth/react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Fallback sample data
 const sampleData = {
@@ -90,22 +91,42 @@ export default function Header() {
                     className="object-contain cursor-pointer transition-transform duration-300 hover:scale-102 filter brightness-100 dark:invert-0  h-20 w-32"
                   />
                 ) : (
-                  <span className="text-2xl font-serif font-bold tracking-widest bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-                    {name}
-                  </span>
+                  <EditableElement
+                    targetId="global.global.header.Header.main.storeName"
+                    componentKey="Header"
+                    elementKey="storeName"
+                    label="Store Brand Name"
+                    defaultValue={name}
+                    inline
+                  >
+                    {(val) => (
+                      <span className="text-2xl font-serif font-bold tracking-widest bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+                        {val}
+                      </span>
+                    )}
+                  </EditableElement>
                 )}
               </Link>
             </div>
 
             {/* Premium Center Navigation */}
             <nav className="hidden lg:flex items-center space-x-10">
-              {navItems.map((item) => (
+              {navItems.map((item, index) => (
                 <Link
                   key={item.label}
                   href={item.href}
                   className="relative group py-2 text-sm font-medium tracking-wider text-white/80 hover:text-white transition-colors duration-300"
                 >
-                  {item.label}
+                  <EditableElement
+                    targetId={`global.global.header.Header.items.${index}.label`}
+                    componentKey="Header"
+                    elementKey={`navItem${index + 1}Label`}
+                    label={`Nav Item ${index + 1} Label`}
+                    defaultValue={item.label}
+                    inline
+                  >
+                    {(val) => <span>{val}</span>}
+                  </EditableElement>
                   <motion.span
                     className="absolute left-0 bottom-0 h-[2px] w-0 bg-gradient-to-r from-indigo-400 to-purple-400"
                     whileHover={{ width: "100%" }}

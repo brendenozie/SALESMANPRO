@@ -1,0 +1,1768 @@
+{
+  "totalTemplates": 55,
+  "componentFamilies": {
+    "hero": [
+      "HeroSlider",
+      "BannerSection",
+      "HeroSection",
+      "Hero",
+      "RestaurantHero",
+      "HealthcareHero"
+    ],
+    "commerce_catalog": [
+      "CategoriesSection",
+      "CategorySection",
+      "PopularProducts",
+      "AllProducts",
+      "MainCoursesSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "BrowseByCategory",
+      "PopularVehiclesWrapper",
+      "FeaturedListingsWrapper",
+      "ListingsSection",
+      "SignatureDishes",
+      "ListingsGrid",
+      "Listings"
+    ],
+    "service_booking": [
+      "ServicesSection",
+      "PricingSection",
+      "BookingFormSection",
+      "PricingAndStatsSection",
+      "AgentsSection",
+      "MedicalServicesSection",
+      "DoctorsSection",
+      "MeetAgents",
+      "GreyServicesSection"
+    ],
+    "features_value_prop": [
+      "FeaturesSection",
+      "MetricsSection",
+      "GlassInfoCardsSection",
+      "ExcellenceSection",
+      "BenefitsSection",
+      "MassageFeatures",
+      "WhyChooseUs",
+      "WhyDineWithUs",
+      "ImpactStatsSection"
+    ],
+    "story_about": [
+      "SchoolSection",
+      "AboutSection",
+      "AboutUsSpotlight"
+    ],
+    "social_proof_testimonials": [
+      "AwardsSection",
+      "TestimonialsSection",
+      "TestimonialsCarouselSection",
+      "TestimonialSection",
+      "Testimonials",
+      "TestimonialsNewsSection"
+    ],
+    "media_showcase": [
+      "VideoShowcaseSection",
+      "StyleGallerySection",
+      "RestaurantGallery",
+      "VirtualTours",
+      "GallerySection"
+    ],
+    "contact_inquiry": [
+      "TrendingLocations",
+      "ContactSection",
+      "LocationsSection",
+      "CallToActionSection"
+    ],
+    "cta_banner": [
+      "PromoSection",
+      "TrendingPromotion",
+      "SecondPromoSection",
+      "CtaSection",
+      "GetStartedSection",
+      "CTASection",
+      "AppPromotionSection",
+      "MobileAppPromo",
+      "CtaBoldSection"
+    ],
+    "faq_accordion": [
+      "FAQSection",
+      "FAQsSection",
+      "RestaurantFAQs",
+      "FaqsSection"
+    ],
+    "newsletter": [
+      "NewsletterSection",
+      "NewsletterSignup"
+    ],
+    "shell_header": [
+      "Header"
+    ],
+    "shell_footer": [
+      "Footer"
+    ],
+    "other": [
+      "DailyBestSells",
+      "SleepTapeAd",
+      "Trending",
+      "PopularBlogsSection",
+      "HowItWorks",
+      "MarketInsightsSection",
+      "CleaningTipsSection",
+      "BlogSection",
+      "HealthTipsSection",
+      "PatientSection",
+      "ClassesGrid",
+      "MarketInsights",
+      "ExpertsSection",
+      "FilterBar",
+      "CoreHighlightsSection",
+      "ProgramsCausesSection",
+      "EventsUpdatesSection",
+      "NewsSection"
+    ]
+  },
+  "uniqueComponentsCount": 88,
+  "components": {
+    "AwardsSection": {
+      "componentKey": "AwardsSection",
+      "files": [
+        "components\\site\\layouts\\Automotive2Layout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\AutomotiveLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\BlogLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\FinanceLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\GhubaLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\MarketplaceLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\MediaLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\RestaurantLayout\\body\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\SaaSLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\ServicesLayout\\body\\AwardsSection\\index.tsx",
+        "components\\site\\layouts\\TravelLayout\\body\\components\\AwardsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "HeroSection": {
+      "componentKey": "HeroSection",
+      "files": [
+        "components\\site\\layouts\\Automotive2Layout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\AutomotiveLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\BlogLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\MarketplaceLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\MediaLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\ServicesLayout\\components\\HeroSection\\index.tsx",
+        "components\\site\\layouts\\TravelLayout\\body\\components\\HeroSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "headline",
+        "subline",
+        "buttonText",
+        "buttonLink",
+        "bannerUrl"
+      ],
+      "contentOrigins": [
+        "D. Store/Company Data",
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 12
+    },
+    "MarketInsightsSection": {
+      "componentKey": "MarketInsightsSection",
+      "files": [
+        "components\\site\\layouts\\Automotive2Layout\\body\\components\\MarketInsightsSection\\index.tsx",
+        "components\\site\\layouts\\AutomotiveLayout\\body\\components\\MarketInsightsSection\\index.tsx",
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\MarketInsightsSection\\index.tsx",
+        "components\\site\\layouts\\TravelLayout\\body\\components\\MarketInsightsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "TestimonialsCarouselSection": {
+      "componentKey": "TestimonialsCarouselSection",
+      "files": [
+        "components\\site\\layouts\\Automotive2Layout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+        "components\\site\\layouts\\AutomotiveLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "TestimonialsSection": {
+      "componentKey": "TestimonialsSection",
+      "files": [
+        "components\\site\\layouts\\Automotive2Layout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\AutomotiveLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\BlogLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\TestimonialsSection\\index.tsx",
+        "components\\site\\layouts\\TravelLayout\\body\\components\\TestimonialsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "D. Store/Company Data",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 46
+    },
+    "VideoShowcaseSection": {
+      "componentKey": "VideoShowcaseSection",
+      "files": [
+        "components\\site\\layouts\\Automotive2Layout\\body\\components\\VideoShowcaseSection\\index.tsx",
+        "components\\site\\layouts\\AutomotiveLayout\\body\\components\\VideoShowcaseSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\VideoShowcaseSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\VideoShowcaseSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\VideoShowcaseSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "BenefitsSection": {
+      "componentKey": "BenefitsSection",
+      "files": [
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\BenefitsSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\BenefitsSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\BenefitsSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\BenefitsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "CtaSection": {
+      "componentKey": "CtaSection",
+      "files": [
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\BlogLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\CtaSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\CtaSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "buttonText",
+        "buttonLink"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "J. External/API Data",
+        "E. Product/Category/Listing Data",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 5
+    },
+    "FAQsSection": {
+      "componentKey": "FAQsSection",
+      "files": [
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\FAQsSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\FAQsSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\FAQsSection\\index.tsx",
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\FAQsSection\\index.tsx",
+        "components\\site\\layouts\\MediaLayout\\body\\components\\FAQsSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\FAQsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "E. Product/Category/Listing Data",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "FeaturesSection": {
+      "componentKey": "FeaturesSection",
+      "files": [
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\SaaSLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\FeaturesSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\FeaturesSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "features.0.title",
+        "features.0.description",
+        "features.1.title",
+        "features.1.description",
+        "features.2.title",
+        "features.2.description",
+        "features.3.title",
+        "features.3.description",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "PricingAndStatsSection": {
+      "componentKey": "PricingAndStatsSection",
+      "files": [
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\PricingAndStatsSection\\index.tsx",
+        "components\\site\\layouts\\BookingsLayout\\body\\components\\PricingAndStatsSection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\PricingAndStatsSection\\index.tsx",
+        "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\PricingAndStatsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "StyleGallerySection": {
+      "componentKey": "StyleGallerySection",
+      "files": [
+        "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\StyleGallerySection\\index.tsx",
+        "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\StyleGallerySection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "PopularBlogsSection": {
+      "componentKey": "PopularBlogsSection",
+      "files": [
+        "components\\site\\layouts\\BlogLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\PopularBlogsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "AboutUsSpotlight": {
+      "componentKey": "AboutUsSpotlight",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\AboutUsSpotlight\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\AboutUsSpotlight\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\AboutUsSpotlight\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "CallToActionSection": {
+      "componentKey": "CallToActionSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\CallToActionSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\CallToActionSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\CallToActionSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\CallToActionSection\\index.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\CallToActionSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\CallToActionSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "J. External/API Data",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "CoreHighlightsSection": {
+      "componentKey": "CoreHighlightsSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\CoreHighlightsSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\CoreHighlightsSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\CoreHighlightsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "CtaBoldSection": {
+      "componentKey": "CtaBoldSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\CtaBoldSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\CtaBoldSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\CtaBoldSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "J. External/API Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "EventsUpdatesSection": {
+      "componentKey": "EventsUpdatesSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\EventsUpdatesSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\EventsUpdatesSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\EventsUpdatesSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "D. Store/Company Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "FAQSection": {
+      "componentKey": "FAQSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\FAQSection\\FAQSection.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\FAQSection\\FAQSection.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\FinanceLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\FAQSection\\index.tsx",
+        "components\\site\\layouts\\ServicesLayout\\components\\FAQSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "D. Store/Company Data",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 9
+    },
+    "ImpactStatsSection": {
+      "componentKey": "ImpactStatsSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\ImpactStatsSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\ImpactStatsSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\ImpactStatsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "NewsSection": {
+      "componentKey": "NewsSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\NewsSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\NewsSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\NewsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "ProgramsCausesSection": {
+      "componentKey": "ProgramsCausesSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\ProgramsCausesSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\ProgramsCausesSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\ProgramsCausesSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "ServicesSection": {
+      "componentKey": "ServicesSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\ServicesSection\\index.tsx",
+        "components\\site\\layouts\\ServicesLayout\\components\\ServicesSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "E. Product/Category/Listing Data",
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "TestimonialsNewsSection": {
+      "componentKey": "TestimonialsNewsSection",
+      "files": [
+        "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\TestimonialsNewsSection\\index.tsx",
+        "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\TestimonialsNewsSection\\index.tsx",
+        "components\\site\\layouts\\NonprofitLayout\\body\\components\\TestimonialsNewsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "AboutSection": {
+      "componentKey": "AboutSection",
+      "files": [
+        "components\\site\\layouts\\ConsultancyLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\EventsLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\AboutSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\AboutSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "description",
+        "imageUrl"
+      ],
+      "contentOrigins": [
+        "D. Store/Company Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 6
+    },
+    "GlassInfoCardsSection": {
+      "componentKey": "GlassInfoCardsSection",
+      "files": [
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\GlassInfoCardsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "MainCoursesSection": {
+      "componentKey": "MainCoursesSection",
+      "files": [
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\MainCoursesSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\MainCoursesSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\MainCoursesSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "SchoolSection": {
+      "componentKey": "SchoolSection",
+      "files": [
+        "components\\site\\layouts\\CoursesLayout\\body\\components\\SchoolSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout2\\body\\components\\SchoolSection\\index.tsx",
+        "components\\site\\layouts\\CoursesLayout3\\body\\components\\SchoolSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "AllProducts": {
+      "componentKey": "AllProducts",
+      "files": [
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\AllProducts\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\AllProducts\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "limit",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 38
+    },
+    "BlogSection": {
+      "componentKey": "BlogSection",
+      "files": [
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\BlogSection\\index.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\BlogSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\BlogSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "HeroSlider": {
+      "componentKey": "HeroSlider",
+      "files": [
+        "components\\site\\layouts\\DeliveryLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\HeroSlider\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\HeroSlider\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "headline",
+        "subline",
+        "badgeText",
+        "ctaText",
+        "ctaLink",
+        "imageUrl",
+        "slides.0.headline",
+        "slides.0.subline",
+        "slides.0.badgeText",
+        "slides.0.ctaText",
+        "slides.0.ctaLink",
+        "slides.0.imageUrl",
+        "slides.0.backgroundColor",
+        "slides.0.textColor",
+        "autoplay",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 38
+    },
+    "CategorySection": {
+      "componentKey": "CategorySection",
+      "files": [
+        "components\\site\\layouts\\DirectoryLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\CategorySection\\index.tsx",
+        "components\\site\\layouts\\MarketplaceLayout\\body\\components\\CategorySection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "description",
+        "ctaText",
+        "ctaLink",
+        "bannerUrl",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 3
+    },
+    "DailyBestSells": {
+      "componentKey": "DailyBestSells",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\DailyBestSells\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\DailyBestSells\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "limit",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "J. External/API Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 38
+    },
+    "MetricsSection": {
+      "componentKey": "MetricsSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\MetricsSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\MetricsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "NewsletterSection": {
+      "componentKey": "NewsletterSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\NewsletterSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\NewsletterSection\\NewsletterSection.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\NewsletterSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\NewsletterSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "description",
+        "buttonText",
+        "supportText",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "J. External/API Data",
+        "D. Store/Company Data",
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 41
+    },
+    "PopularProducts": {
+      "componentKey": "PopularProducts",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\PopularProducts\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\PopularProducts\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "filter",
+        "limit",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "J. External/API Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 38
+    },
+    "PromoSection": {
+      "componentKey": "PromoSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\PromoSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\PromoSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "description",
+        "ctaText",
+        "ctaLink",
+        "bannerUrl",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 38
+    },
+    "SecondPromoSection": {
+      "componentKey": "SecondPromoSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\SecondPromoSection\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\SecondPromoSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "Trending": {
+      "componentKey": "Trending",
+      "files": [
+        "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\FashionLayout\\body\\components\\Trending\\index.tsx",
+        "components\\site\\layouts\\FurnitureLayout\\body\\components\\Trending\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "J. External/API Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "ContactSection": {
+      "componentKey": "ContactSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\ContactSection\\ContactSection.tsx",
+        "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\ContactSection\\ContactSection.tsx",
+        "components\\site\\layouts\\FinanceLayout\\body\\components\\ContactSection\\index.tsx",
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\ContactSection\\index.tsx",
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\ContactSection\\index.tsx",
+        "components\\site\\layouts\\Security2Layout\\body\\components\\ContactSection\\index.tsx",
+        "components\\site\\layouts\\SecurityLayout\\body\\components\\ContactSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "phoneNumber",
+        "email",
+        "address"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "J. External/API Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "BannerSection": {
+      "componentKey": "BannerSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\BannerSection\\BannerSection.tsx",
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\BannerSection\\BannerSection.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "headline",
+        "subtitle",
+        "ctaText",
+        "ctaLink",
+        "bannerUrl",
+        "visible"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "CategoriesSection": {
+      "componentKey": "CategoriesSection",
+      "files": [
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\CategoriesSection\\index.tsx",
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\CategoriesSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\CategoriesSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 39
+    },
+    "SleepTapeAd": {
+      "componentKey": "SleepTapeAd",
+      "files": [
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\SleepTapeAd\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "headline",
+        "subline",
+        "ctaText",
+        "ctaLink",
+        "imageUrl",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "TrendingPromotion": {
+      "componentKey": "TrendingPromotion",
+      "files": [
+        "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\TrendingPromotion\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "description",
+        "ctaText",
+        "ctaLink",
+        "visible"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "PricingSection": {
+      "componentKey": "PricingSection",
+      "files": [
+        "components\\site\\layouts\\EventsLayout\\body\\components\\PricingSection\\index.tsx",
+        "components\\site\\layouts\\ServicesLayout\\components\\PricingSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "D. Store/Company Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "AppPromotionSection": {
+      "componentKey": "AppPromotionSection",
+      "files": [
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\AppPromotionSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "ExpertsSection": {
+      "componentKey": "ExpertsSection",
+      "files": [
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\ExpertsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "GallerySection": {
+      "componentKey": "GallerySection",
+      "files": [
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\GallerySection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "LocationsSection": {
+      "componentKey": "LocationsSection",
+      "files": [
+        "components\\site\\layouts\\FitnessLayout\\body\\components\\LocationsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "CTASection": {
+      "componentKey": "CTASection",
+      "files": [
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\CTASection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "buttonText",
+        "buttonLink"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration",
+        "J. External/API Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "DoctorsSection": {
+      "componentKey": "DoctorsSection",
+      "files": [
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\DoctorsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "MedicalServicesSection": {
+      "componentKey": "MedicalServicesSection",
+      "files": [
+        "components\\site\\layouts\\HealthcareLayout\\body\\components\\MedicalServicesSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "BookingFormSection": {
+      "componentKey": "BookingFormSection",
+      "files": [
+        "components\\site\\layouts\\PortfolioLayout\\body\\components\\BookingFormSection\\index.tsx",
+        "components\\site\\layouts\\ServicesLayout\\components\\BookingFormSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "D. Store/Company Data",
+        "B. Component-Local Configuration",
+        "J. External/API Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "AgentsSection": {
+      "componentKey": "AgentsSection",
+      "files": [
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\AgentsSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\AgentsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "ListingsSection": {
+      "componentKey": "ListingsSection",
+      "files": [
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\ListingsSection\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\ListingsSection\\index.tsx",
+        "components\\site\\layouts\\TravelLayout\\body\\components\\ListingsSection\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "TrendingLocations": {
+      "componentKey": "TrendingLocations",
+      "files": [
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\TrendingLocations\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\TrendingLocations\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 5
+    },
+    "WhyChooseUs": {
+      "componentKey": "WhyChooseUs",
+      "files": [
+        "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\WhyChooseUs\\index.tsx",
+        "components\\site\\layouts\\RealEstateLayout\\body\\components\\WhyChooseUs\\index.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "RestaurantFAQs": {
+      "componentKey": "RestaurantFAQs",
+      "files": [
+        "components\\site\\layouts\\RestaurantLayout\\components\\RestaurantFAQs.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "RestaurantGallery": {
+      "componentKey": "RestaurantGallery",
+      "files": [
+        "components\\site\\layouts\\RestaurantLayout\\components\\RestaurantGallery.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "SignatureDishes": {
+      "componentKey": "SignatureDishes",
+      "files": [
+        "components\\site\\layouts\\RestaurantLayout\\components\\SignatureDishes.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "limit"
+      ],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "Testimonials": {
+      "componentKey": "Testimonials",
+      "files": [
+        "components\\site\\layouts\\RestaurantLayout\\components\\Testimonials.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "visible"
+      ],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "WhyDineWithUs": {
+      "componentKey": "WhyDineWithUs",
+      "files": [
+        "components\\site\\layouts\\RestaurantLayout\\components\\WhyDineWithUs.tsx"
+      ],
+      "hasAdapter": true,
+      "adapterProperties": [
+        "title",
+        "subtitle",
+        "description"
+      ],
+      "contentOrigins": [
+        "D. Store/Company Data"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 1
+    },
+    "CleaningTipsSection": {
+      "componentKey": "CleaningTipsSection",
+      "files": [
+        "components\\site\\layouts\\ServicesLayout\\components\\CleaningTipsSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "E. Product/Category/Listing Data",
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "ExcellenceSection": {
+      "componentKey": "ExcellenceSection",
+      "files": [
+        "components\\site\\layouts\\ServicesLayout\\components\\ExcellenceSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [
+        "B. Component-Local Configuration"
+      ],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "GetStartedSection": {
+      "componentKey": "GetStartedSection",
+      "files": [
+        "components\\site\\layouts\\ServicesLayout\\components\\GetStartedSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    },
+    "TestimonialSection": {
+      "componentKey": "TestimonialSection",
+      "files": [
+        "components\\site\\layouts\\ServicesLayout\\components\\TestimonialSection\\index.tsx"
+      ],
+      "hasAdapter": false,
+      "adapterProperties": [],
+      "contentOrigins": [],
+      "sampleContentPatterns": [],
+      "usedInTemplatesCount": 2
+    }
+  }
+}

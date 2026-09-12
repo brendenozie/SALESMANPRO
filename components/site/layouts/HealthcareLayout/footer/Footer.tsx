@@ -11,6 +11,7 @@ import {
   GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface AddressItem {
   label?: string;
@@ -71,12 +72,33 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-slate-900 pb-16">
           {/* About Module */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-white">
-              About {name}
-            </h3>
-            <p className="text-sm leading-relaxed text-slate-400">
-              Providing expert, personalized healthcare solutions engineered around complete patient recovery, active preventative diagnostics, and systemic vitality.
-            </p>
+            <EditableElement
+              targetId="global.global.footer.Footer.main.brandName"
+              componentKey="Footer"
+              elementKey="brandName"
+              label="Brand Name"
+              defaultValue={name}
+              inline
+            >
+              {(val) => (
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white">
+                  About {val}
+                </h3>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="global.global.footer.Footer.main.bioText"
+              componentKey="Footer"
+              elementKey="bioText"
+              label="Brand Bio"
+              defaultValue="Providing expert, personalized healthcare solutions engineered around complete patient recovery, active preventative diagnostics, and systemic vitality."
+            >
+              {(val) => (
+                <p className="text-sm leading-relaxed text-slate-400">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
           </div>
 
           {/* Quick Navigation */}
@@ -258,9 +280,20 @@ export default function Footer() {
 
         {/* Copy & Platform Attribution */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
-          <div>
-            &copy; {new Date().getFullYear()} {name}. Systems secure.
-          </div>
+          <EditableElement
+            targetId="global.global.footer.Footer.main.copyrightText"
+            componentKey="Footer"
+            elementKey="copyrightText"
+            label="Copyright Notice"
+            defaultValue={`${name}. Systems secure.`}
+            inline
+          >
+            {(val) => (
+              <div>
+                &copy; {new Date().getFullYear()} {val}
+              </div>
+            )}
+          </EditableElement>
           <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-900/40 rounded-xl border border-slate-900/60">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Architecture via</span>
             <a 

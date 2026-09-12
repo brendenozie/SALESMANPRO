@@ -14,6 +14,7 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/solid';
 import { HeroSlide } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // --- Polished Animation Configs ---
 const containerVariants = {
@@ -130,30 +131,62 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: primaryColor }} />
                   <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: primaryColor }} />
                 </span>
-                {badgeText}
+                <EditableElement
+                  targetId="healthcare.home.healthcareHero.HealthcareHero.main.badgeText"
+                  componentKey="HealthcareHero"
+                  elementKey="badgeText"
+                  label="Badge Text"
+                  defaultValue={badgeText}
+                  inline
+                >
+                  {(val) => <span>{val}</span>}
+                </EditableElement>
               </span>
             </motion.div>
           )}
 
           {/* Clean Editorial Typography */}
-          <motion.h1 
-            variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]"
+          <EditableElement
+            targetId="healthcare.home.healthcareHero.HealthcareHero.main.headline"
+            componentKey="HealthcareHero"
+            elementKey="headline"
+            label="Headline"
+            defaultValue={headline}
           >
-            {headline.split(',').map((chunk, index) => (
-              <span key={index} className={index === 1 ? "block mt-1 text-slate-800" : ""}>
-                {chunk}{index === 0 && ','}
-              </span>
-            ))}
-          </motion.h1>
+            {(val) => {
+              const text = typeof val === 'string' ? val : headline;
+              return (
+                <motion.h1 
+                  variants={itemVariants}
+                  className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]"
+                >
+                  {text.split(',').map((chunk, index) => (
+                    <span key={index} className={index === 1 ? "block mt-1 text-slate-800" : ""}>
+                      {chunk}{index === 0 && ','}
+                    </span>
+                  ))}
+                </motion.h1>
+              );
+            }}
+          </EditableElement>
 
           {/* Crisp, Highly Readable Subtext */}
-          <motion.p 
-            variants={itemVariants}
-            className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-normal"
+          <EditableElement
+            targetId="healthcare.home.healthcareHero.HealthcareHero.main.subline"
+            componentKey="HealthcareHero"
+            elementKey="subline"
+            label="Subline"
+            defaultValue={subline}
           >
-            {subline}
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                variants={itemVariants}
+                className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-normal"
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
 
           {/* Actions */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
@@ -164,7 +197,16 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
                 style={{ backgroundColor: primaryColor }}
               >
                 <ClipboardDocumentListIcon className="w-5 h-5 mr-3 group-hover:scale-105 transition-transform" />
-                {ctaText || "Book Now"}
+                <EditableElement
+                  targetId="healthcare.home.healthcareHero.HealthcareHero.main.ctaText"
+                  componentKey="HealthcareHero"
+                  elementKey="ctaText"
+                  label="Button Text"
+                  defaultValue={ctaText || "Schedule Consultation"}
+                  inline
+                >
+                  {(val) => <span>{val}</span>}
+                </EditableElement>
               </Link>
             )}
 

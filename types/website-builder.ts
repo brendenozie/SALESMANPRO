@@ -346,6 +346,8 @@ export type SectionType = z.infer<typeof SectionTypeEnum>;
 export const WebsiteSectionSchema = z.object({
   id: z.string(),
   type: SectionTypeEnum,
+  name: z.string().optional(),
+  component: z.string().optional(),
   order: z.number().default(0),
   isVisible: z.boolean().default(true),
   content: z.record(z.any()),

@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { StoreForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface HeaderProps {
   storeFormData?: StoreForm;
@@ -91,23 +92,45 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 />
               </div>
             ) : (
-              <span className="text-2xl font-[1000] tracking-tighter text-zinc-900 dark:text-white italic uppercase">
-                {data.name || "PRESTIGE"}
-              </span>
+              <EditableElement
+                targetId="header.storeName"
+                componentKey="Header"
+                elementKey="storeName"
+                label="Store / Brand Name"
+                defaultValue={data.name || "PRESTIGE"}
+                inline
+              >
+                {(val) => (
+                  <span className="text-2xl font-[1000] tracking-tighter text-zinc-900 dark:text-white italic uppercase">
+                    {val || "PRESTIGE"}
+                  </span>
+                )}
+              </EditableElement>
             )}
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-10">
-            {navItems.map((item) => (
-              <Link
+            {navItems.map((item, idx) => (
+              <EditableElement
                 key={item.label}
-                href={`${item.href}`}
-                className="relative text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-white/50 hover:text-blue-600 dark:hover:text-white transition-colors group"
+                targetId={`header.nav.${idx}.label`}
+                componentKey="Header"
+                elementKey={`nav.${idx}.label`}
+                label={`Nav ${item.label}`}
+                defaultValue={item.label}
+                inline
               >
-                {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
+                {(val) => (
+                  <Link
+                    href={`${item.href}`}
+                    className="relative text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-white/50 hover:text-blue-600 dark:hover:text-white transition-colors group"
+                  >
+                    {val}
+                    <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full" />
+                  </Link>
+                )}
+              </EditableElement>
             ))}
           </nav>
         </div>

@@ -10,6 +10,7 @@ import {
   MapIcon, // For destination/interest icon
   CheckCircleIcon, // For success state icon
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Shared Utilities ---
 
@@ -117,19 +118,39 @@ export default function ContactUsPage() {
             <SparklesIcon className="h-16 w-16 text-white drop-shadow-lg" />
           </motion.div>
 
-          <motion.h2 
-            variants={itemVariants}
-            className="text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg"
+          <EditableElement
+            targetId="travel.home.newsletterSignupSection.NewsletterSignupSection.main.title"
+            componentKey="NewsletterSignupSection"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="Start Your Next Adventure"
           >
-            Start Your Next Adventure
-          </motion.h2>
+            {(val) => (
+              <motion.h2 
+                variants={itemVariants}
+                className="text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg"
+              >
+                {val}
+              </motion.h2>
+            )}
+          </EditableElement>
 
-          <motion.p 
-            variants={itemVariants}
-            className="text-indigo-100 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed"
+          <EditableElement
+            targetId="travel.home.newsletterSignupSection.NewsletterSignupSection.main.subtitle"
+            componentKey="NewsletterSignupSection"
+            elementKey="subtitle"
+            label="Section Subtitle"
+            defaultValue="Reach out with queries, design customization requests, or destination consulting. Our advisors will map out solutions tailored to your coordinates."
           >
-            Reach out with queries, design customization requests, or destination consulting. Our advisors will map out solutions tailored to your coordinates.
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                variants={itemVariants}
+                className="text-indigo-100 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed"
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
 
           {/* Form / Success Interactive Panel */}
           <motion.div

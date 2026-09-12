@@ -13,6 +13,7 @@ import {
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface SearchFilters {
   location: string;
@@ -163,46 +164,79 @@ export default function HeroSection({
             className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/10 dark:bg-orange-500/10 backdrop-blur-md border border-white/20 dark:border-orange-500/20 shadow-inner"
           >
             <SparklesIcon className="w-4 h-4 text-orange-400 animate-pulse" />
-            <span className="text-white text-xs font-semibold tracking-wider uppercase">
-              {heroSlides[current].badgeText || "Elevate Your Lifestyle"}
-            </span>
+            <EditableElement
+              targetId={`HeroSection.slide${current}.badgeText`}
+              componentKey="HeroSection"
+              elementKey="badgeText"
+              label={`Slide ${current + 1} Badge`}
+              type="text"
+              defaultValue={heroSlides[current].badgeText || "Elevate Your Lifestyle"}
+              inline
+            >
+              {(val) => (
+                <span className="text-white text-xs font-semibold tracking-wider uppercase">
+                  {val ?? heroSlides[current].badgeText ?? "Elevate Your Lifestyle"}
+                </span>
+              )}
+            </EditableElement>
           </motion.div>
 
           <div className="space-y-4 max-w-5xl mx-auto overflow-hidden">
             <AnimatePresence mode="wait" custom={direction}>
-              <motion.h1
-                key={`h1-${current}`}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                // UPDATED SIZING CLASSES HERE:
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-black text-white leading-[0.95] tracking-tight uppercase italic drop-shadow-2xl font-sans"
+              <EditableElement
+                targetId={`HeroSection.slide${current}.headline`}
+                componentKey="HeroSection"
+                elementKey="headline"
+                label={`Slide ${current + 1} Headline`}
+                type="text"
+                defaultValue={heroSlides[current].headline}
               >
-                {heroSlides[current].headline?.split("\n").map((line, i) => (
-                  <span key={i} className="block bg-gradient-to-b from-white via-white to-neutral-300 bg-clip-text text-transparent">
-                    {line}
-                  </span>
-                ))}
-              </motion.h1>
+                {(val) => (
+                  <motion.h1
+                    key={`h1-${current}`}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-black text-white leading-[0.95] tracking-tight uppercase italic drop-shadow-2xl font-sans"
+                  >
+                    {(val ?? heroSlides[current].headline)?.split("\n").map((line: string, i: number) => (
+                      <span key={i} className="block bg-gradient-to-b from-white via-white to-neutral-300 bg-clip-text text-transparent">
+                        {line}
+                      </span>
+                    ))}
+                  </motion.h1>
+                )}
+              </EditableElement>
             </AnimatePresence>
 
             {/* Subline Animation */}
             <AnimatePresence mode="wait" custom={direction}>
-              <motion.p
-                key={`sub-${current}`}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="text-neutral-300 text-base sm:text-lg md:text-xl max-w-2xl mx-auto font-medium drop-shadow"
+              <EditableElement
+                targetId={`HeroSection.slide${current}.subline`}
+                componentKey="HeroSection"
+                elementKey="subline"
+                label={`Slide ${current + 1} Subline`}
+                type="textarea"
+                defaultValue={heroSlides[current].subline}
               >
-                {heroSlides[current].subline}
-              </motion.p>
+                {(val) => (
+                  <motion.p
+                    key={`sub-${current}`}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-neutral-300 text-base sm:text-lg md:text-xl max-w-2xl mx-auto font-medium drop-shadow"
+                  >
+                    {val ?? heroSlides[current].subline}
+                  </motion.p>
+                )}
+              </EditableElement>
             </AnimatePresence>
           </div>
         </div>

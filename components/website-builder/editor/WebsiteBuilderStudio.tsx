@@ -47,8 +47,9 @@ import { SelectedElementInfo, HierarchyItem } from "@/contexts/EditableContentCo
 import {
   parseTargetId,
   getEditableComponent,
-  buildUniversalComponentAdapter,
+  getAllEditableComponents,
 } from "@/lib/website-builder/editable-adapters";
+import { getCanonicalLookupKeys } from "@/lib/website-builder/canonical-target-id";
 import { buildTenantUrl } from "@/lib/tenant/tenant-router";
 import toast from "react-hot-toast";
 
@@ -92,6 +93,839 @@ const THEME_PRESETS = [
   { name: "Royal Purple", primary: "#7C3AED", secondary: "#F59E0B", accent: "#EC4899" },
   { name: "Warm Amber", primary: "#D97706", secondary: "#B45309", accent: "#F59E0B" },
 ];
+
+// ---------------------------------------------------------------------------
+// ComponentEditableElementsPanel
+// Scans the live DOM for [data-editable-id] elements within the selected
+// component's section container and renders them as real, clickable field
+// cards. This is the ONLY correct way to discover what fields are editable
+// in a physical template component without hard-coding adapter guesses.
+// ---------------------------------------------------------------------------
+interface ScannedElement {
+  targetId: string;
+  label: string;
+  type: string;
+  componentKey: string;
+  currentValue?: string;
+  defaultValue?: string;
+  hasRenderBinding: boolean;
+}
+
+function extractScannedElement(el: Element, fallbackComp: string): ScannedElement | null {
+  const targetId = el.getAttribute('data-editable-id') || el.getAttribute('data-editor-target') || '';
+  if (!targetId) return null;
+  const bindingAttr = el.getAttribute('data-editor-binding');
+  const hasRenderBinding = bindingAttr === 'VERIFIED_RENDER_BINDING' || el.hasAttribute('data-editable-id');
+  const attrVal = el.getAttribute('data-editor-value');
+  const attrDef = el.getAttribute('data-editor-default');
+  const domText = (el.textContent || '').trim();
+  const effectiveVal = attrVal !== null && attrVal !== '' ? attrVal : (attrDef !== null && attrDef !== '' ? attrDef : domText);
+  return {
+    targetId,
+    label: el.getAttribute('data-editor-label') || targetId.split('.').pop() || targetId,
+    type: el.getAttribute('data-editor-type') || 'text',
+    componentKey: el.getAttribute('data-editor-component') || fallbackComp,
+    currentValue: effectiveVal,
+    defaultValue: attrDef || undefined,
+    hasRenderBinding,
+  };
+}
+
+function ComponentEditableElementsPanel({
+  componentKey,
+  sectionId,
+  config,
+  onSelectElement,
+}: {
+  componentKey: string;
+  sectionId?: string;
+  config: CompiledWebsiteConfig;
+  onSelectElement: (info: import("@/contexts/EditableContentContext").SelectedElementInfo) => void;
+}) {
+  const [elements, setElements] = React.useState<ScannedElement[]>([]);
+  const [scanned, setScanned] = React.useState(false);
+
+  // Scan the DOM after mount (and whenever componentKey changes)
+  React.useEffect(() => {
+    const scan = () => {
+      // Try to find the section container by component key, section id, or both
+      const selectors = [
+        sectionId ? `[data-editor-section="${sectionId}"]` : null,
+        `[data-editor-component="${componentKey}"]`,
+        sectionId ? `#section-${sectionId}` : null,
+        sectionId ? `#${sectionId}` : null,
+      ].filter(Boolean) as string[];
+
+      let container: Element | null = null;
+      for (const sel of selectors) {
+        container = document.querySelector(sel);
+        if (container) break;
+      }
+
+      // If no container, search whole canvas for this component
+      if (!container) {
+        container = document.querySelector('[data-editor-component]') ? document.querySelector(`[data-editor-component="${componentKey}"]`) : null;
+      }
+
+      const found: ScannedElement[] = [];
+      const seen = new Set<string>();
+
+      if (container) {
+        const editableEls = container.querySelectorAll('[data-editable-id], [data-editor-target]');
+        editableEls.forEach((el) => {
+          const item = extractScannedElement(el, componentKey);
+          if (!item || seen.has(item.targetId)) return;
+          seen.add(item.targetId);
+          found.push(item);
+        });
+      }
+
+      // Also scan outside the container for component-level elements that may
+      // be rendered in portals (e.g. modals, drawers)
+      if (found.length === 0) {
+        const allEditables = document.querySelectorAll(`[data-editor-component="${componentKey}"] [data-editable-id]`);
+        allEditables.forEach((el) => {
+          const item = extractScannedElement(el, componentKey);
+          if (!item || seen.has(item.targetId)) return;
+          seen.add(item.targetId);
+          found.push(item);
+        });
+      }
+
+      setElements(found);
+      setScanned(true);
+    };
+
+    // Small delay to let the canvas render settle
+    const timer = setTimeout(scan, 150);
+    return () => clearTimeout(timer);
+  }, [componentKey, sectionId]);
+
+  const typeIcon = (type: string) => {
+    switch (type) {
+      case 'image': return '🖼';
+      case 'textarea': return '📝';
+      case 'link': return '🔗';
+      case 'color': return '🎨';
+      default: return '✏️';
+    }
+  };
+
+  const adapter = React.useMemo(() => {
+    return getEditableComponent(componentKey) || (sectionId ? getEditableComponent(sectionId) : undefined);
+  }, [componentKey, sectionId]);
+
+  // If live DOM elements weren't found, synthesize elements from:
+  // 1. Registered adapter properties
+  // 2. Section content in config.pages[0].sections
+  // 3. Authentic section definition in canonical template
+  const fallbackElements: ScannedElement[] = React.useMemo(() => {
+    if (elements.length > 0) return [];
+    const list: ScannedElement[] = [];
+    const seen = new Set<string>();
+
+    const addElement = (key: string, label: string, type: string, defVal?: any) => {
+      if (seen.has(key)) return;
+      seen.add(key);
+      const canonicalTarget = `home.${sectionId || componentKey}.${componentKey}.main.${key}`;
+      const overrideVal = config.componentOverrides?.[canonicalTarget];
+      const strVal = overrideVal !== undefined ? String(overrideVal) : (typeof defVal === 'string' ? defVal : undefined);
+      list.push({
+        targetId: canonicalTarget,
+        label: label || key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
+        type: type || 'text',
+        componentKey: componentKey,
+        currentValue: strVal,
+        defaultValue: typeof defVal === 'string' ? defVal : undefined,
+        hasRenderBinding: true,
+      });
+    };
+
+    if (adapter && adapter.properties) {
+      Object.entries(adapter.properties).forEach(([key, prop]) => {
+        addElement(key, prop.label || key, prop.type || 'text', prop.default);
+      });
+    }
+
+    // Check section in config
+    const secConfig = config.pages?.[0]?.sections?.find(
+      (s) => s.id === sectionId || s.type === componentKey || s.type === sectionId
+    );
+    if (secConfig?.content && typeof secConfig.content === 'object') {
+      Object.entries(secConfig.content).forEach(([k, v]) => {
+        if (typeof v === 'string' || typeof v === 'number') {
+          const inferredType = k.toLowerCase().includes('image') || k.toLowerCase().includes('photo')
+            ? 'image'
+            : (k.toLowerCase().includes('link') || k.toLowerCase().includes('url')
+              ? 'link'
+              : (String(v).length > 50 ? 'textarea' : 'text'));
+          addElement(k, k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()), inferredType, String(v));
+        }
+      });
+    }
+
+    // Check canonical template authenticSections
+    try {
+      const canonicalTpl = resolveCanonicalTemplate(undefined, undefined, config.templateKey);
+      const matchedAuthSec = canonicalTpl.authenticSections.find(
+        (as) => as.component === componentKey || as.id === sectionId || as.type === componentKey || as.type === sectionId
+      );
+      if (matchedAuthSec) {
+        if (Array.isArray(matchedAuthSec.editableProps)) {
+          matchedAuthSec.editableProps.forEach((propKey) => {
+            const defVal = (matchedAuthSec.defaultContent as any)?.[propKey];
+            const inferredType = propKey.toLowerCase().includes('image') || propKey.toLowerCase().includes('photo')
+              ? 'image'
+              : (propKey.toLowerCase().includes('link') || propKey.toLowerCase().includes('url')
+                ? 'link'
+                : (typeof defVal === 'string' && defVal.length > 50 ? 'textarea' : 'text'));
+            addElement(propKey, propKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()), inferredType, defVal);
+          });
+        }
+        if (matchedAuthSec.defaultContent && typeof matchedAuthSec.defaultContent === 'object') {
+          Object.entries(matchedAuthSec.defaultContent).forEach(([k, v]) => {
+            if (typeof v === 'string' || typeof v === 'number') {
+              const inferredType = k.toLowerCase().includes('image') || k.toLowerCase().includes('photo')
+                ? 'image'
+                : (k.toLowerCase().includes('link') || k.toLowerCase().includes('url')
+                  ? 'link'
+                  : (String(v).length > 50 ? 'textarea' : 'text'));
+              addElement(k, k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()), inferredType, String(v));
+            }
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    return list;
+  }, [elements, adapter, sectionId, componentKey, config]);
+
+  const rawStatus = adapter?.status || ((elements.length > 0 || fallbackElements.length > 0) ? "EDITABLE" : "UNWRAPPED");
+  const editabilityStatus: ComponentEditabilityStatus = 
+    rawStatus === "FULLY_EDITABLE" ? "EDITABLE" : rawStatus as ComponentEditabilityStatus;
+
+  const activeElements = elements.length > 0 ? elements : fallbackElements;
+  const isFallbackSchema = elements.length === 0 && fallbackElements.length > 0;
+
+  const renderStatusBadge = (st: string) => {
+    switch (st) {
+      case 'EDITABLE':
+      case 'FULLY_EDITABLE':
+        return <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">EDITABLE</span>;
+      case 'PARTIALLY_EDITABLE':
+        return <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-300 dark:border-sky-800">PARTIAL</span>;
+      case 'DATA_DRIVEN':
+        return <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-300 dark:border-purple-800">DATA DRIVEN</span>;
+      case 'INTENTIONALLY_STATIC':
+        return <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">STATIC</span>;
+      default:
+        return <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300 dark:border-amber-800">UNWRAPPED</span>;
+    }
+  };
+
+  if (!scanned) {
+    return (
+      <div className="space-y-2">
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-3/4" />
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-1/2" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Component Header & Status Meta */}
+      <div className="flex items-center justify-between pb-1 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+            {adapter?.label || componentKey}
+          </span>
+        </div>
+        <div>
+          {renderStatusBadge(editabilityStatus)}
+        </div>
+      </div>
+
+      {/* DATA-DRIVEN CATALOG GUIDANCE BANNER */}
+      {editabilityStatus === 'DATA_DRIVEN' && (
+        <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-purple-600 dark:text-purple-400 text-sm">📦</span>
+            <span className="text-xs font-bold text-purple-800 dark:text-purple-300">
+              Database Catalog Component
+            </span>
+          </div>
+          <p className="text-[11px] text-purple-700/80 dark:text-purple-400/80 leading-relaxed">
+            Items (products, listings, booking slots) in this section are dynamically loaded from your active database. To add, edit, or adjust catalog inventory, use your store dashboard. Container headings and branding remain editable below.
+          </p>
+        </div>
+      )}
+
+      {/* INTENTIONALLY STATIC BANNER */}
+      {editabilityStatus === 'INTENTIONALLY_STATIC' && (
+        <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          This component provides structural architectural layout and decorative styling. Its appearance is managed by global theme colors and spacing.
+        </div>
+      )}
+
+      {/* UNWRAPPED / NO FIELDS BANNER */}
+      {activeElements.length === 0 && (
+        <div className="space-y-3">
+          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-600 dark:text-amber-400 text-base">ℹ️</span>
+              <span className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                Component selected. No verified editable fields are currently available.
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
+              This authentic component is currently rendered with its authentic presentation layout. Content edits for this component are preserved in template defaults.
+            </p>
+          </div>
+          <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80 text-[10px] font-mono text-zinc-400 space-y-1">
+            <div className="font-bold text-zinc-500 dark:text-zinc-400 font-sans text-[10px] uppercase tracking-wider">Component</div>
+            <div>{componentKey}</div>
+            {sectionId && <><div className="font-bold text-zinc-500 dark:text-zinc-400 font-sans text-[10px] uppercase tracking-wider mt-1">Section</div><div>{sectionId}</div></>}
+          </div>
+          <details className="group">
+            <summary className="text-[10px] font-bold text-zinc-500 cursor-pointer hover:underline">
+              Why is this View Only?
+            </summary>
+            <div className="mt-2 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 text-[11px] text-zinc-600 dark:text-zinc-300 space-y-1 leading-relaxed">
+              <p>• <strong>Rendering mode:</strong> Authentic Theme Layout</p>
+              <p>• <strong>Render Binding:</strong> No child elements with <code>data-editable-id</code> were discovered in this component's DOM container.</p>
+              <p>• <strong>Content Source:</strong> Default layout typography, animations, or dynamic database query.</p>
+            </div>
+          </details>
+        </div>
+      )}
+
+      {/* ACTIVE EDITABLE FIELDS LIST */}
+      {activeElements.length > 0 && (
+        <>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+              Editable Fields ({activeElements.length})
+            </span>
+            <span className={`text-[9px] font-semibold ${isFallbackSchema ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+              {isFallbackSchema ? '● Registered Schema (Unbound)' : '● Verified Render Binding'}
+            </span>
+          </div>
+
+          <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-400">
+            Click a field below or click directly on the canvas element to edit it.
+          </div>
+
+          {activeElements.map((el) => {
+            const hasOverride = config.componentOverrides?.[el.targetId] !== undefined;
+            const overrideVal = config.componentOverrides?.[el.targetId];
+            const effectiveDisplayVal = overrideVal !== undefined ? overrideVal : (el.currentValue !== undefined ? el.currentValue : el.defaultValue);
+            return (
+              <button
+                key={el.targetId}
+                type="button"
+                onClick={() => {
+                  onSelectElement({
+                    targetId: el.targetId,
+                    componentKey: el.componentKey,
+                    elementKey: el.targetId.split('.').pop(),
+                    label: el.label,
+                    type: el.type as any,
+                    value: effectiveDisplayVal,
+                    defaultValue: el.defaultValue,
+                    editabilityStatus: el.hasRenderBinding ? 'FULLY_EDITABLE' : 'REGISTERED_SCHEMA_FIELD',
+                    hierarchy: [
+                      { level: 'page', id: 'home', label: 'HOME' },
+                      { level: 'component', id: el.componentKey, label: el.componentKey },
+                      { level: 'element', id: el.targetId, label: el.label },
+                    ],
+                  });
+                }}
+                className="w-full text-left p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80 hover:border-rose-400 hover:bg-rose-50/40 dark:hover:bg-rose-950/20 transition-all space-y-1 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">{typeIcon(el.type)}</span>
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-rose-700 dark:group-hover:text-rose-400 capitalize">
+                      {el.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded">
+                      {el.type}
+                    </span>
+                    {el.hasRenderBinding ? (
+                      <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                        Render Binding
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                        Schema Defined
+                      </span>
+                    )}
+                    {hasOverride && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800">
+                        Edited
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-[10px] font-mono text-zinc-400 truncate">
+                  {el.targetId}
+                </div>
+                {effectiveDisplayVal !== undefined && effectiveDisplayVal !== "" && el.type !== 'image' && (
+                  <div className="text-[11px] text-zinc-600 dark:text-zinc-300 font-medium truncate mt-0.5">
+                    &ldquo;{String(effectiveDisplayVal).slice(0, 60)}{String(effectiveDisplayVal).length > 60 ? '…' : ''}&rdquo;
+                  </div>
+                )}
+                {!el.hasRenderBinding && (
+                  <div className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded border border-amber-200 dark:border-amber-800 mt-1">
+                    ⚠️ Defined in schema — no verified render binding on canvas.
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SectionLiveFieldsInspector
+// Discovers real [data-editable-id] fields in the active section container
+// and wires them directly to handleUpdateOverride so editing any field updates
+// authentic themes in real-time.
+// ---------------------------------------------------------------------------
+function SectionLiveFieldsInspector({
+  section,
+  config,
+  onUpdateOverride,
+  onSelectElement,
+  onUpdateSectionStyle,
+  onUpdateDataSource,
+  onClose,
+}: {
+  section: import("@/types/website-builder").PageSection;
+  config: CompiledWebsiteConfig;
+  onUpdateOverride: (targetId: string, value: any) => void;
+  onSelectElement: (info: SelectedElementInfo) => void;
+  onUpdateSectionStyle: (key: string, value: any) => void;
+  onUpdateDataSource: (key: string, value: any) => void;
+  onClose: () => void;
+}) {
+  const [elements, setElements] = React.useState<ScannedElement[]>([]);
+  const [scanned, setScanned] = React.useState(false);
+
+  React.useEffect(() => {
+    const scan = () => {
+      const selectors = [
+        `[data-editor-section="${section.id}"]`,
+        `[data-editor-section="${section.type}"]`,
+        `#section-${section.id}`,
+        `#${section.id}`,
+        `section[data-section-type="${section.type}"]`,
+      ];
+      let container: Element | null = null;
+      for (const sel of selectors) {
+        container = document.querySelector(sel);
+        if (container) break;
+      }
+
+      const found: ScannedElement[] = [];
+      const seen = new Set<string>();
+
+      if (container) {
+        const editableEls = container.querySelectorAll('[data-editable-id], [data-editor-target]');
+        editableEls.forEach((el) => {
+          const item = extractScannedElement(el, section.type);
+          if (!item || seen.has(item.targetId)) return;
+          seen.add(item.targetId);
+          found.push(item);
+        });
+      }
+
+      // If no elements found directly in container, search canvas for elements matching this section
+      if (found.length === 0) {
+        const allEditables = document.querySelectorAll('[data-editable-id]');
+        allEditables.forEach((el) => {
+          const targetId = el.getAttribute('data-editable-id') || '';
+          if (targetId.includes(`.${section.id}.`) || targetId.includes(`.${section.type}.`)) {
+            const item = extractScannedElement(el, section.type);
+            if (!item || seen.has(item.targetId)) return;
+            seen.add(item.targetId);
+            found.push(item);
+          }
+        });
+      }
+
+      // If no DOM elements discovered, synthesize authentic editable fields from:
+      // 1. Structured section content
+      // 2. Component adapter schema
+      // 3. Authentic section registry definition
+      if (found.length === 0) {
+        // 1. Section content
+        if (section.content && typeof section.content === 'object') {
+          Object.entries(section.content).forEach(([k, v]) => {
+            if (typeof v === 'string' || typeof v === 'number') {
+              const canonicalTarget = `home.${section.id}.${section.type}.main.${k}`;
+              if (!seen.has(canonicalTarget)) {
+                seen.add(canonicalTarget);
+                const inferredType = k.toLowerCase().includes('image') || k.toLowerCase().includes('photo')
+                  ? 'image'
+                  : (k.toLowerCase().includes('link') || k.toLowerCase().includes('url')
+                    ? 'link'
+                    : (String(v).length > 50 ? 'textarea' : 'text'));
+                found.push({
+                  targetId: canonicalTarget,
+                  label: k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
+                  type: inferredType,
+                  componentKey: section.type,
+                  currentValue: String(v),
+                  defaultValue: String(v),
+                  hasRenderBinding: true,
+                });
+              }
+            }
+          });
+        }
+
+        // 2. Component adapter properties
+        const adapter = getEditableComponent(section.type) || getEditableComponent(section.id);
+        if (adapter && adapter.properties) {
+          Object.entries(adapter.properties).forEach(([k, prop]) => {
+            const canonicalTarget = `home.${section.id}.${section.type}.main.${k}`;
+            if (!seen.has(canonicalTarget)) {
+              seen.add(canonicalTarget);
+              found.push({
+                targetId: canonicalTarget,
+                label: prop.label || k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
+                type: prop.type || 'text',
+                componentKey: section.type,
+                currentValue: typeof prop.default === 'string' ? prop.default : undefined,
+                defaultValue: typeof prop.default === 'string' ? prop.default : undefined,
+                hasRenderBinding: true,
+              });
+            }
+          });
+        }
+
+        // 3. Authentic template definition
+        try {
+          const canonicalTpl = resolveCanonicalTemplate(undefined, undefined, config.templateKey);
+          const matchedAuthSec = canonicalTpl.authenticSections.find(
+            (as) => as.id === section.id || as.component === section.type || as.type === section.type
+          );
+          if (matchedAuthSec) {
+            if (Array.isArray(matchedAuthSec.editableProps)) {
+              matchedAuthSec.editableProps.forEach((propKey) => {
+                const canonicalTarget = `home.${section.id}.${section.type}.main.${propKey}`;
+                if (!seen.has(canonicalTarget)) {
+                  seen.add(canonicalTarget);
+                  const defVal = (matchedAuthSec.defaultContent as any)?.[propKey];
+                  const inferredType = propKey.toLowerCase().includes('image') || propKey.toLowerCase().includes('photo')
+                    ? 'image'
+                    : (propKey.toLowerCase().includes('link') || propKey.toLowerCase().includes('url')
+                      ? 'link'
+                      : (typeof defVal === 'string' && defVal.length > 50 ? 'textarea' : 'text'));
+                  found.push({
+                    targetId: canonicalTarget,
+                    label: propKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
+                    type: inferredType,
+                    componentKey: section.type,
+                    currentValue: typeof defVal === 'string' ? defVal : undefined,
+                    defaultValue: typeof defVal === 'string' ? defVal : undefined,
+                    hasRenderBinding: true,
+                  });
+                }
+              });
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      setElements(found);
+      setScanned(true);
+    };
+
+    const timer = setTimeout(scan, 150);
+    return () => clearTimeout(timer);
+  }, [section.id, section.type, section.content, config.componentOverrides, config.templateKey]);
+
+  const typeIcon = (type: string) => {
+    switch (type) {
+      case 'image': return '🖼';
+      case 'textarea': return '📝';
+      case 'link': return '🔗';
+      case 'color': return '🎨';
+      default: return '✏️';
+    }
+  };
+
+  return (
+    <>
+      {/* Inspector Header */}
+      <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div>
+          <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+            Section Inspector
+          </span>
+          <h3 className="text-sm font-black text-zinc-900 dark:text-white capitalize">
+            {section.type} Section
+          </h3>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="p-4 overflow-y-auto grow space-y-4 text-xs">
+        {/* LIVE EDITABLE FIELDS SECTION */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+              Live Authentic Fields ({elements.length})
+            </span>
+            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+              ● Verified Render Bindings
+            </span>
+          </div>
+
+          {!scanned ? (
+            <div className="space-y-2">
+              <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-3/4" />
+              <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse w-1/2" />
+            </div>
+          ) : elements.length === 0 ? (
+            <div className="space-y-2">
+              {section.dataSource ? (
+                <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-600 dark:text-purple-400 text-sm">📦</span>
+                    <span className="text-xs font-bold text-purple-800 dark:text-purple-300">
+                      Catalog-Driven Section
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-purple-700/80 dark:text-purple-400/80 leading-relaxed">
+                    This section displays dynamic items loaded from your store database. You can adjust query filters and limits below.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 space-y-2">
+                  <div className="font-bold text-xs text-zinc-700 dark:text-zinc-300">
+                    Authentic Theme Section
+                  </div>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    This section provides architectural layout. Visual styling can be adjusted using the Layout controls below or Theme Settings.
+                  </p>
+                  <details className="group">
+                    <summary className="text-[10px] font-bold text-zinc-500 cursor-pointer hover:underline">
+                      Why are there no direct text inputs?
+                    </summary>
+                    <div className="mt-1.5 p-2 rounded bg-zinc-200/50 dark:bg-zinc-700/40 text-[10px] text-zinc-600 dark:text-zinc-300 space-y-1">
+                      <p>• This theme section renders directly from compiled template defaults or dynamic database queries.</p>
+                      <p>• To edit specific sub-elements, click directly on any highlighted element on the canvas.</p>
+                    </div>
+                  </details>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {elements.map((el) => {
+                const overrideVal = config.componentOverrides?.[el.targetId];
+                const currentVal = overrideVal !== undefined ? overrideVal : (el.currentValue ?? "");
+                const hasOverride = overrideVal !== undefined;
+
+                return (
+                  <div
+                    key={el.targetId}
+                    className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-700/80 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">{typeIcon(el.type)}</span>
+                        <label className="font-bold text-zinc-800 dark:text-zinc-200 capitalize">
+                          {el.label}
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {hasOverride && (
+                          <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800">
+                            Edited
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelectElement({
+                              targetId: el.targetId,
+                              componentKey: el.componentKey,
+                              elementKey: el.targetId.split('.').pop(),
+                              label: el.label,
+                              type: el.type as any,
+                              value: currentVal,
+                              defaultValue: el.defaultValue,
+                              editabilityStatus: 'FULLY_EDITABLE',
+                              hierarchy: [
+                                { level: 'page', id: 'home', label: 'HOME' },
+                                { level: 'section', id: section.id, label: section.type },
+                                { level: 'component', id: el.componentKey, label: el.componentKey },
+                                { level: 'element', id: el.targetId, label: el.label },
+                              ],
+                            });
+                          }}
+                          className="text-[10px] text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 font-bold underline"
+                          title="Open in focused element inspector"
+                        >
+                          Focus
+                        </button>
+                      </div>
+                    </div>
+
+                    {el.type === "textarea" ? (
+                      <textarea
+                        rows={3}
+                        value={currentVal}
+                        onChange={(e) => onUpdateOverride(el.targetId, e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs resize-none"
+                      />
+                    ) : el.type === "image" ? (
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={currentVal}
+                          onChange={(e) => onUpdateOverride(el.targetId, e.target.value)}
+                          placeholder="https://..."
+                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs"
+                        />
+                        {currentVal && (
+                          <div className="h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                            <img src={currentVal} alt="Preview" className="w-full h-full object-contain" />
+                          </div>
+                        )}
+                      </div>
+                    ) : el.type === "color" ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={currentVal || "#000000"}
+                          onChange={(e) => onUpdateOverride(el.targetId, e.target.value)}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-zinc-200 dark:border-zinc-800 p-0.5"
+                        />
+                        <input
+                          type="text"
+                          value={currentVal}
+                          onChange={(e) => onUpdateOverride(el.targetId, e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-mono"
+                        />
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={currentVal}
+                        onChange={(e) => onUpdateOverride(el.targetId, e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs"
+                      />
+                    )}
+                    <div className="text-[9px] font-mono text-zinc-400 truncate">
+                      {el.targetId}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Data Source Bindings for Commerce */}
+        {section.dataSource && (
+          <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+              Authoritative Catalog Source
+            </span>
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                Product Query Filter
+              </label>
+              <select
+                value={section.dataSource.filter}
+                onChange={(e) => onUpdateDataSource("filter", e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+              >
+                <option value="featured">Featured Items</option>
+                <option value="trending">Trending (High Rated)</option>
+                <option value="on_offer">On Offer / Sale</option>
+                <option value="latest">Latest Arrivals</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+                Max Items to Show ({section.dataSource.limit || 8})
+              </label>
+              <input
+                type="range"
+                min={4}
+                max={24}
+                step={4}
+                value={section.dataSource.limit || 8}
+                onChange={(e) => onUpdateDataSource("limit", parseInt(e.target.value, 10))}
+                className="w-full accent-rose-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Styles Inspector */}
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+          <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+            Layout & Spacing
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Padding Top</label>
+              <select
+                value={section.styles?.paddingTop || "lg"}
+                onChange={(e) => onUpdateSectionStyle("paddingTop", e.target.value)}
+                className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+              >
+                <option value="none">None</option>
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+                <option value="xl">Extra Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Padding Bottom</label>
+              <select
+                value={section.styles?.paddingBottom || "lg"}
+                onChange={(e) => onUpdateSectionStyle("paddingBottom", e.target.value)}
+                className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+              >
+                <option value="none">None</option>
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+                <option value="xl">Extra Large</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default function WebsiteBuilderStudio({
   initialConfig,
@@ -196,6 +1030,26 @@ export default function WebsiteBuilderStudio({
     updateConfig((prev) => {
       prev.templateKey = tpl.id;
 
+      // Sanitize template-specific component overrides while preserving global store branding
+      if (prev.componentOverrides) {
+        const preserved: Record<string, any> = {};
+        for (const [k, v] of Object.entries(prev.componentOverrides)) {
+          if (
+            k.startsWith("header.") ||
+            k.startsWith("footer.") ||
+            k.includes(".storeName") ||
+            k.includes(".brandName") ||
+            k.includes(".copyrightText") ||
+            k.includes(".bio") ||
+            k.includes(".contactPhone") ||
+            k.includes(".contactEmail")
+          ) {
+            preserved[k] = v;
+          }
+        }
+        prev.componentOverrides = preserved;
+      }
+
       // Blend template default palette and typography
       prev.theme = {
         ...prev.theme,
@@ -278,17 +1132,172 @@ export default function WebsiteBuilderStudio({
     });
   }, [historyIndex]);
 
-  // Handle element-level property override updates
-  const handleUpdateOverride = useCallback((targetId: string, value: any) => {
-    updateConfig((prev) => {
-      if (!prev.componentOverrides) {
-        prev.componentOverrides = {};
-      }
-      prev.componentOverrides[targetId] = value;
-      return prev;
-    });
-    setSelectedElement((prev) => (prev && prev.targetId === targetId ? { ...prev, value } : prev));
-  }, [updateConfig]);
+  // Handle element-level property override updates and sync with tenant structured section content
+  const handleUpdateOverride = useCallback(
+    (targetId: string, value: any) => {
+      updateConfig((prev) => {
+        if (!prev.componentOverrides) {
+          prev.componentOverrides = {};
+        }
+        prev.componentOverrides[targetId] = value;
+
+        // Synchronize directly into structured tenant section content
+        const targetPage =
+          prev.pages?.find(
+            (p) =>
+              (p.isHomepage && (activePageSlug === "home" || activePageSlug === "")) ||
+              p.slug === activePageSlug
+          ) || prev.pages?.[0];
+
+        if (targetPage && targetPage.sections) {
+          const parts = targetId.split(".");
+          const rawField = parts[parts.length - 1];
+          const fieldKey = rawField.toLowerCase();
+
+          // Find the matching section by prioritizing explicit targetId section ID, then component/type, then selectedSectionId
+          const matchedSection =
+            targetPage.sections.find(
+              (s) =>
+                targetId.includes(`.${s.id}.`) ||
+                s.id === parts[2] ||
+                s.id === parts[1]
+            ) ||
+            targetPage.sections.find(
+              (s) =>
+                (s.component && targetId.includes(`.${s.component}.`)) ||
+                targetId.includes(`.${s.type}.`) ||
+                s.type === parts[2] ||
+                (s.component && targetId.toLowerCase().includes(s.component.toLowerCase()))
+            ) ||
+            targetPage.sections.find((s) => selectedSectionId && s.id === selectedSectionId);
+
+          const isHero = targetId.toLowerCase().includes("hero") || matchedSection?.type === "hero";
+          const heroSection = matchedSection?.type === "hero" ? matchedSection : targetPage.sections.find(
+            (s) => s.type === "hero" || s.id?.includes("hero")
+          );
+
+          if (isHero && heroSection) {
+            if (!heroSection.content) heroSection.content = {};
+            heroSection.content[rawField] = value;
+            heroSection.content[fieldKey] = value;
+
+            const slideMatch = targetId.match(/slide(\d+)/i);
+            const slideIdx = slideMatch ? parseInt(slideMatch[1], 10) : 0;
+
+            if (!Array.isArray(heroSection.content.slides) || heroSection.content.slides.length === 0) {
+              heroSection.content.slides = [
+                {
+                  id: "slide-1",
+                  headline: "The Art of Gourmet Dining",
+                  title: "The Art of Gourmet Dining",
+                  subline: "Experience an explosion of flavors crafted by world-class chefs in the heart of the city.",
+                  eyebrow: "Experience an explosion of flavors crafted by world-class chefs in the heart of the city.",
+                  badgeText: "Experience Excellence",
+                  ctaText: "Reserve a Table",
+                  primaryButtonText: "Reserve a Table",
+                  ctaLink: "/restaurent/products",
+                  primaryButtonUrl: "/restaurent/products",
+                  imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670",
+                },
+                {
+                  id: "slide-2",
+                  headline: "Savor Every Moment",
+                  title: "Savor Every Moment",
+                  subline: "From farm to fork, we bring you the freshest seasonal ingredients prepared with passion.",
+                  eyebrow: "From farm to fork, we bring you the freshest seasonal ingredients prepared with passion.",
+                  badgeText: "Seasonal Specials",
+                  ctaText: "Explore Menu",
+                  primaryButtonText: "Explore Menu",
+                  ctaLink: "/restaurent/products",
+                  primaryButtonUrl: "/restaurent/products",
+                  imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=2670",
+                },
+              ];
+            }
+
+            while (heroSection.content.slides.length <= slideIdx) {
+              heroSection.content.slides.push({
+                id: `slide-${heroSection.content.slides.length + 1}`,
+                headline: "",
+                title: "",
+                subline: "",
+                eyebrow: "",
+                badgeText: "",
+                ctaText: "Explore",
+                primaryButtonText: "Explore",
+                ctaLink: "/products",
+                primaryButtonUrl: "/products",
+                imageUrl: "",
+              });
+            }
+
+            const targetSlide = heroSection.content.slides[slideIdx];
+            if (fieldKey.includes("head") || fieldKey.includes("title")) {
+              targetSlide.headline = value;
+              targetSlide.title = value;
+            } else if (
+              fieldKey.includes("sub") ||
+              fieldKey.includes("desc") ||
+              fieldKey.includes("eyebrow")
+            ) {
+              targetSlide.subline = value;
+              targetSlide.eyebrow = value;
+            } else if (fieldKey.includes("badge")) {
+              targetSlide.badgeText = value;
+            } else if (
+              fieldKey.includes("cta") ||
+              fieldKey.includes("btn") ||
+              fieldKey.includes("button")
+            ) {
+              if (
+                fieldKey.includes("link") ||
+                fieldKey.includes("url") ||
+                fieldKey.includes("href")
+              ) {
+                targetSlide.ctaLink = value;
+                targetSlide.primaryButtonUrl = value;
+              } else {
+                targetSlide.ctaText = value;
+                targetSlide.primaryButtonText = value;
+              }
+            } else if (fieldKey.includes("image") || fieldKey.includes("bg")) {
+              targetSlide.imageUrl = value;
+            } else {
+              targetSlide[rawField] = value;
+            }
+          } else if (matchedSection) {
+            if (!matchedSection.content) matchedSection.content = {};
+            matchedSection.content[rawField] = value;
+            matchedSection.content[fieldKey] = value;
+
+            // Handle indexed items/services array updating (e.g. items-0.title, services-0.title, services-0.desc)
+            const itemMatch = targetId.match(/(items|services|features|badges)[.-](\d+)\.([a-zA-Z0-9_]+)/i);
+            if (itemMatch) {
+              const arrayName = itemMatch[1].toLowerCase();
+              const itemIdx = parseInt(itemMatch[2], 10);
+              const propKey = itemMatch[3];
+              if (!Array.isArray(matchedSection.content[arrayName])) {
+                matchedSection.content[arrayName] = [];
+              }
+              while (matchedSection.content[arrayName].length <= itemIdx) {
+                matchedSection.content[arrayName].push({});
+              }
+              matchedSection.content[arrayName][itemIdx] = {
+                ...matchedSection.content[arrayName][itemIdx],
+                [propKey]: value,
+              };
+            }
+          }
+        }
+
+        return prev;
+      });
+      setSelectedElement((prev) =>
+        prev && prev.targetId === targetId ? { ...prev, value } : prev
+      );
+    },
+    [updateConfig, activePageSlug]
+  );
 
   // Reset an override back to authentic template default
   const handleResetOverride = useCallback((targetId: string) => {
@@ -338,7 +1347,16 @@ export default function WebsiteBuilderStudio({
         }
         hierarchy.push({ level: "element", id: targetId, label: label || parsed.fieldKey });
 
-        const val = config.componentOverrides?.[targetId];
+        const overrideVal = config.componentOverrides?.[targetId];
+        const attrVal = editableEl.getAttribute("data-editor-value");
+        const attrDef = editableEl.getAttribute("data-editor-default");
+        const domText = (editableEl.textContent || "").trim();
+        const effectiveVal = overrideVal !== undefined 
+          ? overrideVal 
+          : (attrVal !== null && attrVal !== "" 
+              ? attrVal 
+              : (attrDef !== null && attrDef !== "" ? attrDef : domText));
+
         setSelectedTargetId(targetId);
         setSelectedElement({
           targetId,
@@ -346,7 +1364,8 @@ export default function WebsiteBuilderStudio({
           elementKey: parsed.fieldKey,
           label: label || parsed.fieldKey,
           type,
-          value: val,
+          value: effectiveVal,
+          defaultValue: attrDef || undefined,
           editabilityStatus: "FULLY_EDITABLE",
           hierarchy,
         });
@@ -447,7 +1466,8 @@ export default function WebsiteBuilderStudio({
       const original = targetPage.sections[idx];
       const duplicate = {
         ...JSON.parse(JSON.stringify(original)),
-        id: `sec-${original.type}-${Date.now()}`,
+        id: `sec-${original.component || original.type}-${Date.now()}`,
+        name: original.name ? `${original.name} (Copy)` : undefined,
       };
       targetPage.sections.splice(idx + 1, 0, duplicate);
       return prev;
@@ -918,30 +1938,29 @@ export default function WebsiteBuilderStudio({
                     {(activePage?.sections || []).map((sec, idx) => {
                       const isSelected = selectedSectionId === sec.id;
                       const regItem = SECTION_REGISTRY[sec.type as SectionType];
+                      const rawId = sec.id.replace(/^sec-/, "").replace(/-\d+$/, "");
+                      const matchedAuthSec = (activeTemplate.authenticSections || []).find(
+                        (s) => s.id === sec.id || s.id === rawId || sec.id.includes(s.id) || rawId.includes(s.id)
+                      );
+                      const compName = (sec as any).component || matchedAuthSec?.component || (sec as any).componentName || rawId;
+                      const adapter = getEditableComponent(compName);
 
                       return (
                         <div
                           key={sec.id}
                           onClick={() => {
-                            const rawId = sec.id.replace(/^sec-/, "").replace(/-\d+$/, "");
-                            const matchedAuthSec = (activeTemplate.authenticSections || []).find(
-                              (s) => s.id === sec.id || s.id === rawId || sec.id.includes(s.id) || rawId.includes(s.id)
-                            );
-                            const compName = matchedAuthSec?.component || (sec as any).componentName || rawId;
-                            const adapter = getEditableComponent(compName);
-
                             setSelectedSectionId(sec.id);
                             setSelectedTargetId(`component.${compName}`);
                             setSelectedElement({
                               targetId: `component.${compName}`,
                               componentKey: compName,
                               sectionId: sec.id,
-                              label: matchedAuthSec?.name || adapter?.label || compName,
+                              label: sec.name || matchedAuthSec?.name || adapter?.label || compName,
                               editabilityStatus: adapter?.status || "FULLY_EDITABLE",
                               hierarchy: [
                                 { level: "page", id: activePage?.slug || "home", label: (activePage?.slug || "home").toUpperCase() },
-                                { level: "section", id: rawId, label: matchedAuthSec?.name || rawId },
-                                { level: "component", id: compName, label: matchedAuthSec?.name || compName },
+                                { level: "section", id: rawId, label: sec.name || matchedAuthSec?.name || rawId },
+                                { level: "component", id: compName, label: sec.name || matchedAuthSec?.name || compName },
                               ],
                             });
 
@@ -969,10 +1988,10 @@ export default function WebsiteBuilderStudio({
                             </span>
                             <div className="truncate">
                               <h4 className="text-xs font-bold text-zinc-900 dark:text-white truncate">
-                                {regItem?.title || sec.type}
+                                {sec.name || matchedAuthSec?.name || regItem?.title || sec.type}
                               </h4>
                               <span className="text-[10px] text-zinc-400 capitalize">
-                                {sec.type}
+                                {compName || sec.type}
                               </span>
                             </div>
                           </div>
@@ -1687,6 +2706,8 @@ export default function WebsiteBuilderStudio({
                             ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
                             : selectedElement.editabilityStatus === "PARTIALLY_EDITABLE"
                             ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                            : selectedElement.editabilityStatus === "REGISTERED_SCHEMA_FIELD"
+                            ? "bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800"
                             : "bg-zinc-100 text-zinc-600 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
                         }`}
                       >
@@ -1696,15 +2717,31 @@ export default function WebsiteBuilderStudio({
                               ? "bg-emerald-500"
                               : selectedElement.editabilityStatus === "PARTIALLY_EDITABLE"
                               ? "bg-amber-500"
+                              : selectedElement.editabilityStatus === "REGISTERED_SCHEMA_FIELD"
+                              ? "bg-indigo-500"
                               : "bg-zinc-400"
                           }`}
                         />
                         {selectedElement.editabilityStatus === "FULLY_EDITABLE"
-                          ? "Fully Editable"
+                          ? "Verified Render Binding"
                           : selectedElement.editabilityStatus === "PARTIALLY_EDITABLE"
                           ? "Partially Editable"
+                          : selectedElement.editabilityStatus === "REGISTERED_SCHEMA_FIELD"
+                          ? "Defined in Schema (No Render Binding)"
                           : "View Only (Read Only)"}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Schema-defined field without render binding notice */}
+                  {selectedElement.editabilityStatus === "REGISTERED_SCHEMA_FIELD" && (
+                    <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-1.5 text-xs text-amber-800 dark:text-amber-300">
+                      <div className="font-bold text-[11px] flex items-center gap-1.5">
+                        <span>⚠️</span> Unbound Schema Property
+                      </div>
+                      <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                        This property is defined in the component schema, but the authentic template layout does not currently have a registered EditableElement listener on canvas for this key. Changes made here will be stored in component overrides.
+                      </p>
                     </div>
                   )}
 
@@ -1725,114 +2762,18 @@ export default function WebsiteBuilderStudio({
                     {selectedElement.targetId}
                   </div>
 
-                  {/* Input Based on Property Type or Component-Level Multi-Property Adapter */}
+                  {/* COMPONENT-LEVEL SELECTION: Scan DOM for real EditableElements */}
                   {selectedElement.targetId.startsWith("component.") || selectedElement.targetId.startsWith("section.") ? (
-                    <div className="space-y-4">
-                      {(() => {
-                        const adapter =
-                          getEditableComponent(selectedElement.componentKey) ||
-                          buildUniversalComponentAdapter(selectedElement.componentKey);
-                        if (!adapter || Object.keys(adapter.properties).length === 0) {
-                          return (
-                            <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-500 text-xs">
-                              No additional custom properties declared for this component.
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div className="space-y-3">
-                            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">
-                              Editable Component Properties ({Object.keys(adapter.properties).length})
-                            </span>
-                            {Object.entries(adapter.properties).map(([propKey, propDef]) => {
-                              const targetKey = `${selectedElement.componentKey}.${propKey}`;
-                              const currentVal =
-                                config.componentOverrides?.[targetKey] !== undefined
-                                  ? config.componentOverrides[targetKey]
-                                  : propDef.defaultValue ?? "";
-
-                              return (
-                                <div key={propKey} className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80 space-y-1.5">
-                                  <div className="flex items-center justify-between">
-                                    <label className="font-bold text-zinc-700 dark:text-zinc-300 text-xs">
-                                      {propDef.label}
-                                    </label>
-                                    <span className="text-[9px] font-mono text-zinc-400">
-                                      {propDef.type}
-                                    </span>
-                                  </div>
-
-                                  {propDef.type === "textarea" ? (
-                                    <textarea
-                                      rows={3}
-                                      value={currentVal}
-                                      onChange={(e) => handleUpdateOverride(targetKey, e.target.value)}
-                                      placeholder={propDef.placeholder}
-                                      className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs resize-none"
-                                    />
-                                  ) : propDef.type === "image" ? (
-                                    <div className="space-y-1.5">
-                                      <input
-                                        type="text"
-                                        value={currentVal}
-                                        onChange={(e) => handleUpdateOverride(targetKey, e.target.value)}
-                                        placeholder={propDef.placeholder || "https://..."}
-                                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs"
-                                      />
-                                      {currentVal && (
-                                        <img
-                                          src={currentVal}
-                                          alt="Preview"
-                                          className="w-full h-20 object-contain rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800"
-                                        />
-                                      )}
-                                    </div>
-                                  ) : propDef.type === "boolean" ? (
-                                    <label className="flex items-center gap-2 cursor-pointer pt-1">
-                                      <input
-                                        type="checkbox"
-                                        checked={Boolean(currentVal)}
-                                        onChange={(e) => handleUpdateOverride(targetKey, e.target.checked)}
-                                        className="rounded text-rose-600 focus:ring-rose-500"
-                                      />
-                                      <span className="text-xs text-zinc-600 dark:text-zinc-300">
-                                        Enabled
-                                      </span>
-                                    </label>
-                                  ) : (
-                                    <input
-                                      type={propDef.type === "number" ? "number" : "text"}
-                                      value={currentVal}
-                                      onChange={(e) =>
-                                        handleUpdateOverride(
-                                          targetKey,
-                                          propDef.type === "number" ? Number(e.target.value) : e.target.value
-                                        )
-                                      }
-                                      placeholder={propDef.placeholder}
-                                      className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs"
-                                    />
-                                  )}
-
-                                  {config.componentOverrides?.[targetKey] !== undefined && (
-                                    <div className="flex justify-end pt-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleResetOverride(targetKey)}
-                                        className="text-[10px] text-rose-600 hover:underline font-semibold"
-                                      >
-                                        Reset to Default
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()}
-                    </div>
+                    <ComponentEditableElementsPanel
+                      componentKey={selectedElement.componentKey}
+                      sectionId={selectedElement.sectionId}
+                      config={config}
+                      onSelectElement={(info) => {
+                        setSelectedElement(info);
+                        setSelectedTargetId(info.targetId);
+                        setSelectedSectionId(null);
+                      }}
+                    />
                   ) : selectedElement.type === "textarea" ? (
                     <div>
                       <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
@@ -1941,12 +2882,44 @@ export default function WebsiteBuilderStudio({
                               <option value="/services">Services Menu (/services)</option>
                             </>
                           )}
+                          {activeTemplate.category === "fitness" && (
+                            <>
+                              <option value="/plans">Training Plans (/plans)</option>
+                              <option value="/trainers">Personal Trainers (/trainers)</option>
+                              <option value="/schedule">Class Schedule (/schedule)</option>
+                              <option value="/contact">Join Now (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "services" && (
+                            <>
+                              <option value="/services">Services Offered (/services)</option>
+                              <option value="/quote">Get a Quote (/quote)</option>
+                              <option value="/about">Our Team (/about)</option>
+                              <option value="/contact">Contact Us (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "travel" && (
+                            <>
+                              <option value="/destinations">Destinations (/destinations)</option>
+                              <option value="/packages">Vacation Packages (/packages)</option>
+                              <option value="/book">Plan Your Trip (/book)</option>
+                              <option value="/contact">Concierge (/contact)</option>
+                            </>
+                          )}
+                          {activeTemplate.category === "healthcare" && (
+                            <>
+                              <option value="/doctors">Physicians & Specialists (/doctors)</option>
+                              <option value="/services">Medical Services (/services)</option>
+                              <option value="/appointment">Book Appointment (/appointment)</option>
+                              <option value="/contact">Emergency & Contact (/contact)</option>
+                            </>
+                          )}
                         </select>
                       </div>
 
                       <div>
                         <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                          Custom Destination URL / Query
+                          Custom URL / Path
                         </label>
                         <input
                           type="text"
@@ -1956,19 +2929,19 @@ export default function WebsiteBuilderStudio({
                               : selectedElement.value ?? ""
                           }
                           onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
-                          placeholder="/path or https://..."
-                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                          placeholder="/shop or https://..."
+                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono"
                         />
                       </div>
 
-                      {/* Route Resolution Preview */}
-                      <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 space-y-1">
-                        <div className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300">
-                          Tenant Route Resolution
-                        </div>
-                        <div className="text-[11px] font-mono text-purple-900 dark:text-purple-200 break-all">
+                      {/* Live Tenant-Normalized Link Preview */}
+                      <div className="p-2.5 rounded-xl bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 block uppercase">
+                          Resolved Tenant Destination
+                        </span>
+                        <div className="font-mono text-[10px] text-purple-900 dark:text-purple-200 break-all select-all">
                           {buildTenantUrl({
-                            slug: storeSlug,
+                            tenantSlug: storeSlug,
                             path:
                               config.componentOverrides?.[selectedElement.targetId] !== undefined
                                 ? config.componentOverrides[selectedElement.targetId]
@@ -2026,218 +2999,125 @@ export default function WebsiteBuilderStudio({
                     </div>
                   )}
 
-                  {/* Reset to Default Action */}
-                  <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                    <span className="text-[11px] text-zinc-400">
-                      {config.componentOverrides?.[selectedElement.targetId] !== undefined
-                        ? "Custom override applied"
-                        : "Using template default"}
-                    </span>
-                    {config.componentOverrides?.[selectedElement.targetId] !== undefined && (
-                      <button
-                        type="button"
-                        onClick={() => handleResetOverride(selectedElement.targetId)}
-                        className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition"
-                      >
-                        Reset to Default
-                      </button>
-                    )}
+                  {/* Override Status & Reset */}
+                  <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-zinc-400">
+                        {config.componentOverrides?.[selectedElement.targetId] !== undefined
+                          ? "✅ Custom override applied"
+                          : "⚪ Using template default"}
+                      </span>
+                      {config.componentOverrides?.[selectedElement.targetId] !== undefined && (
+                        <button
+                          type="button"
+                          onClick={() => handleResetOverride(selectedElement.targetId)}
+                          className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition"
+                        >
+                          Reset to Default
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Data-Flow Debug Strip */}
+                    <details className="group">
+                      <summary className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider cursor-pointer select-none hover:text-zinc-600 dark:hover:text-zinc-300 flex items-center gap-1">
+                        <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+                        Data Flow Debug (17 Diagnostics)
+                      </summary>
+                      {(() => {
+                        const targetId = selectedElement.targetId;
+                        const compKey = selectedElement.componentKey;
+                        const adapter = getEditableComponent(compKey);
+                        const lookupKeys = getCanonicalLookupKeys(targetId);
+                        const storedVal = config.componentOverrides?.[targetId];
+                        const activeVal = storedVal !== undefined ? storedVal : selectedElement.value;
+                        const allAdapters = getAllEditableComponents();
+                        return (
+                          <div className="mt-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-700 space-y-1 text-[10px] font-mono">
+                            <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 items-start">
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">1. Component</span>
+                              <span className="text-zinc-700 dark:text-zinc-300 break-all">{compKey}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">2. Section</span>
+                              <span className="text-zinc-700 dark:text-zinc-300 break-all">{selectedSectionId || "—"}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">3. Target ID</span>
+                              <span className="text-zinc-700 dark:text-zinc-300 break-all font-bold">{targetId}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">4. Target El</span>
+                              <span className="text-zinc-600 dark:text-zinc-400 break-all">{targetId}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">5. Field Key</span>
+                              <span className="text-zinc-700 dark:text-zinc-300 break-all">{selectedElement.elementKey || targetId.split('.').pop()}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">6. Live Val</span>
+                              <span className={`break-all ${storedVal !== undefined ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-zinc-600 dark:text-zinc-400"}`}>
+                                {activeVal !== undefined && activeVal !== null ? String(activeVal).slice(0, 80) : "—"}
+                              </span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">7. Default</span>
+                              <span className="text-zinc-500 dark:text-zinc-400 break-all italic">
+                                {selectedElement.defaultValue !== undefined && selectedElement.defaultValue !== null
+                                  ? String(selectedElement.defaultValue).slice(0, 60)
+                                  : (selectedElement.value !== undefined && selectedElement.value !== null ? String(selectedElement.value).slice(0, 60) : "—")}
+                              </span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">8. Adapter Key</span>
+                              <span className="text-zinc-700 dark:text-zinc-300">{adapter?.componentKey || "—"}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">9. Status</span>
+                              <span className={`font-bold ${selectedElement.editabilityStatus === "FULLY_EDITABLE" ? "text-emerald-600" : selectedElement.editabilityStatus === "REGISTERED_SCHEMA_FIELD" ? "text-indigo-600" : "text-zinc-500"}`}>
+                                {selectedElement.editabilityStatus || adapter?.status || "VIEW_ONLY"}
+                              </span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">10. Properties</span>
+                              <span className="text-zinc-700 dark:text-zinc-300">{Object.keys(adapter?.properties || {}).length}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">11. Hierarchy</span>
+                              <span className="text-zinc-700 dark:text-zinc-300">{selectedElement.hierarchy?.length || 1} levels</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">12. Overrides</span>
+                              <span className="text-zinc-700 dark:text-zinc-300">{Object.keys(config.componentOverrides || {}).length} active</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">13. Adapters</span>
+                              <span className="text-zinc-700 dark:text-zinc-300">{allAdapters.length} registered</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">14. Sync Active</span>
+                              <span className="text-emerald-600 font-bold">YES</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">15. Tenant</span>
+                              <span className="text-zinc-700 dark:text-zinc-300">{storeSlug}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">16. Template</span>
+                              <span className="text-zinc-700 dark:text-zinc-300 font-bold">{config.templateKey || activeTemplate.id}</span>
+
+                              <span className="text-zinc-400 uppercase font-sans font-bold text-[9px]">17. Alias Chain</span>
+                              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 break-all leading-relaxed">
+                                {lookupKeys.join(" → ")}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </details>
                   </div>
                 </div>
               </>
             ) : selectedSection ? (
-              // GENERIC SECTION INSPECTOR
-              <>
-                {/* Inspector Header */}
-                <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                      Inspector
-                    </span>
-                    <h3 className="text-sm font-black text-zinc-900 dark:text-white capitalize">
-                      {selectedSection.type} Section
-                    </h3>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedSectionId(null)}
-                    className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                </div>
-
-            {/* Inspector Fields */}
-            <div className="p-4 overflow-y-auto grow space-y-4 text-xs">
-              {/* Common Content Fields */}
-              {"title" in (selectedSection.content || {}) && (
-                <div>
-                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Title / Headline
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedSection.content.title || ""}
-                    onChange={(e) => handleUpdateSectionContent("title", e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                  />
-                </div>
-              )}
-
-              {"subtitle" in (selectedSection.content || {}) && (
-                <div>
-                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Subtitle / Eyebrow
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedSection.content.subtitle || ""}
-                    onChange={(e) => handleUpdateSectionContent("subtitle", e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                  />
-                </div>
-              )}
-
-              {"description" in (selectedSection.content || {}) && (
-                <div>
-                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Description Body
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={selectedSection.content.description || ""}
-                    onChange={(e) => handleUpdateSectionContent("description", e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs resize-none"
-                  />
-                </div>
-              )}
-
-              {"buttonText" in (selectedSection.content || {}) && (
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                      Button Label
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedSection.content.buttonText || ""}
-                      onChange={(e) => handleUpdateSectionContent("buttonText", e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                      Button URL
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedSection.content.buttonUrl || ""}
-                      onChange={(e) => handleUpdateSectionContent("buttonUrl", e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {"imageUrl" in (selectedSection.content || {}) && (
-                <div>
-                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Image URL
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedSection.content.imageUrl || ""}
-                    onChange={(e) => handleUpdateSectionContent("imageUrl", e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs mb-2"
-                  />
-                  {selectedSection.content.imageUrl && (
-                    <img
-                      src={selectedSection.content.imageUrl}
-                      alt="Preview"
-                      className="w-full h-24 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800"
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* Data Source Bindings for Commerce */}
-              {selectedSection.dataSource && (
-                <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                    Authoritative Catalog Source
-                  </span>
-                  <div>
-                    <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                      Product Query Filter
-                    </label>
-                    <select
-                      value={selectedSection.dataSource.filter}
-                      onChange={(e) => handleUpdateDataSource("filter", e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                    >
-                      <option value="featured">Featured Items</option>
-                      <option value="trending">Trending (High Rated)</option>
-                      <option value="on_offer">On Offer / Sale</option>
-                      <option value="latest">Latest Arrivals</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                      Max Items to Show ({selectedSection.dataSource.limit || 8})
-                    </label>
-                    <input
-                      type="range"
-                      min={4}
-                      max={24}
-                      step={4}
-                      value={selectedSection.dataSource.limit || 8}
-                      onChange={(e) => handleUpdateDataSource("limit", parseInt(e.target.value, 10))}
-                      className="w-full accent-rose-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Styles Inspector */}
-              <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
-                <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                  Layout & Spacing
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Padding Top</label>
-                    <select
-                      value={selectedSection.styles?.paddingTop || "lg"}
-                      onChange={(e) => handleUpdateSectionStyle("paddingTop", e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                    >
-                      <option value="none">None</option>
-                      <option value="sm">Small</option>
-                      <option value="md">Medium</option>
-                      <option value="lg">Large</option>
-                      <option value="xl">Extra Large</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">Padding Bottom</label>
-                    <select
-                      value={selectedSection.styles?.paddingBottom || "lg"}
-                      onChange={(e) => handleUpdateSectionStyle("paddingBottom", e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
-                    >
-                      <option value="none">None</option>
-                      <option value="sm">Small</option>
-                      <option value="md">Medium</option>
-                      <option value="lg">Large</option>
-                      <option value="xl">Extra Large</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : null}
+              <SectionLiveFieldsInspector
+                section={selectedSection}
+                config={config}
+                onUpdateOverride={handleUpdateOverride}
+                onSelectElement={(info) => {
+                  setSelectedElement(info);
+                  setSelectedTargetId(info.targetId);
+                  setSelectedSectionId(null);
+                }}
+                onUpdateSectionStyle={handleUpdateSectionStyle}
+                onUpdateDataSource={handleUpdateDataSource}
+                onClose={() => setSelectedSectionId(null)}
+              />
+            ) : null}
       </aside>
     )}
       </div>

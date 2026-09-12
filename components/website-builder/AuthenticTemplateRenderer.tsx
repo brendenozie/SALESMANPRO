@@ -294,70 +294,30 @@ export default function AuthenticTemplateRenderer({
     const heroSec = (activePage?.sections || []).find(
       (s: any) => s.type === "hero" || s.id?.includes("hero")
     );
-    if (heroSec?.content?.slides?.length) {
-      base.heroSlides = heroSec.content.slides.map((s: any) => ({
-        id: s.id,
-        imageUrl: s.imageUrl,
-        headline: s.title || s.headline,
-        subline: s.eyebrow || s.subline,
-        badgeText: s.badgeText || s.description,
-        ctaText: s.primaryButtonText || s.ctaText || "Shop Now",
-        ctaLink: s.primaryButtonUrl || s.ctaLink || "/products",
-      }));
+    if (heroSec?.content) {
+      (base as any).heroConfig = heroSec.content;
+      if (heroSec.content.slides?.length) {
+        base.heroSlides = heroSec.content.slides.map((s: any) => ({
+          id: s.id,
+          imageUrl: s.imageUrl,
+          headline: s.headline || s.title,
+          subline: s.subline || s.eyebrow || s.description,
+          badgeText: s.badgeText || s.description,
+          ctaText: s.ctaText || s.primaryButtonText || "Shop Now",
+          ctaLink: s.ctaLink || s.primaryButtonUrl || "/products",
+        }));
+      }
     }
+    (base as any).sections = activePage?.sections || [];
+    (base as any).websiteConfig = config;
 
-    // 3. Blend live component overrides from config.componentOverrides into base and heroSlides
+    // 3. Expose componentOverrides on base so any StoreContext consumer can access them
+    // NOTE: Physical components that use EditableElement read overrides directly via
+    // getOverride() from EditableContentContext — NOT from mergedStoreData properties.
+    // The deterministic header/footer overrides above (lines 233-259) handle the
+    // StoreContext path for components that read storeFormData fields (e.g. base.name).
+    // No fuzzy guessing is needed or desired here.
     (base as any).componentOverrides = ov;
-    const firstSlide = base.heroSlides[0];
-
-    for (const [key, val] of Object.entries(ov)) {
-      if (val === undefined || val === null) continue;
-      const lower = key.toLowerCase();
-
-      // Hero headline / title
-      if (lower.includes("headline") || (lower.includes("hero") && lower.includes("title"))) {
-        if (firstSlide) firstSlide.headline = String(val);
-        (base as any).headline = String(val);
-      }
-      // Hero subline / subtitle / eyebrow
-      else if (lower.includes("subline") || (lower.includes("hero") && (lower.includes("subtitle") || lower.includes("eyebrow")))) {
-        if (firstSlide) firstSlide.subline = String(val);
-        (base as any).subline = String(val);
-      }
-      // Hero badge
-      else if (lower.includes("badgetext") || (lower.includes("hero") && lower.includes("badge"))) {
-        if (firstSlide) firstSlide.badgeText = String(val);
-      }
-      // Hero button / CTA text
-      else if (lower.includes("ctatext") || (lower.includes("hero") && (lower.includes("buttontext") || lower.includes("btntext")))) {
-        if (firstSlide) firstSlide.ctaText = String(val);
-        (base as any).ctaText = String(val);
-      }
-      // Hero button / CTA destination
-      else if (lower.includes("ctalink") || (lower.includes("hero") && (lower.includes("buttonurl") || lower.includes("buttonlink") || lower.includes("link")))) {
-        if (firstSlide) firstSlide.ctaLink = String(val);
-        (base as any).ctaLink = String(val);
-      }
-      // Hero image or banner image
-      else if (lower.includes("imageurl") || lower.includes("bannerurl") || (lower.includes("hero") && lower.includes("image"))) {
-        if (firstSlide) firstSlide.imageUrl = String(val);
-        base.bannerUrl = String(val);
-      }
-      // Story / description / about
-      else if (lower.includes("story") || lower.includes("about") || lower.includes("bio") || lower.includes("description")) {
-        base.description = String(val);
-        (base as any).story = String(val);
-      }
-      // Founder details
-      else if (lower.includes("foundername") || lower.includes("ownername")) {
-        (base as any).founderName = String(val);
-        (base as any).ownerName = String(val);
-      } else if (lower.includes("founderquote")) {
-        (base as any).founderQuote = String(val);
-      } else if (lower.includes("aboutimage") || lower.includes("storyimage")) {
-        (base as any).aboutImageUrl = String(val);
-      }
-    }
 
     return base;
   }, [

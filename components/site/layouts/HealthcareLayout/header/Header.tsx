@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -168,24 +169,44 @@ export default function Header() {
               />
             </div>
           ) : (
-            <span 
-              className="text-2xl font-black tracking-tight bg-clip-text text-transparent transition-all duration-300 group-hover:opacity-90"
-              style={{ backgroundImage: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+            <EditableElement
+              targetId="global.global.header.Header.main.storeName"
+              componentKey="Header"
+              elementKey="storeName"
+              label="Store Brand Name"
+              defaultValue={name}
+              inline
             >
-              {name}
-            </span>
+              {(val) => (
+                <span 
+                  className="text-2xl font-black tracking-tight bg-clip-text text-transparent transition-all duration-300 group-hover:opacity-90"
+                  style={{ backgroundImage: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+                >
+                  {val}
+                </span>
+              )}
+            </EditableElement>
           )}
         </div>
 
         {/* DESKTOP CONTENT SYSTEM */}
         <nav className="hidden md:flex items-center space-x-7 text-sm font-bold text-slate-700 dark:text-slate-200">
-          {navItems.map(({ label, href }) => (
+          {navItems.map(({ label, href }, index) => (
             <Link 
               key={label} 
               href={href} 
               className="relative py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors group"
             >
-              {label}
+              <EditableElement
+                targetId={`global.global.header.Header.items.${index}.label`}
+                componentKey="Header"
+                elementKey={`navItem${index + 1}Label`}
+                label={`Nav Item ${index + 1} Label`}
+                defaultValue={label}
+                inline
+              >
+                {(val) => <span>{val}</span>}
+              </EditableElement>
               <span
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] w-0 rounded-full transition-all duration-300 ease-[0.16, 1, 0.3, 1] group-hover:w-full"
                 style={{ backgroundColor: primary }}

@@ -12,6 +12,7 @@ import {
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface SearchFilters {
   location: string;
@@ -166,26 +167,48 @@ export default function HeroSection({
           
           {/* Headline Section */}
           <div className="space-y-4 md:space-y-6 mt-16 md:mt-0 px-2">
-            <motion.h1
-              key={`h1-${current}`}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tight drop-shadow-lg"
+            <EditableElement
+              targetId={`HeroSection.slide${current}.headline`}
+              componentKey="HeroSection"
+              elementKey="headline"
+              label={`Slide ${current + 1} Headline`}
+              type="text"
+              defaultValue={heroSlides[current].headline}
             >
-              {heroSlides[current].headline?.split("\n").map((line, i) => (
-                <span key={i} className="block">{line}</span>
-              ))}
-            </motion.h1>
-            <motion.p
-              key={`p-${current}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-base sm:text-lg md:text-2xl text-gray-200 max-w-3xl mx-auto font-light drop-shadow-md"
+              {(val) => (
+                <motion.h1
+                  key={`h1-${current}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tight drop-shadow-lg"
+                >
+                  {(val ?? heroSlides[current].headline)?.split("\n").map((line: string, i: number) => (
+                    <span key={i} className="block">{line}</span>
+                  ))}
+                </motion.h1>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId={`HeroSection.slide${current}.subline`}
+              componentKey="HeroSection"
+              elementKey="subline"
+              label={`Slide ${current + 1} Subline`}
+              type="textarea"
+              defaultValue={heroSlides[current].subline}
             >
-              {heroSlides[current].subline}
-            </motion.p>
+              {(val) => (
+                <motion.p
+                  key={`p-${current}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  className="text-base sm:text-lg md:text-2xl text-gray-200 max-w-3xl mx-auto font-light drop-shadow-md"
+                >
+                  {val ?? heroSlides[current].subline}
+                </motion.p>
+              )}
+            </EditableElement>
           </div>
 
           {/* Functional Glass Search Bar */}

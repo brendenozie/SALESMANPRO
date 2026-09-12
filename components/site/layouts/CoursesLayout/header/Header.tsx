@@ -15,6 +15,7 @@ import {
   Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
@@ -103,9 +104,20 @@ export default function Header() {
               
               {/* Added adaptive max widths & text-truncation nodes to accommodate lengthy names */}
               <div className="flex flex-col border-l border-slate-200 dark:border-slate-800 pl-2.5 sm:pl-3 min-w-0 max-w-[130px] xs:max-w-[170px] sm:max-w-[240px] md:max-w-[320px] lg:max-w-xs xl:max-w-none">
-                <span className="text-xs sm:text-base font-serif font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
-                  {name}
-                </span>
+                <EditableElement
+                  targetId="header.storeName"
+                  componentKey="Header"
+                  elementKey="storeName"
+                  label="Store / Brand Name"
+                  defaultValue={name}
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-xs sm:text-base font-serif font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
+                      {val}
+                    </span>
+                  )}
+                </EditableElement>
                 <span className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500 mt-0.5 hidden sm:block truncate">
                   Foundations of Excellence
                 </span>
@@ -114,12 +126,34 @@ export default function Header() {
 
             {/* 2. DESKTOP NAVIGATION */}
             <nav className="hidden lg:flex items-center gap-1 bg-slate-100/70 dark:bg-slate-800/60 rounded-full p-1 border border-slate-200/40 dark:border-slate-700/30 relative">
-              <Link href="/" className="px-5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-slate-800">
-                Home
-              </Link>
-              <Link href="/courses/products" className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-slate-800">
-                <AcademicCapIcon className="w-3.5 h-3.5" /> Programs
-              </Link>
+              <EditableElement
+                targetId="header.nav.0.label"
+                componentKey="Header"
+                elementKey="nav.0.label"
+                label="Nav Home"
+                defaultValue="Home"
+                inline
+              >
+                {(val) => (
+                  <Link href="/" className="px-5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-slate-800">
+                    {val}
+                  </Link>
+                )}
+              </EditableElement>
+              <EditableElement
+                targetId="header.nav.1.label"
+                componentKey="Header"
+                elementKey="nav.1.label"
+                label="Nav Programs"
+                defaultValue="Programs"
+                inline
+              >
+                {(val) => (
+                  <Link href="/courses/products" className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-slate-800">
+                    <AcademicCapIcon className="w-3.5 h-3.5" /> {val}
+                  </Link>
+                )}
+              </EditableElement>
               
               <div className="relative">
                 <button 
