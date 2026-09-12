@@ -136,9 +136,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
 
     if (key === 'product-showcase-grid' || key.includes('product-showcase-grid') || key.includes('productshowcasegrid')) {
       return (
-{/* <div id="section-product-showcase-grid" data-editor-section="product-showcase-grid" data-editor-component="ProductShowcaseGrid" key={sec.id || idx}>
-   <ProductShowcaseGrid/>
- </div> */
+        <div id="section-product-showcase-grid" data-editor-section="product-showcase-grid" data-editor-component="ProductShowcaseGrid" key={sec.id || idx}>
+          <ProductShowcaseGrid/>
+        </div>
       );
     }
 

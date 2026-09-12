@@ -1,3 +1,74 @@
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ShoppingCartIcon,XMarkIcon, TrashIcon , StarIcon as StarSolid, StarIcon as StarOutline, ChevronLeftIcon, ChevronRightIcon, HeartIcon, ShoppingBagIcon, StarIcon, UserIcon,  BellIcon, UserCircleIcon, Bars3CenterLeftIcon, MagnifyingGlassCircleIcon, SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import HeroBanner from "./components/HeroSection";
+import CategoryCarousel from "./components/CategorySection";
+import StorePageSection from "./components/StorePageSection";
+import { StoreForm } from "@/types/typings";
+import ReviewsSection from "./components/ReviewsSection";
+import { useStoreContext } from "@/contexts/StoreContext";
+
+// Sample store data
+const store = {
+  name: "Urban Shop Hub",
+  slug: "urban-shop-hub",
+  description: "Discover unique products from local artisans and top brands.",
+  bannerUrl: "/images/marketplace-hero.jpg",
+  categories: [
+    { id: 1, name: "Home & Living", imageUrl: "/categories/home.jpg", slug: "home-and-living" },
+    { id: 2, name: "Fashion", imageUrl: "/categories/fashion.jpg", slug: "fashion" },
+    { id: 3, name: "Electronics", imageUrl: "/categories/electronics.jpg", slug: "electronics" },
+    { id: 4, name: "Beauty", imageUrl: "/categories/beauty.jpg", slug: "beauty" },
+    { id: 5, name: "Sports", imageUrl: "/categories/sports.jpg", slug: "sports" },
+    { id: 6, name: "Toys", imageUrl: "/categories/toys.jpg", slug: "toys" },
+  ],
+  featured: [
+    { id: "p1", name: "Handcrafted Ceramic Vase", price: 2500, imageUrl: "/products/vase.jpg", slug: "ceramic-vase" },
+    { id: "p2", name: "Leather Weekend Bag", price: 4500, imageUrl: "/products/bag.jpg", slug: "weekend-bag" },
+    { id: "p3", name: "Wireless Noise-Cancelling Headphones", price: 12000, imageUrl: "/products/headphones.jpg", slug: "headphones" },
+    { id: "p4", name: "Organic Skincare Set", price: 3500, imageUrl: "/products/skincare.jpg", slug: "skincare-set" },
+  ],
+  promotions: [
+    { title: "Summer Sale - Up to 50% Off", description: "Refresh your home with stylish decor.", bannerUrl: "/promos/summer-sale.jpg" },
+    { title: "New Arrivals", description: "Check out the latest gadgets.", bannerUrl: "/promos/new-arrivals.jpg" },
+  ],
+  testimonials: [
+    { quote: "Best marketplace with unique finds!", author: "Lisa M." },
+    { quote: "Fast shipping and great quality.", author: "Carlos R." },
+  ],
+};
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+
+
+export default function MarketPlaceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  
+  // Use pageData for all content
+  const siteData = pageData || storeFormData;
+  
+  const router = useRouter();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [featured, setFeatured] = useState<any[]>([]);
+  const [promotions, setPromotions] = useState<any[]>([]);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [showMiniCart, setShowMiniCart] = useState(false);
+
+  useEffect(() => {
+    setCategories(store.categories);
+    setFeatured(store.featured);
+    setPromotions(store.promotions);
+    setTestimonials(store.testimonials);
+  }, []);
+
 
   const sectionMap: Record<string, React.ReactNode> = {
     'hero-banner': <HeroBanner storeFormData={siteData} />,
