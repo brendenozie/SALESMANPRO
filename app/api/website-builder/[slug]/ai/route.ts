@@ -12,7 +12,8 @@ import {
 } from "@/types/website-builder";
 import { saveWebsiteDraft, getOrCreateWebsite } from "@/lib/website-builder/website-service";
 import { resolveCanonicalTemplate } from "@/lib/website-builder/template-registry";
-import { GoogleGenAI } from "@google/genai";
+import { google } from "@ai-sdk/google";
+import { generateText } from "ai";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -155,21 +156,21 @@ SAFETY RULES:
     let aiResponseText = "";
     const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    if (apiKey) {
+    if (apiKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       try {
-        const ai = new GoogleGenAI({ apiKey });
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: [
+        const response = await generateText({
+          model: google("gemini-1.5-flash"),
+          messages: [
+            {
+              role: "system",
+              content: systemInstruction,
+            },
             {
               role: "user",
-              parts: [{ text: `${systemInstruction}\n\nUser Request: "${prompt}"` }],
+              content: `User Request: "${prompt}"`,
             },
           ],
-          config: {
-            responseMimeType: "application/json",
-            temperature: 0.3,
-          },
+          temperature: 0.3,
         });
         aiResponseText = response.text || "{}";
       } catch (geminiError) {
