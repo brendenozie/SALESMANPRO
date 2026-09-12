@@ -15,6 +15,7 @@ import siteMetadata from '@/data/siteMetadata';
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
 import { SubscriptionGraceBanner, SubscriptionInactiveView } from './SubscriptionGraceBanner';
 import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registry';
+import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 
 export const revalidate = 60;
 
@@ -189,29 +190,34 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
 
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
-  const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
+  const isGhuba = isGhubaMarketplace(slug, raw);
 
   // Resolve canonical template identity deterministically
-  const canonicalTemplate = resolveCanonicalTemplate(
-    raw.category,
-    raw.variant,
-    raw.website?.templateKey
-  );
+  const canonicalTemplate = isGhuba
+    ? resolveCanonicalTemplate("portal", "ghuba", "ghuba@v1")
+    : resolveCanonicalTemplate(
+        raw.category,
+        raw.variant,
+        raw.website?.templateKey
+      );
 
-  let LayoutComponent = 
-    categoryHeaderFooterLayoutMap[canonicalTemplate.shellLayout]
-    || categoryHeaderFooterLayoutMap[canonicalTemplate.variant] 
-    || categoryHeaderFooterLayoutMap[canonicalTemplate.category]
-    || categoryHeaderFooterLayoutMap[variant] 
-    || categoryHeaderFooterLayoutMap[category]
-    || (() => {
-      const matchedCategory = categoryMap.get(category) as any;
-      if (matchedCategory?.variants?.length) {
-        const firstVariant = normalize(matchedCategory.variants[0].name);
-        return categoryHeaderFooterLayoutMap[firstVariant];
-      }
-    })()
-    || categoryHeaderFooterLayoutMap['default'];
+  let LayoutComponent = isGhuba
+    ? (categoryHeaderFooterLayoutMap["GhubaLayout"] || categoryHeaderFooterLayoutMap["default"])
+    : (
+        categoryHeaderFooterLayoutMap[canonicalTemplate.shellLayout]
+        || categoryHeaderFooterLayoutMap[canonicalTemplate.variant] 
+        || categoryHeaderFooterLayoutMap[canonicalTemplate.category]
+        || categoryHeaderFooterLayoutMap[variant] 
+        || categoryHeaderFooterLayoutMap[category]
+        || (() => {
+          const matchedCategory = categoryMap.get(category) as any;
+          if (matchedCategory?.variants?.length) {
+            const firstVariant = normalize(matchedCategory.variants[0].name);
+            return categoryHeaderFooterLayoutMap[firstVariant];
+          }
+        })()
+        || categoryHeaderFooterLayoutMap['default']
+      );
 
   const userId = ''; 
 

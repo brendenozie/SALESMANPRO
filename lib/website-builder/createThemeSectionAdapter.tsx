@@ -32,59 +32,63 @@ export function ThemeSectionContainer({
     return <>{actualFallback}</>;
   }
 
-  return (
-    <>
-      {sections.map((section, index) => {
-        if (section.visible === false || section.isVisible === false) {
-          return null;
-        }
-        if (renderSection) {
-          const content = renderSection(section, index);
-          if (!content) return null;
-          return (
-            <div
-              key={section.id || index}
-              id={`section-${section.id}`}
-              data-editor-section={section.id}
-              data-editor-component={section.component || section.name || section.id}
-            >
-              {content}
-            </div>
-          );
-        }
-        if (sectionMap) {
-          const secId = (section.id || '').toLowerCase();
-          const secType = (section.type || '').toLowerCase();
-          const secComp = (section.component || '').toLowerCase();
-
-          let matchedKey = Object.keys(sectionMap).find((k) => {
-            const lk = k.toLowerCase();
-            return lk === secId || lk === secType || secId.startsWith(lk) || lk === secComp;
-          });
-
-          if (!matchedKey) {
-            matchedKey = Object.keys(sectionMap).find((k) => {
-              const lk = k.toLowerCase();
-              return secId.includes(lk) || secComp.includes(lk);
-            });
-          }
-
-          const content = matchedKey ? sectionMap[matchedKey] : null;
-          if (!content) return null;
-
-          return (
-            <div
-              key={section.id || index}
-              id={`section-${section.id}`}
-              data-editor-section={section.id}
-              data-editor-component={section.component || section.name || matchedKey}
-            >
-              {content}
-            </div>
-          );
-        }
+  const renderedElements = sections
+    .map((section, index) => {
+      if (section.visible === false || section.isVisible === false) {
         return null;
-      })}
-    </>
-  );
+      }
+      if (renderSection) {
+        const content = renderSection(section, index);
+        if (!content) return null;
+        return (
+          <div
+            key={section.id || index}
+            id={`section-${section.id}`}
+            data-editor-section={section.id}
+            data-editor-component={section.component || section.name || section.id}
+          >
+            {content}
+          </div>
+        );
+      }
+      if (sectionMap) {
+        const secId = (section.id || '').toLowerCase();
+        const secType = (section.type || '').toLowerCase();
+        const secComp = (section.component || '').toLowerCase();
+
+        let matchedKey = Object.keys(sectionMap).find((k) => {
+          const lk = k.toLowerCase();
+          return lk === secId || lk === secType || secId.startsWith(lk) || lk === secComp;
+        });
+
+        if (!matchedKey) {
+          matchedKey = Object.keys(sectionMap).find((k) => {
+            const lk = k.toLowerCase();
+            return secId.includes(lk) || secComp.includes(lk);
+          });
+        }
+
+        const content = matchedKey ? sectionMap[matchedKey] : null;
+        if (!content) return null;
+
+        return (
+          <div
+            key={section.id || index}
+            id={`section-${section.id}`}
+            data-editor-section={section.id}
+            data-editor-component={section.component || section.name || matchedKey}
+          >
+            {content}
+          </div>
+        );
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  if (renderedElements.length === 0 && actualFallback) {
+    return <>{actualFallback}</>;
+  }
+
+  return <>{renderedElements}</>;
 }

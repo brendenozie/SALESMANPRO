@@ -1,4 +1,5 @@
 import { StoreForm, ILocation, ICompanyLocation } from "../types/typings"; // Ensure Location and CompanyLocationType are imported
+import { isGhubaMarketplace } from "@/lib/ghuba-helpers";
 
 // A safe utility to convert a Date or a string into an ISO string
 function safeDateToString(
@@ -20,7 +21,7 @@ function safeDateToString(
 }
 
 export function transformCompanyToStoreForm(raw: any): StoreForm {
-  const isGhuba = raw.domain === "ghuba" || raw.slug === "ghuba";
+  const isGhuba = isGhubaMarketplace(raw.slug, raw);
 
   return {
     id: raw.id,
@@ -30,7 +31,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     domain: raw.domain ?? "",
     tagline: raw.tagline ?? "",
     description: raw.description ?? "",
-    category: isGhuba ? "other" : raw.category,
+    category: isGhuba ? "portal" : raw.category,
     variant: isGhuba ? "ghuba" : raw.variant,
     logoUrl: raw.logoUrl ?? "",
     bannerUrl: raw.bannerUrl ?? "",

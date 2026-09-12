@@ -4,6 +4,7 @@ import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 import { StoreDataSync } from '@/contexts/StoreContext';
 import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registry';
 import TemplateDiagnosticHud from '@/components/website-builder/TemplateDiagnosticHud';
+import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 
 export const revalidate = 60;
 
@@ -19,15 +20,20 @@ export default async function StorePage({ params }: StorePageProps) {
   // Extract ghubaData alongside the rest
   const { componentName, pageData, raw, ghubaData } = await loadStore(slug);
 
-  // Deterministically resolve canonical template identity
-  const canonicalTemplate = resolveCanonicalTemplate(
-    raw?.category,
-    raw?.variant,
-    raw?.website?.templateKey
-  );
+  const isGhuba = isGhubaMarketplace(slug, raw) || componentName === 'GhubaSite';
 
-  const resolvedComponentName =
-    canonicalTemplate.bodyComponent || componentName || 'DefaultSite';
+  // Deterministically resolve canonical template identity
+  const canonicalTemplate = isGhuba
+    ? resolveCanonicalTemplate("portal", "ghuba", "ghuba@v1")
+    : resolveCanonicalTemplate(
+        raw?.category,
+        raw?.variant,
+        raw?.website?.templateKey
+      );
+
+  const resolvedComponentName = isGhuba
+    ? 'GhubaSite'
+    : (canonicalTemplate.bodyComponent || componentName || 'DefaultSite');
   const BodyComponent =
     BodyComponentMap[resolvedComponentName] || BodyComponentMap['DefaultSite'];
   const enabledPaymentMethods = getEnabledPaymentMethods(raw?.PaymentSettings);
@@ -57,6 +63,43 @@ export default async function StorePage({ params }: StorePageProps) {
       publishedConfig.pages?.[0]?.sections || publishedConfig.sections || [];
     pageData.sections = activeSections;
     pageData.websiteConfig = publishedConfig;
+
+    // Guard: For Ghuba, ensure activeSections contains authentic Ghuba marketplace sections.
+    // If activeSections only contains generic store sections (e.g. sec-hero, sec-features),
+    // re-seed pageData.sections from canonicalTemplate.authenticSections
+    if (isGhuba) {
+      const hasGhubaSections = activeSections.some((s: any) => {
+        const id = (s.id || '').toLowerCase();
+        const comp = (s.component || '').toLowerCase();
+        return (
+          id.includes('ghuba') ||
+          id.includes('bannerslider') ||
+          id.includes('flashdeals') ||
+          id.includes('topcate') ||
+          id.includes('newarrivals') ||
+          comp === 'bannerslider' ||
+          comp === 'flashdeals' ||
+          comp === 'topcate' ||
+          comp === 'newarrivals' ||
+          comp === 'discount' ||
+          comp === 'shop' ||
+          comp === 'annocument' ||
+          comp === 'wrapper'
+        );
+      });
+
+      if (!hasGhubaSections && canonicalTemplate?.authenticSections?.length) {
+        pageData.sections = canonicalTemplate.authenticSections.map((sec) => ({
+          id: sec.id,
+          type: sec.type,
+          component: sec.component,
+          title: sec.label,
+          visible: true,
+          order: sec.defaultOrder,
+          content: sec.defaultContent ? JSON.parse(JSON.stringify(sec.defaultContent)) : {},
+        }));
+      }
+    }
 
     // Merge structured hero configuration if present
     const heroSection = activeSections.find(

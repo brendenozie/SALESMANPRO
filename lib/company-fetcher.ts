@@ -78,14 +78,20 @@ const INCLUDE_MAP = {
 async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
   const include = INCLUDE_MAP[strategy];
   const isObjectId = /^[0-9a-fA-F]{24}$/.test(cleanIdentifier);
+  const strippedWww = cleanIdentifier.replace(/^www\./i, "");
+  const withWww = `www.${strippedWww}`;
 
-  // Single unified database query instead of 3 sequential roundtrips
+  // Single unified database query instead of sequential roundtrips
   const company = await prisma.company.findFirst({
     where: {
       OR: [
         { slug: cleanIdentifier },
+        { slug: strippedWww },
         { domain: cleanIdentifier },
-        { domain: `www.${cleanIdentifier}` },
+        { domain: strippedWww },
+        { domain: withWww },
+        { domain: `https://${strippedWww}` },
+        { domain: `https://${withWww}` },
         ...(isObjectId ? [{ id: cleanIdentifier }] : []),
       ],
     },

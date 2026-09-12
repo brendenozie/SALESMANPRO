@@ -69,21 +69,61 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
   const { addToCart } = useStateContext();
 
   
+  const bannerNode = categories.length > 0 ? <BannerSlider categories={categories} pageData={pageData} /> : null;
+  const flashDealsNode = flashDeals.length > 0 ? <FlashDeals productItems={flashDeals} addToCart={addToCart} /> : null;
+  const topCateNode = categories.length > 0 ? <TopCate categories={categories} /> : null;
+  const newArrivalsNode = newArrivals.length > 0 ? <NewArrivals productItems={newArrivals} addToCart={addToCart} /> : null;
+  const discountNode = discounts.length > 0 ? <Discount productItems={discounts} addToCart={addToCart} /> : null;
+  const shopNode = (featuredCategory && featuredCategoryProducts.length > 0) ? (
+    <Shop
+      category={featuredCategory}
+      shopItems={featuredCategoryProducts}
+      addToCart={addToCart}
+    />
+  ) : null;
+  const annocumentNode = <Annocument pageData={pageData} />;
+  const wrapperNode = <Wrapper pageData={pageData} />;
+
   const sectionMap: Record<string, React.ReactNode> = {
-    'banner': categories.length > 0 ? <BannerSlider categories={categories} pageData={pageData} /> : null,
-    'flash-deals': flashDeals.length > 0 ? <FlashDeals productItems={flashDeals} addToCart={addToCart} /> : null,
-    'top-cate': categories.length > 0 ? <TopCate categories={categories} /> : null,
-    'new-arrivals': newArrivals.length > 0 ? <NewArrivals productItems={newArrivals} addToCart={addToCart} /> : null,
-    'discount': discounts.length > 0 ? <Discount productItems={discounts} addToCart={addToCart} /> : null,
-    'shop': (featuredCategory && featuredCategoryProducts.length > 0) ? (
-      <Shop
-        category={featuredCategory}
-        shopItems={featuredCategoryProducts}
-        addToCart={addToCart}
-      />
-    ) : null,
-    'annocument': <Annocument pageData={pageData} />,
-    'wrapper': <Wrapper pageData={pageData} />,
+    // 1. Banner Slider
+    'ghuba-bannerslider': bannerNode,
+    'bannerslider': bannerNode,
+    'banner': bannerNode,
+    'hero': bannerNode,
+
+    // 2. Flash Deals
+    'ghuba-flashdeals': flashDealsNode,
+    'flashdeals': flashDealsNode,
+    'flash-deals': flashDealsNode,
+
+    // 3. Top Categories
+    'ghuba-topcate': topCateNode,
+    'topcate': topCateNode,
+    'top-cate': topCateNode,
+    'categories': topCateNode,
+
+    // 4. New Arrivals
+    'ghuba-newarrivals': newArrivalsNode,
+    'newarrivals': newArrivalsNode,
+    'new-arrivals': newArrivalsNode,
+
+    // 5. Discounts
+    'ghuba-discount': discountNode,
+    'discount': discountNode,
+    'discounts': discountNode,
+
+    // 6. Shop Catalog
+    'ghuba-shop': shopNode,
+    'shop': shopNode,
+
+    // 7. Announcements
+    'ghuba-annocument': annocumentNode,
+    'annocument': annocumentNode,
+    'announcement': annocumentNode,
+
+    // 8. Highlights Wrapper
+    'ghuba-wrapper': wrapperNode,
+    'wrapper': wrapperNode,
   };
 
   const staticFallback = (
