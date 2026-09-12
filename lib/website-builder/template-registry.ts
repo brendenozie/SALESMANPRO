@@ -8769,9 +8769,9 @@ for (const template of Object.values(TEMPLATE_REGISTRY)) {
  * 6. Safe fallback to default-site@v1
  */
 export function resolveCanonicalTemplate(
-  category?: string,
-  variant?: string,
-  explicitTemplateId?: string,
+  category?: string | null,
+  variant?: string | null,
+  explicitTemplateId?: string | null,
 ): TemplateDefinition {
   // Stage 1: Explicit canonical template ID match (if specific)
   if (explicitTemplateId) {

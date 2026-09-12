@@ -22,7 +22,7 @@ interface RouteParams {
 export async function POST(req: Request, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions());
 
     if (!session?.user) {
       return formatResponse(false, null, "Authentication required", 401);
@@ -69,7 +69,7 @@ export async function POST(req: Request, { params }: RouteParams) {
     }
 
     // 3. Compact state summary for model context
-    const canonicalTemplate = resolveCanonicalTemplate(company.category, undefined, config.templateKey);
+    const canonicalTemplate = resolveCanonicalTemplate(company.category ?? undefined, undefined, config.templateKey);
     const activePage = config.pages.find((p) => p.slug === activePageSlug) || config.pages[0];
     const contextSummary = {
       storeName: config.storeName,
@@ -373,10 +373,12 @@ SAFETY RULES:
       reservedAmount: CREDIT_COST,
       actualAmount: CREDIT_COST,
       description: "AI Website Assistant Execution",
-      idempotencyKey: reservation.idempotencyKey,
+      referenceId: reservation.transactionId,
       usageData: {
+        capability: "AGENT",
+        provider: "GOOGLE",
+        model: "gemini-1.5-flash",
         feature: "website_assistant",
-        prompt: prompt.slice(0, 100),
       },
     });
 

@@ -51,7 +51,7 @@ async function resolveBrandingContext(tenantType, companyId) {
             primaryColor: "#ea580c",
             websiteUrl: process.env.NEXTAUTH_URL || "https://salesmanpro.site",
             supportEmail: process.env.DEFAULT_REPLY_TO || "support@salesmanpro.site",
-            supportPhone: "+254 700 000 000",
+            supportPhone: "+254 732 771 353",
         };
     }
     if (tenantType === "GHUBA") {

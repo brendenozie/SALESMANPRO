@@ -18,7 +18,7 @@ interface RouteParams {
 export async function GET(req: Request, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions());
 
     if (!session?.user) {
       return formatResponse(false, null, "Authentication required", 401);
@@ -27,7 +27,7 @@ export async function GET(req: Request, { params }: RouteParams) {
     // Verify tenant access
     const company = await prisma.company.findUnique({
       where: { slug },
-      select: { id: true, userId: true, name: true, logo: true, phone: true, email: true },
+      select: { id: true, userId: true, name: true, logoUrl: true, contactPhone: true, contactEmail: true },
     });
 
     if (!company) {
@@ -43,9 +43,9 @@ export async function GET(req: Request, { params }: RouteParams) {
         websiteId: website.id,
         companyId: company.id,
         storeName: company.name,
-        logoUrl: company.logo,
-        contactPhone: company.phone,
-        contactEmail: company.email,
+        logoUrl: company.logoUrl,
+        contactPhone: company.contactPhone,
+        contactEmail: company.contactEmail,
         status: website.status,
         publishedAt: website.publishedAt,
         config,
@@ -62,7 +62,7 @@ export async function GET(req: Request, { params }: RouteParams) {
 export async function POST(req: Request, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions());
 
     if (!session?.user) {
       return formatResponse(false, null, "Authentication required", 401);
