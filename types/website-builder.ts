@@ -48,16 +48,27 @@ export type ThemeTokens = z.infer<typeof ThemeTokensSchema>;
    2. NAVIGATION CONFIGURATION
    ========================================================================= */
 
-export const NavItemSchema = z.object({
-  id: z.string(),
-  label: z.string(),
-  url: z.string(),
-  isExternal: z.boolean().default(false),
-  badge: z.string().optional(),
-  children: z.array(z.lazy(() => NavItemSchema)).optional(),
-});
+export interface NavItem {
+  id: string;
+  label: string;
+  url: string;
+  isExternal?: boolean;
+  badge?: string;
+  children?: NavItem[];
+}
 
-export type NavItem = z.infer<typeof NavItemSchema>;
+export const NavItemSchema: z.ZodType<NavItem, z.ZodTypeDef, any> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    label: z.string(),
+    url: z.string(),
+    isExternal: z.boolean().default(false),
+    badge: z.string().optional(),
+    children: z.array(NavItemSchema).optional(),
+  })
+) as z.ZodType<NavItem, z.ZodTypeDef, any>;
+
+export type NavItemConfig = NavItem;
 
 export const NavigationConfigSchema = z.object({
   headerItems: z.array(NavItemSchema).default([
@@ -126,38 +137,62 @@ export type NavigationConfig = z.infer<typeof NavigationConfigSchema>;
    3. SECTION DEFINITIONS & COMMERCE DATA SOURCES
    ========================================================================= */
 
-export const CommerceDataSourceSchema = z.object({
+export interface CommerceDataSource {
+  type: "products" | "categories" | "promotions" | "testimonials" | "manual" | "static";
+  filter?: string;
+  limit?: number;
+  categoryId?: string;
+  manualIds?: string[];
+  [key: string]: any;
+}
+
+export const CommerceDataSourceSchema: z.ZodType<CommerceDataSource, z.ZodTypeDef, any> = z.object({
   type: z.enum(["products", "categories", "promotions", "testimonials", "manual", "static"]),
   filter: z.string().optional().default("featured"),
   categoryId: z.string().optional(),
   manualIds: z.array(z.string()).optional(),
-  limit: z.number().min(1).max(24).default(8),
-});
+  limit: z.number().min(1).max(24).optional().default(8),
+}).passthrough() as z.ZodType<CommerceDataSource, z.ZodTypeDef, any>;
 
-export type CommerceDataSource = z.infer<typeof CommerceDataSourceSchema>;
+export interface SectionStyle {
+  paddingTop?: "none" | "sm" | "md" | "lg" | "xl";
+  paddingBottom?: "none" | "sm" | "md" | "lg" | "xl";
+  backgroundColor?: string;
+  textColor?: string;
+  backgroundImageUrl?: string;
+  backgroundOverlayOpacity?: number;
+  textAlign?: "left" | "center" | "right";
+  containerWidth?: "boxed" | "standard" | "wide" | "full";
+  [key: string]: any;
+}
 
-export const SectionStyleSchema = z.object({
-  paddingTop: z.enum(["none", "sm", "md", "lg", "xl"]).default("lg"),
-  paddingBottom: z.enum(["none", "sm", "md", "lg", "xl"]).default("lg"),
+export const SectionStyleSchema: z.ZodType<SectionStyle> = z.object({
+  paddingTop: z.enum(["none", "sm", "md", "lg", "xl"]).optional().default("lg"),
+  paddingBottom: z.enum(["none", "sm", "md", "lg", "xl"]).optional().default("lg"),
   backgroundColor: z.string().optional(),
   textColor: z.string().optional(),
   backgroundImageUrl: z.string().optional(),
-  backgroundOverlayOpacity: z.number().min(0).max(100).default(0),
-  textAlign: z.enum(["left", "center", "right"]).default("left"),
+  backgroundOverlayOpacity: z.number().min(0).max(100).optional().default(0),
+  textAlign: z.enum(["left", "center", "right"]).optional().default("left"),
   containerWidth: z.enum(["boxed", "standard", "wide", "full"]).optional(),
-});
+}).passthrough();
 
-export type SectionStyle = z.infer<typeof SectionStyleSchema>;
+export interface SectionResponsive {
+  columnsMobile?: number;
+  columnsTablet?: number;
+  columnsDesktop?: number;
+  hideOnMobile?: boolean;
+  hideOnDesktop?: boolean;
+  [key: string]: any;
+}
 
-export const SectionResponsiveSchema = z.object({
-  columnsMobile: z.number().min(1).max(3).default(1),
-  columnsTablet: z.number().min(1).max(4).default(2),
-  columnsDesktop: z.number().min(1).max(6).default(4),
-  hideOnMobile: z.boolean().default(false),
-  hideOnDesktop: z.boolean().default(false),
-});
-
-export type SectionResponsive = z.infer<typeof SectionResponsiveSchema>;
+export const SectionResponsiveSchema: z.ZodType<SectionResponsive> = z.object({
+  columnsMobile: z.number().min(1).max(3).optional().default(1),
+  columnsTablet: z.number().min(1).max(4).optional().default(2),
+  columnsDesktop: z.number().min(1).max(6).optional().default(4),
+  hideOnMobile: z.boolean().optional().default(false),
+  hideOnDesktop: z.boolean().optional().default(false),
+}).passthrough();
 
 /* =========================================================================
    4. CONCRETE SECTION CONTENT SCHEMAS
@@ -362,15 +397,22 @@ export type WebsiteSectionConfig = z.infer<typeof WebsiteSectionSchema>;
    6. PAGE MODEL
    ========================================================================= */
 
-export const PageSeoSchema = z.object({
+export interface PageSeo {
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  noIndex?: boolean;
+  [key: string]: any;
+}
+
+export const PageSeoSchema: z.ZodType<PageSeo, z.ZodTypeDef, any> = z.object({
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   ogImage: z.string().optional(),
   canonicalUrl: z.string().optional(),
-  noIndex: z.boolean().default(false),
-});
-
-export type PageSeo = z.infer<typeof PageSeoSchema>;
+  noIndex: z.boolean().optional().default(false),
+}).passthrough() as z.ZodType<PageSeo, z.ZodTypeDef, any>;
 
 export const WebsitePageSchema = z.object({
   id: z.string(),
@@ -389,7 +431,19 @@ export type WebsitePageConfig = z.infer<typeof WebsitePageSchema>;
    7. COMPLETE WEBSITE DRAFT / PUBLISHED COMPILED CONFIG
    ========================================================================= */
 
-export const CompiledWebsiteConfigSchema = z.object({
+export interface CompiledWebsiteConfig {
+  version: 1;
+  templateKey: string;
+  storeName: string;
+  storeSlug: string;
+  theme: ThemeTokens;
+  navigation: NavigationConfig;
+  pages: WebsitePageConfig[];
+  componentOverrides?: Record<string, any>;
+  publishedAt?: string;
+}
+
+export const CompiledWebsiteConfigSchema: z.ZodType<CompiledWebsiteConfig, z.ZodTypeDef, any> = z.object({
   version: z.literal(1).default(1),
   templateKey: z.string().default("ecommerce"),
   storeName: z.string(),
@@ -397,11 +451,9 @@ export const CompiledWebsiteConfigSchema = z.object({
   theme: ThemeTokensSchema.default({}),
   navigation: NavigationConfigSchema.default({}),
   pages: z.array(WebsitePageSchema).default([]),
-  componentOverrides: z.record(z.string(), z.any()).default({}),
+  componentOverrides: z.record(z.string(), z.any()).optional().default({}),
   publishedAt: z.string().optional(),
-});
-
-export type CompiledWebsiteConfig = z.infer<typeof CompiledWebsiteConfigSchema>;
+}).passthrough() as z.ZodType<CompiledWebsiteConfig, z.ZodTypeDef, any>;
 
 /* =========================================================================
    8. COMPONENT REGISTRY DEFINITIONS
@@ -965,7 +1017,7 @@ export interface AuthenticSectionDefinition {
   description?: string;
   editableProps?: string[];
   defaultContent: Record<string, any>;
-  defaultStyles?: Record<string, any>;
+  defaultStyles?: SectionStyle;
   dataSource?: {
     type: "products" | "categories" | "testimonials" | "promotions" | "manual" | "static";
     filter?: string;

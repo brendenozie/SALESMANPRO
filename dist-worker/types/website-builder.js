@@ -37,17 +37,14 @@ exports.ThemeTokensSchema = zod_1.z.object({
     glassmorphism: zod_1.z.boolean().default(false),
     boxShadow: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).default("md"),
 });
-/* =========================================================================
-   2. NAVIGATION CONFIGURATION
-   ========================================================================= */
-exports.NavItemSchema = zod_1.z.object({
+exports.NavItemSchema = zod_1.z.lazy(() => zod_1.z.object({
     id: zod_1.z.string(),
     label: zod_1.z.string(),
     url: zod_1.z.string(),
     isExternal: zod_1.z.boolean().default(false),
     badge: zod_1.z.string().optional(),
-    children: zod_1.z.array(zod_1.z.lazy(() => exports.NavItemSchema)).optional(),
-});
+    children: zod_1.z.array(exports.NavItemSchema).optional(),
+}));
 exports.NavigationConfigSchema = zod_1.z.object({
     headerItems: zod_1.z.array(exports.NavItemSchema).default([
         { id: "home", label: "Home", url: "/" },
@@ -119,22 +116,22 @@ exports.CommerceDataSourceSchema = zod_1.z.object({
     limit: zod_1.z.number().min(1).max(24).default(8),
 });
 exports.SectionStyleSchema = zod_1.z.object({
-    paddingTop: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).default("lg"),
-    paddingBottom: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).default("lg"),
+    paddingTop: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).optional().default("lg"),
+    paddingBottom: zod_1.z.enum(["none", "sm", "md", "lg", "xl"]).optional().default("lg"),
     backgroundColor: zod_1.z.string().optional(),
     textColor: zod_1.z.string().optional(),
     backgroundImageUrl: zod_1.z.string().optional(),
-    backgroundOverlayOpacity: zod_1.z.number().min(0).max(100).default(0),
-    textAlign: zod_1.z.enum(["left", "center", "right"]).default("left"),
+    backgroundOverlayOpacity: zod_1.z.number().min(0).max(100).optional().default(0),
+    textAlign: zod_1.z.enum(["left", "center", "right"]).optional().default("left"),
     containerWidth: zod_1.z.enum(["boxed", "standard", "wide", "full"]).optional(),
-});
+}).passthrough();
 exports.SectionResponsiveSchema = zod_1.z.object({
-    columnsMobile: zod_1.z.number().min(1).max(3).default(1),
-    columnsTablet: zod_1.z.number().min(1).max(4).default(2),
-    columnsDesktop: zod_1.z.number().min(1).max(6).default(4),
-    hideOnMobile: zod_1.z.boolean().default(false),
-    hideOnDesktop: zod_1.z.boolean().default(false),
-});
+    columnsMobile: zod_1.z.number().min(1).max(3).optional().default(1),
+    columnsTablet: zod_1.z.number().min(1).max(4).optional().default(2),
+    columnsDesktop: zod_1.z.number().min(1).max(6).optional().default(4),
+    hideOnMobile: zod_1.z.boolean().optional().default(false),
+    hideOnDesktop: zod_1.z.boolean().optional().default(false),
+}).passthrough();
 /* =========================================================================
    4. CONCRETE SECTION CONTENT SCHEMAS
    ========================================================================= */
