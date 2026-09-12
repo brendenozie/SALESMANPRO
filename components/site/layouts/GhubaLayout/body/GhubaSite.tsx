@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 "use client";
 
 import React, { Suspense } from "react";
@@ -66,55 +67,72 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
 
   const { addToCart } = useStateContext();
 
-  return (
-    <main className="min-h-screen bg-white dark:bg-[#080808] text-zinc-900 dark:text-zinc-100 selection:bg-amber-500 selection:text-white transition-colors duration-500">
-      {/* Priority Above-The-Fold Render */}
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'banner': categories.length > 0 ? <BannerSlider categories={categories} pageData={pageData} /> : null,
+    'flash-deals': flashDeals.length > 0 ? <FlashDeals productItems={flashDeals} addToCart={addToCart} /> : null,
+    'top-cate': categories.length > 0 ? <TopCate categories={categories} /> : null,
+    'new-arrivals': newArrivals.length > 0 ? <NewArrivals productItems={newArrivals} addToCart={addToCart} /> : null,
+    'discount': discounts.length > 0 ? <Discount productItems={discounts} addToCart={addToCart} /> : null,
+    'shop': (featuredCategory && featuredCategoryProducts.length > 0) ? (
+      <Shop
+        category={featuredCategory}
+        shopItems={featuredCategoryProducts}
+        addToCart={addToCart}
+      />
+    ) : null,
+    'annocument': <Annocument pageData={pageData} />,
+    'wrapper': <Wrapper pageData={pageData} />,
+  };
+
+  const staticFallback = (
+    <>
       {categories.length > 0 && (
         <div id="section-banner" data-editor-section="banner" data-editor-component="BannerSlider">
           <BannerSlider categories={categories} pageData={pageData} />
         </div>
       )}
-
-      {/* Dynamic Sections with Standard Loading States */}
       {flashDeals.length > 0 && (
         <div id="section-flash-deals" data-editor-section="flash-deals" data-editor-component="FlashDeals">
           <FlashDeals productItems={flashDeals} addToCart={addToCart} />
         </div>
       )}
-
-      {categories.length > 0 && <div id="section-top-cate" data-editor-section="top-cate" data-editor-component="TopCate">
-   <TopCate categories={categories} />
- </div>}
-
+      {categories.length > 0 && (
+        <div id="section-top-cate" data-editor-section="top-cate" data-editor-component="TopCate">
+          <TopCate categories={categories} />
+        </div>
+      )}
       {newArrivals.length > 0 && (
         <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivals">
           <NewArrivals productItems={newArrivals} addToCart={addToCart} />
         </div>
       )}
-
       {discounts.length > 0 && (
         <div id="section-discount" data-editor-section="discount" data-editor-component="Discount">
           <Discount productItems={discounts} addToCart={addToCart} />
         </div>
       )}
-
       {featuredCategory && featuredCategoryProducts.length > 0 && (
         <div id="section-shop" data-editor-section="shop" data-editor-component="Shop">
           <Shop
-          category={featuredCategory}
-          shopItems={featuredCategoryProducts}
-          addToCart={addToCart}
-        />
+            category={featuredCategory}
+            shopItems={featuredCategoryProducts}
+            addToCart={addToCart}
+          />
         </div>
       )}
-
-      {/* Footer Content */}
       <div id="section-annocument" data-editor-section="annocument" data-editor-component="Annocument">
         <Annocument pageData={pageData} />
       </div>
       <div id="section-wrapper" data-editor-section="wrapper" data-editor-component="Wrapper">
         <Wrapper pageData={pageData} />
       </div>
+    </>
+  );
+
+  return (
+    <main className="min-h-screen bg-white dark:bg-[#080808] text-zinc-900 dark:text-zinc-100 selection:bg-amber-500 selection:text-white transition-colors duration-500">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </main>
   );
 };

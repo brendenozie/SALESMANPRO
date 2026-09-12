@@ -139,7 +139,7 @@ export default function HeroSection({
   // State
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState(filters.location || "");
+  const [searchInput, setSearchInput] = useState(filters?.location || "");
   const slideTimerRef = useRef<number | null>(null);
 
   // Logic: Categories
@@ -155,8 +155,8 @@ export default function HeroSection({
   }, [storeFormData]);
 
   const selectedCategory = useMemo(() => {
-    return rawCategories.find((c) => c.id === filters.category);
-  }, [filters.category, rawCategories]);
+    return rawCategories.find((c) => c.id === filters?.category);
+  }, [filters?.category, rawCategories]);
 
   // Logic: Filter Suggestions
   const filteredSuggestions = useMemo(() => {
@@ -195,7 +195,7 @@ export default function HeroSection({
   // Handlers
   const handleSearchTrigger = () => {
     setIsSearchModalOpen(true);
-    setSearchInput(filters.location || filters.destination || "");
+    setSearchInput(filters?.location || filters?.destination || "");
   };
 
   const handleSelectSuggestion = (item: any) => {
@@ -315,10 +315,10 @@ export default function HeroSection({
                <MagnifyingGlassIcon className="w-6 h-6 text-white/80 mr-3 group-hover:text-white transition-colors" />
                <div className="text-left">
                   <p className="text-white font-medium text-lg">
-                    {filters.location || filters.destination || "Where to?"}
+                    {filters?.location || filters?.destination || "Where to?"}
                   </p>
                   <p className="text-white/60 text-xs">
-                    {(filters.date || filters.guests) ? `${filters.date || ''} • ${filters.guests || 0} Guests` : "Search destinations, hotels, adventures..."}
+                    {(filters?.date || filters?.guests) ? `${filters?.date || ''} • ${filters?.guests || 0} Guests` : "Search destinations, hotels, adventures..."}
                   </p>
                </div>
             </div>

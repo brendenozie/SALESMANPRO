@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 "use client";
 
 import React, { useState, useEffect, useContext } from "react";
@@ -78,8 +79,9 @@ export default function MediaSite({ pageData, companyId }: { pageData: StoreForm
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
 
   // State to hold data, using pageData with fallback to mockData
-  const [dataReady, setDataReady] = useState(false);
-  const [displayData, setDisplayData] = useState<typeof mockStoreData | null>(null);
+  const initialData = (pageData && Object.keys(pageData).length > 0) ? (pageData as unknown as typeof mockStoreData) : mockStoreData;
+  const [dataReady, setDataReady] = useState(true);
+  const [displayData, setDisplayData] = useState<typeof mockStoreData>(initialData);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   useEffect(() => {
@@ -114,114 +116,132 @@ export default function MediaSite({ pageData, companyId }: { pageData: StoreForm
     });
   };
 
-  if (!dataReady || !displayData) {
-    // Visually appealing loading state
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black to-gray-950 text-white">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-3xl font-bold flex items-center gap-4"
-        >
-          <motion.svg
-            className="w-10 h-10 text-red-600 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </motion.svg>
-          Loading Pulse Media...
-        </motion.div>
-      </div>
-    );
-  }
+  const activeData = displayData || initialData;
 
-  return (
-    <div className="font-sans relative"> {/* Increased space-y, set global background */}
-      {/* Hero Section */}
-      <div id="section-media-hero" data-editor-section="media-hero" data-editor-component="MediaHeroSection">
-        <MediaHeroSection
-        slideData={displayData.heroSlides}
+  const sectionMap: Record<string, React.ReactNode> = {
+    'media-hero': (
+      <MediaHeroSection
+        slideData={activeData.heroSlides}
         onPlay={(slide: any) =>
-          router.push(`/${displayData.slug}/video/${slide.slug}`)
+          router.push(`/${activeData.slug}/video/${slide.slug}`)
         }
       />
-      </div>
-
-      {/* Categories Section */}
-      <div id="section-enhanced-categories" data-editor-section="enhanced-categories" data-editor-component="EnhancedCategoriesSection">
-        <EnhancedCategoriesSection
-        categories={displayData.StoreCategory}
-        slug={displayData.slug}
+    ),
+    'hero': (
+      <MediaHeroSection
+        slideData={activeData.heroSlides}
+        onPlay={(slide: any) =>
+          router.push(`/${activeData.slug}/video/${slide.slug}`)
+        }
       />
-      </div>
-
-      {/* Top Picks Carousel */}
-      <div id="section-top-picks" data-editor-section="top-picks" data-editor-component="TopPicksCarousel">
-        <TopPicksCarousel
-        picks={displayData.topPicks}
-        // Assuming TopPicksCarousel might also have an onPlay or onClick for navigation
+    ),
+    'enhanced-categories': (
+      <EnhancedCategoriesSection
+        categories={activeData.StoreCategory}
+        slug={activeData.slug}
+      />
+    ),
+    'categories': (
+      <EnhancedCategoriesSection
+        categories={activeData.StoreCategory}
+        slug={activeData.slug}
+      />
+    ),
+    'top-picks': (
+      <TopPicksCarousel
+        picks={activeData.topPicks}
         onSelect={(item: any) => router.push(item.ctaLink)}
       />
-      </div>
+    ),
+    'latest-releases': (
+      <LatestReleasesSection
+        releases={activeData.latestReleases}
+        onPlay={(item: any) => router.push(item.videoSlug ? `/${activeData.slug}/video/${item.videoSlug}` : `/${activeData.slug}/media/${item.slug}`)}
+      />
+    ),
+    'featured-articles': (
+      <FeaturedArticlesSection
+        featured={activeData.featuredArticles || activeData.blogs}
+        storeSlug={activeData.slug}
+      />
+    ),
+    'latest-videos': (
+      <LatestVideosSection
+        videos={activeData.latestVideos}
+      />
+    ),
+    'testimonials': (
+      <TestimonialsSlider
+        testimonials={activeData.testimonials}
+      />
+    ),
+    'newsletter-signup': <NewsletterSignup />,
+    'newsletter': <NewsletterSignup />,
+    'faqs': (
+      <FAQsSection
+        faqs={activeData.faqs}
+      />
+    ),
+  };
 
-      {/* Latest Releases Section */}
+  const staticFallback = (
+    <>
+      <div id="section-media-hero" data-editor-section="media-hero" data-editor-component="MediaHeroSection">
+        <MediaHeroSection
+          slideData={activeData.heroSlides}
+          onPlay={(slide: any) =>
+            router.push(`/${activeData.slug}/video/${slide.slug}`)
+          }
+        />
+      </div>
+      <div id="section-enhanced-categories" data-editor-section="enhanced-categories" data-editor-component="EnhancedCategoriesSection">
+        <EnhancedCategoriesSection
+          categories={activeData.StoreCategory}
+          slug={activeData.slug}
+        />
+      </div>
+      <div id="section-top-picks" data-editor-section="top-picks" data-editor-component="TopPicksCarousel">
+        <TopPicksCarousel
+          picks={activeData.topPicks}
+          onSelect={(item: any) => router.push(item.ctaLink)}
+        />
+      </div>
       <div id="section-latest-releases" data-editor-section="latest-releases" data-editor-component="LatestReleasesSection">
         <LatestReleasesSection
-        releases={displayData.latestReleases}
-        onPlay={(item: any) => router.push(item.videoSlug ? `/${displayData.slug}/video/${item.videoSlug}` : `/${displayData.slug}/media/${item.slug}`)}
-      />
+          releases={activeData.latestReleases}
+          onPlay={(item: any) => router.push(item.videoSlug ? `/${activeData.slug}/video/${item.videoSlug}` : `/${activeData.slug}/media/${item.slug}`)}
+        />
       </div>
-
-      {/* Featured Articles Section */}
       <div id="section-featured-articles" data-editor-section="featured-articles" data-editor-component="FeaturedArticlesSection">
         <FeaturedArticlesSection
-        featured={displayData.featuredArticles || displayData.blogs}
-        storeSlug={displayData.slug}
-      />
+          featured={activeData.featuredArticles || activeData.blogs}
+          storeSlug={activeData.slug}
+        />
       </div>
-
-      {/* Latest Videos Section */}
       <div id="section-latest-videos" data-editor-section="latest-videos" data-editor-component="LatestVideosSection">
         <LatestVideosSection
-        videos={displayData.latestVideos}
-      />
+          videos={activeData.latestVideos}
+        />
       </div>
-
-      {/* Testimonials Slider */}
       <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSlider">
         <TestimonialsSlider
-        testimonials={displayData.testimonials}
-      />
+          testimonials={activeData.testimonials}
+        />
       </div>
-
-      {/* Newsletter Signup */}
       <div id="section-newsletter-signup" data-editor-section="newsletter-signup" data-editor-component="NewsletterSignup">
         <NewsletterSignup />
       </div>
-
-      {/* FAQs Section */}
       <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
         <FAQsSection
-        faqs={displayData.faqs}
-      />
+          faqs={activeData.faqs}
+        />
       </div>
+    </>
+  );
 
-      {/* Scroll to Top Button */}
+  return (
+    <div className="font-sans relative">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
       <AnimatePresence>
         {showScrollToTop && (
           <motion.button

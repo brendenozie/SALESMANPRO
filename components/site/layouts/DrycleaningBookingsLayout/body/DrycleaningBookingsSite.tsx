@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
 
 import React from 'react';
@@ -44,85 +45,56 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
     promotions 
   } = pageData;
 
-  return (
-    <div className="bg-white dark:bg-[#080a0c] selection:bg-teal-100 selection:text-teal-900 transition-colors duration-500">
-      
-      {/* 01. Hero: The Impression Layer */}
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />,
+    'features': <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />,
+    'massage-features': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
+    'pricing-and-stats': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
+    'style-gallery': <StyleGallerySection />,
+    'benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
+    'testimonials': <TestimonialsSection />,
+    'cta': <CtaSection />,
+    'faqs': faqsData?.data ? <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} /> : null,
+  };
+
+  const staticFallback = (
+    <>
       <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
-        <Hero 
-        name={name} 
-        description={description} 
-        bannerUrl={bannerUrl} 
-        marketplaceListings={marketplaceListings} 
-        heroSlides={heroSlides} 
-      />
+        <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
       </div>
-
-      {/* 02. Core Philosophy & Values */}
       <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
-        <FeaturesSection 
-        name={name} 
-        description={description} 
-        themeSettings={themeSettings} 
-        CoreValues={CoreValues} 
-      />
+        <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />
       </div>
-      
-      {/* 03. Service Deep-Dive */}
       <div id="section-massage-features" data-editor-section="massage-features" data-editor-component="MassageFeatures">
-        <MassageFeatures 
-        marketplaceListings={marketplaceListings} 
-        slug={slug} 
-        themeSettings={themeSettings} 
-      />
+        <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />
       </div>
-      
-      {/* 04. Pricing & Scale: The Menu of Care */}
       <div id="section-pricing-and-stats" data-editor-section="pricing-and-stats" data-editor-component="PricingAndStatsSection">
-        <PricingAndStatsSection 
-        stats={stats} 
-        pricingTiers={pricingTiers} 
-        themeSettings={themeSettings} 
-      />
+        <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />
       </div>
-
-      {/* 05. Visual Portfolio: The Gallery */}
       <div id="section-style-gallery" data-editor-section="style-gallery" data-editor-component="StyleGallerySection">
         <StyleGallerySection />
       </div>
-
-      {/* 06. Strategic Advantages & Promotions */}
       <div id="section-benefits" data-editor-section="benefits" data-editor-component="BenefitsSection">
-        <BenefitsSection 
-        name={name} 
-        description={description} 
-        bannerUrl={bannerUrl} 
-        themeSettings={themeSettings} 
-        promotions={promotions} 
-      />
+        <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
       </div>
-
-      {/* 07. Social Proof: The Collective Voice */}
       <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
         <TestimonialsSection />
       </div>
-
-      {/* 08. Direct Connection: The Concierge Desk */}
       <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
         <CtaSection />
       </div>
-
-      {/* 09. Knowledge Suite: Common Queries */}
       {faqsData?.data && (
         <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
-          <FAQsSection 
-          faqs={faqsData.data} 
-          name={name} 
-          themeSettings={themeSettings} 
-        />
+          <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} />
         </div>
       )}
-      
+    </>
+  );
+
+  return (
+    <div className="bg-white dark:bg-[#080a0c] selection:bg-teal-100 selection:text-teal-900 transition-colors duration-500">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }

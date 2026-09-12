@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -381,95 +382,123 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
     router.push(searchEndpoint);
   }, [router]);
 
-  return (
-    <div className="font-sans">
-      {/* Hero Section  */}
-      <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
-        <Hero 
-        storeFormData={storeFormData}
+  
+  const companyLocations = (pageData as any)?.CompanyLocation || (siteData as any)?.CompanyLocation || [];
+
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': (
+      <Hero
+        storeFormData={siteData}
         filters={filters}
         setFilters={setFilters}
         onSearch={handleSearch}
         trendingLocations={
-          storeFormData?.CompanyLocation
-            ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                // Map/transform to Location type as needed
+          companyLocations.length > 0
+            ? companyLocations.map((loc: any) => ({
                 name: loc.name,
                 slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
                 metaKeywords: loc.metaKeywords || "",
                 status: loc.status || "active",
                 parentId: loc.parentId || null,
-                // Spread any additional fields if needed
                 ...loc,
               }))
             : []
-          }
+        }
       />
-      </div>
-        {/* Filter Bar */}
-        {/* <div id="section-filter-bar" data-editor-section="filter-bar" data-editor-component="FilterBar">
-   <FilterBar />
- </div> */}
+    ),
+    'travel-hero': (
+      <Hero
+        storeFormData={siteData}
+        filters={filters}
+        setFilters={setFilters}
+        onSearch={handleSearch}
+        trendingLocations={
+          companyLocations.length > 0
+            ? companyLocations.map((loc: any) => ({
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                ...loc,
+              }))
+            : []
+        }
+      />
+    ),
+    'listings': <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>,
+    'trending-locations': <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />,
+    'meet-agents': <MeetAgents experts={pageData?.Expert} />,
+    'market-insights': (
+      <MarketInsights
+        virtualTours={[]}
+        blogPosts={pageData?.blogs}
+        regionCosts={[]}
+      />
+    ),
+    'virtual-tours': <VirtualTours />,
+    'testimonials': <Testimonials />,
+    'mobile-app-promo': <MobileAppPromo />,
+    'newsletter-signup': <NewsletterSignup />,
+    'newsletter': <NewsletterSignup />,
+  };
 
-        {/* Listings Section */}
-        <div id="section-listings" data-editor-section="listings" data-editor-component="Listings">
-          <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
-        </div>
-
-        {/* Trending Locations */}
-        <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
-          <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />
-        </div>
-
-        {/* Meet Agents */}
-        <div id="section-meet-agents" data-editor-section="meet-agents" data-editor-component="MeetAgents">
-          <MeetAgents experts={pageData?.Expert} />
-        </div>
-
-        {/* Market Insights */}
-        <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
-          <MarketInsights
-          virtualTours={[]}//pageData?.virtualTours
-          blogPosts={pageData?.blogs}
-          regionCosts={[]}//pageData?.RegionCosts
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
+        <Hero
+          storeFormData={siteData}
+          filters={filters}
+          setFilters={setFilters}
+          onSearch={handleSearch}
+          trendingLocations={
+            companyLocations.length > 0
+              ? companyLocations.map((loc: any) => ({
+                  name: loc.name,
+                  slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                  metaKeywords: loc.metaKeywords || "",
+                  status: loc.status || "active",
+                  parentId: loc.parentId || null,
+                  ...loc,
+                }))
+              : []
+          }
         />
-        </div>
+      </div>
+      <div id="section-listings" data-editor-section="listings" data-editor-component="Listings">
+        <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
+      </div>
+      <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
+        <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />
+      </div>
+      <div id="section-meet-agents" data-editor-section="meet-agents" data-editor-component="MeetAgents">
+        <MeetAgents experts={pageData?.Expert} />
+      </div>
+      <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
+        <MarketInsights
+          virtualTours={[]}
+          blogPosts={pageData?.blogs}
+          regionCosts={[]}
+        />
+      </div>
+      <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
+        <VirtualTours />
+      </div>
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="Testimonials">
+        <Testimonials />
+      </div>
+      <div id="section-mobile-app-promo" data-editor-section="mobile-app-promo" data-editor-component="MobileAppPromo">
+        <MobileAppPromo />
+      </div>
+      <div id="section-newsletter-signup" data-editor-section="newsletter-signup" data-editor-component="NewsletterSignup">
+        <NewsletterSignup />
+      </div>
+    </>
+  );
 
-        {/* Virtual Tours */}
-        <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
-          <VirtualTours />
-        </div>
-
-        {/* Testimonials */}
-        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="Testimonials">
-          <Testimonials />
-        </div>
-
-        {/* Mobile App Promo */}
-        <div id="section-mobile-app-promo" data-editor-section="mobile-app-promo" data-editor-component="MobileAppPromo">
-          <MobileAppPromo />
-        </div>
-
-        {/* Newsletter Signup */}
-        <div id="section-newsletter-signup" data-editor-section="newsletter-signup" data-editor-component="NewsletterSignup">
-          <NewsletterSignup />
-        </div>
-
+  return (
+    <div className="font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

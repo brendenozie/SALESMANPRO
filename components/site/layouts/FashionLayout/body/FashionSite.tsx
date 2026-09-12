@@ -24,6 +24,7 @@ import CategoriesSection from './components/CategorySection';
 import FeaturesSection from './components/FeaturesSection';
 
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -337,11 +338,118 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
   );
 };
 
+  const renderSection = (sec: any, idx: number) => {
+    const key = (sec.component || sec.id || sec.type || '').toLowerCase();
 
+    if (key.includes('hero') || key.includes('heroslider')) {
+      return (
+        <div id={sec.id || "section-hero"} data-editor-section={sec.id || "hero"} data-editor-component="HeroSlider" key={sec.id || idx}>
+          <HeroSlider heroSlides={sec.content?.heroSlides || heroSlides} themeSettings={themeSettings} />
+        </div>
+      );
+    }
 
+    if (key.includes('feature') || key.includes('featuressection')) {
+      return (
+        <div id={sec.id || "section-features"} data-editor-section={sec.id || "features"} data-editor-component="FeaturesSection" key={sec.id || idx}>
+          <FeaturesSection />
+        </div>
+      );
+    }
 
-  return (
-    <div>
+    if (key === 'categories' || key.includes('categoriessection')) {
+      return (
+        <div id={sec.id || "section-categories"} data-editor-section={sec.id || "categories"} data-editor-component="CategoriesSection" key={sec.id || idx}>
+          <CategoriesSection store={pageData} />
+        </div>
+      );
+    }
+
+    if (key.includes('popular') || key.includes('popularproducts')) {
+      return (
+        <div id={sec.id || "section-popular-products"} data-editor-section={sec.id || "popular-products"} data-editor-component="DynamicPopularProducts" key={sec.id || idx}>
+          <DynamicPopularProducts id={id} />
+        </div>
+      );
+    }
+
+    if (key === 'promo' || key.includes('promosection')) {
+      return (
+        <div id={sec.id || "section-promo"} data-editor-section={sec.id || "promo"} data-editor-component="PromoSection" key={sec.id || idx}>
+          <PromoSection promotions={promotions} />
+        </div>
+      );
+    }
+
+    if (key.includes('trending') || key.includes('dynamictrending')) {
+      return (
+        <div id={sec.id || "section-trending"} data-editor-section={sec.id || "trending"} data-editor-component="DynamicTrending" key={sec.id || idx}>
+          <DynamicTrending id={id} />
+        </div>
+      );
+    }
+
+    if (key.includes('daily') || key.includes('dailybestsells') || key.includes('daily-best-sells')) {
+      return (
+        <div id={sec.id || "section-daily-best-sells"} data-editor-section={sec.id || "daily-best-sells"} data-editor-component="DynamicDailyBestSells" key={sec.id || idx}>
+          <DynamicDailyBestSells id={id} />
+        </div>
+      );
+    }
+
+    if (key.includes('second-promo') || key.includes('secondpromosection')) {
+      return (
+        <div id={sec.id || "section-second-promo"} data-editor-section={sec.id || "second-promo"} data-editor-component="SecondPromoSection" key={sec.id || idx}>
+          <SecondPromoSection promotions={promotions} />
+        </div>
+      );
+    }
+
+    if (key.includes('all-product') || key.includes('allproducts')) {
+      return (
+        <div id={sec.id || "section-all-products"} data-editor-section={sec.id || "all-products"} data-editor-component="AllProducts" key={sec.id || idx}>
+          <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
+        </div>
+      );
+    }
+
+    if (key.includes('metric') || key.includes('metricssection')) {
+      return (
+        <div id={sec.id || "section-metrics"} data-editor-section={sec.id || "metrics"} data-editor-component="MetricsSection" key={sec.id || idx}>
+          <MetricsSection coreValues={CoreValues} />
+        </div>
+      );
+    }
+
+    if (key.includes('award') || key.includes('awardssection')) {
+      return (
+        <div id={sec.id || "section-awards"} data-editor-section={sec.id || "awards"} data-editor-component="AwardsSection" key={sec.id || idx}>
+          <AwardsSection awards={awards} />
+        </div>
+      );
+    }
+
+    if (key.includes('testimonial') || key.includes('testimonialssection')) {
+      return (
+        <div id={sec.id || "section-testimonials"} data-editor-section={sec.id || "testimonials"} data-editor-component="TestimonialsSection" key={sec.id || idx}>
+          <TestimonialsSection testimonials={testimonialsData?.data || testimonials} />
+        </div>
+      );
+    }
+
+    if (key.includes('newsletter') || key.includes('newslettersection')) {
+      return (
+        <div id={sec.id || "section-newsletter"} data-editor-section={sec.id || "newsletter"} data-editor-component="NewsletterSection" key={sec.id || idx}>
+          <NewsletterSection />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const staticFallback = (
+    <>
       <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSlider">
         <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       </div>
@@ -375,12 +483,24 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
       <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
         <AwardsSection awards={awards} />
       </div>
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-   <TestimonialsSection testimonials={testimonialsData.data} />
- </div>}
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+          <TestimonialsSection testimonials={testimonialsData.data} />
+        </div>
+      )}
       <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
         <NewsletterSection />
       </div>
+    </>
+  );
+
+  return (
+    <div>
+      <ThemeSectionContainer
+        sections={(pageData as any)?.sections}
+        renderSection={renderSection}
+        fallback={staticFallback}
+      />
     </div>
   );
 }

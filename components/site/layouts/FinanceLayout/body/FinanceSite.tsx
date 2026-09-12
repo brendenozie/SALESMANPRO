@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
 
 import React, { useEffect, useState } from "react";
@@ -180,36 +181,60 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
     }
   }, [testimonialsData, faqsData]);
 
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />,
+    'practice-areas': <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>,
+    'services': <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>,
+    'why-choose-us': <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />,
+    'case-studies-testimonials': testimonialsData?.data ? <CaseStudiesTestimonials testimonials={testimonials} /> : null,
+    'testimonials': testimonialsData?.data ? <CaseStudiesTestimonials testimonials={testimonials} /> : null,
+    'process-workflow': <ProcessWorkflowSection />,
+    'meet-our-experts': <MeetOurExperts experts={experts} />,
+    'consultation-packages': <ConsultationPackagesSection packages={packages} />,
+    'faq': faqsData?.data ? <FAQSection faqs={faqs} /> : null,
+    'contact': <ContactSection />,
+  };
+
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />
+      </div>        
+      <div id="section-practice-areas" data-editor-section="practice-areas" data-editor-component="PracticeAreasSection">
+        <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>
+      </div>
+      <div id="section-why-choose-us" data-editor-section="why-choose-us" data-editor-component="WhyChooseUsSection">
+        <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />
+      </div>
+      {testimonialsData?.data && (
+        <div id="section-case-studies-testimonials" data-editor-section="case-studies-testimonials" data-editor-component="CaseStudiesTestimonials">
+          <CaseStudiesTestimonials testimonials={testimonials} />
+        </div>
+      )}
+      <div id="section-process-workflow" data-editor-section="process-workflow" data-editor-component="ProcessWorkflowSection">
+        <ProcessWorkflowSection />
+      </div>
+      <div id="section-meet-our-experts" data-editor-section="meet-our-experts" data-editor-component="MeetOurExperts">
+        <MeetOurExperts experts={experts} />
+      </div>
+      <div id="section-consultation-packages" data-editor-section="consultation-packages" data-editor-component="ConsultationPackagesSection">
+        <ConsultationPackagesSection packages={packages} />
+      </div>
+      {faqsData?.data && (
+        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+          <FAQSection faqs={faqs} />
+        </div>
+      )}
+      <div id="section-contact" data-editor-section="contact" data-editor-component="ContactSection">
+        <ContactSection />
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen relative">
-       {/* Add padding-top to account for fixed navbar */}
-        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
-          <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />
-        </div>        
-        <div id="section-practice-areas" data-editor-section="practice-areas" data-editor-component="PracticeAreasSection">
-          <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>
-        </div>
-        <div id="section-why-choose-us" data-editor-section="why-choose-us" data-editor-component="WhyChooseUsSection">
-          <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />
-        </div>
-        {testimonialsData?.data && <div id="section-case-studies-testimonials" data-editor-section="case-studies-testimonials" data-editor-component="CaseStudiesTestimonials">
-   <CaseStudiesTestimonials testimonials={testimonials} />
- </div>}
-        <div id="section-process-workflow" data-editor-section="process-workflow" data-editor-component="ProcessWorkflowSection">
-          <ProcessWorkflowSection />
-        </div>
-        <div id="section-meet-our-experts" data-editor-section="meet-our-experts" data-editor-component="MeetOurExperts">
-          <MeetOurExperts experts={experts} />
-        </div>
-        <div id="section-consultation-packages" data-editor-section="consultation-packages" data-editor-component="ConsultationPackagesSection">
-          <ConsultationPackagesSection packages={packages} />
-        </div>
-        {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-   <FAQSection faqs={faqs} />
- </div>}
-        <div id="section-contact" data-editor-section="contact" data-editor-component="ContactSection">
-          <ContactSection />
-        </div>
+    <div className="min-h-screen relative font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }

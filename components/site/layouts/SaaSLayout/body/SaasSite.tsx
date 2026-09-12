@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 // File: components/site/SaasSite.tsx
 'use client';
 
@@ -250,39 +251,71 @@ export default function SaaSSite({ pageData, companyId }: { pageData: StoreForm,
     }
   };
 
-  return (
-    <div className="space-y-28 font-sans"> {/* Increased space-y for more visual breathing room */}
-      {/* Hero Section */}
-      <div id="section-enhanced-hero" data-editor-section="enhanced-hero" data-editor-component="EnhancedHeroSection">
-        <EnhancedHeroSection
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': (
+      <EnhancedHeroSection
         store={siteStoreData}
         loader={loader}
         handleSignup={handleSignup}
       />
-      </div>
-
-      {/* Features Section */}
-      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
-        <FeaturesSection features={siteStoreData.features} />
-      </div>
-
-      {/* Pricing Plans Section */}
-      <div id="section-enhanced-pricing" data-editor-section="enhanced-pricing" data-editor-component="EnhancedPricingSection">
-        <EnhancedPricingSection
+    ),
+    'enhanced-hero': (
+      <EnhancedHeroSection
+        store={siteStoreData}
+        loader={loader}
+        handleSignup={handleSignup}
+      />
+    ),
+    'saas-enhancedherosection': (
+      <EnhancedHeroSection
+        store={siteStoreData}
+        loader={loader}
+        handleSignup={handleSignup}
+      />
+    ),
+    'features': <FeaturesSection features={siteStoreData.features} />,
+    'saas-featuressection': <FeaturesSection features={siteStoreData.features} />,
+    'enhanced-pricing': (
+      <EnhancedPricingSection
         plans={siteStoreData.plans}
         handleSignup={handleSignup}
       />
-      </div>
+    ),
+    'enhanced-testimonials': <EnhancedTestimonialsSection testimonials={siteStoreData.testimonials} />,
+    'enhanced-faqs': <EnhancedFAQsSection faqs={siteStoreData.faqs} />,
+  };
 
-      {/* Testimonials Section */}
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="EnhancedHeroSection">
+        <EnhancedHeroSection
+          store={siteStoreData}
+          loader={loader}
+          handleSignup={handleSignup}
+        />
+      </div>
+      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
+        <FeaturesSection features={siteStoreData.features} />
+      </div>
+      <div id="section-enhanced-pricing" data-editor-section="enhanced-pricing" data-editor-component="EnhancedPricingSection">
+        <EnhancedPricingSection
+          plans={siteStoreData.plans}
+          handleSignup={handleSignup}
+        />
+      </div>
       <div id="section-enhanced-testimonials" data-editor-section="enhanced-testimonials" data-editor-component="EnhancedTestimonialsSection">
         <EnhancedTestimonialsSection testimonials={siteStoreData.testimonials} />
       </div>
-
-      {/* FAQs Section */}
       <div id="section-enhanced-faqs" data-editor-section="enhanced-faqs" data-editor-component="EnhancedFAQsSection">
         <EnhancedFAQsSection faqs={siteStoreData.faqs} />
       </div>
+    </>
+  );
+
+  return (
+    <div className="space-y-28 font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }

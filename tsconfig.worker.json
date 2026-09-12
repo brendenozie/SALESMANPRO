@@ -10,6 +10,7 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist-worker/.tsbuildinfo",
     "baseUrl": ".",
+    "jsx": "react",
     "paths": {
       "@/*": ["./*"]
     }

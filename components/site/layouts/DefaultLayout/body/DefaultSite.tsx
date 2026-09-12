@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 "use client";
 
 import React from "react";
@@ -34,7 +35,8 @@ export default function DefaultSite({
   const displayMessage =
     message || messages[status] || "Something unexpected happened.";
 
-  return (
+  
+  const sectionContent = (
     <div id="section-default" data-editor-section="default" data-editor-component="DefaultSite" className="min-h-screen flex items-center justify-center bg-neutral-50 px-6">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -42,15 +44,12 @@ export default function DefaultSite({
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative w-full max-w-xl rounded-2xl bg-white shadow-xl border border-neutral-200 p-10 text-center"
       >
-        {/* Accent Line */}
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: "100%" }}
           transition={{ duration: 0.6 }}
           className="absolute top-0 left-0 h-1 bg-neutral-900 rounded-t-2xl"
         />
-
-        {/* Status Code */}
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -59,54 +58,37 @@ export default function DefaultSite({
         >
           {status}
         </motion.h1>
-
-        {/* Title */}
         <p className="mt-3 text-xl font-medium text-neutral-800">
           Something went wrong
         </p>
-
-        {/* Description */}
         <p className="mt-2 text-sm text-neutral-600 max-w-md mx-auto">
           {displayMessage}
         </p>
-
-        {/* Actions */}
-        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
-          <motion.button
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.97 }}
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <button
             onClick={() => router.push("/")}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-medium text-neutral-800 hover:bg-neutral-100 transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 transition"
           >
             <HomeIcon className="h-4 w-4" />
-            Go to Home
-          </motion.button>
-
-          <motion.button
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.97 }}
+            Go Home
+          </button>
+          <button
             onClick={() => router.refresh()}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 transition"
+            className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-5 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 transition"
           >
             <ArrowPathIcon className="h-4 w-4" />
-            Retry
-          </motion.button>
-        </div>
-
-        {/* Support */}
-        <div className="mt-6 text-xs text-neutral-500 flex items-center justify-center gap-1">
-          <EnvelopeIcon className="h-4 w-4" />
-          <span>
-            Need help?{" "}
-            <a
-              href="mailto:admin@domain.com"
-              className="underline hover:text-neutral-800"
-            >
-              Contact support
-            </a>
-          </span>
+            Try Again
+          </button>
         </div>
       </motion.div>
     </div>
+  );
+
+  const sectionMap: Record<string, React.ReactNode> = {
+    'default': sectionContent,
+  };
+
+  return (
+    <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={sectionContent} />
   );
 }

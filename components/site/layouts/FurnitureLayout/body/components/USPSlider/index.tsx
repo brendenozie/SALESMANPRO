@@ -31,6 +31,12 @@ const defaultCoreValues = [
   }
 ];
 
+const ICON_MAP: Record<string, any> = {
+  TruckIcon,
+  SwatchIcon,
+  StarIcon,
+};
+
 export default function USPSlider({ coreValues, themeSettings, config, sectionId }: HeroSliderProps) {
   const primary = themeSettings?.primaryColor || '#ef4444';
   const [scrolled, setScrolled] = React.useState(false);
@@ -62,9 +68,19 @@ export default function USPSlider({ coreValues, themeSettings, config, sectionId
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 lg:gap-24">
           {rawItems.map((feature: any, i: number) => {
             const fallbackDef = defaultCoreValues[i % defaultCoreValues.length];
-            const IconComp = typeof feature.icon === 'function' ? feature.icon : fallbackDef.icon;
-            const itemTitle = feature.title || feature.name || fallbackDef.title;
-            const itemDesc = feature.desc || feature.description || feature.subtitle || fallbackDef.desc;
+            const IconComp = typeof feature.icon === 'function'
+              ? feature.icon
+              : (typeof feature.icon === 'string' && ICON_MAP[feature.icon])
+              ? ICON_MAP[feature.icon]
+              : fallbackDef.icon;
+            const itemTitle = feature.title !== undefined && feature.title !== null
+              ? feature.title
+              : (feature.name !== undefined && feature.name !== null ? feature.name : fallbackDef.title);
+            const itemDesc = feature.desc !== undefined && feature.desc !== null
+              ? feature.desc
+              : (feature.description !== undefined && feature.description !== null
+                ? feature.description
+                : (feature.subtitle !== undefined && feature.subtitle !== null ? feature.subtitle : fallbackDef.desc));
 
             return (
               <motion.div 

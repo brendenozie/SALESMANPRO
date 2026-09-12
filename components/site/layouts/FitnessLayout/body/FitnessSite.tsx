@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 "use client";
 
 import React, { useEffect, useMemo } from "react";
@@ -467,87 +468,120 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
         );
       
 
-    return (
-        <div className={'relative w-full overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100'}>
-            {/* Hero Section */}
-            <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
-              <HeroSection store={pageData} 
-            onSearch={handleSearch}
-            trendingLocations={
+    
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': (
+      <HeroSection
+        store={pageData} 
+        onSearch={handleSearch}
+        trendingLocations={
+          CompanyLocation
+            ? CompanyLocation.map((loc: any) => ({
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                ...loc,
+              }))
+            : []
+        }
+      />
+    ),
+    'fitness-hero': (
+      <HeroSection
+        store={pageData} 
+        onSearch={handleSearch}
+        trendingLocations={
+          CompanyLocation
+            ? CompanyLocation.map((loc: any) => ({
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                ...loc,
+              }))
+            : []
+        }
+      />
+    ),
+    'category': <CategorySection store={pageData} />,
+    'fitness-category': <CategorySection store={pageData} />,
+    'listings-grid': <ListingsGrid programs={featured}/>,
+    'classes-grid': <ClassesGrid courses={siteData?.courses}/>,
+    'locations': <LocationsSection />,
+    'virtual-tours': <VirtualTours videos={[]} />,
+    'experts': <ExpertsSection educators={siteData?.Educator} />,
+    'market-insights': <MarketInsights blogs={storeFormData?.blogs} />,
+    'gallery': <GallerySection/>,
+    'testimonials': <TestimonialsSection testimonials={storeFormData?.testimonials} />,
+    'app-promotion': <AppPromotionSection />,
+    'newsletter': <NewsletterSection />,
+    'faqs': <FaqsSection faqs={storeFormData?.faqs} />,
+  };
+
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection store={pageData} 
+          onSearch={handleSearch}
+          trendingLocations={
             CompanyLocation
-                ? CompanyLocation.map((loc: any) => ({
-                    // Map/transform to Location type as needed
-                    name: loc.name,
-                    slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-                    metaKeywords: loc.metaKeywords || "",
-                    status: loc.status || "active",
-                    parentId: loc.parentId || null,
-                    // Spread any additional fields if needed
-                    ...loc,
+              ? CompanyLocation.map((loc: any) => ({
+                  name: loc.name,
+                  slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                  metaKeywords: loc.metaKeywords || "",
+                  status: loc.status || "active",
+                  parentId: loc.parentId || null,
+                  ...loc,
                 }))
-                : []
-            } />
-            </div>
+              : []
+          }
+        />
+      </div>
+      <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
+        <CategorySection store={pageData} />
+      </div>
+      <div id="section-listings-grid" data-editor-section="listings-grid" data-editor-component="ListingsGrid">
+        <ListingsGrid programs={featured}/>
+      </div>
+      <div id="section-classes-grid" data-editor-section="classes-grid" data-editor-component="ClassesGrid">
+        <ClassesGrid courses={siteData?.courses}/>
+      </div>
+      <div id="section-locations" data-editor-section="locations" data-editor-component="LocationsSection">
+        <LocationsSection  />
+      </div>
+      <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
+        <VirtualTours videos={[]} />
+      </div>
+      <div id="section-experts" data-editor-section="experts" data-editor-component="ExpertsSection">
+        <ExpertsSection educators={siteData?.Educator} />
+      </div>
+      <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
+        <MarketInsights blogs={storeFormData?.blogs} />
+      </div>
+      <div id="section-gallery" data-editor-section="gallery" data-editor-component="GallerySection">
+        <GallerySection/>
+      </div>
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection testimonials={storeFormData?.testimonials} />
+      </div>
+      <div id="section-app-promotion" data-editor-section="app-promotion" data-editor-component="AppPromotionSection">
+        <AppPromotionSection />
+      </div>
+      <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+        <NewsletterSection />
+      </div>
+      <div id="section-faqs" data-editor-section="faqs" data-editor-component="FaqsSection">
+        <FaqsSection faqs={storeFormData?.faqs} />
+      </div>
+    </>
+  );
 
-            {/* --- 02. NAVIGATION NODES (Categories) --- */}
-            <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
-              <CategorySection store={pageData} />
-            </div>
-
-            {/* Listings Grid */}
-            <div id="section-listings-grid" data-editor-section="listings-grid" data-editor-component="ListingsGrid">
-              <ListingsGrid programs={featured}/>
-            </div>
-
-            {/* Listings Grid */}
-            <div id="section-classes-grid" data-editor-section="classes-grid" data-editor-component="ClassesGrid">
-              <ClassesGrid courses={siteData?.courses}/>
-            </div>
-
-            {/* Trending Locations */}
-            <div id="section-locations" data-editor-section="locations" data-editor-component="LocationsSection">
-              <LocationsSection  />
-            </div>
-
-            {/* Virtual Tours */}
-            <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
-              <VirtualTours videos={[]} />
-            </div>
-            {/* siteData?.virtualTours */}
-
-            {/* Experts Section */}
-            <div id="section-experts" data-editor-section="experts" data-editor-component="ExpertsSection">
-              <ExpertsSection educators={siteData?.Educator} />
-            </div>
-
-            {/* Insights Section */}
-            <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
-              <MarketInsights blogs={storeFormData?.blogs} />
-            </div>
-
-            <div id="section-gallery" data-editor-section="gallery" data-editor-component="GallerySection">
-              <GallerySection/>
-            </div>
-
-            {/* Testimonials */}
-            <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-              <TestimonialsSection testimonials={storeFormData?.testimonials} />
-            </div>
-
-            {/* App Promotion (no props needed as it uses internal dummy data or generic content) */}
-            <div id="section-app-promotion" data-editor-section="app-promotion" data-editor-component="AppPromotionSection">
-              <AppPromotionSection />
-            </div>
-
-            {/* Newsletter (no props needed as it manages its own state) */}
-            <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
-              <NewsletterSection />
-            </div>
-
-            {/* FAQs */}
-            <div id="section-faqs" data-editor-section="faqs" data-editor-component="FaqsSection">
-              <FaqsSection faqs={storeFormData?.faqs} />
-            </div>
-        </div>
-    );
+  return (
+    <div className={'relative w-full overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100'}>
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
+    </div>
+  );
 }

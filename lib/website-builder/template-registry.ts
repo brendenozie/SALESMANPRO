@@ -8527,6 +8527,35 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateDefinition> = {
     defaultPages: makeEcommercePages("other"),
     authenticSections: DEFAULT_SECTIONS,
   },
+
+  // 56. SALON & SPA BOOKINGS
+  "salon-bookings@v1": {
+    id: "salon-bookings@v1",
+    version: "1.0.0",
+    name: "Luxury Salon & Spa Bookings",
+    category: "bookings",
+    variant: "salon",
+    shellLayout: "SalonBookingsLayout",
+    bodyComponent: "SalonBookingsSite",
+    capabilities: ["services", "bookings", "reviews"],
+    defaultTheme: {
+      primaryColor: "#0D9488",
+      secondaryColor: "#F59E0B",
+      accentColor: "#EC4899",
+      headingFont: "Playfair Display, serif",
+      bodyFont: "Inter, sans-serif",
+      buttonRadius: "lg",
+      cardRadius: "xl",
+    },
+    defaultPages: makeBookingPages("salon-bookings"),
+    authenticSections: BARBERSHOP_BOOKINGS_SECTIONS,
+    shell: makeShell("Header", "Footer", [
+      { id: "nav-services", label: "Treatments", url: "/services" },
+      { id: "nav-gallery", label: "Gallery", url: "/gallery" },
+      { id: "nav-booking", label: "Book Appointment", url: "/booking" },
+      { id: "nav-contact", label: "Contact", url: "/contact" },
+    ]),
+  },
 };
 
 /* =========================================================================
@@ -8628,10 +8657,12 @@ const ALIAS_TO_CANONICAL_ID: Record<string, string> = {
   "bookecommerce": "ecommerce-book@v1",
 
   // Accessories
-  "automotive-store": "ecommerce-accessories@v1",
+  "accessories-store": "ecommerce-accessories@v1",
   "accessories": "ecommerce-accessories@v1",
 
-  // Earphones & Glasses
+  // Electronics & Earphones
+  "electronics-store": "ecommerce-earphones@v1",
+  "electronics": "ecommerce-earphones@v1",
   "earphones-store": "ecommerce-earphones@v1",
   "earphones": "ecommerce-earphones@v1",
   "glasses-store": "ecommerce-glasses@v1",
@@ -8678,6 +8709,9 @@ const ALIAS_TO_CANONICAL_ID: Record<string, string> = {
   "barbershop-store": "barbershop@v1",
   "barbershop": "barbershop@v1",
   "drycleaning": "drycleaning@v1",
+  "salon-bookings": "salon-bookings@v1",
+  "salon": "salon-bookings@v1",
+  "spa": "salon-bookings@v1",
 
   // Real estate
   "real-estate": "real-estate@v1",

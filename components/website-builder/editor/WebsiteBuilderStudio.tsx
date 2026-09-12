@@ -567,11 +567,13 @@ function SectionLiveFieldsInspector({
       // 2. Component adapter schema
       // 3. Authentic section registry definition
       if (found.length === 0) {
+        const compName = section.component || section.type;
+
         // 1. Section content
         if (section.content && typeof section.content === 'object') {
           Object.entries(section.content).forEach(([k, v]) => {
             if (typeof v === 'string' || typeof v === 'number') {
-              const canonicalTarget = `home.${section.id}.${section.type}.main.${k}`;
+              const canonicalTarget = `home.${section.id}.${compName}.main.${k}`;
               if (!seen.has(canonicalTarget)) {
                 seen.add(canonicalTarget);
                 const inferredType = k.toLowerCase().includes('image') || k.toLowerCase().includes('photo')
@@ -583,28 +585,51 @@ function SectionLiveFieldsInspector({
                   targetId: canonicalTarget,
                   label: k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
                   type: inferredType,
-                  componentKey: section.type,
+                  componentKey: compName,
                   currentValue: String(v),
                   defaultValue: String(v),
                   hasRenderBinding: true,
                 });
               }
+            } else if (Array.isArray(v)) {
+              v.forEach((item, itemIdx) => {
+                if (item && typeof item === 'object') {
+                  Object.entries(item).forEach(([propKey, propVal]) => {
+                    if (typeof propVal === 'string' || typeof propVal === 'number') {
+                      const canonicalTarget = `home.${section.id}.${compName}.${k}-${itemIdx}.${propKey}`;
+                      if (!seen.has(canonicalTarget)) {
+                        seen.add(canonicalTarget);
+                        const label = `${k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())} ${itemIdx + 1}: ${propKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}`;
+                        found.push({
+                          targetId: canonicalTarget,
+                          label,
+                          type: typeof propVal === 'string' && propVal.length > 50 ? 'textarea' : 'text',
+                          componentKey: compName,
+                          currentValue: String(propVal),
+                          defaultValue: String(propVal),
+                          hasRenderBinding: true,
+                        });
+                      }
+                    }
+                  });
+                }
+              });
             }
           });
         }
 
         // 2. Component adapter properties
-        const adapter = getEditableComponent(section.type) || getEditableComponent(section.id);
+        const adapter = getEditableComponent(section.component || "") || getEditableComponent(section.type) || getEditableComponent(section.id);
         if (adapter && adapter.properties) {
           Object.entries(adapter.properties).forEach(([k, prop]) => {
-            const canonicalTarget = `home.${section.id}.${section.type}.main.${k}`;
+            const canonicalTarget = `home.${section.id}.${compName}.main.${k}`;
             if (!seen.has(canonicalTarget)) {
               seen.add(canonicalTarget);
               found.push({
                 targetId: canonicalTarget,
                 label: prop.label || k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
                 type: prop.type || 'text',
-                componentKey: section.type,
+                componentKey: compName,
                 currentValue: typeof prop.default === 'string' ? prop.default : undefined,
                 defaultValue: typeof prop.default === 'string' ? prop.default : undefined,
                 hasRenderBinding: true,
@@ -617,12 +642,12 @@ function SectionLiveFieldsInspector({
         try {
           const canonicalTpl = resolveCanonicalTemplate(undefined, undefined, config.templateKey);
           const matchedAuthSec = canonicalTpl.authenticSections.find(
-            (as) => as.id === section.id || as.component === section.type || as.type === section.type
+            (as) => as.id === section.id || as.component === section.component || as.component === section.type || as.type === section.type
           );
           if (matchedAuthSec) {
             if (Array.isArray(matchedAuthSec.editableProps)) {
               matchedAuthSec.editableProps.forEach((propKey) => {
-                const canonicalTarget = `home.${section.id}.${section.type}.main.${propKey}`;
+                const canonicalTarget = `home.${section.id}.${compName}.main.${propKey}`;
                 if (!seen.has(canonicalTarget)) {
                   seen.add(canonicalTarget);
                   const defVal = (matchedAuthSec.defaultContent as any)?.[propKey];
@@ -635,7 +660,7 @@ function SectionLiveFieldsInspector({
                     targetId: canonicalTarget,
                     label: propKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
                     type: inferredType,
-                    componentKey: section.type,
+                    componentKey: compName,
                     currentValue: typeof defVal === 'string' ? defVal : undefined,
                     defaultValue: typeof defVal === 'string' ? defVal : undefined,
                     hasRenderBinding: true,
@@ -1267,25 +1292,28 @@ export default function WebsiteBuilderStudio({
             }
           } else if (matchedSection) {
             if (!matchedSection.content) matchedSection.content = {};
-            matchedSection.content[rawField] = value;
-            matchedSection.content[fieldKey] = value;
 
             // Handle indexed items/services array updating (e.g. items-0.title, services-0.title, services-0.desc)
-            const itemMatch = targetId.match(/(items|services|features|badges)[.-](\d+)\.([a-zA-Z0-9_]+)/i);
+            const itemMatch = targetId.match(/(items|services|features|badges|corevalues|slides)[.-](\d+)\.([a-zA-Z0-9_]+)/i);
             if (itemMatch) {
               const arrayName = itemMatch[1].toLowerCase();
               const itemIdx = parseInt(itemMatch[2], 10);
               const propKey = itemMatch[3];
-              if (!Array.isArray(matchedSection.content[arrayName])) {
-                matchedSection.content[arrayName] = [];
+              const actualKey = Object.keys(matchedSection.content).find(k => k.toLowerCase() === arrayName) || arrayName;
+              const currentArray = Array.isArray(matchedSection.content[actualKey])
+                ? [...matchedSection.content[actualKey]]
+                : [];
+              while (currentArray.length <= itemIdx) {
+                currentArray.push({});
               }
-              while (matchedSection.content[arrayName].length <= itemIdx) {
-                matchedSection.content[arrayName].push({});
-              }
-              matchedSection.content[arrayName][itemIdx] = {
-                ...matchedSection.content[arrayName][itemIdx],
+              currentArray[itemIdx] = {
+                ...currentArray[itemIdx],
                 [propKey]: value,
               };
+              matchedSection.content[actualKey] = currentArray;
+            } else {
+              matchedSection.content[rawField] = value;
+              matchedSection.content[fieldKey] = value;
             }
           }
         }

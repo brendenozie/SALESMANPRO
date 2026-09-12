@@ -10,6 +10,7 @@ import { StoreForm } from "@/types/typings";
 // Above-the-fold components - statically imported
 import HeroSection, { SearchFilters } from "./components/HeroSection";
 import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
+import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
 
 // Loading skeleton
 // Dynamically import below-the-fold components
@@ -87,7 +88,8 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
       setTestimonials(testimonialsData.data);
     }
   }, [testimonialsData]);
-    const [filters, setFilters] = useState<SearchFilters>({
+
+  const [filters, setFilters] = useState<SearchFilters>({
     location: "",
     vehicleType: "",
     make: "",
@@ -112,28 +114,106 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
     window.location.href = `/search?${queryParams.toString()}`;
   }, [filters]);
 
-  return (
-    <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+  const locations = storeFormData?.CompanyLocation
+    ? storeFormData.CompanyLocation.map((loc: any) => ({
+        name: loc.name,
+        slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+        metaKeywords: loc.metaKeywords || "",
+        status: loc.status || "active",
+        parentId: loc.parentId || null,
+        ...loc,
+      }))
+    : [];
 
-      {/* Hero */}
+  const renderSection = (sec: any, idx: number) => {
+    const key = (sec.component || sec.id || sec.type || '').toLowerCase();
+
+    if (key.includes('hero') || key.includes('herosection')) {
+      return (
+        <div id={sec.id || "section-hero"} data-editor-section={sec.id || "hero"} data-editor-component="HeroSection" key={sec.id || idx}>
+          <HeroSection
+            store={storeFormData}
+            trendingLocations={locations}
+            onSearch={() => {}}
+          />
+        </div>
+      );
+    }
+
+    if (key.includes('featured') || key.includes('automotivefeaturedlistingswrapper')) {
+      return (
+        <div id={sec.id || "section-automotive-featured-listings"} data-editor-section={sec.id || "automotive-featured-listings"} data-editor-component="AutomotiveFeaturedListingsWrapper" key={sec.id || idx}>
+          <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
+        </div>
+      );
+    }
+
+    if (key.includes('how-it-works') || key.includes('howitworks')) {
+      return (
+        <div id={sec.id || "section-how-it-works"} data-editor-section={sec.id || "how-it-works"} data-editor-component="HowItWorks" key={sec.id || idx}>
+          <HowItWorks />
+        </div>
+      );
+    }
+
+    if (key.includes('browse') || key.includes('browsebycategory')) {
+      return (
+        <div id={sec.id || "section-browse-by-category"} data-editor-section={sec.id || "browse-by-category"} data-editor-component="BrowseByCategory" key={sec.id || idx}>
+          <BrowseByCategory store={storeFormData}/>
+        </div>
+      );
+    }
+
+    if (key.includes('trending') || key.includes('trendinglocations')) {
+      return (
+        <div id={sec.id || "section-trending-locations"} data-editor-section={sec.id || "trending-locations"} data-editor-component="TrendingLocations" key={sec.id || idx}>
+          <TrendingLocations locations={locations} slug={"slug"} />
+        </div>
+      );
+    }
+
+    if (key.includes('popular') || key.includes('popularvehicleswrapper')) {
+      return (
+        <div id={sec.id || "section-popular-vehicles"} data-editor-section={sec.id || "popular-vehicles"} data-editor-component="PopularVehiclesWrapper" key={sec.id || idx}>
+          <PopularVehiclesWrapper companyId={pageData.id} />
+        </div>
+      );
+    }
+
+    if (key.includes('video') || key.includes('videoshowcasesection')) {
+      return (
+        <div id={sec.id || "section-video-showcase"} data-editor-section={sec.id || "video-showcase"} data-editor-component="VideoShowcaseSection" key={sec.id || idx}>
+          <VideoShowcaseSection blogs={blogsData?.data || []} />
+        </div>
+      );
+    }
+
+    if (key.includes('market') || key.includes('marketinsightssection')) {
+      return (
+        <div id={sec.id || "section-market-insights"} data-editor-section={sec.id || "market-insights"} data-editor-component="MarketInsightsSection" key={sec.id || idx}>
+          <MarketInsightsSection />
+        </div>
+      );
+    }
+
+    if (key.includes('testimonial') || key.includes('testimonialscarouselsection')) {
+      return (
+        <div id={sec.id || "section-testimonials"} data-editor-section={sec.id || "testimonials"} data-editor-component="TestimonialsCarouselSection" key={sec.id || idx}>
+          <TestimonialsCarouselSection testimonials={testimonials} />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const staticFallback = (
+    <>
       <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
         <HeroSection
           store={storeFormData}
-          trendingLocations={storeFormData?.CompanyLocation
-            ? storeFormData?.CompanyLocation.map((loc: any) => ({
-              // Map/transform to Location type as needed
-              name: loc.name,
-              slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-              metaKeywords: loc.metaKeywords || "",
-              status: loc.status || "active",
-              parentId: loc.parentId || null,
-              // Spread any additional fields if needed
-              ...loc,
-            }))
-            : []} 
-            // filters={filters}
-            // setFilters={setFilters}
-            onSearch={() => {}} // No-op since search is handled in FilterBarSection
+          trendingLocations={locations}
+          onSearch={() => {}}
         />
       </div>
 
@@ -146,48 +226,42 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
       </div>
 
       <div id="section-browse-by-category" data-editor-section="browse-by-category" data-editor-component="BrowseByCategory">
-        <BrowseByCategory store={ storeFormData }/>
+        <BrowseByCategory store={storeFormData}/>
       </div>
 
-      {/* Trending Locations Section */}
       <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
-        <TrendingLocations
-          locations={
-            storeFormData?.CompanyLocation
-              ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                  // Map/transform to Location type as needed
-                  name: loc.name,
-                  slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-                  metaKeywords: loc.metaKeywords || "",
-                  status: loc.status || "active",
-                  parentId: loc.parentId || null,
-                  // Spread any additional fields if needed
-                  ...loc,
-                }))
-              : []
-          }
-          slug={"slug"}
-        />
+        <TrendingLocations locations={locations} slug={"slug"} />
       </div>      
 
-      {/* Featured Vehicles */}
       <div id="section-popular-vehicles" data-editor-section="popular-vehicles" data-editor-component="PopularVehiclesWrapper">
-        <PopularVehiclesWrapper  companyId={pageData.id} />
+        <PopularVehiclesWrapper companyId={pageData.id} />
       </div>
-      {/* If videos are stored under latestVideos */}
-      {blogsData?.data && <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
-   <VideoShowcaseSection blogs={blogsData.data || []} />
- </div>}
+
+      {blogsData?.data && (
+        <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
+          <VideoShowcaseSection blogs={blogsData.data || []} />
+        </div>
+      )}
 
       <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsightsSection">
         <MarketInsightsSection />
       </div>
 
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
-   <TestimonialsCarouselSection  testimonials={testimonials} />
- </div>}
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
+          <TestimonialsCarouselSection testimonials={testimonials} />
+        </div>
+      )}
+    </>
+  );
 
+  return (
+    <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      <ThemeSectionContainer
+        sections={(pageData as any)?.sections}
+        renderSection={renderSection}
+        fallback={staticFallback}
+      />
     </div>
   );
 }
-

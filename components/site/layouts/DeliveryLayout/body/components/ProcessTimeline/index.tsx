@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { ArchiveBoxArrowDownIcon, ArrowRightIcon, ArrowRightStartOnRectangleIcon, ArrowsPointingOutIcon, TruckIcon, WrenchIcon } from "@heroicons/react/24/outline";
 import { motion, useScroll, useSpring } from "framer-motion";

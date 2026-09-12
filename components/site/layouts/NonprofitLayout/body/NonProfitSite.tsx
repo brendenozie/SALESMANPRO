@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
 
 import React from 'react';
@@ -35,57 +36,58 @@ export default function NonProfitSite({ pageData, companyId }: { pageData: Store
   // const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
   // const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
 
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': <HeroSection storeFormData={pageData} />,
+    'core-highlights': <CoreHighlightsSection storeFormData={pageData} />,
+    'about-us-spotlight': <AboutUsSpotlight storeFormData={pageData} />,
+    'programs-causes': <ProgramsCausesSection storeFormData={pageData} />,
+    'impact-stats': <ImpactStatsSection storeFormData={pageData} />,
+    'events-updates': <EventsUpdatesSection storeFormData={pageData} />,
+    'news': <NewsSection storeFormData={pageData} />,
+    'testimonials-news': <TestimonialsNewsSection storeFormData={pageData} />,
+    'cta-bold': <CtaBoldSection storeFormData={pageData} />,
+    'faq': <FAQSection storeFormData={pageData} />,
+  };
+
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection storeFormData={pageData} />
+      </div>
+      <div id="section-core-highlights" data-editor-section="core-highlights" data-editor-component="CoreHighlightsSection">
+        <CoreHighlightsSection storeFormData={pageData} />
+      </div>
+      <div id="section-about-us-spotlight" data-editor-section="about-us-spotlight" data-editor-component="AboutUsSpotlight">
+        <AboutUsSpotlight storeFormData={pageData} />
+      </div>
+      <div id="section-programs-causes" data-editor-section="programs-causes" data-editor-component="ProgramsCausesSection">
+        <ProgramsCausesSection storeFormData={pageData} />
+      </div>
+      <div id="section-impact-stats" data-editor-section="impact-stats" data-editor-component="ImpactStatsSection">
+        <ImpactStatsSection storeFormData={pageData} />
+      </div>
+      <div id="section-events-updates" data-editor-section="events-updates" data-editor-component="EventsUpdatesSection">
+        <EventsUpdatesSection storeFormData={pageData} />
+      </div>
+      <div id="section-news" data-editor-section="news" data-editor-component="NewsSection">
+        <NewsSection storeFormData={pageData} />
+      </div>
+      <div id="section-testimonials-news" data-editor-section="testimonials-news" data-editor-component="TestimonialsNewsSection">
+        <TestimonialsNewsSection storeFormData={pageData} />
+      </div>
+      <div id="section-cta-bold" data-editor-section="cta-bold" data-editor-component="CtaBoldSection">
+        <CtaBoldSection storeFormData={pageData} />
+      </div>
+      <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+        <FAQSection storeFormData={pageData} />
+      </div>
+    </>
+  );
+
   return (
-      <main className="min-h-screen bg-gray-100 font-sans">
-        {/* Hero Section - Render immediately */}
-        <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
-          <HeroSection storeFormData={pageData} />
-        </div>
-
-        {/* Core Highlights / Impact Areas */}
-        <div id="section-core-highlights" data-editor-section="core-highlights" data-editor-component="CoreHighlightsSection">
-          <CoreHighlightsSection storeFormData={pageData} />
-        </div>
-
-        {/* About Us Spotlight */}
-        <div id="section-about-us-spotlight" data-editor-section="about-us-spotlight" data-editor-component="AboutUsSpotlight">
-          <AboutUsSpotlight storeFormData={pageData} />
-        </div>
-
-        {/* Our Programs / Featured Causes */}
-        <div id="section-programs-causes" data-editor-section="programs-causes" data-editor-component="ProgramsCausesSection">
-          <ProgramsCausesSection storeFormData={pageData} />
-        </div>
-
-        {/* Impact Stats */}
-        <div id="section-impact-stats" data-editor-section="impact-stats" data-editor-component="ImpactStatsSection">
-          <ImpactStatsSection storeFormData={pageData} />
-        </div>
-
-        {/* Events & Updates - Render when data is ready */}
-        <div id="section-events-updates" data-editor-section="events-updates" data-editor-component="EventsUpdatesSection">
-          <EventsUpdatesSection storeFormData={pageData} />
-        </div>
-
-        {/* News - Render when data is ready */}
-        <div id="section-news" data-editor-section="news" data-editor-component="NewsSection">
-          <NewsSection storeFormData={pageData} />
-        </div>
-
-        {/* Testimonials & News - Render when data is ready */}
-        <div id="section-testimonials-news" data-editor-section="testimonials-news" data-editor-component="TestimonialsNewsSection">
-          <TestimonialsNewsSection storeFormData={pageData} />
-        </div>
-
-        {/* Call to Action - Bold */}
-        <div id="section-cta-bold" data-editor-section="cta-bold" data-editor-component="CtaBoldSection">
-          <CtaBoldSection storeFormData={pageData} />
-        </div>
-
-        {/* FAQs - Render when data is ready */}
-        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-          <FAQSection storeFormData={pageData} />
-        </div>
-      </main>
+    <main className="font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
+    </main>
   );
 }

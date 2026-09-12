@@ -1,0 +1,4258 @@
+[
+  {
+    "id": "ecommerce-shoes@v1",
+    "name": "Modern Shoes Store",
+    "shellLayout": "EcommerceShoesLayout",
+    "bodyComponent": "EcommerceShoesSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "15 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-default@v1",
+    "name": "General E-Commerce Storefront",
+    "shellLayout": "EcommerceLayout",
+    "bodyComponent": "EcommerceSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "8 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-gaming@v1",
+    "name": "Gaming & Esports Store",
+    "shellLayout": "EcommerceGamingLayout",
+    "bodyComponent": "EcommerceGamingSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-agrovet@v1",
+    "name": "Agrovet & Agricultural Supplies",
+    "shellLayout": "EcommerceAgrovetLayout",
+    "bodyComponent": "EcommerceAgrovetSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-meat@v1",
+    "name": "Modern Meat & Gourmet Butchery",
+    "shellLayout": "EcommerceMeatLayout",
+    "bodyComponent": "EcommerceMeatSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-hardware@v1",
+    "name": "Hardware & Tools Store",
+    "shellLayout": "EcommerceHardwareLayout",
+    "bodyComponent": "EcommerceHardwareSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "16 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-watch@v1",
+    "name": "Luxury Timepieces & Watches",
+    "shellLayout": "EcommerceWatchLayout",
+    "bodyComponent": "EcommerceWatchSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-flowers@v1",
+    "name": "Boutique Florist & Flowers",
+    "shellLayout": "EcommerceFlowersLayout",
+    "bodyComponent": "EcommerceFlowersSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-groceries@v1",
+    "name": "Supermarket & Fresh Groceries",
+    "shellLayout": "EcommerceGroceriesLayout",
+    "bodyComponent": "EcommerceGroceriesSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "13 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-earphones@v1",
+    "name": "Pro Audio & Earphones",
+    "shellLayout": "EcommerceEarphonesLayout",
+    "bodyComponent": "EcommerceEarphonesSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "13 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-glasses@v1",
+    "name": "Eyewear & Optics Studio",
+    "shellLayout": "EcommerceGlassesLayout",
+    "bodyComponent": "EcommerceGlassesSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "16 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-honey@v1",
+    "name": "Pure Honey & Organic Bee Products",
+    "shellLayout": "EcommerceHoneyLayout",
+    "bodyComponent": "EcommerceHoneySite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-peanuts@v1",
+    "name": "Organic Nuts & Peanuts",
+    "shellLayout": "EcommercePeanutsLayout",
+    "bodyComponent": "EcommercePeanutsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "13 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-baby@v1",
+    "name": "Baby & Toddler Boutique",
+    "shellLayout": "EcommerceBabyLayout",
+    "bodyComponent": "EcommerceBabySite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "16 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-cake@v1",
+    "name": "Bakery & Designer Cakes",
+    "shellLayout": "EcommerceCakeLayout",
+    "bodyComponent": "EcommerceCakeSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-pets@v1",
+    "name": "Pet Food & Supplies Store",
+    "shellLayout": "EcommercePetsLayout",
+    "bodyComponent": "EcommercePetsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-bike@v1",
+    "name": "Bicycles & Cycling Pro Shop",
+    "shellLayout": "EcommerceBikeLayout",
+    "bodyComponent": "EcommerceBikeSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-motorcycle@v1",
+    "name": "Motorcycles & Riding Gear",
+    "shellLayout": "EcommerceMotorCycleLayout",
+    "bodyComponent": "EcommerceMotorCycleSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-book@v1",
+    "name": "Bookstore & Stationery",
+    "shellLayout": "EcommerceBookLayout",
+    "bodyComponent": "EcommerceBookSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "15 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ecommerce-accessories@v1",
+    "name": "Auto Accessories & Parts",
+    "shellLayout": "EcommerceAccessoriesLayout",
+    "bodyComponent": "EcommerceAccessoriesSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "16 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "fashion@v1",
+    "name": "Modern Fashion & Apparel Boutique",
+    "shellLayout": "FashionLayout",
+    "bodyComponent": "FashionSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "13 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "furniture@v1",
+    "name": "Contemporary Furniture & Interior Design",
+    "shellLayout": "FurnitureLayout",
+    "bodyComponent": "FurnitureSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "15 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "courses@v1",
+    "name": "Online Academy & Courses (Layout 1)",
+    "shellLayout": "CoursesLayout",
+    "bodyComponent": "CoursesSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "courses-2@v1",
+    "name": "Modern University & Courses (Layout 2)",
+    "shellLayout": "CoursesLayout2",
+    "bodyComponent": "CoursesSite2",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "courses-3@v1",
+    "name": "Executive Bootcamp (Layout 3)",
+    "shellLayout": "CoursesLayout3",
+    "bodyComponent": "CoursesSite3",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "automotive@v1",
+    "name": "Premier Car Dealership & Motors (Layout 1)",
+    "shellLayout": "AutomotiveLayout",
+    "bodyComponent": "AutomotiveSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "automotive-2@v1",
+    "name": "Luxury Motors Dealership (Layout 2)",
+    "shellLayout": "Automotive2Layout",
+    "bodyComponent": "Automotive2Site",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "security@v1",
+    "name": "Security Guarding & Systems (Layout 1)",
+    "shellLayout": "SecurityLayout",
+    "bodyComponent": "SecuritySite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "security-2@v1",
+    "name": "Cyber & Security Consulting (Layout 2)",
+    "shellLayout": "Security2Layout",
+    "bodyComponent": "Security2Site",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "consultancy@v1",
+    "name": "Executive Advisory & Business Coaching",
+    "shellLayout": "ConsultancyLayout",
+    "bodyComponent": "ConsultancySite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "10 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "public-speaking@v1",
+    "name": "Keynote Speaker & Author",
+    "shellLayout": "PublicSpeakingLayout",
+    "bodyComponent": "PublicSpeakingSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "services@v1",
+    "name": "Professional Agency & Service Provider",
+    "shellLayout": "ServicesLayout",
+    "bodyComponent": "ServiceSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "10 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "bookings@v1",
+    "name": "General Appointment & Booking Hub",
+    "shellLayout": "BookingsLayout",
+    "bodyComponent": "BookingsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "barbershop@v1",
+    "name": "Classic Barbershop & Grooming",
+    "shellLayout": "BarbershopBookingsLayout",
+    "bodyComponent": "BarbershopBookingsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "drycleaning@v1",
+    "name": "Drycleaning & Laundry Express",
+    "shellLayout": "DrycleaningBookingsLayout",
+    "bodyComponent": "DrycleaningBookingsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "10 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "real-estate@v1",
+    "name": "Luxury Properties & Realty",
+    "shellLayout": "RealEstateLayout",
+    "bodyComponent": "RealEstateSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "11 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "property-management@v1",
+    "name": "Property Asset & Tenancy Management",
+    "shellLayout": "PropertyManagementLayout",
+    "bodyComponent": "PropertyManagementSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "11 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "restaurant@v1",
+    "name": "Bistro, Restaurant & Food Delivery",
+    "shellLayout": "RestaurantLayout",
+    "bodyComponent": "RestaurentSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "6 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "healthcare@v1",
+    "name": "Medical Clinic & Health Center",
+    "shellLayout": "HealthcareLayout",
+    "bodyComponent": "HealthCareSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "fitness@v1",
+    "name": "Gym, Fitness & Personal Training",
+    "shellLayout": "FitnessLayout",
+    "bodyComponent": "FitnessSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "13 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "finance@v1",
+    "name": "Wealth Advisory & Financial Solutions",
+    "shellLayout": "FinanceLayout",
+    "bodyComponent": "FinanceSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "travel@v1",
+    "name": "Safari Expeditions & Travel Agency",
+    "shellLayout": "TravelLayout",
+    "bodyComponent": "TravelSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "10 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "saas@v1",
+    "name": "Cloud Software & Tech Platform",
+    "shellLayout": "SaaSLayout",
+    "bodyComponent": "SaaSSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "5 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "marketplace@v1",
+    "name": "Multi-Vendor Marketplace",
+    "shellLayout": "MarketplaceLayout",
+    "bodyComponent": "MarketPlaceSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "4 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "portfolio@v1",
+    "name": "Creative Portfolio & CV",
+    "shellLayout": "PortfolioLayout",
+    "bodyComponent": "PortfolioSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "14 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "company-portfolio@v1",
+    "name": "Corporate Enterprise Portfolio (Dark)",
+    "shellLayout": "CompanyPortfolioLayout",
+    "bodyComponent": "CompanyPortfolioSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "company-portfolio-light@v1",
+    "name": "Corporate Enterprise Portfolio (Light)",
+    "shellLayout": "CompanyPortfolioLightLayout",
+    "bodyComponent": "CompanyPortfolioLightSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "blog@v1",
+    "name": "Digital Magazine & Editorial Blog",
+    "shellLayout": "BlogLayout",
+    "bodyComponent": "BlogSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "7 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "media@v1",
+    "name": "Film Studio & Media Entertainment",
+    "shellLayout": "MediaLayout",
+    "bodyComponent": "MediaSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "nonprofit@v1",
+    "name": "Charity, Foundation & NGO",
+    "shellLayout": "NonprofitLayout",
+    "bodyComponent": "NonProfitSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "10 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "delivery@v1",
+    "name": "Courier & Express Logistics",
+    "shellLayout": "DeliveryLayout",
+    "bodyComponent": "DeliverySite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "12 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "Verified in live SSR DOM output"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "directory@v1",
+    "name": "Local Business Directory",
+    "shellLayout": "DirectoryLayout",
+    "bodyComponent": "DirectorySite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "events@v1",
+    "name": "Event Ticketing & Experiences",
+    "shellLayout": "EventsLayout",
+    "bodyComponent": "EventsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "ghuba@v1",
+    "name": "Ghuba Super App Ecosystem",
+    "shellLayout": "GhubaLayout",
+    "bodyComponent": "GhubaSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "8 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "default-site@v1",
+    "name": "Universal Clean Storefront",
+    "shellLayout": "DefaultLayout",
+    "bodyComponent": "DefaultSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "1 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  },
+  {
+    "id": "salon-bookings@v1",
+    "name": "Luxury Salon & Spa Bookings",
+    "shellLayout": "SalonBookingsLayout",
+    "bodyComponent": "SalonBookingsSite",
+    "classification": "STATIC MONOLITHIC",
+    "overallStatus": "PASS",
+    "capabilities": {
+      "shell": {
+        "status": "PASS"
+      },
+      "pageResolution": {
+        "status": "PASS"
+      },
+      "sectionDiscovery": {
+        "status": "PASS",
+        "notes": "9 authentic sections"
+      },
+      "sectionIdentity": {
+        "status": "PASS"
+      },
+      "sectionRenderer": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer adapter available"
+      },
+      "tenantConfig": {
+        "status": "PASS",
+        "notes": "Config pass-through supported via StoreContextProvider"
+      },
+      "domBinding": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-section"
+      },
+      "editorSelection": {
+        "status": "PASS",
+        "notes": "ThemeSectionContainer emits data-editor-component"
+      },
+      "edit": {
+        "status": "PASS",
+        "notes": "Section content edit verified via StoreContext"
+      },
+      "hide": {
+        "status": "PASS",
+        "notes": "Supported via sections array filtering"
+      },
+      "move": {
+        "status": "PASS",
+        "notes": "Supported via sections array reordering"
+      },
+      "duplicate": {
+        "status": "PASS",
+        "notes": "Supported via section cloning"
+      },
+      "delete": {
+        "status": "PASS",
+        "notes": "Supported via section deletion"
+      },
+      "save": {
+        "status": "PASS",
+        "notes": "Serialized draft sections schema valid"
+      },
+      "reload": {
+        "status": "PASS",
+        "notes": "Roundtrip hydration from draft JSON"
+      },
+      "publish": {
+        "status": "PASS",
+        "notes": "Published config writes canonical templateKey"
+      },
+      "publicStorefront": {
+        "status": "PASS",
+        "notes": "Storefront hydration with authentic components"
+      }
+    },
+    "rootCauseScope": "NONE"
+  }
+]

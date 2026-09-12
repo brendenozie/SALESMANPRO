@@ -1,0 +1,994 @@
+[
+  {
+    "templateId": "ecommerce-shoes@v1",
+    "name": "Modern Shoes Store",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceShoesSite",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\EcommerceShoesSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-default@v1",
+    "name": "General E-Commerce Storefront",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceSite",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\EcommerceSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-gaming@v1",
+    "name": "Gaming & Esports Store",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceGamingSite",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\EcommerceGamingSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-agrovet@v1",
+    "name": "Agrovet & Agricultural Supplies",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceAgrovetSite",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\EcommerceAgrovetSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-meat@v1",
+    "name": "Modern Meat & Gourmet Butchery",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceMeatSite",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\EcommerceMeatSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-hardware@v1",
+    "name": "Hardware & Tools Store",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceHardwareSite",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\EcommerceHardwareSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-watch@v1",
+    "name": "Luxury Timepieces & Watches",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceWatchSite",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\EcommerceWatchSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-flowers@v1",
+    "name": "Boutique Florist & Flowers",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceFlowersSite",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\EcommerceFlowersSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-groceries@v1",
+    "name": "Supermarket & Fresh Groceries",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceGroceriesSite",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\EcommerceGroceriesSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-earphones@v1",
+    "name": "Pro Audio & Earphones",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceEarphonesSite",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\EcommerceEarphonesSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-glasses@v1",
+    "name": "Eyewear & Optics Studio",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceGlassesSite",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\EcommerceGlassesSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-honey@v1",
+    "name": "Pure Honey & Organic Bee Products",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceHoneySite",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\EcommerceHoneySite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-peanuts@v1",
+    "name": "Organic Nuts & Peanuts",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommercePeanutsSite",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\EcommercePeanutsSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-baby@v1",
+    "name": "Baby & Toddler Boutique",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceBabySite",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\EcommerceBabySite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-cake@v1",
+    "name": "Bakery & Designer Cakes",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceCakeSite",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\EcommerceCakeSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-pets@v1",
+    "name": "Pet Food & Supplies Store",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommercePetsSite",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\EcommercePetsSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-bike@v1",
+    "name": "Bicycles & Cycling Pro Shop",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceBikeSite",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\EcommerceBikeSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-motorcycle@v1",
+    "name": "Motorcycles & Riding Gear",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceMotorCycleSite",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\EcommerceMotorCycleSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-book@v1",
+    "name": "Bookstore & Stationery",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceBookSite",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\EcommerceBookSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ecommerce-accessories@v1",
+    "name": "Auto Accessories & Parts",
+    "category": "ecommerce",
+    "bodyComponentName": "EcommerceAccessoriesSite",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\EcommerceAccessoriesSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "fashion@v1",
+    "name": "Modern Fashion & Apparel Boutique",
+    "category": "fashion",
+    "bodyComponentName": "FashionSite",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\FashionSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "furniture@v1",
+    "name": "Contemporary Furniture & Interior Design",
+    "category": "furniture",
+    "bodyComponentName": "FurnitureSite",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\FurnitureSite.tsx",
+    "fileExists": true,
+    "isDynamic": true,
+    "hasStaticFallback": true,
+    "isStaticMonolithic": false,
+    "checksSections": true,
+    "checksVisibility": true,
+    "passesConfig": true,
+    "architecturalClassification": "PARTIALLY DYNAMIC",
+    "notes": [
+      "Filters visibility",
+      "Binds tenant config"
+    ]
+  },
+  {
+    "templateId": "courses@v1",
+    "name": "Online Academy & Courses (Layout 1)",
+    "category": "courses",
+    "bodyComponentName": "CoursesSite",
+    "filePath": "components\\site\\layouts\\CoursesLayout\\body\\CoursesSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "courses-2@v1",
+    "name": "Modern University & Courses (Layout 2)",
+    "category": "courses",
+    "bodyComponentName": "CoursesSite2",
+    "filePath": "components\\site\\layouts\\CoursesLayout2\\body\\CoursesSite2.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "courses-3@v1",
+    "name": "Executive Bootcamp (Layout 3)",
+    "category": "courses",
+    "bodyComponentName": "CoursesSite3",
+    "filePath": "components\\site\\layouts\\CoursesLayout3\\body\\CoursesSite3.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "automotive@v1",
+    "name": "Premier Car Dealership & Motors (Layout 1)",
+    "category": "automotive",
+    "bodyComponentName": "AutomotiveSite",
+    "filePath": "components\\site\\layouts\\AutomotiveLayout\\body\\AutomotiveSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "automotive-2@v1",
+    "name": "Luxury Motors Dealership (Layout 2)",
+    "category": "automotive",
+    "bodyComponentName": "Automotive2Site",
+    "filePath": "components\\site\\layouts\\Automotive2Layout\\body\\Automotive2Site.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "security@v1",
+    "name": "Security Guarding & Systems (Layout 1)",
+    "category": "security",
+    "bodyComponentName": "SecuritySite",
+    "filePath": "components\\site\\layouts\\SecurityLayout\\body\\SecuritySite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "security-2@v1",
+    "name": "Cyber & Security Consulting (Layout 2)",
+    "category": "security",
+    "bodyComponentName": "Security2Site",
+    "filePath": "components\\site\\layouts\\Security2Layout\\body\\Security2Site.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "consultancy@v1",
+    "name": "Executive Advisory & Business Coaching",
+    "category": "consultancy",
+    "bodyComponentName": "ConsultancySite",
+    "filePath": "components\\site\\layouts\\ConsultancyLayout\\body\\ConsultancySite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "public-speaking@v1",
+    "name": "Keynote Speaker & Author",
+    "category": "publicspeaking",
+    "bodyComponentName": "PublicSpeakingSite",
+    "filePath": "components\\site\\layouts\\PublicSpeakingLayout\\body\\PublicSpeakingSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "services@v1",
+    "name": "Professional Agency & Service Provider",
+    "category": "services",
+    "bodyComponentName": "ServiceSite",
+    "filePath": "components\\site\\layouts\\ServicesLayout\\body\\ServiceSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "bookings@v1",
+    "name": "General Appointment & Booking Hub",
+    "category": "bookings",
+    "bodyComponentName": "BookingsSite",
+    "filePath": "components\\site\\layouts\\BookingsLayout\\body\\BookingsSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "barbershop@v1",
+    "name": "Classic Barbershop & Grooming",
+    "category": "bookings",
+    "bodyComponentName": "BarbershopBookingsSite",
+    "filePath": "components\\site\\layouts\\BarbershopBookingsLayout\\body\\BarbershopBookingsSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "drycleaning@v1",
+    "name": "Drycleaning & Laundry Express",
+    "category": "bookings",
+    "bodyComponentName": "DrycleaningBookingsSite",
+    "filePath": "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\DrycleaningBookingsSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "real-estate@v1",
+    "name": "Luxury Properties & Realty",
+    "category": "realestate",
+    "bodyComponentName": "RealEstateSite",
+    "filePath": "components\\site\\layouts\\RealEstateLayout\\body\\RealEstateSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "property-management@v1",
+    "name": "Property Asset & Tenancy Management",
+    "category": "realestate",
+    "bodyComponentName": "PropertyManagementSite",
+    "filePath": "components\\site\\layouts\\PropertyManagementLayout\\body\\PropertyManagementSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "restaurant@v1",
+    "name": "Bistro, Restaurant & Food Delivery",
+    "category": "restaurant",
+    "bodyComponentName": "RestaurentSite",
+    "filePath": "components\\site\\layouts\\RestaurantLayout\\body\\RestaurentSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": false,
+    "checksSections": true,
+    "checksVisibility": false,
+    "passesConfig": true,
+    "architecturalClassification": "HYBRID",
+    "notes": [
+      "Binds tenant config"
+    ]
+  },
+  {
+    "templateId": "healthcare@v1",
+    "name": "Medical Clinic & Health Center",
+    "category": "healthcare",
+    "bodyComponentName": "HealthCareSite",
+    "filePath": "components\\site\\layouts\\HealthcareLayout\\body\\HealthCareSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "fitness@v1",
+    "name": "Gym, Fitness & Personal Training",
+    "category": "fitness",
+    "bodyComponentName": "FitnessSite",
+    "filePath": "components\\site\\layouts\\FitnessLayout\\body\\FitnessSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "finance@v1",
+    "name": "Wealth Advisory & Financial Solutions",
+    "category": "finance",
+    "bodyComponentName": "FinanceSite",
+    "filePath": "components\\site\\layouts\\FinanceLayout\\body\\FinanceSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "travel@v1",
+    "name": "Safari Expeditions & Travel Agency",
+    "category": "travel",
+    "bodyComponentName": "TravelSite",
+    "filePath": "components\\site\\layouts\\TravelLayout\\body\\TravelSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "saas@v1",
+    "name": "Cloud Software & Tech Platform",
+    "category": "saas",
+    "bodyComponentName": "SaaSSite",
+    "filePath": "components\\site\\layouts\\SaaSLayout\\body\\SaaSSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "marketplace@v1",
+    "name": "Multi-Vendor Marketplace",
+    "category": "marketplace",
+    "bodyComponentName": "MarketPlaceSite",
+    "filePath": "components\\site\\layouts\\MarketplaceLayout\\body\\MarketPlaceSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "portfolio@v1",
+    "name": "Creative Portfolio & CV",
+    "category": "portfolio",
+    "bodyComponentName": "PortfolioSite",
+    "filePath": "components\\site\\layouts\\PortfolioLayout\\body\\PortfolioSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "company-portfolio@v1",
+    "name": "Corporate Enterprise Portfolio (Dark)",
+    "category": "corporate",
+    "bodyComponentName": "CompanyPortfolioSite",
+    "filePath": "components\\site\\layouts\\CompanyPortfolioLayout\\body\\CompanyPortfolioSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "company-portfolio-light@v1",
+    "name": "Corporate Enterprise Portfolio (Light)",
+    "category": "corporate",
+    "bodyComponentName": "CompanyPortfolioLightSite",
+    "filePath": "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\CompanyPortfolioLightSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "blog@v1",
+    "name": "Digital Magazine & Editorial Blog",
+    "category": "blog",
+    "bodyComponentName": "BlogSite",
+    "filePath": "components\\site\\layouts\\BlogLayout\\body\\BlogSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "media@v1",
+    "name": "Film Studio & Media Entertainment",
+    "category": "media",
+    "bodyComponentName": "MediaSite",
+    "filePath": "components\\site\\layouts\\MediaLayout\\body\\MediaSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "nonprofit@v1",
+    "name": "Charity, Foundation & NGO",
+    "category": "nonprofit",
+    "bodyComponentName": "NonProfitSite",
+    "filePath": "components\\site\\layouts\\NonprofitLayout\\body\\NonProfitSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "delivery@v1",
+    "name": "Courier & Express Logistics",
+    "category": "logistics",
+    "bodyComponentName": "DeliverySite",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\DeliverySite.tsx",
+    "fileExists": true,
+    "isDynamic": true,
+    "hasStaticFallback": true,
+    "isStaticMonolithic": false,
+    "checksSections": true,
+    "checksVisibility": true,
+    "passesConfig": true,
+    "architecturalClassification": "PARTIALLY DYNAMIC",
+    "notes": [
+      "Filters visibility",
+      "Binds tenant config"
+    ]
+  },
+  {
+    "templateId": "directory@v1",
+    "name": "Local Business Directory",
+    "category": "directory",
+    "bodyComponentName": "DirectorySite",
+    "filePath": "components\\site\\layouts\\DirectoryLayout\\body\\DirectorySite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "events@v1",
+    "name": "Event Ticketing & Experiences",
+    "category": "events",
+    "bodyComponentName": "EventsSite",
+    "filePath": "components\\site\\layouts\\EventsLayout\\body\\EventsSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "ghuba@v1",
+    "name": "Ghuba Super App Ecosystem",
+    "category": "portal",
+    "bodyComponentName": "GhubaSite",
+    "filePath": "components\\site\\layouts\\GhubaLayout\\body\\GhubaSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": true,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  },
+  {
+    "templateId": "default-site@v1",
+    "name": "Universal Clean Storefront",
+    "category": "general",
+    "bodyComponentName": "DefaultSite",
+    "filePath": "components\\site\\layouts\\DefaultLayout\\body\\DefaultSite.tsx",
+    "fileExists": true,
+    "isDynamic": false,
+    "hasStaticFallback": false,
+    "isStaticMonolithic": true,
+    "checksSections": false,
+    "checksVisibility": false,
+    "passesConfig": false,
+    "architecturalClassification": "STATIC MONOLITHIC",
+    "notes": [
+      "Hardcoded JSX; ignores section move/hide/duplicate/delete"
+    ]
+  }
+]

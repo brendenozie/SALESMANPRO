@@ -63,6 +63,7 @@ const EcommerceMeatSite = dynamic(() => import('@/components/site/layouts/Ecomme
 const EcommerceHardwareSite = dynamic(() => import('@/components/site/layouts/EcommerceHardwareLayout/body/EcommerceHardwareSite'));
 const EcommerceBookSite = dynamic(() => import('@/components/site/layouts/EcommerceBookLayout/body/EcommerceBookSite'));
 const DrycleaningBookingsSite = dynamic(() => import('@/components/site/layouts/DrycleaningBookingsLayout/body/DrycleaningBookingsSite'));
+const SalonBookingsSite = dynamic(() => import('@/components/site/layouts/SalonBookingsLayout/body/BookingsSite'));
 const PropertyManagementSite = dynamic(() => import('@/components/site/layouts/PropertyManagementLayout/body/PropertyManagementSite'));
 const CompanyPortfolioSite = dynamic(() => import('@/components/site/layouts/CompanyPortfolioLayout/body/CompanyPortfolioSite'));
 const EcommerceAccessoriesSite = dynamic(() => import('@/components/site/layouts/EcommerceAccessoriesLayout/body/EcommerceAccessoriesSite'));
@@ -115,6 +116,7 @@ export const BodyComponentMap: Record<string, BodyComponentType> = {
   'EventsSite': EventsSite,
   'HealthCareSite': HealthCareSite,
   'SaaSSite': SaaSSite,
+  'SaasSite': SaaSSite,
   'MediaSite': MediaSite,
   'TravelSite': TravelSite,
   'MarketPlaceSite': MarketPlaceSite,
@@ -124,5 +126,6 @@ export const BodyComponentMap: Record<string, BodyComponentType> = {
   'FurnitureSite': FurnitureSite,
   'FashionSite': FashionSite,
   'DrycleaningBookingsSite': DrycleaningBookingsSite,
+  'SalonBookingsSite': SalonBookingsSite,
   'DefaultSite': DefaultSite,
 };

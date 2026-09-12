@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 // File: components/site/layouts/DirectoryLayout/DirectorySite.tsx
 'use client';
 
@@ -45,49 +46,68 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
     // router.push(`/${pageData.slug}/search?q=${encodeURIComponent(searchTerm)}`);
   };
 
-  return (
-    <div className="font-sans">
-      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
-        <HeroSection
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': (
+      <HeroSection
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         onSearch={handleSearch}
       />
-      </div>
+    ),
+    'promotion': <PromotionSection promotions={pageData.promotions} />,
+    'new-arrivals': <NewArrivalsSection id={companyId} marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />,
+    'category': <CategorySection StoreCategory={pageData.StoreCategory}/>,
+    'popular-products': <PopularProductsSection id={pageData.id} currency={pageData.currency} />,
+    'featured-listings-overview': <FeaturedListingsOverviewSection marketplaceListings={pageData.marketplaceListings} />,
+    'testimonials': testimonialsData?.data ? <TestimonialsSection testimonial={testimonialsData?.data} /> : null,
+    'cta': <CtaSection />,
+    'faq': faqsData?.data ? <FAQSection faqs={faqsData?.data} /> : null,
+  };
 
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onSearch={handleSearch}
+        />
+      </div>
       <div id="section-promotion" data-editor-section="promotion" data-editor-component="PromotionSection">
         <PromotionSection promotions={pageData.promotions} />
       </div>
-
       <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivalsSection">
         <NewArrivalsSection id={companyId} marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
       </div>
-
       <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
         <CategorySection StoreCategory={pageData.StoreCategory}/>
       </div>
-
       <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="PopularProductsSection">
         <PopularProductsSection id={pageData.id} currency={pageData.currency} />
       </div>
-      
       <div id="section-featured-listings-overview" data-editor-section="featured-listings-overview" data-editor-component="FeaturedListingsOverviewSection">
-        <FeaturedListingsOverviewSection  marketplaceListings={pageData.marketplaceListings} />
+        <FeaturedListingsOverviewSection marketplaceListings={pageData.marketplaceListings} />
       </div>
-
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-   <TestimonialsSection testimonial={testimonialsData?.data} />
- </div>}
-
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+          <TestimonialsSection testimonial={testimonialsData?.data} />
+        </div>
+      )}
       <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
         <CtaSection />
       </div>
-    
-      {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-   <FAQSection faqs={faqsData?.data} />
- </div>} 
-      
-       {/* faqs={customFaqs} */}
+      {faqsData?.data && (
+        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+          <FAQSection faqs={faqsData?.data} />
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }

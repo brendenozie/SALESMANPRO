@@ -19,4 +19,5 @@ Module._resolveFilename = function (request, parent, isMain, options) {
   }
   return originalResolveFilename.call(this, request, parent, isMain, options);
 };
-
+require.extensions['.css'] = () => {};
+require.extensions['.scss'] = () => {};

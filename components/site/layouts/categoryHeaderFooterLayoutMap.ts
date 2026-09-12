@@ -210,6 +210,13 @@ const EcommerceAccessoriesLayout = dynamic(
     ),
 );
 
+const SalonBookingsLayout = dynamic(
+  () =>
+    import(
+      "@/components/site/layouts/SalonBookingsLayout/BookingsLayout"
+    ),
+);
+
 export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent> = {
   ghuba: GhubaLayout,
   ecommerce: EcommerceLayout,
@@ -374,6 +381,9 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
   FurnitureLayout: FurnitureLayout,
   FashionLayout: FashionLayout,
   DrycleaningBookingsLayout: DrycleaningBookingsLayout,
+  SalonBookingsLayout: SalonBookingsLayout,
+  "salon-bookings": SalonBookingsLayout,
+  salon: SalonBookingsLayout,
   SaaSLayout: SaaSLayout,
   saas: SaaSLayout,
   DefaultLayout: DefaultLayout,

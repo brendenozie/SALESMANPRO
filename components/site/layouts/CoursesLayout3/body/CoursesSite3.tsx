@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
 
 import React from "react";
@@ -34,25 +35,56 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
   const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
   
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': <HeroSection storeFormData={pageData} />,
+    'school': <SchoolSection storeFormData={pageData} />,
+    'main-courses': <MainCoursesSection storeFormData={pageData} />,
+    'about': <AboutSection storeFormData={pageData} />,
+    'testimonials': testimonialsData?.data ? <TestimonialsSection storeFormData={pageData} /> : null,
+    'popular-blogs': blogsData?.data ? <PopularBlogsSection storeFormData={pageData} /> : null,
+    'cta': <CtaSection />,
+    'faq': faqsData?.data ? <FAQSection storeFormData={pageData} /> : null,
+  };
+
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        <HeroSection storeFormData={pageData} />
+      </div>
+      <div id="section-school" data-editor-section="school" data-editor-component="SchoolSection">
+        <SchoolSection storeFormData={pageData} />
+      </div>
+      <div id="section-main-courses" data-editor-section="main-courses" data-editor-component="MainCoursesSection">
+        <MainCoursesSection storeFormData={pageData} />
+      </div>
+      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+        <AboutSection storeFormData={pageData} />
+      </div>
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+          <TestimonialsSection storeFormData={pageData} />
+        </div>
+      )}
+      {blogsData?.data && (
+        <div id="section-popular-blogs" data-editor-section="popular-blogs" data-editor-component="PopularBlogsSection">
+          <PopularBlogsSection storeFormData={pageData} />
+        </div>
+      )}
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection />
+      </div>
+      {faqsData?.data && (
+        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+          <FAQSection storeFormData={pageData} />
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="font-sans">
-      {/* Hero */}
-      <HeroSection storeFormData={pageData} />
-
-      <SchoolSection storeFormData={pageData} />
-
-      <MainCoursesSection storeFormData={pageData} />
-
-      <AboutSection storeFormData={pageData} />
-
-      {testimonialsData?.data && <TestimonialsSection storeFormData={pageData} />}
-
-      {blogsData?.data && <PopularBlogsSection storeFormData={pageData} />}
-
-      <CtaSection />
-
-      {faqsData?.data && <FAQSection storeFormData={pageData} />}   
-
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }

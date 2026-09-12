@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -113,56 +114,87 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
     window.location.href = `/search?${queryParams.toString()}`;
   }, [filters]);
 
-  return (
-    <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': (
+      <HeroSection
+        store={storeFormData}
+        trendingLocations={storeFormData?.CompanyLocation
+          ? storeFormData?.CompanyLocation.map((loc: any) => ({
+            name: loc.name,
+            slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+            metaKeywords: loc.metaKeywords || "",
+            status: loc.status || "active",
+            parentId: loc.parentId || null,
+            ...loc,
+          }))
+          : []} 
+        onSearch={() => {}}
+      />
+    ),
+    'automotive-featured-listings': <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>,
+    'how-it-works': <HowItWorks />,
+    'browse-by-category': <BrowseByCategory store={storeFormData}/>,
+    'trending-locations': (
+      <TrendingLocations
+        locations={
+          storeFormData?.CompanyLocation
+            ? storeFormData?.CompanyLocation.map((loc: any) => ({
+                name: loc.name,
+                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                metaKeywords: loc.metaKeywords || "",
+                status: loc.status || "active",
+                parentId: loc.parentId || null,
+                ...loc,
+              }))
+            : []
+        }
+        slug={"slug"}
+      />
+    ),
+    'popular-vehicles': <PopularVehiclesWrapper companyId={pageData.id} />,
+    'video-showcase': blogsData?.data ? <VideoShowcaseSection blogs={blogsData.data || []} /> : null,
+    'market-insights': <MarketInsightsSection />,
+    'testimonials': testimonialsData?.data ? <TestimonialsCarouselSection testimonials={testimonials} /> : null,
+  };
 
-      {/* Hero */}
+  const staticFallback = (
+    <>
       <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
         <HeroSection
           store={storeFormData}
           trendingLocations={storeFormData?.CompanyLocation
             ? storeFormData?.CompanyLocation.map((loc: any) => ({
-              // Map/transform to Location type as needed
               name: loc.name,
               slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
               metaKeywords: loc.metaKeywords || "",
               status: loc.status || "active",
               parentId: loc.parentId || null,
-              // Spread any additional fields if needed
               ...loc,
             }))
             : []} 
-            // filters={filters}
-            // setFilters={setFilters}
-            onSearch={() => {}} // No-op since search is handled in FilterBarSection
+          onSearch={() => {}}
         />
       </div>
-
       <div id="section-automotive-featured-listings" data-editor-section="automotive-featured-listings" data-editor-component="AutomotiveFeaturedListingsWrapper">
         <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
       </div>
-
       <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorks">
         <HowItWorks />
       </div>
-
       <div id="section-browse-by-category" data-editor-section="browse-by-category" data-editor-component="BrowseByCategory">
-        <BrowseByCategory store={ storeFormData }/>
+        <BrowseByCategory store={storeFormData}/>
       </div>
-
-      {/* Trending Locations Section */}
       <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
         <TrendingLocations
           locations={
             storeFormData?.CompanyLocation
               ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                  // Map/transform to Location type as needed
                   name: loc.name,
                   slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
                   metaKeywords: loc.metaKeywords || "",
                   status: loc.status || "active",
                   parentId: loc.parentId || null,
-                  // Spread any additional fields if needed
                   ...loc,
                 }))
               : []
@@ -170,25 +202,28 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
           slug={"slug"}
         />
       </div>      
-
-      {/* Featured Vehicles */}
       <div id="section-popular-vehicles" data-editor-section="popular-vehicles" data-editor-component="PopularVehiclesWrapper">
-        <PopularVehiclesWrapper  companyId={pageData.id} />
+        <PopularVehiclesWrapper companyId={pageData.id} />
       </div>
-      {/* If videos are stored under latestVideos */}
-      {blogsData?.data && <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
-   <VideoShowcaseSection blogs={blogsData.data || []} />
- </div>}
-
+      {blogsData?.data && (
+        <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
+          <VideoShowcaseSection blogs={blogsData.data || []} />
+        </div>
+      )}
       <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsightsSection">
         <MarketInsightsSection />
       </div>
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
+          <TestimonialsCarouselSection testimonials={testimonials} />
+        </div>
+      )}
+    </>
+  );
 
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
-   <TestimonialsCarouselSection  testimonials={testimonials} />
- </div>}
-
+  return (
+    <div className="font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }
-

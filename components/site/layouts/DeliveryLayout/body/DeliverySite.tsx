@@ -139,56 +139,31 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     );
   };
 
-  const activeSections = (pageData as any).sections;
-  const hasTenantSections = Array.isArray(activeSections);
+const DEFAULT_DELIVERY_SECTIONS = [
+  { id: "delivery-hero", name: "Hero Banner Slider", component: "HeroSlider", type: "hero", visible: true },
+  { id: "delivery-ab", name: "About Us Strip", component: "AbSection", type: "custom", visible: true },
+  { id: "delivery-team", name: "Expert Team Showcase", component: "TeamSection", type: "custom", visible: true },
+  { id: "delivery-services", name: "Delivery Services Grid", component: "ServicesSection", type: "services", visible: true },
+  { id: "delivery-booking", name: "Schedule Dispatch", component: "BookingSection", type: "booking", visible: true },
+  { id: "delivery-testimonials", name: "Client Reviews Carousel", component: "TestimonialsCarouselSection", type: "testimonials", visible: true },
+  { id: "delivery-work", name: "Fleet & Operations Showcase", component: "WorkShowcase", type: "custom", visible: true },
+  { id: "delivery-process", name: "Fulfillment Timeline", component: "ProcessTimeline", type: "custom", visible: true },
+  { id: "delivery-social", name: "Network Stats & Proof", component: "SocialProofSection", type: "featuresBadges", visible: true },
+  { id: "delivery-map", name: "Coverage Network Map", component: "NetworkMap", type: "custom", visible: true },
+  { id: "delivery-blog", name: "Logistics Insights & News", component: "BlogSection", type: "custom", visible: true },
+  { id: "delivery-contact", name: "Dispatch Center Contact", component: "ContactSection", type: "contact", visible: true },
+];
 
-  if (hasTenantSections) {
-    return (
-      <div>
-        {activeSections
-          .filter((sec: any) => sec.isVisible !== false)
-          .map((sec: any, idx: number) => renderSectionComponent(sec, idx))}
-      </div>
-    );
-  }
+  const rawSections = (pageData as any)?.sections;
+  const activeSections = Array.isArray(rawSections) && rawSections.length > 0
+    ? rawSections
+    : DEFAULT_DELIVERY_SECTIONS;
 
   return (
-    <div>
-      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSlider">
-        <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      </div>
-
-      <div id="section-ab" data-editor-section="ab" data-editor-component="AbSection">
-        <AbSection storeFormData={siteData} />
-      </div>  
-
-      <div id="section-team" data-editor-section="team" data-editor-component="TeamSection">
-        <TeamSection storeFormData={siteData} />
-      </div>
-      
-      <div id="section-services" data-editor-section="services" data-editor-component="ServicesSection">
-        <ServicesSection storeFormData={siteData} />
-      </div> 
-
-      <BookingSection storeFormData={siteData} />
-
-      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
-        <TestimonialsCarouselSection testimonials={pageData?.testimonials || []} />
-      </div>
-
-      <WorkShowcase />
-
-      <ProcessTimeline />
-
-      <div id="section-social-proof" data-editor-section="social-proof" data-editor-component="SocialProofSection">
-        <SocialProofSection />
-      </div>  
-
-      <NetworkMap />
-
-      <BlogSection />
-
-      <ContactSection companyId={siteData?.id || companyId || ''} />
+    <div data-delivery-site="dynamic-root">
+      {activeSections
+        .filter((sec: any) => sec.visible !== false && sec.isVisible !== false)
+        .map((sec: any, idx: number) => renderSectionComponent(sec, idx))}
     </div>
   );
 }

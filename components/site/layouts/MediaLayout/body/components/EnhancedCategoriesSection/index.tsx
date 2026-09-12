@@ -86,17 +86,17 @@ export default function EnhancedCategoriesSection({ categories, slug, isSubPage 
   
   const actualCategories = (categories && categories.length > 0) ? categories : fallbackCategories;
   
-  // Logic remains the same, but uses actualCategories
-  const isShowSubcategories = isSubPage || actualCategories.length < 4;
+  const subcategoryItems = actualCategories.flatMap(cat => (cat && Array.isArray(cat.subcategories)) ? cat.subcategories : []).filter(Boolean);
+  const isShowSubcategories = isSubPage || (actualCategories.length < 4 && subcategoryItems.length > 0);
   
   const itemsToDisplay = isShowSubcategories
-    ? actualCategories.flatMap(cat => cat.subcategories).slice(0, 8)
+    ? subcategoryItems.slice(0, 8)
     : actualCategories;
 
   // Function to determine the image source
   const getImageUrl = (item: any): string => {
-    if ('name' in item && 'slug' in item) { // Assumes ISubcategory
-        // Placeholder for subcategories if they lack images in the API structure
+    if (!item) return 'https://images.unsplash.com/photo-1549490349-801282101348?q=80&w=2670&auto=format&fit=crop';
+    if (typeof item === 'object' && 'name' in item && 'slug' in item && !('image' in item)) { // Assumes ISubcategory
         return 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2670&auto=format&fit=crop';
     }
     // Assumes IStoreCategory
@@ -104,16 +104,18 @@ export default function EnhancedCategoriesSection({ categories, slug, isSubPage 
   };
 
   const getName = (item: any): string => {
-    if ('name' in item && 'slug' in item) { // ISubcategory
+    if (!item) return 'Unknown Category';
+    if (typeof item === 'object' && 'name' in item && 'slug' in item && !('displayName' in item)) { // ISubcategory
         return item.name;
     }
-    return item.displayName || item.category?.name || 'Unknown Category';
+    return item.displayName || item.name || item.category?.name || 'Unknown Category';
   };
 
   const getSlug = (item: any): string => {
-    if ('name' in item && 'slug' in item) { // ISubcategory
-        const parentCategory = actualCategories.find(cat => cat.subcategories.includes(item));
-        return `${slug}/category/${parentCategory?.slug}/${item.slug}`;
+    if (!item) return slug;
+    if (typeof item === 'object' && 'name' in item && 'slug' in item && !('id' in item)) { // ISubcategory
+        const parentCategory = actualCategories.find(cat => Array.isArray(cat.subcategories) && cat.subcategories.includes(item));
+        return `${slug}/category/${parentCategory?.slug || 'all'}/${item.slug}`;
     }
     // IStoreCategory
     return `${slug}/category/${item.slug || item.id}`;

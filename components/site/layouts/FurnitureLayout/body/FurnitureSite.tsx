@@ -149,13 +149,15 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       default:
         if (process.env.NODE_ENV !== "production") {
           console.warn(
-            `[FurnitureSite] Unresolved section component: "${compKey || sec.component || sec.type}" for section "${sec.id}"`
+            `[WebsiteBuilder Renderer Failure]\ntheme: Furniture\npage: Home\nsectionId: ${sec.id}\nsemanticRole: ${sec.category || sec.type}\ncomponentType: ${sec.component || compKey}\nrendererKey: ${compKey}\nrenderer: NOT FOUND`
           );
         }
         childNode = (
-          <div className="p-8 my-4 border-2 border-dashed border-amber-500 bg-amber-50/10 text-amber-600 dark:text-amber-400 text-center font-mono text-xs rounded-xl">
-            <span className="font-bold">[Unresolved Section Component: {sec.name || sec.component || sec.type || sec.id}]</span>
-            <div className="text-[10px] text-zinc-500 mt-1">Section ID: {sec.id} &bull; Type: {sec.type}</div>
+          <div className="p-8 my-4 border-2 border-dashed border-rose-500 bg-rose-50/10 text-rose-600 dark:text-rose-400 text-center font-mono text-xs rounded-xl">
+            <span className="font-bold">[WebsiteBuilder Renderer Failure: Unresolved Section Component: {sec.name || sec.component || sec.type || sec.id}]</span>
+            <div className="text-[10px] text-zinc-500 mt-1">
+              Theme: Furniture &bull; Section ID: {sec.id} &bull; Component: {sec.component || "none"} &bull; Type: {sec.type}
+            </div>
           </div>
         );
         break;
@@ -175,71 +177,60 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     );
   };
 
-  const activeSections = (pageData as any).sections;
-  const hasTenantSections = Array.isArray(activeSections);
+const DEFAULT_FURNITURE_SECTIONS = [
+  { id: "furniture-heroslider", name: "Hero Banner Slider", component: "HeroSlider", type: "hero", isVisible: true },
+  {
+    id: "furniture-uspslider",
+    name: "Core Values & Guarantees",
+    component: "USPSlider",
+    type: "featuresBadges",
+    isVisible: true,
+    content: {
+      title: "Core Values & Guarantees",
+      items: [
+        {
+          title: "White Glove Delivery",
+          desc: "Seamless assembly and precise placement by our specialist team.",
+          icon: "TruckIcon",
+        },
+        {
+          title: "Sustainable Sourcing",
+          desc: "FSC certified timber and organic textiles designed for longevity.",
+          icon: "SwatchIcon",
+        },
+        {
+          title: "Lifetime Structural",
+          desc: "A testament to quality: guaranteed integrity on every frame.",
+          icon: "StarIcon",
+        },
+      ],
+    },
+  },
+  { id: "furniture-categorysection", name: "Featured Categories", component: "CategorySection", type: "categoryGrid", isVisible: true },
+  { id: "furniture-weeklyproducts", name: "Weekly Featured Items", component: "WeeklyProducts", type: "productGrid", isVisible: true },
+  { id: "furniture-roomsection", name: "Shop by Room", component: "RoomSection", type: "custom", isVisible: true },
+  { id: "furniture-dynamicpopularproducts", name: "Popular Products", component: "DynamicPopularProducts", type: "productGrid", isVisible: true },
+  { id: "furniture-promosection", name: "Promotional Spotlight Banner", component: "PromoSection", type: "ctaBanner", isVisible: true },
+  { id: "furniture-dynamictrending", name: "Trending Items", component: "DynamicTrending", type: "custom", isVisible: true },
+  { id: "furniture-dynamicdailybestsells", name: "Daily Best Sellers", component: "DynamicDailyBestSells", type: "productGrid", isVisible: true },
+  { id: "furniture-secondpromosection", name: "Special Offers Banner", component: "SecondPromoSection", type: "ctaBanner", isVisible: true },
+  { id: "furniture-allproducts", name: "All Products Showcase", component: "AllProducts", type: "productGrid", isVisible: true },
+  { id: "furniture-metricssection", name: "Guarantees & Performance Metrics", component: "MetricsSection", type: "featuresBadges", isVisible: true },
+  { id: "furniture-awardssection", name: "Industry Awards & Honors", component: "AwardsSection", type: "featuresBadges", isVisible: true },
+  { id: "furniture-testimonialssection", name: "Customer Testimonials", component: "TestimonialsSection", type: "testimonials", isVisible: true },
+  { id: "furniture-newslettersection", name: "VIP Newsletter Subscription", component: "NewsletterSection", type: "newsletter", isVisible: true },
+];
 
-  if (hasTenantSections) {
-    return (
-      <div>
-        {activeSections
-          .filter((sec: any) => sec.isVisible !== false)
-          .map((sec: any, idx: number) => renderSectionComponent(sec, idx))}
-      </div>
-    );
-  }
+  const rawSections = (pageData as any)?.sections;
+  const activeSections = Array.isArray(rawSections) && rawSections.length > 0
+    ? rawSections
+    : DEFAULT_FURNITURE_SECTIONS;
 
   return (
-    <div>
-      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSlider">
-        <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      </div>
-      {/* USP Section */}
-      <div id="section-usp" data-editor-section="usp" data-editor-component="USPSlider">
-        <USPSlider coreValues={CoreValues} themeSettings={themeSettings} />
-      </div>      
-      <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
-        <CategorySection store={pageData} />
-      </div>      
-      {/* Product Grid */}
-      <div id="section-weekly-products" data-editor-section="weekly-products" data-editor-component="WeeklyProducts">
-        <WeeklyProducts id={id} />
-      </div>
-      {/* Featured Categories */}
-      <div id="section-room" data-editor-section="room" data-editor-component="RoomSection">
-        <RoomSection store={pageData} themeSettings={themeSettings} />
-      </div>
-      <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="DynamicPopularProducts">
-        <DynamicPopularProducts id={id} />
-      </div>
-      <div id="section-promo" data-editor-section="promo" data-editor-component="PromoSection">
-        <PromoSection promotions={promotions} />
-      </div>
-      <div id="section-trending" data-editor-section="trending" data-editor-component="DynamicTrending">
-        <DynamicTrending id={id} />
-      </div>
-      <div id="section-daily-best-sells" data-editor-section="daily-best-sells" data-editor-component="DynamicDailyBestSells">
-        <DynamicDailyBestSells id={id} />
-      </div>
-      <div id="section-second-promo" data-editor-section="second-promo" data-editor-component="SecondPromoSection">
-        <SecondPromoSection promotions={promotions} />
-      </div>
-      <div id="section-all-products" data-editor-section="all-products" data-editor-component="AllProducts">
-        <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
-      </div>
-      <div id="section-metrics" data-editor-section="metrics" data-editor-component="MetricsSection">
-        <MetricsSection coreValues={CoreValues} />
-      </div>
-      <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
-        <AwardsSection awards={awards} />
-      </div>
-      {testimonialsData?.data && (
-        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection testimonials={testimonialsData.data} />
-        </div>
-      )}
-      <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
-        <NewsletterSection />
-      </div>
+    <div data-furniture-site="dynamic-root">
+      {activeSections
+        .filter((sec: any) => sec.visible !== false && sec.isVisible !== false)
+        .map((sec: any, idx: number) => renderSectionComponent(sec, idx))}
     </div>
   );
 }

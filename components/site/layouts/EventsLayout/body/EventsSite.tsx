@@ -1,3 +1,4 @@
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
 
 import React from "react";
@@ -47,53 +48,63 @@ export default function EventsSite({ pageData, companyId }: { pageData: StoreFor
   const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
-  return (
-    <div className="font-sans">
-      {/* Hero */}
+  
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero-component': <HeroComponent storeFormData={pageData} />,
+    'hero': <HeroComponent storeFormData={pageData} />,
+    'about': <AboutSection storeFormData={pageData}/>,
+    'features': <FeaturesSection promotions={pageData.promotions} description={pageData.description} />,
+    'how-it-works': <HowItWorksSection />,
+    'live-events': eventsData?.data ? <LiveEventsSection events={eventsData.data} /> : null,
+    'events': eventsData?.data ? <LiveEventsSection events={eventsData.data} /> : null,
+    'testimonials': testimonialsData?.data ? <TestimonialsSection testimonials={testimonialsData.data} /> : null,
+    'pricing': <PricingSection />,
+    'faq': faqsData?.data ? <FAQSection /> : null,
+    'call-to-action': <CallToActionSection />,
+    'cta': <CallToActionSection />,
+  };
+
+  const staticFallback = (
+    <>
       <div id="section-hero-component" data-editor-section="hero-component" data-editor-component="HeroComponent">
         <HeroComponent storeFormData={pageData} />
       </div>
-
-      {/* About */}
       <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
         <AboutSection storeFormData={pageData}/>
       </div>
-
-      {/* Features */}
       <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
         <FeaturesSection promotions={pageData.promotions} description={pageData.description} />
       </div>
-
-      {/* How It Works */}
       <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorksSection">
         <HowItWorksSection />
       </div>
-
-      {/* Live Events - Render when data is ready */}
-      {eventsData?.data && <div id="section-live-events" data-editor-section="live-events" data-editor-component="LiveEventsSection">
-   <LiveEventsSection events={eventsData.data} />
- </div>}
-
-      {/* Testimonials - Render when data is ready */}
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-   <TestimonialsSection testimonials={testimonialsData.data} />
- </div>}
-
-      {/* Pricing (for event organizers) */}
+      {eventsData?.data && (
+        <div id="section-live-events" data-editor-section="live-events" data-editor-component="LiveEventsSection">
+          <LiveEventsSection events={eventsData.data} />
+        </div>
+      )}
+      {testimonialsData?.data && (
+        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+          <TestimonialsSection testimonials={testimonialsData.data} />
+        </div>
+      )}
       <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
         <PricingSection />
       </div>
-
-      {/* FAQ - Render when data is ready */}
-      {faqsData?.data && <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-   <FAQSection />
- </div>}
-
+      {faqsData?.data && (
+        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+          <FAQSection />
+        </div>
+      )}
       <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
         <CallToActionSection />
       </div>
+    </>
+  );
 
+  return (
+    <div className="font-sans">
+      <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </div>
   );
 }
-

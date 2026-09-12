@@ -76,6 +76,19 @@ export default async function StorePage({ params }: StorePageProps) {
         }));
       }
     }
+  } else {
+    // When no publishedConfig exists yet, seed authentic sections from canonicalTemplate
+    if (!pageData.sections && canonicalTemplate?.authenticSections?.length) {
+      pageData.sections = canonicalTemplate.authenticSections.map((sec) => ({
+        id: sec.id,
+        type: sec.type,
+        component: sec.component,
+        title: sec.label,
+        visible: true,
+        order: sec.defaultOrder,
+        content: sec.defaultContent ? JSON.parse(JSON.stringify(sec.defaultContent)) : {},
+      }));
+    }
   }
 
   return (
