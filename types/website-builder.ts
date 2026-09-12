@@ -127,8 +127,8 @@ export type NavigationConfig = z.infer<typeof NavigationConfigSchema>;
    ========================================================================= */
 
 export const CommerceDataSourceSchema = z.object({
-  type: z.enum(["products", "categories", "promotions", "testimonials", "manual"]),
-  filter: z.enum(["featured", "on_offer", "trending", "latest", "best_selling", "category_id", "manual_ids"]).default("featured"),
+  type: z.enum(["products", "categories", "promotions", "testimonials", "manual", "static"]),
+  filter: z.string().optional().default("featured"),
   categoryId: z.string().optional(),
   manualIds: z.array(z.string()).optional(),
   limit: z.number().min(1).max(24).default(8),
@@ -967,7 +967,7 @@ export interface AuthenticSectionDefinition {
   defaultContent: Record<string, any>;
   defaultStyles?: Record<string, any>;
   dataSource?: {
-    type: "products" | "categories" | "testimonials" | "promotions" | "static";
+    type: "products" | "categories" | "testimonials" | "promotions" | "manual" | "static";
     filter?: string;
     limit?: number;
   };

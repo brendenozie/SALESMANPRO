@@ -3,8 +3,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCachedFetcherv1 = exports.createCachedFetcher = void 0;
 function normalizeApiUrl(url) {
-    if (typeof window !== "undefined" && url.includes("localhost:3000/api") && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-        return url.replace(/^https?:\/\/localhost:3000\/api/, "/api");
+    if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+        return url.replace(/^https?:\/\/(localhost|127\.0\.0\.1):3000\/api/, "/api");
     }
     return url;
 }

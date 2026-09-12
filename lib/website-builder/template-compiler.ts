@@ -739,7 +739,7 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
           hideOnMobile: false,
           hideOnDesktop: false,
         },
-        dataSource: sec.dataSource,
+        dataSource: sec.dataSource ? (sec.dataSource as any) : undefined,
       };
     });
   }

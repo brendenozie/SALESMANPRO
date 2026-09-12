@@ -190,6 +190,7 @@ function leanShellInclude() {
         ...latestSubscriptionInclude,
         addresses: true,
         ShippingSettings: true,
+        website: true,
     };
 }
 exports.leanShellInclude = leanShellInclude;
@@ -286,7 +287,8 @@ function pageDataInclude() {
         TourPackage: true,
         PaymentSettings: true,
         ShippingSettings: true,
-        addresses: true, // Include the new addresses array for multi-location support
+        addresses: true,
+        website: true,
     };
 }
 exports.pageDataInclude = pageDataInclude;
