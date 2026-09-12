@@ -1,6 +1,7 @@
+'use client';
+
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 // File: components/site/SaasSite.tsx
-'use client';
 
 import React from "react";
 import { useRouter } from "next/navigation";

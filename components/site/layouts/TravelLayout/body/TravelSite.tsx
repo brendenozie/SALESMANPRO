@@ -1,5 +1,6 @@
+'use client';
+
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
-"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";

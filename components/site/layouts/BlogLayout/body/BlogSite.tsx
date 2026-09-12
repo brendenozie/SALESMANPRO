@@ -1,6 +1,7 @@
+'use client';
+
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 // File: components/site/layouts/BlogLayout/BlogSite.tsx
-'use client';
 
 import React from 'react';
 import dynamic from 'next/dynamic';

@@ -1,5 +1,6 @@
+'use client';
+
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
-"use client";
 
 import React, {  } from "react";
 import { useStoreContext } from "@/contexts/StoreContext";

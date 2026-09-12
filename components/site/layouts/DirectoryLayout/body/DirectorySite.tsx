@@ -1,6 +1,7 @@
+'use client';
+
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 // File: components/site/layouts/DirectoryLayout/DirectorySite.tsx
-'use client';
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';

@@ -1,5 +1,6 @@
-import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 'use client';
+
+import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React, { useState, useEffect, useCallback } from "react";
 import dynamic from 'next/dynamic';
