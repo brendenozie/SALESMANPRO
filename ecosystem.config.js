@@ -1,7 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const APP_DIR = path.resolve(__dirname);
+// Determine base application directory.
+// In production, bind PM2 to /var/www/salesmanpro/current so workers never retain a retired release path.
+const PROD_CURRENT = '/var/www/salesmanpro/current';
+const defaultAppDir = fs.existsSync(path.join(__dirname, 'server.js'))
+  ? path.resolve(__dirname)
+  : (fs.existsSync(path.join(__dirname, '..', 'server.js')) ? path.resolve(__dirname, '..') : path.resolve(__dirname));
+
+const APP_DIR = (fs.existsSync(PROD_CURRENT) && fs.existsSync(path.join(PROD_CURRENT, 'server.js')))
+  ? PROD_CURRENT
+  : defaultAppDir;
+
 const isStandalone = fs.existsSync(path.join(APP_DIR, 'server.js'));
 const aliasScript = path.join(APP_DIR, 'dist-worker', 'workers', 'resolve-alias.js');
 
@@ -60,14 +70,14 @@ module.exports = {
         ...baseEnv,
         PORT: 3000,
       },
-      min_uptime: '15s',
+      min_uptime: '10s',
       max_memory_restart: '2200M',
-      restart_delay: 4000,
+      restart_delay: 2000,
       exp_backoff_restart_delay: 500,
       max_restarts: 20,
       autorestart: true,
-      kill_timeout: 10000,
-      listen_timeout: 10000,
+      kill_timeout: 8000,
+      listen_timeout: 15000,
       watch: false,
     },
     {

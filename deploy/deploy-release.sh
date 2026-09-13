@@ -100,8 +100,38 @@ for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workfo
   fi
 done
 
-# Perform zero-downtime rolling reload for cluster mode, falling back to startOrReload if not already running
-pm2 reload ecosystem.config.js --update-env || pm2 startOrReload ecosystem.config.js --update-env
+# Reload the primary salesmanpro web cluster instances first
+echo "🔄 Reloading salesmanpro cluster instances from active release..."
+pm2 reload "${CURRENT_LINK}/ecosystem.config.js" --only salesmanpro --update-env || \
+pm2 startOrReload "${CURRENT_LINK}/ecosystem.config.js" --only salesmanpro --update-env
+
+# Verify all cluster instances transitioned cleanly
+# If any instance failed to reload or is non-operational, force a clean restart
+INCONSISTENT_CLUSTER=$(pm2 jlist 2>/dev/null | node -e '
+  try {
+    const list = JSON.parse(require("fs").readFileSync(0, "utf8"));
+    const instances = list.filter(p => p.name === "salesmanpro");
+    if (instances.length === 0 || instances.some(p => p.pm2_env.status !== "online")) {
+      console.log("yes");
+    } else {
+      console.log("no");
+    }
+  } catch (e) {
+    console.log("no");
+  }
+' 2>/dev/null || echo "no")
+
+if [ "${INCONSISTENT_CLUSTER}" = "yes" ]; then
+  echo "⚠️ Warning: Detected inconsistent cluster state. Performing forced restart of salesmanpro..."
+  pm2 restart salesmanpro --update-env
+fi
+
+# Reload background workers one by one to avoid CPU and memory spikes during release switch
+echo "🔄 Reloading background worker processes..."
+for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker; do
+  pm2 startOrReload "${CURRENT_LINK}/ecosystem.config.js" --only "${app_name}" --update-env 2>/dev/null || true
+done
+
 pm2 save
 
 # 9. Automated Health Check Verification
@@ -139,7 +169,7 @@ if [ "${HEALTH_PASSED}" != "true" ]; then
     ln -sfn "${PREVIOUS_RELEASE}" "${BASE_DIR}/current_tmp"
     mv -Tf "${BASE_DIR}/current_tmp" "${CURRENT_LINK}"
     cd "${CURRENT_LINK}"
-    pm2 startOrReload ecosystem.config.js --update-env || pm2 restart ecosystem.config.js --update-env
+    pm2 startOrReload "${CURRENT_LINK}/ecosystem.config.js" --update-env || pm2 restart "${CURRENT_LINK}/ecosystem.config.js" --update-env
     pm2 save
     echo "✅ Rollback completed. Live service restored to previous release."
   else
