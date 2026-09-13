@@ -17,7 +17,9 @@ import {
   LinkIcon,
   XMarkIcon,
   BoltIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
+import StoreCustomerEmailCenter from "./StoreCustomerEmailCenter";
 
 interface MarketingIntelligenceCenterProps {
   companyId: string;
@@ -31,7 +33,7 @@ export default function MarketingIntelligenceCenter({
   slug,
 }: MarketingIntelligenceCenterProps) {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "opportunities" | "health" | "attribution" | "connections"
+    "overview" | "email" | "opportunities" | "health" | "attribution" | "connections"
   >("overview");
   const [loading, setLoading] = useState(true);
   const [syncingId, setSyncingId] = useState<string | null>(null);
@@ -243,6 +245,7 @@ export default function MarketingIntelligenceCenter({
       <div className="flex items-center space-x-2 border-b border-slate-800/60 pb-2 overflow-x-auto">
         {[
           { id: "overview", label: "Executive Overview", icon: ChartBarIcon },
+          { id: "email", label: "Customer Email Broadcast", icon: EnvelopeIcon },
           { id: "opportunities", label: "Opportunity Engine", icon: BoltIcon },
           { id: "health", label: "Health Scorecard", icon: ShieldCheckIcon },
           { id: "attribution", label: "Attribution Framework", icon: FunnelIcon },
@@ -254,7 +257,7 @@ export default function MarketingIntelligenceCenter({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
+              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition shrink-0 ${
                 isActive
                   ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
@@ -262,6 +265,11 @@ export default function MarketingIntelligenceCenter({
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
+              {tab.id === "email" && (
+                <span className="ml-1.5 px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] rounded-full font-bold">
+                  New
+                </span>
+              )}
               {tab.id === "opportunities" && opportunities.length > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.2 bg-amber-500/20 text-amber-300 text-xs rounded-full font-bold">
                   {opportunities.length}
@@ -271,6 +279,15 @@ export default function MarketingIntelligenceCenter({
           );
         })}
       </div>
+
+      {/* TAB: CUSTOMER EMAIL BROADCAST */}
+      {activeTab === "email" && (
+        <StoreCustomerEmailCenter
+          companyId={companyId}
+          companyName={companyName}
+          slug={slug}
+        />
+      )}
 
       {/* TAB 1: EXECUTIVE OVERVIEW */}
       {activeTab === "overview" && (

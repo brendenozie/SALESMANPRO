@@ -19,7 +19,9 @@ export type EmailTemplateId =
   | "DIRECT_MESSAGE"
   | "CONTACT_SUBMISSION"
   | "BACKUP_ALERT"
-  | "TEST_EMAIL";
+  | "TEST_EMAIL"
+  | "PROMOTIONAL_ANNOUNCEMENT"
+  | "SYSTEM_COMMUNICATION";
 
 export interface EmailSenderIdentity {
   fromName: string;

@@ -396,6 +396,12 @@ const commonEcommerce = (
       ],
     },
     {
+      label: "Email",
+      icon: HomeIcon,
+      href: `admin/${adminSlug}/marketing`,
+      minTier: "Ghuba Basic",
+    },
+    {
       label: "Etims",
       href: `/admin/${adminSlug}/etims`,
       icon: ChartBarIcon,
@@ -714,6 +720,26 @@ export const getCategoryMenus = (
             href: `/super-admin/etims`,
             minTier: "Ghuba Pro",
           },
+          {
+            label: "Email",
+            href: `/super-admin/marketing`,
+            minTier: "Ghuba Basic",
+          },
+          {
+            label: "ads",
+            href: "/super-admin/ads",
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "ai-workforce",
+            href: "/super-admin/ai-workforce",
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "payments",
+            href: "/super-admin/payments",
+            minTier: "Ghuba Pro",
+          }
         ],
       },
       {

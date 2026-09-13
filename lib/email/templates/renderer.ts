@@ -461,6 +461,136 @@ export function renderEmailTemplate(
       };
     }
 
+    case "PROMOTIONAL_ANNOUNCEMENT": {
+      const recipientName = data.recipientName ? escapeHtml(data.recipientName) : "valued partner";
+      const headline = escapeHtml(data.headline || data.title || `Special Announcement from ${branding.brandName}`);
+      const badgeText = escapeHtml(data.badgeText || "✨ Exclusive Announcement");
+      const subject = data.subject || `${badgeText}: ${headline}`;
+      const rawBody = (data.bodyText || data.message || data.content || "").replace(/{{name}}/gi, recipientName);
+
+      const bodyParagraphs = rawBody
+        .split(/\n\s*\n/)
+        .map((para: string) => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.65; color: #334155;">${escapeHtml(para).replace(/\n/g, "<br/>")}</p>`)
+        .join("");
+
+      const highlightBox = data.highlightText
+        ? `
+        <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: 12px; padding: 18px 22px; margin: 24px 0;">
+          <p style="margin: 0; font-size: 15px; font-weight: 600; color: #9a3412;">${escapeHtml(data.highlightText)}</p>
+        </div>`
+        : "";
+
+      const ctaButton = data.ctaUrl && data.ctaLabel
+        ? `
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0 20px 0;">
+          <tr>
+            <td align="center">
+              <a href="${escapeHtml(data.ctaUrl)}" target="_blank" class="btn-primary" style="background: ${branding.primaryColor || "#ea580c"}; display: inline-block;">
+                ${escapeHtml(data.ctaLabel)}
+              </a>
+            </td>
+          </tr>
+        </table>`
+        : "";
+
+      const htmlContent = `
+        <div style="text-align: center; margin-bottom: 24px;">
+          <span style="display: inline-block; padding: 6px 14px; background-color: #ffedd5; color: #c2410c; font-size: 12px; font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid #fed7aa;">
+            ${badgeText}
+          </span>
+          <h1 style="margin: 16px 0 8px 0; font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.3;">
+            ${headline}
+          </h1>
+          <p style="margin: 0; font-size: 14px; color: #64748b;">
+            Hello ${recipientName},
+          </p>
+        </div>
+
+        <div style="margin: 20px 0;">
+          ${bodyParagraphs}
+        </div>
+
+        ${highlightBox}
+        ${ctaButton}
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px 0;" />
+        <p style="margin: 0; font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.5;">
+          You are receiving this promotional update because you have an active account on <strong>${escapeHtml(branding.brandName)}</strong>.
+        </p>
+      `;
+
+      return {
+        subject,
+        html: wrapInLayout(htmlContent, branding, subject),
+        text: `${headline}\n\nHello ${recipientName},\n\n${rawBody}\n\n${data.ctaLabel ? `${data.ctaLabel}: ${data.ctaUrl}\n\n` : ""}Best regards,\n${branding.brandName}`,
+      };
+    }
+
+    case "SYSTEM_COMMUNICATION": {
+      const recipientName = data.recipientName ? escapeHtml(data.recipientName) : "user";
+      const headline = escapeHtml(data.headline || data.title || `Important Notice from ${branding.brandName}`);
+      const badgeText = escapeHtml(data.badgeText || "📢 Official Communication");
+      const subject = data.subject || `${badgeText}: ${headline}`;
+      const rawBody = (data.bodyText || data.message || data.content || "").replace(/{{name}}/gi, recipientName);
+
+      const bodyParagraphs = rawBody
+        .split(/\n\s*\n/)
+        .map((para: string) => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.65; color: #334155;">${escapeHtml(para).replace(/\n/g, "<br/>")}</p>`)
+        .join("");
+
+      const noticeCallout = data.noticeBox
+        ? `
+        <div style="background-color: #f1f5f9; border-left: 4px solid #0284c7; border-radius: 6px; padding: 14px 18px; margin: 20px 0;">
+          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #0369a1;">${escapeHtml(data.noticeBox)}</p>
+        </div>`
+        : "";
+
+      const ctaButton = data.ctaUrl && data.ctaLabel
+        ? `
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 28px 0 16px 0;">
+          <tr>
+            <td align="center">
+              <a href="${escapeHtml(data.ctaUrl)}" target="_blank" class="btn-primary" style="background-color: #0f172a; display: inline-block;">
+                ${escapeHtml(data.ctaLabel)}
+              </a>
+            </td>
+          </tr>
+        </table>`
+        : "";
+
+      const htmlContent = `
+        <div style="margin-bottom: 20px;">
+          <span style="display: inline-block; padding: 5px 12px; background-color: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: 700; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+            ${badgeText}
+          </span>
+          <h1 style="margin: 14px 0 6px 0; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.35;">
+            ${headline}
+          </h1>
+          <p style="margin: 0; font-size: 14px; color: #64748b;">
+            Hello ${recipientName},
+          </p>
+        </div>
+
+        <div style="margin: 20px 0;">
+          ${bodyParagraphs}
+        </div>
+
+        ${noticeCallout}
+        ${ctaButton}
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px 0;" />
+        <p style="margin: 0; font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.5;">
+          This is an administrative communication regarding your <strong>${escapeHtml(branding.brandName)}</strong> account.
+        </p>
+      `;
+
+      return {
+        subject,
+        html: wrapInLayout(htmlContent, branding, subject),
+        text: `${headline}\n\nHello ${recipientName},\n\n${rawBody}\n\n${data.ctaLabel ? `${data.ctaLabel}: ${data.ctaUrl}\n\n` : ""}Best regards,\n${branding.brandName} Team`,
+      };
+    }
+
     case "TEST_EMAIL":
     default: {
       const subject = `Test Email from ${branding.brandName}`;

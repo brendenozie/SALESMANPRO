@@ -1350,3 +1350,93 @@ WorkforceToolRegistry.registerTool({
     };
   },
 });
+
+// 28. sendAIEmailBroadcast
+WorkforceToolRegistry.registerTool({
+  name: "sendAIEmailBroadcast",
+  description: "Dispatch an AI-coordinated marketing campaign or communication email to store customers or platform users (Requires Human Approval).",
+  levelScope: [AgentWorkforceLevel.STORE, AgentWorkforceLevel.PLATFORM],
+  permissionRequired: AgentPermissionLevel.HUMAN_APPROVAL_REQUIRED,
+  requiresApproval: true,
+  costCredits: 2.0,
+  parameters: {
+    campaignType: "string (PROMOTIONAL or COMMUNICATION)",
+    audience: "string (ALL_CUSTOMERS, REPEAT_BUYERS, RECENT_BUYERS, or custom comma-separated list)",
+    subject: "string",
+    headline: "string",
+    badgeText: "optional string",
+    highlightText: "optional string",
+    bodyText: "string (personalized body copy with {{name}})",
+    ctaLabel: "optional string",
+    ctaUrl: "optional string",
+  },
+  execute: async (args, context) => {
+    const { EmailService } = await import("@/lib/email/emailService");
+    const tenantType = context.level === AgentWorkforceLevel.PLATFORM ? "PLATFORM" : "STORE";
+    const templateId = args.campaignType === "COMMUNICATION" ? "SYSTEM_COMMUNICATION" : "PROMOTIONAL_ANNOUNCEMENT";
+
+    let targetEmails: string[] = [];
+
+    if (tenantType === "STORE" && context.companyId) {
+      const consumers = await prisma.consumer.findMany({
+        where: { companyId: context.companyId },
+        select: { user: { select: { email: true } } },
+        take: 1000,
+      });
+      const orderCustomers = await prisma.customerOrder.findMany({
+        where: { companyId: context.companyId, email: { not: null } },
+        select: { email: true },
+        take: 1000,
+      });
+
+      const uniqueSet = new Set<string>();
+      consumers.forEach((c) => c.user?.email && uniqueSet.add(c.user.email.toLowerCase()));
+      orderCustomers.forEach((o) => o.email && uniqueSet.add(o.email.toLowerCase()));
+      targetEmails = Array.from(uniqueSet);
+    } else {
+      const users = await prisma.user.findMany({
+        where: { email: { not: "" }, deletedAt: null, status: { not: "SUSPENDED" } },
+        select: { email: true },
+        take: 500,
+      });
+      targetEmails = users.map((u) => u.email).filter(Boolean);
+    }
+
+    if (targetEmails.length === 0) {
+      return { success: false, error: "No matching recipients found to receive campaign email." };
+    }
+
+    let dispatched = 0;
+    for (const email of targetEmails) {
+      await EmailService.sendEmail({
+        tenantType,
+        companyId: context.companyId || undefined,
+        template: templateId,
+        recipient: email,
+        data: {
+          subject: args.subject,
+          headline: args.headline || args.subject,
+          badgeText: args.badgeText || (args.campaignType === "COMMUNICATION" ? "📢 Notice" : "✨ Exclusive Offer"),
+          highlightText: args.highlightText,
+          bodyText: args.bodyText,
+          ctaLabel: args.ctaLabel,
+          ctaUrl: args.ctaUrl,
+          recipientName: email.split("@")[0],
+        },
+        async: true,
+      });
+      dispatched++;
+    }
+
+    return {
+      success: true,
+      data: {
+        recipientsCount: dispatched,
+        campaignType: args.campaignType,
+        subject: args.subject,
+      },
+      summaryForAgent: `AI Email Campaign '${args.subject}' (${args.campaignType}) dispatched to ${dispatched} recipients via ${tenantType} gateway.`,
+    };
+  },
+});
+
