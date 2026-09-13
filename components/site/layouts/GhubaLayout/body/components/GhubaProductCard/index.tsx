@@ -9,14 +9,14 @@ import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
 
-// Icons (Strictly Heroicons - No Lucide)
-import { 
-  HeartIcon, StarIcon, BoltIcon, TrashIcon, MinusIcon, PlusIcon, 
+// Icons
+import {
+  HeartIcon, StarIcon, BoltIcon, TrashIcon, MinusIcon, PlusIcon,
   ShoppingBagIcon, XMarkIcon, HomeIcon, BeakerIcon, KeyIcon,
   CalendarDaysIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/solid';
-import { 
-  Square2StackIcon, MapPinIcon, CalendarIcon 
+import {
+  Square2StackIcon, MapPinIcon, CalendarIcon
 } from '@heroicons/react/24/outline';
 
 import { resolveProductType } from '@/lib/ghuba-product-type';
@@ -43,10 +43,8 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
 
-  // --- DYNAMIC TYPE DETECTION ---
   const itemType = useMemo(() => resolveProductType(product), [product]);
 
-  // --- CART & OPTIONS LOGIC (ECOMMERCE ONLY) ---
   const hasOptions = itemType === "ECOMMERCE" && (product.hasOptions || (product.options && product.options.length > 0));
 
   const currentItemSignature = hasOptions && Object.keys(selectedOptions).length > 0
@@ -54,7 +52,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
     : product.id;
 
   const quantity = cart.find((item: any) => {
-    const matchId = item.selectedOptions 
+    const matchId = item.selectedOptions
       ? `${item.id}-${JSON.stringify(item.selectedOptions)}`
       : item.id;
     return matchId === product.id || matchId === currentItemSignature;
@@ -62,14 +60,12 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
 
   const handleActionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // Route non-buyable types directly to the detail view for inquiries/booking
+
     if (itemType !== "ECOMMERCE") {
       router.push(`/ghuba/productlist/${product.id}`);
       return;
     }
 
-    // Handle Ecommerce flows
     if (hasOptions) {
       const initialOptions: Record<string, string> = {};
       product.options.forEach((opt: any) => {
@@ -93,7 +89,6 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
     setIsModalOpen(false);
   };
 
-  // --- DATA NORMALIZATION ---
   const displayTitle = itemType === "AUTO" && product.make ? `${product.make} ${product.model}` : product.name || product.title;
 
   const normalizeImageUrl = (img: any): string => {
@@ -107,37 +102,36 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
 
   const rawImage = product.images?.length > 0 ? product.images[0] : null;
   const primaryImage = normalizeImageUrl(rawImage);
-  
+
   const whatsappNumber = `${storeFormData?.contactPhone || "254700000000"}`;
   const message = encodeURIComponent(`I'm interested in: ${displayTitle}. Could you provide more details?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  // --- DYNAMIC RENDERING HELPERS ---
   const renderBadge = () => {
     if (itemType === "PROPERTY") {
       return (
-        <div className="absolute top-2 sm:top-4 left-0 z-20 bg-indigo-600 text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg uppercase tracking-widest">
+        <div className="absolute top-3 left-0 z-20 bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-r-full shadow-md uppercase tracking-widest">
           {product.status === 'ACTIVE' ? 'Available' : 'Listing'}
         </div>
       );
     }
     if (itemType === "AUTO") {
       return (
-        <div className="absolute top-2 sm:top-4 left-0 z-20 bg-slate-900 text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg uppercase tracking-widest">
+        <div className="absolute top-3 left-0 z-20 bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white text-[10px] font-black px-3 py-1 rounded-r-full shadow-md uppercase tracking-widest">
           {product.condition || 'Vehicle'}
         </div>
       );
     }
     if (itemType === "SERVICE") {
       return (
-        <div className="absolute top-2 sm:top-4 left-0 z-20 bg-emerald-600 text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg uppercase tracking-widest">
+        <div className="absolute top-3 left-0 z-20 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-r-full shadow-md uppercase tracking-widest">
           Service
         </div>
       );
     }
     if (product.discount > 0) {
       return (
-        <div className="absolute top-2 sm:top-4 left-0 z-20 bg-[#E63946] text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg">
+        <div className="absolute top-3 left-0 z-20 bg-[#E63946] text-white text-[10px] font-black px-3 py-1 rounded-r-full shadow-md">
           {product.discount}% OFF
         </div>
       );
@@ -149,7 +143,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
     if (itemType === "PROPERTY") {
       const beds = product.bedrooms?.length > 0 ? product.bedrooms[0].type : "N/A";
       return (
-        <div className="flex items-center gap-3 text-[10px] sm:text-xs text-zinc-500 font-bold">
+        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 font-bold">
           <span className="flex items-center gap-1"><HomeIcon className="w-3 h-3" /> {beds}</span>
           <span className="flex items-center gap-1"><BeakerIcon className="w-3 h-3" /> {product.bathrooms || '-'}</span>
           <span className="flex items-center gap-1"><Square2StackIcon className="w-3 h-3" /> {product.area ? `${product.area} sqft` : '-'}</span>
@@ -158,47 +152,40 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
     }
     if (itemType === "AUTO") {
       return (
-        <div className="flex items-center gap-3 text-[10px] sm:text-xs text-zinc-500 font-bold">
+        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 font-bold">
           <span className="flex items-center gap-1"><CalendarIcon className="w-3 h-3" /> {product.year || '-'}</span>
           <span className="flex items-center gap-1"><KeyIcon className="w-3 h-3" /> {product.transmission?.substring(0, 4) || '-'}</span>
-          <span className="flex items-center gap-1"><MapPinIcon className="w-3 h-3" /> {product.mileage ? `${(product.mileage/1000).toFixed(0)}k` : '-'}</span>
+          <span className="flex items-center gap-1"><MapPinIcon className="w-3 h-3" /> {product.mileage ? `${(product.mileage / 1000).toFixed(0)}k` : '-'}</span>
         </div>
       );
     }
     if (itemType === "SERVICE") {
       return (
-        <div className="flex items-center gap-3 text-[10px] sm:text-xs text-zinc-500 font-bold">
+        <div className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 font-bold">
           <span className="flex items-center gap-1"><CalendarDaysIcon className="w-3 h-3" /> {product.duration || 'Flexible'}</span>
           <span className="flex items-center gap-1"><MapPinIcon className="w-3 h-3" /> {product.location || 'Local'}</span>
         </div>
       );
     }
-    // ECOMMERCE Default
     return (
       <div className="flex items-center space-x-0.5">
         {[...Array(5)].map((_, i) => (
-          <StarIcon key={i} className={`h-2 w-2 sm:h-3 sm:w-3 ${i < (product.rating || 5) ? "text-[#E63946]" : "text-zinc-300 dark:text-zinc-800"}`} />
+          <StarIcon key={i} className={`h-3 w-3 ${i < (product.rating || 5) ? "text-amber-400" : "text-zinc-200 dark:text-zinc-700"}`} />
         ))}
-        <span className="text-[8px] text-zinc-400 font-bold ml-1 sm:ml-2 uppercase">({product.reviews || 24})</span>
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold ml-2 uppercase">({product.reviews || 24})</span>
       </div>
     );
   };
 
-  const getActionConfig = () => {
+  const actionConfig = (() => {
     switch (itemType) {
-      case "PROPERTY":
-        return { icon: <HomeIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: "Details" };
-      case "AUTO":
-        return { icon: <MagnifyingGlassIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: "Inspect" };
-      case "SERVICE":
-        return { icon: <CalendarDaysIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: "Book" };
+      case "PROPERTY": return { icon: <HomeIcon className="w-4 h-4" />, text: "Details" };
+      case "AUTO": return { icon: <MagnifyingGlassIcon className="w-4 h-4" />, text: "Inspect" };
+      case "SERVICE": return { icon: <CalendarDaysIcon className="w-4 h-4" />, text: "Book" };
       case "ECOMMERCE":
-      default:
-        return { icon: <ShoppingBagIcon className="w-3 h-3 sm:w-4 sm:h-4" />, text: hasOptions ? "Options" : "Add" };
+      default: return { icon: <ShoppingBagIcon className="w-4 h-4" />, text: hasOptions ? "Options" : "Add to Cart" };
     }
-  };
-
-  const actionConfig = getActionConfig();
+  })();
 
   return (
     <>
@@ -206,73 +193,72 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        whileHover={{ y: -5 }}
-        className="relative p-1.5 sm:p-4 group h-full"
+        className="relative group h-full"
       >
-        <div 
+        <div
           onClick={() => router.push(`/ghuba/productlist/${product.id}`)}
-          className="relative h-full cursor-pointer bg-white dark:bg-[#0F0F0F] border border-zinc-200 dark:border-zinc-800 rounded-[1.2rem] sm:rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_20px_40px_-10px_rgba(230,57,70,0.15)] flex flex-col"
+          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col"
         >
           {/* --- IMAGE HEADER --- */}
-          <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-900 shrink-0">
+          <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-950 shrink-0">
             {renderBadge()}
 
             <Image
               width={400}
               height={400}
               loader={loaderProp}
-              src={imageError ? 'https://via.placeholder.com/400x400?text=Image+Not+Found' : primaryImage}
+              src={imageError ? 'https://via.placeholder.com/400x400?text=No+Image' : primaryImage}
               alt={displayTitle}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={() => setImageError(true)}
             />
 
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[1px]">
-               <span className="bg-white text-black font-black text-[8px] sm:text-[10px] uppercase tracking-widest px-4 py-2 sm:px-6 sm:py-3 rounded-full translate-y-2 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
-                 View Details
-               </span>
+            {/* Subtle overlay for hover details */}
+            <div className="absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+              <span className="bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 font-bold text-[10px] uppercase tracking-widest px-5 py-2.5 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                View Details
+              </span>
             </div>
 
             <button
               onClick={(e) => { e.stopPropagation(); toggleLike(product.id); }}
-              className={`absolute top-2 right-2 sm:top-4 sm:right-4 z-20 p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border transition-all active:scale-90 ${
-                likedItems?.[product.id] 
-                  ? "bg-[#E63946] text-white border-transparent" 
-                  : "bg-black/20 text-white border-white/20 hover:bg-black/40"
-              }`}
+              className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${likedItems?.[product.id]
+                  ? "bg-red-50 text-[#E63946] dark:bg-red-500/20 dark:text-red-400"
+                  : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
+                }`}
             >
               <HeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           </div>
 
           {/* --- PRODUCT INFO --- */}
-          <div className="p-4 sm:p-6 flex flex-col flex-grow justify-between gap-3 sm:gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between items-start gap-1">
-                <h3 className="text-[11px] sm:text-lg font-black uppercase tracking-tighter text-zinc-900 dark:text-white line-clamp-2 leading-tight h-10 sm:h-14">
+          <div className="p-4 sm:p-5 flex flex-col flex-grow justify-between gap-4">
+            <div className="space-y-3">
+              <div className="flex justify-between items-start gap-2">
+                <h3 className="text-sm sm:text-base font-black tracking-tight text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-snug">
                   {displayTitle}
                 </h3>
                 {itemType === "ECOMMERCE" && (
-                  <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md shrink-0">
-                     <BoltIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#E63946]" />
-                     <span className="hidden sm:block text-[8px] font-black dark:text-zinc-300 uppercase">New</span>
+                  <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded shrink-0">
+                    <BoltIcon className="w-3 h-3 text-[#E63946]" />
+                    <span className="text-[9px] font-black text-[#E63946] uppercase tracking-wider">New</span>
                   </div>
                 )}
               </div>
-              
+
               {renderQuickStats()}
 
               {product.company && (
-                <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold truncate pt-1">
-                  <span className="text-zinc-400">Sold by:</span>
-                  <span 
+                <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                  <span>By</span>
+                  <span
                     onClick={(e) => {
                       if (product.company?.slug) {
                         e.stopPropagation();
-                        router.push(`/site/${product.company.slug}/ghuba`);
+                        router.push(`/site/${product.company.slug}`);
                       }
                     }}
-                    className="text-zinc-700 dark:text-zinc-300 font-bold hover:underline truncate"
+                    className="text-zinc-900 dark:text-zinc-200 font-bold hover:underline truncate cursor-pointer"
                   >
                     {product.company.name || "Verified Store"}
                   </span>
@@ -280,71 +266,73 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto">
-              <div className="flex flex-col">
-                <span className="text-[8px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none">Price</span>
-                <span className="text-sm sm:text-xl font-black text-zinc-900 dark:text-white mt-0.5 sm:mt-1 italic">
-                  <span className="text-[9px] sm:text-xs not-italic mr-0.5 font-bold text-zinc-400">KES</span>
-                  {(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
-                </span>
+            {/* Bottom Actions & Price */}
+            <div className="mt-auto space-y-3">
+              <div className="flex items-end justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Price</span>
+                  <span className="text-lg sm:text-xl font-black text-zinc-900 dark:text-white leading-none mt-1">
+                    <span className="text-xs mr-1 font-bold text-zinc-400 dark:text-zinc-500">KES</span>
+                    {(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
+                  </span>
+                </div>
+
+                <div className="shrink-0">
+                  <AnimatePresence mode="wait">
+                    {itemType === "ECOMMERCE" && quantity > 0 ? (
+                      <motion.div
+                        key="in-cart"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="flex items-center justify-between bg-zinc-900 dark:bg-zinc-100 rounded-xl p-1 shadow-md h-10 w-28"
+                        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+                      >
+                        <button onClick={() => decreaseQuantity(currentItemSignature)} className="p-2 text-white dark:text-zinc-900 hover:bg-white/20 dark:hover:bg-black/10 rounded-lg transition-colors">
+                          {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400 dark:text-red-500" /> : <MinusIcon className="w-4 h-4" />}
+                        </button>
+                        <span className="text-white dark:text-zinc-900 font-black text-sm">{quantity}</span>
+                        <button onClick={() => addToCart({ ...product, selectedOptions })} className="p-2 text-white dark:text-zinc-900 hover:bg-white/20 dark:hover:bg-black/10 rounded-lg transition-colors">
+                          <PlusIcon className="w-4 h-4 text-emerald-400 dark:text-emerald-500" />
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.button
+                        key="add-btn"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleActionClick}
+                        className={`h-10 px-4 flex items-center justify-center gap-2 rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all duration-300 shadow-sm
+                          ${itemType === 'ECOMMERCE'
+                            ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                            : 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white'
+                          }`}
+                      >
+                        {actionConfig.icon}
+                        {actionConfig.text}
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
-              {/* Action Tray */}
-              <div className="mt-auto">
-                <AnimatePresence mode="wait">
-                  {itemType === "ECOMMERCE" && quantity > 0 ? (
-                    <motion.div 
-                      key="in-cart"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="flex items-center justify-between bg-slate-900 rounded-2xl p-1 shadow-xl"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button onClick={() => decreaseQuantity(currentItemSignature)} className="p-2 sm:p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
-                        {quantity === 1 ? <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" /> : <MinusIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
-                      </button>
-                      <span className="text-white font-black text-xs sm:text-sm px-1 sm:px-2">{quantity}</span>
-                      <button onClick={() => addToCart({ ...product, selectedOptions })} className="p-2 sm:p-3 text-white hover:bg-white/10 rounded-xl transition-colors">
-                        <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
-                      </button>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      key="add-btn"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleActionClick}
-                      className={`w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 text-black dark:text-white border border-zinc-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition-all duration-300 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-900 ${itemType !== 'ECOMMERCE' && 'bg-zinc-900 text-white dark:bg-white dark:text-black border-transparent'}`}
-                    >
-                      {actionConfig.icon}
-                      {actionConfig.text}
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-                
-            {/* Quick Contact Overlay */}
-            <div className="flex items-end justify-center pt-1">
-              <a 
+              {/* Refined Quick Contact Overlay */}
+              <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="w-full bg-[#25D366] text-white py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#25D366]/20 transform translate-y-2 opacity-90 hover:opacity-100 hover:translate-y-0 transition-all"
+                className="w-full bg-[#25D366]/10 dark:bg-[#25D366]/20 text-[#1da851] dark:text-[#25D366] hover:bg-[#25D366] hover:text-white py-2.5 rounded-xl flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wider transition-colors duration-300"
               >
-                <WhatsAppIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                Inquire
+                <WhatsAppIcon className="w-4 h-4" />
+                Quick Inquire
               </a>
             </div>
           </div>
-
-          <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#E63946]/20 to-transparent shrink-0" />
         </div>
       </motion.div>
 
-      {/* Options Selection Backdrop & Modal Windows (E-commerce Only) */}
+      {/* Options Selection Modal */}
       <AnimatePresence>
         {isModalOpen && itemType === "ECOMMERCE" && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -353,38 +341,38 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm"
             />
-            
+
             <motion.div
               initial={{ scale: 0.95, y: 15, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
-              className="relative bg-white dark:bg-[#0F0F0F] w-full max-w-md p-6 rounded-[1.5rem] shadow-2xl border border-zinc-200 dark:border-zinc-800 z-10 space-y-6"
+              className="relative bg-white dark:bg-zinc-900 w-full max-w-md p-6 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 z-10 space-y-6"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight">Configure Item</h4>
-                  <p className="text-xs text-zinc-400">Specify preferences below to continue.</p>
+                  <h4 className="text-lg font-black text-zinc-900 dark:text-zinc-100 tracking-tight">Configure Item</h4>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Specify preferences below to continue.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
 
               {formError && (
-                <div className="text-xs bg-red-500/10 text-[#E63946] border border-red-500/20 px-3 py-2 rounded-xl font-bold">
+                <div className="text-sm bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-4 py-3 rounded-xl font-medium">
                   {formError}
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {product.options?.map((option: any) => (
-                  <div key={option.name} className="space-y-2">
-                    <label className="text-xs font-black uppercase text-zinc-400 tracking-wider">
+                  <div key={option.name} className="space-y-3">
+                    <label className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 tracking-wider">
                       {option.name} <span className="text-[#E63946]">*</span>
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -397,11 +385,10 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
                               setSelectedOptions(prev => ({ ...prev, [option.name]: val }));
                               setFormError('');
                             }}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all ${
-                              isSelected
-                                ? 'bg-[#E63946] border-[#E63946] text-white shadow-md'
-                                : 'bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900'
-                            }`}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${isSelected
+                                ? 'bg-zinc-900 dark:bg-zinc-100 border-zinc-900 dark:border-zinc-100 text-white dark:text-zinc-900 shadow-md'
+                                : 'bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500'
+                              }`}
                           >
                             {val}
                           </button>
@@ -412,10 +399,10 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
                 ))}
               </div>
 
-              <div className="pt-2">
+              <div className="pt-4">
                 <button
                   onClick={handleConfirmOptions}
-                  className="w-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:bg-[#E63946] dark:hover:bg-[#E63946] hover:text-white"
+                  className="w-full bg-[#E63946] hover:bg-[#d62d3a] text-white py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-colors shadow-lg shadow-[#E63946]/20"
                 >
                   Confirm Configuration
                 </button>

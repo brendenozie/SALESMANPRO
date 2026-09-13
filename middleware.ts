@@ -136,7 +136,11 @@ export default async function middleware(
       verifyUrl.searchParams.set("email", String(session.email || ""));
       return NextResponse.redirect(verifyUrl);
     }
+    if (session.isActive === false) {
+      return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
+    }
     if (
+      !pathname.startsWith("/stores") &&
       !canAccessDashboard({
         role: session.role as string,
         companyId: session.companyId as string | undefined,
@@ -177,6 +181,11 @@ export default async function middleware(
     pathname.startsWith("/stores") ||
     pathname === "/admin"
   ) {
+    if (pathname.startsWith("/stores")) {
+      return NextResponse.redirect(
+        new URL(`https://${PRIMARY_HOST_NAME}${pathname}${url.search}`),
+      );
+    }
     return NextResponse.redirect(new URL("/", request.url));
   }
 

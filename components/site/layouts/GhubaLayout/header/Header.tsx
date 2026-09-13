@@ -264,7 +264,16 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
     <div className="flex items-center space-x-1 sm:space-x-3">
       {/* Desktop "Start Selling" Button positioned next to the profile for high visibility */}
       <button
-        onClick={() => router.push("/stores")}
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            const hostname = window.location.hostname;
+            if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
+              router.push("/stores");
+            } else {
+              window.location.href = "https://salesmanpro.site/stores";
+            }
+          }
+        }}
         className="hidden lg:flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-full text-sm font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
       >
         <BuildingLibraryIcon className="w-4 h-4" />
@@ -380,7 +389,20 @@ const BottomNav = ({ path }: { path: string }) => {
         return (
           <button 
             key={name} 
-            onClick={() => router.push(link)} 
+            onClick={() => {
+              if (link === "/stores") {
+                if (typeof window !== "undefined") {
+                  const hostname = window.location.hostname;
+                  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
+                    router.push("/stores");
+                  } else {
+                    window.location.href = "https://salesmanpro.site/stores";
+                  }
+                }
+              } else {
+                router.push(link);
+              }
+            }} 
             className={`flex flex-col items-center p-2 rounded-xl transition-all ${
               isActive 
                 ? "text-amber-500" 

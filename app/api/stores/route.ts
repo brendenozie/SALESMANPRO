@@ -342,6 +342,19 @@ async function createCompany(req: Request, context: HandlerContext) {
       },
     });
 
+    // ⚡ Promote creator to ADMIN for their newly created store and associate companyId
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          role: "ADMIN",
+          ...(user.companyId ? {} : { companyId: newCompany.id }),
+        },
+      });
+    } catch (roleErr) {
+      console.error("⚠️ Failed to update user role to ADMIN upon store creation:", roleErr);
+    }
+
     // ⚡ Automatic introductory AI credit grant for new store onboarding
     let welcomeCreditsInfo: { granted: boolean; amount: number; balance: number } = {
       granted: false,

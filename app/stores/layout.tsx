@@ -17,15 +17,7 @@ export default async function StoresLayout({ children }: { children: React.React
     redirect(`/verify-email?email=${encodeURIComponent(user.email || "")}`);
   }
 
-  if (
-    !canAccessDashboard({
-      role: user.role,
-      companyId: user.companyId,
-      emailVerified: user.emailVerified,
-      isActive: user.isActive,
-      hasTenantAccess: user.hasTenantAccess,
-    })
-  ) {
+  if (user.isActive === false) {
     redirect("/unauthorized?reason=forbidden");
   }
 
