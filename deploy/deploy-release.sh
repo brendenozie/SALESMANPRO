@@ -85,14 +85,14 @@ echo "🔁 Reloading PM2 processes..."
 cd "${CURRENT_LINK}"
 export NODE_ENV="production"
 
-# If salesmanpro is currently running in legacy cluster mode, delete it so it starts cleanly in fork mode without port collision
-if pm2 describe salesmanpro 2>/dev/null | grep -qi "cluster"; then
-  echo "🔄 Migrating salesmanpro from cluster to fork mode..."
+# If salesmanpro is currently running in fork mode, delete it once so it cleanly transitions to cluster mode
+if pm2 describe salesmanpro 2>/dev/null | grep -qi "fork_mode"; then
+  echo "🔄 Migrating salesmanpro from fork mode to zero-downtime cluster mode..."
   pm2 delete salesmanpro || true
 fi
 
-# Clean up duplicate PM2 instances if registered multiple times
-for app_name in salesmanpro ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker; do
+# Clean up duplicate PM2 instances for single-instance background worker processes
+for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker; do
   COUNT=$(pm2 jlist 2>/dev/null | grep -o "\"name\":\"${app_name}\"" | wc -l || echo "0")
   if [ "${COUNT}" -gt 1 ]; then
     echo "⚠️ Detected ${COUNT} duplicate instances for ${app_name}, resetting..."
@@ -100,7 +100,8 @@ for app_name in salesmanpro ssl-worker whatsapp-worker ai-job-worker backup-work
   fi
 done
 
-pm2 startOrReload ecosystem.config.js --update-env || pm2 restart ecosystem.config.js --update-env
+# Perform zero-downtime rolling reload for cluster mode, falling back to startOrReload if not already running
+pm2 reload ecosystem.config.js --update-env || pm2 startOrReload ecosystem.config.js --update-env
 pm2 save
 
 # 9. Automated Health Check Verification
