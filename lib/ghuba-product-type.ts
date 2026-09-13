@@ -1,3 +1,5 @@
+import { CATEGORY_STEPS } from "@/constant/CATEGORY_STEPS";
+
 export type ProductType = "PROPERTY" | "AUTO" | "SERVICE" | "ECOMMERCE";
 
 export interface ProductCapabilities {
@@ -12,7 +14,62 @@ export interface ProductWithCapabilities {
   [key: string]: any;
 }
 
+// ----------------------------------------------------------------------
+// 0. Build normalized lookup dictionary from CATEGORY_STEPS
+// ----------------------------------------------------------------------
+const CATEGORY_STEPS_MAP = new Map<string, number[]>();
+Object.entries(CATEGORY_STEPS).forEach(([key, steps]) => {
+  CATEGORY_STEPS_MAP.set(key.trim().toLowerCase(), steps);
+});
+
+// Helper to look up steps by category name (handles slug/hyphen/store variations)
+function getStepsForCategory(name: string): number[] | null {
+  if (!name || typeof name !== "string") return null;
+  const cleaned = name.trim().toLowerCase();
+  
+  // Exact match
+  if (CATEGORY_STEPS_MAP.has(cleaned)) {
+    return CATEGORY_STEPS_MAP.get(cleaned)!;
+  }
+
+  // Try replacing hyphens and underscores with spaces
+  const unslugged = cleaned.replace(/[-_]/g, " ").trim();
+  if (CATEGORY_STEPS_MAP.has(unslugged)) {
+    return CATEGORY_STEPS_MAP.get(unslugged)!;
+  }
+
+  // If the category explicitly indicates a "Service" (e.g., "Automotive Services", "Cleaning Services")
+  if (unslugged.endsWith(" services") || unslugged.endsWith(" service")) {
+    // Check if CATEGORY_STEPS has a direct match
+    if (CATEGORY_STEPS_MAP.has(unslugged)) {
+      return CATEGORY_STEPS_MAP.get(unslugged)!;
+    }
+    // Return standard Service steps
+    return CATEGORY_STEPS["Services"] || [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11];
+  }
+
+  // If the category explicitly indicates a "Store" / "Shop" (e.g., "Automotive Store", "Hardware Store")
+  if (unslugged.endsWith(" store") || unslugged.endsWith(" shop")) {
+    if (CATEGORY_STEPS_MAP.has(unslugged)) {
+      return CATEGORY_STEPS_MAP.get(unslugged)!;
+    }
+    // Retail store steps: standard ecommerce [1, 2, 3, 7, 8, 9, 10, 12, 11]
+    return [1, 2, 3, 7, 8, 9, 10, 12, 11];
+  }
+
+  // Search for matching key in CATEGORY_STEPS_MAP
+  for (const [key, steps] of CATEGORY_STEPS_MAP.entries()) {
+    if (key === unslugged || key.startsWith(unslugged) || unslugged.startsWith(key)) {
+      return steps;
+    }
+  }
+
+  return null;
+}
+
+// ----------------------------------------------------------------------
 // 1. Explicit E-commerce / Retail override keywords (always allow Add to Cart)
+// ----------------------------------------------------------------------
 const EXPLICIT_ECOMMERCE_KEYWORDS = [
   // Agriculture & Farm Inputs
   "seeds", "fertilizers", "fertiliser", "animal feeds", "veterinary", "farm tools", "equipment",
@@ -38,7 +95,7 @@ const EXPLICIT_ECOMMERCE_KEYWORDS = [
 
   // Electronics & Gadgets
   "electronics", "phones", "smartphones", "tablets", "laptops", "computers", "headphones",
-  "earphones", "speakers", "audio", "cables", "chargers", "cases", "covers", "monitors",
+  "earphones", "speakers", "cables", "chargers", "cases", "covers", "monitors",
   "tvs", "television", "cameras", "printers", "smart home", "gaming", "consoles",
 
   // Health, Beauty & Personal Care
@@ -54,52 +111,81 @@ const EXPLICIT_ECOMMERCE_KEYWORDS = [
   "digital goods", "e-books", "ebooks", "software license"
 ];
 
+// ----------------------------------------------------------------------
 // 2. Automotive Accessories, Parts, Fluids & Care (always allow Add to Cart)
+// ----------------------------------------------------------------------
 const AUTO_ACCESSORY_KEYWORDS = [
-  "accessories", "accessory", "parts", "spare parts", "auto parts", "car parts",
+  "accessories", "accessory", "spare parts", "auto parts", "car parts",
   "performance parts", "car care", "charging stations", "charger", "tires", "tyres",
-  "wheels", "rims", "audio", "stereo", "speakers", "navigation", "gps", "interior",
-  "exterior", "safety", "emergency", "fluids", "oils", "motor oil", "engine oil",
+  "wheels", "rims", "car stereo", "car navigation", "car gps", "car interior",
+  "car exterior", "car alarm", "vehicle security", "car security",
+  "tracking systems", "motor oil", "engine oil",
   "lubricants", "coolant", "brake fluid", "transmission fluid", "batteries", "car battery",
-  "power systems", "lighting", "bulbs", "led bulbs", "headlights", "taillights", "fog lights",
-  "dash cams", "dash cam", "cameras", "security", "tracking", "tracker", "car alarm",
-  "alarm", "diagnostic", "obd", "electronics", "tools", "jack", "jumper cables",
-  "camper", "sunroof", "wipers", "wiper blades", "washers", "steering", "steering cover",
-  "pedals", "seat covers", "seat cover", "mats", "floor mats", "wraps", "decals",
-  "stickers", "towing", "trailers", "exhaust", "mufflers", "transmission", "drivetrain",
-  "cooling", "radiators", "suspension", "shock absorbers", "shocks", "struts", "engine",
-  "filters", "oil filter", "air filter", "fuel filter", "cabin filter", "brakes",
-  "brake pads", "brake discs", "rotors", "spark plugs", "plugs", "clutch", "fan belt",
-  "timing belt", "air freshener", "wax", "polish", "car shampoo", "detailing",
+  "power systems", "led bulbs", "headlights", "taillights", "fog lights",
+  "dash cams", "dash cam", "obd", "diagnostic tools", "jumper cables",
+  "wiper blades", "washers", "steering cover",
+  "seat covers", "floor mats", "wraps", "decals",
+  "stickers", "towing equipment", "trailers", "mufflers",
+  "radiators", "shock absorbers", "shocks", "struts", "engine mounts",
+  "oil filter", "air filter", "fuel filter", "cabin filter",
+  "brake pads", "brake discs", "rotors", "spark plugs", "clutch plate", "fan belt",
+  "timing belt", "air freshener", "car wax", "car polish", "car shampoo",
   "key fob", "keychain", "tire inflator", "pressure gauge"
 ];
 
-// 3. Property Keywords (Only for actual real estate / land / housing units)
+// ----------------------------------------------------------------------
+// 3. Service / Labor Action Keywords (Higher precedence than individual product words)
+// For example: "Oil Change Service" is a SERVICE, not a bottle of oil.
+// ----------------------------------------------------------------------
+const EXPLICIT_SERVICE_ACTION_KEYWORDS = [
+  "service", "services", "repair", "repairs", "maintenance", "installation",
+  "diagnostic", "inspection", "car wash", "auto detailing", "wheel alignment",
+  "oil change", "breakdown", "towing service", "mechanic", "hvac", "tune up"
+];
+
+// ----------------------------------------------------------------------
+// 4. Property Keywords (Real estate, land, housing, commercial space)
+// ----------------------------------------------------------------------
 const PROPERTY_KEYWORDS = [
-  "real estate", "property", "houses for sale", "houses for rent", "house for sale",
-  "house for rent", "land for sale", "land for lease", "plots", "plot for sale",
-  "apartments for rent", "apartments for sale", "serviced apartments", "vacation rentals",
-  "commercial property", "office space", "warehouses", "gated communities",
-  "residential property", "villas", "townhouses", "bungalows", "penthouses"
+  "real estate", "property", "houses", "house", "land", "plot", "plots",
+  "apartments", "apartment", "serviced apartments", "vacation rentals",
+  "commercial property", "commercial", "office space", "offices", "office",
+  "warehouses", "warehouse", "gated communities", "residential property",
+  "villas", "villa", "townhouses", "townhouse", "bungalows", "bungalow",
+  "penthouses", "penthouse", "hostels", "hostel", "shared housing",
+  "event spaces", "event space", "farms", "farm"
 ];
 
-// 4. Pure Vehicle Keywords (Physical whole vehicles, not parts or accessories)
+// ----------------------------------------------------------------------
+// 5. Pure Vehicle Keywords (Physical whole vehicles)
+// ----------------------------------------------------------------------
 const VEHICLE_BODY_KEYWORDS = [
-  "sedan", "suv", "hatchback", "pickup truck", "coupe", "convertible",
-  "wagon", "station wagon", "minivan", "van", "bus", "lorry", "truck",
-  "motorcycle", "motorbike", "scooter", "quad bike", "commercial vehicle",
+  "sedan", "sedans", "suv", "suvs", "hatchback", "hatchbacks", "pickup truck",
+  "pickup trucks", "coupe", "convertible", "wagon", "station wagon", "minivan",
+  "van", "vans", "bus", "buses", "lorry", "lorries", "truck", "trucks",
+  "motorcycle", "motorcycles", "motorbike", "motorbikes", "scooter", "scooters",
+  "quad bike", "commercial vehicle", "commercial vehicles",
   "used car", "used cars", "new car", "new cars", "salvage vehicle",
-  "electric vehicle", "classic car", "vintage car"
+  "electric vehicle", "electric vehicles", "classic car", "vintage car",
+  "luxury cars", "off-road vehicles", "sports cars"
 ];
 
-// 5. Service & Booking Keywords
+// ----------------------------------------------------------------------
+// 6. Service & Booking Keywords
+// ----------------------------------------------------------------------
 const SERVICE_KEYWORDS = [
-  "cleaning service", "drycleaning", "plumbing service", "electrical service",
-  "landscaping service", "catering service", "transportation service", "it services",
-  "beauty services", "barbershop booking", "hair salon", "tutoring service",
-  "event planning", "tutors", "tour packages", "safari tour", "flight tickets",
-  "hotel booking", "consulting session", "coaching session", "therapy session",
-  "security guard", "vip protection", "wellness booking"
+  "cleaning", "drycleaning", "dry cleaning", "laundry", "plumbing", "electrical",
+  "landscaping", "gardener", "catering", "caterer", "transportation", "logistics",
+  "it services", "web development", "beauty services", "barbershop", "barber",
+  "hair salon", "salon", "spa", "massage", "tutoring", "tutor", "tutors",
+  "event planning", "event planner", "tour packages", "safari tour", "travel & experiences",
+  "hotel booking", "consulting", "consultant", "coaching", "coach",
+  "therapist", "therapy", "counselor", "counseling", "security services",
+  "security guard", "vip protection", "wellness", "fitness & wellness",
+  "gym membership", "personal trainer", "mechanic", "car repair", "repair service",
+  "appliance repair", "pest control", "carpentry", "painting service", "courier",
+  "car wash", "auto repair", "car detailing", "wheel alignment", "inspection service",
+  "car insurance services", "car rental & leasing"
 ];
 
 /**
@@ -111,7 +197,13 @@ function extractSearchableText(product: any): string {
   const parts: string[] = [];
 
   // Main Category
-  if (product.category) parts.push(String(product.category));
+  if (typeof product.category === "string") {
+    parts.push(product.category);
+  } else if (product.category && typeof product.category === "object") {
+    if (product.category.name) parts.push(String(product.category.name));
+    if (product.category.displayName) parts.push(String(product.category.displayName));
+  }
+
   if (product.productCategory?.name) parts.push(String(product.productCategory.name));
 
   // Subcategory Name
@@ -148,10 +240,11 @@ function extractSearchableText(product: any): string {
 
 /**
  * Validates whether a bedrooms value represents a genuine real-estate listing
- * and not an empty array [] or dummy array like [[[[[]]]]] or [0].
  */
 function hasValidBedrooms(bedrooms: any): boolean {
-  if (!bedrooms || !Array.isArray(bedrooms) || bedrooms.length === 0) return false;
+  if (!bedrooms) return false;
+  if (typeof bedrooms === "number" && bedrooms > 0) return true;
+  if (!Array.isArray(bedrooms) || bedrooms.length === 0) return false;
   return bedrooms.some((b: any) => {
     if (!b) return false;
     if (typeof b === "object" && !Array.isArray(b)) {
@@ -163,12 +256,166 @@ function hasValidBedrooms(bedrooms: any): boolean {
 }
 
 /**
+ * Resolves the ProductType directly from the CATEGORY_STEPS configuration.
+ * Prioritizes subcategories over umbrella parent categories (e.g. "Automotive").
+ */
+function resolveFromCategorySteps(product: any): ProductType | null {
+  if (!product) return null;
+
+  // PRIORITY 1: Subcategory (the most specific definition)
+  const subCandidates: string[] = [];
+  if (product.subCategoryName) subCandidates.push(product.subCategoryName);
+  if (product.subCategory) {
+    if (typeof product.subCategory === "string") {
+      try {
+        const parsed = JSON.parse(product.subCategory);
+        if (parsed?.name) subCandidates.push(parsed.name);
+        if (parsed?.displayName) subCandidates.push(parsed.displayName);
+      } catch {
+        subCandidates.push(product.subCategory);
+      }
+    } else if (typeof product.subCategory === "object") {
+      if (product.subCategory.name) subCandidates.push(product.subCategory.name);
+      if (product.subCategory.displayName) subCandidates.push(product.subCategory.displayName);
+    }
+  }
+
+  // PRIORITY 2: Main Category
+  const mainCandidates: string[] = [];
+  if (typeof product.category === "string") mainCandidates.push(product.category);
+  if (product.category?.name) mainCandidates.push(product.category.name);
+  if (product.category?.displayName) mainCandidates.push(product.category.displayName);
+  if (product.productCategory?.name) mainCandidates.push(product.productCategory.name);
+
+  // Helper to interpret steps array
+  const interpretSteps = (candidateName: string, steps: number[]): ProductType | null => {
+    const candidateLower = candidateName.toLowerCase();
+
+    // If candidate specifically mentions service / repair / maintenance / wash / detailing
+    if (
+      candidateLower.includes("service") ||
+      candidateLower.includes("repair") ||
+      candidateLower.includes("maintenance") ||
+      candidateLower.includes("wash") ||
+      candidateLower.includes("detailing") ||
+      candidateLower.includes("inspection")
+    ) {
+      return "SERVICE";
+    }
+
+    // Auto Accessories / Spare Parts check
+    const isAutoAccessorySteps =
+      steps.includes(9) &&
+      !steps.includes(4) &&
+      !steps.includes(5) &&
+      !steps.includes(14);
+
+    if (
+      isAutoAccessorySteps ||
+      candidateLower.includes("accessories") ||
+      candidateLower.includes("parts") ||
+      candidateLower.includes("care") ||
+      candidateLower.includes("batteries") ||
+      candidateLower.includes("tires") ||
+      candidateLower.includes("wheels")
+    ) {
+      return "ECOMMERCE";
+    }
+
+    // Services & Booking (Step 16: ServiceSpecifics, Step 17: BookingSlot, Step 15: PricingTiers)
+    if (steps.includes(16) || steps.includes(17) || (steps.includes(15) && !steps.includes(9))) {
+      return "SERVICE";
+    }
+
+    // Property (Step 19: PropertyTypeDetails, Step 13: AmenitiesStep)
+    if (steps.includes(19) || steps.includes(13)) {
+      return "PROPERTY";
+    }
+
+    // Whole Vehicles (Step 4: EnginePerformance, Step 5: OwnershipPricing, Step 14: VehicleAmenitiesStep)
+    if (steps.includes(4) || steps.includes(5) || steps.includes(14)) {
+      return "AUTO";
+    }
+
+    // E-Commerce
+    if (steps.includes(7) || steps.includes(9) || steps.includes(10)) {
+      return "ECOMMERCE";
+    }
+
+    return null;
+  };
+
+  // 1. Evaluate Subcategory FIRST
+  for (const sub of subCandidates) {
+    // Also check if subcategory name directly indicates a service or accessory
+    const subLower = sub.toLowerCase();
+    if (
+      subLower.includes("repair") ||
+      subLower.includes("maintenance") ||
+      subLower.includes("wash") ||
+      subLower.includes("detailing") ||
+      subLower.includes("alignment") ||
+      subLower.includes("service")
+    ) {
+      return "SERVICE";
+    }
+
+    if (
+      subLower.includes("accessories") ||
+      subLower.includes("parts") ||
+      subLower.includes("tires") ||
+      subLower.includes("wheels") ||
+      subLower.includes("batteries") ||
+      subLower.includes("care")
+    ) {
+      return "ECOMMERCE";
+    }
+
+    const steps = getStepsForCategory(sub);
+    if (steps && Array.isArray(steps)) {
+      const result = interpretSteps(sub, steps);
+      if (result) return result;
+    }
+  }
+
+  // 2. Evaluate Main Category SECOND
+  for (const main of mainCandidates) {
+    const mainLower = main.toLowerCase();
+
+    // Check if main category explicitly indicates "Services" vs "Store"
+    if (mainLower.includes("service")) {
+      return "SERVICE";
+    }
+    if (mainLower.includes("store") || mainLower.includes("shop")) {
+      return "ECOMMERCE";
+    }
+
+    // Broad umbrella categories like "Automotive" or "Cars" with NO subcategory
+    // should not prematurely classify before checking product name/specs!
+    if (mainLower === "automotive" || mainLower === "cars" || mainLower === "vehicles") {
+      // Don't decide yet; allow attribute & keyword checks on the product name/specs to decide
+      continue;
+    }
+
+    const steps = getStepsForCategory(main);
+    if (steps && Array.isArray(steps)) {
+      const result = interpretSteps(main, steps);
+      if (result) return result;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Resolves the functional ProductType for any Ghuba product or marketplace listing.
  * Guarantees that:
- * - Hardware, food/cakes, retail, apparel, and automotive accessories are always "ECOMMERCE" (Add to Cart).
- * - Physical properties (real estate) are "PROPERTY".
- * - Physical whole vehicles (cars, motorcycles, trucks) are "AUTO".
- * - Service bookings are "SERVICE".
+ * - Umbrella categories like "Automotive" differentiate accurately based on subcategory:
+ *   - "Sedans" / "SUVs" -> "AUTO"
+ *   - "Car Accessories" / "Batteries" -> "ECOMMERCE"
+ *   - "Car Repair" / "Car Wash" -> "SERVICE"
+ * - Categories ending in "Services" default to "SERVICE".
+ * - Categories ending in "Store" default to "ECOMMERCE".
  */
 export function resolveProductType(product: any): ProductType {
   if (!product) return "ECOMMERCE";
@@ -176,9 +423,22 @@ export function resolveProductType(product: any): ProductType {
   const text = extractSearchableText(product);
 
   // -------------------------------------------------------------
-  // STEP 1: INTERCEPT AUTOMOTIVE ACCESSORIES & PARTS FIRST
-  // If an item mentions accessory or part keywords, it is ECOMMERCE (Add to Cart),
-  // even if its parent category is "Cars", "Automotive", or "Vehicles".
+  // STEP 1: SERVICE LABOR ACTION INTERCEPTION
+  // If the listing title/subcategory specifically mentions a performed service
+  // like "oil change service", "car wash", "repair", "wheel alignment",
+  // it is a SERVICE (even if it mentions oil, wax, or brakes).
+  // -------------------------------------------------------------
+  const isServiceAction = EXPLICIT_SERVICE_ACTION_KEYWORDS.some((kw) => text.includes(kw));
+  if (isServiceAction) {
+    // Confirm it's not a pure physical tool like "diagnostic tool" or "repair kit"
+    if (!text.includes("kit") && !text.includes("tool") && !text.includes("manual")) {
+      return "SERVICE";
+    }
+  }
+
+  // -------------------------------------------------------------
+  // STEP 2: INTERCEPT AUTOMOTIVE ACCESSORIES & PARTS
+  // If an item mentions accessory or part keywords, it is ECOMMERCE (Add to Cart).
   // -------------------------------------------------------------
   const isAutoAccessory = AUTO_ACCESSORY_KEYWORDS.some((kw) => text.includes(kw));
   if (isAutoAccessory) {
@@ -186,7 +446,7 @@ export function resolveProductType(product: any): ProductType {
   }
 
   // -------------------------------------------------------------
-  // STEP 2: INTERCEPT EXPLICIT E-COMMERCE / RETAIL OVERRIDES
+  // STEP 3: INTERCEPT EXPLICIT E-COMMERCE / RETAIL OVERRIDES
   // Hardware, farm inputs, cakes/groceries, fashion, gadgets, etc.
   // -------------------------------------------------------------
   const isExplicitEcommerce = EXPLICIT_ECOMMERCE_KEYWORDS.some((kw) => text.includes(kw));
@@ -195,47 +455,84 @@ export function resolveProductType(product: any): ProductType {
   }
 
   // -------------------------------------------------------------
-  // STEP 3: PROPERTY (Real Estate / Apartments / Land / Houses)
+  // STEP 4: CONSULT CATEGORY_STEPS (Subcategory first, then Main Category)
   // -------------------------------------------------------------
-  const isPropertyCategory = PROPERTY_KEYWORDS.some((kw) => text.includes(kw));
-  const hasBedrooms = hasValidBedrooms(product.bedrooms);
+  const typeFromCategorySteps = resolveFromCategorySteps(product);
+  if (typeFromCategorySteps) {
+    return typeFromCategorySteps;
+  }
 
-  if ((isPropertyCategory || hasBedrooms) && !text.includes("paint") && !text.includes("fixture") && !text.includes("hardware")) {
+  // -------------------------------------------------------------
+  // STEP 5: ATTRIBUTE-BASED INFERENCE (From populated product fields)
+  // -------------------------------------------------------------
+  // Services attribute check
+  const hasServiceFields =
+    Boolean(product.hourlyRate) ||
+    Boolean(product.minimumHours) ||
+    Boolean(product.serviceSchedule) ||
+    Boolean(product.minNoticePeriod) ||
+    Boolean(product.maxBookingAhead);
+
+  if (hasServiceFields) {
+    return "SERVICE";
+  }
+
+  // Property attribute check
+  const hasBedrooms = hasValidBedrooms(product.bedrooms);
+  const hasPropertyFields =
+    Boolean(product.propertyTypeId) ||
+    hasBedrooms ||
+    Boolean(product.bathrooms);
+
+  if (hasPropertyFields && !text.includes("paint") && !text.includes("fixture") && !text.includes("hardware")) {
     return "PROPERTY";
   }
 
-  // -------------------------------------------------------------
-  // STEP 4: AUTOMOTIVE (Whole Physical Vehicles)
-  // Only true physical vehicles, requiring:
-  // - A legitimate vehicle category/body keyword, OR
-  // - A valid VIN (10+ characters), OR
-  // - Category is "Cars" / "Automotive" AND make + model are present (without accessory keywords).
-  // -------------------------------------------------------------
+  // Whole vehicle attribute check
   const hasValidVin = typeof product.vin === "string" && product.vin.trim().length >= 10;
-  const isVehicleBody = VEHICLE_BODY_KEYWORDS.some((kw) => text.includes(kw));
-  const isGeneralAutoCategory = text.includes("cars") || text.includes("automotive") || text.includes("motorcycle") || text.includes("vehicle");
-
-  if (hasValidVin || isVehicleBody) {
+  if (hasValidVin) {
     return "AUTO";
   }
 
-  if (isGeneralAutoCategory) {
-    // If it has physical vehicle attributes like make and model or year, and is not an accessory
-    if (product.make && product.model && (product.year || product.mileage || product.transmission)) {
-      return "AUTO";
-    }
+  if (product.make && product.model && (product.year || product.mileage || product.transmission || product.engineSize)) {
+    return "AUTO";
   }
 
   // -------------------------------------------------------------
-  // STEP 5: SERVICES & BOOKINGS
+  // STEP 6: KEYWORD-BASED FALLBACK INFERENCE
   // -------------------------------------------------------------
-  const isServiceKeyword = SERVICE_KEYWORDS.some((kw) => text.includes(kw));
+  // Property keywords
+  const isPropertyCategory = PROPERTY_KEYWORDS.some((kw) => {
+    const regex = new RegExp(`\\b${kw}\\b`, "i");
+    return regex.test(text);
+  });
+
+  if (isPropertyCategory && !text.includes("paint") && !text.includes("fixture") && !text.includes("hardware")) {
+    return "PROPERTY";
+  }
+
+  // Vehicle keywords
+  const isVehicleBody = VEHICLE_BODY_KEYWORDS.some((kw) => {
+    const regex = new RegExp(`\\b${kw}\\b`, "i");
+    return regex.test(text);
+  });
+
+  if (isVehicleBody) {
+    return "AUTO";
+  }
+
+  // Service keywords
+  const isServiceKeyword = SERVICE_KEYWORDS.some((kw) => {
+    const regex = new RegExp(`\\b${kw}\\b`, "i");
+    return regex.test(text);
+  });
+
   if (isServiceKeyword || (Boolean(product.duration) && text.includes("service"))) {
     return "SERVICE";
   }
 
   // -------------------------------------------------------------
-  // STEP 6: DEFAULT TO ECOMMERCE (Standard Add to Cart)
+  // STEP 7: DEFAULT TO ECOMMERCE (Standard Add to Cart)
   // All other retail items, hardware, groceries, crafts default to Add to Cart.
   // -------------------------------------------------------------
   return "ECOMMERCE";
