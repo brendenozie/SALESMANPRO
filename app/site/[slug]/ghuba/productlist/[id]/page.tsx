@@ -29,6 +29,9 @@ const serialize = (item: any) => ({
 });
 
 
+import { redirect } from "next/navigation";
+import { extractListingId, getListingPublicUrl } from "@/lib/ghuba-slug";
+
 interface PageProps {
   params: Promise<{ slug: string; id: string }>;
 }
@@ -42,9 +45,10 @@ const listingWhere = {
 
 export default async function Page({ params }: PageProps) {
   const { slug, id } = await params;
+  const listingId = extractListingId(id);
 
   const listing = await prisma.marketplaceListings.findUnique({
-    where: { id: id },
+    where: { id: listingId },
     include: {
       product: true,
       productCategory: true,
@@ -62,6 +66,13 @@ export default async function Page({ params }: PageProps) {
 
   if (!listing) return <div>Product not found</div>;
 
+  // If accessed directly via legacy raw 24-hex ObjectId, redirect to canonical SEO-friendly URL
+  if (/^[0-9a-fA-F]{24}$/.test(id)) {
+    const canonicalPath = getListingPublicUrl(listing);
+    const targetUrl = slug && slug !== "ghuba" ? `/site/${slug}${canonicalPath}` : canonicalPath;
+    redirect(targetUrl);
+  }
+
   const serializedListing = serialize(listing);
 
   // Fetch similar listings
@@ -69,7 +80,7 @@ export default async function Page({ params }: PageProps) {
     where: {
       ...listingWhere,
       productCategoryId: listing.productCategoryId,
-      id: { not: id },
+      id: { not: listing.id },
     },
     include: {
       product: true,

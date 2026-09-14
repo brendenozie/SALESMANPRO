@@ -195,10 +195,7 @@ const FiltersV1 = ({ filters, setFilters }) => {
   );
 };
 
-// 1. (Optional) Define Shared UI outside if you want to keep it a component
-// Or just inline it as shown below to avoid prop-drilling.
-
-const Filters = ({ filters, setFilters }) => {
+const Filters = ({ filters, setFilters, searchTerm = '', onSearch }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [isOpen, setIsOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -284,6 +281,13 @@ const Filters = ({ filters, setFilters }) => {
   // Helper for the JSX to avoid the "Inner Component" bug
   const renderFilterList = () => (
     <div className="space-y-4">
+      {onSearch && (
+        <SearchInput
+          value={searchTerm}
+          onChange={(e) => onSearch(e.target.value)}
+          placeholder="Search products..."
+        />
+      )}
       <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
       <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
       <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />

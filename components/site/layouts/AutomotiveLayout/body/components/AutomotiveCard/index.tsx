@@ -13,9 +13,14 @@ import {
   ScaleIcon,
   Cog6ToothIcon,
   BeakerIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ShoppingBagIcon,
+  TrashIcon,
+  MinusIcon,
+  PlusIcon
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -35,6 +40,7 @@ const SpecItem = ({ icon: Icon, label, value }: any) => (
 
 const AutomotiveCard = ({ item }: { item: any }) => {
   const { storeFormData } = useStoreContext();
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
   
   // Dynamic Data Extraction based on your JSON
   const price = item.finalPrice || item.sellingPrice;
@@ -44,6 +50,9 @@ const AutomotiveCard = ({ item }: { item: any }) => {
   const transmission = item.transmission || "Auto";
   const fuel = item.fuelType || "Petrol";
   
+  const itemId = item._id?.$oid || item.id;
+  const quantity = cart.find((c: any) => c.id === itemId)?.quantity || 0;
+
   // Logic for Badges based on your JSON flags
   const showHotBadge = item.isFeatured || item.tags?.includes('trending');
   const showNewBadge = item.isNewArrival || item.condition === "New";
@@ -55,37 +64,58 @@ const AutomotiveCard = ({ item }: { item: any }) => {
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      ...item,
+      id: itemId,
+      title: `${item.make} ${item.model}`,
+      name: `${item.make} ${item.model}`,
+      finalPrice: price,
+      sellingPrice: price,
+    });
+  };
+
   return (
-    <Link href={`/automotive/listings/${item._id?.$oid || item.id}`} passHref legacyBehavior>
+    <Link href={`/automotive/listings/${itemId}`} passHref legacyBehavior>
       <motion.a
-        whileHover={{ y: -10 }}
-        className="group relative block h-full bg-white dark:bg-[#0E0E0E] rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 overflow-hidden flex flex-col transition-all duration-500 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)]"
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none hover:shadow-2xl hover:shadow-blue-500/10 dark:hover:border-zinc-700 transition-all cursor-pointer h-full"
       >
-        {/* --- IMAGE SECTION --- */}
-        <div className="relative aspect-[4/3] overflow-hidden">
+        {/* --- MEDIA SECTION --- */}
+        <div className="relative aspect-[16/10] overflow-hidden">
           <Image
-            src={item.images?.[0] || "https://images.unsplash.com/photo-1494976388531-d1058494cdd8"}
-            alt={item.name}
+            src={item.images?.[0] || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800'}
+            alt={`${item.make} ${item.model}`}
             fill
-            className="object-cover transition-transform duration-1000 group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             loader={loader}
           />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
 
-          {/* Luxury Tags */}
-          <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">
-            {showHotBadge && (
-              <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.15em] text-white flex items-center gap-1.5 shadow-2xl backdrop-blur-md border border-white/20 bg-orange-600/90">
-                <FireIcon className="w-3.5 h-3.5"/>
-                Trending
-              </span>
-            )}
-            {showNewBadge && (
-              <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.15em] text-white flex items-center gap-1.5 shadow-2xl backdrop-blur-md border border-white/20 bg-emerald-600/90">
-                <SparklesIcon className="w-3.5 h-3.5"/>
-                New Arrival
-              </span>
+          {/* Badges Container */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
+            <div className="flex gap-2">
+              {showNewBadge && (
+                <span className="px-3 py-1 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg flex items-center gap-1">
+                  <SparklesIcon className="w-3 h-3" /> New
+                </span>
+              )}
+              {showHotBadge && (
+                <span className="px-3 py-1 bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg flex items-center gap-1">
+                  <FireIcon className="w-3 h-3" /> Hot
+                </span>
+              )}
+            </div>
+            
+            {item.verified && (
+              <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-emerald-400">
+                <ShieldCheckIcon className="w-5 h-5" />
+              </div>
             )}
           </div>
 
@@ -134,18 +164,47 @@ const AutomotiveCard = ({ item }: { item: any }) => {
           </div>
 
           {/* Footer Action */}
-          <div className="mt-auto pt-5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+          <div className="mt-auto pt-5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-3">
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-zinc-400 uppercase">Status</span>
               <span className="text-xs font-bold text-zinc-900 dark:text-zinc-300">
                 {item.financingAvailable ? "Financing Available" : "Cash Sale"}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-               <span className="text-xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">View Car</span>
-               <div className="w-12 h-12 rounded-2xl bg-zinc-900 dark:bg-blue-600 flex items-center justify-center text-white shadow-xl transition-all duration-300 group-hover:rotate-[360deg] group-hover:scale-110">
-                 <ArrowRightIcon className="w-5 h-5" />
-               </div>
+
+            <div className="flex items-center gap-2">
+              {quantity > 0 ? (
+                <div 
+                  className="flex items-center gap-1.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl px-2 py-1.5 shadow"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                >
+                  <button 
+                    onClick={() => decreaseQuantity(itemId)}
+                    className="p-1 hover:bg-white/20 dark:hover:bg-black/10 rounded"
+                  >
+                    {quantity === 1 ? <TrashIcon className="w-3.5 h-3.5 text-red-400" /> : <MinusIcon className="w-3.5 h-3.5" />}
+                  </button>
+                  <span className="text-xs font-black px-1">{quantity}</span>
+                  <button 
+                    onClick={() => addToCart({ ...item, id: itemId, finalPrice: price, sellingPrice: price })}
+                    className="p-1 hover:bg-white/20 dark:hover:bg-black/10 rounded text-emerald-400"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  className="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors shadow-lg shadow-blue-600/20"
+                >
+                  <ShoppingBagIcon className="w-4 h-4" />
+                  Add to Cart
+                </button>
+              )}
+
+              <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-200 transition-colors">
+                <ArrowRightIcon className="w-4 h-4" />
+              </div>
             </div>
           </div>
         </div>

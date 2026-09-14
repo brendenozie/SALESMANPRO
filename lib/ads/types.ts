@@ -141,7 +141,7 @@ export interface ServedAdItem {
     id: string;
     name: string;
     sellingPrice: number;
-    finalPrice: number;
+    finalPrice?: number | null;
     images: string[];
     isFeatured: boolean;
   };

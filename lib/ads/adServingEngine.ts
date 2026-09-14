@@ -15,6 +15,7 @@ import {
   AdCreativeType,
   AdBiddingStrategy,
 } from "./types";
+import { getListingPublicUrl } from "@/lib/ghuba-slug";
 
 export class AdServingEngine {
   /**
@@ -201,6 +202,17 @@ export class AdServingEngine {
         costPerImpressionKES = (c.bidAmountKES || placement.baseCpmKES) / 1000;
       }
 
+      const toStringArray = (val: any): string[] => {
+        if (!Array.isArray(val)) return [];
+        return val
+          .map((item) => {
+            if (typeof item === "string") return item;
+            if (item && typeof item === "object") return item.url || item.secure_url || item.src || "";
+            return "";
+          })
+          .filter((url): url is string => Boolean(url));
+      };
+
       let listingData = undefined;
       if (c.listingId) {
         try {
@@ -220,9 +232,9 @@ export class AdServingEngine {
               id: listing.id,
               name: listing.name,
               sellingPrice: listing.sellingPrice,
-              finalPrice: listing.finalPrice,
-              images: listing.images || [],
-              isFeatured: listing.isFeatured,
+              finalPrice: listing.finalPrice ?? 0,
+              images: toStringArray(listing.images),
+              isFeatured: Boolean(listing.isFeatured),
             };
           }
         } catch {
@@ -242,7 +254,7 @@ export class AdServingEngine {
               id: prod.id,
               name: prod.name,
               sellingPrice: prod.sellingPrice,
-              images: prod.images || [],
+              images: toStringArray(prod.images),
             };
           }
         } catch {
@@ -263,7 +275,7 @@ export class AdServingEngine {
         ctaUrl:
           creative?.ctaUrl ||
           (listingData
-            ? `/ghuba/productlist/${listingData.id}`
+            ? getListingPublicUrl(listingData)
             : productData
             ? `/stores?product=${productData.id}`
             : "/"),

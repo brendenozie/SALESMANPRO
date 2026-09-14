@@ -30,6 +30,15 @@ const listingSelect = {
   vin: true,
   bedrooms: true,
   duration: true,
+  companyId: true,
+  company: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      logoUrl: true,
+    },
+  },
 };
 
 const listingWhere = {
@@ -148,7 +157,7 @@ export const getGhubaHomepageCached = unstable_cache(
       },
     };
   },
-  ["ghuba:homepage:data:v3"], // Updated cache key
+  ["ghuba:homepage:data:v4"], // Updated cache key with company relation
   {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300
