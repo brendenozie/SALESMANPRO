@@ -18,6 +18,15 @@ import {
   TemplateShellDefinition,
 } from "@/types/website-builder";
 
+export type {
+  TemplateDefinition,
+  TemplatePageDefinition,
+  AuthenticSectionDefinition,
+  TemplateCapability,
+  ThemeTokens,
+  TemplateShellDefinition,
+};
+
 // ✅ Helper to build standard eCommerce subpages
 function makeEcommercePages(subfolder: string): TemplatePageDefinition[] {
   return [

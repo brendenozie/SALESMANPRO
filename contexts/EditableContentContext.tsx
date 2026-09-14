@@ -1,7 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useMemo, useCallback, ReactNode } from "react";
-import { EditablePropertyType, parseTargetId } from "@/lib/website-builder/editable-adapters";
+import {
+  EditablePropertyType,
+  parseTargetId,
+  ComponentEditabilityStatus,
+} from "@/lib/website-builder/editable-adapters";
 import { getCanonicalLookupKeys, parseCanonicalTargetId } from "@/lib/website-builder/canonical-target-id";
 import { buildTenantUrl } from "@/lib/tenant/tenant-router";
 
@@ -20,7 +24,7 @@ export interface SelectedElementInfo {
   type?: EditablePropertyType;
   value?: any;
   defaultValue?: any;
-  editabilityStatus?: "FULLY_EDITABLE" | "PARTIALLY_EDITABLE" | "VIEW_ONLY" | "REGISTERED_SCHEMA_FIELD";
+  editabilityStatus?: ComponentEditabilityStatus | "REGISTERED_SCHEMA_FIELD";
   hierarchy?: HierarchyItem[];
 }
 

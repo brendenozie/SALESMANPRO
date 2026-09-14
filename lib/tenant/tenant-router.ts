@@ -12,7 +12,8 @@
  */
 
 export interface BuildTenantUrlOptions {
-  slug: string;
+  slug?: string;
+  tenantSlug?: string;
   path: string;
   query?: Record<string, string | number | boolean | null | undefined> | string;
   context?: {
@@ -104,11 +105,13 @@ export function sanitizePath(rawPath: string, tenantSlug: string): { cleanPath: 
  * Builds a deterministic, tenant-aware URL for storefront buttons, links, and redirects.
  */
 export function buildTenantUrl({
-  slug,
+  slug: rawSlug,
+  tenantSlug,
   path,
   query,
   context = {},
 }: BuildTenantUrlOptions): string {
+  const slug = rawSlug || tenantSlug || "";
   // Determine current host
   let currentHost = context.host;
   if (!currentHost && typeof window !== "undefined") {

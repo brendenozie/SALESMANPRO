@@ -392,6 +392,7 @@ export const WebsiteSectionSchema = z.object({
 });
 
 export type WebsiteSectionConfig = z.infer<typeof WebsiteSectionSchema>;
+export type PageSection = WebsiteSectionConfig;
 
 /* =========================================================================
    6. PAGE MODEL
@@ -1035,6 +1036,8 @@ export interface TemplateDefinition {
   id: string; // e.g. "ecommerce-shoes@v1"
   version: string; // e.g. "1.0.0"
   name: string;
+  description?: string;
+  thumbnailUrl?: string;
   category: string;
   variant: string;
   shellLayout: string;

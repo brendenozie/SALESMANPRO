@@ -34,6 +34,7 @@ export interface EditablePropertyDefinition {
   type: EditablePropertyType;
   group?: "content" | "media" | "link" | "style" | "visibility";
   defaultValue?: any;
+  default?: any;
   placeholder?: string;
   description?: string;
   options?: EditablePropertyOption[];

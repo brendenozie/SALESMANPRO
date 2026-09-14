@@ -6,6 +6,7 @@ import {
   SectionType,
   SECTION_REGISTRY,
   ThemeTokens,
+  PageSection,
 } from "@/types/website-builder";
 import WebsiteRenderer from "../WebsiteRenderer";
 import TemplateDiagnosticHud from "../TemplateDiagnosticHud";
@@ -48,6 +49,7 @@ import {
   parseTargetId,
   getEditableComponent,
   getAllEditableComponents,
+  type ComponentEditabilityStatus,
 } from "@/lib/website-builder/editable-adapters";
 import { getCanonicalLookupKeys } from "@/lib/website-builder/canonical-target-id";
 import { buildTenantUrl } from "@/lib/tenant/tenant-router";
@@ -243,7 +245,7 @@ function ComponentEditableElementsPanel({
 
     if (adapter && adapter.properties) {
       Object.entries(adapter.properties).forEach(([key, prop]) => {
-        addElement(key, prop.label || key, prop.type || 'text', prop.default);
+        addElement(key, prop.label || key, prop.type || 'text', prop.defaultValue ?? prop.default);
       });
     }
 
@@ -509,7 +511,7 @@ function SectionLiveFieldsInspector({
   onUpdateDataSource,
   onClose,
 }: {
-  section: import("@/types/website-builder").PageSection;
+  section: PageSection;
   config: CompiledWebsiteConfig;
   onUpdateOverride: (targetId: string, value: any) => void;
   onSelectElement: (info: SelectedElementInfo) => void;
@@ -950,11 +952,13 @@ function SectionLiveFieldsInspector({
       </div>
     </>
   );
+}
+
 function cloneConfig(prev: CompiledWebsiteConfig): CompiledWebsiteConfig {
   return {
     ...prev,
     componentOverrides: prev.componentOverrides ? { ...prev.componentOverrides } : {},
-    theme: prev.theme ? { ...prev.theme } : { ...prev.theme },
+    theme: prev.theme ? { ...prev.theme } : ({} as any),
     navigation: prev.navigation
       ? {
           ...prev.navigation,
@@ -2623,7 +2627,7 @@ export default function WebsiteBuilderStudio({
                                 {tpl.id} &bull; {tpl.category}
                               </div>
                               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">
-                                {tpl.description}
+                                {tpl.description || `${tpl.name} theme tailored for ${tpl.category}.`}
                               </p>
                             </div>
                             <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
@@ -3037,7 +3041,7 @@ export default function WebsiteBuilderStudio({
                         </span>
                         <div className="font-mono text-[10px] text-purple-900 dark:text-purple-200 break-all select-all">
                           {buildTenantUrl({
-                            tenantSlug: storeSlug,
+                            slug: storeSlug,
                             path:
                               config.componentOverrides?.[selectedElement.targetId] !== undefined
                                 ? config.componentOverrides[selectedElement.targetId]
