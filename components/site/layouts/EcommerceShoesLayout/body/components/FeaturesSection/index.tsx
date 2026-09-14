@@ -8,13 +8,14 @@ import {
   Squares2X2Icon,
   ArrowUturnLeftIcon,
 } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 interface FeaturesSectionProps {
   features?: {
     id: number;
     title: string;
     description: string;
-    icon: React.ElementType;
+    icon?: any;
   }[];
   themeSettings?: any;
 }
@@ -75,26 +76,68 @@ export default function FeaturesSection({ features, themeSettings }: FeaturesSec
           {/* Sticky Left Layout Manifesto Anchor */}
           <div className="lg:sticky lg:top-24 space-y-6">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 block mb-2">
-                Operational Framework
-              </span>
-              <h2 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white uppercase leading-none">
-                Engineered <br />
-                <span className="text-zinc-400 dark:text-zinc-500 font-normal italic font-serif lowercase">to the</span> <br />
-                Highest Spec
-              </h2>
+              <EditableElement
+                targetId="home.features.badgeText"
+                componentKey="FeaturesSection"
+                elementKey="badgeText"
+                label="Framework Tagline"
+                defaultValue="Operational Framework"
+                inline
+              >
+                {(val) => (
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 block mb-2">
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.features.title"
+                componentKey="FeaturesSection"
+                elementKey="title"
+                label="Section Title"
+                defaultValue="Engineered to the Highest Spec"
+              >
+                {(val) => (
+                  <h2 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-white uppercase leading-none">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
             </div>
             
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed max-w-sm font-medium">
-              Every interface layer, distribution pipeline, and user verification channel is calibrated for high-throughput luxury retail processing.
-            </p>
+            <EditableElement
+              targetId="home.features.description"
+              componentKey="FeaturesSection"
+              elementKey="description"
+              label="Operational Narrative"
+              type="textarea"
+              defaultValue="Every interface layer, distribution pipeline, and user verification channel is calibrated for high-throughput luxury retail processing."
+            >
+              {(val) => (
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed max-w-sm font-medium">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
             
             {/* Design Language Technical Calibration Badge */}
             <div className="inline-flex items-center gap-3 px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-zinc-200/60 dark:border-zinc-800 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-black tracking-widest text-zinc-800 dark:text-zinc-300 uppercase">
-                System Latency: 0.04ms
-              </span>
+              <EditableElement
+                targetId="home.features.badge"
+                componentKey="FeaturesSection"
+                elementKey="badge"
+                label="System Status Badge"
+                defaultValue="System Latency: 0.04ms"
+                inline
+              >
+                {(val) => (
+                  <span className="text-[9px] font-black tracking-widest text-zinc-800 dark:text-zinc-300 uppercase">
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
             </div>
           </div>
 
@@ -107,7 +150,7 @@ export default function FeaturesSection({ features, themeSettings }: FeaturesSec
             className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6"
           >
             {displayFeatures.map((feature, idx) => {
-              const Icon = feature.icon || Squares2X2Icon;
+              const Icon = typeof feature.icon === 'function' ? feature.icon : Squares2X2Icon;
               
               return (
                 <motion.div
@@ -147,12 +190,34 @@ export default function FeaturesSection({ features, themeSettings }: FeaturesSec
 
                   {/* Bottom Block: Informational Typography Frame */}
                   <div>
-                    <h3 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-2 flex items-center gap-2">
-                      {feature.title}
-                    </h3>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-xs md:text-sm leading-relaxed font-medium">
-                      {feature.description}
-                    </p>
+                    <EditableElement
+                      targetId={`home.features.items.${idx}.title`}
+                      componentKey="FeaturesSection"
+                      elementKey="title"
+                      label={`Feature ${idx + 1} Title`}
+                      defaultValue={feature.title}
+                    >
+                      {(val) => (
+                        <h3 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-2 flex items-center gap-2">
+                          {val}
+                        </h3>
+                      )}
+                    </EditableElement>
+
+                    <EditableElement
+                      targetId={`home.features.items.${idx}.description`}
+                      componentKey="FeaturesSection"
+                      elementKey="description"
+                      label={`Feature ${idx + 1} Description`}
+                      type="textarea"
+                      defaultValue={feature.description}
+                    >
+                      {(val) => (
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs md:text-sm leading-relaxed font-medium">
+                          {val}
+                        </p>
+                      )}
+                    </EditableElement>
                   </div>
 
                   {/* Accent Line Blueprint Asset */}

@@ -9,6 +9,7 @@ import {
   PhoneIcon, 
   ArrowRightIcon 
 } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const dummyPromotionData = {
   title: 'Engineered for the Modern Athlete',
@@ -38,6 +39,7 @@ const contentVariants: Variants = {
 };
 
 export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromotionAdProps) {
+  const { buildUrl } = useEditableContent();
   const promotion = promotions?.length >= 2 ? promotions[1] : null;
   const adData = promotion || dummyPromotionData;
 
@@ -67,13 +69,25 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
               whileInView={{ opacity: 1, scale: 1, rotate: -6 }}
               viewport={{ once: true }}
               transition={{ type: 'spring', stiffness: 50, damping: 12, delay: 0.1 }}
-              className="absolute -top-6 -left-6 w-36 h-36 rounded-2xl overflow-hidden border-4 border-white dark:border-zinc-900 shadow-2xl hidden sm:block"
+              className="absolute -top-6 -left-6 w-36 h-36 rounded-2xl overflow-hidden border-4 border-white dark:border-zinc-900 shadow-2xl hidden sm:block z-20"
             >
-              <img 
-                src={adData.featureImage1} 
-                alt="Architecture Close-up" 
-                className="w-full h-full object-cover"
-              />
+              <EditableElement
+                targetId="home.sleep-tape-ad.featureImage1"
+                componentKey="SleepTapeAd"
+                elementKey="featureImage1"
+                label="Thumbnail Image 1"
+                type="image"
+                defaultValue={adData.featureImage1}
+                className="w-full h-full"
+              >
+                {(val) => (
+                  <img 
+                    src={val || adData.featureImage1} 
+                    alt="Architecture Close-up" 
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </EditableElement>
             </motion.div>
 
             {/* Overlapping Feature Layer 2 */}
@@ -82,13 +96,25 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
               whileInView={{ opacity: 1, scale: 1, rotate: 8 }}
               viewport={{ once: true }}
               transition={{ type: 'spring', stiffness: 50, damping: 12, delay: 0.2 }}
-              className="absolute -bottom-6 -right-6 w-40 h-40 rounded-3xl overflow-hidden border-4 border-white dark:border-zinc-900 shadow-2xl hidden sm:block"
+              className="absolute -bottom-6 -right-6 w-40 h-40 rounded-3xl overflow-hidden border-4 border-white dark:border-zinc-900 shadow-2xl hidden sm:block z-20"
             >
-              <img 
-                src={adData.featureImage2} 
-                alt="Heel Configuration Cushioning" 
-                className="w-full h-full object-cover"
-              />
+              <EditableElement
+                targetId="home.sleep-tape-ad.featureImage2"
+                componentKey="SleepTapeAd"
+                elementKey="featureImage2"
+                label="Thumbnail Image 2"
+                type="image"
+                defaultValue={adData.featureImage2}
+                className="w-full h-full"
+              >
+                {(val) => (
+                  <img 
+                    src={val || adData.featureImage2} 
+                    alt="Heel Configuration Cushioning" 
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </EditableElement>
             </motion.div>
 
             {/* Primary Hero Display Plate Container */}
@@ -101,18 +127,41 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
                 transition={{ type: 'spring', stiffness: 100, damping: 15 }}
                 className="relative w-full h-full cursor-grab active:cursor-grabbing"
               >
-                <img
-                  src={adData.bannerUrl}
-                  alt="Hero Campaign Silhouette"
-                  className="w-full h-full object-contain drop-shadow-[0_25px_30px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_25px_30px_rgba(255,255,255,0.02)]"
-                />
+                <EditableElement
+                  targetId="home.sleep-tape-ad.bannerUrl"
+                  componentKey="SleepTapeAd"
+                  elementKey="bannerUrl"
+                  label="Hero Product Image"
+                  type="image"
+                  defaultValue={adData.bannerUrl}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <img
+                      src={val || adData.bannerUrl}
+                      alt="Hero Campaign Silhouette"
+                      className="w-full h-full object-contain drop-shadow-[0_25px_30px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_25px_30px_rgba(255,255,255,0.02)]"
+                    />
+                  )}
+                </EditableElement>
               </motion.div>
             </div>
 
             {/* Floating Live Telemetry Statistics Badge */}
-            <div className="absolute top-6 right-6 bg-zinc-900/90 dark:bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <div className="absolute top-6 right-6 bg-zinc-900/90 dark:bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2 z-20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-white dark:text-zinc-900">10k+ Deployed</span>
+              <EditableElement
+                targetId="home.sleep-tape-ad.badge"
+                componentKey="SleepTapeAd"
+                elementKey="badge"
+                label="Campaign Badge"
+                defaultValue="10k+ Deployed"
+                inline
+              >
+                {(val) => (
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white dark:text-zinc-900">{val}</span>
+                )}
+              </EditableElement>
             </div>
 
           </div>
@@ -129,32 +178,72 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-[1px] w-6 bg-zinc-400" />
-              <span 
-                className="text-[10px] font-black uppercase tracking-[0.3em] block"
-                style={{ color: primary === '#18181b' ? undefined : primary }}
+              <EditableElement
+                targetId="home.sleep-tape-ad.subtitle"
+                componentKey="SleepTapeAd"
+                elementKey="subtitle"
+                label="Campaign Subtitle"
+                defaultValue={adData.subtitle}
+                inline
               >
-                {adData.subtitle}
-              </span>
+                {(val) => (
+                  <span 
+                    className="text-[10px] font-black uppercase tracking-[0.3em] block"
+                    style={{ color: primary === '#18181b' ? undefined : primary }}
+                  >
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[1.05] uppercase tracking-tight">
-              Engineered <br />
-              <span className="text-zinc-400 dark:text-zinc-500 font-normal italic font-serif lowercase">for the</span> Modern Athlete
-            </h2>
+            <EditableElement
+              targetId="home.sleep-tape-ad.title"
+              componentKey="SleepTapeAd"
+              elementKey="title"
+              label="Campaign Title"
+              defaultValue={adData.title}
+            >
+              {(val) => (
+                <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[1.05] uppercase tracking-tight">
+                  {val}
+                </h2>
+              )}
+            </EditableElement>
             
-            <p className="mt-6 text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-xl leading-relaxed font-medium">
-              {adData.description}
-            </p>
+            <EditableElement
+              targetId="home.sleep-tape-ad.description"
+              componentKey="SleepTapeAd"
+              elementKey="description"
+              label="Campaign Description"
+              type="textarea"
+              defaultValue={adData.description}
+            >
+              {(val) => (
+                <p className="mt-6 text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-xl leading-relaxed font-medium">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
           </div>
 
           {/* Action Trigger Block Layout Frame */}
           <div className="pt-2">
-            <Link href={adData.ctaLink || '/ecommerceshoes/products'} passHref>
+            <Link href={buildUrl(adData.ctaLink || '/ecommerceshoes/products')} passHref>
               <button 
                 className="group inline-flex items-center gap-4 text-white dark:text-zinc-900 font-black text-[11px] uppercase tracking-widest py-5 px-10 rounded-[1.75rem] bg-zinc-900 dark:bg-white transition-all hover:opacity-90 hover:shadow-xl hover:shadow-zinc-950/10 active:scale-98"
                 style={{ backgroundColor: primary === '#18181b' ? undefined : primary }}
               >
-                <span>{adData.ctaText}</span>
+                <EditableElement
+                  targetId="home.sleep-tape-ad.ctaText"
+                  componentKey="SleepTapeAd"
+                  elementKey="ctaText"
+                  label="Button Text"
+                  defaultValue={adData.ctaText}
+                  inline
+                >
+                  {(val) => <span>{val}</span>}
+                </EditableElement>
                 <div className="h-5 w-5 bg-white/10 dark:bg-zinc-900/10 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
                   <ArrowRightIcon className="w-3 h-3 stroke-[3]" />
                 </div>
@@ -165,7 +254,7 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
           {/* Perks Matrix Block System */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-10 border-t border-zinc-200/60 dark:border-zinc-800/60">
             {adData.perks.map((perk: any, index: number) => {
-              const Icon = perk.icon;
+              const Icon = typeof perk.icon === 'function' ? perk.icon : ShieldCheckIcon;
               return (
                 <div key={index} className="flex gap-4 items-start group">
                   <div 
@@ -175,12 +264,33 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
                     <Icon className="w-5 h-5 stroke-[1.75]" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-tight">
-                      {perk.text}
-                    </h4>
-                    <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium mt-0.5 leading-tight">
-                      {perk.detail || 'Verified enterprise spec'}
-                    </p>
+                    <EditableElement
+                      targetId={`home.sleep-tape-ad.perks.${index}.text`}
+                      componentKey="SleepTapeAd"
+                      elementKey="text"
+                      label={`Perk ${index + 1} Title`}
+                      defaultValue={perk.text}
+                    >
+                      {(val) => (
+                        <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+                          {val}
+                        </h4>
+                      )}
+                    </EditableElement>
+
+                    <EditableElement
+                      targetId={`home.sleep-tape-ad.perks.${index}.detail`}
+                      componentKey="SleepTapeAd"
+                      elementKey="detail"
+                      label={`Perk ${index + 1} Detail`}
+                      defaultValue={perk.detail || 'Verified enterprise spec'}
+                    >
+                      {(val) => (
+                        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium mt-0.5 leading-tight">
+                          {val}
+                        </p>
+                      )}
+                    </EditableElement>
                   </div>
                 </div>
               );

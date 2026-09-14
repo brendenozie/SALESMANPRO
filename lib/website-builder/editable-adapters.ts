@@ -93,162 +93,14 @@ export function buildUniversalComponentAdapter(componentKey: string): EditableCo
   else if (lower.includes("contact") || lower.includes("booking") || lower.includes("appointment")) category = "contact";
   else if (lower.includes("promo") || lower.includes("cta") || lower.includes("discount") || lower.includes("newsletter") || lower.includes("pricing")) category = "cta";
 
-  const properties: Record<string, EditablePropertyDefinition> = {};
-
-  if (category === "hero") {
-    properties["headline"] = {
-      key: "headline",
-      label: "Main Headline",
-      type: "text",
-      group: "content",
-      defaultValue: `Welcome to Our ${label}`,
-    };
-    properties["subline"] = {
-      key: "subline",
-      label: "Subline / Eyebrow",
-      type: "text",
-      group: "content",
-      defaultValue: "Experience exceptional quality and service.",
-    };
-    properties["badgeText"] = {
-      key: "badgeText",
-      label: "Badge / Description",
-      type: "textarea",
-      group: "content",
-      defaultValue: "Discover handpicked selections and verified excellence.",
-    };
-    properties["ctaText"] = {
-      key: "ctaText",
-      label: "Button Label",
-      type: "text",
-      group: "link",
-      defaultValue: "Explore Now",
-    };
-    properties["ctaLink"] = {
-      key: "ctaLink",
-      label: "Button Link",
-      type: "link",
-      group: "link",
-      defaultValue: "/products",
-    };
-    properties["imageUrl"] = {
-      key: "imageUrl",
-      label: "Hero Image",
-      type: "image",
-      group: "media",
-      defaultValue: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
-    };
-  } else if (category === "commerce") {
-    properties["title"] = {
-      key: "title",
-      label: "Section Title",
-      type: "text",
-      group: "content",
-      defaultValue: label,
-    };
-    properties["subtitle"] = {
-      key: "subtitle",
-      label: "Subtitle / Tagline",
-      type: "text",
-      group: "content",
-      defaultValue: "Explore our latest collection",
-    };
-    properties["limit"] = {
-      key: "limit",
-      label: "Max Items to Show",
-      type: "number",
-      group: "content",
-      defaultValue: 8,
-    };
-  } else if (category === "social_proof") {
-    properties["title"] = {
-      key: "title",
-      label: "Section Title",
-      type: "text",
-      group: "content",
-      defaultValue: label,
-    };
-    properties["subtitle"] = {
-      key: "subtitle",
-      label: "Subtitle / Tagline",
-      type: "text",
-      group: "content",
-      defaultValue: "What people are saying about us",
-    };
-  } else if (category === "contact") {
-    properties["title"] = {
-      key: "title",
-      label: "Heading",
-      type: "text",
-      group: "content",
-      defaultValue: label,
-    };
-    properties["subtitle"] = {
-      key: "subtitle",
-      label: "Subtitle",
-      type: "text",
-      group: "content",
-      defaultValue: "We are here to assist you",
-    };
-    properties["buttonText"] = {
-      key: "buttonText",
-      label: "Action Button Label",
-      type: "text",
-      group: "link",
-      defaultValue: "Submit Request",
-    };
-  } else {
-    properties["title"] = {
-      key: "title",
-      label: "Title",
-      type: "text",
-      group: "content",
-      defaultValue: label,
-    };
-    properties["subtitle"] = {
-      key: "subtitle",
-      label: "Subtitle / Eyebrow",
-      type: "text",
-      group: "content",
-      defaultValue: "Quality & dedication in every detail",
-    };
-    properties["description"] = {
-      key: "description",
-      label: "Description / Narrative",
-      type: "textarea",
-      group: "content",
-      defaultValue: `Learn more about our ${label} offerings and craftsmanship.`,
-    };
-    properties["buttonText"] = {
-      key: "buttonText",
-      label: "Button Label",
-      type: "text",
-      group: "link",
-      defaultValue: "Learn More",
-    };
-    properties["buttonLink"] = {
-      key: "buttonLink",
-      label: "Button Destination",
-      type: "link",
-      group: "link",
-      defaultValue: "/about",
-    };
-    properties["imageUrl"] = {
-      key: "imageUrl",
-      label: "Featured Image",
-      type: "image",
-      group: "media",
-      defaultValue: "",
-    };
-  }
-
   return {
     componentKey: cleanKey,
     label,
     category,
-    status: "FULLY_EDITABLE",
-    capabilities: ["content", "presentation", "media", "links"],
-    properties,
+    status: "VIEW_ONLY",
+    capabilities: [],
+    properties: {},
+    missingProperties: ["unverified_component_fields"],
   };
 }
 
@@ -331,6 +183,36 @@ export function getEditableComponent(componentKey: string): EditableComponentDef
     "benefitssection": "FeaturesSection",
     "trendinglocationssection": "TrendingLocations",
     "trending-locations": "TrendingLocations",
+    "sleeptapead": "SleepTapeAd",
+    "sleep-tape-ad": "SleepTapeAd",
+    "shoepromotionad": "SleepTapeAd",
+    "shoe-promotion-ad": "SleepTapeAd",
+    "features": "FeaturesSection",
+    "featuressection": "FeaturesSection",
+    "trendingpromotion": "TrendingPromotion",
+    "trending-promo": "TrendingPromotion",
+    "trending": "TrendingPromotion",
+    "metricssection": "MetricsSection",
+    "metrics": "MetricsSection",
+    "bannersection": "BannerSection",
+    "banner": "BannerSection",
+    "promosection": "CtaSection",
+    "promo": "CtaSection",
+    "secondpromosection": "CtaSection",
+    "second-promo": "CtaSection",
+    "promotionssection": "CtaSection",
+    "promotions": "CtaSection",
+    "categoriessection": "CategoriesSection",
+    "categorysection": "CategoriesSection",
+    "categories": "CategoriesSection",
+    "why-choose-us": "FeaturesSection",
+    "whychooseus": "FeaturesSection",
+    "why-dine-with-us": "FeaturesSection",
+    "whydinewithus": "FeaturesSection",
+    "pricingsection": "PricingSection",
+    "pricing": "PricingSection",
+    "faq": "FAQSection",
+    "faqs": "FAQSection",
   };
 
   const lower = componentKey.toLowerCase();

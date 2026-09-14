@@ -950,6 +950,40 @@ function SectionLiveFieldsInspector({
       </div>
     </>
   );
+function cloneConfig(prev: CompiledWebsiteConfig): CompiledWebsiteConfig {
+  return {
+    ...prev,
+    componentOverrides: prev.componentOverrides ? { ...prev.componentOverrides } : {},
+    theme: prev.theme ? { ...prev.theme } : { ...prev.theme },
+    navigation: prev.navigation
+      ? {
+          ...prev.navigation,
+          headerSettings: prev.navigation.headerSettings ? { ...prev.navigation.headerSettings } : ({} as any),
+          footerSettings: prev.navigation.footerSettings ? { ...prev.navigation.footerSettings } : ({} as any),
+          headerItems: prev.navigation.headerItems ? prev.navigation.headerItems.map((item) => ({ ...item })) : [],
+          footerColumns: prev.navigation.footerColumns
+            ? prev.navigation.footerColumns.map((col) => ({
+                ...col,
+                items: col.items ? col.items.map((it) => ({ ...it })) : [],
+              }))
+            : [],
+        }
+      : prev.navigation,
+    pages: prev.pages
+      ? prev.pages.map((p) => ({
+          ...p,
+          sections: p.sections
+            ? p.sections.map((s) => ({
+                ...s,
+                content: s.content ? (Array.isArray(s.content) ? [...s.content] : { ...s.content }) : s.content,
+                styles: s.styles ? { ...s.styles } : s.styles,
+                responsive: s.responsive ? { ...s.responsive } : s.responsive,
+                dataSource: s.dataSource ? { ...s.dataSource } : s.dataSource,
+              }))
+            : [],
+        }))
+      : [],
+  };
 }
 
 export default function WebsiteBuilderStudio({
@@ -1141,21 +1175,55 @@ export default function WebsiteBuilderStudio({
     }
   }, [activePageSlug, selectedSectionId, selectedElement, activePage]);
 
+  const historyTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (historyTimeoutRef.current) clearTimeout(historyTimeoutRef.current);
+    };
+  }, []);
+
+  const pushHistorySnapshot = useCallback(
+    (nextConfig: CompiledWebsiteConfig) => {
+      if (historyTimeoutRef.current) {
+        clearTimeout(historyTimeoutRef.current);
+      }
+      historyTimeoutRef.current = setTimeout(() => {
+        setHistory((h) => {
+          const sliced = h.slice(0, historyIndex + 1);
+          const updated = [...sliced, nextConfig];
+          if (updated.length > 25) updated.shift();
+          return updated;
+        });
+        setHistoryIndex((idx) => Math.min(idx + 1, 24));
+      }, 400);
+    },
+    [historyIndex]
+  );
+
   // Track edits and push snapshots into history
-  const updateConfig = useCallback((updater: (prev: CompiledWebsiteConfig) => CompiledWebsiteConfig) => {
-    setConfig((prev) => {
-      const next = updater(JSON.parse(JSON.stringify(prev)));
-      setHistory((h) => {
-        const sliced = h.slice(0, historyIndex + 1);
-        const updated = [...sliced, next];
-        if (updated.length > 50) updated.shift();
-        return updated;
+  const updateConfig = useCallback(
+    (updater: (prev: CompiledWebsiteConfig) => CompiledWebsiteConfig, immediateHistory = false) => {
+      setConfig((prev) => {
+        const next = updater(cloneConfig(prev));
+        if (immediateHistory) {
+          if (historyTimeoutRef.current) clearTimeout(historyTimeoutRef.current);
+          setHistory((h) => {
+            const sliced = h.slice(0, historyIndex + 1);
+            const updated = [...sliced, next];
+            if (updated.length > 25) updated.shift();
+            return updated;
+          });
+          setHistoryIndex((idx) => Math.min(idx + 1, 24));
+        } else {
+          pushHistorySnapshot(next);
+        }
+        setHasUnsavedChanges(true);
+        return next;
       });
-      setHistoryIndex((idx) => Math.min(idx + 1, 49));
-      setHasUnsavedChanges(true);
-      return next;
-    });
-  }, [historyIndex]);
+    },
+    [historyIndex, pushHistorySnapshot]
+  );
 
   // Handle element-level property override updates and sync with tenant structured section content
   const handleUpdateOverride = useCallback(

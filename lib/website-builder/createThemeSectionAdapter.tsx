@@ -40,6 +40,18 @@ export function ThemeSectionContainer({
       if (renderSection) {
         const content = renderSection(section, index);
         if (!content) return null;
+
+        const enhancedContent = React.isValidElement(content)
+          ? React.cloneElement(content as React.ReactElement<any>, {
+              sectionId: section.id,
+              sectionType: section.type,
+              sectionContent: section.content,
+              ...(section.content && typeof section.content === 'object' && !Array.isArray(section.content)
+                ? section.content
+                : {}),
+            })
+          : content;
+
         return (
           <div
             key={section.id || index}
@@ -47,7 +59,7 @@ export function ThemeSectionContainer({
             data-editor-section={section.id}
             data-editor-component={section.component || section.name || section.id}
           >
-            {content}
+            {enhancedContent}
           </div>
         );
       }
@@ -71,6 +83,17 @@ export function ThemeSectionContainer({
         const content = matchedKey ? sectionMap[matchedKey] : null;
         if (!content) return null;
 
+        const enhancedContent = React.isValidElement(content)
+          ? React.cloneElement(content as React.ReactElement<any>, {
+              sectionId: section.id,
+              sectionType: section.type,
+              sectionContent: section.content,
+              ...(section.content && typeof section.content === 'object' && !Array.isArray(section.content)
+                ? section.content
+                : {}),
+            })
+          : content;
+
         return (
           <div
             key={section.id || index}
@@ -78,7 +101,7 @@ export function ThemeSectionContainer({
             data-editor-section={section.id}
             data-editor-component={section.component || section.name || matchedKey}
           >
-            {content}
+            {enhancedContent}
           </div>
         );
       }

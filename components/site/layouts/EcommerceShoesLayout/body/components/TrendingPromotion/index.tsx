@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, Variants } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRightIcon, BoltIcon } from '@heroicons/react/24/solid';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 interface TrendingProps {
   promotions?: any;
@@ -33,6 +34,7 @@ const itemVariants: Variants = {
 };
 
 export default function TrendingPromotion({ promotions, themeSettings }: TrendingProps) {
+  const { buildUrl } = useEditableContent();
   const sectionRef = useRef<HTMLDivElement>(null);
   const product = promotions?.[2] || dummyTrendingProduct;
   const primaryColor = themeSettings?.primaryColor || product.accentColor || '#18181b';
@@ -85,11 +87,23 @@ export default function TrendingPromotion({ promotions, themeSettings }: Trendin
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               className="relative z-10 w-full max-w-[420px] aspect-square flex items-center justify-center cursor-grab active:cursor-grabbing"
             >
-              <img
-                src={product.bannerUrl}
-                alt={product.title}
-                className="w-full h-full object-contain -rotate-12 drop-shadow-[0_30px_45px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_45px_rgba(255,255,255,0.015)]"
-              />
+              <EditableElement
+                targetId="home.trending-promo.bannerUrl"
+                componentKey="TrendingPromotion"
+                elementKey="bannerUrl"
+                label="Trending Product Image"
+                type="image"
+                defaultValue={product.bannerUrl}
+                className="w-full h-full"
+              >
+                {(val) => (
+                  <img
+                    src={val || product.bannerUrl}
+                    alt={product.title}
+                    className="w-full h-full object-contain -rotate-12 drop-shadow-[0_30px_45px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_45px_rgba(255,255,255,0.015)]"
+                  />
+                )}
+              </EditableElement>
             </motion.div>
           </motion.div>
 
@@ -102,39 +116,76 @@ export default function TrendingPromotion({ promotions, themeSettings }: Trendin
                 className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2 bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white border border-zinc-200/60 dark:border-zinc-800"
               >
                 <BoltIcon className="w-3.5 h-3.5 animate-pulse" style={{ color: primaryColor === '#18181b' ? undefined : primaryColor }} />
-                System Alert: In Demand
+                <EditableElement
+                  targetId="home.trending-promo.badge"
+                  componentKey="TrendingPromotion"
+                  elementKey="badge"
+                  label="Status Badge"
+                  defaultValue="System Alert: In Demand"
+                  inline
+                >
+                  {(val) => <span>{val}</span>}
+                </EditableElement>
               </span>
             </motion.div>
 
             {/* Asymmetrical Dynamic Headline Row */}
-            <motion.h1 
-              variants={itemVariants}
-              className="text-5xl sm:text-6xl md:text-8xl font-black mb-6 leading-[0.9] tracking-tight text-zinc-900 dark:text-white uppercase"
-            >
-              {product.title.split(' ').map((word: string, i: number) => (
-                <span key={i} className="block last:text-zinc-400 dark:last:text-zinc-500 last:font-normal last:font-serif last:lowercase">
-                  {word}{' '}
-                </span>
-              ))}
-            </motion.h1>
+            <motion.div variants={itemVariants} className="mb-6">
+              <EditableElement
+                targetId="home.trending-promo.title"
+                componentKey="TrendingPromotion"
+                elementKey="title"
+                label="Trending Title"
+                defaultValue={product.title}
+              >
+                {(val) => (
+                  <h1 className="text-5xl sm:text-6xl md:text-8xl font-black leading-[0.9] tracking-tight text-zinc-900 dark:text-white uppercase">
+                    {String(val).split(' ').map((word: string, i: number) => (
+                      <span key={i} className="block last:text-zinc-400 dark:last:text-zinc-500 last:font-normal last:font-serif last:lowercase">
+                        {word}{' '}
+                      </span>
+                    ))}
+                  </h1>
+                )}
+              </EditableElement>
+            </motion.div>
             
             {/* Informational Parameter Block */}
-            <motion.p 
-              variants={itemVariants}
-              className="text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-md mb-10 font-medium leading-relaxed"
-            >
-              {product.description}
-            </motion.p>
+            <motion.div variants={itemVariants} className="max-w-md mb-10">
+              <EditableElement
+                targetId="home.trending-promo.description"
+                componentKey="TrendingPromotion"
+                elementKey="description"
+                label="Trending Description"
+                type="textarea"
+                defaultValue={product.description}
+              >
+                {(val) => (
+                  <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
+            </motion.div>
 
             {/* Micro-Tactile Trigger Capsule */}
             <motion.div variants={itemVariants} className="w-full sm:w-auto">
-              <Link href={product.ctaLink || '/ecommerceshoes/products'} passHref>
+              <Link href={buildUrl(product.ctaLink || '/ecommerceshoes/products')} passHref>
                 <button
                   className="group w-full sm:w-auto relative inline-flex items-center justify-center text-white dark:text-zinc-900 font-black text-[11px] uppercase tracking-widest py-5 px-12 rounded-2xl transition-all duration-300 bg-zinc-900 dark:bg-white hover:opacity-90 active:scale-98 shadow-xl shadow-zinc-950/10 dark:shadow-none"
                   style={{ backgroundColor: primaryColor === '#18181b' ? undefined : primaryColor }}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-3 w-full">
-                    {product.ctaText}
+                    <EditableElement
+                      targetId="home.trending-promo.ctaText"
+                      componentKey="TrendingPromotion"
+                      elementKey="ctaText"
+                      label="Button Text"
+                      defaultValue={product.ctaText}
+                      inline
+                    >
+                      {(val) => <span>{val}</span>}
+                    </EditableElement>
                     <ArrowRightIcon className="w-4 h-4 stroke-[2.5] transition-transform duration-300 group-hover:translate-x-1.5" />
                   </span>
                 </button>

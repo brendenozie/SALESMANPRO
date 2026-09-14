@@ -210,7 +210,13 @@ export default function AuthenticTemplateRenderer({
   // 4. Merge live config and overrides into storeFormData
   const mergedStoreData = useMemo(() => {
     const base: StoreForm = storeFormData
-      ? JSON.parse(JSON.stringify(storeFormData))
+      ? {
+          ...storeFormData,
+          themeSettings: { ...(storeFormData.themeSettings || {}) },
+          heroSlides: storeFormData.heroSlides
+            ? storeFormData.heroSlides.map((s) => ({ ...s }))
+            : [],
+        }
       : createSyntheticStoreForm(config, canonicalTemplate, companyId);
 
     // Apply live theme overrides
@@ -283,8 +289,8 @@ export default function AuthenticTemplateRenderer({
         },
       ];
     } else {
-      // Clone heroSlides to avoid mutating external references
-      base.heroSlides = JSON.parse(JSON.stringify(base.heroSlides));
+      // Shallow-clone heroSlides to avoid mutating external references
+      base.heroSlides = base.heroSlides.map((s) => ({ ...s }));
     }
 
     // 2. Apply hero slide overrides from config sections if edited

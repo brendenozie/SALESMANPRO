@@ -4,7 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
-import { useStoreContext } from '@/contexts/StoreContext'; // Corrected hook name based on previous sections
+import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 // --- Improved Metric Card ---
 const MetricCard = ({
@@ -55,13 +56,34 @@ const MetricCard = ({
           <Icon className="w-10 h-10" strokeWidth={1.5} />
         </div>
 
-        <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3 tracking-tight uppercase">
-          {title}
-        </h3>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3 tracking-tight uppercase">
+              {val}
+            </h3>
+          )}
+        </EditableElement>
         
-        <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-sm font-medium">
-          {description}
-        </p>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-sm font-medium">
+              {val}
+            </p>
+          )}
+        </EditableElement>
       </div>
 
       {/* Animated Accent Border */}
@@ -125,22 +147,41 @@ export default function MetricsSection({ coreValues }: MetricsSectionProps) {
               className="flex items-center gap-3 mb-4"
             >
               <div className="h-[2px] w-12" style={{ backgroundColor: primaryColor }} />
-              <span className="text-xs font-black uppercase tracking-[0.4em]" style={{ color: primaryColor }}>
-                The Standard
-              </span>
+              <EditableElement
+                targetId="home.metrics.badge"
+                componentKey="MetricsSection"
+                elementKey="badge"
+                label="Metrics Badge"
+                defaultValue="The Standard"
+                inline
+              >
+                {(val) => (
+                  <span className="text-xs font-black uppercase tracking-[0.4em]" style={{ color: primaryColor }}>
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
             
-            <motion.h2 
+            <motion.div 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white leading-[0.9] italic uppercase"
             >
-              Engineered for <br /> 
-              <span className="text-transparent stroke-gray-900 dark:stroke-white transition-all" style={{ WebkitTextStroke: '1px currentColor' }}>
-                Excellence.
-              </span>
-            </motion.h2>
+              <EditableElement
+                targetId="home.metrics.title"
+                componentKey="MetricsSection"
+                elementKey="title"
+                label="Metrics Title"
+                defaultValue="Engineered for Excellence."
+              >
+                {(val) => (
+                  <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white leading-[0.9] italic uppercase">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
+            </motion.div>
           </div>
           
           <motion.div 
@@ -148,9 +189,20 @@ export default function MetricsSection({ coreValues }: MetricsSectionProps) {
             whileInView={{ opacity: 1 }}
             className="lg:max-w-sm pb-2"
           >
-            <p className="text-gray-500 dark:text-zinc-400 text-lg font-medium leading-relaxed">
-              We deliver a premium service ecosystem tailored for the modern athlete and sneaker enthusiast.
-            </p>
+            <EditableElement
+              targetId="home.metrics.description"
+              componentKey="MetricsSection"
+              elementKey="description"
+              label="Metrics Description"
+              type="textarea"
+              defaultValue="We deliver a premium service ecosystem tailored for the modern athlete and sneaker enthusiast."
+            >
+              {(val) => (
+                <p className="text-gray-500 dark:text-zinc-400 text-lg font-medium leading-relaxed">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
           </motion.div>
         </div>
 
