@@ -57,7 +57,7 @@ const ProfilePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const userId = session?.user?.id;
+  const userId = (session?.user as any)?.id;
 
   // --- Auth & Loading Pipeline ---
   if (status === "unauthenticated") {
