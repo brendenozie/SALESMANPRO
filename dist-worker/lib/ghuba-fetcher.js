@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGhubaHomepageCached = void 0;
+exports.getGhubaHomepageCached = exports.isGhubaMarketplace = void 0;
 const cache_1 = require("next/cache");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+var ghuba_helpers_1 = require("./ghuba-helpers");
+Object.defineProperty(exports, "isGhubaMarketplace", { enumerable: true, get: function () { return ghuba_helpers_1.isGhubaMarketplace; } });
 const listingSelect = {
     id: true,
     name: true,
@@ -19,6 +21,29 @@ const listingSelect = {
     isNewArrival: true,
     brand: true,
     productCategoryId: true,
+    category: true,
+    subCategoryName: true,
+    subCategory: true,
+    productCategory: {
+        select: {
+            id: true,
+            name: true,
+        },
+    },
+    make: true,
+    model: true,
+    vin: true,
+    bedrooms: true,
+    duration: true,
+    companyId: true,
+    company: {
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+        },
+    },
 };
 const listingWhere = {
     status: "ACTIVE",
@@ -122,7 +147,7 @@ exports.getGhubaHomepageCached = (0, cache_1.unstable_cache)(async () => {
             featuredCategoryProducts,
         },
     };
-}, ["ghuba:homepage:data:v3"], // Updated cache key
+}, ["ghuba:homepage:data:v4"], // Updated cache key with company relation
 {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300

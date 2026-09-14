@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdServingEngine = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const types_1 = require("./types");
+const ghuba_slug_1 = require("@/lib/ghuba-slug");
 class AdServingEngine {
     /**
      * Seed standard placements if not already registered in database.
@@ -178,6 +179,19 @@ class AdServingEngine {
             if (c.biddingStrategy === types_1.AdBiddingStrategy.CPM) {
                 costPerImpressionKES = (c.bidAmountKES || placement.baseCpmKES) / 1000;
             }
+            const toStringArray = (val) => {
+                if (!Array.isArray(val))
+                    return [];
+                return val
+                    .map((item) => {
+                    if (typeof item === "string")
+                        return item;
+                    if (item && typeof item === "object")
+                        return item.url || item.secure_url || item.src || "";
+                    return "";
+                })
+                    .filter((url) => Boolean(url));
+            };
             let listingData = undefined;
             if (c.listingId) {
                 try {
@@ -197,9 +211,9 @@ class AdServingEngine {
                             id: listing.id,
                             name: listing.name,
                             sellingPrice: listing.sellingPrice,
-                            finalPrice: listing.finalPrice,
-                            images: listing.images || [],
-                            isFeatured: listing.isFeatured,
+                            finalPrice: listing.finalPrice ?? 0,
+                            images: toStringArray(listing.images),
+                            isFeatured: Boolean(listing.isFeatured),
                         };
                     }
                 }
@@ -219,7 +233,7 @@ class AdServingEngine {
                             id: prod.id,
                             name: prod.name,
                             sellingPrice: prod.sellingPrice,
-                            images: prod.images || [],
+                            images: toStringArray(prod.images),
                         };
                     }
                 }
@@ -239,7 +253,7 @@ class AdServingEngine {
                 ctaText: creative?.ctaText || (listingData ? "View Deal" : "Shop Now"),
                 ctaUrl: creative?.ctaUrl ||
                     (listingData
-                        ? `/ghuba/productlist/${listingData.id}`
+                        ? (0, ghuba_slug_1.getListingPublicUrl)(listingData)
                         : productData
                             ? `/stores?product=${productData.id}`
                             : "/"),

@@ -10,6 +10,7 @@ const company_fetcher_1 = require("@/lib/company-fetcher");
 const transformPrismaToStoreForm_1 = require("@/utils/transformPrismaToStoreForm");
 const siteBodyComponentMap_1 = require("@/components/site/layouts/siteBodyComponentMap");
 const ghuba_fetcher_1 = require("@/lib/ghuba-fetcher");
+const ghuba_helpers_1 = require("@/lib/ghuba-helpers");
 // Safe per-request memoization helper compatible with React 18 types
 const requestCache = (react_1.default.cache || ((fn) => fn));
 exports.loadStore = requestCache(async (slug) => {
@@ -17,13 +18,13 @@ exports.loadStore = requestCache(async (slug) => {
     if (!raw)
         (0, navigation_1.notFound)();
     const pageData = (0, transformPrismaToStoreForm_1.transformCompanyToStoreForm)(raw);
-    const isGhuba = pageData.domain === "ghuba" || pageData.slug === "ghuba";
+    const isGhuba = (0, ghuba_helpers_1.isGhubaMarketplace)(slug, raw);
     const categoryInput = pageData.category || "other";
     const variantInput = pageData.variant || "";
-    const category = isGhuba ? "other" : categoryInput;
+    const category = isGhuba ? "portal" : categoryInput;
     const variant = isGhuba ? "ghuba" : variantInput;
-    const componentName = (0, siteBodyComponentMap_1.getComponentNameForCategory)(category, variant || "");
-    // Fetch global Ghuba data instantly from cache if applicable
+    const componentName = isGhuba ? "GhubaSite" : (0, siteBodyComponentMap_1.getComponentNameForCategory)(category, variant || "");
+    // Fetch global Ghuba marketplace data instantly from cache if applicable
     let ghubaData = null;
     if (isGhuba) {
         ghubaData = await (0, ghuba_fetcher_1.getGhubaHomepageCached)();

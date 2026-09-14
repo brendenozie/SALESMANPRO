@@ -108,7 +108,7 @@ if (!isBuildPhase) {
 function isRedisAvailable() {
     if (isBuildPhase)
         return false;
-    return exports.redisConnection.status === "ready" || exports.redisConnection.status === "connect";
+    return exports.redisConnection.status === "ready";
 }
 exports.isRedisAvailable = isRedisAvailable;
 /**

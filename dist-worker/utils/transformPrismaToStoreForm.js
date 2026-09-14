@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transformCompanyToStoreForm = void 0;
+const ghuba_helpers_1 = require("@/lib/ghuba-helpers");
 // A safe utility to convert a Date or a string into an ISO string
 function safeDateToString(date) {
     if (!date) {
@@ -18,7 +19,7 @@ function safeDateToString(date) {
     return undefined;
 }
 function transformCompanyToStoreForm(raw) {
-    const isGhuba = raw.domain === "ghuba" || raw.slug === "ghuba";
+    const isGhuba = (0, ghuba_helpers_1.isGhubaMarketplace)(raw.slug, raw);
     return {
         id: raw.id,
         name: raw.name,
@@ -27,7 +28,7 @@ function transformCompanyToStoreForm(raw) {
         domain: raw.domain ?? "",
         tagline: raw.tagline ?? "",
         description: raw.description ?? "",
-        category: isGhuba ? "other" : raw.category,
+        category: isGhuba ? "portal" : raw.category,
         variant: isGhuba ? "ghuba" : raw.variant,
         logoUrl: raw.logoUrl ?? "",
         bannerUrl: raw.bannerUrl ?? "",

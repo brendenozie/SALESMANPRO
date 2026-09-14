@@ -67,6 +67,12 @@ function parseCanonicalTargetId(targetId) {
         if (match) {
             itemIndex = parseInt(match[1], 10);
         }
+        else {
+            const fieldIndexMatch = fieldKey.match(/(?:^|\.)(\d+)(?:\.|$)/);
+            if (fieldIndexMatch) {
+                itemIndex = parseInt(fieldIndexMatch[1], 10);
+            }
+        }
         return {
             raw: targetId,
             isCanonical: true,
@@ -202,10 +208,30 @@ function getCanonicalLookupKeys(targetId, context) {
         addKey(`${parsed.componentKey}.items.${idx}.${parsed.fieldKey}`);
         addKey(`${parsed.componentKey}.items-${idx}.${parsed.fieldKey}`);
         addKey(`items.${idx}.${parsed.fieldKey}`);
+        // Format: Component.features.0.field
+        addKey(`${parsed.componentKey}.features.${idx}.${parsed.fieldKey}`);
+        addKey(`${parsed.componentKey}.features-${idx}.${parsed.fieldKey}`);
+        addKey(`features.${idx}.${parsed.fieldKey}`);
+        // Format: Component.perks.0.field
+        addKey(`${parsed.componentKey}.perks.${idx}.${parsed.fieldKey}`);
+        addKey(`${parsed.componentKey}.perks-${idx}.${parsed.fieldKey}`);
+        addKey(`perks.${idx}.${parsed.fieldKey}`);
         // Format: Component.services.0.field
         addKey(`${parsed.componentKey}.services.${idx}.${parsed.fieldKey}`);
         addKey(`${parsed.componentKey}.services-${idx}.${parsed.fieldKey}`);
         addKey(`services.${idx}.${parsed.fieldKey}`);
+        // Format: Component.dishes.0.field
+        addKey(`${parsed.componentKey}.dishes.${idx}.${parsed.fieldKey}`);
+        addKey(`${parsed.componentKey}.dishes-${idx}.${parsed.fieldKey}`);
+        addKey(`dishes.${idx}.${parsed.fieldKey}`);
+        // Format: Component.values.0.field
+        addKey(`${parsed.componentKey}.values.${idx}.${parsed.fieldKey}`);
+        addKey(`${parsed.componentKey}.values-${idx}.${parsed.fieldKey}`);
+        addKey(`values.${idx}.${parsed.fieldKey}`);
+        // Format: Component.badges.0.field
+        addKey(`${parsed.componentKey}.badges.${idx}.${parsed.fieldKey}`);
+        addKey(`${parsed.componentKey}.badges-${idx}.${parsed.fieldKey}`);
+        addKey(`badges.${idx}.${parsed.fieldKey}`);
         // Format: home.hero-slider.slides.0.field (for hero slider)
         if (parsed.componentKey.toLowerCase().includes("hero")) {
             addKey(`home.hero-slider.slides.${idx}.${parsed.fieldKey}`);

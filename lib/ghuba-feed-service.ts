@@ -7,7 +7,7 @@
  */
 
 import prisma from "@/server/db/prismadb";
-import { ListingStatus } from "@prisma/client";
+import { ListingStatus, Prisma } from "@prisma/client";
 import { resolveProductType, withCapabilities } from "./ghuba-product-type";
 import { getListingPublicUrl } from "./ghuba-slug";
 
@@ -402,7 +402,11 @@ const listingSelectFields = {
       slug: true,
     },
   },
-};
+} as const;
+
+export type GhubaFeedListingRaw = Prisma.marketplaceListingsGetPayload<{
+  select: typeof listingSelectFields;
+}>;
 
 /**
  * Retrieves a ranked, cursor-paginated batch of Ghuba marketplace feed items.
@@ -453,7 +457,7 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
     queryArgs.skip = 1;
   }
 
-  const rawListings = await prisma.marketplaceListings.findMany(queryArgs);
+  const rawListings = (await prisma.marketplaceListings.findMany(queryArgs)) as unknown as GhubaFeedListingRaw[];
 
   const hasMore = rawListings.length > take;
   const pageListings = hasMore ? rawListings.slice(0, take) : rawListings;

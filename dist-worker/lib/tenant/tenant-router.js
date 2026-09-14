@@ -77,7 +77,8 @@ exports.sanitizePath = sanitizePath;
 /**
  * Builds a deterministic, tenant-aware URL for storefront buttons, links, and redirects.
  */
-function buildTenantUrl({ slug, path, query, context = {}, }) {
+function buildTenantUrl({ slug: rawSlug, tenantSlug, path, query, context = {}, }) {
+    const slug = rawSlug || tenantSlug || "";
     // Determine current host
     let currentHost = context.host;
     if (!currentHost && typeof window !== "undefined") {
