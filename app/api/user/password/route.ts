@@ -5,30 +5,43 @@ import prisma from "@/server/db/prismadb";
 import { authOptions } from "@/lib/auth";
 
 export async function PUT(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions());
   if (!session?.user?.id) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const { oldPassword, newPassword } = await req.json();
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  if (!user?.password) {
+  if (!newPassword || typeof newPassword !== "string" || newPassword.length < 6) {
     return NextResponse.json(
-      { message: "Password login not enabled for this account" },
+      { message: "New password must be at least 6 characters" },
       { status: 400 }
     );
   }
 
-  const valid = await bcrypt.compare(oldPassword, user.password);
-  if (!valid) {
-    return NextResponse.json(
-      { message: "Current password is incorrect" },
-      { status: 400 }
-    );
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  // If user has a password, verify oldPassword
+  if (user.password) {
+    if (!oldPassword) {
+      return NextResponse.json(
+        { message: "Current password is required" },
+        { status: 400 }
+      );
+    }
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) {
+      return NextResponse.json(
+        { message: "Current password is incorrect" },
+        { status: 400 }
+      );
+    }
   }
 
   const hashed = await bcrypt.hash(newPassword, 12);

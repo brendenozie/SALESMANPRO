@@ -112,9 +112,16 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
   const handleSaveAddress = async () => {
     if (!userId || !selectedLocation) return;
     try {
-      const payload = { userId, latitude: selectedLocation.lat, longitude: selectedLocation.lng, address, description: address };
+      const payload = {
+        userId,
+        name: "Delivery Address",
+        latitude: selectedLocation.lat,
+        longitude: selectedLocation.lng,
+        address: address || searchTerm || "Selected Location",
+        description: address || searchTerm,
+      };
       const response = await axios.post(`/api/shop/setLocation`, payload);
-      setSavedAddress(response.data.body || payload);
+      setSavedAddress(response.data.data || response.data.body || payload);
       showFeedback('success', 'Location saved successfully!');
     } catch (err) {
       console.error("Error saving address:", err);
@@ -163,13 +170,16 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     if (!userId) return;
     try {
       const { data } = await axios.get(`/api/shop/getLocation`, { params: { userId }, headers: { "Credentials": "include" } });
-      if (data.body && data.body.address) {
-        const addr = data.body;
+      const addr = data.data || data.body;
+      if (addr && addr.address) {
         setSavedAddress(addr);
-        setMapCenter({ lat: addr.latitude, lng: addr.longitude });
-        setSelectedLocation({ lat: addr.latitude, lng: addr.longitude });
-        setZoom(15);
-        fetchAddress(addr.latitude, addr.longitude);
+        if (addr.latitude && addr.longitude) {
+          setMapCenter({ lat: addr.latitude, lng: addr.longitude });
+          setSelectedLocation({ lat: addr.latitude, lng: addr.longitude });
+          setZoom(15);
+        }
+        setAddress(addr.address);
+        setSearchTerm(addr.address);
       } else {
         handleUseMyLocation();
       }

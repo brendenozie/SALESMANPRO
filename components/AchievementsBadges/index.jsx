@@ -1,73 +1,184 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 import {
   TrophyIcon,
-  ChartBarIcon,
-  StarIcon,
-} from '@heroicons/react/24/outline';
+  SparklesIcon,
+  ShieldCheckIcon,
+  ShoppingBagIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
 
-const AchievementsBadges = () => {
-  const [profileCompletion, setProfileCompletion] = useState(75);
-  const badges = [
-    { id: 1, name: 'Starter Badge', description: 'Completed first task.', icon: <TrophyIcon className='h-8 w-8 text-yellow-500' /> },
-    { id: 2, name: 'Consistency Star', description: 'Logged in 7 days in a row.', icon: <StarIcon className='h-8 w-8 text-blue-500' /> },
+interface AchievementsBadgesProps {
+  stats?: {
+    orders?: number;
+    points?: number;
+    visits?: number;
+  };
+}
+
+const AchievementsBadges: React.FC<AchievementsBadgesProps> = ({
+  stats = { orders: 0, points: 100, visits: 1 },
+}) => {
+  const { data: session } = useSession();
+  const user = session?.user as any;
+
+  // Calculate real profile completion based on actual filled fields
+  const fields = [
+    Boolean(user?.name),
+    Boolean(user?.email),
+    Boolean(user?.phone),
+    Boolean(user?.address),
+    Boolean(user?.bio),
+    Boolean(user?.image || user?.profilePicture),
   ];
-  const userRank = {
-    points: 1500,
-    rank: 'Gold Member',
+  const filledCount = fields.filter(Boolean).length;
+  const profileCompletion = Math.round((filledCount / fields.length) * 100);
+
+  const orderCount = stats.orders || 0;
+  const points = stats.points || 100;
+
+  // Real badges computed from profile & activity
+  const allBadges = [
+    {
+      id: "starter",
+      name: "Marketplace Pioneer",
+      description: "Joined the Ghuba digital commerce ecosystem.",
+      earned: true,
+      icon: SparklesIcon,
+      color: "text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10",
+    },
+    {
+      id: "profile",
+      name: "Profile Complete",
+      description: "Filled out full contact details and delivery preferences.",
+      earned: profileCompletion >= 80,
+      icon: ShieldCheckIcon,
+      color: "text-blue-500 bg-blue-50 dark:bg-blue-500/10",
+    },
+    {
+      id: "first_order",
+      name: "Active Shopper",
+      description: "Placed an order on the Ghuba marketplace.",
+      earned: orderCount >= 1,
+      icon: ShoppingBagIcon,
+      color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10",
+    },
+    {
+      id: "vip",
+      name: "VIP Explorer",
+      description: "Achieved 250+ community points & 5+ orders.",
+      earned: points >= 250 && orderCount >= 5,
+      icon: TrophyIcon,
+      color: "text-purple-500 bg-purple-50 dark:bg-purple-500/10",
+    },
+  ];
+
+  const getTier = (pts: number) => {
+    if (pts >= 1000) return { rank: "Platinum Elite", color: "text-purple-600 dark:text-purple-400" };
+    if (pts >= 500) return { rank: "Gold Member", color: "text-yellow-600 dark:text-yellow-400" };
+    if (pts >= 250) return { rank: "Silver Shopper", color: "text-blue-600 dark:text-blue-400" };
+    return { rank: "Bronze Starter", color: "text-amber-700 dark:text-amber-500" };
   };
 
+  const tier = getTier(points);
+
   return (
-    <div className="p-6 w-full max-w-3xl mx-auto shadow-lg rounded-2xl bg-white dark:bg-gray-900 dark:text-white">
-      <h2 className="text-xl font-bold mb-4">🏆 Achievements & Badges</h2>
+    <div className="p-6 w-full max-w-3xl mx-auto shadow-xl rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/60">
+      <div className="mb-6 pb-4 border-b border-gray-100 dark:border-gray-700/60">
+        <h2 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+          <span>🏆</span> Achievements & Loyalty
+        </h2>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          Track your profile completeness, loyalty milestones, and shopper rank
+        </p>
+      </div>
 
       {/* Profile Completion Progress */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Profile Completion</h3>
-        <div className="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-          <div
-            className="bg-green-500 h-4 rounded-full transition-all duration-500"
-            style={{ width: `${profileCompletion}%` }}
-          ></div>
+      <div className="mb-8 p-5 bg-gray-50 dark:bg-gray-700/40 rounded-2xl border border-gray-100 dark:border-gray-700/60">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200">Profile Completion</h3>
+          <span className="text-xs font-black text-yellow-600 dark:text-yellow-400">
+            {profileCompletion}% Complete
+          </span>
         </div>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{profileCompletion}% Complete</p>
+        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
+          <motion.div
+            className="bg-yellow-500 h-full rounded-full transition-all duration-700"
+            initial={{ width: 0 }}
+            animate={{ width: `${profileCompletion}%` }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          {profileCompletion < 100
+            ? "Complete your bio, phone number, and address to unlock all marketplace privileges."
+            : "Your profile is fully completed and verified!"}
+        </p>
       </div>
 
-      {/* Badges Earned */}
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Badges Earned</h3>
-        <div className="grid grid-cols-2 gap-4">
-          {badges.map((badge) => (
-            <motion.div
-              key={badge.id}
-              className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-3 shadow-sm"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              {badge.icon}
-              <div>
-                <h4 className="font-medium">{badge.name}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{badge.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* User Rankings/Points */}
-      <div>
-        <h3 className="font-semibold mb-2">User Rankings & Points</h3>
-        <motion.div
-          className="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center gap-3 shadow-sm"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <ChartBarIcon className='h-8 w-8 text-blue-600 dark:text-blue-400' />
-          <div>
-            <h4 className="font-medium">{userRank.rank}</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Points: {userRank.points}</p>
+      {/* User Tier & Points Card */}
+      <div className="mb-8 p-5 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-gray-700/60 dark:to-gray-800/60 rounded-2xl border border-yellow-200 dark:border-gray-700/60 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3.5 bg-yellow-500 text-white rounded-2xl shadow-md">
+            <TrophyIcon className="w-7 h-7" />
           </div>
-        </motion.div>
+          <div>
+            <h4 className={`text-lg font-black ${tier.color}`}>{tier.rank}</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Ghuba Commerce Loyalty Program
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="text-2xl font-black text-gray-900 dark:text-white">{points}</span>
+          <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Points</span>
+        </div>
+      </div>
+
+      {/* Badges Grid */}
+      <div>
+        <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200 mb-3">Milestone Badges</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {allBadges.map((badge) => {
+            const Icon = badge.icon;
+            return (
+              <div
+                key={badge.id}
+                className={`p-4 rounded-2xl border transition-all flex items-start gap-3.5 ${
+                  badge.earned
+                    ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm"
+                    : "bg-gray-50/60 dark:bg-gray-800/40 border-dashed border-gray-200 dark:border-gray-700/60 opacity-60"
+                }`}
+              >
+                <div className={`p-2.5 rounded-xl flex-shrink-0 ${badge.color}`}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="font-bold text-sm text-gray-900 dark:text-white">
+                      {badge.name}
+                    </h4>
+                    {badge.earned && (
+                      <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {badge.description}
+                  </p>
+                  <span
+                    className={`inline-block text-[10px] font-black uppercase tracking-wider mt-2 px-2 py-0.5 rounded-full ${
+                      badge.earned
+                        ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
+                    {badge.earned ? "Unlocked" : "Locked"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

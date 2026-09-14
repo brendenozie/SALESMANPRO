@@ -15,14 +15,16 @@ async function handler(req: Request) {
   try {
     const { userId, name, slug, latitude, longitude, address, description } = await req.json();
 
-    if (!userId || !name || !latitude || !longitude || !address) {
-      return formatResponse(false, null, "All fields are required", 400);
+    if (!userId || !latitude || !longitude || !address) {
+      return formatResponse(false, null, "User ID, coordinates, and address are required", 400);
     }
+
+    const safeName = name || "Primary Delivery Address";
 
     // ensure we have a slug (generate from name if not provided)
     const safeSlug =
       slug ||
-      name
+      safeName
         .toString()
         .toLowerCase()
         .trim()
@@ -38,21 +40,27 @@ async function handler(req: Request) {
     if (existing) {
       location = await prisma.address.update({
         where: { id: existing.id },
-        data: { name, slug: safeSlug, latitude, longitude, address, description },
+        data: { name: safeName, slug: safeSlug, latitude, longitude, address, description: description || address },
       });
     } else {
       location = await prisma.address.create({
         data: {
-          name,
+          name: safeName,
           slug: safeSlug,
           latitude,
           longitude,
           address,
-          description,
+          description: description || address,
           user: { connect: { id: userId } },
         },
       });
     }
+
+    // Sync address string with User model
+    await prisma.user.update({
+      where: { id: userId },
+      data: { address },
+    }).catch(() => null);
 
     return formatResponse(true, location, "Location updated successfully", 200);
   } catch (error: any) {
