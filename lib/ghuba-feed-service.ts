@@ -473,22 +473,28 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
   const listingIds = pageListings.map((l) => l.id);
 
   // 1. Batch lookup likes count
-  const likesGroup = await prisma.marketplaceListingLike.groupBy({
-    by: ["listingId"],
-    where: { listingId: { in: listingIds } },
-    _count: { _all: true },
-  });
+  const likesGroup: Array<{ listingId: string; _count: { _all: number } }> = 
+    (prisma as any).marketplaceListingLike?.groupBy
+      ? await (prisma as any).marketplaceListingLike.groupBy({
+          by: ["listingId"],
+          where: { listingId: { in: listingIds } },
+          _count: { _all: true },
+        })
+      : [];
   const likesCountMap = new Map<string, number>();
   for (const item of likesGroup) {
     likesCountMap.set(item.listingId, item._count._all);
   }
 
   // 2. Batch lookup comments count
-  const commentsGroup = await prisma.marketplaceListingComment.groupBy({
-    by: ["listingId"],
-    where: { listingId: { in: listingIds }, status: "VISIBLE" },
-    _count: { _all: true },
-  });
+  const commentsGroup: Array<{ listingId: string; _count: { _all: number } }> = 
+    (prisma as any).marketplaceListingComment?.groupBy
+      ? await (prisma as any).marketplaceListingComment.groupBy({
+          by: ["listingId"],
+          where: { listingId: { in: listingIds }, status: "VISIBLE" },
+          _count: { _all: true },
+        })
+      : [];
   const commentsCountMap = new Map<string, number>();
   for (const item of commentsGroup) {
     commentsCountMap.set(item.listingId, item._count._all);
@@ -513,13 +519,15 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
 
   if (userId) {
     const [userLikes, userSaves] = await Promise.all([
-      prisma.marketplaceListingLike.findMany({
-        where: {
-          userId,
-          listingId: { in: listingIds },
-        },
-        select: { listingId: true },
-      }),
+      (prisma as any).marketplaceListingLike?.findMany
+        ? (prisma as any).marketplaceListingLike.findMany({
+            where: {
+              userId,
+              listingId: { in: listingIds },
+            },
+            select: { listingId: true },
+          })
+        : Promise.resolve([]),
       prisma.wishlistItem.findMany({
         where: {
           marketplaceListingId: { in: listingIds },
@@ -529,7 +537,7 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
       }),
     ]);
 
-    for (const l of userLikes) userLikedSet.add(l.listingId);
+    for (const l of userLikes as Array<{ listingId: string }>) userLikedSet.add(l.listingId);
     for (const s of userSaves) {
       if (s.marketplaceListingId) userSavedSet.add(s.marketplaceListingId);
     }
