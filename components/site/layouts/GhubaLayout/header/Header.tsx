@@ -20,7 +20,8 @@ import {
   MinusIcon,
   PlusIcon,
   Bars3BottomRightIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  FilmIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
@@ -58,7 +59,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const hiddenPaths = ['/ghuba/profile', '/shop/profile'];
+  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed'];
   if (hiddenPaths.some(p => path.includes(p))) return null;
 
   return (
@@ -374,9 +375,9 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
 const BottomNav = ({ path }: { path: string }) => {
   const router = useRouter();
   
-  // Added "Sell" into the mobile bottom navigation for guaranteed visibility
   const items = [
     { name: "Home", icon: HomeIcon, link: "/" },
+    { name: "Reels", icon: FilmIcon, link: "/ghuba/feed" },
     { name: "Explore", icon: MagnifyingGlassIcon, link: "/ghuba/productlist" },
     { name: "Sell", icon: BuildingLibraryIcon, link: "/stores" }, 
     { name: "Deals", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
@@ -581,9 +582,9 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
   );
 };
 
-// Updated Menu Label to "Start Selling" 
 const menuItems = [
   { name: "Home", icon: <HomeIcon className="w-5 h-5" />, link: "/" },
+  { name: "Reels Feed", icon: <FilmIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/feed" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
   { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "/stores" }, 
