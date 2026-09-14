@@ -11,6 +11,7 @@ import {
   FireIcon, BoltIcon, KeyIcon, VideoCameraIcon, CalendarIcon, ClockIcon , EnvelopeIcon, UsersIcon } from "@heroicons/react/24/outline";
 
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // AUTH
 import { useSession } from "next-auth/react";
@@ -197,8 +198,9 @@ export default function AutoDetailsClient({ data }: { data: any }) {
         }
       };
 
-  // Data Normalization
-  const images = data.images?.length > 0 ? data.images : ["https://placehold.co/1200x800?text=No+Image"];
+  // Universal Media Resolution
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(data), [data]);
+  const gallery = resolvedMedia.gallery;
   
   // Mapping host from root contact fields
   const host = {
@@ -217,12 +219,12 @@ export default function AutoDetailsClient({ data }: { data: any }) {
 
   const nextImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
   };
 
   const prevImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
   };
 
   return (
@@ -253,14 +255,27 @@ export default function AutoDetailsClient({ data }: { data: any }) {
               animate={{ scale: 1, opacity: 1 }}
               className="relative w-full h-full max-w-6xl flex items-center justify-center"
             >
-              <Image 
-                src={images[currentImageIndex]} 
-                alt="Gallery" 
-                fill 
-                className="object-contain" 
-                loader={customLoader}
-                priority
-              />
+              {gallery[currentImageIndex]?.type === "VIDEO" ? (
+                <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center">
+                  <video
+                    src={gallery[currentImageIndex].url}
+                    poster={gallery[currentImageIndex].posterUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-[85vh] max-w-full rounded-2xl shadow-2xl object-contain"
+                  />
+                </div>
+              ) : (
+                <Image 
+                  src={gallery[currentImageIndex]?.url || resolvedMedia.primaryImageUrl} 
+                  alt="Gallery" 
+                  fill 
+                  className="object-contain" 
+                  loader={customLoader}
+                  priority
+                />
+              )}
             </motion.div>
 
             <button onClick={nextImage} className="absolute right-4 md:right-8 p-3 text-white bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md z-[110]">
@@ -307,24 +322,45 @@ export default function AutoDetailsClient({ data }: { data: any }) {
         </div>
 
         {/* --- DYNAMIC GALLERY GRID --- */}
-        {/* Fixed mobile view: grid-cols-1 on mobile, auto-h so it doesn't squish images */}
         <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-3 md:gap-4 h-auto md:h-[500px] lg:h-[580px] rounded-2xl md:rounded-[2rem] overflow-hidden mb-8 md:mb-12 shadow-md dark:shadow-none">
-          <div className="col-span-1 md:col-span-2 md:row-span-2 relative group cursor-pointer aspect-[4/3] md:aspect-auto overflow-hidden" onClick={() => setIsGalleryOpen(true)}>
-            <img src={images[0]} alt="Primary View" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="col-span-1 md:col-span-2 md:row-span-2 relative group cursor-pointer aspect-[4/3] md:aspect-auto overflow-hidden" onClick={() => { setCurrentImageIndex(0); setIsGalleryOpen(true); }}>
+            {gallery[0]?.type === "VIDEO" ? (
+              <div className="relative w-full h-full">
+                <img src={gallery[0].posterUrl || resolvedMedia.posterUrl} alt="Vehicle Showcase" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-colors group-hover:bg-black/40">
+                  <div className="w-16 h-16 rounded-full bg-white/95 dark:bg-zinc-900/95 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                    <VideoCameraIcon className="w-8 h-8 ml-0.5" />
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-white/10 uppercase tracking-wider">
+                  <VideoCameraIcon className="w-4 h-4 text-indigo-400" />
+                  <span>Watch Walkaround Video</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <img src={gallery[0]?.url || resolvedMedia.primaryImageUrl} alt="Primary View" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" />
+              </>
+            )}
             {/* Mobile view photo counter badge */}
             <button className="md:hidden absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-              <Square2StackIcon className="w-4 h-4" /> {images.length} Photos
+              <Square2StackIcon className="w-4 h-4" /> {gallery.length} Media
             </button>
           </div>
           
-          {images.slice(1, 5).map((img: string, idx: number) => (
+          {gallery.slice(1, 5).map((item, idx: number) => (
             <div key={idx} className="relative group cursor-pointer hidden md:block overflow-hidden" onClick={() => { setCurrentImageIndex(idx + 1); setIsGalleryOpen(true); }}>
-              <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              {idx === 3 && images.length > 5 && (
+              <img src={item.thumbnailUrl || item.posterUrl || item.url} alt={`View ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              {item.type === "VIDEO" && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                  <VideoCameraIcon className="w-6 h-6 text-white drop-shadow-md" />
+                </div>
+              )}
+              {idx === 3 && gallery.length > 5 && (
                 <div className="absolute inset-0 bg-zinc-950/70 flex flex-col items-center justify-center backdrop-blur-[4px] group-hover:bg-zinc-950/60 transition-all">
                   <Square2StackIcon className="w-7 h-7 text-white mb-1.5" />
-                  <span className="text-white font-bold text-xs tracking-wider uppercase">{images.length - 5}+ More Photos</span>
+                  <span className="text-white font-bold text-xs tracking-wider uppercase">{gallery.length - 5}+ More Media</span>
                 </div>
               )}
             </div>

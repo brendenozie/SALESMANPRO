@@ -5,7 +5,7 @@ import React, { useMemo, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { StarIcon, PlusIcon, MinusIcon, HeartIcon } from '@heroicons/react/24/solid';
+import { StarIcon, PlusIcon, MinusIcon, HeartIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { 
   ClockIcon, 
   ShieldCheckIcon, 
@@ -19,6 +19,7 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceWatchLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 type ImageObj = { url: string };
@@ -84,9 +85,13 @@ export function ProductDetail({
     };
   }, [product, selectedOption]);
 
-  const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) return resolvedMedia.allMedia;
+    return [{ type: 'image' as const, url: resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91' }];
+  }, [resolvedMedia]);
 
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91';
+  const currentMediaItem = mediaItems[mainIndex] || mediaItems[0];
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 selection:bg-amber-500/30 mt-32">
@@ -105,7 +110,7 @@ export function ProductDetail({
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative aspect-square w-full max-w-2xl mx-auto group cursor-crosshair"
+                className="relative aspect-square w-full max-w-2xl mx-auto group cursor-pointer flex items-center justify-center"
                 onClick={() => setIsLightboxOpen(true)}
               >
                 <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent rounded-full blur-3xl opacity-30" />
@@ -116,23 +121,36 @@ export function ProductDetail({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 1.1 }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative w-full h-full z-10"
+                    className="relative w-full h-full z-10 flex items-center justify-center p-4"
                   >
-                    <Image
-                      src={currentImage}
-                      alt={product.name}
-                      loader={loader}
-                      fill
-                      className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.6)]"
-                      priority
-                    />
+                    {currentMediaItem.type === 'video' ? (
+                      <video
+                        src={currentMediaItem.url}
+                        poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                        controls
+                        playsInline
+                        autoPlay
+                        muted
+                        loop
+                        className="w-full h-full max-h-[500px] object-contain rounded-2xl drop-shadow-[0_35px_35px_rgba(0,0,0,0.6)]"
+                      />
+                    ) : (
+                      <Image
+                        src={currentMediaItem.url}
+                        alt={product.name}
+                        loader={loader}
+                        fill
+                        className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.6)]"
+                        priority
+                      />
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
 
               {/* Sophisticated Thumbnails */}
               <div className="mt-12 flex justify-center gap-4 overflow-x-auto pb-4 no-scrollbar">
-                {currentImages.map((img, idx) => (
+                {mediaItems.map((item, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -141,7 +159,18 @@ export function ProductDetail({
                       idx === mainIndex ? 'border-amber-500 scale-110 shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'border-slate-800 opacity-50 hover:opacity-100'
                     }`}
                   >
-                    <Image src={(img as any).url ? (img as any).url : img} alt="thumb" fill className="object-cover" loader={loader} />
+                    <Image
+                      src={item.type === 'video' ? (item.posterUrl || resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91') : item.url}
+                      alt="thumb"
+                      fill
+                      className="object-cover"
+                      loader={loader}
+                    />
+                    {item.type === 'video' && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <VideoCameraIcon className="w-5 h-5 text-amber-400 drop-shadow-md" />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>

@@ -13,7 +13,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import {
   HeartIcon, StarIcon, BoltIcon, TrashIcon, MinusIcon, PlusIcon,
   ShoppingBagIcon, XMarkIcon, HomeIcon, BeakerIcon, KeyIcon,
-  CalendarDaysIcon, MagnifyingGlassIcon
+  CalendarDaysIcon, MagnifyingGlassIcon, VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import {
   Square2StackIcon, MapPinIcon, CalendarIcon
@@ -21,11 +21,14 @@ import {
 
 import { resolveProductType } from '@/lib/ghuba-product-type';
 import { getListingPublicUrl } from '@/lib/ghuba-slug';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loaderProp = ({ src, width, quality }: any) => {
+  if (src.startsWith('data:')) return src;
+  const separator = src.includes('?') ? '&' : '?';
   const params = [`w=${width || 400}`];
   if (quality) params.push(`q=${quality}`);
-  return `${src}?${params.join('&')}`;
+  return `${src}${separator}${params.join('&')}`;
 };
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -45,6 +48,10 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
   const [formError, setFormError] = useState('');
 
   const itemType = useMemo(() => resolveProductType(product), [product]);
+
+  // Resolve media using universal media engine (guaranteed poster, responsive WebP variants, video detection)
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const primaryImage = resolvedMedia.primaryImageUrl;
 
   // Both ECOMMERCE and AUTO can be added to cart
   const canAddToCart = itemType === "ECOMMERCE" || itemType === "AUTO";
@@ -94,18 +101,6 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
   };
 
   const displayTitle = itemType === "AUTO" && product.make ? `${product.make} ${product.model}` : product.name || product.title;
-
-  const normalizeImageUrl = (img: any): string => {
-    if (!img) return 'https://via.placeholder.com/400x400?text=No+Image';
-    if (typeof img === 'string') return img;
-    if (typeof img === 'object') {
-      return img.url || img.secure_url || img.src || 'https://via.placeholder.com/400x400?text=No+Image';
-    }
-    return 'https://via.placeholder.com/400x400?text=No+Image';
-  };
-
-  const rawImage = product.images?.length > 0 ? product.images[0] : null;
-  const primaryImage = normalizeImageUrl(rawImage);
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254700000000"}`;
   const message = encodeURIComponent(`I'm interested in: ${displayTitle}. Could you provide more details?`);
@@ -233,6 +228,13 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
             >
               <HeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
+
+            {resolvedMedia.hasVideo && (
+              <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-white/10 tracking-wide uppercase pointer-events-none">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Video</span>
+              </div>
+            )}
           </div>
 
           {/* --- PRODUCT INFO --- */}

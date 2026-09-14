@@ -1,7 +1,7 @@
 'use client';
 
 import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
-import { CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { CheckBadgeIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import React, { useState, useEffect, useMemo } from 'react';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +9,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -106,7 +107,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const whatsappMsg = encodeURIComponent(`EXECUTIVE INQUIRY: I am looking at the "${name}" with configuration options: ${Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ') || 'Standard'}. Total pricing evaluated: Kes ${currentFinalPrice.toLocaleString()}.`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 
-  const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
 
   const handleOpenSelector = () => {
     if (hasOptions) {
@@ -149,6 +151,12 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059] flex items-center gap-1.5 text-white">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-[#c5a059]" />
+                <span className="text-[9px] font-bold tracking-[0.2em] uppercase">Video</span>
+              </div>
+            )}
             {currentSellingPrice > currentFinalPrice && (
               <div className="bg-black text-white px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059]">
                 <p className="text-[9px] font-bold tracking-[0.2em] uppercase">Limited Edition</p>

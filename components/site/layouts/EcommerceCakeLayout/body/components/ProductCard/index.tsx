@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, TrashIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import React, { useMemo, useState } from 'react';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -101,7 +102,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
       : null;
     
-  const imageSrc = images?.[0] || 'https://via.placeholder.com/400';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400';
 
   const handleAddToCartAction = (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -116,8 +118,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       ...product,
       finalPrice: calculatedPrices.finalPrice,
       sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
-      selectedOptions,
+      selectedOptions: { ...selectedOptions },
     });
+  };
+
+  const handleDecreaseQuantityAction = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (typeof decreaseQuantity === 'function') {
+      decreaseQuantity(product.id, { selectedOptions });
+    }
   };
 
   return (
@@ -143,6 +154,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           {/* Minimalist Promotional Labels & Matrix Count Indicators */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Video</span>
+              </div>
+            )}
             {discount !== null && (
               <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-orange-50">
                 <span style={{ color: primary }} className="text-[10px] font-black tracking-widest">

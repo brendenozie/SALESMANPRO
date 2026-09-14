@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, TrashIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 import React, { useMemo, useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // Custom WhatsApp Icon Component
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -91,7 +92,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     return product.id;
   }, [product.id, selectedOptions, hasVariants]);
 
-  const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
 
   // 5. Bespoke Concierge WhatsApp Link Configuration
   const optionsSummary = Object.entries(selectedOptions)
@@ -108,7 +110,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    if (hasVariants && !isConfiguring) {
+    if (hasVariants && !allOptionsSelected) {
       setIsConfiguring(true);
       return;
     }
@@ -117,14 +119,23 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       ...product,
       finalPrice: calculatedPrices.finalPrice,
       sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
-      selectedOptions,
+      selectedOptions: { ...selectedOptions }
     });
+  };
+
+  const handleDecreaseQuantity = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (typeof decreaseQuantity === 'function') {
+      decreaseQuantity(product.id, { selectedOptions });
+    }
   };
 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         className="group bg-transparent relative flex flex-col h-full overflow-hidden"
@@ -142,6 +153,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             />
           </Link>
 
+          {/* Video Indicator Badge */}
+          {resolvedMedia.hasVideo && (
+            <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
+              <span>Video</span>
+            </div>
+          )}
+
           {/* WhatsApp Floating Button (Top Right) */}
           <a 
             href={whatsappUrl}
@@ -154,7 +173,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Floating Badges */}
           {sellingPrice > (finalPrice || 0) && (
-            <div className="absolute top-4 left-4 bg-white px-3 py-1 shadow-sm">
+            <div className={`absolute ${resolvedMedia.hasVideo ? 'top-12' : 'top-4'} left-4 bg-white px-3 py-1 shadow-sm`}>
               <p className="text-[10px] font-bold tracking-tighter uppercase text-red-600">
                 Limited Edition
               </p>

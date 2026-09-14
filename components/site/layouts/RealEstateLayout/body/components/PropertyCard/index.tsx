@@ -13,9 +13,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { 
   CheckBadgeIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // Custom WhatsApp Icon for Real Estate Agents
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -64,6 +66,8 @@ const safeRender = (val: any) => {
 const PropertyCard = ({ item, key }: any) => {
 
   const { storeFormData } = useStoreContext();
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(item), [item]);
+
   // WhatsApp Agent Config
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`Hi, I'm interested in viewing the property: "${item.name}" (ID: ${item.id.slice(0, 6)}). Is it currently available for a site visit?`);
@@ -92,12 +96,19 @@ const PropertyCard = ({ item, key }: any) => {
         {/* --- IMAGE AREA --- */}
         <div className="relative h-72 w-full overflow-hidden">
           <Image
-            src={item.images?.[0] || `https://images.unsplash.com/photo-1600585154340-be6161a56a0c`}
+            src={resolvedMedia.primaryImageUrl}
             alt={item.name}
             fill
             className="object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
             loader={customLoader}
           />
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
           
           {/* Status Badges */}
           <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">

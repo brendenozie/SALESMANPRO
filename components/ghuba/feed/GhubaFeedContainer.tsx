@@ -135,6 +135,24 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     };
   }, [activeIndex, items]);
 
+  // Intelligent bounded prefetch for NEXT slide media (current + 1 only)
+  useEffect(() => {
+    const nextItem = items[activeIndex + 1];
+    if (!nextItem || typeof window === "undefined") return;
+
+    // Check if user has Save-Data enabled or is on slow network
+    const nav = navigator as any;
+    if (nav?.connection?.saveData || nav?.connection?.effectiveType === "2g") {
+      return; // Skip prefetch on Save-Data / slow 2G
+    }
+
+    const nextPoster = nextItem.media.poster || nextItem.media.images[0];
+    if (nextPoster && !nextPoster.startsWith("data:")) {
+      const img = new Image();
+      img.src = nextPoster;
+    }
+  }, [activeIndex, items]);
+
   // Keyboard Navigation: ArrowUp / ArrowDown / Space / M
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

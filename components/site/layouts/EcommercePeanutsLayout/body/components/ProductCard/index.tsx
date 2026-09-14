@@ -7,7 +7,8 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlusIcon, MinusIcon, ShoppingCartIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, MinusIcon, ShoppingCartIcon, TrashIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -28,6 +29,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#8B4513';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
   
   const { name, images, finalPrice, sellingPrice } = product;
 
@@ -127,7 +129,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
           <Link href={`/peanutecommerce/products/${product.id}`} className="block h-full w-full">
             <Image
-              src={images?.[0] || 'https://via.placeholder.com/300'}
+              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300'}
               alt={name}
               loader={loader}
               fill
@@ -136,6 +138,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           </Link>
           
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Video</span>
+              </div>
+            )}
             {discount && (
               <div className="bg-[#F3A852] text-[#3E2723] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
                 {discount}% Crunch

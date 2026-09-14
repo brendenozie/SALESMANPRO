@@ -16,11 +16,12 @@ import {
   PlusIcon,
   MinusIcon
 } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
+import { StarIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
 import ProductCard from '@/components/site/layouts/FashionLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 type ImageObj = { url: string };
 
@@ -125,12 +126,18 @@ export function ProductDetail({
 
   const quantity = matchingCartItem?.quantity || 0;
 
-  const currentImages = (product.images)?.length 
-    ? (product.images as ImageObj[]) 
-    : [{ url: 'https://via.placeholder.com/400x600' }];
-  
-    const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) {
+      return resolvedMedia.allMedia;
+    }
+    return [{ 
+      type: 'image' as const, 
+      url: resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80' 
+    }];
+  }, [resolvedMedia]);
 
+  const currentMediaItem = mediaItems[mainIndex] || mediaItems[0];
 
   const handleVariantQuantityIncrement = () => {
     const requiredCategoriesCount = Object.keys(groupedOptions).length;
@@ -188,6 +195,12 @@ export function ProductDetail({
                   <SparklesIcon className="h-3 w-3 text-amber-500 animate-pulse" />
                   Atelier Original
                 </span>
+                {currentMediaItem?.type === 'video' && (
+                  <span className="backdrop-blur-md bg-black/70 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-1.5 shadow-sm">
+                    <VideoCameraIcon className="h-3 w-3 text-emerald-400" />
+                    Video Showcase
+                  </span>
+                )}
               </div>
 
               <AnimatePresence mode="wait">
@@ -197,28 +210,41 @@ export function ProductDetail({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full relative"
+                  className="w-full h-full relative flex items-center justify-center bg-black"
                 >
-                  <Image
-                    src={currentImage}
-                    alt={product.name}
-                    loader={loader}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="object-cover object-top selection:bg-transparent"
-                    priority
-                  />
+                  {currentMediaItem?.type === 'video' ? (
+                    <video
+                      src={currentMediaItem.url}
+                      poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                      controls
+                      playsInline
+                      autoPlay
+                      muted
+                      loop
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={currentMediaItem?.url || resolvedMedia.primaryImageUrl}
+                      alt={product.name}
+                      loader={loader}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="object-cover object-top selection:bg-transparent"
+                      priority
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
               
               <div className="absolute bottom-6 right-6 backdrop-blur-md bg-zinc-950/70 text-white text-[10px] font-mono tracking-widest px-3 py-1.5 rounded-md border border-white/10 select-none z-20">
-                {(mainIndex + 1).toString().padStart(2, '0')} / {currentImages.length.toString().padStart(2, '0')}
+                {(mainIndex + 1).toString().padStart(2, '0')} / {mediaItems.length.toString().padStart(2, '0')}
               </div>
             </div>
 
             {/* Interactive Dynamic Filmstrip Rail */}
             <div className="grid grid-cols-5 gap-3.5">
-              {currentImages.map((img, idx) => (
+              {mediaItems.map((item, idx) => (
                 <button
                   key={idx}
                   onClick={() => setMainIndex(idx)}
@@ -228,7 +254,18 @@ export function ProductDetail({
                       : 'opacity-60 dark:opacity-40 hover:opacity-100 border-zinc-200 dark:border-zinc-800'
                   }`}
                 >
-                  <Image src={img.url || img} alt="Lookbook context frame" loader={loader} fill className="object-cover object-top" />
+                  <Image 
+                    src={item.type === 'video' ? (item.posterUrl || item.thumbnailUrl || resolvedMedia.primaryImageUrl) : (item.thumbnailUrl || item.url)} 
+                    alt="Lookbook context frame" 
+                    loader={loader} 
+                    fill 
+                    className="object-cover object-top" 
+                  />
+                  {item.type === 'video' && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <VideoCameraIcon className="w-5 h-5 text-white drop-shadow-md" />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

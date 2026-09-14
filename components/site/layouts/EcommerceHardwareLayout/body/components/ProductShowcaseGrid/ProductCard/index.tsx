@@ -9,11 +9,13 @@ import {
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
   BoltIcon,
-  XMarkIcon
+  XMarkIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -111,7 +113,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
 
   return (
     <>
@@ -143,6 +146,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                <ShieldCheckIcon className="w-2.5 h-2.5 text-green-500" />
                VERIFIED
             </div>
+            {resolvedMedia.hasVideo && (
+              <div className="bg-amber-500 text-black text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-xs flex items-center gap-1 shadow-sm">
+                <VideoCameraIcon className="w-2.5 h-2.5 text-black" />
+                VIDEO
+              </div>
+            )}
           </div>
 
           {/* WhatsApp Quick Action Ring */}

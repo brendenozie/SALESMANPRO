@@ -17,9 +17,11 @@ import {
   ArrowPathIcon,
   ShoppingBagIcon
 } from '@heroicons/react/24/outline';
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -36,6 +38,8 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
 
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
@@ -183,13 +187,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           <Link href={`/furnitureecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
-              src={product.images?.[0] || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000"}
+              src={resolvedMedia.primaryImageUrl}
               alt={product.name}
               loader={loader}
               fill
               className="object-cover transition-transform duration-[2s] ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
             />
           </Link>
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
 
           {/* ELEGANT BADGES */}
           <div className="absolute top-6 left-6 flex flex-col gap-2 z-10">
@@ -391,14 +402,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="relative w-full max-w-4xl bg-white dark:bg-[#0c0c0c] rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border border-zinc-100 dark:border-zinc-900 overflow-hidden z-10 flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]"
             >
               {/* Image Preview Left */}
-              <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-[#F7F7F7] dark:bg-zinc-900">
-                <Image
-                  src={product.images?.[0] || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000"}
-                  alt={product.name}
-                  loader={loader}
-                  fill
-                  className="object-cover"
-                />
+              <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto bg-[#F7F7F7] dark:bg-zinc-900 overflow-hidden">
+                {resolvedMedia.hasVideo ? (
+                  <video
+                    src={resolvedMedia.primaryVideoUrl}
+                    poster={resolvedMedia.posterUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={resolvedMedia.primaryImageUrl}
+                    alt={product.name}
+                    loader={loader}
+                    fill
+                    className="object-cover"
+                  />
+                )}
                 <button
                   onClick={() => setIsQuickViewOpen(false)}
                   className="absolute top-6 left-6 p-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-full border border-zinc-200/50 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:scale-105 transition-transform md:hidden"

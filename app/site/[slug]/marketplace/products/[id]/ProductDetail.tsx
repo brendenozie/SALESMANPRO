@@ -1,19 +1,20 @@
 // app/[slug]/products/[productId]/page.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 // import ProductCard from '@/components/shop/ProductCard'; // Assuming ProductCard is the correct component for individual products
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
+import { StarIcon, PlusIcon, MinusIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion'; // Import motion and AnimatePresence
 import { useStateContext } from '@/contexts/ContextProvider';
 import { StoreForm, MarketListingForm } from '@/types/typings'; // Import relevant types
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 
-export default async function ProductDetail({ product, related, storeData }: {
+export default function ProductDetail({ product, related, storeData }: {
   product: MarketListingForm;
   related: MarketListingForm[];
   storeData: StoreForm;
@@ -35,7 +36,13 @@ export default async function ProductDetail({ product, related, storeData }: {
     decreaseQuantity(product.id);
   };
 
-  const currentImage = product.images?.[mainIndex]?.url || '/placeholder-image.png';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) return resolvedMedia.allMedia;
+    return [{ type: 'image' as const, url: resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x400?text=No+Image' }];
+  }, [resolvedMedia]);
+
+  const currentMediaItem = mediaItems[mainIndex] || mediaItems[0];
 
   // Variants for image animation
   const imageVariants = {
@@ -57,20 +64,33 @@ export default async function ProductDetail({ product, related, storeData }: {
               animate="animate"
               exit="exit"
               transition={{ duration: 0.3 }}
-              className="relative w-full aspect-video md:aspect-square lg:aspect-video rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700"
+              className="relative w-full aspect-video md:aspect-square lg:aspect-video rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-white dark:bg-gray-800"
             >
-              <Image
-                src={currentImage || 'https://via.placeholder.com/600x400?text=No+Image'}
-                alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-contain bg-white dark:bg-gray-800" // Use object-contain and a background for better fit
-              />
+              {currentMediaItem.type === 'video' ? (
+                <video
+                  src={currentMediaItem.url}
+                  poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                  controls
+                  playsInline
+                  autoPlay
+                  muted
+                  loop
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <Image
+                  src={currentMediaItem.url}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-contain"
+                />
+              )}
             </motion.div>
           </AnimatePresence>
 
           <div className="flex mt-6 space-x-3 overflow-x-auto pb-2 scrollbar-hide">
-            {product.images?.map((img: any, idx: number) => (
+            {mediaItems.map((item, idx: number) => (
               <motion.button
                 key={idx}
                 onClick={() => setMainIndex(idx)}
@@ -82,12 +102,17 @@ export default async function ProductDetail({ product, related, storeData }: {
                 style={idx === mainIndex ? { borderColor: primary, boxShadow: `0 0 0 4px ${primary}` } : {}} // Dynamic ring color
               >
                 <Image
-                  src={img.url || 'https://via.placeholder.com/96x96?text=No+Image'}
+                  src={item.type === 'video' ? (item.posterUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/96x96?text=No+Image') : item.url}
                   alt={`${product.name}-${idx}`}
                   fill
                   sizes="96px"
                   className="object-cover"
                 />
+                {item.type === 'video' && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <VideoCameraIcon className="w-5 h-5 text-white drop-shadow-md" />
+                  </div>
+                )}
               </motion.button>
             ))}
           </div>

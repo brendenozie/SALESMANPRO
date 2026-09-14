@@ -66,6 +66,7 @@ import {
   resolveProductType,
   withCapabilities,
 } from "@/lib/ghuba-product-type";
+import { resolveProductMedia } from "@/lib/product-media-resolver";
 
 export type { ProductType, ProductCapabilities, ProductWithCapabilities };
 
@@ -378,15 +379,12 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
     }
   };
 
-  // Image Array Resolution[cite: 1]
-  const rawImages = listing.images && listing.images.length > 0 ? listing.images : [];
-  const images = useMemo(() => {
-    if (!rawImages.length) return ["https://placehold.co/1200x800?text=No+Image+Available"];
-    return rawImages.map((img) => (typeof img === "string" ? img : img.url || "https://placehold.co/1200x800?text=No+Image+Available"));
-  }, [rawImages]);
+  // Universal Media Resolution (combines videos, WebP variants, guaranteed poster frames)
+  const resolvedMedia = useMemo(() => resolveProductMedia(listing), [listing]);
+  const gallery = resolvedMedia.gallery;
 
-  const handleNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  const handlePrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  const handleNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
+  const handlePrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
 
   const displayTitle = itemType === "AUTO" && listing.make ? `${listing.make} ${listing.model || ""}` : listing.title || listing.name || "Untitled Listing";
   const hostRole = itemType === "PROPERTY" ? "Property Consultant" : itemType === "AUTO" ? "Sales Specialist" : "Service Provider";
@@ -655,15 +653,28 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
               transition={{ type: "spring", damping: 20 }}
               className="relative w-full h-full max-w-6xl flex items-center justify-center"
             >
-              <Image
-                src={images[currentImageIndex]}
-                alt={`Gallery View ${currentImageIndex + 1}`}
-                fill
-                className="object-contain"
-                loader={customLoader}
-                priority
-                sizes="100vw"
-              />
+              {gallery[currentImageIndex]?.type === "VIDEO" ? (
+                <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center">
+                  <video
+                    src={gallery[currentImageIndex].url}
+                    poster={gallery[currentImageIndex].posterUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-[85vh] max-w-full rounded-2xl shadow-2xl object-contain"
+                  />
+                </div>
+              ) : (
+                <Image
+                  src={gallery[currentImageIndex]?.url || resolvedMedia.primaryImageUrl}
+                  alt={`Gallery View ${currentImageIndex + 1}`}
+                  fill
+                  className="object-contain"
+                  loader={customLoader}
+                  priority
+                  sizes="100vw"
+                />
+              )}
             </motion.div>
             <button
               onClick={(e) => {
@@ -770,18 +781,42 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
               setIsGalleryOpen(true);
             }}
           >
-            <Image
-              src={images[0]}
-              loader={customLoader}
-              alt="Primary Feature"
-              fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-105"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            {gallery[0]?.type === "VIDEO" ? (
+              <div className="relative w-full h-full">
+                <Image
+                  src={gallery[0].posterUrl || resolvedMedia.posterUrl}
+                  loader={customLoader}
+                  alt="Video Showcase"
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                  priority
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-colors group-hover:bg-black/40">
+                  <div className="w-16 h-16 rounded-full bg-white/95 dark:bg-zinc-900/95 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                    <VideoCameraIcon className="w-8 h-8 ml-0.5" />
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-white/10 uppercase tracking-wider">
+                  <VideoCameraIcon className="w-4 h-4 text-emerald-400" />
+                  <span>Watch Video Showcase</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Image
+                  src={gallery[0]?.url || resolvedMedia.primaryImageUrl}
+                  loader={customLoader}
+                  alt="Primary Feature"
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              </>
+            )}
           </div>
 
-          {images.slice(1, 5).map((imgUrl, idx) => (
+          {gallery.slice(1, 5).map((item, idx) => (
             <div
               key={idx}
               className="relative group cursor-pointer hidden md:block overflow-hidden"
@@ -791,17 +826,22 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
               }}
             >
               <Image
-                src={imgUrl}
+                src={item.thumbnailUrl || item.posterUrl || item.url}
                 loader={customLoader}
                 alt={`Listing View ${idx + 1}`}
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />
-              {idx === 3 && images.length > 5 && (
+              {item.type === "VIDEO" && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                  <VideoCameraIcon className="w-6 h-6 text-white drop-shadow-md" />
+                </div>
+              )}
+              {idx === 3 && gallery.length > 5 && (
                 <div className="absolute inset-0 bg-zinc-950/70 flex flex-col items-center justify-center backdrop-blur-sm group-hover:bg-zinc-950/60 transition-all">
                   <Square2StackIcon className="w-8 h-8 text-white mb-2" />
                   <span className="text-white font-bold text-xs uppercase tracking-widest">
-                    +{images.length - 5} More Photos
+                    +{gallery.length - 5} More Media
                   </span>
                 </div>
               )}

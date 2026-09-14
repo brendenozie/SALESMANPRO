@@ -434,6 +434,19 @@ async function handleDelete(
         where: { id: String(id) },
         select: { company: true },
       });
+
+      // Cleanup associated media assets from S3 in background
+      const mediaUrlsToClean = [
+        ...normalizeArray(existing.images).map((img: any) => (typeof img === "string" ? img : img?.url || img?.cdnUrl)).filter(Boolean),
+        ...normalizeArray(existing.videos).map((vid: any) => (typeof vid === "string" ? vid : vid?.url || vid?.cdnUrl)).filter(Boolean),
+      ];
+      if (mediaUrlsToClean.length > 0) {
+        import("@/lib/media-cleanup").then(({ deleteMediaAssetsFromStorage }) => {
+          deleteMediaAssetsFromStorage(mediaUrlsToClean).catch((e) =>
+            console.error("[LISTING_DELETE_MEDIA_CLEANUP_ERROR]", e)
+          );
+        });
+      }
     });
 
     if (listing?.company?.slug) {

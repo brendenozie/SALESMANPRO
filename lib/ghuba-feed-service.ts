@@ -13,12 +13,38 @@ import { getListingPublicUrl } from "./ghuba-slug";
 
 export type FeedListingType = "ECOMMERCE" | "SERVICE" | "PROPERTY" | "AUTO";
 
+export interface MediaVariantUrls {
+  thumbnail: string;
+  feed: string;
+  full: string;
+}
+
+export interface EnrichedFeedImage {
+  url: string;
+  variants?: MediaVariantUrls;
+  width?: number;
+  height?: number;
+  blurDataUrl?: string;
+}
+
+export interface EnrichedFeedVideo {
+  url: string;
+  posterUrl: string;
+  width?: number;
+  height?: number;
+  duration?: number;
+  status?: "READY" | "PROCESSING" | "FAILED";
+}
+
 export interface GhubaFeedMedia {
   primaryType: "VIDEO" | "IMAGE" | "GALLERY";
+  status: "READY" | "PROCESSING" | "FAILED";
   videos: string[];
   images: string[];
-  poster?: string;
-  thumbnail?: string;
+  poster: string; // Guaranteed non-empty CDN/fallback URL (never undefined)
+  thumbnail: string; // Guaranteed non-empty thumbnail URL
+  videoDetails?: EnrichedFeedVideo[];
+  imageDetails?: EnrichedFeedImage[];
 }
 
 export interface GhubaFeedItem {
@@ -92,7 +118,7 @@ export function normalizeMediaList(rawList: any): string[] {
         urls.push(clean);
       }
     } else if (item && typeof item === "object") {
-      const candidate = item.url || item.secure_url || item.src || item.path;
+      const candidate = item.url || item.secure_url || item.src || item.path || item.cdnUrl;
       if (typeof candidate === "string" && candidate.trim().length > 0) {
         urls.push(candidate.trim());
       }
@@ -102,60 +128,197 @@ export function normalizeMediaList(rawList: any): string[] {
   return urls;
 }
 
+/**
+ * Parses raw JSON media items into structured, enriched media details.
+ * Supports either (rawVideos, rawImages) or a single combined media list.
+ */
+export function parseDetailedMediaList(
+  rawVideosOrList: any,
+  rawImages?: any
+): {
+  images: EnrichedFeedImage[];
+  videos: EnrichedFeedVideo[];
+} {
+  const images: EnrichedFeedImage[] = [];
+  const videos: EnrichedFeedVideo[] = [];
+
+  const parseVideoItem = (item: any) => {
+    if (!item) return;
+    if (typeof item === "string") {
+      const clean = item.trim();
+      if (clean.length > 0) {
+        videos.push({ url: clean, posterUrl: "", status: "READY" });
+      }
+    } else if (typeof item === "object") {
+      const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
+      if (url) {
+        videos.push({
+          url,
+          posterUrl: item.posterUrl || item.poster || item.thumbnailUrl || "",
+          width: item.width,
+          height: item.height,
+          duration: item.duration,
+          status: item.status || "READY",
+        });
+      }
+    }
+  };
+
+  const parseImageItem = (item: any) => {
+    if (!item) return;
+    if (typeof item === "string") {
+      const clean = item.trim();
+      if (clean.length > 0) {
+        images.push({ url: clean });
+      }
+    } else if (typeof item === "object") {
+      const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
+      if (url) {
+        images.push({
+          url,
+          variants: item.variants,
+          width: item.width,
+          height: item.height,
+          blurDataUrl: item.blurDataUrl,
+        });
+      }
+    }
+  };
+
+  if (rawImages !== undefined) {
+    const videoList = Array.isArray(rawVideosOrList) ? rawVideosOrList : rawVideosOrList ? [rawVideosOrList] : [];
+    videoList.forEach(parseVideoItem);
+    const imageList = Array.isArray(rawImages) ? rawImages : rawImages ? [rawImages] : [];
+    imageList.forEach(parseImageItem);
+  } else {
+    // Single list passed: discern by type property or extension
+    const list = Array.isArray(rawVideosOrList) ? rawVideosOrList : rawVideosOrList ? [rawVideosOrList] : [];
+    for (const item of list) {
+      if (!item) continue;
+      if (typeof item === "string") {
+        const clean = item.trim();
+        if (clean.endsWith(".mp4") || clean.endsWith(".webm") || clean.includes("/videos/")) {
+          videos.push({ url: clean, posterUrl: "", status: "READY" });
+        } else {
+          images.push({ url: clean });
+        }
+      } else if (typeof item === "object") {
+        const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
+        if (item.type === "video" || url.endsWith(".mp4") || url.endsWith(".webm") || url.includes("/videos/")) {
+          videos.push({
+            url,
+            posterUrl: item.posterUrl || item.poster || item.thumbnailUrl || "",
+            width: item.width,
+            height: item.height,
+            duration: item.duration,
+            status: item.status || "READY",
+          });
+        } else {
+          images.push({
+            url,
+            variants: item.variants,
+            width: item.width,
+            height: item.height,
+            blurDataUrl: item.blurDataUrl,
+          });
+        }
+      }
+    }
+  }
+
+  return { images, videos };
+}
+
 const DEFAULT_FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80";
 
 /**
  * Resolves media according to the strict Media Priority Rule:
- * 1. VIDEO
- * 2. IMAGE
- * 3. MULTI-IMAGE PRESENTATION (GALLERY)
+ * 1. READY VIDEO (Guaranteed poster frame; if video is PROCESSING or FAILED, fallback to IMAGE)
+ * 2. MULTI-IMAGE GALLERY
+ * 3. SINGLE READY IMAGE
  * 4. FALLBACK LISTING IMAGE
- * 5. PLACEHOLDER
+ * 5. BRANDED PLACEHOLDER
  */
 export function resolveFeedMedia(rawVideos: any, rawImages: any): GhubaFeedMedia {
-  const videos = normalizeMediaList(rawVideos);
-  const images = normalizeMediaList(rawImages);
+  const videoUrls = normalizeMediaList(rawVideos);
+  const imageUrls = normalizeMediaList(rawImages);
 
-  const poster = images[0] || undefined;
-  const thumbnail = poster || DEFAULT_FALLBACK_IMAGE;
+  const { videos: structuredVideos, images: structuredImages } = parseDetailedMediaList(
+    rawVideos,
+    rawImages
+  );
 
-  if (videos.length > 0) {
+  // Guarantee high-quality poster frame:
+  // 1. Explicit video posterUrl
+  // 2. First image's feed variant URL
+  // 3. First image URL
+  // 4. Default branded commerce image
+  const firstImageVariant = structuredImages[0]?.variants?.feed || structuredImages[0]?.url || imageUrls[0];
+  const explicitVideoPoster = structuredVideos[0]?.posterUrl;
+  const guaranteedPoster = explicitVideoPoster && explicitVideoPoster.length > 0
+    ? explicitVideoPoster
+    : firstImageVariant || DEFAULT_FALLBACK_IMAGE;
+
+  const guaranteedThumbnail = structuredImages[0]?.variants?.thumbnail || guaranteedPoster;
+
+  // Filter videos for readiness: only READY videos can be served as primary VIDEO
+  const activeVideo = structuredVideos[0];
+  const isVideoReady = !activeVideo || activeVideo.status === undefined || activeVideo.status === "READY";
+  const hasValidVideo = videoUrls.length > 0 && isVideoReady;
+
+  if (hasValidVideo) {
     return {
       primaryType: "VIDEO",
-      videos,
-      images,
-      poster,
-      thumbnail,
+      status: "READY",
+      videos: videoUrls,
+      images: imageUrls.length > 0 ? imageUrls : [guaranteedPoster],
+      poster: guaranteedPoster,
+      thumbnail: guaranteedThumbnail,
+      videoDetails: structuredVideos.length > 0 ? structuredVideos : [{
+        url: videoUrls[0],
+        posterUrl: guaranteedPoster,
+        status: "READY",
+      }],
+      imageDetails: structuredImages,
     };
   }
 
-  if (images.length > 1) {
+  // Gallery priority when multiple images exist
+  if (imageUrls.length > 1) {
     return {
       primaryType: "GALLERY",
+      status: "READY",
       videos: [],
-      images,
-      poster,
-      thumbnail,
+      images: imageUrls,
+      poster: guaranteedPoster,
+      thumbnail: guaranteedThumbnail,
+      imageDetails: structuredImages,
     };
   }
 
-  if (images.length === 1) {
+  // Single image
+  if (imageUrls.length === 1) {
     return {
       primaryType: "IMAGE",
+      status: "READY",
       videos: [],
-      images,
-      poster,
-      thumbnail,
+      images: imageUrls,
+      poster: guaranteedPoster,
+      thumbnail: guaranteedThumbnail,
+      imageDetails: structuredImages,
     };
   }
 
+  // Fallback image
   return {
     primaryType: "IMAGE",
+    status: "READY",
     videos: [],
     images: [DEFAULT_FALLBACK_IMAGE],
     poster: DEFAULT_FALLBACK_IMAGE,
     thumbnail: DEFAULT_FALLBACK_IMAGE,
+    imageDetails: [{ url: DEFAULT_FALLBACK_IMAGE }],
   };
 }
 

@@ -13,6 +13,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 
 // AUTH
@@ -201,10 +202,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
           }
         };
 
-  // --- Fallbacks & Data Mapping ---
-  const images = data.images && data.images.length > 0 
-    ? data.images 
-    : ["https://placehold.co/1200x800?text=No+Image"];
+  // Universal Media Resolution
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(data), [data]);
+  const gallery = resolvedMedia.gallery;
   
   const host = { 
     name: data.contactName || "Property Manager", 
@@ -236,12 +236,12 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
   };
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
   };
 
   return (
@@ -258,16 +258,27 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
             <ChevronLeftIcon className="w-10 h-10" />
           </button>
 
-          <div className="relative w-full h-[80vh] max-w-5xl aspect-video">
-             <Image 
-               src={images[currentImageIndex]} 
-               alt={`Gallery Image ${currentImageIndex + 1}`}
-               fill 
-               className="object-contain" 
-               loader={customLoader}
-             />
+          <div className="relative w-full h-[80vh] max-w-5xl aspect-video flex items-center justify-center">
+             {gallery[currentImageIndex]?.type === "VIDEO" ? (
+               <video
+                 src={gallery[currentImageIndex].url}
+                 poster={gallery[currentImageIndex].posterUrl}
+                 controls
+                 autoPlay
+                 playsInline
+                 className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl"
+               />
+             ) : (
+               <Image 
+                 src={gallery[currentImageIndex]?.url || resolvedMedia.primaryImageUrl} 
+                 alt={`Gallery Image ${currentImageIndex + 1}`}
+                 fill 
+                 className="object-contain" 
+                 loader={customLoader}
+               />
+             )}
              <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm">
-                {currentImageIndex + 1} / {images.length}
+                {currentImageIndex + 1} / {gallery.length}
              </div>
           </div>
 
@@ -309,32 +320,60 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
         {/* --- BENTO GRID GALLERY --- */}
         <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-3 h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-12">
           {/* Main Large Image */}
-          <div className="md:col-span-2 md:row-span-2 relative group cursor-pointer" onClick={() => openGallery(0)}>
-             <Image 
-               src={images[0]} 
-               loader={customLoader}
-               alt="Main property" 
-               fill
-               className="object-cover transition-transform duration-700 group-hover:scale-105"
-             />
-             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+          <div className="md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden" onClick={() => openGallery(0)}>
+             {gallery[0]?.type === "VIDEO" ? (
+               <div className="relative w-full h-full">
+                 <Image 
+                   src={gallery[0].posterUrl || resolvedMedia.posterUrl} 
+                   loader={customLoader}
+                   alt="Main property showcase" 
+                   fill
+                   className="object-cover transition-transform duration-700 group-hover:scale-105"
+                 />
+                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-colors group-hover:bg-black/40">
+                   <div className="w-16 h-16 rounded-full bg-white/95 dark:bg-zinc-900/95 text-emerald-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                     <VideoCameraIcon className="w-8 h-8 ml-0.5" />
+                   </div>
+                 </div>
+                 <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-white/10 uppercase tracking-wider">
+                   <VideoCameraIcon className="w-4 h-4 text-emerald-400" />
+                   <span>Watch Virtual Video Tour</span>
+                 </div>
+               </div>
+             ) : (
+               <>
+                 <Image 
+                   src={gallery[0]?.url || resolvedMedia.primaryImageUrl} 
+                   loader={customLoader}
+                   alt="Main property" 
+                   fill
+                   className="object-cover transition-transform duration-700 group-hover:scale-105"
+                 />
+                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+               </>
+             )}
           </div>
 
           {/* Side Images */}
-          {images.slice(1, 5).map((img: string, idx: number) => (
-            <div key={idx} className="relative group cursor-pointer hidden md:block" onClick={() => openGallery(idx + 1)}>
+          {gallery.slice(1, 5).map((item, idx: number) => (
+            <div key={idx} className="relative group cursor-pointer hidden md:block overflow-hidden" onClick={() => openGallery(idx + 1)}>
               <Image 
-                src={img} 
+                src={item.thumbnailUrl || item.posterUrl || item.url} 
                 loader={customLoader}
                 alt={`Detail ${idx + 1}`} 
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
+              {item.type === "VIDEO" && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                  <VideoCameraIcon className="w-6 h-6 text-white drop-shadow-md" />
+                </div>
+              )}
               {/* "View All" Overlay on the last visible image */}
               {idx === 3 && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center group-hover:bg-black/60 transition-colors">
                   <span className="text-white font-semibold text-sm border border-white/30 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                    View all {images.length} photos
+                    View all {gallery.length} media
                   </span>
                 </div>
               )}

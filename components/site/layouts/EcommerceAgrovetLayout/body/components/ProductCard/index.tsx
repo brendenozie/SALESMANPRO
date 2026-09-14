@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingBagIcon, XMarkIcon, ShoppingCartIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingBagIcon, XMarkIcon, ShoppingCartIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -32,6 +33,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#059669';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
 
   // Structure variant configuration array
   const groupedVariants = useMemo(() => {
@@ -162,13 +164,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
           <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
-              src={product.images?.[0] || FALLBACK_IMAGE_URL}
+              src={resolvedMedia.primaryImageUrl || FALLBACK_IMAGE_URL}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
               loader={loader}
             />
           </Link>
+
+          {/* Video Indicator Badge */}
+          {resolvedMedia.hasVideo && (
+            <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
 
           {/* Quick Consultation Floating Trigger Action Link */}
           <a 
@@ -200,7 +210,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           {discount && (
             <div 
               style={{ backgroundColor: primary }}
-              className="absolute top-4 left-4 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-lg"
+              className={`absolute ${resolvedMedia.hasVideo ? 'top-12' : 'top-4'} left-4 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-lg`}
             >
               -{discount}% OFF
             </div>

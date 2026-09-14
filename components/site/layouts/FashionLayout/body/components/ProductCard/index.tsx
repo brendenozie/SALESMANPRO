@@ -15,6 +15,8 @@ import {
   MinusIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -67,7 +69,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
   }, [cart, id]);
 
-  const img = images?.[0] || (images?.[0] as any)?.url || 'https://via.placeholder.com/400x600';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const img = resolvedMedia.primaryImageUrl;
 
   // ---------- WHATSAPP SETUP ----------
   const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
@@ -119,6 +122,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               priority
             />
           </Link>
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-4 left-5 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
 
           {/* --- STATUS LABEL METRICS --- */}
           <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">

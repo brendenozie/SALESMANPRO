@@ -9,13 +9,15 @@ import {
   TrashIcon, 
   ShoppingBagIcon,
   HeartIcon,
-  XMarkIcon
+  XMarkIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -119,7 +121,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
 
   const handleAddToCart = (e?: React.MouseEvent, bypassModalCheck = false) => {
     e?.preventDefault();
@@ -171,7 +174,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </Link>
 
           {/* Top Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-pink-400" />
+                <span>Video</span>
+              </div>
+            )}
             {discount && (
               <div 
                 className="px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider shadow-sm"

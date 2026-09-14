@@ -10,12 +10,14 @@ import {
   ShoppingBagIcon, 
   ArrowRightIcon,
   ShieldCheckIcon,
-  TruckIcon
+  TruckIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceShoesLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 type ImageObj = { url: string };
 
@@ -122,9 +124,18 @@ export default function ProductDetail({
   //   ? (product.images) 
   //   : [{'https://via.placeholder.com/600'];
     
-    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) {
+      return resolvedMedia.allMedia;
+    }
+    return [{ 
+      type: 'image' as const, 
+      url: resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80' 
+    }];
+  }, [resolvedMedia]);
 
+  const currentMediaItem = mediaItems[mainIndex] || mediaItems[0];
 
   const handleVariantQuantityIncrement = () => {
     const totalRequiredCategories = Object.keys(groupedOptions).length;
@@ -157,9 +168,9 @@ export default function ProductDetail({
   const handleDragEnd = (_: any, info: PanInfo) => {
     const swipeThreshold = 50;
     if (info.offset.x < -swipeThreshold) {
-      setMainIndex((prev) => (prev + 1) % currentImages.length);
+      setMainIndex((prev) => (prev + 1) % mediaItems.length);
     } else if (info.offset.x > swipeThreshold) {
-      setMainIndex((prev) => (prev - 1 + currentImages.length) % currentImages.length);
+      setMainIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
     }
   };
 
@@ -188,23 +199,36 @@ export default function ProductDetail({
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.4}
                 onDragEnd={handleDragEnd}
-                className="w-full h-full relative cursor-grab active:cursor-grabbing drop-shadow-[0_30px_50px_rgba(16,185,129,0.12)] dark:drop-shadow-[0_30px_50px_rgba(16,185,129,0.18)]"
+                className="w-full h-full relative cursor-grab active:cursor-grabbing drop-shadow-[0_30px_50px_rgba(16,185,129,0.12)] dark:drop-shadow-[0_30px_50px_rgba(16,185,129,0.18)] flex items-center justify-center"
               >
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  loader={loader}
-                  fill
-                  sizes="(max-width: 1024px) 90vw, 45vw"
-                  className="object-contain select-none pointer-events-none"
-                  priority
-                />
+                {currentMediaItem?.type === 'video' ? (
+                  <video
+                    src={currentMediaItem.url}
+                    poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                    controls
+                    playsInline
+                    autoPlay
+                    muted
+                    loop
+                    className="w-full h-full object-contain rounded-2xl select-none"
+                  />
+                ) : (
+                  <Image
+                    src={currentMediaItem?.url || resolvedMedia.primaryImageUrl}
+                    alt={product.name}
+                    loader={loader}
+                    fill
+                    sizes="(max-width: 1024px) 90vw, 45vw"
+                    className="object-contain select-none pointer-events-none"
+                    priority
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
 
           <div className="flex gap-1.5 mt-2 mb-6 lg:hidden z-20">
-            {currentImages.map((_, idx) => (
+            {mediaItems.map((_, idx) => (
               <div 
                 key={idx} 
                 className={`h-1 rounded-full transition-all duration-300 ${
@@ -215,7 +239,7 @@ export default function ProductDetail({
           </div>
 
           <div className="absolute bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 flex items-center gap-3 p-2 bg-white/70 dark:bg-zinc-950/60 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-2xl z-20 overflow-x-auto max-w-full no-scrollbar shadow-sm transition-colors duration-300">
-            {currentImages.map((img, idx) => (
+            {mediaItems.map((item, idx) => (
               <button
                 key={idx}
                 onClick={() => setMainIndex(idx)}
@@ -225,7 +249,18 @@ export default function ProductDetail({
                     : 'opacity-50 hover:opacity-100'
                 }`}
               >
-                <Image src={img.url || img } alt="Thumbnail context" loader={loader} fill className="object-cover" />
+                <Image 
+                  src={item.type === 'video' ? (item.posterUrl || item.thumbnailUrl || resolvedMedia.primaryImageUrl) : (item.thumbnailUrl || item.url)} 
+                  alt="Thumbnail context" 
+                  loader={loader} 
+                  fill 
+                  className="object-cover" 
+                />
+                {item.type === 'video' && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <VideoCameraIcon className="w-4 h-4 text-white drop-shadow" />
+                  </div>
+                )}
               </button>
             ))}
           </div>

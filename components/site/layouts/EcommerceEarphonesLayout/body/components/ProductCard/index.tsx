@@ -1,6 +1,7 @@
 'use client';
 
 import { MinusIcon, PlusIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import React, { useState, useEffect, useMemo } from 'react';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +9,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -109,7 +111,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}". Is it currently available in stock, and what are the delivery timelines?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x800';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x800';
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -157,6 +160,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           {/* Status Tags */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-md flex items-center gap-1 text-white">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[9px] font-bold uppercase tracking-widest">Video</span>
+              </div>
+            )}
             {product.sellingPrice! > product.finalPrice! && (
               <div className="bg-rose-50/90 backdrop-blur-md px-3 py-1 rounded-full border border-rose-100 shadow-sm">
                 <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">

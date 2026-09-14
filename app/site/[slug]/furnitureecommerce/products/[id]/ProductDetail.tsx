@@ -14,11 +14,13 @@ import {
   ArchiveBoxIcon,
   ArrowsPointingOutIcon,
   ScaleIcon,
-  SwatchIcon
+  SwatchIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/FurnitureLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 type ImageObj = { url: string };
@@ -106,10 +108,13 @@ export function ProductDetail({
     decreaseQuantity(variationCartId);
   };
 
-      const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) return resolvedMedia.allMedia;
+    return [{ type: 'image' as const, url: resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80' }];
+  }, [resolvedMedia]);
 
-    const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
-
+  const currentMediaItem = mediaItems[mainIndex] || mediaItems[0];
 
   return (
     <div className="bg-[#fafaf9] dark:bg-stone-950 text-[#1c1917] dark:text-stone-100 min-h-screen font-sans selection:bg-stone-700 dark:selection:bg-stone-300 selection:text-white dark:selection:text-stone-950 antialiased transition-colors duration-300 pb-24 sm:pb-12">
@@ -124,7 +129,7 @@ export function ProductDetail({
           
           {/* LEFT COMPONENT: PATTERNED CANVAS GALLERY */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="relative group aspect-[4/5] md:aspect-[16/11] overflow-hidden rounded-[2rem] bg-white dark:bg-stone-900 shadow-[0_4px_30px_rgba(0,0,0,0.02)] dark:shadow-none border border-stone-200/60 dark:border-stone-800/80 transition-colors duration-300">
+            <div className="relative group aspect-[4/5] md:aspect-[16/11] overflow-hidden rounded-[2rem] bg-white dark:bg-stone-900 shadow-[0_4px_30px_rgba(0,0,0,0.02)] dark:shadow-none border border-stone-200/60 dark:border-stone-800/80 transition-colors duration-300 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={mainIndex}
@@ -132,32 +137,45 @@ export function ProductDetail({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
-                  className="w-full h-full"
+                  className="w-full h-full flex items-center justify-center"
                 >
-                  <Image
-                    src={currentImage}
-                    alt={product.name}
-                    loader={loader}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="object-cover transition-transform duration-700 hover:scale-[1.03]"
-                    priority
-                  />
+                  {currentMediaItem.type === 'video' ? (
+                    <video
+                      src={currentMediaItem.url}
+                      poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                      controls
+                      playsInline
+                      autoPlay
+                      muted
+                      loop
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={currentMediaItem.url}
+                      alt={product.name}
+                      loader={loader}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="object-cover transition-transform duration-700 hover:scale-[1.03]"
+                      priority
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
 
-              <button className="absolute top-5 right-5 p-3.5 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity border border-stone-100 dark:border-stone-800 text-stone-600 dark:text-stone-300 hover:scale-105 active:scale-95 duration-300">
+              <button className="absolute top-5 right-5 p-3.5 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity border border-stone-100 dark:border-stone-800 text-stone-600 dark:text-stone-300 hover:scale-105 active:scale-95 duration-300 z-10">
                 <ArrowsPointingOutIcon className="h-4 w-4" />
               </button>
 
-              <div className="absolute bottom-5 left-5 px-4 py-2 bg-stone-900/80 dark:bg-stone-100/90 backdrop-blur-md rounded-full text-[10px] font-mono tracking-widest uppercase text-stone-50 dark:text-stone-950 shadow-sm">
-                {mainIndex + 1} / {currentImages.length}
+              <div className="absolute bottom-5 left-5 px-4 py-2 bg-stone-900/80 dark:bg-stone-100/90 backdrop-blur-md rounded-full text-[10px] font-mono tracking-widest uppercase text-stone-50 dark:text-stone-950 shadow-sm z-10">
+                {mainIndex + 1} / {mediaItems.length}
               </div>
             </div>
 
             {/* Micro Thumbnail Grid Matrix */}
             <div className="grid grid-cols-4 gap-3">
-              {currentImages.map((img, idx) => (
+              {mediaItems.map((item, idx) => (
                 <button
                   key={idx}
                   onClick={() => setMainIndex(idx)}
@@ -167,7 +185,18 @@ export function ProductDetail({
                       : 'opacity-60 dark:opacity-40 hover:opacity-100 border-stone-200 dark:border-stone-800'
                   }`}
                 >
-                  <Image src={img.url || img} alt="Architectural thumbnail perspective" loader={loader} fill className="object-cover" />
+                  <Image
+                    src={item.type === 'video' ? (item.posterUrl || resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80') : item.url}
+                    alt="Architectural thumbnail perspective"
+                    loader={loader}
+                    fill
+                    className="object-cover"
+                  />
+                  {item.type === 'video' && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <VideoCameraIcon className="w-5 h-5 text-white drop-shadow-md" />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

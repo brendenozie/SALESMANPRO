@@ -36,31 +36,58 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
   const lastTapRef = useRef<number>(0);
 
   // Determine effective media type taking error fallback into account
-  const hasVideo = item.media.primaryType === "VIDEO" && item.media.videos.length > 0 && !videoError;
+  const videoSrc = item.media.videos[0];
+  const hasVideo = item.media.primaryType === "VIDEO" && Boolean(videoSrc) && !videoError;
   const isGallery = !hasVideo && item.media.images.length > 1;
 
-  // Autoplay / pause control based on viewport activity
+  // Autoplay & Hardware Decoder Lifecycle Management
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !hasVideo) return;
 
+    // Check Save-Data mode or 2G connections
+    const nav = typeof navigator !== "undefined" ? (navigator as any) : null;
+    const isSaveData = Boolean(nav?.connection?.saveData || nav?.connection?.effectiveType === "2g");
+
     if (isActive) {
+      if (isSaveData) {
+        // In Save-Data mode, don't auto-download video stream; keep poster visible
+        setIsPlaying(false);
+        return;
+      }
+
+      if (video.getAttribute("src") !== videoSrc) {
+        video.src = videoSrc;
+      }
       video.currentTime = 0;
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => setIsPlaying(true))
           .catch((err) => {
-            // Autoplay restriction fallback
             console.warn("Autoplay muted required or prevented", err.message);
             setIsPlaying(false);
           });
       }
     } else {
+      // Inactive: pause and release hardware decoders to prevent mobile browser crashes
       video.pause();
       setIsPlaying(false);
+      // Cleanly detach video source buffer on inactive slides
+      if (video.getAttribute("src")) {
+        video.removeAttribute("src");
+        video.load();
+      }
     }
-  }, [isActive, hasVideo]);
+
+    return () => {
+      if (video) {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }
+    };
+  }, [isActive, hasVideo, videoSrc]);
 
   // Handle tap / click to toggle play / pause or double-tap to like
   const handleContainerClick = (e: React.MouseEvent) => {
@@ -78,9 +105,13 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
     // Single tap -> Toggle Play / Pause on videos
     if (hasVideo && videoRef.current) {
       if (videoRef.current.paused) {
-        videoRef.current.play();
-        setIsPlaying(true);
-        flashPlayIndicator();
+        if (!videoRef.current.getAttribute("src")) {
+          videoRef.current.src = videoSrc;
+        }
+        videoRef.current.play().then(() => {
+          setIsPlaying(true);
+          flashPlayIndicator();
+        });
       } else {
         videoRef.current.pause();
         setIsPlaying(false);
@@ -99,6 +130,9 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
     setTimeout(() => setShowHeartBurst(false), 900);
   };
 
+  const currentImageDetail = item.media.imageDetails?.[activeImageIndex];
+  const imageVariants = currentImageDetail?.variants;
+
   return (
     <article
       className="relative h-[100dvh] w-full flex-shrink-0 snap-start snap-always overflow-hidden bg-black select-none"
@@ -107,20 +141,31 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
       {/* 1. MEDIA LAYER */}
       <div className="absolute inset-0 h-full w-full flex items-center justify-center bg-neutral-950">
         {hasVideo ? (
-          <video
-            ref={videoRef}
-            src={item.media.videos[0]}
-            poster={item.media.poster}
-            playsInline
-            loop
-            muted={isMuted}
-            preload={isActive ? "auto" : "metadata"}
-            onError={() => {
-              console.warn("Video failed to load for listing", item.id);
-              setVideoError(true);
-            }}
-            className="h-full w-full object-cover sm:object-contain"
-          />
+          <div className="relative h-full w-full flex items-center justify-center">
+            {/* Zero-Black-Screen Poster Frame (visible while buffering / paused) */}
+            <div
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-300 ${
+                isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"
+              }`}
+              style={{
+                backgroundImage: `url(${item.media.poster})`,
+              }}
+            />
+
+            <video
+              ref={videoRef}
+              poster={item.media.poster}
+              playsInline
+              loop
+              muted={isMuted}
+              preload={isActive ? "auto" : "none"}
+              onError={() => {
+                console.warn("Video failed to load for listing", item.id);
+                setVideoError(true);
+              }}
+              className="relative z-10 h-full w-full object-cover sm:object-contain"
+            />
+          </div>
         ) : isGallery ? (
           /* Multi-image slideshow / gallery */
           <div className="relative h-full w-full overflow-hidden">
@@ -128,17 +173,26 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
             <div
               className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110"
               style={{
-                backgroundImage: `url(${item.media.images[activeImageIndex] || item.media.poster})`,
+                backgroundImage: `url(${imageVariants?.feed || item.media.images[activeImageIndex] || item.media.poster})`,
               }}
             />
 
             <div className="relative h-full w-full flex items-center justify-center">
-              <img
-                src={item.media.images[activeImageIndex] || item.media.poster || ""}
-                alt={item.title}
-                className="h-full w-full object-contain transition-transform duration-700 hover:scale-105"
-                loading={isActive ? "eager" : "lazy"}
-              />
+              <picture className="h-full w-full flex items-center justify-center">
+                {imageVariants?.feed && (
+                  <source media="(max-width: 768px)" srcSet={imageVariants.feed} type="image/webp" />
+                )}
+                {imageVariants?.full && (
+                  <source srcSet={imageVariants.full} type="image/webp" />
+                )}
+                <img
+                  src={imageVariants?.feed || item.media.images[activeImageIndex] || item.media.poster || ""}
+                  alt={item.title}
+                  className="h-full w-full object-contain transition-transform duration-700 hover:scale-105"
+                  loading={isActive ? "eager" : "lazy"}
+                  style={currentImageDetail?.blurDataUrl ? { backgroundImage: `url(${currentImageDetail.blurDataUrl})`, backgroundSize: "cover" } : undefined}
+                />
+              </picture>
             </div>
 
             {/* Gallery Dots Indicator */}

@@ -9,13 +9,15 @@ import {
   HeartIcon,
   BookOpenIcon,
   BookmarkIcon,
-  XMarkIcon
+  XMarkIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -104,7 +106,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0]?.url || images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
 
   const handleActionClick = () => {
     if (hasOptions) {
@@ -164,6 +167,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </Link>
 
           <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/80 backdrop-blur-sm text-white px-2 py-1 text-[8px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-md border border-white/20">
+                <VideoCameraIcon className="w-3 h-3 text-amber-400" /> Video
+              </div>
+            )}
             {discount && (
               <div className="bg-amber-500 text-black px-2 py-1 text-[9px] font-black uppercase tracking-widest shadow-xl">
                 -{discount}%

@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { XMarkIcon, PlusIcon, MinusIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, MinusIcon, TrashIcon, ShoppingBagIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface QuickViewProps {
   isOpen: boolean;
@@ -88,7 +89,18 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
     };
   }, [selectedVariants, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  const images = product.images?.length ? product.images : ['https://via.placeholder.com/600x900'];
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) {
+      return resolvedMedia.allMedia;
+    }
+    return [{ 
+      type: 'image' as const, 
+      url: resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x900' 
+    }];
+  }, [resolvedMedia]);
+
+  const currentMediaItem = mediaItems[selectedImage] || mediaItems[0];
 
   const handleAddActiveCombination = () => {
     addToCart({
@@ -138,33 +150,57 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                     key={selectedImage}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="h-full w-full"
+                    className="h-full w-full relative flex items-center justify-center bg-black"
                   >
-                    <Image
-                      src={images[selectedImage]?.url || images[selectedImage] || ''}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      loader={({ src }) => src}
-                      priority
-                    />
+                    {currentMediaItem?.type === 'video' ? (
+                      <video
+                        src={currentMediaItem.url}
+                        poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                        controls
+                        playsInline
+                        autoPlay
+                        muted
+                        loop
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={currentMediaItem?.url || resolvedMedia.primaryImageUrl}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        loader={({ src }) => src}
+                        priority
+                      />
+                    )}
                   </motion.div>
                 </div>
                 
                 {/* Premium Thumbnail Strip */}
-                {images.length > 1 && (
+                {mediaItems.length > 1 && (
                   <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar snap-x">
-                    {images.map((img: any, idx: number) => (
+                    {mediaItems.map((item, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
-                        className={`relative h-20 w-15 flex-shrink-0 overflow-hidden rounded-xl border transition-all duration-300 snap-start ${
+                        className={`relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-xl border transition-all duration-300 snap-start ${
                           selectedImage === idx ? 'scale-[1.02] shadow-md' : 'border-transparent opacity-40 hover:opacity-80'
                         }`}
                         style={{ borderColor: selectedImage === idx ? primaryColor : 'transparent' }}
                       >
-                        <Image src={img?.url || img || ''} alt="" fill className="object-cover" loader={({ src }) => src} />
+                        <Image 
+                          src={item.type === 'video' ? (item.posterUrl || item.thumbnailUrl || resolvedMedia.primaryImageUrl) : (item.thumbnailUrl || item.url)} 
+                          alt="" 
+                          fill 
+                          className="object-cover" 
+                          loader={({ src }) => src} 
+                        />
+                        {item.type === 'video' && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <VideoCameraIcon className="w-4 h-4 text-white drop-shadow" />
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>

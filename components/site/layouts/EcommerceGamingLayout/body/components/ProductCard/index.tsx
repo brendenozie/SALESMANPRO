@@ -4,10 +4,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -130,7 +131,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const discount = sellingPrice && finalPrice && sellingPrice > finalPrice
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100) : null;
 
-  const imageSrc = images?.[0] || 'https://via.placeholder.com/300';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300';
 
   // Automatically anchor initial default parameters upon initialization
   useEffect(() => {
@@ -212,7 +214,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
 
         {/* Product Display Viewport */}
-        <Link href={`/gamingecommerce/products/${product.id}`} className="relative h-60 w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950/60">
+        <Link href={`/gamingecommerce/products/${product.id}`} className="relative h-60 w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950/60 block">
           <Image
             src={imageSrc}
             alt={name || "Product Image"}
@@ -220,6 +222,12 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             loader={loader}
             className="object-contain p-6 opacity-90 dark:opacity-85 group-hover:scale-105 transition-transform duration-500"
           />
+          {resolvedMedia.hasVideo && (
+            <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-0.5 border border-red-600/40 flex items-center gap-1 text-white">
+              <VideoCameraIcon className="w-3 h-3 text-red-500" />
+              <span className="text-[9px] font-mono font-bold uppercase tracking-wider">VIDEO</span>
+            </div>
+          )}
         </Link>
 
         {/* Configuration Summary & Pricing */}

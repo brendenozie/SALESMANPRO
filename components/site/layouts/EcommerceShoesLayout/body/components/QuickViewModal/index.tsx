@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { XMarkIcon, PlusIcon, MinusIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, MinusIcon, TrashIcon, ShoppingBagIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface QuickViewProps {
   isOpen: boolean;
@@ -89,7 +90,18 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
     };
   }, [selectedVariants, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  const images = product.images?.length ? product.images : ['https://via.placeholder.com/600'];
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) {
+      return resolvedMedia.allMedia;
+    }
+    return [{ 
+      type: 'image' as const, 
+      url: resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600' 
+    }];
+  }, [resolvedMedia]);
+
+  const currentMediaItem = mediaItems[selectedImage] || mediaItems[0];
 
   const handleAddActiveCombination = () => {
     addToCart({
@@ -142,28 +154,41 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
               {/* Left: Product Media Gallery & Managed Placements */}
               <div className="w-full md:w-1/2 p-4 md:p-8 bg-zinc-50 dark:bg-zinc-950/40 flex flex-col justify-between border-b md:border-b-0 md:border-r border-zinc-100 dark:border-zinc-800">
                 <div>
-                  <div className="relative aspect-square w-full overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center">
                     <motion.div
                       key={selectedImage}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="h-full w-full"
+                      className="h-full w-full relative flex items-center justify-center"
                     >
-                      <Image
-                        src={images[selectedImage]?.url || images[selectedImage] || ''}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-6"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        loader={({ src }) => src}
-                      />
+                      {currentMediaItem?.type === 'video' ? (
+                        <video
+                          src={currentMediaItem.url}
+                          poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                          controls
+                          playsInline
+                          autoPlay
+                          muted
+                          loop
+                          className="w-full h-full object-contain p-4 rounded-2xl"
+                        />
+                      ) : (
+                        <Image
+                          src={currentMediaItem?.url || resolvedMedia.primaryImageUrl}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-6"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          loader={({ src }) => src}
+                        />
+                      )}
                     </motion.div>
                   </div>
                   
                   {/* Thumbnail Strip */}
-                  {images.length > 1 && (
+                  {mediaItems.length > 1 && (
                     <div className="mt-4 flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                      {images.map((img: any, idx: number) => (
+                      {mediaItems.map((item, idx: number) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedImage(idx)}
@@ -172,7 +197,18 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                           }`}
                           style={{ borderColor: selectedImage === idx ? primaryColor : 'transparent' }}
                         >
-                          <Image src={img?.url || img || ''} alt="" fill className="object-cover" loader={({ src }) => src} />
+                          <Image 
+                            src={item.type === 'video' ? (item.posterUrl || item.thumbnailUrl || resolvedMedia.primaryImageUrl) : (item.thumbnailUrl || item.url)} 
+                            alt="" 
+                            fill 
+                            className="object-cover" 
+                            loader={({ src }) => src} 
+                          />
+                          {item.type === 'video' && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <VideoCameraIcon className="w-4 h-4 text-white drop-shadow" />
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>

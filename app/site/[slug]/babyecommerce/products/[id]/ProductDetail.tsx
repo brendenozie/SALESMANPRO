@@ -13,9 +13,10 @@ import {
   SparklesIcon,
   FaceSmileIcon
 } from '@heroicons/react/24/outline';
-import { StarIcon, PlusIcon, MinusIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { StarIcon, PlusIcon, MinusIcon, CheckCircleIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 interface VariantOption {
@@ -112,9 +113,13 @@ export function ProductDetail({
     })?.quantity || 0;
   }, [cart, currentCartItemId]);
 
-  const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaItems = useMemo(() => {
+    if (resolvedMedia.allMedia && resolvedMedia.allMedia.length > 0) return resolvedMedia.allMedia;
+    return [{ type: 'image' as const, url: resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80' }];
+  }, [resolvedMedia]);
 
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+  const currentMediaItem = mediaItems[mainIndex] || mediaItems[0];
 
   // Interceptors to pass complete line-item configuration payloads
   const handleAddItem = () => {
@@ -153,34 +158,47 @@ export function ProductDetail({
         
         {/* LEFT: THE GALLERY */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="relative aspect-square rounded-[3rem] overflow-hidden bg-white shadow-[0_20px_50px_rgba(249,168,212,0.15)] border-4 border-white group">
+          <div className="relative aspect-square rounded-[3rem] overflow-hidden bg-white shadow-[0_20px_50px_rgba(249,168,212,0.15)] border-4 border-white group flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={mainIndex}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className="w-full h-full p-12"
+                className="w-full h-full p-6 flex items-center justify-center"
               >
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  loader={loader}
-                  fill
-                  className="object-contain"
-                  priority
-                />
+                {currentMediaItem.type === 'video' ? (
+                  <video
+                    src={currentMediaItem.url}
+                    poster={currentMediaItem.posterUrl || resolvedMedia.primaryImageUrl}
+                    controls
+                    playsInline
+                    autoPlay
+                    muted
+                    loop
+                    className="w-full h-full max-h-[500px] object-contain rounded-[2rem]"
+                  />
+                ) : (
+                  <Image
+                    src={currentMediaItem.url}
+                    alt={product.name}
+                    loader={loader}
+                    fill
+                    className="object-contain p-6"
+                    priority
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
             
-            <button className="absolute top-8 right-8 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:text-pink-500 transition-colors">
+            <button className="absolute top-8 right-8 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:text-pink-500 transition-colors z-10">
               <HeartIcon className="h-6 w-6" />
             </button>
           </div>
 
           {/* Thumbnails */}
           <div className="flex justify-center gap-4 overflow-x-auto py-2">
-            {currentImages.map((img, idx) => (
+            {mediaItems.map((item, idx) => (
               <button
                 key={idx}
                 onClick={() => setMainIndex(idx)}
@@ -188,7 +206,18 @@ export function ProductDetail({
                   mainIndex === idx ? 'border-pink-300 scale-110 shadow-lg' : 'border-transparent bg-white opacity-60'
                 }`}
               >
-                <Image src={img.url || img} alt="thumb" loader={loader} fill className="object-cover p-2" />
+                <Image
+                  src={item.type === 'video' ? (item.posterUrl || resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80') : item.url}
+                  alt="thumb"
+                  loader={loader}
+                  fill
+                  className="object-cover p-2"
+                />
+                {item.type === 'video' && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <VideoCameraIcon className="w-5 h-5 text-white drop-shadow-md" />
+                  </div>
+                )}
               </button>
             ))}
           </div>

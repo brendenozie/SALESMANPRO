@@ -13,12 +13,14 @@ import {
   ShareIcon,
   ShieldCheckIcon,
   TruckIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface VariantOption {
   category: string;
@@ -110,8 +112,9 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
     })?.quantity || 0;
   }, [cart, currentCartItemId]);
 
-  const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaGallery = resolvedMedia.gallery;
+  const currentMedia = mediaGallery[mainIndex] || mediaGallery[0];
 
   // 7. Context mutations forwarding custom compound objects downstream
   const handleAddToCart = () => {
@@ -186,14 +189,27 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                   transition={{ duration: 0.25 }}
                   className="w-full h-full relative"
                 >
-                  <Image
-                    src={currentImage}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    priority
-                    loader={loader}
-                  />
+                  {currentMedia?.type === 'VIDEO' ? (
+                    <div className="w-full h-full bg-black flex items-center justify-center">
+                      <video
+                        src={currentMedia.url}
+                        poster={currentMedia.posterUrl}
+                        controls
+                        autoPlay
+                        playsInline
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <Image
+                      src={currentMedia?.url || ''}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      priority
+                      loader={loader}
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
               
@@ -205,7 +221,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
 
               {/* MOBILE INTERACTIVE PAGE PIN DOTS */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 sm:hidden z-10">
-                {currentImages.map((_, idx) => (
+                {mediaGallery.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setMainIndex(idx)}
@@ -218,8 +234,8 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
 
             {/* DESKTOP THUMBNAILS PANEL */}
             <div className="hidden sm:flex gap-3 overflow-x-auto no-scrollbar py-4 px-1">
-              {currentImages.map((img, idx) => {
-                const thumbUrl = img?.url || img;
+              {mediaGallery.map((item, idx) => {
+                const thumbUrl = item.thumbnailUrl || item.posterUrl || item.url;
                 return (
                   <button
                     key={idx}
@@ -229,6 +245,11 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                     }`}
                   >
                     <Image src={thumbUrl} alt={`Thumbnail view ${idx + 1}`} fill className="object-cover" loader={loader}/>
+                    {item.type === 'VIDEO' && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                        <VideoCameraIcon className="w-5 h-5 text-white drop-shadow-md" />
+                      </div>
+                    )}
                   </button>
                 );
               })}

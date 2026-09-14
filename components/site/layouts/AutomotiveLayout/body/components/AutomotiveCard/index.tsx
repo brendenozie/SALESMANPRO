@@ -17,10 +17,12 @@ import {
   ShoppingBagIcon,
   TrashIcon,
   MinusIcon,
-  PlusIcon
+  PlusIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -52,6 +54,8 @@ const AutomotiveCard = ({ item }: { item: any }) => {
   
   const itemId = item._id?.$oid || item.id;
   const quantity = cart.find((c: any) => c.id === itemId)?.quantity || 0;
+
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(item), [item]);
 
   // Logic for Badges based on your JSON flags
   const showHotBadge = item.isFeatured || item.tags?.includes('trending');
@@ -87,13 +91,20 @@ const AutomotiveCard = ({ item }: { item: any }) => {
         {/* --- MEDIA SECTION --- */}
         <div className="relative aspect-[16/10] overflow-hidden">
           <Image
-            src={item.images?.[0] || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800'}
+            src={resolvedMedia.primaryImageUrl}
             alt={`${item.make} ${item.model}`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             loader={loader}
           />
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-3 left-4 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
 

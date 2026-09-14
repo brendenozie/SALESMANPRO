@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, TrashIcon, XMarkIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, TrashIcon, XMarkIcon, AdjustmentsHorizontalIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // Custom WhatsApp Icon
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -23,6 +24,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#0EA5E9';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
 
   // 1. Group Product Options by category
   const groupedVariants = useMemo(() => {
@@ -120,16 +122,24 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         <div className="relative aspect-[10/11] rounded-[2rem] overflow-hidden bg-slate-50">
           <Link href={`/petsecommerce/products/${product.id}`}>
             <Image
-              src={product.images?.[0] || 'https://via.placeholder.com/400'}
+              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400'}
               alt={product.name}
               loader={({ src }) => `${src}?w=400&q=80`}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </Link>
+
+          {/* Video Indicator Badge */}
+          {resolvedMedia.hasVideo && (
+            <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-sky-400" />
+              <span>Video</span>
+            </div>
+          )}
           
           {discount && (
-            <div className="absolute top-4 left-4 px-4 py-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm z-10">
+            <div className={`absolute ${resolvedMedia.hasVideo ? 'top-12' : 'top-4'} left-4 px-4 py-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm z-10`}>
               <span className="text-[10px] font-black text-slate-900">-{discount}% OFF</span>
             </div>
           )}

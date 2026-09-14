@@ -3,8 +3,10 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 // Assuming you are using heroicons or a similar library. Replace with your actual icon imports.
 import { MapPinIcon, HomeModernIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'; 
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
 
 import { useStoreContext } from '@/contexts/StoreContext';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // Custom WhatsApp Icon for Real Estate Agents
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -17,9 +19,10 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 const PropertyCard = ({ item, key, itemVariants, customLoader }: any) => {
 
     const { storeFormData } = useStoreContext();
+    const resolvedMedia = resolveProductMedia(item);
     // WhatsApp Agent Config
     const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-    const message = encodeURIComponent(`Hi, I'm interested in viewing the property: "${item.name}" (ID: ${item.id.slice(0, 6)}). Is it currently available for a site visit?`);
+    const message = encodeURIComponent(`Hi, I'm interested in viewing the property: "${item.name}" (ID: ${item.id?.slice(0, 6)}). Is it currently available for a site visit?`);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
   
   // 1. Calculate the starting price from tiers, fallback to finalPrice
@@ -48,13 +51,20 @@ const PropertyCard = ({ item, key, itemVariants, customLoader }: any) => {
         {/* --- Image & Badges Area --- */}
         <div className="relative h-64 w-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
           <Image
-            src={item.images?.[0] || `https://placehold.co/600x400/059669/D1FAE5?text=Property`}
+            src={resolvedMedia.primaryImageUrl}
             alt={item.name}
             layout="fill"
             objectFit="cover"
             className="transform transition-transform duration-700 group-hover:scale-110"
             loader={customLoader}
           />
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
           
           {/* Gradient Overlay for better badge readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />

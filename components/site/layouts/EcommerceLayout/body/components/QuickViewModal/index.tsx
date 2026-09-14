@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { XMarkIcon, ShoppingCartIcon, HeartIcon, PlusIcon, MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
+import { StarIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface QuickViewProps {
   isOpen: boolean;
@@ -87,7 +88,9 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
 
   if (!mounted) return null;
 
-  const images = product.images?.length ? product.images : ['https://via.placeholder.com/600'];
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const mediaGallery = resolvedMedia.gallery;
+  const currentMedia = mediaGallery[selectedImage] || mediaGallery[0];
 
   // Handle Dynamic Submission of the active selection combination into the Cart Context
   const handleAddActiveCombination = () => {
@@ -154,31 +157,47 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                       key={selectedImage}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="h-full w-full"
+                      className="h-full w-full relative"
                     >
-                      <Image
-                        src={images[selectedImage]?.url || images[selectedImage] || ''}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-6"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        loader={({ src }) => src}
-                      />
+                      {currentMedia?.type === 'VIDEO' ? (
+                        <video
+                          src={currentMedia.url}
+                          poster={currentMedia.posterUrl}
+                          controls
+                          autoPlay
+                          playsInline
+                          className="w-full h-full object-contain bg-black"
+                        />
+                      ) : (
+                        <Image
+                          src={currentMedia?.url || ''}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-6"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          loader={({ src }) => src}
+                        />
+                      )}
                     </motion.div>
                   </div>
                   
                   {/* Thumbnail Strip */}
-                  {images.length > 1 && (
+                  {mediaGallery.length > 1 && (
                     <div className="mt-4 flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                      {images.map((img: any, idx: number) => (
+                      {mediaGallery.map((item, idx: number) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedImage(idx)}
                           className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                            selectedImage === idx ? 'border-indigo-500 scale-105' : 'border-transparent opacity-60'
+                            selectedImage === idx ? 'border-indigo-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
                           }`}
                         >
-                          <Image src={img?.url || img || ''} alt="" fill className="object-cover" loader={({ src }) => src} />
+                          <Image src={item.thumbnailUrl || item.posterUrl || item.url} alt="" fill className="object-cover" loader={({ src }) => src} />
+                          {item.type === 'VIDEO' && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                              <VideoCameraIcon className="w-4 h-4 text-white drop-shadow-md" />
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>

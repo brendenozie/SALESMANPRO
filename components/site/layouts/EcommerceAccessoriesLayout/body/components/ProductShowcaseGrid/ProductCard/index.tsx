@@ -9,11 +9,13 @@ import {
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
   BoltIcon,
-  XMarkIcon
+  XMarkIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -118,7 +120,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
 
   return (
     <>
@@ -147,6 +150,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="bg-zinc-900/90 dark:bg-black/80 text-amber-400 font-mono text-[8px] font-bold px-1.5 py-0.5 rounded-xs flex items-center gap-1 backdrop-blur-xs border-l-2 border-amber-500">
               <ShieldCheckIcon className="w-2.5 h-2.5" /> CERTIFIED
             </span>
+            {resolvedMedia.hasVideo && (
+              <span className="bg-amber-500 text-black font-mono text-[8px] font-bold px-1.5 py-0.5 rounded-xs flex items-center gap-1 shadow-md">
+                <VideoCameraIcon className="w-2.5 h-2.5 text-black" /> VIDEO
+              </span>
+            )}
           </div>
 
           {/* Standalone Tech Metrics Panel */}

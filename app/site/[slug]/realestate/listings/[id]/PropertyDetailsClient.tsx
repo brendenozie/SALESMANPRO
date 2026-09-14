@@ -11,6 +11,7 @@ import {
   FireIcon, BoltIcon, KeyIcon, VideoCameraIcon, CalendarIcon, ClockIcon , EnvelopeIcon, UsersIcon } from "@heroicons/react/24/outline";
 
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // AUTH
 import { useSession } from "next-auth/react";
@@ -194,8 +195,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
         }
       };
 
-  // Data Normalization
-  const images = data.images?.length > 0 ? data.images : ["https://placehold.co/1200x800?text=No+Image"];
+  // Universal Media Resolution
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(data), [data]);
+  const gallery = resolvedMedia.gallery;
   
   const host = {
     name: data.contactName || "Authorized Agent",
@@ -210,12 +212,12 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
   const nextImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
   };
 
   const prevImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
   };
 
   return (
@@ -245,14 +247,27 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
               animate={{ scale: 1, opacity: 1 }}
               className="relative w-full h-full max-w-6xl flex items-center justify-center"
             >
-              <Image 
-                src={images[currentImageIndex]} 
-                alt="Gallery" 
-                fill 
-                className="object-contain" 
-                loader={customLoader}
-                priority
-              />
+              {gallery[currentImageIndex]?.type === "VIDEO" ? (
+                <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center">
+                  <video
+                    src={gallery[currentImageIndex].url}
+                    poster={gallery[currentImageIndex].posterUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-[85vh] max-w-full rounded-2xl shadow-2xl object-contain"
+                  />
+                </div>
+              ) : (
+                <Image 
+                  src={gallery[currentImageIndex]?.url || resolvedMedia.primaryImageUrl} 
+                  alt="Gallery" 
+                  fill 
+                  className="object-contain" 
+                  loader={customLoader}
+                  priority
+                />
+              )}
             </motion.div>
 
             <button onClick={nextImage} className="absolute right-2 md:right-8 p-2 md:p-3 text-white bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md z-[110]">
@@ -294,16 +309,42 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
         {/* --- BENTO GALLERY --- */}
         <div className="grid grid-cols-4 grid-rows-2 gap-2 md:gap-4 h-[300px] md:h-[600px] rounded-2xl md:rounded-[2rem] overflow-hidden mb-12 md:mb-16 shadow-2xl shadow-indigo-100/50 dark:shadow-none bg-slate-200 dark:bg-slate-800">
-          <div className="col-span-4 md:col-span-2 row-span-2 relative group cursor-pointer overflow-hidden" onClick={() => setIsGalleryOpen(true)}>
-             <Image src={images[0]} loader={customLoader} alt="Primary" fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+          <div className="col-span-4 md:col-span-2 row-span-2 relative group cursor-pointer overflow-hidden" onClick={() => { setCurrentImageIndex(0); setIsGalleryOpen(true); }}>
+            {gallery[0]?.type === "VIDEO" ? (
+              <div className="relative w-full h-full">
+                <Image
+                  src={gallery[0].posterUrl || resolvedMedia.posterUrl}
+                  loader={customLoader}
+                  alt="Property Video Tour"
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center transition-colors group-hover:bg-black/40">
+                  <div className="w-16 h-16 rounded-full bg-white/95 dark:bg-zinc-900/95 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                    <VideoCameraIcon className="w-8 h-8 ml-0.5" />
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-white/10 uppercase tracking-wider">
+                  <VideoCameraIcon className="w-4 h-4 text-emerald-400" />
+                  <span>Watch Virtual Video Tour</span>
+                </div>
+              </div>
+            ) : (
+              <Image src={gallery[0]?.url || resolvedMedia.primaryImageUrl} loader={customLoader} alt="Primary" fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+            )}
           </div>
-          {images.slice(1, 5).map((img: string, idx: number) => (
+          {gallery.slice(1, 5).map((item, idx: number) => (
             <div key={idx} className="relative group cursor-pointer hidden md:block overflow-hidden" onClick={() => { setCurrentImageIndex(idx + 1); setIsGalleryOpen(true); }}>
-              <Image src={img} loader={customLoader} alt={`View ${idx}`} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
-              {idx === 3 && images.length > 5 && (
+              <Image src={item.thumbnailUrl || item.posterUrl || item.url} loader={customLoader} alt={`View ${idx}`} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+              {item.type === "VIDEO" && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                  <VideoCameraIcon className="w-6 h-6 text-white drop-shadow-md" />
+                </div>
+              )}
+              {idx === 3 && gallery.length > 5 && (
                 <div className="absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center backdrop-blur-[2px]">
                   <Square2StackIcon className="w-8 h-8 text-white mb-2" />
-                  <span className="text-white font-bold text-sm uppercase">{images.length}+ Photos</span>
+                  <span className="text-white font-bold text-sm uppercase">{gallery.length - 5}+ More Media</span>
                 </div>
               )}
             </div>

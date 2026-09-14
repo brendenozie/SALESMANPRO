@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, BoltIcon, XMarkIcon, TrashIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { MinusIcon, PlusIcon, BoltIcon, XMarkIcon, TrashIcon, AdjustmentsHorizontalIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 import React, { useMemo, useState, useEffect } from 'react';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -107,7 +108,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
 
   // Base context execution function called cleanly from card or modal execution triggers
   const executeAddToCart = () => {
@@ -184,6 +186,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
             />
           </Link>
+
+          {/* Video Indicator Badge */}
+          {resolvedMedia.hasVideo && (
+            <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur-md px-2.5 py-1 text-white flex items-center gap-1 border border-white/20 shadow-md">
+              <VideoCameraIcon className="w-3.5 h-3.5 text-orange-500" />
+              <span className="text-[9px] font-mono font-bold uppercase tracking-widest">Video</span>
+            </div>
+          )}
 
           {/* Technical Callout */}
           <div className="absolute bottom-4 left-4 flex flex-col gap-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, TrashIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import React, { useMemo, useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -103,7 +104,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((calculatedPrices.sellingPrice - calculatedPrices.finalPrice) / calculatedPrices.sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0] || 'https://via.placeholder.com/300';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300';
 
   // 5. Dynamic WhatsApp Concierge URL Formulation
   const optionsSummary = Object.entries(selectedOptions)
@@ -155,14 +157,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             />
           </Link>
           
-          {discount && (
-            <div 
-              style={{ backgroundColor: primaryColor }}
-              className="absolute top-3 left-3 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest z-10"
-            >
-              -{discount}%
-            </div>
-          )}
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 border border-white/20 shadow-md">
+                <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Video</span>
+              </div>
+            )}
+            {discount && (
+              <div 
+                style={{ backgroundColor: primaryColor }}
+                className="text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest"
+              >
+                -{discount}%
+              </div>
+            )}
+          </div>
 
           {/* Floating WhatsApp */}
           <a 

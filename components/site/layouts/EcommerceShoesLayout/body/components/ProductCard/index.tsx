@@ -9,12 +9,14 @@ import {
   PlusIcon, 
   StarIcon, 
   TrashIcon, 
-  ShoppingBagIcon
+  ShoppingBagIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import QuickViewModal from '../QuickViewModal';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -150,7 +152,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
           <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
             <Image
-              src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
+              src={resolvedMedia.primaryImageUrl}
               alt={product.name}
               loader={loader}
               fill
@@ -159,6 +161,13 @@ export default function ProductCard({ product }: { product: MarketListingForm })
               priority={product.isNewArrival}
             />
           </Link>
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3 h-3 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
         </div>
 
         <div className="pt-4 px-1 pb-1 flex flex-col flex-grow">

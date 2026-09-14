@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import React, { useState, useMemo } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion } from 'framer-motion';
@@ -9,6 +9,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import QuickViewModal from '../QuickViewModal';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -56,7 +57,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0]?.url || images?.[0] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=400&q=80';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
+  const imageSrc = resolvedMedia.primaryImageUrl;
 
   return (
     <>
@@ -80,6 +82,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               priority={false}
             />
           </Link>
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3 h-3 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
           
           {discount && (
             <div 

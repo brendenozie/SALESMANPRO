@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, XMarkIcon, TrashIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import React, { useMemo, useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -25,6 +26,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#0D4C4F';
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
   const { name, images, finalPrice, sellingPrice } = product;
 
   // 1. Structural Categorization of Eyewear Variations
@@ -119,7 +121,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F6F2]">
           <Link href={`/glassesecommerce/products/${product.id}`} className="block h-full w-full">
             <Image
-              src={images?.[0] || 'https://via.placeholder.com/600x800'}
+              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x800'}
               alt={name || 'Product Image'}
               fill
               loader={loader}
@@ -129,6 +131,12 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Minimalist Labels */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/80 backdrop-blur-sm text-white text-[8px] font-bold px-2 py-1 uppercase tracking-[0.2em] flex items-center gap-1 border border-white/20 shadow-md">
+                <VideoCameraIcon className="w-3 h-3 text-amber-400" />
+                <span>Video</span>
+              </div>
+            )}
             {discount && (
               <span className="bg-[#F3A852] text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest">
                 -{discount}%

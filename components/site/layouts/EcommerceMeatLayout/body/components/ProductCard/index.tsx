@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { MinusIcon, PlusIcon, TrashIcon, ShoppingBagIcon, FireIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, TrashIcon, ShoppingBagIcon, FireIcon, XMarkIcon, CheckIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -26,6 +27,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Modal tracking selection parameters isolated from baseline listing grid components
@@ -149,7 +151,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
         <div className="relative aspect-square w-full rounded-[2rem] overflow-hidden bg-stone-100 dark:bg-stone-900 mb-5">
           <Link href={`/meatecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
-              src={product.images?.[0] || 'https://via.placeholder.com/400'}
+              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400'}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -160,6 +162,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
 
           {/* Master Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+            {resolvedMedia.hasVideo && (
+              <div className="bg-black/70 backdrop-blur-md text-white text-[9px] font-bold px-2.5 py-1 rounded-full shadow-xl flex items-center gap-1 border border-white/20">
+                <VideoCameraIcon className="w-3 h-3 text-red-500" />
+                <span>VIDEO</span>
+              </div>
+            )}
             {discount && (
               <div className="bg-red-600 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-xl">
                 {discount}% OFF
