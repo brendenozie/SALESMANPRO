@@ -8,6 +8,7 @@
     "start": "next start",
     "vercel-build": "npx prisma generate && next build",
     "test": "ts-node --project tsconfig.worker.json tests/whatsapp-integration.test.ts",
+    "test:api-hardening": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/run-all-api-hardening-tests.ts",
     "test:domain": "ts-node --project tsconfig.worker.json tests/multi-server-domain-routing.test.ts",
     "test:social": "ts-node --project tsconfig.worker.json tests/social-platform.test.ts",
     "test:pillars": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/three-pillars.test.ts",

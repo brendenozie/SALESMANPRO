@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { EmailService } from "@/lib/email/emailService";
+import { enqueueEmailBroadcastJob } from "@/lib/email/queue/emailQueue";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -239,7 +241,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Dispatch loop
+    // Offload store campaign broadcast to BullMQ asynchronous queue
+    const broadcastId = `store_bcast_${targetCompanyId}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+
+    const enqueued = await enqueueEmailBroadcastJob({
+      broadcastId,
+      tenantType: "STORE",
+      companyId: targetCompanyId,
+      template: templateId,
+      recipients,
+      commonData: commonEmailData,
+    });
+
+    if (enqueued) {
+      return formatResponse(
+        true,
+        {
+          broadcastId,
+          status: "QUEUED",
+          totalTargeted: recipients.length,
+        },
+        `Store campaign successfully enqueued for ${recipients.length} customer${recipients.length > 1 ? "s" : ""}`,
+        202
+      );
+    }
+
+    // Graceful inline fallback if BullMQ queueing is unavailable
     let totalSent = 0;
     let totalQueued = 0;
     let totalFailed = 0;

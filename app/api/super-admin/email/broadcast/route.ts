@@ -3,7 +3,9 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { requireSuperAdmin } from "@/lib/ai/authHelper";
 import { EmailService } from "@/lib/email/emailService";
+import { enqueueEmailBroadcastJob } from "@/lib/email/queue/emailQueue";
 import { ROLES } from "@prisma/client";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -157,7 +159,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Dispatch loop with controlled batching
+    // Offload bulk broadcast to BullMQ asynchronous queue
+    const broadcastId = `broadcast_sa_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+
+    const enqueued = await enqueueEmailBroadcastJob({
+      broadcastId,
+      tenantType: "PLATFORM",
+      template: templateId,
+      recipients,
+      commonData: commonEmailData,
+    });
+
+    if (enqueued) {
+      return formatResponse(
+        true,
+        {
+          broadcastId,
+          status: "QUEUED",
+          totalTargeted: recipients.length,
+        },
+        `Broadcast successfully enqueued for ${recipients.length} user${recipients.length > 1 ? "s" : ""}`,
+        202
+      );
+    }
+
+    // Graceful inline fallback if BullMQ queueing is unavailable
     let totalQueued = 0;
     let totalSent = 0;
     let totalFailed = 0;
@@ -173,7 +199,6 @@ export async function POST(req: NextRequest) {
             ...commonEmailData,
             recipientName: recipient.name || "valued customer",
           },
-          // Allows BullMQ queueing if redis is active, or seamless inline fallback
           async: true,
           idempotencyKey: `broadcast_${Date.now()}_${recipient.email}`,
         });

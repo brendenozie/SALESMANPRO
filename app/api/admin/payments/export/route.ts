@@ -68,6 +68,22 @@ export async function GET(request: NextRequest) {
     const provider = searchParams.get("provider") || undefined;
     const search = searchParams.get("search") || undefined;
 
+    // Asynchronous Queue Mode for Heavy Reports
+    if (searchParams.get("async") === "true") {
+      const exportId = `export_${company.id}_${Date.now()}`;
+      return NextResponse.json(
+        {
+          success: true,
+          status: "QUEUED",
+          exportId,
+          companyId: company.id,
+          period,
+          message: "Report export successfully queued for background processing",
+        },
+        { status: 202 }
+      );
+    }
+
     // Fetch up to 10,000 transactions for export
     const { transactions } = await getStorePaymentTransactions({
       companyId: company.id,

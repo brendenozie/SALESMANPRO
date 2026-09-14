@@ -6,8 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 export const PUT = withApiHandler(
   async (req, context) => {
     const companyId = context.companyId;
-    const body = await req.json().catch(() => null);
-    const { registrationId, status } = body || {};
+    const registrationId = context.params?.registrationId;
 
     if (!registrationId) {
       return formatResponse(
@@ -26,6 +25,9 @@ export const PUT = withApiHandler(
       );
     }
 
+    const body = await req.json().catch(() => null);
+    const { status } = body || {}; // Expected: "REGISTERED" or "ATTENDED"
+
     if (!status || !["REGISTERED", "ATTENDED"].includes(status)) {
       return formatResponse(
         false,
@@ -35,6 +37,7 @@ export const PUT = withApiHandler(
       );
     }
 
+    // Tenant Isolation: Verify attendee exists and belongs to the company's event
     const attendee = await prisma.eventTicketAttendee.findUnique({
       where: { id: registrationId },
       include: {
@@ -55,6 +58,7 @@ export const PUT = withApiHandler(
 
     const isCheckedIn = status === "ATTENDED";
 
+    // Update attendee check-in state
     const updatedRecord = await prisma.eventTicketAttendee.update({
       where: { id: registrationId },
       data: {

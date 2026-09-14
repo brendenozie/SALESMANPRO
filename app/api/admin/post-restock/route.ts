@@ -1,202 +1,344 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/inventory/route.ts
-import { NextResponse } from "next/server";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { TargetStatus } from "@prisma/client";
+import { z } from "zod";
 
-export const POST = withApiHandler(async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
+const restockSchema = z.object({
+  productId: z.string().min(1, "Product ID is required"),
+  quantity: z.number().int().positive("Quantity must be a positive integer"),
+  action: z.enum(["NEWSTOCK", "RESTOCK", "ASSIGN", "RETURN"]),
+  companyId: z.string().optional(),
+  damaged: z.number().int().nonnegative().optional().default(0),
+  salesAgentId: z.string().optional(),
+  reason: z.string().optional(),
+  adminId: z.string().optional(),
+  commissionRate: z.number().nonnegative().optional().default(0),
+  commissionType: z.string().optional().default("PERCENTAGE"),
+  target: z
+    .object({
+      type: z.string().optional().default("QUANTITY"),
+      value: z.number().optional().default(0),
+      metricType: z.string().optional().default("SALES_VOLUME"),
+    })
+    .optional(),
+});
+
+async function handlePost(req: Request, context: any) {
+  const body = await req.json().catch(() => null);
+  if (!body) {
+    return formatResponse(false, null, "Invalid JSON payload", 400);
   }
 
-  const body = await req.json();
+  const parsed = restockSchema.safeParse(body);
+  if (!parsed.success) {
+    return formatResponse(false, null, parsed.error.errors, 400);
+  }
+
+  const companyId = context.companyId || parsed.data.companyId;
+  if (!companyId) {
+    return formatResponse(
+      false,
+      null,
+      "Authorized company context is required",
+      403,
+    );
+  }
+
   const {
     productId,
     quantity,
     damaged,
     action,
-    companyId,
     salesAgentId,
     reason,
     adminId,
     commissionRate,
     commissionType,
     target,
-  } = body;
+  } = parsed.data;
 
-  if (!productId || !action || !quantity || quantity <= 0) {
-    return formatResponse(false, null, "Invalid product ID or quantity.", 400);
-  }
+  // Verify product belongs to tenant company
+  const product = await prisma.product.findFirst({
+    where: { id: productId, companyId },
+    select: { id: true, name: true },
+  });
 
-  // Find existing inventory item
-  let inventoryItem = await prisma.inventoryItem.findFirst({ where: { productId } });
-
-  // --- NEWSTOCK / RESTOCK when item missing ---
-  if (!inventoryItem && (action === "RESTOCK" || action === "NEWSTOCK")) {
-    inventoryItem = await prisma.inventoryItem.create({
-      data: {
-        product: { connect: { id: productId } },
-        company: { connect: { id: companyId } },
-        quantity,
-        reorderThreshold: 10,
-      },
-    });
-
-    await prisma.inventoryLog.create({
-      data: {
-        inventoryId: inventoryItem.id,
-        action: "NEWSTOCK",
-        damaged,
-        quantity,
-      },
-    });
-
-    
-    try {
-      await cacheDel(`tenant:${companyId}:post-restock:*`);
-      await cacheDel(`admin:post-restock:*`);
-    } catch (e) {}
-    return formatResponse(true, { inventory: inventoryItem }, "New inventory item added.", 201);
-  }
-
-  if (!inventoryItem) {
-    return formatResponse(false, null, "Inventory item not found.", 404);
-  }
-
-  // --- RESTOCK ---
-  if (action === "RESTOCK") {
-    const updatedInventory = await prisma.inventoryItem.update({
-      where: { id: inventoryItem.id },
-      data: { quantity: inventoryItem.quantity + quantity, updatedAt: new Date() },
-    });
-
-    await prisma.inventoryLog.create({
-      data: { inventoryId: inventoryItem.id, action, damaged, quantity },
-    });
-
-    return formatResponse(true, { inventory: updatedInventory }, "Product restocked successfully.", 200);
-  }
-
-  // --- ASSIGN ---
-  if (action === "ASSIGN") {
-    if (inventoryItem.quantity < quantity) {
-      return formatResponse(false, null, "Insufficient inventory quantity.", 400);
-    }
-
-    const updatedInventory = await prisma.inventoryItem.update({
-      where: { id: inventoryItem.id },
-      data: { quantity: inventoryItem.quantity - quantity, updatedAt: new Date() },
-    });
-
-    const commission = await prisma.commission.upsert({
-      where: { salesAgentId_productId: { salesAgentId, productId } },
-      update: { commissionEarned: { increment: quantity * commissionRate }, updatedAt: new Date() },
-      create: {
-        salesAgentId,
-        productId,
-        commissionRate,
-        commissionEarned: quantity * commissionRate,
-        basedOn: commissionType,
-      },
-    });
-
-    const targetP = await prisma.target.upsert({
-        where: { 
-          agent_product_unique: { 
-            agentId: salesAgentId, 
-            productId: productId,
-          }
-        },
-        update: { 
-          achievedValue: { increment: quantity },
-          updatedAt: new Date(),
-        },
-        create: {
-          salesAgent: { connect: { id: salesAgentId } },
-          product: { connect: { id: productId } }, // ✅ required relation
-          targetType: target.type, // COST or QUANTITY
-          targetValue: target.value,
-          achievedValue: quantity,
-          startDate: new Date(),
-          endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-          metricType: target.metricType ?? "SALES_VOLUME" , // avoid undefined
-          periodStart: new Date(),
-          periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-          status: "ONGOING" as TargetStatus,
-        },
-      });
-
-
-    let agentInventory = await prisma.agentInventory.findFirst({
-      where: { inventoryItemId: inventoryItem.id, salesAgentId },
-    });
-
-    if (!agentInventory) {
-      agentInventory = await prisma.agentInventory.create({
-        data: { salesAgentId, inventoryItemId: inventoryItem.id, quantity },
-      });
-    } else {
-      agentInventory = await prisma.agentInventory.update({
-        where: { id: agentInventory.id },
-        data: { quantity: agentInventory.quantity + quantity, updatedAt: new Date() },
-      });
-    }
-
-    await prisma.inventoryLog.create({ data: { inventoryId: inventoryItem.id, action: "ASSIGN", damaged, quantity } });
-    await prisma.agentInventoryLog.create({
-      data: { agentInventoryId: agentInventory.id, action: "ASSIGN", damaged, quantity, totalPrice: 100 },
-    });
-
+  if (!product) {
     return formatResponse(
-      true,
-      { inventory: updatedInventory, commission, target: targetP },
-      "Product assigned successfully.",
-      200
+      false,
+      null,
+      "Product not found or does not belong to authorized company",
+      404,
     );
   }
 
-  // --- RETURN ---
-  if (action === "RETURN") {
-    const agentInventory = await prisma.agentInventory.findFirst({
-      where: { inventoryItemId: inventoryItem.id, salesAgentId },
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Find existing inventory item scoped to tenant
+      let inventoryItem = await tx.inventoryItem.findFirst({
+        where: { productId, companyId },
+      });
+
+      // --- NEWSTOCK / RESTOCK when item does not exist ---
+      if (!inventoryItem && (action === "RESTOCK" || action === "NEWSTOCK")) {
+        inventoryItem = await tx.inventoryItem.create({
+          data: {
+            product: { connect: { id: productId } },
+            company: { connect: { id: companyId } },
+            quantity,
+            reorderThreshold: 10,
+          },
+        });
+
+        await tx.inventoryLog.create({
+          data: {
+            inventoryId: inventoryItem.id,
+            action: "NEWSTOCK",
+            damaged,
+            quantity,
+          },
+        });
+
+        return { inventory: inventoryItem, message: "New inventory item added." };
+      }
+
+      if (!inventoryItem) {
+        throw new Error("Inventory record not found for this product.");
+      }
+
+      // --- RESTOCK: Atomic increment ---
+      if (action === "RESTOCK") {
+        const updatedInventory = await tx.inventoryItem.update({
+          where: { id: inventoryItem.id },
+          data: {
+            quantity: { increment: quantity },
+            updatedAt: new Date(),
+          },
+        });
+
+        await tx.inventoryLog.create({
+          data: { inventoryId: inventoryItem.id, action, damaged, quantity },
+        });
+
+        return {
+          inventory: updatedInventory,
+          message: "Product restocked successfully.",
+        };
+      }
+
+      // --- ASSIGN TO SALES AGENT ---
+      if (action === "ASSIGN") {
+        if (!salesAgentId) {
+          throw new Error("salesAgentId is required for ASSIGN action");
+        }
+
+        // Conditional atomic decrement ensuring stock does not go below zero
+        const updateResult = await tx.inventoryItem.updateMany({
+          where: {
+            id: inventoryItem.id,
+            companyId,
+            quantity: { gte: quantity },
+          },
+          data: {
+            quantity: { decrement: quantity },
+            updatedAt: new Date(),
+          },
+        });
+
+        if (updateResult.count === 0) {
+          throw new Error("Insufficient inventory quantity for assignment.");
+        }
+
+        const updatedInventory = await tx.inventoryItem.findUnique({
+          where: { id: inventoryItem.id },
+        });
+
+        const commission = await tx.commission.upsert({
+          where: { salesAgentId_productId: { salesAgentId, productId } },
+          update: {
+            commissionEarned: { increment: quantity * commissionRate },
+            updatedAt: new Date(),
+          },
+          create: {
+            salesAgentId,
+            productId,
+            commissionRate,
+            commissionEarned: quantity * commissionRate,
+            basedOn: commissionType,
+          },
+        });
+
+        let targetP: any = null;
+        if (target) {
+          targetP = await tx.target.upsert({
+            where: {
+              agent_product_unique: {
+                agentId: salesAgentId,
+                productId,
+              },
+            },
+            update: {
+              achievedValue: { increment: quantity },
+              updatedAt: new Date(),
+            },
+            create: {
+              salesAgent: { connect: { id: salesAgentId } },
+              product: { connect: { id: productId } },
+              targetType: target.type || "QUANTITY",
+              targetValue: target.value || 0,
+              achievedValue: quantity,
+              startDate: new Date(),
+              endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+              metricType: target.metricType ?? "SALES_VOLUME",
+              periodStart: new Date(),
+              periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+              status: "ONGOING" as TargetStatus,
+            },
+          });
+        }
+
+        let agentInventory = await tx.agentInventory.findFirst({
+          where: { inventoryItemId: inventoryItem.id, salesAgentId },
+        });
+
+        if (!agentInventory) {
+          agentInventory = await tx.agentInventory.create({
+            data: { salesAgentId, inventoryItemId: inventoryItem.id, quantity },
+          });
+        } else {
+          agentInventory = await tx.agentInventory.update({
+            where: { id: agentInventory.id },
+            data: {
+              quantity: { increment: quantity },
+              updatedAt: new Date(),
+            },
+          });
+        }
+
+        await tx.inventoryLog.create({
+          data: {
+            inventoryId: inventoryItem.id,
+            action: "ASSIGN",
+            damaged,
+            quantity,
+          },
+        });
+        await tx.agentInventoryLog.create({
+          data: {
+            agentInventoryId: agentInventory.id,
+            action: "ASSIGN",
+            damaged,
+            quantity,
+            totalPrice: 100,
+          },
+        });
+
+        return {
+          inventory: updatedInventory,
+          commission,
+          target: targetP,
+          message: "Product assigned successfully.",
+        };
+      }
+
+      // --- RETURN FROM SALES AGENT ---
+      if (action === "RETURN") {
+        if (!salesAgentId) {
+          throw new Error("salesAgentId is required for RETURN action");
+        }
+
+        const agentInventory = await tx.agentInventory.findFirst({
+          where: { inventoryItemId: inventoryItem.id, salesAgentId },
+        });
+
+        if (!agentInventory || agentInventory.quantity < quantity) {
+          throw new Error("Insufficient agent inventory quantity for return.");
+        }
+
+        // Conditional decrement on agent inventory
+        const agentUpdate = await tx.agentInventory.updateMany({
+          where: {
+            id: agentInventory.id,
+            quantity: { gte: quantity },
+          },
+          data: {
+            quantity: { decrement: quantity },
+            updatedAt: new Date(),
+          },
+        });
+
+        if (agentUpdate.count === 0) {
+          throw new Error("Insufficient agent inventory quantity for return.");
+        }
+
+        const updatedInventory = await tx.inventoryItem.update({
+          where: { id: inventoryItem.id },
+          data: {
+            quantity: { increment: quantity },
+            updatedAt: new Date(),
+          },
+        });
+
+        await tx.agentInventoryLog.create({
+          data: {
+            agentInventoryId: agentInventory.id,
+            action: "RETURN",
+            damaged,
+            quantity,
+            totalPrice: 100,
+          },
+        });
+
+        await tx.return.create({
+          data: {
+            inventoryId: inventoryItem.id,
+            returnedBy: { connect: { id: salesAgentId } },
+            quantity,
+            reason: reason || "Returned to stock",
+            ...(adminId && { ReturnApprovedBy: { connect: { id: adminId } } }),
+          },
+        });
+
+        await tx.inventoryLog.create({
+          data: {
+            inventoryId: inventoryItem.id,
+            action: "RETURN",
+            damaged,
+            quantity,
+          },
+        });
+
+        return {
+          inventory: updatedInventory,
+          message: "Product returned successfully.",
+        };
+      }
+
+      throw new Error("Invalid inventory action.");
     });
 
-    if (!agentInventory || agentInventory.quantity < quantity) {
-      return formatResponse(false, null, "Insufficient agent inventory quantity.", 400);
-    }
+    try {
+      await cacheDel(`tenant:${companyId}:post-restock:*`);
+      await cacheDel(`tenant:${companyId}:inventory:*`);
+      await cacheDel(`admin:post-restock:*`);
+    } catch {}
 
-    const updatedInventory = await prisma.inventoryItem.update({
-      where: { id: inventoryItem.id },
-      data: { quantity: inventoryItem.quantity + quantity, updatedAt: new Date() },
-    });
-
-    await prisma.agentInventory.update({
-      where: { id: agentInventory.id },
-      data: { quantity: agentInventory.quantity - quantity, updatedAt: new Date() },
-    });
-
-    await prisma.agentInventoryLog.create({
-      data: { agentInventoryId: agentInventory.id, action: "RETURN", damaged, quantity, totalPrice: 100 },
-    });
-
-    await prisma.return.create({
-      data: {
-        inventoryId: inventoryItem.id,
-        returnedBy: { connect: { id: salesAgentId } },
-        quantity,
-        reason,
-        ReturnApprovedBy: { connect: { id: adminId } },
-      },
-    });
-
-    await prisma.inventoryLog.create({ data: { inventoryId: inventoryItem.id, action: "RETURN", damaged, quantity } });
-
-    return formatResponse(true, { inventory: updatedInventory }, "Product returned successfully.", 200);
+    return formatResponse(true, result, result.message, 200);
+  } catch (err: any) {
+    console.error("[INVENTORY_RESTOCK_ERROR]", err);
+    return formatResponse(
+      false,
+      null,
+      err.message || "Failed to process inventory restock transaction",
+      400,
+    );
   }
+}
 
-  return formatResponse(false, null, "Invalid action.", 400);
+export const POST = withApiHandler(handlePost, {
+  requireAuth: true,
+  requireTenant: true,
+  requireIdempotency: true,
 });

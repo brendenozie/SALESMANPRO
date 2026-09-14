@@ -6,7 +6,12 @@
 
 import { Worker, Job } from "bullmq";
 import { redisConnection } from "@/lib/redis";
-import { EMAIL_QUEUE_NAME, EmailJobData } from "./emailQueue";
+import {
+  EMAIL_QUEUE_NAME,
+  EmailJobData,
+  EMAIL_BROADCAST_QUEUE_NAME,
+  EmailBroadcastJobData,
+} from "./emailQueue";
 import { EmailService } from "../emailService";
 
 export function createEmailWorker(): Worker<EmailJobData> {
@@ -39,3 +44,82 @@ export function createEmailWorker(): Worker<EmailJobData> {
 
   return worker;
 }
+
+export function createEmailBroadcastWorker(): Worker<EmailBroadcastJobData> {
+  const worker = new Worker<EmailBroadcastJobData>(
+    EMAIL_BROADCAST_QUEUE_NAME,
+    async (job: Job<EmailBroadcastJobData>) => {
+      const {
+        broadcastId,
+        tenantType,
+        companyId,
+        template,
+        recipients,
+        commonData,
+        replyTo,
+      } = job.data;
+      console.log(
+        `[EmailBroadcastWorker] Processing broadcast ${broadcastId} with ${recipients.length} recipients`
+      );
+
+      const chunkSize = 25;
+      let sentCount = 0;
+      let failedCount = 0;
+
+      for (let i = 0; i < recipients.length; i += chunkSize) {
+        const chunk = recipients.slice(i, i + chunkSize);
+        await Promise.all(
+          chunk.map(async (r) => {
+            try {
+              const res = await EmailService.sendEmail({
+                tenantType,
+                companyId,
+                template,
+                recipient: r.email,
+                data: {
+                  ...commonData,
+                  recipientName: r.name || "valued customer",
+                },
+                replyTo,
+                async: false,
+                idempotencyKey: `broadcast_${broadcastId}_${r.email}`,
+              });
+              if (res.success) sentCount++;
+              else failedCount++;
+            } catch {
+              failedCount++;
+            }
+          })
+        );
+
+        const progressPercent = Math.round(
+          ((i + chunk.length) / recipients.length) * 100
+        );
+        await job.updateProgress(progressPercent);
+      }
+
+      console.log(
+        `[EmailBroadcastWorker] Finished broadcast ${broadcastId}: ${sentCount} sent, ${failedCount} failed`
+      );
+      return { broadcastId, total: recipients.length, sentCount, failedCount };
+    },
+    {
+      connection: redisConnection,
+      concurrency: 2,
+    }
+  );
+
+  worker.on("completed", (job) => {
+    console.log(`[EmailBroadcastWorker] Completed broadcast job ${job.id}`);
+  });
+
+  worker.on("failed", (job, err) => {
+    console.error(
+      `[EmailBroadcastWorker] Broadcast job ${job?.id} failed:`,
+      err.message
+    );
+  });
+
+  return worker;
+}
+

@@ -1,19 +1,21 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// // app/api/customer-orders/[id]/route.ts
-import prisma from '@/server/db/prismadb';
-import { withApiHandler } from '@/lib/hooks/withApiHandler';
-import { formatResponse } from '@/lib/formatResponse';
-import { z } from 'zod';
-import { OrderStatus, Prisma } from '@prisma/client';
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { z } from "zod";
+import { OrderStatus, Prisma } from "@prisma/client";
 
 // Shared selector to maintain dry code and consistent payloads
 const ORDER_SELECT = {
   id: true,
+  companyId: true,
+  consumerId: true,
   status: true,
   deliveryStatus: true,
   deliveryPersonName: true,
   deliveryPersonContact: true,
-  totalAmount: true,
+  totalPrice: true,
+  totalFinalPrice: true,
   createdAt: true,
   updatedAt: true,
   items: {
@@ -21,6 +23,7 @@ const ORDER_SELECT = {
       id: true,
       quantity: true,
       price: true,
+      totalPrice: true,
       marketplaceListing: {
         select: { id: true, name: true },
       },
@@ -36,149 +39,179 @@ const updateOrderSchema = z.object({
   deliveryPersonContact: z.string().optional(),
 });
 
+export const GET = withApiHandler(
+  async (_req, context) => {
+    const companyId = context.companyId;
+    const orderId = context.params?.id;
 
-export const GET = withApiHandler(async (_req, { params }) => {
-  
-  const cacheKey = buildTenantCacheKey(params.id, "customer-orders", {});
+    if (!orderId) {
+      return formatResponse(false, null, "Order ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    const cacheKey = buildTenantCacheKey(companyId, "customer-order", {
+      id: orderId,
+    });
 
-  const order = await prisma.customerOrder.findUnique({
-    where: { id: params.id },
-    select: ORDER_SELECT,
-  });
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
 
-
-  if (!order) return formatResponse(false, null, 'Order not found', 404);
-  try {
-    await cacheSet(cacheKey, order, 60);
-  } catch (e) {}
-  return formatResponse(true, order, 'Order fetched successfully');
-});
-
-
-export const PUT = withApiHandler(async (req, { params }) => {
-  const body = await req.json();
-  const parsed = updateOrderSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return formatResponse(false, null, parsed.error.format(), 400);
-  }
-
-  try {
-    const updatedOrder = await prisma.customerOrder.update({
-      where: { id: params.id },
-      data: parsed.data,
+    // Strict tenant-scoped lookup preventing cross-tenant IDOR
+    const order = await prisma.customerOrder.findFirst({
+      where: {
+        id: orderId,
+        companyId,
+      },
       select: ORDER_SELECT,
     });
 
-    
-    try {
-      await cacheDel(`tenant:${params.id}:customer-orders:*`);
-      await cacheDel(`admin:customer-orders:*`);
-    } catch (e) {}
-    return formatResponse(true, updatedOrder, 'Order updated successfully');
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return formatResponse(false, null, 'Order not found', 404);
+    if (!order) {
+      return formatResponse(false, null, "Order not found", 404);
     }
-    throw error;
-  }
-});
 
+    try {
+      await cacheSet(cacheKey, order, 60);
+    } catch (e) {}
 
-export const DELETE = withApiHandler(async (_req, { params }) => {
-  try {
-    const deleted = await prisma.customerOrder.delete({
-      where: { id: params.id },
+    return formatResponse(true, order, "Order fetched successfully", 200);
+  },
+  { requireAuth: true, requireTenant: true },
+);
+
+export const PUT = withApiHandler(
+  async (req, context) => {
+    const companyId = context.companyId;
+    const orderId = context.params?.id;
+
+    if (!orderId) {
+      return formatResponse(false, null, "Order ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return formatResponse(false, null, "Invalid JSON payload", 400);
+    }
+
+    const parsed = updateOrderSchema.safeParse(body);
+    if (!parsed.success) {
+      return formatResponse(false, null, parsed.error.format(), 400);
+    }
+
+    // Verify record exists and belongs to the authorized tenant before mutation
+    const existing = await prisma.customerOrder.findFirst({
+      where: { id: orderId, companyId },
+      select: { id: true, status: true },
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Order not found", 404);
+    }
+
+    try {
+      const updatedOrder = await prisma.customerOrder.update({
+        where: { id: orderId },
+        data: parsed.data,
+        select: ORDER_SELECT,
+      });
+
+      try {
+        await cacheDel(`tenant:${companyId}:customer-orders:*`);
+        await cacheDel(
+          buildTenantCacheKey(companyId, "customer-order", { id: orderId }),
+        );
+      } catch (e) {}
+
+      return formatResponse(
+        true,
+        updatedOrder,
+        "Order updated successfully",
+        200,
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        return formatResponse(false, null, "Order not found", 404);
+      }
+      throw error;
+    }
+  },
+  { requireAuth: true, requireTenant: true },
+);
+
+export const DELETE = withApiHandler(
+  async (_req, context) => {
+    const companyId = context.companyId;
+    const orderId = context.params?.id;
+
+    if (!orderId) {
+      return formatResponse(false, null, "Order ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    // Verify record exists and belongs to the authorized tenant before deletion
+    const existing = await prisma.customerOrder.findFirst({
+      where: { id: orderId, companyId },
       select: { id: true },
     });
-    
-    try {
-      await cacheDel(`tenant:${params.id}:customer-orders:*`);
-      await cacheDel(`admin:customer-orders:*`);
-    } catch (e) {}
-    return formatResponse(true, { deletedId: deleted.id }, 'Order deleted successfully');
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return formatResponse(false, null, 'Order not found', 404);
+
+    if (!existing) {
+      return formatResponse(false, null, "Order not found", 404);
     }
-    throw error;
-  }
-});
 
+    try {
+      const deleted = await prisma.customerOrder.delete({
+        where: { id: orderId },
+        select: { id: true },
+      });
 
-// // --- GET /api/customer-orders/:id
-// // Fetches a single customer order by ID
-// export const GET = withApiHandler(async (_request, context) => {
-//   const { id } = context.params;
+      try {
+        await cacheDel(`tenant:${companyId}:customer-orders:*`);
+        await cacheDel(
+          buildTenantCacheKey(companyId, "customer-order", { id: orderId }),
+        );
+      } catch (e) {}
 
-//   const order = await prisma.customerOrder.findUnique({
-//     where: { id },
-//     include: {
-//       // customer: { select: { id: true, name: true, email: true } },
-
-//       items: { select: { id: true, marketplaceListing: {
-//         select: { id: true, name: true },
-//       }, quantity: true, price: true } },
-//     },
-//   });
-
-//   if (!order) {
-//     return formatResponse(false, null, 'Customer order not found', 404);
-//   }
-
-//   return formatResponse(true, order, 'Customer order fetched successfully', 200);
-// });
-
-// // --- PUT /api/customer-orders/:id
-// // Updates a specific customer order (e.g., status, delivery details)
-// export const PUT = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-
-//   // Parse + validate body
-//   const body = await request.json();
-//   const parsed = updateOrderSchema.safeParse(body);
-//   if (!parsed.success) {
-//     return formatResponse(false, null, parsed.error.errors, 400);
-//   }
-
-//   const { status, deliveryStatus, deliveryPersonName, deliveryPersonContact } = parsed.data;
-
-//   const updatedOrder = await prisma.customerOrder.update({
-//     where: { id },
-//     data: {
-//       status: status as OrderStatus | undefined,
-//       deliveryStatus,
-//       deliveryPersonName,
-//       deliveryPersonContact,
-//       updatedAt: new Date(),
-//     },
-//     include: {
-//       // customer: { select: { id: true, name: true, email: true } },  // Include customer details
-//       items: { select: { id: true, marketplaceListing: {
-//         select: { id: true, name: true },
-//       }, quantity: true, price: true } },
-//     },
-//   });
-
-//   return formatResponse(true, updatedOrder, 'Customer order updated successfully');
-// });
-
-// // --- DELETE /api/customer-orders/:id
-// // Deletes a customer order by ID
-// export const DELETE = withApiHandler(async (_request, context) => {
-//   const { id } = context.params;
-
-//   const existingOrder = await prisma.customerOrder.findUnique({ where: { id } });
-//   if (!existingOrder) {
-//     return formatResponse(false, null, 'Customer order not found', 404);
-//   }
-
-//   const deletedOrder = await prisma.customerOrder.delete({ where: { id } });
-
-//   return formatResponse(true, { deletedId: deletedOrder.id }, 'Customer order deleted successfully');
-// });
+      return formatResponse(
+        true,
+        { deletedId: deleted.id },
+        "Order deleted successfully",
+        200,
+      );
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        return formatResponse(false, null, "Order not found", 404);
+      }
+      throw error;
+    }
+  },
+  { requireAuth: true, requireTenant: true },
+);

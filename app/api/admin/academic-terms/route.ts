@@ -1,32 +1,39 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const companyId = searchParams.get("companyId");
-  const academicYearId = searchParams.get("academicYearId");
+export const GET = withApiHandler(
+  async (req, context) => {
+    const { searchParams } = new URL(req.url);
+    const companyId = context.companyId;
+    const academicYearId = searchParams.get("academicYearId");
 
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID is required", 400);
-  }
-
-  // Consistent key matching pattern
-  const cacheKey = `admin:terms:${companyId}:${academicYearId || "all"}`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) {
-      const response = formatResponse(true, cached, "Fetched (Cached)", 200);
-      response.headers.set(
-        "Cache-Control",
-        "private, s-maxage=60, stale-while-revalidate=120",
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
       );
-      return response;
     }
-  } catch (e) {}
 
-  try {
+    const cacheKey = buildTenantCacheKey(companyId, "academic-terms", {
+      academicYearId: academicYearId || "all",
+    });
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) {
+        const response = formatResponse(true, cached, "Fetched (Cached)", 200);
+        response.headers.set(
+          "Cache-Control",
+          "private, s-maxage=60, stale-while-revalidate=120",
+        );
+        return response;
+      }
+    } catch (e) {}
+
     const terms = await prisma.term.findMany({
       where: {
         companyId,
@@ -60,30 +67,50 @@ export async function GET(req: Request) {
       "private, s-maxage=60, stale-while-revalidate=120",
     );
     return response;
-  } catch (error) {
-    return formatResponse(false, null, "Failed to fetch terms", 500);
-  }
-}
+  },
+  { requireAuth: true, requireTenant: true },
+);
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { name, startDate, endDate, termNumber, academicYearId, companyId } =
-      body;
+export const POST = withApiHandler(
+  async (req, context) => {
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return formatResponse(false, null, "Invalid JSON payload", 400);
+    }
 
-    if (
-      !name ||
-      !startDate ||
-      !endDate ||
-      !termNumber ||
-      !academicYearId ||
-      !companyId
-    ) {
+    const companyId = context.companyId;
+    if (!companyId) {
       return formatResponse(
         false,
         null,
-        "Missing required payload fields",
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    const { name, startDate, endDate, termNumber, academicYearId } = body;
+
+    if (!name || !startDate || !endDate || !termNumber || !academicYearId) {
+      return formatResponse(
+        false,
+        null,
+        "Missing required payload fields: name, startDate, endDate, termNumber, academicYearId",
         400,
+      );
+    }
+
+    // Tenant boundary: verify academic year belongs to this company
+    const academicYear = await prisma.academicYear.findFirst({
+      where: { id: academicYearId, companyId },
+      select: { id: true },
+    });
+
+    if (!academicYear) {
+      return formatResponse(
+        false,
+        null,
+        "Specified academic year does not exist in this company",
+        404,
       );
     }
 
@@ -92,22 +119,18 @@ export async function POST(req: Request) {
         name,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        termNumber: parseInt(termNumber),
+        termNumber: parseInt(String(termNumber), 10),
         academicYearId,
         companyId,
         isActive: false,
       },
     });
 
-    // EVACUATE BOTH CACHE POSSIBILITIES
     try {
-      await cacheDel(`tenant:${companyId}:terms:*`);
-      await cacheDel(`admin:terms:*`);
-      await cacheDel(`admin:terms:${companyId}:${academicYearId}`);
+      await cacheDel(`tenant:${companyId}:academic-terms:*`);
     } catch (e) {}
 
     return formatResponse(true, newTerm, "Term created successfully", 201);
-  } catch (error) {
-    return formatResponse(false, null, "Failed to create term", 500);
-  }
-}
+  },
+  { requireAuth: true, requireTenant: true },
+);

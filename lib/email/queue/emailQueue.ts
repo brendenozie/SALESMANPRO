@@ -41,6 +41,9 @@ export async function enqueueEmailJob(
   jobData: EmailJobData,
   jobId?: string
 ): Promise<boolean> {
+  if (!isRedisAvailable()) {
+    return false;
+  }
   try {
     await emailQueue.add("send-email", jobData, {
       jobId: jobId || `email_${jobData.logId}`,
@@ -54,3 +57,53 @@ export async function enqueueEmailJob(
     return false;
   }
 }
+
+export const EMAIL_BROADCAST_QUEUE_NAME = "email-broadcast";
+
+export interface EmailBroadcastJobData {
+  broadcastId: string;
+  tenantType: EmailTenantType;
+  companyId?: string;
+  template: EmailTemplateId;
+  recipients: Array<{ email: string; name?: string | null }>;
+  commonData: Record<string, any>;
+  replyTo?: string;
+}
+
+export const emailBroadcastQueue = new Queue<EmailBroadcastJobData>(
+  EMAIL_BROADCAST_QUEUE_NAME,
+  {
+    connection: redisConnection,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 5000,
+      },
+      removeOnComplete: 1000,
+      removeOnFail: 5000,
+    },
+  }
+);
+
+export async function enqueueEmailBroadcastJob(
+  broadcastData: EmailBroadcastJobData
+): Promise<boolean> {
+  if (!isRedisAvailable() || !broadcastData) {
+    return false;
+  }
+  try {
+    await emailBroadcastQueue.add("broadcast-email", broadcastData, {
+      jobId: `broadcast_${broadcastData.broadcastId}`,
+    });
+    return true;
+  } catch (err: any) {
+    console.warn(
+      "[EmailQueue] Failed to enqueue broadcast job:",
+      err.message
+    );
+    return false;
+  }
+}
+
+

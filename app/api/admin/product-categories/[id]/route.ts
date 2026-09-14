@@ -1,61 +1,161 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/product-categories/[id]/route.ts
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { z } from "zod";
 
+const updateCategorySchema = z.object({
+  name: z.string().optional(),
+  slug: z.string().optional(),
+  icon: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  longDescription: z.string().optional().nullable(),
+  seoTitle: z.string().optional().nullable(),
+  seoDescription: z.string().optional().nullable(),
+  metaKeywords: z.array(z.string()).optional(),
+  sortOrder: z.coerce.number().int().optional(),
+  visible: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  showInHomepage: z.boolean().optional(),
+});
 
-export const GET = withApiHandler(async (_req, { params }: { params: { id: string } }) => {
-  
-  const cacheKey = buildTenantCacheKey(params.id, "product-categories", {});
+// GET: Get single category scoped to company
+export const GET = withApiHandler(
+  async (_req, context: any) => {
+    const companyId = context.companyId;
+    const { id } = context.params;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  const category = await prisma.productCategory.findUnique({
-    where: { id: params.id },
-  });
-
-  if (!category) {
-    return formatResponse(false, null, "Category not found", 404);
-  }
-
-  try {
-    if (category) {
-      await cacheSet(cacheKey, category, 60);
+    if (!id) {
+      return formatResponse(false, null, "Category ID is required", 400);
     }
-  } catch (e) {}
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
 
-  return formatResponse(true, category, "Category fetched successfully");
-});
+    const category = await prisma.productCategory.findFirst({
+      where: { id, companyId },
+    });
 
+    if (!category) {
+      return formatResponse(false, null, "Category not found in this company", 404);
+    }
 
-export const PUT = withApiHandler(async (req, { params }: { params: { id: string } }) => {
-  const data = await req.json();
-  const { id, ...rest } = data;
+    return formatResponse(true, category, "Category fetched successfully", 200);
+  },
+  { requireAuth: true, requireTenant: true },
+);
 
-  const category = await prisma.productCategory.update({
-    where: { id: params.id },
-    data: rest,
-  });
+// PUT: Update single category with IDOR verification
+export const PUT = withApiHandler(
+  async (req, context: any) => {
+    const companyId = context.companyId;
+    const { id } = context.params;
+
+    if (!id) {
+      return formatResponse(false, null, "Category ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return formatResponse(false, null, "Invalid JSON payload", 400);
+    }
+
+    const parsed = updateCategorySchema.safeParse(body);
+    if (!parsed.success) {
+      return formatResponse(false, null, parsed.error.errors, 400);
+    }
+
+    // Verify category exists and belongs to company (IDOR protection)
+    const existing = await prisma.productCategory.findFirst({
+      where: { id, companyId },
+      select: { id: true, slug: true },
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Category not found in this company", 404);
+    }
+
+    // If slug is being changed, ensure uniqueness
+    if (parsed.data.slug && parsed.data.slug !== existing.slug) {
+      const slugConflict = await prisma.productCategory.findFirst({
+        where: { slug: parsed.data.slug, companyId, id: { not: id } },
+        select: { id: true },
+      });
+      if (slugConflict) {
+        return formatResponse(
+          false,
+          null,
+          "Category with this slug already exists for your company",
+          409,
+        );
+      }
+    }
+
+    const category = await prisma.productCategory.update({
+      where: { id },
+      data: parsed.data,
+    });
 
     try {
-      await cacheDel(`tenant:${params.id}:product-categories:*`);
-      await cacheDel(`admin:product-categories:*`);
+      await cacheDel(`tenant:${companyId}:product-categories:*`);
     } catch (e) {}
-    return formatResponse(true, category, "Category updated successfully");
-});
 
+    return formatResponse(true, category, "Category updated successfully", 200);
+  },
+  { requireAuth: true, requireTenant: true },
+);
 
-export const DELETE = withApiHandler(async (_req, { params }: { params: { id: string } }) => {
-  const deleted = await prisma.productCategory.delete({
-    where: { id: params.id },
-  });
+// DELETE: Delete single category with IDOR verification
+export const DELETE = withApiHandler(
+  async (_req, context: any) => {
+    const companyId = context.companyId;
+    const { id } = context.params;
+
+    if (!id) {
+      return formatResponse(false, null, "Category ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    // Verify category belongs to company before delete
+    const existing = await prisma.productCategory.findFirst({
+      where: { id, companyId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Category not found in this company", 404);
+    }
+
+    const deleted = await prisma.productCategory.delete({
+      where: { id },
+    });
 
     try {
-      await cacheDel(`tenant:${params.id}:product-categories:*`);
-      await cacheDel(`admin:product-categories:*`);
+      await cacheDel(`tenant:${companyId}:product-categories:*`);
     } catch (e) {}
-    return formatResponse(true, deleted, "Category deleted successfully");
-});
+
+    return formatResponse(true, deleted, "Category deleted successfully", 200);
+  },
+  { requireAuth: true, requireTenant: true },
+);

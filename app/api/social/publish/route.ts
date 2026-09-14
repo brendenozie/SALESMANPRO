@@ -59,7 +59,37 @@ export async function POST(req: Request) {
       });
     }
 
-    // Publish immediately
+    // Check if synchronous execution is explicitly requested (e.g. for deterministic testing)
+    const isAsync = body.async !== false;
+
+    if (isAsync) {
+      await prisma.socialMediaPost.update({
+        where: { id: postId },
+        data: {
+          status: "PUBLISHING",
+          isApproved: true,
+        },
+      });
+
+      const job = await socialJobQueue.add(
+        "PUBLISH_IMMEDIATE_POST",
+        { companyId: auth.companyId, postId, action: "PUBLISH_SCHEDULED_POST" },
+        { jobId: `publish_imm_${postId}_${Date.now()}` }
+      );
+
+      return NextResponse.json(
+        {
+          success: true,
+          queued: true,
+          status: "QUEUED",
+          jobId: job.id,
+          message: "Social post publication enqueued successfully to BullMQ worker",
+        },
+        { status: 202 }
+      );
+    }
+
+    // Synchronous execution path
     const result = await socialService.publishNow(auth.companyId, postId);
 
     return NextResponse.json({

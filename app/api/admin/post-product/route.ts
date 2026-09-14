@@ -3,6 +3,7 @@ import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { resolveAuthorizedCompany } from "@/lib/auth/tenantScope";
 
 
 // ----------------- Utils -----------------
@@ -37,13 +38,13 @@ const parseNumber = (
 };
 
 
-// POST or PUT /api/product
-async function handlePost(req: Request) {
+// POST or PUT /api/admin/post-product
+async function handlePost(req: Request, context: any) {
   const body = await req.json();
   const {
     id,
     // Basic
-    companyId,
+    companyId: bodyCompanyId,
     name,
     description,
     longDescription,
@@ -176,13 +177,31 @@ async function handlePost(req: Request) {
     listingTransactionType,
   } = body;
 
+  // Determine authoritative companyId
+  const authCompanyRes = await resolveAuthorizedCompany(context, bodyCompanyId);
+  if (!authCompanyRes.authorized || !authCompanyRes.companyId) {
+    return formatResponse(false, null, authCompanyRes.error || "Unauthorized company access", 403);
+  }
+  const companyId = authCompanyRes.companyId;
+
   // Determine the true productCategoryId
   const productCategoryId =
     rawProductCategoryId || rawCategory?.categoryId || null;
 
   // Basic validation
-  if (!name || !companyId || costPrice == null || sellingPrice == null) {
-    return formatResponse(false, null, "Missing required fields.", 400);
+  if (!name || costPrice == null || sellingPrice == null) {
+    return formatResponse(false, null, "Missing required fields: name, costPrice, sellingPrice.", 400);
+  }
+
+  // If updating, verify ownership first (IDOR check)
+  if (id) {
+    const existing = await prisma.product.findFirst({
+      where: { id, companyId },
+      select: { id: true },
+    });
+    if (!existing) {
+      return formatResponse(false, null, "Product not found or not owned by this company.", 404);
+    }
   }
 
   // Parse primitives
@@ -523,4 +542,8 @@ async function handlePost(req: Request) {
   );
 }
 
-export const POST = withApiHandler(handlePost);
+export const POST = withApiHandler(handlePost, {
+  requireAuth: true,
+  requireTenant: true,
+  roles: ["SUPER_ADMIN", "ADMIN", "COMPANY_ADMIN", "MANAGER"],
+});

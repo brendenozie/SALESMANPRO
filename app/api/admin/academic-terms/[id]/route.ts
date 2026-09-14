@@ -1,66 +1,109 @@
 import prisma from "@/server/db/prismadb";
-import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
+import { cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  try {
-    const body = await req.json();
-    const { companyId } = body; // Mandated payload context parameter for multi-tenant safety
+export const PATCH = withApiHandler(
+  async (req, context) => {
+    const companyId = context.companyId;
+    const termId = context.params?.id;
 
+    if (!termId) {
+      return formatResponse(false, null, "Term ID is required", 400);
+    }
     if (!companyId) {
       return formatResponse(
         false,
         null,
-        "Company ID verification context is missing",
-        400,
+        "Authorized company context required",
+        403,
       );
     }
 
-    // Force secure multi-tenant verification check mapping
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return formatResponse(false, null, "Invalid JSON payload", 400);
+    }
+
+    // Verify existing record belongs to authorized tenant
+    const existing = await prisma.term.findFirst({
+      where: { id: termId, companyId },
+      select: { id: true, academicYearId: true },
+    });
+
+    if (!existing) {
+      return formatResponse(
+        false,
+        null,
+        "Term not found in this company",
+        404,
+      );
+    }
+
     const updatedTerm = await prisma.term.update({
-      where: {
-        id: params.id,
-        companyId: companyId,
-      },
+      where: { id: termId },
       data: {
         name: body.name,
         startDate: body.startDate ? new Date(body.startDate) : undefined,
         endDate: body.endDate ? new Date(body.endDate) : undefined,
-        termNumber: body.termNumber ? parseInt(body.termNumber) : undefined,
+        termNumber: body.termNumber
+          ? parseInt(String(body.termNumber), 10)
+          : undefined,
       },
     });
 
     try {
-      await cacheDel(`tenant:${companyId}:terms:*`);
-      await cacheDel(`admin:terms:*`);
-      await cacheDel(`admin:terms:${companyId}:${updatedTerm.academicYearId}`);
+      await cacheDel(`tenant:${companyId}:academic-terms:*`);
     } catch (e) {}
 
     return formatResponse(true, updatedTerm, "Term updated successfully", 200);
-  } catch (error: any) {
-    return formatResponse(false, null, "Update execution failed", 500);
-  }
-}
+  },
+  { requireAuth: true, requireTenant: true },
+);
 
 /**
  * PUT: Safely activate one single term per year and auto-deactivate previous choices
  */
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  try {
-    const { companyId, academicYearId } = await req.json();
+export const PUT = withApiHandler(
+  async (req, context) => {
+    const companyId = context.companyId;
+    const termId = context.params?.id;
 
-    if (!companyId || !academicYearId) {
+    if (!termId) {
+      return formatResponse(false, null, "Term ID is required", 400);
+    }
+    if (!companyId) {
       return formatResponse(
         false,
         null,
-        "Context structural parameters missing",
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    const body = await req.json().catch(() => null);
+    const academicYearId = body?.academicYearId;
+
+    if (!academicYearId) {
+      return formatResponse(
+        false,
+        null,
+        "academicYearId is required to activate a term",
         400,
+      );
+    }
+
+    const existing = await prisma.term.findFirst({
+      where: { id: termId, companyId, academicYearId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return formatResponse(
+        false,
+        null,
+        "Term not found for the specified academic year in this company",
+        404,
       );
     }
 
@@ -71,70 +114,62 @@ export async function PUT(
         data: { isActive: false },
       });
 
-      // 2. Safely perform target updates bounded under tenant scope constraints
-      return await tx.term.update({
-        where: {
-          id: params.id,
-          companyId: companyId,
-        },
+      // 2. Safely perform target update
+      return tx.term.update({
+        where: { id: termId },
         data: { isActive: true },
       });
     });
 
     try {
-      await cacheDel(`tenant:${companyId}:terms:*`);
-      await cacheDel(`admin:terms:*`);
-      await cacheDel(`admin:terms:${companyId}:${academicYearId}`);
+      await cacheDel(`tenant:${companyId}:academic-terms:*`);
     } catch (e) {}
 
     return formatResponse(true, activatedTerm, "Term activated safely", 200);
-  } catch (error: any) {
-    return formatResponse(
-      false,
-      null,
-      "Activation transaction chain failed",
-      500,
-    );
-  }
-}
+  },
+  { requireAuth: true, requireTenant: true },
+);
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get("companyId");
+export const DELETE = withApiHandler(
+  async (_req, context) => {
+    const companyId = context.companyId;
+    const termId = context.params?.id;
 
+    if (!termId) {
+      return formatResponse(false, null, "Term ID is required", 400);
+    }
     if (!companyId) {
       return formatResponse(
         false,
         null,
-        "Company verification identifier context is missing",
-        400,
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    const existing = await prisma.term.findFirst({
+      where: { id: termId, companyId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return formatResponse(
+        false,
+        null,
+        "Term not found in this company",
+        404,
       );
     }
 
     const term = await prisma.term.delete({
-      where: {
-        id: params.id,
-        companyId: companyId,
-      },
+      where: { id: termId },
     });
 
     try {
-      await cacheDel(`tenant:${companyId}:terms:*`);
-      await cacheDel(`admin:terms:*`);
-      await cacheDel(`admin:terms:${companyId}:${term.academicYearId}`);
+      await cacheDel(`tenant:${companyId}:academic-terms:*`);
     } catch (e) {}
 
     return formatResponse(true, term, "Term purged successfully", 200);
-  } catch (error: any) {
-    return formatResponse(
-      false,
-      null,
-      "Purge validation lifecycle process failed",
-      500,
-    );
-  }
-}
+  },
+  { requireAuth: true, requireTenant: true },
+);
