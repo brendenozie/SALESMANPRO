@@ -19,7 +19,7 @@ export interface TenantScopeResult {
   authorized: boolean;
   companyId?: string;
   error?: string;
-  status: 200 | 400 | 401 | 403 | 404;
+  status: 200 | 400 | 401 | 403 | 404 | 500;
 }
 
 /**
