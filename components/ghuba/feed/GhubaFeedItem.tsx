@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { AiFillPlayCircle, AiFillHeart } from "react-icons/ai";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, HeartIcon, PlayCircleIcon } from "@heroicons/react/24/outline";
 import { GhubaFeedItem as GhubaFeedItemType } from "@/lib/ghuba-feed-service";
 import { GhubaFeedActions } from "./GhubaFeedActions";
 import { GhubaFeedCommerceBar } from "./GhubaFeedCommerceBar";
@@ -332,7 +332,7 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
       {showPlayIcon && (
         <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/20 animate-fade-out">
           <div className="rounded-full bg-black/60 p-4 text-white/90 backdrop-blur-md shadow-2xl">
-            <AiFillPlayCircle className="h-14 w-14" />
+            <PlayCircleIcon className="h-14 w-14" />
           </div>
         </div>
       )}
@@ -340,7 +340,7 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
       {/* 4. Double Tap Heart Burst */}
       {showHeartBurst && (
         <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center animate-bounce">
-          <AiFillHeart className="h-28 w-28 text-rose-500 drop-shadow-2xl" />
+          <HeartIcon className="h-28 w-28 text-rose-500 drop-shadow-2xl" />
         </div>
       )}
 
