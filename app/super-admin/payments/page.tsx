@@ -22,7 +22,7 @@ export default async function SuperAdminPaymentsPage() {
   const user = session.user as any;
   const role = (user.role || "").toUpperCase();
 
-  if (role !== "SUPER_ADMIN") {
+  if (role !== "SUPER_ADMIN" && role !== "ADMIN") {
     redirect("/unauthorized?reason=super_admin_required");
   }
 

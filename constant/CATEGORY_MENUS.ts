@@ -398,7 +398,7 @@ const commonEcommerce = (
     {
       label: "Email",
       icon: HomeIcon,
-      href: `admin/${adminSlug}/marketing`,
+      href: `/admin/${adminSlug}/email`,
       minTier: "Ghuba Basic",
     },
     {
@@ -722,7 +722,7 @@ export const getCategoryMenus = (
           },
           {
             label: "Email",
-            href: `/super-admin/marketing`,
+            href: `/super-admin/email`,
             minTier: "Ghuba Basic",
           },
           {
