@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm } from '@/types/typings';
 
@@ -43,8 +42,6 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
@@ -57,7 +54,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     CoreValues = [],
   } = pageData;
 
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const testimonialsData = { data: pageData.testimonials || [] };
 
   const featured = useMemo(
     () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),

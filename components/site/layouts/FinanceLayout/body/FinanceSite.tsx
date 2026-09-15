@@ -11,7 +11,6 @@ import { StoreForm } from "@/types/typings";
 // Above-the-fold components - statically imported
 import HeroSection from "./components/heroSection";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Loading skeleton
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
@@ -29,8 +28,6 @@ const ContactSection = dynamic(() => import('./components/ContactSection'), { lo
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer
 const lightBackground = "#112240"; // Alternate background for contrast sections
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function FinanceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Using context for global theme settings only

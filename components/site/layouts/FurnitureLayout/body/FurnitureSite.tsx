@@ -31,8 +31,6 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {

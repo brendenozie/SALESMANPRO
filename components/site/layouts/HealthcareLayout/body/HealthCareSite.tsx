@@ -12,7 +12,6 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import HealthcareHero from './components/HeroSection';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Loading skeleton
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
@@ -73,8 +72,6 @@ const defaultContactInfo = {
   mapLink: 'https://www.google.com/maps/place/New+York,+NY' // Example Google Maps link
 };
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function HealthCareSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const { storeFormData } = useStoreContext(); // Use for global theme settings only

@@ -4,7 +4,6 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
@@ -32,11 +31,6 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 // Updated component signature
 export default function NonProfitSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  // const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  // const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
-  // const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
-  // const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
-
   
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <HeroSection storeFormData={pageData} />,

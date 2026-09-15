@@ -23,8 +23,6 @@ const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSecti
 const LatestPodcastSection = dynamic(() => import('./components/LatestPodcastSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BlogSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data

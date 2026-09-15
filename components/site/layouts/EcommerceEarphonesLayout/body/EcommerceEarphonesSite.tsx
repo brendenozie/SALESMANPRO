@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm } from '@/types/typings';
 
@@ -43,8 +42,6 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
@@ -58,7 +55,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   } = pageData;
 
   // Fetch client-side testimonials
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const testimonialsData = { data: pageData.testimonials || [] };
 
   // Featured listings optimization
   const featured = useMemo(

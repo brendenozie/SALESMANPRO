@@ -4,7 +4,7 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React from "react";
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
+
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
@@ -13,8 +13,6 @@ import GlassInfoCardsSection from "./components/GlassInfoCardsSection";
 import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
 // Loading skeleton
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import below-the-fold components
 const SchoolSection = dynamic(() => import('./components/SchoolSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
@@ -33,9 +31,10 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 //----------------------------------------------
 export default function CoursesSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  
+  const testimonialsData = { data: pageData.testimonials || [] };
+  const blogsData = { data: pageData.blogs || [] }; 
+  const faqsData = { data: pageData.faqs || [] };
   
   
   const sectionMap: Record<string, React.ReactNode> = {

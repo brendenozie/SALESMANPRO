@@ -9,7 +9,6 @@ import { StoreForm } from "@/types/typings";
 // Above-the-fold components - statically imported
 import HeroComponent from "./components/HeroSection";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Loading skeleton
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
@@ -36,8 +35,6 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 //----------------------------------------------
 // EventsSite component, using StoreContext

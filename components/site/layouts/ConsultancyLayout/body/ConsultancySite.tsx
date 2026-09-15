@@ -4,7 +4,6 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React from "react";
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
@@ -13,8 +12,6 @@ import HeroSection from "./components/HeroSection";
 import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
 // Loading skeleton
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import below-the-fold components
 const SocialProofSection = dynamic(() => import('./components/SocialProofSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
@@ -33,8 +30,9 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 export default function ConsultancySite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
+  
+  const testimonialsData = { data: pageData.testimonials || [] };
+  const blogsData = { data: pageData.blogs || [] };
 
   // Use pageData for all content
   const siteData = pageData;

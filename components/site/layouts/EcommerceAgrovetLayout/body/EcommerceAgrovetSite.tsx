@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm } from '@/types/typings';
 
@@ -40,10 +39,7 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
@@ -60,7 +56,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   } = pageData;
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const testimonialsData = { data: pageData.testimonials || [] };
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(

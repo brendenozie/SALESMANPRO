@@ -4,7 +4,7 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
+
 import 'react-datepicker/dist/react-datepicker.css';
 import { StoreForm } from '@/types/typings';
 
@@ -29,8 +29,10 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BookingsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side social proof
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  
+  const testimonialsData = { data: pageData.testimonials || [] };
+  const blogsData = { data: pageData.blogs || [] }; 
+  const faqsData = { data: pageData.faqs || [] };
 
   const { 
     name, 

@@ -5,7 +5,7 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
+
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StoreForm } from '@/types/typings';
@@ -40,8 +40,9 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  const testimonialsData = { data: pageData.testimonials || [] };
+  const blogsData = { data: pageData.blogs || [] }; 
+  const faqsData = { data: pageData.faqs || [] };
 
   const handleSearch = () => {
     // router.push(`/${pageData.slug}/search?q=${encodeURIComponent(searchTerm)}`);
