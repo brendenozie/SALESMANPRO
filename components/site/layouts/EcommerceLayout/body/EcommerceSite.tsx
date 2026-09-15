@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 import dynamic from 'next/dynamic';
 import HeroSlider from './components/HeroSlider';
-import { StoreForm, MarketListingForm } from '@/types/typings';
+import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
@@ -41,10 +41,6 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {

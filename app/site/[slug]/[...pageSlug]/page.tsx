@@ -89,10 +89,16 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
 
   let activeConfig = raw?.website?.publishedConfig as any;
 
-  // If no published config exists, or if the page is a standard template page not yet explicitly saved,
-  // synthesize from template defaults so customer navigation (/products, /categories, /about) never 404s
+  // Compile from template defaults lazily (once) only if there is no published config.
+  // This avoids calling compileWebsiteFromCompany() multiple times per request.
+  let compiledFallback: ReturnType<typeof compileWebsiteFromCompany> | null = null;
+  const getCompiledFallback = () => {
+    if (!compiledFallback) compiledFallback = compileWebsiteFromCompany(raw);
+    return compiledFallback;
+  };
+
   if (!activeConfig) {
-    activeConfig = compileWebsiteFromCompany(raw);
+    activeConfig = getCompiledFallback();
   }
 
   // Check if page exists in active config
@@ -104,8 +110,8 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
   if (!pageExists) {
     const isTemplatePage = canonicalTemplate.defaultPages.some((p) => p.slug === currentSlug);
     if (isTemplatePage) {
-      // Re-synthesize clean template defaults for this page
-      const freshConfig = compileWebsiteFromCompany(raw);
+      // Re-use the already-compiled fallback — no second compile needed
+      const freshConfig = getCompiledFallback();
       activeConfig = {
         ...activeConfig,
         pages: [...(activeConfig.pages || []), ...(freshConfig.pages.filter((p) => p.slug === currentSlug))],
