@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { AiFillPlayCircle, AiFillHeart } from "react-icons/ai";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { GhubaFeedItem as GhubaFeedItemType } from "@/lib/ghuba-feed-service";
 import { GhubaFeedActions } from "./GhubaFeedActions";
 import { GhubaFeedCommerceBar } from "./GhubaFeedCommerceBar";
@@ -28,6 +29,7 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
   onUpdateEngagement,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const galleryContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [showPlayIcon, setShowPlayIcon] = useState<boolean>(false);
   const [videoError, setVideoError] = useState<boolean>(false);
@@ -39,6 +41,39 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
   const videoSrc = item.media.videos[0];
   const hasVideo = item.media.primaryType === "VIDEO" && Boolean(videoSrc) && !videoError;
   const isGallery = !hasVideo && item.media.images.length > 1;
+
+  // Reset gallery position when feed item becomes inactive
+  useEffect(() => {
+    if (!isActive) {
+      setActiveImageIndex(0);
+      if (galleryContainerRef.current) {
+        galleryContainerRef.current.scrollLeft = 0;
+      }
+    }
+  }, [isActive]);
+
+  const handleGalleryScroll = () => {
+    if (!galleryContainerRef.current) return;
+    const container = galleryContainerRef.current;
+    if (container.clientWidth > 0) {
+      const newIndex = Math.round(container.scrollLeft / container.clientWidth);
+      if (newIndex >= 0 && newIndex < item.media.images.length && newIndex !== activeImageIndex) {
+        setActiveImageIndex(newIndex);
+      }
+    }
+  };
+
+  const scrollToImage = (index: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (galleryContainerRef.current) {
+      const width = galleryContainerRef.current.clientWidth;
+      galleryContainerRef.current.scrollTo({
+        left: index * width,
+        behavior: "smooth",
+      });
+      setActiveImageIndex(index);
+    }
+  };
 
   // Autoplay & Hardware Decoder Lifecycle Management
   useEffect(() => {
@@ -167,46 +202,90 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
             />
           </div>
         ) : isGallery ? (
-          /* Multi-image slideshow / gallery */
+          /* Multi-image swipeable & scrollable gallery */
           <div className="relative h-full w-full overflow-hidden">
             {/* Blurred background for aesthetic framing */}
             <div
-              className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110"
+              className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110 transition-all duration-500"
               style={{
                 backgroundImage: `url(${imageVariants?.feed || item.media.images[activeImageIndex] || item.media.poster})`,
               }}
             />
 
-            <div className="relative h-full w-full flex items-center justify-center">
-              <picture className="h-full w-full flex items-center justify-center">
-                {imageVariants?.feed && (
-                  <source media="(max-width: 768px)" srcSet={imageVariants.feed} type="image/webp" />
-                )}
-                {imageVariants?.full && (
-                  <source srcSet={imageVariants.full} type="image/webp" />
-                )}
-                <img
-                  src={imageVariants?.feed || item.media.images[activeImageIndex] || item.media.poster || ""}
-                  alt={item.title}
-                  className="h-full w-full object-contain transition-transform duration-700 hover:scale-105"
-                  loading={isActive ? "eager" : "lazy"}
-                  style={currentImageDetail?.blurDataUrl ? { backgroundImage: `url(${currentImageDetail.blurDataUrl})`, backgroundSize: "cover" } : undefined}
-                />
-              </picture>
+            {/* Horizontal Scroll Snap Container */}
+            <div
+              ref={galleryContainerRef}
+              onScroll={handleGalleryScroll}
+              className="relative z-10 flex h-full w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth touch-pan-x"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {item.media.images.map((imgUrl, idx) => {
+                const detail = item.media.imageDetails?.[idx];
+                const variants = detail?.variants;
+                return (
+                  <div
+                    key={idx}
+                    className="relative flex-shrink-0 w-full h-full snap-start snap-always flex items-center justify-center p-2"
+                  >
+                    <picture className="h-full w-full flex items-center justify-center pointer-events-none">
+                      {variants?.feed && (
+                        <source media="(max-width: 768px)" srcSet={variants.feed} type="image/webp" />
+                      )}
+                      {variants?.full && (
+                        <source srcSet={variants.full} type="image/webp" />
+                      )}
+                      <img
+                        src={variants?.feed || imgUrl}
+                        alt={`${item.title} - ${idx + 1}`}
+                        className="h-full w-full object-contain pointer-events-none transition-transform duration-500"
+                        loading={isActive && Math.abs(activeImageIndex - idx) <= 1 ? "eager" : "lazy"}
+                        draggable={false}
+                        style={detail?.blurDataUrl ? { backgroundImage: `url(${detail.blurDataUrl})`, backgroundSize: "cover" } : undefined}
+                      />
+                    </picture>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Left Chevron Navigation Button */}
+            {activeImageIndex > 0 && (
+              <button
+                type="button"
+                onClick={(e) => scrollToImage(activeImageIndex - 1, e)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white backdrop-blur-md border border-white/20 shadow-xl transition-all active:scale-95"
+                aria-label="Previous image"
+              >
+                <ChevronLeftIcon className="h-5 w-5" />
+              </button>
+            )}
+
+            {/* Right Chevron Navigation Button (offset so it does not collide with feed action buttons) */}
+            {activeImageIndex < item.media.images.length - 1 && (
+              <button
+                type="button"
+                onClick={(e) => scrollToImage(activeImageIndex + 1, e)}
+                className="absolute right-16 sm:right-20 top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white backdrop-blur-md border border-white/20 shadow-xl transition-all active:scale-95"
+                aria-label="Next image"
+              >
+                <ChevronRightIcon className="h-5 w-5" />
+              </button>
+            )}
+
+            {/* Slide Counter Badge */}
+            <div className="absolute top-16 right-4 z-20 rounded-full bg-black/60 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white/90 border border-white/20 shadow-md">
+              <span>{activeImageIndex + 1} / {item.media.images.length}</span>
             </div>
 
             {/* Gallery Dots Indicator */}
-            <div className="absolute top-16 left-0 right-0 z-20 flex justify-center gap-1.5 p-2">
-              {item.media.images.map((img, idx) => (
+            <div className="absolute top-16 left-0 right-0 z-20 flex justify-center gap-1.5 p-2 pointer-events-auto">
+              {item.media.images.map((_, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveImageIndex(idx);
-                  }}
-                  className={`h-1.5 rounded-full transition-all ${
-                    activeImageIndex === idx ? "w-6 bg-amber-400" : "w-1.5 bg-white/40"
+                  onClick={(e) => scrollToImage(idx, e)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    activeImageIndex === idx ? "w-6 bg-amber-400 shadow-sm" : "w-1.5 bg-white/40 hover:bg-white/70"
                   }`}
                   aria-label={`Slide ${idx + 1}`}
                 />

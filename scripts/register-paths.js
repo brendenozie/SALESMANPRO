@@ -4,6 +4,9 @@ const fs = require('fs');
 
 const originalResolveFilename = Module._resolveFilename;
 Module._resolveFilename = function (request, parent, isMain, options) {
+  if (request === 'server-only' || request === 'client-only') {
+    return path.resolve(__dirname, 'server-only-stub.js');
+  }
   if (request.startsWith('@/')) {
     const relativePath = request.slice(2);
     let absolutePath = path.resolve(__dirname, '..', relativePath);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { HiCheckBadge, HiShoppingBag, HiBolt, HiCalendarDays, HiChatBubbleLeftRight } from "react-icons/hi2";
-import { GhubaFeedItem } from "@/lib/ghuba-feed-service";
+import { useStateContext } from "@/contexts/ContextProvider";
 
 interface GhubaFeedCommerceBarProps {
   item: GhubaFeedItem;
@@ -22,12 +22,8 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
   const [expanded, setExpanded] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
-  // Dynamic context hook to safely consume StateContext if available
-  let appContext: any = null;
-  try {
-    const { StateContext } = require("@/contexts/ContextProvider") || {};
-    // Note: React useContext requires the context object
-  } catch {}
+  // Consume cart actions from global ContextProvider
+  const { addToCart } = useStateContext();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,13 +38,18 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
         finalPrice: item.price,
         sellingPrice: item.price,
         quantity: 1,
-        image: item.media.thumbnail || item.media.poster,
+        image: item.media.thumbnail || item.media.poster || (item.media.images && item.media.images[0]) || "",
         images: item.media.images,
         seller: item.seller,
         publicUrl: item.publicUrl,
       };
 
-      // Dispatch custom cart event so ContextProvider or external cart listeners update
+      // 1. Context cart update (for global cart and checkout drawer)
+      if (typeof addToCart === "function") {
+        addToCart(cartItem as any);
+      }
+
+      // 2. Dispatch custom cart event & update local storage for Ghuba Cart compatibility
       if (typeof window !== "undefined") {
         const stored = localStorage.getItem("ghuba_cart");
         let currentCart = stored ? JSON.parse(stored) : [];
@@ -66,14 +67,6 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
           })
         );
       }
-
-      toast.success(
-        <div className="flex items-center gap-2">
-          <HiShoppingBag className="h-5 w-5 text-emerald-500" />
-          <span>Added <b>{item.title.slice(0, 24)}</b> to cart!</span>
-        </div>,
-        { duration: 2500 }
-      );
     } catch {
       toast.error("Failed to add to cart");
     } finally {
@@ -84,8 +77,8 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
   const handleBuyNow = (e: React.MouseEvent) => {
     e.stopPropagation();
     handleAddToCart(e);
-    // Proceed seamlessly to Ghuba checkout
-    router.push("/site/ghuba/checkout");
+    // Proceed directly to the dedicated Ghuba checkout page
+    router.push("/ghuba/checkout");
   };
 
   return (

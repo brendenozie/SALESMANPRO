@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   XMarkIcon, 
@@ -36,10 +37,16 @@ export default function WhatsAppBubble({
   productUrl, 
   phoneNumber = "254712345678" 
 }: WhatsAppModalProps) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [showPulse, setShowPulse] = useState(true);  
   const { storeFormData } = useStoreContext();
   const [currentUrl, setCurrentUrl] = useState("");
+
+  // Suppress floating WhatsApp bubble on feed views so it doesn't obstruct feed action buttons & video controls
+  if (pathname && (pathname.includes("/feed") || pathname.endsWith("/feed"))) {
+    return null;
+  }
 
   const toggleModal = () => {
     setIsOpen(!isOpen);

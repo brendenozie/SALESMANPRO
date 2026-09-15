@@ -348,21 +348,25 @@ async function getGhubaFeed(options = {}) {
     }
     const listingIds = pageListings.map((l) => l.id);
     // 1. Batch lookup likes count
-    const likesGroup = await prismadb_1.default.marketplaceListingLike.groupBy({
-        by: ["listingId"],
-        where: { listingId: { in: listingIds } },
-        _count: { _all: true },
-    });
+    const likesGroup = prismadb_1.default.marketplaceListingLike?.groupBy
+        ? await prismadb_1.default.marketplaceListingLike.groupBy({
+            by: ["listingId"],
+            where: { listingId: { in: listingIds } },
+            _count: { _all: true },
+        })
+        : [];
     const likesCountMap = new Map();
     for (const item of likesGroup) {
         likesCountMap.set(item.listingId, item._count._all);
     }
     // 2. Batch lookup comments count
-    const commentsGroup = await prismadb_1.default.marketplaceListingComment.groupBy({
-        by: ["listingId"],
-        where: { listingId: { in: listingIds }, status: "VISIBLE" },
-        _count: { _all: true },
-    });
+    const commentsGroup = prismadb_1.default.marketplaceListingComment?.groupBy
+        ? await prismadb_1.default.marketplaceListingComment.groupBy({
+            by: ["listingId"],
+            where: { listingId: { in: listingIds }, status: "VISIBLE" },
+            _count: { _all: true },
+        })
+        : [];
     const commentsCountMap = new Map();
     for (const item of commentsGroup) {
         commentsCountMap.set(item.listingId, item._count._all);
@@ -384,13 +388,15 @@ async function getGhubaFeed(options = {}) {
     const userSavedSet = new Set();
     if (userId) {
         const [userLikes, userSaves] = await Promise.all([
-            prismadb_1.default.marketplaceListingLike.findMany({
-                where: {
-                    userId,
-                    listingId: { in: listingIds },
-                },
-                select: { listingId: true },
-            }),
+            prismadb_1.default.marketplaceListingLike?.findMany
+                ? prismadb_1.default.marketplaceListingLike.findMany({
+                    where: {
+                        userId,
+                        listingId: { in: listingIds },
+                    },
+                    select: { listingId: true },
+                })
+                : Promise.resolve([]),
             prismadb_1.default.wishlistItem.findMany({
                 where: {
                     marketplaceListingId: { in: listingIds },

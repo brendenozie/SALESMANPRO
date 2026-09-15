@@ -73,6 +73,68 @@ Return strictly a JSON object with:
         return result.json || { text: result.text };
     }
     /**
+     * Generates comprehensive SEO strategy (title, description, keywords, strategy) for a Store.
+     */
+    async generateStoreSEO(params, context) {
+        const prompt = `You are the world's leading technical eCommerce SEO strategist.
+Generate an optimized, high-CTR search engine profile for this online business:
+Store Name: "${params.storeName}"
+Category / Vertical: "${params.category || "General Store"}"
+Tagline: "${params.tagline || ""}"
+Current Bio: "${params.description || ""}"
+Key Offerings / Top Products: ${params.topProducts?.join(", ") || "Diverse catalog"}
+Location: ${[params.city, params.country].filter(Boolean).join(", ") || "Global"}
+
+Requirements:
+1. "seoTitle": (50-65 characters) Highly clickable, includes primary commercial keyword, location (if available), and store name. No keyword stuffing.
+2. "seoDescription": (145-160 characters) Compelling meta snippet answering search intent, showcasing uniqueness, and ending with an active call to action.
+3. "keywords": (array of 10-15 targeted phrases) High-intent transactional, commercial, and localized long-tail keywords.
+4. "competitiveSummary": (1-2 sentences) Brief strategy rationale explaining why this metadata will outrank competitors.
+
+Return strictly a JSON object with keys: "seoTitle", "seoDescription", "keywords", "competitiveSummary".`;
+        try {
+            const result = await aiService_1.aiService.generateText({
+                prompt,
+                systemPrompt: "You are an expert technical eCommerce SEO specialist. Always output strictly valid JSON.",
+                modelId: params.modelId,
+                jsonSchema: true,
+            }, {
+                ...context,
+                feature: "store_seo",
+            });
+            if (result.json && (result.json.seoTitle || result.json.title)) {
+                return {
+                    seoTitle: (result.json.seoTitle || result.json.title),
+                    seoDescription: (result.json.seoDescription || result.json.description),
+                    keywords: (result.json.keywords || result.json.metaKeywords || []),
+                    competitiveSummary: (result.json.competitiveSummary || "AI-optimized based on store catalog and regional search intent."),
+                };
+            }
+        }
+        catch (err) {
+            console.warn("AI generation encountered issue, falling back to deterministic SEO generator:", err?.message);
+        }
+        // Deterministic High-Quality Fallback if AI provider is unconfigured or rate-limited
+        const locPart = params.city ? ` in ${params.city}` : "";
+        const catPart = params.category ? ` | ${params.category}` : "";
+        const cleanTitle = `${params.storeName} - Best Online Deals${locPart}${catPart}`.slice(0, 65);
+        const cleanDesc = `Shop authentic products online at ${params.storeName}. Enjoy fast delivery, verified customer service, and unbeatable prices${locPart}. Explore our catalog today!`.slice(0, 160);
+        const fallbackKeywords = [
+            params.storeName.toLowerCase(),
+            `${params.storeName.toLowerCase()} online shop`,
+            `buy online ${params.city || "kenya"}`.toLowerCase(),
+            params.category ? `${params.category.toLowerCase()} online` : "ecommerce store",
+            "best prices online",
+            "fast delivery shopping",
+        ];
+        return {
+            seoTitle: cleanTitle,
+            seoDescription: cleanDesc,
+            keywords: fallbackKeywords,
+            competitiveSummary: "Generated using deterministic high-conversion eCommerce SEO templates.",
+        };
+    }
+    /**
      * Generates smart attributes & specifications (dimensions, colors, materials, care instructions).
      */
     async generateAttributes(params, context) {
@@ -123,15 +185,118 @@ Return strictly a JSON object with:
         });
         if (result.images.length > 0) {
             const newImageUrl = result.images[0].url;
-            const currentImages = Array.isArray(product.images) ? product.images : [];
-            await prismadb_1.default.product.update({
-                where: { id: product.id },
+            const targetType = params.targetType || "PRODUCT";
+            // If targeted to Product or Both, attach to Product record
+            if (targetType === "PRODUCT" || targetType === "BOTH") {
+                const currentImages = (Array.isArray(product.images) ? product.images : []).filter((img) => img !== null);
+                await prismadb_1.default.product.update({
+                    where: { id: product.id },
+                    data: {
+                        images: [...currentImages, newImageUrl],
+                    },
+                });
+            }
+            // If explicitly targeted to Listing or Both, attach to consumer-facing listing(s)
+            if (targetType === "LISTING" || targetType === "BOTH") {
+                const attachedListings = params.listingId
+                    ? await prismadb_1.default.marketplaceListings.findMany({ where: { id: params.listingId } })
+                    : await prismadb_1.default.marketplaceListings.findMany({ where: { productId: product.id } });
+                for (const listing of attachedListings) {
+                    const listingImages = (Array.isArray(listing.images) ? listing.images : []).filter((img) => img !== null);
+                    await prismadb_1.default.marketplaceListings.update({
+                        where: { id: listing.id },
+                        data: {
+                            images: [...listingImages, newImageUrl],
+                        },
+                    });
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * Applies AI-generated titles, descriptions, tags, and specifications
+     * to the targeted entity (PRODUCT, LISTING, or BOTH).
+     */
+    async applyProductAI(params, context) {
+        let resolvedProductId = params.productId;
+        if (!resolvedProductId && params.listingId) {
+            const listing = await prismadb_1.default.marketplaceListings.findUnique({
+                where: { id: params.listingId },
+                select: { id: true, productId: true },
+            });
+            if (listing?.productId) {
+                resolvedProductId = listing.productId;
+            }
+        }
+        // Default target: if only listingId passed, target is LISTING; if targetType passed, use it; else if productId passed, default to PRODUCT
+        const targetType = params.targetType || (params.listingId && !params.productId ? "LISTING" : "PRODUCT");
+        const updateData = {};
+        if (params.name)
+            updateData.name = params.name.trim();
+        if (params.description)
+            updateData.description = params.description.trim();
+        let fullDescription = params.longDescription || params.description;
+        if (params.bulletPoints && params.bulletPoints.length > 0) {
+            const bullets = "\n\nKey Highlights:\n" + params.bulletPoints.join("\n");
+            fullDescription = fullDescription ? `${fullDescription}${bullets}` : bullets;
+        }
+        if (fullDescription)
+            updateData.longDescription = fullDescription.trim();
+        if (params.tags && Array.isArray(params.tags))
+            updateData.tags = params.tags;
+        if (params.attributes) {
+            if (params.attributes.material)
+                updateData.material = Array.isArray(params.attributes.material) ? params.attributes.material : [params.attributes.material];
+            if (params.attributes.careInstructions)
+                updateData.careInstructions = params.attributes.careInstructions;
+            if (params.attributes.warrantyPeriod)
+                updateData.warrantyPeriod = params.attributes.warrantyPeriod;
+            if (params.attributes.condition)
+                updateData.condition = params.attributes.condition;
+            if (params.attributes.weight)
+                updateData.weight = Array.isArray(params.attributes.weight) ? params.attributes.weight : [params.attributes.weight];
+        }
+        let updatedProduct = null;
+        let updatedListing = null;
+        // Apply to Product if target is PRODUCT or BOTH
+        if ((targetType === "PRODUCT" || targetType === "BOTH") && resolvedProductId) {
+            updatedProduct = await prismadb_1.default.product.update({
+                where: { id: resolvedProductId },
                 data: {
-                    images: [...currentImages, newImageUrl],
+                    ...updateData,
+                    updatedAt: new Date(),
                 },
             });
         }
-        return result;
+        // Apply to Listing if target is LISTING or BOTH
+        if (targetType === "LISTING" || targetType === "BOTH") {
+            if (params.listingId) {
+                updatedListing = await prismadb_1.default.marketplaceListings.update({
+                    where: { id: params.listingId },
+                    data: {
+                        ...updateData,
+                        updatedAt: new Date(),
+                    },
+                });
+            }
+            else if (resolvedProductId) {
+                await prismadb_1.default.marketplaceListings.updateMany({
+                    where: { productId: resolvedProductId },
+                    data: {
+                        ...updateData,
+                        updatedAt: new Date(),
+                    },
+                });
+            }
+        }
+        return {
+            success: true,
+            product: updatedProduct,
+            listing: updatedListing,
+            targetType,
+            updatedFields: Object.keys(updateData),
+        };
     }
 }
 exports.ProductAIService = ProductAIService;

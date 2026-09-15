@@ -156,7 +156,7 @@ class CentralVideoProvider {
                 },
             },
         });
-        // 5. If linked to product, attach video URL
+        // 5. If linked to product, attach video URL to product and all attached marketplace listings
         if (inputAssets.productId) {
             try {
                 const product = await prismadb_1.default.product.findUnique({
@@ -164,19 +164,38 @@ class CentralVideoProvider {
                 });
                 if (product) {
                     const currentVideos = Array.isArray(product.videos) ? product.videos : [];
-                    await prismadb_1.default.product.update({
-                        where: { id: product.id },
-                        data: {
-                            videos: [...currentVideos, params.videoUrl],
-                        },
-                    });
+                    if (!currentVideos.includes(params.videoUrl)) {
+                        await prismadb_1.default.product.update({
+                            where: { id: product.id },
+                            data: {
+                                videos: [...currentVideos, params.videoUrl],
+                            },
+                        });
+                    }
+                    // Propagate video to attached customer-facing marketplace listings only if explicitly requested (targetType === "BOTH")
+                    if (inputAssets.targetType === "BOTH") {
+                        const attachedListings = await prismadb_1.default.marketplaceListings.findMany({
+                            where: { productId: product.id },
+                        });
+                        for (const listing of attachedListings) {
+                            const listingVideos = Array.isArray(listing.videos) ? listing.videos : [];
+                            if (!listingVideos.includes(params.videoUrl)) {
+                                await prismadb_1.default.marketplaceListings.update({
+                                    where: { id: listing.id },
+                                    data: {
+                                        videos: [...listingVideos, params.videoUrl],
+                                    },
+                                });
+                            }
+                        }
+                    }
                 }
             }
             catch (err) {
                 console.error("[ATTACH_VIDEO_TO_PRODUCT_ERROR]", err);
             }
         }
-        // 6. If linked to marketplace listing, attach video URL
+        // 6. If linked to marketplace listing, attach video URL and back-propagate to product if linked
         if (inputAssets.marketplaceListingId) {
             try {
                 const listing = await prismadb_1.default.marketplaceListings.findUnique({
@@ -184,12 +203,31 @@ class CentralVideoProvider {
                 });
                 if (listing) {
                     const currentVideos = Array.isArray(listing.videos) ? listing.videos : [];
-                    await prismadb_1.default.marketplaceListings.update({
-                        where: { id: listing.id },
-                        data: {
-                            videos: [...currentVideos, params.videoUrl],
-                        },
-                    });
+                    if (!currentVideos.includes(params.videoUrl)) {
+                        await prismadb_1.default.marketplaceListings.update({
+                            where: { id: listing.id },
+                            data: {
+                                videos: [...currentVideos, params.videoUrl],
+                            },
+                        });
+                    }
+                    // If this listing is linked to a parent Product, ensure product also receives the video
+                    if (listing.productId) {
+                        const parentProduct = await prismadb_1.default.product.findUnique({
+                            where: { id: listing.productId },
+                        });
+                        if (parentProduct) {
+                            const parentVideos = Array.isArray(parentProduct.videos) ? parentProduct.videos : [];
+                            if (!parentVideos.includes(params.videoUrl)) {
+                                await prismadb_1.default.product.update({
+                                    where: { id: parentProduct.id },
+                                    data: {
+                                        videos: [...parentVideos, params.videoUrl],
+                                    },
+                                });
+                            }
+                        }
+                    }
                 }
             }
             catch (err) {

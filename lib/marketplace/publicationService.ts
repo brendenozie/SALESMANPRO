@@ -178,6 +178,7 @@ export async function publishProductToMarketplace(
   const createdListing = await prisma.marketplaceListings.create({
     data: {
       ...sanitized,
+      subCategory: (sanitized.subCategory ?? product.subCategory ?? {}) as any,
       company: { connect: { id: product.companyId } },
       product: { connect: { id: product.id } },
       ...(product.productCategoryId

@@ -102,9 +102,10 @@ function withApiHandler(handler, options = {
                 }
             }
             // --- Role-based Access Control ---
-            if (options.allowedRoles && options.allowedRoles.length > 0) {
+            const effectiveAllowedRoles = options.allowedRoles ?? options.roles;
+            if (effectiveAllowedRoles && effectiveAllowedRoles.length > 0) {
                 const userRole = context.user?.role?.toLowerCase();
-                const allowedRolesLower = options.allowedRoles.map((role) => role.toLowerCase());
+                const allowedRolesLower = effectiveAllowedRoles.map((role) => role.toLowerCase());
                 if (!userRole || !allowedRolesLower.includes(userRole)) {
                     return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "Forbidden: Insufficient role permissions", 403, undefined, requestId), Date.now() - startTime, requestId);
                 }

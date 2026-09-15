@@ -143,16 +143,25 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 export async function uploadFiles(
   files: File[],
   type: "image" | "video" | "book",
-  onProgress?: (progress: number, file: File) => void
+  onProgress?: (progress: number, file: File) => void,
+  companyId?: string
 ): Promise<{ url: string; key: string; contentType: string }[]> {
   if (!files?.length) return [];
 
   const uploads = files.map(async (file) => {
     try {
-      // ✅ Step 1: Request a signed upload URL from your API
-      const res = await fetch(
-        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-      );
+      // ✅ Step 1: Request presigned direct S3 upload URL with tenant company scoping
+      const res = await fetch(`${apiBaseUrl}/upload-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          type,
+          contentType: file.type || "application/octet-stream",
+          fileSize: file.size,
+          companyId,
+        }),
+      });
 
       if (!res.ok) {
         const text = await res.text();
@@ -161,7 +170,7 @@ export async function uploadFiles(
 
       const { uploadUrl, publicUrl, key, contentType } = await res.json();
 
-      // ✅ Step 2: Upload directly to S3
+      // ✅ Step 2: Upload directly to S3 with progress tracking
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", uploadUrl);
@@ -169,13 +178,13 @@ export async function uploadFiles(
 
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable && onProgress) {
-            const progress = Math.round((event.loaded / event.total) * 100);
+            const progress = Math.round((event.loaded / event.total) * 90);
             onProgress(progress, file);
           }
         };
 
         xhr.onload = () => {
-          if (xhr.status === 200) resolve();
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
           else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
         };
 
@@ -183,7 +192,16 @@ export async function uploadFiles(
         xhr.send(file);
       });
 
-      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      // ✅ Step 3: Trigger responsive WebP variant optimization if image
+      if (type === "image" && key) {
+        fetch(`${apiBaseUrl}/media/process`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key, companyId }),
+        }).catch((e) => console.warn("[MEDIA_PROCESS_BG_NOTICE]", e));
+      }
+
+      if (onProgress) onProgress(100, file);
       return { url: publicUrl, key, contentType };
     } catch (err) {
       console.error("❌ Upload error:", err);
@@ -725,19 +743,19 @@ export default function AddProductModal({
         const uploadImagePromises = newImageItems.map(item =>
           uploadFiles([item.file!], "image", (progress, file) => {
             console.log(`Uploading image ${file.name}: ${progress}%`);
-          }).then(result => ({ id: item.id, url: result[0].url }))
+          }, companyId).then(result => ({ id: item.id, url: result[0].url }))
         );
 
         const uploadVideoPromises = newVideoItems.map(item =>
           uploadFiles([item.file!], "video", (progress, file) => {
             console.log(`Uploading video ${file.name}: ${progress}%`);
-          }).then(result => ({ id: item.id, url: result[0].url }))
+          }, companyId).then(result => ({ id: item.id, url: result[0].url }))
         );
 
         const uploadBookPromises = newBookItems.map(item =>
           uploadFiles([item.file!], "book", (progress, file) => {
             console.log(`Uploading book ${file.name}: ${progress}%`);
-          }).then(result => ({ id: item.id, url: result[0].url }))
+          }, companyId).then(result => ({ id: item.id, url: result[0].url }))
         );
 
         // 3. Run all uploads in parallel
