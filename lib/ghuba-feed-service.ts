@@ -769,12 +769,23 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
 
   for (const raw of pageListings) {
     const wrapped = withCapabilities(raw);
-    const resolvedType = wrapped.productType as FeedListingType;
+    let resolvedType = wrapped.productType as FeedListingType;
 
     // Filter by type if explicitly requested (double check against resolved functional type)
     if (type && resolvedType !== type) {
-      continue;
+      if (
+        type === "PROPERTY" &&
+        (raw.bedrooms != null ||
+          /real estate|property|house|apartment|villa|land|plot|home|commercial|residence/i.test(
+            raw.category || raw.subCategoryName || raw.name || ""
+          ))
+      ) {
+        resolvedType = "PROPERTY";
+      } else {
+        continue;
+      }
     }
+
 
     const media = resolveFeedMedia(raw.videos, raw.images);
     const publicUrl = getListingPublicUrl(raw);

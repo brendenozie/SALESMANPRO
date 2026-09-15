@@ -7,15 +7,14 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth";
 import { getGhubaFeed, FeedListingType } from "@/lib/ghuba-feed-service";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     const userId = (session?.user as any)?.id || null;
 
     const { searchParams } = new URL(request.url);

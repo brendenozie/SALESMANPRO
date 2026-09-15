@@ -6,8 +6,7 @@
  */
 
 import { Metadata } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth";
 import { getGhubaFeed } from "@/lib/ghuba-feed-service";
 import { GhubaFeedContainer } from "@/components/ghuba/feed/GhubaFeedContainer";
 
@@ -37,7 +36,7 @@ export default async function GhubaFeedPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const session = await getServerSession(authOptions());
+  const session = await getAuthSession();
   const userId = (session?.user as any)?.id || null;
 
   // Pre-fetch initial batch on server for instant first-paint

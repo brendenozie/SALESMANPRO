@@ -5,6 +5,10 @@ import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
 import AdminInventoryClient, { InventoryItem } from "./AdminInventoryClient";
 import { IStoreCategory } from "@/types/typings";
+import {
+  getStoreCategoriesByCompanyId,
+  getStoreInventoryProducts,
+} from "@/lib/store-category-service";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -29,38 +33,37 @@ export default async function AdminInventoryPage({ params }: Props) {
   // Use the actual database ID for your API calls, ensuring consistency
   const companyId = company.id;
 
+  // 1. Always load categories directly from the database first
+  let categoriesData: IStoreCategory[] = await getStoreCategoriesByCompanyId(companyId);
   let productsData: InventoryItem[] = [];
-  let categoriesData: IStoreCategory[] = [];
   let agentsData: any[] = [];
 
   try {
     const cookieHeader = (await cookies()).toString();
     const fetchOptions = { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } };
 
-    // Fetch in parallel to speed up the page load
-    const [productsRes, categoriesRes, agentsRes] = await Promise.all([
-      fetch(`${apiBaseUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`, fetchOptions)
+    // Fetch in parallel
+    const [productsRes, agentsRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`, fetchOptions).catch(() => null),
+      fetch(`${apiBaseUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`, fetchOptions).catch(() => null),
     ]);
 
-    if (productsRes.ok) {
+    if (productsRes && productsRes.ok) {
       const prodData = await productsRes.json();
-      productsData = Array.isArray(prodData.data?.results) ? prodData.data.results : [];
+      productsData = Array.isArray(prodData?.data?.results) ? prodData.data.results : [];
     }
 
-    if (categoriesRes.ok) {
-      const catData = await categoriesRes.json();
-      categoriesData = Array.isArray(catData.data?.results) ? catData.data.results : [];
-    }
-
-    if (agentsRes.ok) {
+    if (agentsRes && agentsRes.ok) {
       const agentData = await agentsRes.json();
-      agentsData = Array.isArray(agentData.data) ? agentData.data : [];
+      agentsData = Array.isArray(agentData?.data) ? agentData.data : [];
     }
-
   } catch (err: any) {
     console.error("Inventory fetch error:", err.message);
+  }
+
+  // Fallback directly to DB if fetch failed or returned 0 products
+  if (productsData.length === 0) {
+    productsData = await getStoreInventoryProducts(companyId, 1, 50);
   }
 
   return (
@@ -71,4 +74,4 @@ export default async function AdminInventoryPage({ params }: Props) {
       agentsData={agentsData}
     />
   );
-}
+}

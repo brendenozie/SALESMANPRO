@@ -5,8 +5,7 @@
  */
 
 import { Metadata } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth";
 import { getGhubaFeed } from "@/lib/ghuba-feed-service";
 import { GhubaFeedContainer } from "@/components/ghuba/feed/GhubaFeedContainer";
 
@@ -25,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export default async function GhubaDirectFeedPage() {
-  const session = await getServerSession(authOptions());
+  const session = await getAuthSession();
   const userId = (session?.user as any)?.id || null;
 
   const initialFeed = await getGhubaFeed({

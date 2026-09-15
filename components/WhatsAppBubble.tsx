@@ -43,11 +43,6 @@ export default function WhatsAppBubble({
   const { storeFormData } = useStoreContext();
   const [currentUrl, setCurrentUrl] = useState("");
 
-  // Suppress floating WhatsApp bubble on feed views so it doesn't obstruct feed action buttons & video controls
-  if (pathname && (pathname.includes("/feed") || pathname.endsWith("/feed"))) {
-    return null;
-  }
-
   const toggleModal = () => {
     setIsOpen(!isOpen);
     setShowPulse(false);
@@ -56,6 +51,11 @@ export default function WhatsAppBubble({
   useEffect(() => {
     setCurrentUrl(window.location.href);
   }, []);
+
+  // Suppress floating WhatsApp bubble on feed views so it doesn't obstruct feed action buttons & video controls
+  if (pathname && (pathname.includes("/feed") || pathname.endsWith("/feed"))) {
+    return null;
+  }
 
   // Construct context-aware pre-filled WhatsApp message
   const activeProduct = productName || storeFormData?.name;
