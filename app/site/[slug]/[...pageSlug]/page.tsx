@@ -2,13 +2,8 @@ import { notFound } from "next/navigation";
 import { loadStore } from "@/lib/loadStore";
 import { StoreDataSync } from "@/contexts/StoreContext";
 import WebsiteRenderer from "@/components/website-builder/WebsiteRenderer";
-import dynamic from "next/dynamic";
 import { compileWebsiteFromCompany } from "@/lib/website-builder/template-compiler";
-
-const TemplateDiagnosticHud = dynamic(
-  () => import("@/components/website-builder/TemplateDiagnosticHud"),
-  { ssr: false }
-);
+import DiagnosticHudLoader from "@/components/website-builder/DiagnosticHudLoader";
 
 import type { Metadata } from "next";
 import { SEOService } from "@/lib/seo";
@@ -135,7 +130,7 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
         socialLinks={raw.socialLinks}
       />
       {process.env.NODE_ENV !== 'production' && (
-        <TemplateDiagnosticHud
+        <DiagnosticHudLoader
           slug={slug}
           template={canonicalTemplate}
           pageSlug={currentSlug}

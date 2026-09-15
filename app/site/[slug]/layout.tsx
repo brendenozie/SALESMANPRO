@@ -204,22 +204,15 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
         raw.website?.templateKey
       );
 
-  let LayoutComponent = isGhuba
-    ? (categoryHeaderFooterLayoutMap["GhubaLayout"] || categoryHeaderFooterLayoutMap["default"])
+  const LayoutComponent = isGhuba
+    ? (categoryHeaderFooterLayoutMap["GhubaLayout"] ?? categoryHeaderFooterLayoutMap["default"])
     : (
         categoryHeaderFooterLayoutMap[canonicalTemplate.shellLayout]
-        || categoryHeaderFooterLayoutMap[canonicalTemplate.variant] 
-        || categoryHeaderFooterLayoutMap[canonicalTemplate.category]
-        || categoryHeaderFooterLayoutMap[variant] 
-        || categoryHeaderFooterLayoutMap[category]
-        || (() => {
-          const matchedCategory = categoryMap.get(category) as any;
-          if (matchedCategory?.variants?.length) {
-            const firstVariant = normalize(matchedCategory.variants[0].name);
-            return categoryHeaderFooterLayoutMap[firstVariant];
-          }
-        })()
-        || categoryHeaderFooterLayoutMap['default']
+        ?? categoryHeaderFooterLayoutMap[canonicalTemplate.variant]
+        ?? categoryHeaderFooterLayoutMap[canonicalTemplate.category]
+        ?? categoryHeaderFooterLayoutMap[variant]
+        ?? categoryHeaderFooterLayoutMap[category]
+        ?? categoryHeaderFooterLayoutMap["default"]
       );
 
   const userId = ''; 
@@ -277,4 +270,4 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
       </StoreContextProvider>
     </EditableContentProvider>
   );
-}
+}

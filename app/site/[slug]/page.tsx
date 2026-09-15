@@ -2,13 +2,8 @@ import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
 import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 import { StoreDataSync } from '@/contexts/StoreContext';
-import dynamic from 'next/dynamic';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
-
-const TemplateDiagnosticHud = dynamic(
-  () => import('@/components/website-builder/TemplateDiagnosticHud'),
-  { ssr: false }
-);
+import DiagnosticHudLoader from '@/components/website-builder/DiagnosticHudLoader';
 
 export const revalidate = 60;
 
@@ -139,7 +134,7 @@ export default async function StorePage({ params }: StorePageProps) {
         ghubaData={ghubaData}
       />
       {process.env.NODE_ENV !== 'production' && (
-        <TemplateDiagnosticHud
+        <DiagnosticHudLoader
           slug={slug}
           template={canonicalTemplate}
           pageSlug="home"
