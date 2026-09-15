@@ -38,7 +38,13 @@ export default function TemplateDiagnosticHud({
 }: TemplateDiagnosticHudProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Render when ?debug=template or in local development
+  // ⛔ Production guard — never render on public storefronts in production.
+  // This prevents internal template metadata from leaking to visitors.
+  if (process.env.NODE_ENV === "production" && !isEditor) {
+    return null;
+  }
+
+  // In development/staging: additionally require ?debug=template query param or localhost
   if (
     typeof window !== "undefined" &&
     !window.location.search.includes("debug=template") &&

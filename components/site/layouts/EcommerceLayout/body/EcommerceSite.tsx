@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm } from '@/types/typings';
 
@@ -61,14 +60,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     CoreValues = [],
   } = pageData;
 
-  // Fetch client-side data with instant server-rendered fallback
-  const { data: testimonialsData } = useSWR(
-    companyId ? `/api/site/testimonials?id=${companyId}` : null,
-    fetcher
-  );
-  const activeTestimonials = testimonialsData?.data?.length
-    ? testimonialsData.data
-    : (testimonials?.length ? testimonials : null);
+  // Use server-provided testimonials directly — no need to re-fetch from the client.
+  // pageData.testimonials is already loaded server-side in pageDataInclude.
+  const activeTestimonials = testimonials?.length ? testimonials : null;
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(

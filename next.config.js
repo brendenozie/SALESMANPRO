@@ -81,6 +81,7 @@ module.exports = {
 
   async headers() {
     return [
+      // ─── Security headers for all routes ───────────────────────────────
       {
         source: "/:path*",
         headers: [
@@ -102,11 +103,50 @@ module.exports = {
           },
         ],
       },
+      // ─── Public tenant storefront pages — CDN-cacheable ────────────────
+      // Matches revalidate: 60 on layout/page. CDN serves stale for 5 min
+      // while Next.js ISR background-revalidates. Safe because no user-specific
+      // data is included in the public storefront HTML.
+      {
+        source: "/site/:slug*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
+          },
+        ],
+      },
+      // ─── Next.js immutable static assets ───────────────────────────────
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // ─── Optimized images from Next.js image API ────────────────────────
+      {
+        source: "/_next/image*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
     ];
   },
 
   images: {
-    loader: "custom",
+    // Use default Next.js image optimization (WebP/AVIF, responsive, CDN-friendly).
+    // Previously `loader: "custom"` was set without a loaderFile — this silently
+    // disabled all optimization. Removing it restores built-in image processing.
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 3600,
+    deviceSizes: [390, 640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     domains: [
       "t1.gstatic.com",
       "t2.gstatic.com",
@@ -117,6 +157,12 @@ module.exports = {
       "images.trvl-media.com",
       "salesmanpro.site",
       "dozi4r4ug9739.cloudfront.net",
+    ],
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "*.cloudfront.net" },
+      { protocol: "https", hostname: "*.s3.*.amazonaws.com" },
+      { protocol: "https", hostname: "*.salesmanpro.site" },
     ],
   },
 };

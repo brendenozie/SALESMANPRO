@@ -262,10 +262,10 @@ export function pageDataInclude() {
       },
     },
     ...latestSubscriptionInclude,
-    blogs: { orderBy: { publishedAt: "desc" as const } },
-    faqs: orderedAsc,
-    testimonials: orderedAsc,
-    heroSlides: orderedAsc,
+    blogs: { orderBy: { publishedAt: "desc" as const }, take: 10 },
+    faqs: { orderBy: { order: "asc" as const }, take: 50 },
+    testimonials: { orderBy: { order: "asc" as const }, take: 20 },
+    heroSlides: { orderBy: { order: "asc" as const }, take: 10 },
     promotions: {
       select: {
         title: true,
@@ -317,7 +317,7 @@ export function pageDataInclude() {
     },
     Podcast: true,
     courses: true,
-    events: true,
+    events: { orderBy: { createdAt: "desc" as const }, take: 20 },
     Package: true,
     Project: true,
     services: true,
