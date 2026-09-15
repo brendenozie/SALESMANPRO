@@ -396,6 +396,12 @@ const commonEcommerce = (
       ],
     },
     {
+      label: "Ads & Marketing",
+      icon: CurrencyDollarIcon,
+      minTier: "Ghuba Pro",
+      href: `/admin/${adminSlug}/ads`,
+    },
+    {
       label: "Email",
       icon: HomeIcon,
       href: `/admin/${adminSlug}/email`,
@@ -738,6 +744,11 @@ export const getCategoryMenus = (
           {
             label: "payments",
             href: "/super-admin/payments",
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "seo",
+            href: "/super-admin/seo",
             minTier: "Ghuba Pro",
           }
         ],
