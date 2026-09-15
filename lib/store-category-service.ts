@@ -101,7 +101,7 @@ export async function getStoreCategoriesByCompanyId(companyId: string): Promise<
     // find product categories that are actively linked to this company's products
     const productCategories = await prisma.productCategory.findMany({
       where: {
-        products: { some: { companyId } },
+        Product: { some: { companyId } },
       },
       take: 50,
       orderBy: { sortOrder: "asc" },
