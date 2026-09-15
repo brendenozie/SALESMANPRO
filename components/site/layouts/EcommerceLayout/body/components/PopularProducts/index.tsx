@@ -34,7 +34,7 @@ const NextArrow = ({ onClick }: { onClick?: () => void }) => (
 
 export default function PopularProducts({ id }: { id: string }) {
   const url = `/api/site/productsByFlag?companyId=${id}&flag=isFeatured&limit=8`;
-  const cacheKey = `products-${id}-isOnOffer`;
+  const cacheKey = `products-${id}-isFeatured`;
   const fetcher = createCachedFetcher(cacheKey);
 
   const { data, error, isLoading } = useSWR(url, fetcher, {

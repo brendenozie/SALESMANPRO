@@ -2,7 +2,6 @@ import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
 import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 import { StoreDataSync } from '@/contexts/StoreContext';
-import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registry';
 import TemplateDiagnosticHud from '@/components/website-builder/TemplateDiagnosticHud';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 
@@ -17,23 +16,14 @@ interface StorePageProps {
 export default async function StorePage({ params }: StorePageProps) {
   const { slug } = await params;
   
-  // Extract ghubaData alongside the rest
-  const { componentName, pageData, raw, ghubaData } = await loadStore(slug);
+  // Extract pre-resolved store data & canonical template memoized in loadStore
+  const { componentName, pageData, raw, ghubaData, canonicalTemplate } = await loadStore(slug);
 
   const isGhuba = isGhubaMarketplace(slug, raw) || componentName === 'GhubaSite';
 
-  // Deterministically resolve canonical template identity
-  const canonicalTemplate = isGhuba
-    ? resolveCanonicalTemplate("portal", "ghuba", "ghuba@v1")
-    : resolveCanonicalTemplate(
-        raw?.category,
-        raw?.variant,
-        raw?.website?.templateKey
-      );
-
   const resolvedComponentName = isGhuba
     ? 'GhubaSite'
-    : (canonicalTemplate.bodyComponent || componentName || 'DefaultSite');
+    : (canonicalTemplate?.bodyComponent || componentName || 'DefaultSite');
   const BodyComponent =
     BodyComponentMap[resolvedComponentName] || BodyComponentMap['DefaultSite'];
   const enabledPaymentMethods = getEnabledPaymentMethods(raw?.PaymentSettings);

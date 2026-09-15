@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { unstable_cache } from 'next/cache';
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -32,6 +33,22 @@ export function OPTIONS() {
   });
 }
 
+const getCachedEvents = (companyId: string) =>
+  unstable_cache(
+    async () => {
+      return await prisma.event.findMany({
+        where: { companyId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      });
+    },
+    [`events-${companyId}`],
+    {
+      revalidate: 600,
+      tags: [`events-${companyId}`, 'all-events'],
+    }
+  )();
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
@@ -41,12 +58,15 @@ export async function GET(req: Request) {
   }
 
   try {
-    const events = await prisma.event.findMany({
-      where: { companyId: id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const events = await getCachedEvents(id);
 
-    return withCors({ data: events });
+    return withCors(
+      { data: events },
+      200,
+      {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      }
+    );
   } catch (error) {
     console.error('Error fetching events:', error);
     return withCors({ error: 'Failed to fetch events' }, 500);

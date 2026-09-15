@@ -11,7 +11,6 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button 
@@ -33,9 +32,9 @@ const NextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-export default function DailyBestSells({ id }: { id: string }) {
-  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
-  const cacheKey = `products-${id}-isOnOffer`;
+export default function Trending({ id }: { id: string }) {
+  const url = `/api/site/productsByFlag?companyId=${id}&flag=isNewArrival&limit=8`;
+  const cacheKey = `products-${id}-isNewArrival`;
   const fetcher = createCachedFetcher(cacheKey);
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
@@ -63,7 +62,7 @@ export default function DailyBestSells({ id }: { id: string }) {
     ]
   };
 
-  if (isLoading) <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>;
+  if (isLoading) return <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>;
   if (error || !data?.data?.length) return null;
 
   return (

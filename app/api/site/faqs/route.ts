@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { unstable_cache } from 'next/cache';
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -32,6 +33,21 @@ export function OPTIONS() {
   });
 }
 
+const getCachedFaqs = (companyId: string) =>
+  unstable_cache(
+    async () => {
+      return await prisma.fAQ.findMany({
+        where: { companyId },
+        orderBy: { createdAt: 'asc' },
+        take: 50,
+      });
+    },
+    [`faqs-${companyId}`],
+    {
+      revalidate: 3600,
+      tags: [`faqs-${companyId}`, 'all-faqs'],
+    }
+  )();
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -42,12 +58,15 @@ export async function GET(req: Request) {
   }
 
   try {
-    const faqs = await prisma.fAQ.findMany({
-      where: { companyId: id },
-      orderBy: { createdAt: 'asc' },
-    });
+    const faqs = await getCachedFaqs(id);
 
-    return withCors({ data: faqs });
+    return withCors(
+      { data: faqs },
+      200,
+      {
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=86400",
+      }
+    );
   } catch (error) {
     console.error('Error fetching FAQs:', error);
     return withCors({ error: 'Failed to fetch FAQs' }, 500);
