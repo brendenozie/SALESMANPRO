@@ -4,7 +4,6 @@
 import React from "react";
 import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
@@ -12,9 +11,7 @@ import { StoreForm } from "@/types/typings";
 import HeroSection from "../components/HeroSection";
 
 // Loading skeleton
-
 import { SkeletonGrid } from './SkeletonGrid/SkeletonGrid';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import below-the-fold components
 const AboutSection = dynamic(() => import('../components/aboutUs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
@@ -27,29 +24,13 @@ const CleaningTipsSection = dynamic(() => import('../components/CleaningTipsSect
 const GetStartedSection = dynamic(() => import('../components/GetStartedSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 const BookingFormSection = dynamic(() => import('../components/BookingFormSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
-const loader = ({
-  src,
-  width,
-  quality,
-}: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
 export default function ServiceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
-  
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
-  
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
-  
+
   // Use pageData for all content
   const siteData = pageData || storeFormData;
+  const hasTestimonials = (siteData?.testimonials?.length ?? 0) > 0;
+  const hasFaqs = (siteData?.faqs?.length ?? 0) > 0;
 
   // If there's any chance data is not yet loaded, guard early:
   if (!siteData) {
@@ -66,8 +47,8 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
     'excellence': <ExcellenceSection slug={siteData.slug} themeSettings={siteData.themeSettings} promotions={siteData.promotions} />,
     'services': <ServicesSection slug={siteData.slug} themeSettings={siteData.themeSettings} marketplaceListings={siteData.marketplaceListings} />,
     'pricing': <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />,
-    'testimonial': testimonialsData?.data ? <TestimonialSection /> : null,
-    'faq': faqsData?.data ? <FAQSection /> : null,
+    'testimonial': hasTestimonials ? <TestimonialSection /> : null,
+    'faq': hasFaqs ? <FAQSection /> : null,
     'cleaning-tips': <CleaningTipsSection />,
     'booking-form': <BookingFormSection />,
     'get-started': <GetStartedSection />,
@@ -90,12 +71,12 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
       <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
         <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />
       </div>
-      {testimonialsData?.data && (
+      {hasTestimonials && (
         <div id="section-testimonial" data-editor-section="testimonial" data-editor-component="TestimonialSection">
           <TestimonialSection />
         </div>
       )}
-      {faqsData?.data && (
+      {hasFaqs && (
         <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
           <FAQSection />
         </div>

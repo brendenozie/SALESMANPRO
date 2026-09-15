@@ -5,17 +5,12 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import 'react-datepicker/dist/react-datepicker.css';
 import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import Hero from './components/HeroSection';
-
 import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
-// Loading skeleton
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Dynamically import below-the-fold components
 const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
@@ -26,26 +21,20 @@ const TestimonialsSection = dynamic(() => import('./components/TestimonialsSecti
 const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 const FAQsSection = dynamic(() => import('./components/FAQsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
 export default function BookingsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
-
   const { name, slug, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers, promotions } = pageData;
+  const hasTestimonials = (pageData?.testimonials?.length ?? 0) > 0;
+  const hasFaqs = (pageData?.faqs?.length ?? 0) > 0;
 
-  
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />,
     'features': <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />,
     'massage-features': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
     'pricing-and-stats': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
     'benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
-    'testimonials': testimonialsData?.data ? <TestimonialsSection /> : null,
+    'testimonials': hasTestimonials ? <TestimonialsSection /> : null,
     'cta': <CtaSection />,
-    'faqs': faqsData?.data ? <FAQsSection /> : null,
+    'faqs': hasFaqs ? <FAQsSection /> : null,
   };
 
   const staticFallback = (
@@ -65,7 +54,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
       <div id="section-benefits" data-editor-section="benefits" data-editor-component="BenefitsSection">
         <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
       </div>
-      {testimonialsData?.data && (
+      {hasTestimonials && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
           <TestimonialsSection />
         </div>
@@ -73,7 +62,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
       <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
         <CtaSection />
       </div>
-      {faqsData?.data && (
+      {hasFaqs && (
         <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
           <FAQsSection />
         </div>

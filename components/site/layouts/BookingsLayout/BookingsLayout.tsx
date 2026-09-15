@@ -1,6 +1,5 @@
-"use client";
 
-import React, { ReactNode, } from "react";
+import React, { ReactNode } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";

@@ -4,7 +4,6 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React from "react";
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
@@ -44,23 +43,24 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 // EventsSite component, using StoreContext
 //----------------------------------------------
 export default function EventsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
-  // Fetch client-side data
-  const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  const events = pageData?.events || [];
+  const testimonials = pageData?.testimonials || [];
+  const faqs = pageData?.faqs || [];
+  const hasEvents = events.length > 0;
+  const hasTestimonials = testimonials.length > 0;
+  const hasFaqs = faqs.length > 0;
 
-  
   const sectionMap: Record<string, React.ReactNode> = {
     'hero-component': <HeroComponent storeFormData={pageData} />,
     'hero': <HeroComponent storeFormData={pageData} />,
     'about': <AboutSection storeFormData={pageData}/>,
     'features': <FeaturesSection promotions={pageData.promotions} description={pageData.description} />,
     'how-it-works': <HowItWorksSection />,
-    'live-events': eventsData?.data ? <LiveEventsSection events={eventsData.data} /> : null,
-    'events': eventsData?.data ? <LiveEventsSection events={eventsData.data} /> : null,
-    'testimonials': testimonialsData?.data ? <TestimonialsSection testimonials={testimonialsData.data} /> : null,
+    'live-events': hasEvents ? <LiveEventsSection events={events} /> : null,
+    'events': hasEvents ? <LiveEventsSection events={events} /> : null,
+    'testimonials': hasTestimonials ? <TestimonialsSection testimonials={testimonials} /> : null,
     'pricing': <PricingSection />,
-    'faq': faqsData?.data ? <FAQSection /> : null,
+    'faq': hasFaqs ? <FAQSection /> : null,
     'call-to-action': <CallToActionSection />,
     'cta': <CallToActionSection />,
   };
@@ -79,20 +79,20 @@ export default function EventsSite({ pageData, companyId }: { pageData: StoreFor
       <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorksSection">
         <HowItWorksSection />
       </div>
-      {eventsData?.data && (
+      {hasEvents && (
         <div id="section-live-events" data-editor-section="live-events" data-editor-component="LiveEventsSection">
-          <LiveEventsSection events={eventsData.data} />
+          <LiveEventsSection events={events} />
         </div>
       )}
-      {testimonialsData?.data && (
+      {hasTestimonials && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection testimonials={testimonialsData.data} />
+          <TestimonialsSection testimonials={testimonials} />
         </div>
       )}
       <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
         <PricingSection />
       </div>
-      {faqsData?.data && (
+      {hasFaqs && (
         <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
           <FAQSection />
         </div>

@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm } from '@/types/typings';
 
@@ -63,7 +62,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   } = pageData;
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const activeTestimonials = testimonials && testimonials.length > 0 ? testimonials : [];
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
@@ -174,7 +173,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     if (key === 'testimonials' || key.includes('testimonials') || key.includes('testimonialssection')) {
       return (
 <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection" key={sec.id || idx}>
-   <TestimonialsSection testimonials={testimonialsData.data} />
+   <TestimonialsSection testimonials={activeTestimonials} />
  </div>
       );
     }
@@ -228,9 +227,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
         <AwardsSection awards={awards} />
       </div>
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-   <TestimonialsSection testimonials={testimonialsData.data} />
- </div>}
+      {activeTestimonials.length > 0 && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection testimonials={activeTestimonials} />
+      </div>}
       <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
         <NewsletterSection />
       </div>

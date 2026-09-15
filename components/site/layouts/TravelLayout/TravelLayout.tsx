@@ -1,4 +1,3 @@
-"use client";
 
 import React, { ReactNode } from "react";
 import Header from "./header/Header";
@@ -9,8 +8,6 @@ interface TravelLayoutProps {
   children: ReactNode;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
 
 export default function TravelLayout({ params, children }: TravelLayoutProps) {
 

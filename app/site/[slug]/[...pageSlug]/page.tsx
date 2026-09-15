@@ -2,9 +2,13 @@ import { notFound } from "next/navigation";
 import { loadStore } from "@/lib/loadStore";
 import { StoreDataSync } from "@/contexts/StoreContext";
 import WebsiteRenderer from "@/components/website-builder/WebsiteRenderer";
-import { resolveCanonicalTemplate } from "@/lib/website-builder/template-registry";
+import dynamic from "next/dynamic";
 import { compileWebsiteFromCompany } from "@/lib/website-builder/template-compiler";
-import TemplateDiagnosticHud from "@/components/website-builder/TemplateDiagnosticHud";
+
+const TemplateDiagnosticHud = dynamic(
+  () => import("@/components/website-builder/TemplateDiagnosticHud"),
+  { ssr: false }
+);
 
 import type { Metadata } from "next";
 import { SEOService } from "@/lib/seo";
@@ -78,14 +82,7 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
   const { slug, pageSlug } = await params;
   const currentSlug = pageSlug ? pageSlug.join("/") : "home";
 
-  const { pageData, raw } = await loadStore(slug);
-
-  // Deterministically resolve canonical template
-  const canonicalTemplate = resolveCanonicalTemplate(
-    raw?.category,
-    raw?.variant,
-    raw?.website?.templateKey
-  );
+  const { pageData, raw, canonicalTemplate } = await loadStore(slug);
 
   let activeConfig = raw?.website?.publishedConfig as any;
 
@@ -137,15 +134,17 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
         address={raw.address || raw.addresses?.[0]?.address}
         socialLinks={raw.socialLinks}
       />
-      <TemplateDiagnosticHud
-        slug={slug}
-        template={canonicalTemplate}
-        pageSlug={currentSlug}
-        hasPublishedConfig={!!raw?.website?.publishedConfig}
-        sectionsCount={canonicalTemplate.authenticSections.length}
-        category={raw?.category}
-        variant={raw?.variant}
-      />
+      {process.env.NODE_ENV !== 'production' && (
+        <TemplateDiagnosticHud
+          slug={slug}
+          template={canonicalTemplate}
+          pageSlug={currentSlug}
+          hasPublishedConfig={!!raw?.website?.publishedConfig}
+          sectionsCount={canonicalTemplate.authenticSections.length}
+          category={raw?.category}
+          variant={raw?.variant}
+        />
+      )}
     </main>
   );
 }

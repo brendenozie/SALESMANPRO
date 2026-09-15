@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm, ListingMarketStatus, ListingSystemStatus, ListingTransactionType } from '@/types/typings';
 
@@ -46,9 +45,6 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     promotions = [],
     CoreValues = [],
   } = pageData;
-
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL || "/api"}/site/testimonials?id=${companyId}`, fetcher);
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
@@ -139,8 +135,8 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
         childNode = <AwardsSection awards={awards} />;
         break;
       case "TestimonialsSection":
-        childNode = (testimonialsData?.data || testimonials?.length > 0) ? (
-          <TestimonialsSection testimonials={testimonialsData?.data || testimonials} />
+        childNode = (testimonials && testimonials.length > 0) ? (
+          <TestimonialsSection testimonials={testimonials} />
         ) : null;
         break;
       case "NewsletterSection":

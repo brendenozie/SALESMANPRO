@@ -1,19 +1,13 @@
-"use client";
 
-import React, { ReactNode, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import React, { ReactNode } from "react";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";
-import Link from "next/link";
 
 interface RealEstateLayoutProps {
   params: { storeFormData: any };
   children: ReactNode;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
 
 export default function RealEstateHeaderLayout({ params, children }: RealEstateLayoutProps) {
   const { storeFormData } = params;

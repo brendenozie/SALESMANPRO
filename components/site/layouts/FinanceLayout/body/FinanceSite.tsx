@@ -4,7 +4,6 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React, { useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
@@ -36,10 +35,6 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 export default function FinanceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Using context for global theme settings only
   // const { storeFormData } = useStoreContext(); 
-
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
   // Use pageData for all content, with fallback to hardcoded data
   const siteData = pageData && Object.keys(pageData).length > 0 ? pageData : {
@@ -166,34 +161,24 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
     }
   };
 
-  // State initialization: Use the combined siteData for child components
-  const [testimonials, setTestimonials] = useState<any[]>(siteData.testimonials);
-  const [faqs, setFaqs] = useState<any[]>(siteData.faqs);
+  const testimonials = siteData.testimonials || [];
+  const faqs = siteData.faqs || [];
+  const hasTestimonials = testimonials.length > 0;
+  const hasFaqs = faqs.length > 0;
   const experts = siteData.Expert || [];
   const packages = siteData.packages || [];
 
-  // useEffect to update states if data is fetched
-  useEffect(() => {
-    if (testimonialsData?.data) {
-      setTestimonials(testimonialsData.data);
-    }
-    if (faqsData?.data) {
-      setFaqs(faqsData.data);
-    }
-  }, [testimonialsData, faqsData]);
-
-  
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />,
     'practice-areas': <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>,
     'services': <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>,
     'why-choose-us': <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />,
-    'case-studies-testimonials': testimonialsData?.data ? <CaseStudiesTestimonials testimonials={testimonials} /> : null,
-    'testimonials': testimonialsData?.data ? <CaseStudiesTestimonials testimonials={testimonials} /> : null,
+    'case-studies-testimonials': hasTestimonials ? <CaseStudiesTestimonials testimonials={testimonials} /> : null,
+    'testimonials': hasTestimonials ? <CaseStudiesTestimonials testimonials={testimonials} /> : null,
     'process-workflow': <ProcessWorkflowSection />,
     'meet-our-experts': <MeetOurExperts experts={experts} />,
     'consultation-packages': <ConsultationPackagesSection packages={packages} />,
-    'faq': faqsData?.data ? <FAQSection faqs={faqs} /> : null,
+    'faq': hasFaqs ? <FAQSection faqs={faqs} /> : null,
     'contact': <ContactSection />,
   };
 
@@ -208,7 +193,7 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
       <div id="section-why-choose-us" data-editor-section="why-choose-us" data-editor-component="WhyChooseUsSection">
         <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />
       </div>
-      {testimonialsData?.data && (
+      {hasTestimonials && (
         <div id="section-case-studies-testimonials" data-editor-section="case-studies-testimonials" data-editor-component="CaseStudiesTestimonials">
           <CaseStudiesTestimonials testimonials={testimonials} />
         </div>
@@ -222,7 +207,7 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
       <div id="section-consultation-packages" data-editor-section="consultation-packages" data-editor-component="ConsultationPackagesSection">
         <ConsultationPackagesSection packages={packages} />
       </div>
-      {faqsData?.data && (
+      {hasFaqs && (
         <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
           <FAQSection faqs={faqs} />
         </div>

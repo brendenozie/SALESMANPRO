@@ -2,7 +2,6 @@
 
 import React from "react";
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
@@ -20,17 +19,12 @@ const RestaurantFAQs = dynamic(() => import('../components/RestaurantFAQs'), { l
 
 import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
 
-// Generic fetcher
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 //----------------------------------------------
 // RestaurantSite component with authentic Theme Section Adapter
 //----------------------------------------------
 export default function RestaurentSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  const hasTestimonials = (pageData?.testimonials?.length ?? 0) > 0;
+  const hasFaqs = (pageData?.faqs?.length ?? 0) > 0;
 
   // Extract structured tenant section configuration
   const heroConfig =
@@ -70,6 +64,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
     }
 
     if (key.includes('testimonial')) {
+      if (!hasTestimonials) return null;
       return (
         <div id={sec.id || "section-testimonials"} data-editor-section={sec.id || "testimonials"} data-editor-component="Testimonials" key={sec.id || idx}>
           <Testimonials />
@@ -86,6 +81,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
     }
 
     if (key.includes('faq') || key.includes('restaurantfaqs')) {
+      if (!hasFaqs) return null;
       return (
         <div id={sec.id || "section-restaurant-faqs"} data-editor-section={sec.id || "restaurant-faqs"} data-editor-component="RestaurantFAQs" key={sec.id || idx}>
           <RestaurantFAQs />
@@ -115,7 +111,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
         <WhyDineWithUs storeFormData={pageData} />
       </div>
 
-      {testimonialsData?.data && (
+      {hasTestimonials && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="Testimonials">
           <Testimonials />
         </div>
@@ -125,7 +121,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
         <RestaurantGallery />
       </div>
 
-      {faqsData?.data && (
+      {hasFaqs && (
         <div id="section-restaurant-faqs" data-editor-section="restaurant-faqs" data-editor-component="RestaurantFAQs">
           <RestaurantFAQs />
         </div>

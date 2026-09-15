@@ -5,7 +5,6 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StoreForm } from '@/types/typings';
@@ -81,10 +80,6 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
   const router = useRouter();
 
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
-
   // Use pageData for all content
   const siteData = pageData || storeFormData;
 
@@ -115,18 +110,10 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
   // Use state to manage the data passed to components, defaulting to sample data if store data is null/empty
   const servicesData = svcFromStore && svcFromStore.length > 0 ? svcFromStore : sampleServices;
   const doctorsData = docFromStore && docFromStore.length > 0 ? docFromStore : sampleDoctors;
-  const [testimonialsDataState, setTestimonialsDataState] = useState<any[]>(tFromStore && tFromStore.length > 0 ? tFromStore : sampleTestimonials);
-  const [faqsDataState, setFaqsDataState] = useState<any[]>(faqFromStore && faqFromStore.length > 0 ? faqFromStore : sampleFaqs);
-
-  // Update states when data is fetched
-  useEffect(() => {
-    if (testimonialsData?.data) {
-      setTestimonialsDataState(testimonialsData.data);
-    }
-    if (faqsData?.data) {
-      setFaqsDataState(faqsData.data);
-    }
-  }, [testimonialsData, faqsData]);
+  const testimonialsDataState = tFromStore && tFromStore.length > 0 ? tFromStore : sampleTestimonials;
+  const faqsDataState = faqFromStore && faqFromStore.length > 0 ? faqFromStore : sampleFaqs;
+  const hasTestimonials = testimonialsDataState && testimonialsDataState.length > 0;
+  const hasFaqs = faqsDataState && faqsDataState.length > 0;
 
   // Merge default contact info with any provided from storeFormData
   const contactInfoData = {
@@ -148,9 +135,9 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
     'services': <MedicalServicesSection services={servicesData} storeSlug={slug} />,
     'health-tips': <HealthTipsSection/>,
     'doctors': <DoctorsSection doctors={doctorsData} storeSlug={slug} />,
-    'patient': testimonialsData?.data ? <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} /> : null,
-    'testimonials': testimonialsData?.data ? <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} /> : null,
-    'faqs': faqsData?.data ? <FAQsSection name={name} slug={slug} faqs={faqsDataState} /> : null,
+    'patient': hasTestimonials ? <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} /> : null,
+    'testimonials': hasTestimonials ? <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} /> : null,
+    'faqs': hasFaqs ? <FAQsSection name={name} slug={slug} faqs={faqsDataState} /> : null,
     'contact': (
       <ContactSection
         storeSlug={slug}
@@ -181,12 +168,12 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
       <div id="section-doctors" data-editor-section="doctors" data-editor-component="DoctorsSection">
         <DoctorsSection doctors={doctorsData} storeSlug={slug} />
       </div>
-      {testimonialsData?.data && (
+      {hasTestimonials && (
         <div id="section-patient" data-editor-section="patient" data-editor-component="PatientSection">
           <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} />
         </div>
       )}
-      {faqsData?.data && (
+      {hasFaqs && (
         <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
           <FAQsSection name={name} slug={slug} faqs={faqsDataState} />
         </div>

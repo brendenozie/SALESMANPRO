@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm, ListingMarketStatus, ListingSystemStatus, ListingTransactionType } from '@/types/typings';
 import Image from 'next/image';
@@ -77,9 +76,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     bannerUrl,
     CoreValues = [],
   } = pageData;
-
-  // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const activeTestimonials = testimonials && testimonials.length > 0 ? testimonials : [];
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
@@ -430,9 +427,10 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
     }
 
     if (key.includes('testimonial') || key.includes('testimonialssection')) {
+      if (activeTestimonials.length === 0) return null;
       return (
         <div id={sec.id || "section-testimonials"} data-editor-section={sec.id || "testimonials"} data-editor-component="TestimonialsSection" key={sec.id || idx}>
-          <TestimonialsSection testimonials={testimonialsData?.data || testimonials} />
+          <TestimonialsSection testimonials={activeTestimonials} />
         </div>
       );
     }
@@ -483,9 +481,9 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
       <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
         <AwardsSection awards={awards} />
       </div>
-      {testimonialsData?.data && (
+      {activeTestimonials.length > 0 && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection testimonials={testimonialsData.data} />
+          <TestimonialsSection testimonials={activeTestimonials} />
         </div>
       )}
       <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
