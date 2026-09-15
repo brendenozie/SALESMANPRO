@@ -43,17 +43,13 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store', include: 'credentials' });
+      const res = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store', credentials: 'include' });
       
         if (res.ok) {
-              
           const resJson = await res.json();
-          // Ensure the response has the expected structure
-          if (!resJson || !resJson.data.results || !Array.isArray(resJson.data.results)) {
-            throw new Error('Invalid response structure');
-          }
-    
-          const data = resJson.data.results || resJson.results || resJson.data ; // Handle both cases
+          const rawData = resJson?.data?.results || resJson?.results || resJson?.data || [];
+          const data = Array.isArray(rawData) ? rawData : [];
+
           
           let storeCategories = data.map((sc: any) => ({
             id: sc.id,
