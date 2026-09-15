@@ -128,7 +128,7 @@ module.exports = {
       },
       // ─── Optimized images from Next.js image API ────────────────────────
       {
-        source: "/_next/image*",
+        source: "/_next/image",
         headers: [
           {
             key: "Cache-Control",
