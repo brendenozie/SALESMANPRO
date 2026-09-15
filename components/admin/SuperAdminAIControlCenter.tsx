@@ -18,6 +18,7 @@ import {
   CircleStackIcon,
   LockClosedIcon,
   ShareIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/24/outline";
 
 interface Provider {
