@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const loaderProp = ({ src, width, quality }) => {
   const params = [`w=${width || 800}`]; // Default width to 800 if not provided
@@ -57,29 +58,33 @@ const Categories = () => {
           {!loading && !error && categories.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
               {categories.map(({ name, icon }, index) => (
-                <motion.div
+                <Link
                   key={index}
-                  onClick={() => router.push(`/ghuba/productlist?category=${name}`)}
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 dark:from-yellow-500 dark:to-yellow-600 text-white p-5 rounded-2xl shadow-lg flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-all overflow-hidden"
+                  href={`/ghuba/productlist?category=${encodeURIComponent(name)}`}
+                  className="block group"
                 >
-                  {/* Background Overlay for Depth */}
-                  <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-2xl z-0"></div>
-
-                  {/* Category Icon */}
-                  <motion.span
-                    className="text-4xl md:text-5xl relative z-10 drop-shadow-md"
-                    whileHover={{ rotate: 5 }}
+                  <motion.div
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 dark:from-yellow-500 dark:to-yellow-600 text-white p-5 rounded-2xl shadow-lg flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-all overflow-hidden"
                   >
-                    {icon}
-                  </motion.span>
+                    {/* Background Overlay for Depth */}
+                    <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-2xl z-0"></div>
 
-                  {/* Category Name */}
-                  <p className="font-bold text-center text-sm sm:text-lg relative z-10 drop-shadow-sm whitespace-normal break-words w-full mt-2">
-                    {name}
-                  </p>
-                </motion.div>
+                    {/* Category Icon */}
+                    <motion.span
+                      className="text-4xl md:text-5xl relative z-10 drop-shadow-md"
+                      whileHover={{ rotate: 5 }}
+                    >
+                      {icon}
+                    </motion.span>
+
+                    {/* Category Name */}
+                    <p className="font-bold text-center text-sm sm:text-lg relative z-10 drop-shadow-sm whitespace-normal break-words w-full mt-2">
+                      {name}
+                    </p>
+                  </motion.div>
+                </Link>
               ))}
             </div>
           )}

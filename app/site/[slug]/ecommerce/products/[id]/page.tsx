@@ -7,6 +7,9 @@ import { MarketListingForm } from '@/types/typings';
 import { findCompanyCached } from '@/lib/company-fetcher';
 import { fetchWithCache, buildTenantCacheKey } from '@/lib/cache';
 
+import { Metadata } from 'next';
+import { SEOService } from '@/lib/seo';
+
 export const revalidate = 60;
 
 interface PageParams {
@@ -16,6 +19,56 @@ interface PageParams {
 
 interface PageProps {
   params: Promise<PageParams> | PageParams;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolved = (params as any) instanceof Promise ? await params : params as PageParams;
+  const { slug, id } = resolved;
+  if (!slug || !id) return { title: "Product" };
+
+  const company = await findCompanyCached(slug, "lean");
+  if (!company) return { title: "Store" };
+
+  const product = await prisma.marketplaceListings.findFirst({
+    where: { id: id, companyId: company.id },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      brand: true,
+      finalPrice: true,
+      sellingPrice: true,
+      images: true,
+      isAvailable: true,
+      sku: true,
+    },
+  });
+
+  if (!product) {
+    return { title: `Product | ${company.name}` };
+  }
+
+  const seoResult = SEOService.generate({
+    siteType: "TENANT_STORE",
+    pageType: "PRODUCT",
+    tenant: {
+      id: company.id,
+      slug: company.slug || slug,
+      domain: company.domain,
+      name: company.name,
+      currency: company.currency,
+      logoUrl: company.logoUrl,
+    },
+    entity: product,
+    currentPath: `/products/${id}`,
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Products", url: "/products" },
+      { name: product.name, url: `/products/${id}` },
+    ],
+  });
+
+  return seoResult.metadata;
 }
 
 // Server component: fetch data, prepare props for the client ProductDetail
@@ -107,10 +160,33 @@ export default async function ProductPage({ params }: PageProps) {
     listingSystemStatus: r.listingSystemStatus as any,
   })) as MarketListingForm[];
 
+  const seoResult = SEOService.generate({
+    siteType: "TENANT_STORE",
+    pageType: "PRODUCT",
+    tenant: {
+      id: company.id,
+      slug: company.slug || slug,
+      domain: company.domain,
+      name: company.name,
+      currency: company.currency,
+      logoUrl: company.logoUrl,
+    },
+    entity: product,
+    currentPath: `/products/${id}`,
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Products", url: "/products" },
+      { name: product.name, url: `/products/${id}` },
+    ],
+  });
+
   // Pass only necessary props to the client component (smaller bundle)
   return (
-    <div  className=" bg-[#fafaf9] dark:bg-black transition-colors duration-300">
-      
+    <div className="bg-[#fafaf9] dark:bg-black transition-colors duration-300">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(seoResult.jsonLd) }}
+      />
       <div className="py-16 bg-[#fafaf9] dark:bg-black transition-colors duration-300">
       </div>
       {/* ProductDetail is a client component, defined below */}

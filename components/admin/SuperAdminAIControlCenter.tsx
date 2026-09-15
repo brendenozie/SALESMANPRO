@@ -336,6 +336,14 @@ export default function SuperAdminAIControlCenter() {
               <span>AI Workforce (28 Agents)</span>
             </Link>
 
+            <Link
+              href="/super-admin/seo"
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-teal-400 border border-slate-800 rounded-xl font-medium text-xs tracking-wide transition-colors"
+            >
+              <GlobeAltIcon className="w-4 h-4" />
+              <span>SEO & Discovery</span>
+            </Link>
+
             <button
               onClick={handleToggleGlobalKillSwitch}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs tracking-wide transition-colors ${globalKillSwitch

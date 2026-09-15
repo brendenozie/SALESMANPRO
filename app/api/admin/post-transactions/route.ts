@@ -106,6 +106,6 @@ export const POST = withApiHandler(
   },
   {
     requireAuth: true,
-    roles: ["SUPER_ADMIN", "ADMIN", "COMPANY_ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "COMPANY_ADMIN"],
   }
 );

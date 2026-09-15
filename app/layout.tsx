@@ -17,21 +17,28 @@ import ClientSecurityGuard from "@/components/security/ClientSecurityGuard";
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
   title: {
-    default: siteMetadata.title, 
-    template: `%s  ${siteMetadata.title ? `| ${siteMetadata.title}` : ""}`, 
+    default: siteMetadata.title,
+    template: `%s | SalesmanPro`,
   },
-  description: siteMetadata.description, 
+  description: siteMetadata.description,
   openGraph: {
-    title: siteMetadata.title, 
+    title: siteMetadata.title,
     description: siteMetadata.description,
-    url: "./",
-    siteName: siteMetadata.title, 
-    images: [siteMetadata.socialBanner],
+    url: siteMetadata.siteUrl,
+    siteName: "SalesmanPro",
+    images: [
+      {
+        url: siteMetadata.socialBanner,
+        width: 1200,
+        height: 630,
+        alt: siteMetadata.title,
+      },
+    ],
     locale: "en_US",
     type: "website",
   },
   alternates: {
-    canonical: "./",
+    canonical: siteMetadata.siteUrl,
     types: {
       "application/rss+xml": `${siteMetadata.siteUrl}/feed.xml`,
     },
@@ -48,11 +55,43 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: siteMetadata.title, // Removed the `%s |` prefix
+    title: siteMetadata.title,
+    description: siteMetadata.description,
     card: "summary_large_image",
     images: [siteMetadata.socialBanner],
   },
 };
+
+const rootPlatformJsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "SalesmanPro",
+    url: siteMetadata.siteUrl,
+    logo: `${siteMetadata.siteUrl}/static/images/logo.png`,
+    description: siteMetadata.description,
+    sameAs: [
+      siteMetadata.facebook,
+      siteMetadata.youtube,
+      siteMetadata.linkedin,
+      siteMetadata.x,
+    ].filter(Boolean),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "SalesmanPro",
+    url: siteMetadata.siteUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteMetadata.siteUrl}/help-center?query={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  },
+];
 
 export default async function RootLayout({
   children,
@@ -119,6 +158,10 @@ export default async function RootLayout({
           rel="alternate"
           type="application/rss+xml"
           href={`${basePath}/feed.xml`}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(rootPlatformJsonLd) }}
         />
       </head>
 

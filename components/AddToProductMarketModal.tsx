@@ -34,6 +34,9 @@ import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/typ
 import ProductVariants from "./ProductVariants";
 
 
+// NOTE: keep API constants consistent with your app's env
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+
 ////////////////////////////////////////////////////////////////////////////////
 // Constants & API
 //////////////////////////////////////////////////////////////////////////////// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -178,11 +181,11 @@ function productToListingForm(
     tags: p?.tags ?? [],
 
     quantity: p?.quantity ?? 0,
-    buyingPrice: p?.sellingPrice ?? 0,
+    buyingPrice: 0,
     sellingPrice: p?.sellingPrice ?? 0,
     discount: p?.discount ?? 0,
-    finalPrice: p?.finalPrice ?? 0,
-    profitMargin: p?.profitMargin ?? 0,
+    finalPrice: p?.finalPrice ?? p?.sellingPrice ?? 0,
+    profitMargin: 0,
     pricingTiers: p?.pricingTiers ?? [],
 
     startDealDate: p?.startDealDate?.toString() || null,
@@ -335,9 +338,9 @@ function buildListingPayload(
     condition: f.condition || null,
     dimensions: f.dimensions || null,
     material: f.material,
-    profitMargin: f.profitMargin,
+    profitMargin: 0,
     discount: f.discount,
-    buyingPrice: f.buyingPrice,
+    buyingPrice: 0,
     sellingPrice: f.sellingPrice,
     finalPrice: f.finalPrice,
     pricingTiers: f.pricingTiers,

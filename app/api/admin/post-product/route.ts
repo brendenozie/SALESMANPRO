@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { resolveAuthorizedCompany } from "@/lib/auth/tenantScope";
+import { publishProductToMarketplace, syncApprovedSharedFields } from "@/lib/marketplace/publicationService";
 
 
 // ----------------- Utils -----------------
@@ -43,6 +44,7 @@ async function handlePost(req: Request, context: any) {
   const body = await req.json();
   const {
     id,
+    publishToMarketplace,
     // Basic
     companyId: bodyCompanyId,
     name,
@@ -530,6 +532,17 @@ async function handlePost(req: Request, context: any) {
         },
       });
 
+  // Controlled marketplace publication & shared spec synchronization
+  try {
+    if (publishToMarketplace) {
+      await publishProductToMarketplace(product.id);
+    } else if (id) {
+      await syncApprovedSharedFields(product.id);
+    }
+  } catch (syncErr) {
+    console.warn("[POST_PRODUCT_MARKETPLACE_SYNC_ERROR]", syncErr);
+  }
+
   try {
     await cacheDel(`tenant:${companyId}:post-product:*`);
     await cacheDel(`admin:post-product:*`);
@@ -545,5 +558,5 @@ async function handlePost(req: Request, context: any) {
 export const POST = withApiHandler(handlePost, {
   requireAuth: true,
   requireTenant: true,
-  roles: ["SUPER_ADMIN", "ADMIN", "COMPANY_ADMIN", "MANAGER"],
+  allowedRoles: ["SUPER_ADMIN", "ADMIN", "COMPANY_ADMIN", "MANAGER"],
 });

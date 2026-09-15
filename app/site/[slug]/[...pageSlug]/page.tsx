@@ -6,6 +6,10 @@ import { resolveCanonicalTemplate } from "@/lib/website-builder/template-registr
 import { compileWebsiteFromCompany } from "@/lib/website-builder/template-compiler";
 import TemplateDiagnosticHud from "@/components/website-builder/TemplateDiagnosticHud";
 
+import type { Metadata } from "next";
+import { SEOService } from "@/lib/seo";
+import { isGhubaMarketplace } from "@/lib/ghuba-helpers";
+
 export const revalidate = 60;
 
 interface CustomStorePageProps {
@@ -13,6 +17,61 @@ interface CustomStorePageProps {
     slug: string;
     pageSlug: string[];
   }>;
+}
+
+export async function generateMetadata({ params }: CustomStorePageProps): Promise<Metadata> {
+  const { slug, pageSlug } = await params;
+  const currentSlug = pageSlug ? pageSlug.join("/") : "home";
+  const { raw } = await loadStore(slug);
+
+  if (!raw) {
+    return { title: "Page Not Found" };
+  }
+
+  let activeConfig = raw?.website?.publishedConfig as any;
+  if (!activeConfig) {
+    activeConfig = compileWebsiteFromCompany(raw);
+  }
+
+  const page = (activeConfig.pages || []).find(
+    (p: any) => p.slug === currentSlug || (p.isHomepage && currentSlug === "home")
+  );
+
+  const pageTitle = page?.seo?.metaTitle || page?.title || currentSlug.replace(/-/g, " ");
+  const pageDesc = page?.seo?.metaDescription || raw.description || undefined;
+
+  const isGhuba = isGhubaMarketplace(slug, raw);
+
+  const seoResult = SEOService.generate({
+    siteType: isGhuba ? "GHUBA" : "TENANT_STORE",
+    pageType: "CUSTOM",
+    tenant: {
+      id: raw.id,
+      slug: raw.slug || slug,
+      domain: raw.domain,
+      name: raw.name,
+      description: raw.description,
+      logoUrl: raw.logoUrl,
+      bannerUrl: raw.bannerUrl,
+      address: raw.address,
+      city: raw.city,
+      country: raw.country,
+      currency: raw.currency,
+      contactPhone: raw.contactPhone,
+      contactEmail: raw.contactEmail,
+    },
+    entity: {
+      name: pageTitle,
+      description: pageDesc,
+    },
+    currentPath: `/${currentSlug}`,
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: pageTitle, url: `/${currentSlug}` },
+    ],
+  });
+
+  return seoResult.metadata;
 }
 
 export default async function CustomStorePage({ params }: CustomStorePageProps) {

@@ -575,6 +575,7 @@ export default function AddProductModal({
 
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [publishToMarketplace, setPublishToMarketplace] = useState(false);
 
   // AUTOSAVE & DRAFT RESTORE: Persists form data to localStorage to prevent data loss
   const draftKey = useMemo(() => `product-draft-${companyId}-${product?.id || 'new'}`, [companyId, product?.id]);
@@ -766,7 +767,13 @@ export default function AddProductModal({
 
 
         // 6. Build final payload
-        const payload = { ...formData, images: finalImageUrls, videos: finalVideoUrls, ebooks: finalBookUrls };
+        const payload = {
+          ...formData,
+          images: finalImageUrls,
+          videos: finalVideoUrls,
+          ebooks: finalBookUrls,
+          publishToMarketplace,
+        };
         
         const res = await fetch(`${apiBaseUrl}/admin/post-product`, {
             method: 'POST',
@@ -1091,10 +1098,21 @@ export default function AddProductModal({
 
       {/* Sticky Footer */}
       <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
-          Progress: {mode === "fast" ? fastProgress : progress}%{" "}
-          {/* AUTOSAVE STATUS: Subtle indicator for save state */}
-          {autosaveStatus === "saving" ? "• saving…" : autosaveStatus === "saved" ? "• saved" : ""}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
+            Progress: {mode === "fast" ? fastProgress : progress}%{" "}
+            {/* AUTOSAVE STATUS: Subtle indicator for save state */}
+            {autosaveStatus === "saving" ? "• saving…" : autosaveStatus === "saved" ? "• saved" : ""}
+          </div>
+          <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 cursor-pointer select-none hover:bg-gray-100 transition-colors">
+            <input
+              type="checkbox"
+              checked={publishToMarketplace}
+              onChange={(e) => setPublishToMarketplace(e.target.checked)}
+              className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+            />
+            <span>Publish to Marketplace</span>
+          </label>
         </div>
 
         {/* FAST MODE NAVIGATION */}

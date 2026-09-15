@@ -2,6 +2,7 @@ import { cacheDel, buildTenantCacheKey } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { syncApprovedSharedFields } from "@/lib/marketplace/publicationService";
 import { z } from "zod";
 
 const updateProductSchema = z.object({
@@ -142,6 +143,9 @@ export const PUT = withApiHandler(
       },
     });
 
+    // Synchronize approved shared technical specs and derived availability
+    await syncApprovedSharedFields(id, Object.keys(data));
+
     try {
       await cacheDel(`tenant:${companyId}:products:*`);
       await cacheDel(`tenant:${companyId}:admin_products:*`);
@@ -179,6 +183,11 @@ export const DELETE = withApiHandler(
     if (!existing) {
       return formatResponse(false, null, "Product not found in this company", 404);
     }
+
+    // Clean up or deactivate consumer-facing marketplace listings
+    await prisma.marketplaceListings.deleteMany({
+      where: { productId: id },
+    });
 
     await prisma.product.delete({
       where: { id },

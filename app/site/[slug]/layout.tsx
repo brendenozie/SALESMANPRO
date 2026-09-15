@@ -16,6 +16,7 @@ import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
 import { SubscriptionGraceBanner, SubscriptionInactiveView } from './SubscriptionGraceBanner';
 import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registry';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
+import { SEOService } from '@/lib/seo';
 
 export const revalidate = 60;
 
@@ -74,35 +75,37 @@ export async function generateMetadata(
   }
 
   const seo = extractSEO(company);
-  const title = seo.title || company.name;
-  const description = seo.description || 'Discover our exclusive collection.';
-  const previousImages = (await parent).openGraph?.images || [];
-  const images = company.logoUrl ? [company.logoUrl] : previousImages;
-  
-  const cleanBaseUrl = getCleanSiteUrl();
-  const canonicalUrl = `${cleanBaseUrl}/${slug}`;
+  const isGhuba = isGhubaMarketplace(slug, company);
 
-  return {
-    title,
-    description,
-    icons: company.logoUrl ? { icon: company.logoUrl, apple: company.logoUrl } : undefined,
-    keywords: seo.keywords || 'ecommerce, ghuba, shops, marketplace',
-    alternates: {
-      canonical: canonicalUrl,
+  const seoResult = SEOService.generate({
+    siteType: isGhuba ? "GHUBA" : "TENANT_STORE",
+    pageType: "HOME",
+    tenant: {
+      id: company.id,
+      slug: company.slug || slug,
+      domain: company.domain,
+      name: company.name,
+      description: seo.description || company.description,
+      tagline: company.tagline,
+      logoUrl: company.logoUrl,
+      bannerUrl: company.bannerUrl,
+      address: company.address,
+      city: company.city,
+      country: company.country,
+      currency: company.currency,
+      contactPhone: company.contactPhone,
+      contactEmail: company.contactEmail,
     },
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-      images,
+    currentPath: "/",
+    customSEO: {
+      title: seo.title,
+      description: seo.description,
+      keywords: Array.isArray(seo.keywords) ? seo.keywords : undefined,
+      canonicalUrl: seo.canonicalUrl,
     },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images,
-    },
-  };
+  });
+
+  return seoResult.metadata;
 }
 
 // --- LAYOUT ---
@@ -222,27 +225,34 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   const userId = ''; 
 
   const seo = extractSEO(raw);
-  const cleanBaseUrl = getCleanSiteUrl();
-  
-  const jsonLd: any = {
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: raw.name,
-    url: `${cleanBaseUrl}/${slug}`,
-    description: seo.description || 'Discover our exclusive collection.',
-  };
-
-  if (raw.logoUrl) {
-    jsonLd.image = raw.logoUrl;
-    jsonLd.logo = raw.logoUrl;
-  }
+  const layoutSeo = SEOService.generate({
+    siteType: isGhuba ? "GHUBA" : "TENANT_STORE",
+    pageType: "HOME",
+    tenant: {
+      id: raw.id,
+      slug: raw.slug || slug,
+      domain: raw.domain,
+      name: raw.name,
+      description: seo.description || raw.description,
+      tagline: raw.tagline,
+      logoUrl: raw.logoUrl,
+      bannerUrl: raw.bannerUrl,
+      address: raw.address,
+      city: raw.city,
+      country: raw.country,
+      currency: raw.currency,
+      contactPhone: raw.contactPhone,
+      contactEmail: raw.contactEmail,
+    },
+    currentPath: "/",
+  });
 
   return (
     <EditableContentProvider
       componentOverrides={overrides}
       tenantSlug={slug}
       isEditorMode={false}
-      isPreviewMode={true}
+      isPreviewMode={false}
     >
       <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
         <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
@@ -255,7 +265,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
           <LayoutComponent params={{ storeFormData }}>
             <script
               type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(layoutSeo.jsonLd) }}
             />
             <Suspense fallback={<LoadingSpinner />}>
               {children}

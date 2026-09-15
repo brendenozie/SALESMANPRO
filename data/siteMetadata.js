@@ -1,9 +1,9 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: '',//SalesmanPro | Ghuba
+  title: 'SalesmanPro — Omnichannel Commerce, POS & Multi-Store Platform',
   author: 'Brenden Odhiambo',
-  headerTitle: '',//SalesmanPro | Ghuba
-  description: '',//'SalesmanPro is a platform that provides sales professionals with the tools and resources they need to succeed in their careers. Our mission is to empower salespeople to achieve their goals and reach their full potential.',
+  headerTitle: 'SalesmanPro',
+  description: 'SalesmanPro is the all-in-one commerce platform powering modern retail, multi-tenant eCommerce storefronts, POS, and digital sales automation.',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://salesmanpro.site',

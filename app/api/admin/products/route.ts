@@ -2,6 +2,7 @@ import { fetchWithCache, cacheDel, buildTenantCacheKey } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { publishProductToMarketplace } from "@/lib/marketplace/publicationService";
 import { z } from "zod";
 
 // Zod schema for query filtering & pagination
@@ -28,6 +29,7 @@ const createProductSchema = z.object({
   isDiscounted: z.boolean().optional(),
   isFeatured: z.boolean().default(false),
   ingredients: z.string().optional().nullable(),
+  publishToMarketplace: z.boolean().default(false),
 });
 
 // GET /api/admin/products
@@ -153,6 +155,7 @@ export const POST = withApiHandler(
       isDiscounted,
       isFeatured,
       ingredients,
+      publishToMarketplace,
     } = parsed.data;
 
     // Verify product category belongs to authorized company
@@ -238,6 +241,15 @@ export const POST = withApiHandler(
         status: "ACTIVE",
       },
     });
+
+    // Controlled marketplace publication (only if explicitly requested)
+    try {
+      if (publishToMarketplace) {
+        await publishProductToMarketplace(newProduct.id);
+      }
+    } catch (syncErr) {
+      console.warn("[CREATE_PRODUCT_MARKETPLACE_SYNC_ERROR]", syncErr);
+    }
 
     // Targeted cache invalidation using tenant pattern
     try {

@@ -5,6 +5,7 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
+import { sanitizePublicListingData } from "@/lib/marketplace/productListingPolicy";
 
 // ----------------- Utils -----------------
 const parseJsonSafely = (data: any, fallback: any = null) => {
@@ -281,7 +282,7 @@ async function handlePost(req: Request, context: any) {
     buyingPrice: parsedBuyingPrice,
     sellingPrice: parsedSellingPrice,
     finalPrice: parsedFinalPrice,
-    profitMargin: parsedProfitMargin,
+    profitMargin: 0, // Never leak internal profit margin
     pricingTiers: safePricing,
     startDealDate: parsedStartDeal,
     endDealDate: parsedEndDeal,
@@ -362,6 +363,8 @@ async function handlePost(req: Request, context: any) {
     listingTransactionType,
   };
 
+  const sanitizedData = sanitizePublicListingData(data);
+
   let listing: any = {};
 
   try {
@@ -378,14 +381,14 @@ async function handlePost(req: Request, context: any) {
 
         listing = await tx.marketplaceListings.update({
           where: { id },
-          data,
+          data: sanitizedData,
           select: { id: true, name: true, company: { select: { id: true, slug: true } } },
         });
         return;
       }
 
       listing = await tx.marketplaceListings.create({
-        data,
+        data: sanitizedData as any,
         select: { id: true, name: true, company: { select: { id: true, slug: true } } },
       });
     });

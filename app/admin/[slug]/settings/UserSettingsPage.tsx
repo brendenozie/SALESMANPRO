@@ -12,6 +12,7 @@ import {
   ServerStackIcon,
   DocumentCheckIcon,
   ChatBubbleLeftRightIcon, // New high-fidelity icon element for eTIMS Tax dashboard routing
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -22,6 +23,7 @@ import { changePassword, deactivateAccount, logoutUser, updateNotificationPrefer
 import { ProfileTab, SecurityTab, NotificationsTab, DomainTab, AccountTab } from './components/StandardTabs';
 import { KraTab } from './components/KraTab';
 import { WhatsAppAiTab } from './components/WhatsAppAiTab';
+import { SeoStrategyTab } from './components/SeoStrategyTab';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const A_RECORD_IP = process.env.VPS_IP || '161.97.149.171';
@@ -161,6 +163,7 @@ export default function UserSettingsPage({ companyId }: { companyId: string }) {
             { id: 'security', label: 'Security Context', Icon: KeyIcon, text: 'text-green-500' },
             { id: 'notifications', label: 'Alert Preferences', Icon: BellAlertIcon, text: 'text-blue-500' },
             { id: 'domain', label: 'Network Domain', Icon: ServerStackIcon, text: 'text-purple-500' },
+            { id: 'seo', label: 'SEO & Search Presence', Icon: GlobeAltIcon, text: 'text-indigo-500' },
             { id: 'whatsapp', label: 'WhatsApp AI', Icon: ChatBubbleLeftRightIcon, text: 'text-green-500' },
             { id: 'kra', label: 'KRA eTIMS Tax', Icon: DocumentCheckIcon, text: 'text-red-500' }, // Linked high fidelity tracking icon
             { id: 'account', label: 'Danger Operations', Icon: TrashIcon, text: 'text-gray-400' },
@@ -198,6 +201,7 @@ export default function UserSettingsPage({ companyId }: { companyId: string }) {
               {activeTab === 'security' && <SecurityTab {...{ handlePasswordChange, oldPassword, setOldPassword, newPassword, setNewPassword, confirmNewPassword, setConfirmNewPassword }} />}
               {activeTab === 'notifications' && <NotificationsTab {...{ emailAlerts, setEmailAlerts, smsAlerts, setSmsAlerts, inAppNotifications, setInAppNotifications }} />}
               {activeTab === 'domain' && <DomainTab {...{ handleDomainSubmit, customDomain, setCustomDomain, currentDomain, domainLoading, renderDomainStatusLine, loading, domainStatus, A_RECORD_IP, slug }} />}
+              {activeTab === 'seo' && <SeoStrategyTab companyId={companyId} showStatus={showStatus} apiBaseUrl={apiBaseUrl} />}
               {activeTab === 'kra' && <KraTab companyId={companyId} showStatus={showStatus} apiBaseUrl={apiBaseUrl} />}
               {activeTab === 'whatsapp' && <WhatsAppAiTab companyId={companyId} showStatus={showStatus} apiBaseUrl={apiBaseUrl} />}
               {activeTab === 'account' && <AccountTab handleDeactivateAccount={deactivateAccount} />}

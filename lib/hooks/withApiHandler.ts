@@ -29,6 +29,7 @@ export interface ApiHandlerOptions {
   requireRateLimit?: boolean;
   requireIdempotency?: boolean; // When true, mandates Idempotency-Key header on mutations
   allowedRoles?: string[]; // Optional: Restrict access to specific roles
+  roles?: string[]; // Alias for allowedRoles
   timeoutMs?: number; // Optional request timeout (default: 15,000ms)
 }
 
@@ -146,9 +147,10 @@ export function withApiHandler(
       }
 
       // --- Role-based Access Control ---
-      if (options.allowedRoles && options.allowedRoles.length > 0) {
+      const effectiveAllowedRoles = options.allowedRoles ?? options.roles;
+      if (effectiveAllowedRoles && effectiveAllowedRoles.length > 0) {
         const userRole = context.user?.role?.toLowerCase();
-        const allowedRolesLower = options.allowedRoles.map((role) =>
+        const allowedRolesLower = effectiveAllowedRoles.map((role) =>
           role.toLowerCase(),
         );
 

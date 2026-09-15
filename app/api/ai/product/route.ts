@@ -31,14 +31,41 @@ export async function POST(req: Request) {
     switch (action.toUpperCase()) {
       case "DESCRIPTION":
         result = await productAI.generateDescription(params, context);
+        if (params.autoApply && (params.productId || params.listingId)) {
+          await productAI.applyProductAI({
+            productId: params.productId,
+            listingId: params.listingId,
+            targetType: params.targetType,
+            description: result?.shortDescription || result?.text,
+            longDescription: result?.longDescription,
+            bulletPoints: result?.bulletPoints,
+            tags: result?.suggestedTags,
+          }, context);
+        }
         break;
 
       case "SEO":
         result = await productAI.generateSEO(params, context);
+        if (params.autoApply && (params.productId || params.listingId)) {
+          await productAI.applyProductAI({
+            productId: params.productId,
+            listingId: params.listingId,
+            targetType: params.targetType,
+            tags: result?.metaKeywords,
+          }, context);
+        }
         break;
 
       case "ATTRIBUTES":
         result = await productAI.generateAttributes(params, context);
+        if (params.autoApply && (params.productId || params.listingId)) {
+          await productAI.applyProductAI({
+            productId: params.productId,
+            listingId: params.listingId,
+            targetType: params.targetType,
+            attributes: result,
+          }, context);
+        }
         break;
 
       case "IMAGE":
@@ -46,6 +73,10 @@ export async function POST(req: Request) {
           return NextResponse.json({ success: false, error: "productId is required for image generation" }, { status: 400 });
         }
         result = await productAI.generateAndAttachImage(params, context);
+        break;
+
+      case "APPLY":
+        result = await productAI.applyProductAI(params, context);
         break;
 
       default:
