@@ -2,10 +2,8 @@
 
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import dynamic from 'next/dynamic';
-import { useRouter } from "next/navigation";
-import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported

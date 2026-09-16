@@ -1,9 +1,4 @@
-"use client";
-
-import React, { ReactNode, useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+import React, { ReactNode } from "react";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";
 
@@ -12,26 +7,16 @@ interface CoursesLayoutProps {
   children: ReactNode;
 }
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
 export default function CoursesHeaderLayout({ params, children }: CoursesLayoutProps) {
-  
-  const path = usePathname();
-  // bail out on /login or any deeper login route
-  if (path.startsWith('/site/educational-online-courses/courses/login')) return (<section >{children}</section>);   
-// bail out on /login or any deeper login route
-if (path.startsWith('/site/educational-online-courses/courses/signup')) return (<section >{children}</section>);   
-
   return (
     <>
       <div id="section-header" data-editor-section="header" data-editor-component="Header">
-        <Header/>
+        <Header />
       </div>
       {/* Child Content (Course Details) */}
-      <section >{children}</section>
+      <section>{children}</section>
       <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
-        <Footer/>
+        <Footer />
       </div>
     </>
   );

@@ -3,9 +3,8 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 // File: components/site/layouts/HealthcareLayout/HealthcareSite.tsx
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StoreForm } from '@/types/typings';
 
@@ -75,7 +74,6 @@ const defaultContactInfo = {
 
 export default function HealthCareSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
-  const router = useRouter();
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;
