@@ -14,15 +14,23 @@ import { getListingPublicUrl } from "./ghuba-slug";
 
 export type FeedListingType = "ECOMMERCE" | "SERVICE" | "PROPERTY" | "AUTO";
 
+import {
+  type MediaVariantUrls,
+  type EnrichedFeedImage,
+  type EnrichedFeedVideo,
+  normalizeMediaList,
+  parseDetailedMediaList,
+} from "./media-normalizer";
+
 export type {
   MediaVariantUrls,
   EnrichedFeedImage,
   EnrichedFeedVideo,
-} from "./media-normalizer";
+};
 export {
   normalizeMediaList,
   parseDetailedMediaList,
-} from "./media-normalizer";
+};
 
 export interface GhubaFeedMedia {
   primaryType: "VIDEO" | "IMAGE" | "GALLERY";

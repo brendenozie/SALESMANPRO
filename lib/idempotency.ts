@@ -322,11 +322,8 @@ export async function withIdempotency<T>(
     await saveIdempotencyResponse(
       cleanKey,
       tenantId,
-      {
-        status: 200,
-        body: result,
-        savedAt: Date.now(),
-      },
+      200,
+      result,
       retentionTtlSeconds,
     );
     return result;
