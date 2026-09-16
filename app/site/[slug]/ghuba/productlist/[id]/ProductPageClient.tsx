@@ -59,6 +59,13 @@ const DynamicGhubaProductCard = dynamic(
   }
 );
 
+const ProductCommentsSection = dynamic(
+  () => import("@/components/ghuba/comments/ProductCommentsSection"),
+  { ssr: false }
+);
+
+import { useProductTelemetry } from "@/hooks/useProductTelemetry";
+
 import {
   ProductType,
   ProductCapabilities,
@@ -207,6 +214,21 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
   const [justAddedToCart, setJustAddedToCart] = useState(false);
+  const { trackProductView, trackAddToCart: trackCartAction, trackWhatsAppClick } = useProductTelemetry();
+
+  useEffect(() => {
+    trackProductView(
+      {
+        marketplaceListingId: listing.id,
+        productId: product.id,
+        companyId: listing.companyId,
+      },
+      {
+        title: displayTitle,
+        category: listing.category,
+      }
+    );
+  }, [listing.id, product.id, listing.companyId, displayTitle, listing.category, trackProductView]);
 
   // Auto-fill user information when session changes[cite: 1]
   useEffect(() => {
@@ -941,6 +963,11 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
 
           {/* Action Sidebar */}
           <div className="lg:col-span-1">{renderActionSidebar()}</div>
+        </div>
+
+        {/* Product Comments & Discussion */}
+        <div className="mt-16">
+          <ProductCommentsSection listingId={listing.id} />
         </div>
 
         {/* Related Items View */}

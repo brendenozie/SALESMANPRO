@@ -14,7 +14,7 @@
  * 4. Backward Compatibility: Transparently handles legacy string arrays, object URLs, and modern variant schemas.
  */
 
-import { normalizeMediaList, parseDetailedMediaList, MediaVariantUrls } from "./ghuba-feed-service";
+import { normalizeMediaList, parseDetailedMediaList, MediaVariantUrls } from "./media-normalizer";
 
 export interface GalleryMediaItem {
   type: "IMAGE" | "VIDEO";

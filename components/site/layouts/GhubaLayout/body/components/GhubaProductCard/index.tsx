@@ -16,8 +16,10 @@ import {
   CalendarDaysIcon, MagnifyingGlassIcon, VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import {
-  Square2StackIcon, MapPinIcon, CalendarIcon
+  Square2StackIcon, MapPinIcon, CalendarIcon, BookmarkIcon, ShareIcon
 } from '@heroicons/react/24/outline';
+import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
+import { useProductTelemetry } from '@/hooks/useProductTelemetry';
 
 import { resolveProductType } from '@/lib/ghuba-product-type';
 import { getListingPublicUrl } from '@/lib/ghuba-slug';
@@ -41,11 +43,43 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
   const router = useRouter();
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const { observeImpression, trackCardClick, trackAddToCart: trackCartTelemetry, trackWhatsAppClick, trackShare } = useProductTelemetry();
 
   const [imageError, setImageError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
+  const [isSaved, setIsSaved] = useState(Boolean(product.isSaved));
+
+  const handleToggleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
+    try {
+      await fetch(`/api/ghuba/listings/${product.id}/save`, {
+        method: nextSaved ? "POST" : "DELETE",
+      });
+    } catch {
+      setIsSaved(!nextSaved);
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    trackShare({
+      marketplaceListingId: product.id,
+      productId: product.productId,
+      companyId: product.companyId,
+    });
+    const url = typeof window !== "undefined" ? `${window.location.origin}${getListingPublicUrl(product)}` : "";
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: displayTitle, url });
+      } catch {}
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+    }
+  };
 
   const itemType = useMemo(() => resolveProductType(product), [product]);
 
@@ -190,7 +224,21 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
     <>
       <div className="relative group h-full">
         <div
-          onClick={() => router.push(getListingPublicUrl(product))}
+          ref={observeImpression({
+            marketplaceListingId: product.id,
+            productId: product.productId,
+            companyId: product.companyId,
+            sourceSection: "catalog_card",
+          })}
+          onClick={() => {
+            trackCardClick({
+              marketplaceListingId: product.id,
+              productId: product.productId,
+              companyId: product.companyId,
+              sourceSection: "catalog_card",
+            });
+            router.push(getListingPublicUrl(product));
+          }}
           onMouseEnter={() => {
             const url = getListingPublicUrl(product);
             if (url) router.prefetch(url);
@@ -218,15 +266,42 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
               </span>
             </div>
 
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleLike(product.id); }}
-              className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${likedItems?.[product.id]
-                  ? "bg-red-50 text-[#E63946] dark:bg-red-500/20 dark:text-red-400"
-                  : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
+            {/* Top Right Quick Actions: Share, Save/Wishlist, Like */}
+            <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+              <button
+                type="button"
+                aria-label="Share listing"
+                onClick={handleShare}
+                className="p-1.5 sm:p-2 rounded-full backdrop-blur-md bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80 transition-all hover:scale-110 active:scale-95 shadow-sm"
+              >
+                <ShareIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Save to wishlist"
+                onClick={handleToggleSave}
+                className={`p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 shadow-sm ${
+                  isSaved
+                    ? "bg-amber-50 text-amber-500 dark:bg-amber-500/20 dark:text-amber-400"
+                    : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
                 }`}
-            >
-              <HeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
+              >
+                {isSaved ? <BookmarkSolidIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <BookmarkIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              </button>
+
+              <button
+                type="button"
+                aria-label="Like listing"
+                onClick={(e) => { e.stopPropagation(); toggleLike?.(product.id); }}
+                className={`p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 shadow-sm ${likedItems?.[product.id]
+                    ? "bg-red-50 text-[#E63946] dark:bg-red-500/20 dark:text-red-400"
+                    : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
+                  }`}
+              >
+                <HeartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </button>
+            </div>
 
             {resolvedMedia.hasVideo && (
               <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-white/10 tracking-wide uppercase pointer-events-none">
@@ -331,7 +406,14 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  trackWhatsAppClick({
+                    marketplaceListingId: product.id,
+                    productId: product.productId,
+                    companyId: product.companyId,
+                  });
+                }}
                 className="w-full bg-[#25D366]/10 dark:bg-[#25D366]/20 text-[#1da851] dark:text-[#25D366] hover:bg-[#25D366] hover:text-white py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors duration-300"
               >
                 <WhatsAppIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

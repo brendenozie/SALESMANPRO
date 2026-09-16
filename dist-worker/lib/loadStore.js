@@ -13,6 +13,7 @@ const ghuba_fetcher_1 = require("@/lib/ghuba-fetcher");
 const ghuba_helpers_1 = require("@/lib/ghuba-helpers");
 // Safe per-request memoization helper compatible with React 18 types
 const requestCache = (react_1.default.cache || ((fn) => fn));
+const template_registry_1 = require("@/lib/website-builder/template-registry");
 exports.loadStore = requestCache(async (slug) => {
     const raw = await (0, company_fetcher_1.findCompanyCached)(slug, "page");
     if (!raw)
@@ -23,11 +24,16 @@ exports.loadStore = requestCache(async (slug) => {
     const variantInput = pageData.variant || "";
     const category = isGhuba ? "portal" : categoryInput;
     const variant = isGhuba ? "ghuba" : variantInput;
-    const componentName = isGhuba ? "GhubaSite" : (0, siteBodyComponentMap_1.getComponentNameForCategory)(category, variant || "");
+    const canonicalTemplate = isGhuba
+        ? (0, template_registry_1.resolveCanonicalTemplate)("portal", "ghuba", "ghuba@v1")
+        : (0, template_registry_1.resolveCanonicalTemplate)(raw?.category, raw?.variant, raw?.website?.templateKey);
+    const componentName = isGhuba
+        ? "GhubaSite"
+        : (canonicalTemplate.bodyComponent || (0, siteBodyComponentMap_1.getComponentNameForCategory)(category, variant || ""));
     // Fetch global Ghuba marketplace data instantly from cache if applicable
     let ghubaData = null;
     if (isGhuba) {
         ghubaData = await (0, ghuba_fetcher_1.getGhubaHomepageCached)();
     }
-    return { raw, pageData, componentName, ghubaData };
+    return { raw, pageData, componentName, ghubaData, canonicalTemplate };
 });

@@ -3679,19 +3679,27 @@ model MarketplaceListingLike {
 }
 
 model MarketplaceListingComment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  listingId String   @db.ObjectId
-  userId    String   @db.ObjectId
-  content   String
-  status    String   @default("VISIBLE")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  listingId        String   @db.ObjectId
+  userId           String   @db.ObjectId
+  content          String
+  status           String   @default("VISIBLE")
+  moderationStatus String   @default("APPROVED") // PENDING, APPROVED, HIDDEN, REJECTED
+  parentId         String?  @db.ObjectId
+  parent           MarketplaceListingComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies          MarketplaceListingComment[] @relation("CommentReplies")
+  reportCount      Int      @default(0)
+  reports          Json[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   listing   marketplaceListings @relation(fields: [listingId], references: [id], onDelete: Cascade)
   user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([listingId, createdAt])
+  @@index([listingId, moderationStatus, createdAt])
   @@index([userId])
+  @@index([parentId])
 }
 
 model ClientInventory {
@@ -10850,4 +10858,169 @@ model WebsiteRevision {
   @@index([websiteId, versionNumber])
   @@index([companyId])
 }
+
+// ============================================================
+// PRODUCT INTERACTION TELEMETRY & ANALYTICS AGGREGATES
+// ============================================================
+
+enum InteractionChannel {
+  GHUBA
+  STORE
+  WHATSAPP
+  POS
+  REELS
+  SEARCH
+  OTHER
+}
+
+enum InteractionEventType {
+  PRODUCT_IMPRESSION
+  PRODUCT_VIEW
+  PRODUCT_CARD_CLICK
+  PRODUCT_DETAIL_OPEN
+  PRODUCT_LIKE
+  PRODUCT_UNLIKE
+  PRODUCT_WISHLIST_ADD
+  PRODUCT_WISHLIST_REMOVE
+  PRODUCT_COMMENT_CREATE
+  PRODUCT_COMMENT_REPLY
+  PRODUCT_SHARE
+  PRODUCT_SAVE
+  PRODUCT_ADD_TO_CART
+  PRODUCT_REMOVE_FROM_CART
+  CHECKOUT_STARTED
+  ORDER_CREATED
+  ORDER_PAID
+  PRODUCT_INQUIRY
+  WHATSAPP_CLICK
+  REEL_VIEW
+  REEL_LIKE
+  SEARCH_IMPRESSION
+  SEARCH_RESULT_CLICK
+}
+
+model ProductInteractionEvent {
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  eventType            InteractionEventType
+  marketplaceListingId String?              @db.ObjectId
+  productId            String?              @db.ObjectId
+  companyId            String?              @db.ObjectId
+  storeId              String?
+  userId               String?              @db.ObjectId
+  consumerId           String?              @db.ObjectId
+  customerId           String?
+  anonymousVisitorId   String?
+  sessionId            String?
+  orderId              String?              @db.ObjectId
+  channel              InteractionChannel   @default(GHUBA)
+  sourcePage           String?
+  sourceSection        String?
+  referrer             String?
+  deviceType           String?
+  country              String?
+  metadata             Json?
+  dedupeKey            String?
+  createdAt            DateTime             @default(now())
+
+  @@index([marketplaceListingId, createdAt])
+  @@index([productId, createdAt])
+  @@index([companyId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([anonymousVisitorId, eventType])
+  @@index([userId, eventType])
+  @@index([dedupeKey])
+  @@index([createdAt])
+}
+
+model ListingDailyMetric {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  marketplaceListingId String             @db.ObjectId
+  productId            String?            @db.ObjectId
+  companyId            String             @db.ObjectId
+  date                 String             // YYYY-MM-DD
+  channel              InteractionChannel @default(GHUBA)
+
+  impressions          Int                @default(0)
+  uniqueImpressions    Int                @default(0)
+  views                Int                @default(0)
+  uniqueViews          Int                @default(0)
+  cardClicks           Int                @default(0)
+  likes                Int                @default(0)
+  wishlistAdds         Int                @default(0)
+  comments             Int                @default(0)
+  shares               Int                @default(0)
+  saves                Int                @default(0)
+  addToCarts           Int                @default(0)
+  checkoutStarts       Int                @default(0)
+  orders               Int                @default(0)
+  paidOrders           Int                @default(0)
+  revenue              Float              @default(0)
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@unique([marketplaceListingId, date, channel])
+  @@index([companyId, date])
+  @@index([marketplaceListingId, date])
+  @@index([date, channel])
+}
+
+model StoreDailyMetric {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String             @db.ObjectId
+  date              String             // YYYY-MM-DD
+  channel           InteractionChannel @default(STORE)
+
+  impressions       Int                @default(0)
+  uniqueImpressions Int                @default(0)
+  views             Int                @default(0)
+  uniqueViews       Int                @default(0)
+  cardClicks        Int                @default(0)
+  likes             Int                @default(0)
+  wishlistAdds      Int                @default(0)
+  comments          Int                @default(0)
+  shares            Int                @default(0)
+  saves             Int                @default(0)
+  addToCarts        Int                @default(0)
+  checkoutStarts    Int                @default(0)
+  orders            Int                @default(0)
+  paidOrders        Int                @default(0)
+  revenue           Float              @default(0)
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([companyId, date, channel])
+  @@index([companyId, date])
+  @@index([date, channel])
+}
+
+model GhubaDailyMetric {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  date              String             // YYYY-MM-DD
+  channel           InteractionChannel @default(GHUBA)
+
+  impressions       Int                @default(0)
+  uniqueImpressions Int                @default(0)
+  views             Int                @default(0)
+  uniqueViews       Int                @default(0)
+  cardClicks        Int                @default(0)
+  likes             Int                @default(0)
+  wishlistAdds      Int                @default(0)
+  comments          Int                @default(0)
+  shares            Int                @default(0)
+  saves             Int                @default(0)
+  addToCarts        Int                @default(0)
+  checkoutStarts    Int                @default(0)
+  orders            Int                @default(0)
+  paidOrders        Int                @default(0)
+  revenue           Float              @default(0)
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([date, channel])
+  @@index([date])
+}
+
 

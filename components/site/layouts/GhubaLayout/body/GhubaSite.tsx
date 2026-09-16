@@ -44,6 +44,10 @@ const Shop = dynamic(() => import("./components/shops"), {
 
 const Annocument = dynamic(() => import("./components/annocument/Annocument"));
 const Wrapper = dynamic(() => import("./components/wrapper/Wrapper"));
+const GhubaPersonalizedSection = dynamic(
+  () => import("@/components/ghuba/recommendations/GhubaPersonalizedSection"),
+  { ssr: false }
+);
 
 interface HomePageProps {
   pageData: StoreForm;
@@ -83,6 +87,7 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
   ) : null;
   const annocumentNode = <Annocument pageData={pageData} />;
   const wrapperNode = <Wrapper pageData={pageData} />;
+  const personalizedNode = <GhubaPersonalizedSection />;
 
   const sectionMap: Record<string, React.ReactNode> = {
     // 1. Banner Slider
@@ -102,26 +107,31 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
     'top-cate': topCateNode,
     'categories': topCateNode,
 
-    // 4. New Arrivals
+    // 4. Personalized Recommendations
+    'ghuba-recommendations': personalizedNode,
+    'recommendations': personalizedNode,
+    'personalized': personalizedNode,
+
+    // 5. New Arrivals
     'ghuba-newarrivals': newArrivalsNode,
     'newarrivals': newArrivalsNode,
     'new-arrivals': newArrivalsNode,
 
-    // 5. Discounts
+    // 6. Discounts
     'ghuba-discount': discountNode,
     'discount': discountNode,
     'discounts': discountNode,
 
-    // 6. Shop Catalog
+    // 7. Shop Catalog
     'ghuba-shop': shopNode,
     'shop': shopNode,
 
-    // 7. Announcements
+    // 8. Announcements
     'ghuba-annocument': annocumentNode,
     'annocument': annocumentNode,
     'announcement': annocumentNode,
 
-    // 8. Highlights Wrapper
+    // 9. Highlights Wrapper
     'ghuba-wrapper': wrapperNode,
     'wrapper': wrapperNode,
   };
@@ -138,6 +148,9 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
           <FlashDeals productItems={flashDeals} addToCart={addToCart} />
         </div>
       )}
+      <div id="section-recommendations" data-editor-section="recommendations" data-editor-component="GhubaPersonalizedSection">
+        <GhubaPersonalizedSection />
+      </div>
       {categories.length > 0 && (
         <div id="section-top-cate" data-editor-section="top-cate" data-editor-component="TopCate">
           <TopCate categories={categories} />

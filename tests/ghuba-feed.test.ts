@@ -314,8 +314,12 @@ async function runTests() {
 }
 
 runTests()
-  .catch((err) => {
-    console.error("TEST FAILED:", err);
-    process.exit(1);
+  .then(async () => {
+    await prisma.$disconnect();
+    process.exit(0);
   })
-  .finally(() => prisma.$disconnect());
+  .catch(async (err) => {
+    console.error("TEST FAILED:", err);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

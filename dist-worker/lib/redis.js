@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = void 0;
+exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = void 0;
 // lib/redis.ts
 const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
@@ -128,5 +128,9 @@ function getBullMQConnectionOptions() {
     };
 }
 exports.getBullMQConnectionOptions = getBullMQConnectionOptions;
+function getRedisClient() {
+    return exports.redisConnection;
+}
+exports.getRedisClient = getRedisClient;
 const redis = exports.redisConnection;
 exports.default = redis;

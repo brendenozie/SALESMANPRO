@@ -63,5 +63,5 @@ export default async function ClientsPage({ params }: PageProps) {
   //   console.error("[ClientsPage] Error fetching clients →", err.message);
   // }
 
-  return <AnalyticsClient  />;
+  return <AnalyticsClient slug={slug} storeName={company.name} />;
 }

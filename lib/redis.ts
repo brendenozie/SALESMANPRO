@@ -133,5 +133,9 @@ export function getBullMQConnectionOptions(): RedisOptions {
   };
 }
 
+export function getRedisClient(): Redis {
+  return redisConnection;
+}
+
 const redis = redisConnection;
 export default redis;

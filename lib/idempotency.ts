@@ -283,3 +283,56 @@ export async function withDistributedLock<T>(
   }
 }
 
+/**
+ * Wraps a mutation function with distributed idempotency protection.
+ * If the operation was previously completed, returns the cached result.
+ * If concurrent requests arrive with the same key, waits or returns an in-flight error.
+ */
+export async function withIdempotency<T>(
+  key: string,
+  fn: () => Promise<T>,
+  tenantId = "global",
+  retentionTtlSeconds = 86400,
+): Promise<T> {
+  if (!key || typeof key !== "string" || !key.trim()) {
+    return await fn();
+  }
+
+  const cleanKey = key.trim();
+  const lock = await acquireIdempotencyLock(cleanKey, tenantId);
+
+  if (lock.state === "COMPLETED") {
+    return lock.response.body as T;
+  }
+
+  if (lock.state === "IN_FLIGHT") {
+    // Singleflight wait for in-flight operation (up to 3 seconds)
+    for (let i = 0; i < 30; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const retryLock = await acquireIdempotencyLock(cleanKey, tenantId);
+      if (retryLock.state === "COMPLETED") {
+        return retryLock.response.body as T;
+      }
+    }
+    throw new Error("IDEMPOTENCY_IN_FLIGHT: A request with this Idempotency-Key is currently being processed.");
+  }
+
+  try {
+    const result = await fn();
+    await saveIdempotencyResponse(
+      cleanKey,
+      tenantId,
+      {
+        status: 200,
+        body: result,
+        savedAt: Date.now(),
+      },
+      retentionTtlSeconds,
+    );
+    return result;
+  } catch (error) {
+    await releaseIdempotencyLock(cleanKey, tenantId);
+    throw error;
+  }
+}
+

@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/server/db/prismadb";
 import { extractListingId } from "@/lib/ghuba-slug";
+import { enqueueTelemetryBatch } from "@/lib/analytics/queue/analyticsQueue";
 
 export async function POST(
   request: NextRequest,
@@ -35,7 +36,7 @@ export async function POST(
 
     const listing = await prisma.marketplaceListings.findUnique({
       where: { id: listingId },
-      select: { id: true },
+      select: { id: true, companyId: true, productId: true },
     });
 
     if (!listing) {
@@ -60,6 +61,18 @@ export async function POST(
     const likesCount = await prisma.marketplaceListingLike.count({
       where: { listingId },
     });
+
+    // Asynchronously record interaction event
+    enqueueTelemetryBatch([
+      {
+        eventType: "PRODUCT_LIKE",
+        marketplaceListingId: listingId,
+        productId: listing.productId || undefined,
+        companyId: listing.companyId || undefined,
+        userId,
+        channel: "GHUBA",
+      },
+    ]);
 
     return NextResponse.json({
       success: true,
@@ -98,6 +111,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Invalid listing ID" }, { status: 400 });
     }
 
+    const listing = await prisma.marketplaceListings.findUnique({
+      where: { id: listingId },
+      select: { id: true, companyId: true, productId: true },
+    });
+
     await prisma.marketplaceListingLike.deleteMany({
       where: {
         listingId,
@@ -108,6 +126,20 @@ export async function DELETE(
     const likesCount = await prisma.marketplaceListingLike.count({
       where: { listingId },
     });
+
+    // Asynchronously record interaction event
+    if (listing) {
+      enqueueTelemetryBatch([
+        {
+          eventType: "PRODUCT_UNLIKE",
+          marketplaceListingId: listingId,
+          productId: listing.productId || undefined,
+          companyId: listing.companyId || undefined,
+          userId,
+          channel: "GHUBA",
+        },
+      ]);
+    }
 
     return NextResponse.json({
       success: true,

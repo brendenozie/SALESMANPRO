@@ -141,15 +141,22 @@ exports.findCompanyCached = requestCache(async (identifier, strategy = "lean") =
     // 3️⃣ Execute with Singleflight stampede protection and two-tier Redis/in-memory caching
     return (0, cache_2.fetchWithCache)(cacheKey, async () => {
         // Setup Next.js tag-aware cache wrapper for ISR/framework integration
-        const nextKey = ["company-details", cleanIdentifier, strategy].join(":");
-        const cachedFetcher = (0, cache_1.unstable_cache)(() => findCompanyFn(cleanIdentifier, strategy), [nextKey], {
-            tags: [
-                `company:${cleanIdentifier}`,
-                `company-details:${cleanIdentifier}:${strategy}`,
-            ],
-            revalidate: 600, // 10 minute revalidation
-        });
-        const data = await cachedFetcher();
+        let data;
+        try {
+            const nextKey = ["company-details", cleanIdentifier, strategy].join(":");
+            const cachedFetcher = (0, cache_1.unstable_cache)(() => findCompanyFn(cleanIdentifier, strategy), [nextKey], {
+                tags: [
+                    `company:${cleanIdentifier}`,
+                    `company-details:${cleanIdentifier}:${strategy}`,
+                ],
+                revalidate: 600, // 10 minute revalidation
+            });
+            data = await cachedFetcher();
+        }
+        catch (err) {
+            // Fallback for environments where incrementalCache is not initialized (e.g. workers, tests, CLI)
+            data = await findCompanyFn(cleanIdentifier, strategy);
+        }
         // If we loaded the rich 'page' strategy, simultaneously warm the 'lean' cache key!
         if (data && strategy === "page") {
             const leanKey = (0, cache_2.buildTenantCacheKey)(cleanIdentifier, "company_details", { strategy: "lean" });
@@ -228,10 +235,10 @@ function pageDataInclude() {
             },
         },
         ...latestSubscriptionInclude,
-        blogs: { orderBy: { publishedAt: "desc" } },
-        faqs: orderedAsc,
-        testimonials: orderedAsc,
-        heroSlides: orderedAsc,
+        blogs: { orderBy: { publishedAt: "desc" }, take: 10 },
+        faqs: { orderBy: { order: "asc" }, take: 50 },
+        testimonials: { orderBy: { order: "asc" }, take: 20 },
+        heroSlides: { orderBy: { order: "asc" }, take: 10 },
         promotions: {
             select: {
                 title: true,
@@ -283,7 +290,7 @@ function pageDataInclude() {
         },
         Podcast: true,
         courses: true,
-        events: true,
+        events: { orderBy: { createdAt: "desc" }, take: 20 },
         Package: true,
         Project: true,
         services: true,
