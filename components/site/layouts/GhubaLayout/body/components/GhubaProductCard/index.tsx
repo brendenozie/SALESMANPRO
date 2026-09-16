@@ -191,7 +191,11 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
       <div className="relative group h-full">
         <div
           onClick={() => router.push(getListingPublicUrl(product))}
-          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col"
+          onMouseEnter={() => {
+            const url = getListingPublicUrl(product);
+            if (url) router.prefetch(url);
+          }}
+          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-xl active:scale-[0.99] flex flex-col"
         >
           {/* --- IMAGE HEADER --- */}
           <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-950 shrink-0">
@@ -257,6 +261,11 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
                       if (product.company?.slug) {
                         e.stopPropagation();
                         router.push(`/site/${product.company.slug}`);
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      if (product.company?.slug) {
+                        router.prefetch(`/site/${product.company.slug}`);
                       }
                     }}
                     className="text-zinc-900 dark:text-zinc-200 font-bold hover:underline truncate cursor-pointer"

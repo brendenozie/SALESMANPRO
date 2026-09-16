@@ -3,31 +3,87 @@ export const revalidate = 300; // 5 minutes
 
 import type { Metadata } from "next";
 import { ListingStatus } from "@prisma/client";
+import { fetchWithCache } from "@/lib/cache";
 import ProductPageClient from "./ProductPageClient";
 import prisma from "@/server/db/prismadb";
 import { redirect } from "next/navigation";
 import { extractListingId, getListingPublicUrl } from "@/lib/ghuba-slug";
 import { SEOService } from "@/lib/seo";
 
+// Public-safe Product projection strictly excluding private margin/cost/supplier fields
+const publicProductSelect = {
+  id: true,
+  name: true,
+  description: true,
+  longDescription: true,
+  category: true,
+  subCategory: true,
+  subCategoryName: true,
+  images: true,
+  videos: true,
+  tags: true,
+  brand: true,
+  model: true,
+  color: true,
+  size: true,
+  weight: true,
+  condition: true,
+  dimensions: true,
+  material: true,
+  quantity: true,
+  sellingPrice: true,
+  discount: true,
+  finalPrice: true,
+  isOnOffer: true,
+  isFlashDeal: true,
+  isDiscounted: true,
+  isNewArrival: true,
+  isFeatured: true,
+  make: true,
+  trim: true,
+  type: true,
+  mileage: true,
+  engineType: true,
+  engineSize: true,
+  horsepower: true,
+  torque: true,
+  fuelType: true,
+  fuelEconomy: true,
+  transmission: true,
+  drivetrain: true,
+  vin: true,
+  logbookStatus: true,
+  serviceHistory: true,
+  negotiable: true,
+  financingAvailable: true,
+  tradeIn: true,
+  features: true,
+  author: true,
+  publisher: true,
+  isbn: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 // Helper to handle Date serialization for Client Components
 const serialize = (item: any) => ({
   ...item,
-  createdAt: item.createdAt.toISOString(),
-  updatedAt: item.updatedAt.toISOString(),
-  expirationDate: item.expirationDate?.toISOString() || null,
+  createdAt: item.createdAt?.toISOString?.() || item.createdAt,
+  updatedAt: item.updatedAt?.toISOString?.() || item.updatedAt,
+  expirationDate: item.expirationDate?.toISOString?.() || null,
   product: item.product
     ? {
         ...item.product,
-        createdAt: item.product.createdAt.toISOString(),
-        updatedAt: item.product.updatedAt.toISOString(),
-        releaseDate: item.product.releaseDate?.toISOString() || null,
+        createdAt: item.product.createdAt?.toISOString?.() || item.product.createdAt,
+        updatedAt: item.product.updatedAt?.toISOString?.() || item.product.updatedAt,
+        releaseDate: item.product.releaseDate?.toISOString?.() || null,
       }
     : null,
   productCategory: item.productCategory
     ? {
         ...item.productCategory,
-        createdAt: item.productCategory.createdAt.toISOString(),
-        updatedAt: item.productCategory.updatedAt.toISOString(),
+        createdAt: item.productCategory.createdAt?.toISOString?.() || item.productCategory.createdAt,
+        updatedAt: item.productCategory.updatedAt?.toISOString?.() || item.productCategory.updatedAt,
       }
     : null,
 });
@@ -43,30 +99,41 @@ const listingWhere = {
   ghubaStatus: "APPROVED",
 };
 
+/**
+ * Cached listing fetcher shared between generateMetadata and Page component
+ */
+const getCachedListing = (listingId: string) =>
+  fetchWithCache(
+    `ghuba:listing:${listingId}`,
+    async () => {
+      return prisma.marketplaceListings.findUnique({
+        where: { id: listingId },
+        include: {
+          product: {
+            select: publicProductSelect,
+          },
+          productCategory: true,
+          company: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true,
+              site: true,
+            },
+          },
+        },
+      });
+    },
+    { ttlSeconds: 300, swrSeconds: 600 }
+  );
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const listingId = extractListingId(id);
 
   try {
-    const listing = await prisma.marketplaceListings.findUnique({
-      where: { id: listingId },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        make: true,
-        model: true,
-        finalPrice: true,
-        sellingPrice: true,
-        images: true,
-        type: true,
-        category: true,
-        isAvailable: true,
-        company: {
-          select: { id: true, name: true, slug: true, logoUrl: true },
-        },
-      },
-    });
+    const listing = await getCachedListing(listingId);
 
     if (!listing) {
       return {
@@ -115,22 +182,7 @@ export default async function Page({ params }: PageProps) {
   const { slug, id } = await params;
   const listingId = extractListingId(id);
 
-  const listing = await prisma.marketplaceListings.findUnique({
-    where: { id: listingId },
-    include: {
-      product: true,
-      productCategory: true,
-      company: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          logoUrl: true,
-          site: true,
-        },
-      },
-    },
-  });
+  const listing = await getCachedListing(listingId);
 
   if (!listing) return <div>Product not found</div>;
 
@@ -143,15 +195,15 @@ export default async function Page({ params }: PageProps) {
 
   const serializedListing = serialize(listing);
 
-  // Fetch similar listings
+  // Fetch similar listings with selective public projection
   let similar = await prisma.marketplaceListings.findMany({
     where: {
       ...listingWhere,
-      productCategoryId: listing.productCategoryId,
+      productCategoryId: listing.productCategoryId || undefined,
       id: { not: listing.id },
     },
     include: {
-      product: true,
+      product: { select: publicProductSelect },
       company: {
         select: {
           id: true,
@@ -168,7 +220,7 @@ export default async function Page({ params }: PageProps) {
     similar = await prisma.marketplaceListings.findMany({
       where: { ...listingWhere, id: { not: listingId } },
       include: {
-        product: true,
+        product: { select: publicProductSelect },
         company: {
           select: {
             id: true,

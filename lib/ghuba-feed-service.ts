@@ -8,6 +8,7 @@
 
 import prisma from "@/server/db/prismadb";
 import { ListingStatus, Prisma } from "@prisma/client";
+import { fetchWithCache } from "@/lib/cache";
 import { resolveProductType, withCapabilities } from "./ghuba-product-type";
 import { getListingPublicUrl } from "./ghuba-slug";
 
@@ -547,9 +548,9 @@ const CURATED_PROPERTY_SAMPLE_ITEMS: GhubaFeedItem[] = [
 ];
 
 /**
- * Retrieves a ranked, cursor-paginated batch of Ghuba marketplace feed items.
+ * Core query engine for Ghuba marketplace feed items.
  */
-export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaFeedResponse> {
+async function fetchFeedItemsInternal(options: GetFeedOptions = {}): Promise<GhubaFeedResponse> {
   const { cursor, limit = 10, category, type, userId } = options;
   const take = Math.min(Math.max(1, limit), 25);
 
@@ -691,42 +692,41 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
 
   const listingIds = pageListings.map((l) => l.id);
 
-  // 1. Batch lookup likes count
-  const likesGroup: Array<{ listingId: string; _count: { _all: number } }> = 
+  // 1-3. Run likes, comments, and saves count lookups concurrently in parallel
+  const [likesGroup, commentsGroup, savesGroup] = await Promise.all([
     listingIds.length > 0 && (prisma as any).marketplaceListingLike?.groupBy
-      ? await (prisma as any).marketplaceListingLike.groupBy({
+      ? (prisma as any).marketplaceListingLike.groupBy({
           by: ["listingId"],
           where: { listingId: { in: listingIds } },
           _count: { _all: true },
         })
-      : [];
-  const likesCountMap = new Map<string, number>();
-  for (const item of likesGroup) {
-    likesCountMap.set(item.listingId, item._count._all);
-  }
-
-  // 2. Batch lookup comments count
-  const commentsGroup: Array<{ listingId: string; _count: { _all: number } }> = 
+      : Promise.resolve([]),
     listingIds.length > 0 && (prisma as any).marketplaceListingComment?.groupBy
-      ? await (prisma as any).marketplaceListingComment.groupBy({
+      ? (prisma as any).marketplaceListingComment.groupBy({
           by: ["listingId"],
           where: { listingId: { in: listingIds }, status: "VISIBLE" },
           _count: { _all: true },
         })
-      : [];
+      : Promise.resolve([]),
+    listingIds.length > 0
+      ? prisma.wishlistItem.groupBy({
+          by: ["marketplaceListingId"],
+          where: { marketplaceListingId: { in: listingIds } },
+          _count: { _all: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const likesCountMap = new Map<string, number>();
+  for (const item of (likesGroup as any[])) {
+    likesCountMap.set(item.listingId, item._count._all);
+  }
+
   const commentsCountMap = new Map<string, number>();
-  for (const item of commentsGroup) {
+  for (const item of (commentsGroup as any[])) {
     commentsCountMap.set(item.listingId, item._count._all);
   }
 
-  // 3. Batch lookup saves count (via WishlistItem relation)
-  const savesGroup = listingIds.length > 0
-    ? await prisma.wishlistItem.groupBy({
-        by: ["marketplaceListingId"],
-        where: { marketplaceListingId: { in: listingIds } },
-        _count: { _all: true },
-      })
-    : [];
   const savesCountMap = new Map<string, number>();
   for (const item of savesGroup) {
     if (item.marketplaceListingId) {
@@ -943,4 +943,71 @@ export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaF
     nextCursor,
     hasMore: hasMore && items.length > 0,
   };
+}
+
+/**
+ * High-performance cached public feed batch with Singleflight stampede protection.
+ * Revalidated every 60s.
+ */
+export async function getCachedPublicFeed(
+  category?: string | null,
+  type?: FeedListingType | null,
+  limit: number = 10
+): Promise<GhubaFeedResponse> {
+  const cacheKey = `ghuba:feed:${category || "all"}:${type || "all"}:${limit}`;
+  return fetchWithCache(
+    cacheKey,
+    () => fetchFeedItemsInternal({ category, type, limit }),
+    { ttlSeconds: 60, swrSeconds: 120 }
+  );
+}
+
+/**
+ * Public entrypoint for Ghuba feed.
+ * Seamlessly serves cached data for public first-paint, and fast-paths viewer state for authenticated users.
+ */
+export async function getGhubaFeed(options: GetFeedOptions = {}): Promise<GhubaFeedResponse> {
+  const { cursor, limit = 10, category, type, userId } = options;
+
+  // Use cached public batch for initial visits without pagination cursor
+  if (!cursor) {
+    const publicBatch = await getCachedPublicFeed(category, type, limit);
+    if (!userId || publicBatch.items.length === 0) {
+      return publicBatch;
+    }
+
+    // Fast viewer state overlay for authenticated users on top of cached public items
+    const listingIds = publicBatch.items.map((i) => i.listingId);
+    const [userLikes, userSaves] = await Promise.all([
+      (prisma as any).marketplaceListingLike?.findMany
+        ? (prisma as any).marketplaceListingLike.findMany({
+            where: { userId, listingId: { in: listingIds } },
+            select: { listingId: true },
+          })
+        : Promise.resolve([]),
+      prisma.wishlistItem.findMany({
+        where: { marketplaceListingId: { in: listingIds }, wishlist: { userId } },
+        select: { marketplaceListingId: true },
+      }),
+    ]);
+
+    const userLikedSet = new Set((userLikes as any[]).map((l: any) => l.listingId));
+    const userSavedSet = new Set(userSaves.map((s) => s.marketplaceListingId).filter(Boolean));
+
+    const enrichedItems = publicBatch.items.map((item) => ({
+      ...item,
+      viewerState: {
+        liked: userLikedSet.has(item.listingId),
+        saved: userSavedSet.has(item.listingId),
+      },
+    }));
+
+    return {
+      ...publicBatch,
+      items: enrichedItems,
+    };
+  }
+
+  // Cursor-paginated infinite scroll query
+  return fetchFeedItemsInternal(options);
 }

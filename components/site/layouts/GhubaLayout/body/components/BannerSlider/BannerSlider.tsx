@@ -5,6 +5,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeftIcon,
@@ -41,14 +42,14 @@ const CustomNextArrow = ({ onClick }: any) => (
 
 // --- REFINED CATEGORIES ---
 const CategoriesGrid = ({ categories }: any) => {
-  const router = useRouter();
   return (
     <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 px-4 py-10">
       {categories?.map(({ name, icon }: any, index: number) => (
-        <div
+        <Link
           key={index}
-          onClick={() => router.push(`/ghuba/productlist?category=${name}`)}
-          className="group relative flex flex-col items-center p-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[1.0rem] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10"
+          href={`/ghuba/productlist?category=${encodeURIComponent(name)}`}
+          prefetch={true}
+          className="group relative flex flex-col items-center p-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[1.0rem] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10 active:scale-95"
         >
           <div className="w-16 h-16 flex items-center justify-center bg-white dark:bg-zinc-800 rounded-2xl shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
             <span className="text-3xl group-hover:scale-110 transition-transform">{icon}</span>
@@ -56,7 +57,7 @@ const CategoriesGrid = ({ categories }: any) => {
           <p className="mt-4 font-black text-center text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">
             {name}
           </p>
-        </div>
+        </Link>
       ))}
     </div>
   );

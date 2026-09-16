@@ -26,10 +26,10 @@ const Categories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("https://www.salesmanpro.site/api/shop/categories?limit=100");
+        const response = await fetch("/api/shop/categories?limit=100");
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
-        setCategories(data.categories);
+        setCategories(data.categories || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -48,7 +48,17 @@ const Categories = () => {
           </h1>
 
           {loading && (
-            <p className="text-center text-gray-600 dark:text-gray-300">Loading categories...</p>
+            <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6 animate-pulse">
+              {Array.from({ length: 15 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="relative bg-gradient-to-br from-yellow-400/20 to-yellow-500/10 dark:from-yellow-500/10 dark:to-yellow-600/5 p-5 rounded-2xl border border-yellow-500/20 shadow-sm flex flex-col items-center justify-center h-36 sm:h-44 space-y-3"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-yellow-500/20" />
+                  <div className="w-20 h-4 rounded-md bg-yellow-500/30" />
+                </div>
+              ))}
+            </div>
           )}
 
           {error && (

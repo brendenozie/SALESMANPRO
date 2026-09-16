@@ -124,14 +124,14 @@ const TopCate = ({ categories = [] }: { categories?: any[] }) => {
             </div>
           </div>
 
-          <button
-            onClick={() => router.push("/ghuba/categories")}
-            type="button"
-            className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0"
+          <Link
+            href="/ghuba/categories"
+            prefetch={true}
+            className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0 active:scale-95"
           >
             <span>Catalog</span>
             <ArrowUpRightIcon className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </button>
+          </Link>
         </div>
 
         <div className="relative">

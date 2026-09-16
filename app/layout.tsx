@@ -6,6 +6,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./globals.css";
 
+import { Suspense } from "react";
 import Providers from "./providers";
 import siteMetadata from "@/data/siteMetadata";
 import { Metadata } from "next";
@@ -13,6 +14,7 @@ import { getAuthSession } from "@/lib/auth";
 import TokenSignIn from "@/components/TokenSignIn";
 import ThemeProvider from "./theme-provider";
 import ClientSecurityGuard from "@/components/security/ClientSecurityGuard";
+import NavigationProgressBar from "@/components/site/NavigationProgressBar";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
@@ -169,6 +171,9 @@ export default async function RootLayout({
         <ThemeProvider>
           <ClientSecurityGuard />
           <Providers session={session}>
+            <Suspense fallback={null}>
+              <NavigationProgressBar />
+            </Suspense>
             <TokenSignIn />
             <main>{children}</main>
           </Providers>

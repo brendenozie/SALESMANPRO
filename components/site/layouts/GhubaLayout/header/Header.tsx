@@ -25,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { debounce } from "lodash";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -85,9 +86,10 @@ const Header = () => {
           <div className="container mx-auto flex items-center justify-between px-4 md:px-6 py-4">
             
             {/* Logo Section */}
-            <div 
-              onClick={() => window.location.href = '/'} 
-              className="flex items-center gap-3 cursor-pointer group"
+            <Link 
+              href="/" 
+              prefetch={true}
+              className="flex items-center gap-3 cursor-pointer group active:scale-95 transition-transform"
             >
               <div className="relative overflow-hidden rounded-xl bg-zinc-50 dark:bg-zinc-900 p-1 transition-transform group-hover:scale-105">
                 {logoUrl ? (
@@ -101,7 +103,7 @@ const Header = () => {
                   {name}
                 </span>
               )}
-            </div>
+            </Link>
 
             {/* Search Center */}
             <SearchBar />
@@ -127,7 +129,7 @@ const Header = () => {
             </div>
           </div>
 
-          <DesktopMenu />
+          <DesktopMenu path={path} />
         </nav>
 
         <AnimatePresence>
@@ -203,32 +205,43 @@ const SearchBar = () => {
     return () => debouncedFetch.cancel();
   }, [searchTerm, debouncedFetch]);
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      setIsDropdownVisible(false);
+      router.push(`/ghuba/productlist?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-lg hidden md:flex items-center group mx-6">
-      <div className="absolute left-4 text-zinc-400 group-focus-within:text-amber-500 transition-colors">
-        <MagnifyingGlassIcon className="w-5 h-5" />
-      </div>
-      <input
-        type="text"
-        placeholder="Search for products, brands, and more..."
-        className="w-full pl-12 pr-28 py-2.5 bg-zinc-100 dark:bg-zinc-900 border border-transparent focus:border-amber-500/50 focus:bg-white dark:focus:bg-zinc-950 rounded-full focus:ring-4 focus:ring-amber-500/10 focus:outline-none text-zinc-800 dark:text-zinc-200 text-sm transition-all shadow-inner"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        onFocus={() => { if (suggestions.length > 0) setIsDropdownVisible(true) }}
-        onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
-      />
-      
-      <div className="absolute right-2 flex items-center gap-2">
-        {loading && (
-          <div className="w-4 h-4 border-2 border-zinc-300 border-t-amber-500 rounded-full animate-spin" />
-        )}
-        <button 
-          onClick={() => router.push(`/ghuba/productlist`)} 
-          className="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all text-zinc-600 dark:text-zinc-300 hover:text-amber-500"
-        >
-          Nearby
-        </button>
-      </div>
+      <form onSubmit={handleSearchSubmit} className="relative w-full flex items-center">
+        <div className="absolute left-4 text-zinc-400 group-focus-within:text-amber-500 transition-colors">
+          <MagnifyingGlassIcon className="w-5 h-5" />
+        </div>
+        <input
+          type="text"
+          placeholder="Search for products, brands, and more..."
+          className="w-full pl-12 pr-28 py-2.5 bg-zinc-100 dark:bg-zinc-900 border border-transparent focus:border-amber-500/50 focus:bg-white dark:focus:bg-zinc-950 rounded-full focus:ring-4 focus:ring-amber-500/10 focus:outline-none text-zinc-800 dark:text-zinc-200 text-sm transition-all shadow-inner"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => { if (suggestions.length > 0) setIsDropdownVisible(true) }}
+          onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
+        />
+        
+        <div className="absolute right-2 flex items-center gap-2">
+          {loading && (
+            <div className="w-4 h-4 border-2 border-zinc-300 border-t-amber-500 rounded-full animate-spin" />
+          )}
+          <Link 
+            href="/ghuba/productlist" 
+            prefetch={true}
+            className="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all text-zinc-600 dark:text-zinc-300 hover:text-amber-500 active:scale-95"
+          >
+            Nearby
+          </Link>
+        </div>
+      </form>
 
       <AnimatePresence>
         {isDropdownVisible && (
@@ -242,7 +255,10 @@ const SearchBar = () => {
               <li
                 key={item.id}
                 className={`px-5 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer text-sm text-zinc-700 dark:text-zinc-300 transition-colors ${i !== suggestions.length - 1 ? 'border-b border-zinc-100 dark:border-zinc-800' : ''}`}
-                onMouseDown={() => router.push(getListingPublicUrl(item))}
+                onMouseDown={() => {
+                  setIsDropdownVisible(false);
+                  router.push(getListingPublicUrl(item));
+                }}
               >
                 <span className="truncate pr-4">{item.title || item.name}</span>
                 <ArrowRightIcon className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -313,30 +329,34 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
   );
 };
 
-const DesktopMenu = () => (
+const DesktopMenu = ({ path }: { path: string }) => (
   <div className="hidden md:block w-full border-t border-zinc-100 dark:border-zinc-800/50">
     <ul className="container mx-auto flex items-center justify-center space-x-2 text-sm font-semibold text-zinc-600 dark:text-zinc-400 py-2">
-      {menuItems.map(({ name, icon, link }) => (
-        <li key={name}>
-          <a 
-            href={link} 
-            className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 ${
-              name === "Start Selling" 
-                ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10" 
-                : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
-            }`}
-          >
-            <span className="opacity-70">{icon}</span> {name}
-          </a>
-        </li>
-      ))}
+      {menuItems.map(({ name, icon, link }) => {
+        const isActive = path === link || (link !== "/" && path?.startsWith(link));
+        return (
+          <li key={name}>
+            <Link 
+              href={link} 
+              prefetch={true}
+              className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${
+                isActive
+                  ? "bg-amber-500 text-zinc-950 font-bold shadow-sm"
+                  : name === "Start Selling" 
+                    ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10" 
+                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
+              }`}
+            >
+              <span className={isActive ? "opacity-100" : "opacity-70"}>{icon}</span> {name}
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   </div>
 );
 
 const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
-  const router = useRouter();
-
   return (
     <motion.div 
       initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
@@ -346,26 +366,31 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
     >
       <button 
         onClick={() => setIsMobileMenuOpen(false)} 
-        className="absolute top-6 right-6 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-full text-zinc-900 dark:text-white"
+        className="absolute top-6 right-6 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-full text-zinc-900 dark:text-white active:scale-95"
       >
         <XMarkIcon className="w-6 h-6" />
       </button>
       
       <div className="space-y-6">
         {menuItems.map(({ name, icon, link }, i) => (
-          <motion.button 
+          <motion.div
+            key={name}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.05 }}
-            key={name} 
-            onClick={() => { router.push(link); setIsMobileMenuOpen(false); }} 
-            className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors"
           >
-             <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-amber-500">
-               {icon}
-             </div>
-             {name}
-          </motion.button>
+            <Link 
+              href={link} 
+              prefetch={true}
+              onClick={() => setIsMobileMenuOpen(false)} 
+              className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors active:scale-95"
+            >
+               <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-amber-500">
+                 {icon}
+               </div>
+               {name}
+            </Link>
+          </motion.div>
         ))}
       </div>
     </motion.div>
@@ -373,8 +398,6 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
 };
 
 const BottomNav = ({ path }: { path: string }) => {
-  const router = useRouter();
-  
   const items = [
     { name: "Home", icon: HomeIcon, link: "/" },
     { name: "Reels", icon: FilmIcon, link: "/ghuba/feed" },
@@ -385,39 +408,27 @@ const BottomNav = ({ path }: { path: string }) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white/90 dark:bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800/80 flex justify-around py-3 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:hidden z-40">
+    <div className="fixed bottom-0 left-0 w-full bg-white/90 dark:bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800/80 flex justify-around py-2 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:hidden z-40">
       {items.map(({ name, icon: Icon, link }) => {
-        const isActive = path === link;
+        const isActive = path === link || (link !== "/" && path?.startsWith(link));
         return (
-          <button 
+          <Link 
             key={name} 
-            onClick={() => {
-              if (link === "/stores") {
-                if (typeof window !== "undefined") {
-                  const hostname = window.location.hostname;
-                  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
-                    router.push("/stores");
-                  } else {
-                    window.location.href = "https://salesmanpro.site/stores";
-                  }
-                }
-              } else {
-                router.push(link);
-              }
-            }} 
-            className={`flex flex-col items-center p-2 rounded-xl transition-all ${
+            href={link}
+            prefetch={true}
+            className={`flex flex-col items-center p-2 rounded-xl transition-all active:scale-90 ${
               isActive 
-                ? "text-amber-500" 
+                ? "text-amber-500 font-bold" 
                 : name === "Sell" 
                   ? "text-zinc-800 dark:text-zinc-100 hover:text-amber-500" 
                   : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
             }`}
           >
-            <Icon className={`w-6 h-6 ${isActive ? "fill-amber-500/10 stroke-2" : "stroke-[1.5]"}`} />
-            <span className={`text-[10px] mt-1 font-semibold ${isActive ? "font-bold" : ""}`}>
+            <Icon className={`w-6 h-6 ${isActive ? "fill-amber-500/10 stroke-2 text-amber-500" : "stroke-[1.5]"}`} />
+            <span className={`text-[10px] mt-1 font-semibold ${isActive ? "font-bold text-amber-500" : ""}`}>
               {name}
             </span>
-          </button>
+          </Link>
         );
       })}
     </div>
