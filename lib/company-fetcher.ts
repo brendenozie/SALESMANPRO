@@ -161,19 +161,25 @@ export const findCompanyCached = requestCache(async (
     cacheKey,
     async () => {
       // Setup Next.js tag-aware cache wrapper for ISR/framework integration
-      const nextKey = ["company-details", cleanIdentifier, strategy].join(":");
-      const cachedFetcher = unstable_cache(
-        () => findCompanyFn(cleanIdentifier, strategy),
-        [nextKey],
-        {
-          tags: [
-            `company:${cleanIdentifier}`,
-            `company-details:${cleanIdentifier}:${strategy}`,
-          ],
-          revalidate: 600, // 10 minute revalidation
-        },
-      );
-      const data = await cachedFetcher();
+      let data: any;
+      try {
+        const nextKey = ["company-details", cleanIdentifier, strategy].join(":");
+        const cachedFetcher = unstable_cache(
+          () => findCompanyFn(cleanIdentifier, strategy),
+          [nextKey],
+          {
+            tags: [
+              `company:${cleanIdentifier}`,
+              `company-details:${cleanIdentifier}:${strategy}`,
+            ],
+            revalidate: 600, // 10 minute revalidation
+          },
+        );
+        data = await cachedFetcher();
+      } catch (err: any) {
+        // Fallback for environments where incrementalCache is not initialized (e.g. workers, tests, CLI)
+        data = await findCompanyFn(cleanIdentifier, strategy);
+      }
 
       // If we loaded the rich 'page' strategy, simultaneously warm the 'lean' cache key!
       if (data && strategy === "page") {

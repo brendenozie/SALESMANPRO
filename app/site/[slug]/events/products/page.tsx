@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
 import EventListWrapper from "./components/EventListWrapper/EventListWrapper";
 import { findCompanyCached } from "@/lib/company-fetcher";
+import { fetchWithCache, buildTenantCacheKey } from "@/lib/cache";
 
 // --- Mock sample events (used when DB has no items yet) ---
 const mockEvents = [
@@ -100,22 +101,38 @@ export default async function EventListPage({ params, searchParams }: PageProps)
   if (sort === "price-asc") orderBy = { price: "asc" };
   if (sort === "price-desc") orderBy = { price: "desc" };
 
-  // Fetch parallel instances from relational database collections
-  const [eventRecords, categories] = await Promise.all([
-    prisma.event.findMany({
-      where,
-      orderBy,
-      take: 30,
-      include: {
-        productCategory: true,
-      },
-    }),
-    prisma.storeCategory.findMany({
-      orderBy: { displayName: "asc" },
-      where: { companyId: company.id },
-      select: { id: true, displayName: true, categoryId: true, category: true },
-    }),
-  ]);
+  // Fetch parallel instances with singleflight caching
+  const eventsCacheKey = buildTenantCacheKey(company.id, "events_catalog", {
+    search,
+    categoryId: categoryId || "all",
+    status,
+    sort,
+    minPrice,
+    maxPrice,
+  });
+
+  const { eventRecords, categories } = await fetchWithCache(
+    eventsCacheKey,
+    async () => {
+      const [eventRecords, categories] = await Promise.all([
+        prisma.event.findMany({
+          where,
+          orderBy,
+          take: 30,
+          include: {
+            productCategory: true,
+          },
+        }),
+        prisma.storeCategory.findMany({
+          orderBy: { displayName: "asc" },
+          where: { companyId: company.id },
+          select: { id: true, displayName: true, categoryId: true, category: true },
+        }),
+      ]);
+      return { eventRecords, categories };
+    },
+    180
+  );
 
   // Transform Prisma output safely to fit the unified frontend UI state contracts
   const normalizedEvents = eventRecords.map((evt) => {

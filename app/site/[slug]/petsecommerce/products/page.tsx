@@ -1,3 +1,4 @@
+import { fetchWithCache, buildTenantCacheKey } from '@/lib/cache';
 // app/[slug]/products/page.tsx
 import React from "react";
 import { notFound } from "next/navigation";
@@ -130,7 +131,18 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   if (sort === "rating") orderBy = { rating: "desc" };
 
   // Fetch from DB
-  const [listings, categories] = await Promise.all([
+  const listCacheKey = buildTenantCacheKey(company.id, "products_catalog", {
+    search: search || "",
+    categoryId: categoryId || "",
+    minPrice: minPrice || 0,
+    maxPrice: maxPrice || 0,
+    sort: sort || "",
+  });
+
+  const { listings, categories } = await fetchWithCache(
+    listCacheKey,
+    async () => {
+      const [listings, categories] = await Promise.all([
     prisma.marketplaceListings.findMany({
       where,
       orderBy,
@@ -151,6 +163,10 @@ export default async function ProductListPage({ params, searchParams }: PageProp
       select: { id: true, displayName: true, categoryId: true, category: true },
     }),
   ]);
+      return { listings, categories };
+    },
+    180
+  );
 
   // --- Normalize DB results into MarketListingForm ---
   const normalizedListings: MarketListingForm[] = listings.map((p) => ({

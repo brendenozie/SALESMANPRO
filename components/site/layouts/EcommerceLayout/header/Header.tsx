@@ -111,6 +111,7 @@ export default function Header() {
                 <Link
                   key={link.label}
                   href={link.href}
+                  prefetch={true}
                   className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   {link.label}
@@ -169,6 +170,7 @@ export default function Header() {
                   <Link
                     key={link.label}
                     href={link.href}
+                    prefetch={true}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-lg font-black uppercase tracking-widest text-slate-900 dark:text-white"
                   >

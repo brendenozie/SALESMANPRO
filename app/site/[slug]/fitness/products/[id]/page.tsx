@@ -1,15 +1,12 @@
-// app/[slug]/products/[productId]/page.tsx
-
 import React from "react";
 import { notFound } from "next/navigation";
-
 import prisma from "@/server/db/prismadb";
-
 import FitnessWellnessView from "./FitnessWellnessView";
-
 import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
+import { fetchWithCache, buildTenantCacheKey } from "@/lib/cache";
+import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 interface PageParams {
   slug: string;
@@ -20,91 +17,76 @@ interface PageProps {
   params: Promise<PageParams> | PageParams;
 }
 
-export default async function ProductPage({
-  params,
-}: PageProps) {
-  const resolved =
-    params instanceof Promise
-      ? await params
-      : params;
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolved = params instanceof Promise ? await params : params;
+  const { id } = resolved || {};
+  if (!id) return { title: "Program" };
 
-  const { id } = resolved;
+  const program = await fetchWithCache(
+    `fitness_meta:${id}`,
+    () => prisma.course.findUnique({
+      where: { id },
+      select: { title: true, description: true },
+    }),
+    300
+  );
+
+  return {
+    title: program?.title ? `${program.title} | Program` : "Fitness Program",
+    description: program?.description || undefined,
+  };
+}
+
+export default async function ProductPage({ params }: PageProps) {
+  const resolved = params instanceof Promise ? await params : params;
+  const { id } = resolved || {};
 
   if (!id) {
     notFound();
   }
 
   // =========================================
-  // FETCH FITNESS PROGRAM / COURSE
+  // FETCH FITNESS PROGRAM / COURSE CACHED
   // =========================================
-
-  const program = await prisma.course.findUnique({
-    where: {
-      id: id,
-    },
-
-    include: {
-      company: true,
-
-      CourseEducatorAssignment: {
-        include: {
-          educator: {
-            include: {
-              user: true,
+  const program = await fetchWithCache(
+    `fitness_program:${id}`,
+    () => prisma.course.findUnique({
+      where: { id },
+      include: {
+        company: true,
+        CourseEducatorAssignment: {
+          include: {
+            educator: {
+              include: { user: true },
             },
           },
         },
-      },
-
-      modules: {
-        include: {
-          lessons: {
-            include: {
-              materials: true,
-            },
-
-            orderBy: {
-              order: "asc",
+        modules: {
+          include: {
+            lessons: {
+              include: { materials: true },
+              orderBy: { order: "asc" },
             },
           },
-        },
-
-        orderBy: {
-          order: "asc",
+          orderBy: { order: "asc" },
         },
       },
-    },
-  });
+    }),
+    300
+  );
 
   if (!program) {
     notFound();
   }
 
-  // =========================================
-  // PROGRAM STATS
-  // =========================================
-
-  const totalModules =
-    program.modules?.length || 0;
-
+  const totalModules = program.modules?.length || 0;
   const totalLessons =
-    program.modules.reduce(
-      (acc, module) =>
-        acc + module.lessons.length,
-      0,
-    ) || 0;
-
+    program.modules?.reduce((acc: number, module: any) => acc + (module.lessons?.length || 0), 0) || 0;
   const totalDuration =
-    program.modules.reduce(
-      (acc, module) =>
-        acc +
-        module.lessons.reduce(
-          (lessonAcc, lesson) =>
-            lessonAcc +
-            (lesson.duration || 0),
-          0,
-        ),
-      0,
+    program.modules?.reduce(
+      (acc: number, module: any) =>
+        acc + (module.lessons?.reduce((lAcc: number, l: any) => lAcc + (l.duration || 0), 0) || 0),
+      0
     ) || 0;
 
   return (
@@ -115,7 +97,6 @@ export default async function ProductPage({
         totalLessons={totalLessons}
         totalDuration={totalDuration}
       />
-
       <NewsletterSection />
     </div>
   );

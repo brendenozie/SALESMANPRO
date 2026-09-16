@@ -1,3 +1,5 @@
+import { getTenantProductDetail, getTenantProductMetadata } from '@/lib/tenant-product-service';
+import type { Metadata } from 'next';
 // app/[slug]/products/[productId]/page.tsx
 
 import React from 'react';
@@ -15,46 +17,26 @@ interface PageProps {
 // Ensure this is a server component as it fetches data
 export const revalidate = 60;
 
-export default async function ProductPage({ params }: PageProps) {
-  const { slug, productId } = await params;
 
-  // Fetch store data
-  const rawStore = await findCompanyCached(slug, "lean");
-  if (!rawStore) notFound();
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const resolved = params instanceof Promise ? await params : params;
+  const targetId = resolved?.id || resolved?.productId;
+  return getTenantProductMetadata(resolved?.slug, targetId);
+}
 
-  // Fetch product and related items
-  const product = await prisma.marketplaceListings.findFirst({
-    where: { id: productId, company: { slug } },
-    // Ensure images are included if your schema supports it and it's needed
-    // include: { images: true }, // Uncomment if 'images' is a relation in your Prisma schema
-  });
-  if (!product) notFound();
+export default async function ProductPage({ params }: any) {
+  const resolved = params instanceof Promise ? await params : params;
+  const { slug } = resolved || {};
+  const targetId = resolved?.id || resolved?.productId;
 
-  // Assuming product.images is an array of objects with a 'url' property
-  // Add a fallback for images if the include is not enabled or data structure differs
-  // const productWithImages = {
-  //   ...product,
-  //   images: product.images || [{ url: '/placeholder-image.png' }], // Fallback for images
-  //   rating: 4.5, // product.rating ||  Default rating if not available
-  //   reviews: 100, // product.reviews || Default reviews if not available
-  // };
+  if (!slug || !targetId) notFound();
 
+  const data = await getTenantProductDetail(slug, targetId);
+  if (!data) notFound();
 
-  const related = await prisma.marketplaceListings.findMany({
-    where: {
-      companyId: product.companyId,
-      productCategoryId: product.productCategoryId,
-      NOT: { id: product.id },
-    },
-    take: 4,
-    // include: { images: true }, // Uncomment if 'images' is a relation in your Prisma schema
-  });
-
-  // Prepare related products with fallback images
-  const relatedWithImages = related.map(item => ({
-    ...item,
-    images: item.images || [{ url: '/placeholder-image.png' }],
-  }));
+  const product = data.product;
+  const relatedWithImages = data.related;
+  const rawStore = data.company;
 
   return (
     // Pass rawStore to ProductDetail to access theme settings in client component
