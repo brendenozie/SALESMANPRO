@@ -23,6 +23,7 @@ import {
   createEmailVerificationToken,
   sendVerificationEmail,
 } from "@/lib/auth/verification";
+import { authLog, generateCorrelationId } from "@/lib/auth/telemetry";
 
 function getSharedSecret(): string {
   return (
@@ -144,11 +145,26 @@ async function resolveHasTenantAccess(
   ) {
     return true;
   }
-  const [owned, staff] = await Promise.all([
-    prisma.company.findFirst({ where: { userId }, select: { id: true } }),
-    prisma.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
-  ]);
-  return !!(owned || staff);
+  try {
+    const { fetchWithCache } = await import("./cache");
+    return await fetchWithCache(
+      `tenant_access:${userId}`,
+      async () => {
+        const [owned, staff] = await Promise.all([
+          prisma.company.findFirst({ where: { userId }, select: { id: true } }),
+          prisma.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+        ]);
+        return !!(owned || staff);
+      },
+      { ttlSeconds: 600 },
+    );
+  } catch {
+    const [owned, staff] = await Promise.all([
+      prisma.company.findFirst({ where: { userId }, select: { id: true } }),
+      prisma.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+    ]);
+    return !!(owned || staff);
+  }
 }
 
 async function resolveFlowContext(
@@ -369,6 +385,9 @@ export const authOptions = (
     },
     callbacks: {
       async redirect({ url, baseUrl }) {
+        const start = Date.now();
+        const cId = generateCorrelationId();
+
         if (url.includes("/logout") || url.includes("/api/auth/signout")) {
           return url.startsWith("/") ? `${baseUrl}${url}` : url;
         }
@@ -396,6 +415,7 @@ export const authOptions = (
               ) {
                 const cleanHandover = new URL("/api/auth/handover", baseUrl);
                 cleanHandover.searchParams.set("target", safeTarget.toString());
+                authLog(cId, "redirect_callback_duration", Date.now() - start, { target: cleanHandover.toString() });
                 return cleanHandover.toString();
               }
             }
@@ -446,17 +466,24 @@ export const authOptions = (
 
           const allowed = await isAllowedReturnUrl(finalRedirectUrl);
           if (!allowed) {
+            authLog(cId, "redirect_callback_duration", Date.now() - start, { error: "unauthorized_return_url" });
             return `${HUB_URL}/unauthorized?reason=invalid_callback`;
           }
 
           const handoverUrl = new URL("/api/auth/handover", baseUrl);
           handoverUrl.searchParams.set("target", finalRedirectUrl);
+          authLog(cId, "redirect_callback_duration", Date.now() - start, { target: finalRedirectUrl });
           return handoverUrl.toString();
         } catch {
+          authLog(cId, "redirect_callback_duration", Date.now() - start, { error: "invalid_redirect" });
           return `${HUB_URL}/unauthorized?reason=invalid_redirect`;
         }
       },
       async signIn({ user, account }) {
+        const start = Date.now();
+        const cId = generateCorrelationId();
+        authLog(cId, "google_callback_arrival", 0, { provider: account?.provider, email: user?.email });
+
         if (
           !account ||
           account.provider === "credentials" ||
@@ -468,60 +495,88 @@ export const authOptions = (
         }
         if (!user.email) return false;
 
+        const u = user as any;
+        // Fast-path: Check isActive directly if returned by adapter
+        if (u.isActive === false) return false;
+
         const flow = await resolveFlowContext(requestCtx);
-        const existing = await prisma.user.findUnique({
-          where: { email: user.email.toLowerCase() },
-          select: { id: true, role: true, isActive: true },
-        });
+        const userId = user.id;
 
-        if (existing?.isActive === false) return false;
+        if (userId) {
+          // Asynchronously apply login context if storefront without holding up authentication
+          if (flow) {
+            applyLoginContext(userId, flow).catch(() => null);
+          }
+        } else {
+          // Fallback user query only if user.id was not provided
+          const existing = await prisma.user.findUnique({
+            where: { email: user.email.toLowerCase() },
+            select: { id: true, role: true, isActive: true },
+          });
 
-        if (existing) {
-          await applyLoginContext(existing.id, flow);
+          if (existing?.isActive === false) return false;
+
+          if (existing && flow) {
+            applyLoginContext(existing.id, flow).catch(() => null);
+          }
         }
 
+        authLog(cId, "user_lookup_duration", Date.now() - start, { provider: account?.provider });
         return true;
       },
       async jwt({ token, user }) {
+        const jwtStart = Date.now();
+        const cId = generateCorrelationId();
+
         if (user) {
-          let dbUser: {
-            role?: string | null;
-            emailVerified?: boolean | null;
-            isActive?: boolean | null;
-            companyId?: string | null;
-          } | null = null;
-          if (user.id) {
-            dbUser = await prisma.user.findUnique({
-              where: { id: user.id },
-              select: {
-                role: true,
-                emailVerified: true,
-                isActive: true,
-                companyId: true,
-              },
-            });
+          const u = user as any;
+          let role = u.role || "USER";
+          let emailVerified = u.emailVerified;
+          let isActive = u.isActive;
+          let companyId = u.companyId;
+
+          // Only query DB if critical authorization fields are missing from adapter user
+          if (!role || isActive === undefined || companyId === undefined) {
+            if (user.id) {
+              const dbUser = await prisma.user.findUnique({
+                where: { id: user.id },
+                select: {
+                  role: true,
+                  emailVerified: true,
+                  isActive: true,
+                  companyId: true,
+                },
+              });
+              if (dbUser) {
+                role = dbUser.role || role;
+                emailVerified = dbUser.emailVerified ?? emailVerified;
+                isActive = dbUser.isActive ?? isActive;
+                companyId = dbUser.companyId ?? companyId;
+              }
+            }
           }
-          const role = dbUser?.role || (user as any).role || "USER";
-          const companyId = dbUser?.companyId ?? (user as any).companyId;
+
           const hasTenantAccess =
-            (user as any).hasTenantAccess ??
+            u.hasTenantAccess ??
             (await resolveHasTenantAccess(user.id, role, companyId));
 
           Object.assign(token, {
             id: user.id,
             name: user.name,
             email: user.email,
-            phone: (user as any).phone,
-            username: (user as any).username,
-            bio: (user as any).bio,
-            address: (user as any).address,
+            phone: u.phone,
+            username: u.username,
+            bio: u.bio,
+            address: u.address,
             role,
-            profilePicture: (user as any).profilePicture,
-            emailVerified: dbUser?.emailVerified ?? (user as any).emailVerified,
-            isActive: dbUser?.isActive ?? (user as any).isActive,
+            profilePicture: u.profilePicture,
+            emailVerified,
+            isActive: isActive !== false,
             companyId,
             hasTenantAccess,
           });
+
+          authLog(cId, "jwt_callback_duration", Date.now() - jwtStart, { userId: user.id, role });
         } else if (token.id && token.hasTenantAccess === undefined) {
           const dbUser = await prisma.user.findUnique({
             where: { id: String(token.id) },
@@ -545,10 +600,12 @@ export const authOptions = (
           } else {
             token.hasTenantAccess = false;
           }
+          authLog(cId, "jwt_callback_duration", Date.now() - jwtStart, { tokenRefresh: true });
         }
         return token;
       },
       async session({ session, token }) {
+        const sessionStart = Date.now();
         if (session.user) {
           Object.assign(session.user, {
             id: token.id as string,
@@ -566,18 +623,23 @@ export const authOptions = (
             hasTenantAccess: token.hasTenantAccess,
           });
         }
+        authLog(generateCorrelationId(), "session_callback_duration", Date.now() - sessionStart);
         return session;
       },
     },
     events: {
       async createUser({ user }) {
         if (!user?.id) return;
+        const cId = generateCorrelationId();
+        const start = Date.now();
+
         const flow = await resolveFlowContext(requestCtx);
         if (flow) {
           await provisionSignupRelationships(user.id, flow, {
             isNewUser: true,
           });
         }
+
         const existing = await prisma.user.findUnique({
           where: { id: user.id },
           select: { email: true, emailVerified: true },
@@ -594,13 +656,17 @@ export const authOptions = (
           },
         });
 
+        // Send email asynchronously without blocking OAuth response completion
         if (existing.emailVerified !== true) {
-          const token = await createEmailVerificationToken(existing.email);
-          const callbackUrl = flow?.returnUrl || HUB_URL;
-          await sendVerificationEmail(existing.email, token, callbackUrl).catch(
-            () => null,
-          );
+          createEmailVerificationToken(existing.email)
+            .then((token) => {
+              const callbackUrl = flow?.returnUrl || HUB_URL;
+              return sendVerificationEmail(existing.email!, token, callbackUrl);
+            })
+            .catch(() => null);
         }
+
+        authLog(cId, "account_linking_duration", Date.now() - start, { userId: user.id });
       },
     },
 

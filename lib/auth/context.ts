@@ -102,20 +102,29 @@ export async function isAllowedReturnUrl(raw: string | null | undefined): Promis
   if (isStaticallyAllowedReturnHost(host)) return true;
 
   try {
-    const prisma = (await import("../../server/db/prismadb")).default;
-    const classified = classifyHost(host);
-    const company = await prisma.company.findFirst({
-      where: {
-        OR: [
-          { domain: host },
-          { domain: `www.${host}` },
-          { domain: url.hostname.toLowerCase() },
-          ...(classified.slug ? [{ slug: classified.slug }, { domain: classified.slug }] : []),
-        ],
+    const { fetchWithCache } = await import("../cache");
+    const cacheKey = `allowed_return_host:${host}`;
+
+    return await fetchWithCache(
+      cacheKey,
+      async () => {
+        const prisma = (await import("../../server/db/prismadb")).default;
+        const classified = classifyHost(host);
+        const company = await prisma.company.findFirst({
+          where: {
+            OR: [
+              { domain: host },
+              { domain: `www.${host}` },
+              { domain: url.hostname.toLowerCase() },
+              ...(classified.slug ? [{ slug: classified.slug }, { domain: classified.slug }] : []),
+            ],
+          },
+          select: { id: true },
+        });
+        return !!company;
       },
-      select: { id: true },
-    });
-    return !!company;
+      { ttlSeconds: 300 },
+    );
   } catch {
     return false;
   }

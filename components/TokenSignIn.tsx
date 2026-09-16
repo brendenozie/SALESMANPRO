@@ -15,22 +15,32 @@ export default function TokenSignIn() {
   useEffect(() => {
     if (hasRun.current) return;
 
-    const token = searchParams.get("auth_token");
+    const token = searchParams.get("auth_token") || searchParams.get("token");
 
     if (!token) return;
-    if (status !== "unauthenticated") return;
+    // Do not run if already authenticated as a session is already established
+    if (status === "authenticated") return;
 
     hasRun.current = true;
 
     const run = async () => {
-      const result = await signIn("token-signin", {
-        token,
-        redirect: false,
-      });
+      try {
+        const result = await signIn("token-signin", {
+          token,
+          redirect: false,
+        });
 
-      if (result?.ok) {
-        router.replace(window.location.pathname, { scroll: false });
-        router.refresh();
+        if (result?.ok) {
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete("auth_token");
+          cleanUrl.searchParams.delete("token");
+          cleanUrl.searchParams.delete("auth");
+
+          router.replace(cleanUrl.pathname + cleanUrl.search, { scroll: false });
+          router.refresh();
+        }
+      } catch (err) {
+        console.warn("[TokenSignIn] Handover token sign-in error:", err);
       }
     };
 

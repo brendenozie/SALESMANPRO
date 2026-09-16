@@ -120,7 +120,11 @@ export default async function middleware(
   const isHub = classified.kind === "hub" || isLocalHost || host === AUTH_HOST;
 
   if (isHub && isOperatorPath(pathname) && !isPublicAuthPath(pathname)) {
-    if (!session) {
+    // If an in-flight handover token is present, allow request through to establish the session
+    const hasHandoverToken =
+      url.searchParams.has("auth_token") || url.searchParams.has("token");
+
+    if (!session && !hasHandoverToken) {
       if (isLocalHost && pathname.includes("/website-builder")) {
         return NextResponse.next();
       }

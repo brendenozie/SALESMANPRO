@@ -3,29 +3,36 @@
 import { getProviders } from "next-auth/react";
 import { useEffect, useState } from "react";
 import ProvidersSection from "./ProvidersSection";
-import Skeleton from "./Skeleton";
 
 export type Provider = { id: string; name: string };
 
+// Instant default providers so page renders with 0ms network delay
+const DEFAULT_PROVIDERS: Provider[] = [
+  { id: "google", name: "Google" },
+  { id: "credentials-email-password", name: "Email & Password" },
+];
+
 export default function SignInClient() {
-  const [providers, setProviders] = useState<Provider[] | null>(null);
+  const [providers, setProviders] = useState<Provider[]>(DEFAULT_PROVIDERS);
 
   useEffect(() => {
     let mounted = true;
 
+    // Optional background check for dynamic providers without blocking the UI
     getProviders().then((res) => {
-      if (!mounted) return;
-      setProviders(res ? Object.values(res) : []);
+      if (!mounted || !res) return;
+      const fetched = Object.values(res);
+      if (fetched.length > 0) {
+        setProviders(fetched);
+      }
+    }).catch(() => {
+      // Fallback gracefully to default providers
     });
 
     return () => {
       mounted = false;
     };
   }, []);
-
-  if (!providers) {
-    return <Skeleton />;
-  }
 
   return <ProvidersSection providers={providers} />;
 }
