@@ -103,12 +103,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        className="group relative flex flex-col w-full bg-white dark:bg-zinc-950 transition-colors duration-500"
-      >
+      <div className="group relative flex flex-col w-full bg-white dark:bg-zinc-950 transition-colors duration-500">
         {/* --- IMAGE CONTAINER FRAME --- */}
         <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-900 shadow-sm group-hover:shadow-2xl transition-all duration-700 ease-[0.16,1,0.3,1]">
           
@@ -248,7 +243,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* --- EXTERNAL PORTAL QUICK-VIEW SPECIFICATION PORTAL SHEET --- */}
       <QuickViewModal

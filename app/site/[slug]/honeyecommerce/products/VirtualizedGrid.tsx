@@ -3,23 +3,21 @@
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
-import { JsonValue } from "@prisma/client/runtime/library";
 import { MarketListingForm } from "@/types/typings";
-
 
 export default function VirtualizedGrid({ items, columnCount = 4 }: {
   items: MarketListingForm[];
   columnCount?: number;
 }) {
-  const parentRef = useRef(null);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const rowCount = Math.ceil(items.length / columnCount);
 
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 280, // height estimate – tweak
-    overscan: 4,
+    estimateSize: () => 380, // accurate height estimate
+    overscan: 5,
   });
 
   return (
@@ -44,6 +42,8 @@ export default function VirtualizedGrid({ items, columnCount = 4 }: {
           return (
             <div
               key={virtualRow.key.toString()}
+              data-index={virtualRow.index}
+              ref={rowVirtualizer.measureElement}
               className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-2"
               style={{
                 position: "absolute",

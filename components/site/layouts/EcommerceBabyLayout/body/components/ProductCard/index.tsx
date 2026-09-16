@@ -154,13 +154,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        whileHover={{ y: -8 }}
-        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)]"
-      >
+      <div className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)]">
         {/* --- IMAGE CONTAINER --- */}
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC] dark:bg-zinc-800/50">
           <Link href={`/babyecommerce/products/${product.id}`} className="block h-full w-full">
@@ -321,7 +315,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= GLOBAL HIGH-INDEX QUICKVIEW MODAL PORTAL ================= */}
       <AnimatePresence>

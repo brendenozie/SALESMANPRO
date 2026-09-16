@@ -134,12 +134,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="group bg-transparent relative flex flex-col h-full overflow-hidden"
-      >
+      <div className="group bg-transparent relative flex flex-col h-full overflow-hidden">
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] rounded-sm mb-6">
           <Link href={`/watchecommerce/products/${product.id}`}>
@@ -271,7 +266,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </a>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= THE ATELIER CONFIGURATION SCREEN-PORTAL MODAL ================= */}
       <AnimatePresence>

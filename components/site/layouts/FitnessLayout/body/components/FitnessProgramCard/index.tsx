@@ -47,13 +47,7 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="group relative flex flex-col h-full bg-slate-50/60 dark:bg-slate-900/40 rounded-3xl overflow-hidden border border-slate-200/60 dark:border-slate-800/60 transition-all duration-300 hover:bg-white dark:hover:bg-slate-900 hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
-      >
+      <div className="group relative flex flex-col h-full bg-slate-50/60 dark:bg-slate-900/40 rounded-3xl overflow-hidden border border-slate-200/60 dark:border-slate-800/60 transition-all duration-300 hover:bg-white dark:hover:bg-slate-900 hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
         {/* Media Container Aspect-Ratio Grid */}
         <div className="relative aspect-[16/11] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
           <Link href={detailPageUrl} className="block w-full h-full absolute inset-0 z-10">
@@ -160,7 +154,7 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
             </Link>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {showQuickView && (
         <QuickViewModal

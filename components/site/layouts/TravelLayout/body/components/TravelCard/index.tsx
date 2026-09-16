@@ -38,12 +38,7 @@ const TravelCard = ({ listing }: any) => {
     new Intl.NumberFormat("en-US", { style: "currency", currency: "KES", maximumFractionDigits: 0 }).format(val);
 
   return (
-    <motion.div
-      className="group relative bg-white rounded-[2rem] overflow-hidden border border-slate-100 flex flex-col h-full shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-    >
+    <div className="group relative bg-white rounded-[2rem] overflow-hidden border border-slate-100 flex flex-col h-full shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500">
       {/* --- IMAGE LAYER --- */}
       <div className="relative h-72 w-full overflow-hidden">
         <Image
@@ -126,7 +121,7 @@ const TravelCard = ({ listing }: any) => {
           </a>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -176,12 +176,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        className="group relative flex flex-col bg-white dark:bg-[#080808] transition-all duration-700"
-      >
+      <div className="group relative flex flex-col bg-white dark:bg-[#080808] transition-all duration-700">
         {/* --- ARCHITECTURAL IMAGE FRAME --- */}
         <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] bg-[#F7F7F7] dark:bg-zinc-900 border border-transparent dark:border-zinc-800/50 group-hover:shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15)] transition-all duration-700">
           
@@ -380,7 +375,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= LIGHTBOX OVERLAY ================= */}
       <AnimatePresence>

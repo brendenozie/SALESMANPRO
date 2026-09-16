@@ -153,13 +153,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-        viewport={{ once: true }}
-        className="group relative flex flex-col"
-      >
+      <div className="group relative flex flex-col">
         {/* Image Container Component Frame */}
         <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
           <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
@@ -324,7 +318,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= FULL SCREEN PORTAL QUICKVIEW MODAL OVERLAY ================= */}
       <AnimatePresence>

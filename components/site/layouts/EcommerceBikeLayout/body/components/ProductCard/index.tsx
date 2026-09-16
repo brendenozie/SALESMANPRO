@@ -138,12 +138,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="group relative flex flex-col bg-white border border-gray-100 p-5 transition-all duration-500 hover:shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] hover:-translate-y-2 overflow-hidden"
-      >
+      <div className="group relative flex flex-col bg-white border border-gray-100 p-5 transition-all duration-500 hover:shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] hover:-translate-y-2 overflow-hidden">
         {/* Tactical Header: ID & WhatsApp */}
         <div className="flex justify-between items-start mb-4">
           <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest">
@@ -308,7 +303,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= GLOBAL FIXED SCREEN MODAL MODULE ================= */}
       <AnimatePresence>

@@ -146,12 +146,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        className="group relative bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/50 p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]"
-      >
+      <div className="group relative bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/50 p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]">
         {/* --- IMAGE CONTAINER --- */}
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-zinc-50 dark:bg-zinc-800/50 shadow-sm transition-transform duration-500 group-hover:-rotate-1 group-hover:scale-[1.02]">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-black/10 z-10" />
@@ -269,7 +264,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
              </span>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* --- INTERCEPT OPTION SELECTOR MODAL --- */}
       <AnimatePresence>

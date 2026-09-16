@@ -62,13 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.4 }}
-        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800 h-full"
-      >
+      <div className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800 h-full">
         {/* IMAGE HUB CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden bg-slate-50 dark:bg-zinc-950">
           <Link href={`/ecommerce/products/${product.id}`} className="block w-full h-full">
@@ -250,7 +244,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* QUICK VIEW CONTROL MODAL LAYER */}
       {showQuickView && (

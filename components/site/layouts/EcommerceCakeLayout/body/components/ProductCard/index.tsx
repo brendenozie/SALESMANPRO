@@ -133,12 +133,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="group relative flex flex-col bg-white rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50"
-      >
+      <div className="group relative flex flex-col bg-white rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50">
         {/* Image View Window Section */}
         <div className="relative h-80 w-full overflow-hidden bg-gray-50">
           <Link href={`/cakeecommerce/products/${product.id}`} className="block h-full w-full">
@@ -301,7 +296,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* TRUE DIALOG CONFIGURATION DIALOG MODAL */}
       <AnimatePresence>

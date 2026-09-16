@@ -190,12 +190,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        className="group relative flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-red-600/40 dark:hover:border-red-600/40 transition-all duration-300 shadow-sm hover:shadow-xl overflow-hidden rounded-sm"
-      >
+      <div className="group relative flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-red-600/40 dark:hover:border-red-600/40 transition-all duration-300 shadow-sm hover:shadow-xl overflow-hidden rounded-sm">
         {/* Tactical Header */}
         <div className="flex justify-between items-center p-3 border-b border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-black/20">
           <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 tracking-wider">
@@ -293,7 +288,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Split Overlay Configuration Matrix HUD */}
       <AnimatePresence>

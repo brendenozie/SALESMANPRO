@@ -130,12 +130,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="group bg-transparent"
-      >
+      <div className="group bg-transparent">
         {/* Image Display Wrapper Frame */}
         <div className="relative aspect-[4/5] overflow-hidden bg-[#f9f9f9] dark:bg-stone-900 rounded-sm mb-6 border border-stone-100 dark:border-stone-800/50">
           <Link href={`/motorcycleecommerce/products/${product.id}`}>
@@ -254,7 +249,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               </a>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Configuration Customizer Modal Window Workspace */}
       <AnimatePresence>

@@ -177,12 +177,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'grid' }) 
   /* -------------------------------------------------------------------------- */
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800 hover:shadow-2xl"
-      >
+      <div className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800 hover:shadow-2xl">
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-zinc-50 dark:bg-zinc-800/40">
           <Link href={`/babyecommerce/products/${id}`} className="block h-full w-full">
             <Image src={imageSrc} alt={name} fill loader={loader} className="object-cover transition-transform duration-700 group-hover:scale-108" />
@@ -263,7 +258,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'grid' }) 
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       <AnimatePresence>{isOpenQuickView && renderQuickViewModal()}</AnimatePresence>
     </>

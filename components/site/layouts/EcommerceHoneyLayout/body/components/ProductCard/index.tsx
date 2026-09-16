@@ -139,12 +139,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="group bg-white rounded-[2rem] p-4 border border-stone-100 relative flex flex-col h-full overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(62,39,35,0.05)]"
-      >
+      <div className="group bg-white rounded-[2rem] p-4 border border-stone-100 relative flex flex-col h-full overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(62,39,35,0.05)]">
         {/* Image Container */}
         <div className="relative h-64 w-full rounded-[1.5rem] overflow-hidden bg-[#FAF9F6]">
           <Link href={`/honeyecommerce/products/${product.id}`} className="block h-full w-full">
@@ -285,7 +280,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ================= PORTAL SCREEN MODAL PANEL ================= */}
       <AnimatePresence>

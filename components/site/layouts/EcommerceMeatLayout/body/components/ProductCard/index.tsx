@@ -140,13 +140,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-        viewport={{ once: true }}
-        className="group relative flex flex-col bg-white dark:bg-[#0f0f0f] p-3 rounded-[2.5rem] border border-stone-100 dark:border-stone-800/50 hover:shadow-2xl hover:border-red-600/20 transition-all duration-500"
-      >
+      <div className="group relative flex flex-col bg-white dark:bg-[#0f0f0f] p-3 rounded-[2.5rem] border border-stone-100 dark:border-stone-800/50 hover:shadow-2xl hover:border-red-600/20 transition-all duration-500">
         {/* Image Container Layout */}
         <div className="relative aspect-square w-full rounded-[2rem] overflow-hidden bg-stone-100 dark:bg-stone-900 mb-5">
           <Link href={`/meatecommerce/products/${product.id}`} className="block w-full h-full">
@@ -261,7 +255,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
             </a>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Butchery Customization Overlay Panel */}
       <AnimatePresence>

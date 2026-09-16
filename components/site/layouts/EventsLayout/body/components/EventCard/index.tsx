@@ -44,13 +44,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
   const isFree = !event.finalPrice || event.finalPrice === 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      viewport={{ once: true }}
-      className="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800/80 shadow-sm hover:shadow-xl hover:border-zinc-200/60 dark:hover:border-zinc-700/50 p-4 transition-all duration-300"
-    >
+    <div className="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800/80 shadow-sm hover:shadow-xl hover:border-zinc-200/60 dark:hover:border-zinc-700/50 p-4 transition-all duration-300">
       {/* Event Hero Media Container */}
       <div className="relative aspect-[16/10] w-full rounded-[1.8rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 mb-5">
         <Link href={`/events/products/${event.id}`} className="block w-full h-full">
@@ -155,7 +149,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
         </div>
 
       </div>
-    </motion.div>
+    </div>
   );
 };
 
