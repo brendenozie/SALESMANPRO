@@ -38,7 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withDistributedLock = exports.releaseDistributedLock = exports.acquireDistributedLock = exports.releaseIdempotencyLock = exports.saveIdempotencyResponse = exports.acquireIdempotencyLock = void 0;
+exports.withIdempotency = exports.withDistributedLock = exports.releaseDistributedLock = exports.acquireDistributedLock = exports.releaseIdempotencyLock = exports.saveIdempotencyResponse = exports.acquireIdempotencyLock = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const redis_1 = __importStar(require("./redis"));
 const MAX_IN_MEMORY_KEYS = 5000;
@@ -250,3 +250,39 @@ async function withDistributedLock(resourceKey, fn, ttlSeconds = 10, maxWaitMs =
     }
 }
 exports.withDistributedLock = withDistributedLock;
+/**
+ * Wraps a mutation function with distributed idempotency protection.
+ * If the operation was previously completed, returns the cached result.
+ * If concurrent requests arrive with the same key, waits or returns an in-flight error.
+ */
+async function withIdempotency(key, fn, tenantId = "global", retentionTtlSeconds = 86400) {
+    if (!key || typeof key !== "string" || !key.trim()) {
+        return await fn();
+    }
+    const cleanKey = key.trim();
+    const lock = await acquireIdempotencyLock(cleanKey, tenantId);
+    if (lock.state === "COMPLETED") {
+        return lock.response.body;
+    }
+    if (lock.state === "IN_FLIGHT") {
+        // Singleflight wait for in-flight operation (up to 3 seconds)
+        for (let i = 0; i < 30; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            const retryLock = await acquireIdempotencyLock(cleanKey, tenantId);
+            if (retryLock.state === "COMPLETED") {
+                return retryLock.response.body;
+            }
+        }
+        throw new Error("IDEMPOTENCY_IN_FLIGHT: A request with this Idempotency-Key is currently being processed.");
+    }
+    try {
+        const result = await fn();
+        await saveIdempotencyResponse(cleanKey, tenantId, 200, result, retentionTtlSeconds);
+        return result;
+    }
+    catch (error) {
+        await releaseIdempotencyLock(cleanKey, tenantId);
+        throw error;
+    }
+}
+exports.withIdempotency = withIdempotency;

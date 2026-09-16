@@ -15,131 +15,9 @@ const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const cache_1 = require("@/lib/cache");
 const ghuba_product_type_1 = require("./ghuba-product-type");
 const ghuba_slug_1 = require("./ghuba-slug");
-/**
- * Normalizes raw JSON media values into sanitized HTTP(S) URL strings.
- */
-function normalizeMediaList(rawList) {
-    if (!rawList)
-        return [];
-    const list = Array.isArray(rawList) ? rawList : [rawList];
-    const urls = [];
-    for (const item of list) {
-        if (typeof item === "string" && item.trim().length > 0) {
-            const clean = item.trim();
-            if (clean.startsWith("http://") || clean.startsWith("https://") || clean.startsWith("/")) {
-                urls.push(clean);
-            }
-        }
-        else if (item && typeof item === "object") {
-            const candidate = item.url || item.secure_url || item.src || item.path || item.cdnUrl;
-            if (typeof candidate === "string" && candidate.trim().length > 0) {
-                urls.push(candidate.trim());
-            }
-        }
-    }
-    return urls;
-}
-exports.normalizeMediaList = normalizeMediaList;
-/**
- * Parses raw JSON media items into structured, enriched media details.
- * Supports either (rawVideos, rawImages) or a single combined media list.
- */
-function parseDetailedMediaList(rawVideosOrList, rawImages) {
-    const images = [];
-    const videos = [];
-    const parseVideoItem = (item) => {
-        if (!item)
-            return;
-        if (typeof item === "string") {
-            const clean = item.trim();
-            if (clean.length > 0) {
-                videos.push({ url: clean, posterUrl: "", status: "READY" });
-            }
-        }
-        else if (typeof item === "object") {
-            const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
-            if (url) {
-                videos.push({
-                    url,
-                    posterUrl: item.posterUrl || item.poster || item.thumbnailUrl || "",
-                    width: item.width,
-                    height: item.height,
-                    duration: item.duration,
-                    status: item.status || "READY",
-                });
-            }
-        }
-    };
-    const parseImageItem = (item) => {
-        if (!item)
-            return;
-        if (typeof item === "string") {
-            const clean = item.trim();
-            if (clean.length > 0) {
-                images.push({ url: clean });
-            }
-        }
-        else if (typeof item === "object") {
-            const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
-            if (url) {
-                images.push({
-                    url,
-                    variants: item.variants,
-                    width: item.width,
-                    height: item.height,
-                    blurDataUrl: item.blurDataUrl,
-                });
-            }
-        }
-    };
-    if (rawImages !== undefined) {
-        const videoList = Array.isArray(rawVideosOrList) ? rawVideosOrList : rawVideosOrList ? [rawVideosOrList] : [];
-        videoList.forEach(parseVideoItem);
-        const imageList = Array.isArray(rawImages) ? rawImages : rawImages ? [rawImages] : [];
-        imageList.forEach(parseImageItem);
-    }
-    else {
-        // Single list passed: discern by type property or extension
-        const list = Array.isArray(rawVideosOrList) ? rawVideosOrList : rawVideosOrList ? [rawVideosOrList] : [];
-        for (const item of list) {
-            if (!item)
-                continue;
-            if (typeof item === "string") {
-                const clean = item.trim();
-                if (clean.endsWith(".mp4") || clean.endsWith(".webm") || clean.includes("/videos/")) {
-                    videos.push({ url: clean, posterUrl: "", status: "READY" });
-                }
-                else {
-                    images.push({ url: clean });
-                }
-            }
-            else if (typeof item === "object") {
-                const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
-                if (item.type === "video" || url.endsWith(".mp4") || url.endsWith(".webm") || url.includes("/videos/")) {
-                    videos.push({
-                        url,
-                        posterUrl: item.posterUrl || item.poster || item.thumbnailUrl || "",
-                        width: item.width,
-                        height: item.height,
-                        duration: item.duration,
-                        status: item.status || "READY",
-                    });
-                }
-                else {
-                    images.push({
-                        url,
-                        variants: item.variants,
-                        width: item.width,
-                        height: item.height,
-                        blurDataUrl: item.blurDataUrl,
-                    });
-                }
-            }
-        }
-    }
-    return { images, videos };
-}
-exports.parseDetailedMediaList = parseDetailedMediaList;
+const media_normalizer_1 = require("./media-normalizer");
+Object.defineProperty(exports, "normalizeMediaList", { enumerable: true, get: function () { return media_normalizer_1.normalizeMediaList; } });
+Object.defineProperty(exports, "parseDetailedMediaList", { enumerable: true, get: function () { return media_normalizer_1.parseDetailedMediaList; } });
 const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80";
 /**
  * Resolves media according to the strict Media Priority Rule:
@@ -150,9 +28,9 @@ const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-
  * 5. BRANDED PLACEHOLDER
  */
 function resolveFeedMedia(rawVideos, rawImages) {
-    const videoUrls = normalizeMediaList(rawVideos);
-    const imageUrls = normalizeMediaList(rawImages);
-    const { videos: structuredVideos, images: structuredImages } = parseDetailedMediaList(rawVideos, rawImages);
+    const videoUrls = (0, media_normalizer_1.normalizeMediaList)(rawVideos);
+    const imageUrls = (0, media_normalizer_1.normalizeMediaList)(rawImages);
+    const { videos: structuredVideos, images: structuredImages } = (0, media_normalizer_1.parseDetailedMediaList)(rawVideos, rawImages);
     // Guarantee high-quality poster frame:
     // 1. Explicit video posterUrl
     // 2. First image's feed variant URL
@@ -232,7 +110,7 @@ function calculateFeedScore(listing, likesCount = 0, commentsCount = 0, savesCou
     const freshnessPoints = Math.max(0, 30 - ageInHours * 0.05);
     score += freshnessPoints;
     // Video priority boost: video content gets a primary discoverability boost
-    const videoUrls = normalizeMediaList(listing.videos);
+    const videoUrls = (0, media_normalizer_1.normalizeMediaList)(listing.videos);
     if (videoUrls.length > 0) {
         score += 35;
     }

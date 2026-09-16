@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -17,6 +40,7 @@ const context_1 = require("@/lib/auth/context");
 const domain_1 = require("@/lib/auth/domain");
 const provision_1 = require("@/lib/auth/provision");
 const verification_1 = require("@/lib/auth/verification");
+const telemetry_1 = require("@/lib/auth/telemetry");
 function getSharedSecret() {
     return (process.env.NEXTAUTH_SECRET ||
         process.env.AUTH_SECRET ||
@@ -115,11 +139,23 @@ async function resolveHasTenantAccess(userId, role, companyId) {
     if ((0, authorization_1.canAccessDashboard)({ role, companyId, emailVerified: true, isActive: true })) {
         return true;
     }
-    const [owned, staff] = await Promise.all([
-        prismadb_1.default.company.findFirst({ where: { userId }, select: { id: true } }),
-        prismadb_1.default.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
-    ]);
-    return !!(owned || staff);
+    try {
+        const { fetchWithCache } = await Promise.resolve().then(() => __importStar(require("./cache")));
+        return await fetchWithCache(`tenant_access:${userId}`, async () => {
+            const [owned, staff] = await Promise.all([
+                prismadb_1.default.company.findFirst({ where: { userId }, select: { id: true } }),
+                prismadb_1.default.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+            ]);
+            return !!(owned || staff);
+        }, { ttlSeconds: 600 });
+    }
+    catch {
+        const [owned, staff] = await Promise.all([
+            prismadb_1.default.company.findFirst({ where: { userId }, select: { id: true } }),
+            prismadb_1.default.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+        ]);
+        return !!(owned || staff);
+    }
 }
 async function resolveFlowContext(opts) {
     const fromCookie = await (0, context_1.readAuthContextFromCookieHeader)(opts.cookieHeader);
@@ -286,6 +322,8 @@ const authOptions = (ctx = {}) => {
         },
         callbacks: {
             async redirect({ url, baseUrl }) {
+                const start = Date.now();
+                const cId = (0, telemetry_1.generateCorrelationId)();
                 if (url.includes("/logout") || url.includes("/api/auth/signout")) {
                     return url.startsWith("/") ? `${baseUrl}${url}` : url;
                 }
@@ -305,6 +343,7 @@ const authOptions = (ctx = {}) => {
                                 (0, domain_1.normalizeHost)(safeTarget.hostname) !== "auth.salesmanpro.site") {
                                 const cleanHandover = new URL("/api/auth/handover", baseUrl);
                                 cleanHandover.searchParams.set("target", safeTarget.toString());
+                                (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { target: cleanHandover.toString() });
                                 return cleanHandover.toString();
                             }
                         }
@@ -349,17 +388,23 @@ const authOptions = (ctx = {}) => {
                     }
                     const allowed = await (0, context_1.isAllowedReturnUrl)(finalRedirectUrl);
                     if (!allowed) {
+                        (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { error: "unauthorized_return_url" });
                         return `${domain_1.HUB_URL}/unauthorized?reason=invalid_callback`;
                     }
                     const handoverUrl = new URL("/api/auth/handover", baseUrl);
                     handoverUrl.searchParams.set("target", finalRedirectUrl);
+                    (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { target: finalRedirectUrl });
                     return handoverUrl.toString();
                 }
                 catch {
+                    (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { error: "invalid_redirect" });
                     return `${domain_1.HUB_URL}/unauthorized?reason=invalid_redirect`;
                 }
             },
             async signIn({ user, account }) {
+                const start = Date.now();
+                const cId = (0, telemetry_1.generateCorrelationId)();
+                (0, telemetry_1.authLog)(cId, "google_callback_arrival", 0, { provider: account?.provider, email: user?.email });
                 if (!account ||
                     account.provider === "credentials" ||
                     account.provider === "token-signin" ||
@@ -369,51 +414,80 @@ const authOptions = (ctx = {}) => {
                 }
                 if (!user.email)
                     return false;
-                const flow = await resolveFlowContext(requestCtx);
-                const existing = await prismadb_1.default.user.findUnique({
-                    where: { email: user.email.toLowerCase() },
-                    select: { id: true, role: true, isActive: true },
-                });
-                if (existing?.isActive === false)
+                const u = user;
+                // Fast-path: Check isActive directly if returned by adapter
+                if (u.isActive === false)
                     return false;
-                if (existing) {
-                    await (0, provision_1.applyLoginContext)(existing.id, flow);
+                const flow = await resolveFlowContext(requestCtx);
+                const userId = user.id;
+                if (userId) {
+                    // Asynchronously apply login context if storefront without holding up authentication
+                    if (flow) {
+                        (0, provision_1.applyLoginContext)(userId, flow).catch(() => null);
+                    }
                 }
+                else {
+                    // Fallback user query only if user.id was not provided
+                    const existing = await prismadb_1.default.user.findUnique({
+                        where: { email: user.email.toLowerCase() },
+                        select: { id: true, role: true, isActive: true },
+                    });
+                    if (existing?.isActive === false)
+                        return false;
+                    if (existing && flow) {
+                        (0, provision_1.applyLoginContext)(existing.id, flow).catch(() => null);
+                    }
+                }
+                (0, telemetry_1.authLog)(cId, "user_lookup_duration", Date.now() - start, { provider: account?.provider });
                 return true;
             },
             async jwt({ token, user }) {
+                const jwtStart = Date.now();
+                const cId = (0, telemetry_1.generateCorrelationId)();
                 if (user) {
-                    let dbUser = null;
-                    if (user.id) {
-                        dbUser = await prismadb_1.default.user.findUnique({
-                            where: { id: user.id },
-                            select: {
-                                role: true,
-                                emailVerified: true,
-                                isActive: true,
-                                companyId: true,
-                            },
-                        });
+                    const u = user;
+                    let role = u.role || "USER";
+                    let emailVerified = u.emailVerified;
+                    let isActive = u.isActive;
+                    let companyId = u.companyId;
+                    // Only query DB if critical authorization fields are missing from adapter user
+                    if (!role || isActive === undefined || companyId === undefined) {
+                        if (user.id) {
+                            const dbUser = await prismadb_1.default.user.findUnique({
+                                where: { id: user.id },
+                                select: {
+                                    role: true,
+                                    emailVerified: true,
+                                    isActive: true,
+                                    companyId: true,
+                                },
+                            });
+                            if (dbUser) {
+                                role = dbUser.role || role;
+                                emailVerified = dbUser.emailVerified ?? emailVerified;
+                                isActive = dbUser.isActive ?? isActive;
+                                companyId = dbUser.companyId ?? companyId;
+                            }
+                        }
                     }
-                    const role = dbUser?.role || user.role || "USER";
-                    const companyId = dbUser?.companyId ?? user.companyId;
-                    const hasTenantAccess = user.hasTenantAccess ??
+                    const hasTenantAccess = u.hasTenantAccess ??
                         (await resolveHasTenantAccess(user.id, role, companyId));
                     Object.assign(token, {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        phone: user.phone,
-                        username: user.username,
-                        bio: user.bio,
-                        address: user.address,
+                        phone: u.phone,
+                        username: u.username,
+                        bio: u.bio,
+                        address: u.address,
                         role,
-                        profilePicture: user.profilePicture,
-                        emailVerified: dbUser?.emailVerified ?? user.emailVerified,
-                        isActive: dbUser?.isActive ?? user.isActive,
+                        profilePicture: u.profilePicture,
+                        emailVerified,
+                        isActive: isActive !== false,
                         companyId,
                         hasTenantAccess,
                     });
+                    (0, telemetry_1.authLog)(cId, "jwt_callback_duration", Date.now() - jwtStart, { userId: user.id, role });
                 }
                 else if (token.id && token.hasTenantAccess === undefined) {
                     const dbUser = await prismadb_1.default.user.findUnique({
@@ -435,10 +509,12 @@ const authOptions = (ctx = {}) => {
                     else {
                         token.hasTenantAccess = false;
                     }
+                    (0, telemetry_1.authLog)(cId, "jwt_callback_duration", Date.now() - jwtStart, { tokenRefresh: true });
                 }
                 return token;
             },
             async session({ session, token }) {
+                const sessionStart = Date.now();
                 if (session.user) {
                     Object.assign(session.user, {
                         id: token.id,
@@ -456,6 +532,7 @@ const authOptions = (ctx = {}) => {
                         hasTenantAccess: token.hasTenantAccess,
                     });
                 }
+                (0, telemetry_1.authLog)((0, telemetry_1.generateCorrelationId)(), "session_callback_duration", Date.now() - sessionStart);
                 return session;
             },
         },
@@ -463,6 +540,8 @@ const authOptions = (ctx = {}) => {
             async createUser({ user }) {
                 if (!user?.id)
                     return;
+                const cId = (0, telemetry_1.generateCorrelationId)();
+                const start = Date.now();
                 const flow = await resolveFlowContext(requestCtx);
                 if (flow) {
                     await (0, provision_1.provisionSignupRelationships)(user.id, flow, {
@@ -483,11 +562,16 @@ const authOptions = (ctx = {}) => {
                             : (existing.emailVerified ?? false),
                     },
                 });
+                // Send email asynchronously without blocking OAuth response completion
                 if (existing.emailVerified !== true) {
-                    const token = await (0, verification_1.createEmailVerificationToken)(existing.email);
-                    const callbackUrl = flow?.returnUrl || domain_1.HUB_URL;
-                    await (0, verification_1.sendVerificationEmail)(existing.email, token, callbackUrl).catch(() => null);
+                    (0, verification_1.createEmailVerificationToken)(existing.email)
+                        .then((token) => {
+                        const callbackUrl = flow?.returnUrl || domain_1.HUB_URL;
+                        return (0, verification_1.sendVerificationEmail)(existing.email, token, callbackUrl);
+                    })
+                        .catch(() => null);
                 }
+                (0, telemetry_1.authLog)(cId, "account_linking_duration", Date.now() - start, { userId: user.id });
             },
         },
         secret: secret,

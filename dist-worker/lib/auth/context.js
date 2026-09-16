@@ -107,20 +107,24 @@ async function isAllowedReturnUrl(raw) {
     if ((0, domain_1.isStaticallyAllowedReturnHost)(host))
         return true;
     try {
-        const prisma = (await Promise.resolve().then(() => __importStar(require("../../server/db/prismadb")))).default;
-        const classified = (0, domain_1.classifyHost)(host);
-        const company = await prisma.company.findFirst({
-            where: {
-                OR: [
-                    { domain: host },
-                    { domain: `www.${host}` },
-                    { domain: url.hostname.toLowerCase() },
-                    ...(classified.slug ? [{ slug: classified.slug }, { domain: classified.slug }] : []),
-                ],
-            },
-            select: { id: true },
-        });
-        return !!company;
+        const { fetchWithCache } = await Promise.resolve().then(() => __importStar(require("../cache")));
+        const cacheKey = `allowed_return_host:${host}`;
+        return await fetchWithCache(cacheKey, async () => {
+            const prisma = (await Promise.resolve().then(() => __importStar(require("../../server/db/prismadb")))).default;
+            const classified = (0, domain_1.classifyHost)(host);
+            const company = await prisma.company.findFirst({
+                where: {
+                    OR: [
+                        { domain: host },
+                        { domain: `www.${host}` },
+                        { domain: url.hostname.toLowerCase() },
+                        ...(classified.slug ? [{ slug: classified.slug }, { domain: classified.slug }] : []),
+                    ],
+                },
+                select: { id: true },
+            });
+            return !!company;
+        }, { ttlSeconds: 300 });
     }
     catch {
         return false;

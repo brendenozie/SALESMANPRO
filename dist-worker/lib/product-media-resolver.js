@@ -16,7 +16,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveProductMedia = void 0;
-const ghuba_feed_service_1 = require("./ghuba-feed-service");
+const media_normalizer_1 = require("./media-normalizer");
 const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80";
 /**
  * Resolves complete media state for any product or marketplace listing across Ghuba and tenant stores.
@@ -36,9 +36,9 @@ function resolveProductMedia(product) {
     }
     const rawVideos = product.videos;
     const rawImages = product.images;
-    const { videos: structuredVideos, images: structuredImages } = (0, ghuba_feed_service_1.parseDetailedMediaList)(rawVideos, rawImages);
-    const videoUrls = (0, ghuba_feed_service_1.normalizeMediaList)(rawVideos);
-    const imageUrls = (0, ghuba_feed_service_1.normalizeMediaList)(rawImages);
+    const { videos: structuredVideos, images: structuredImages } = (0, media_normalizer_1.parseDetailedMediaList)(rawVideos, rawImages);
+    const videoUrls = (0, media_normalizer_1.normalizeMediaList)(rawVideos);
+    const imageUrls = (0, media_normalizer_1.normalizeMediaList)(rawImages);
     const hasVideo = videoUrls.length > 0 && (structuredVideos[0]?.status === undefined || structuredVideos[0]?.status === "READY");
     // Determine guaranteed poster frame:
     // 1. Explicit video posterUrl
