@@ -1,17 +1,8 @@
 'use client';
 
 import { memo, useCallback, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
+import GhubaProductCard from '@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard';
 import { useStateContext } from '@/contexts/ContextProvider';
-
-const DynamicBannerSlider = dynamic(
-  () => import('@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard'), 
-  { 
-    loading: () => <SkeletonGrid count={1} />, 
-    ssr: false,
-  }
-);
 
 const MemoizedProductCard = memo(({ product, isPriority }: any) => {
   const { addToCart } = useStateContext();
@@ -35,7 +26,7 @@ const MemoizedProductCard = memo(({ product, isPriority }: any) => {
 
   return (
     <div className="group transform transition-all duration-300 hover:-translate-y-1 h-full">
-      <DynamicBannerSlider 
+      <GhubaProductCard 
         product={product} 
         isLiked={isLiked}
         toggleLike={handleToggleLike} 

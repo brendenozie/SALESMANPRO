@@ -20,6 +20,7 @@ export default function VirtualizedGrid({
 }: any) {
   const [columns, setColumns] = useState(4);
   const [mounted, setMounted] = useState(false);
+  const parentRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function VirtualizedGrid({
     count: rows.length,
     estimateSize: () => (typeof window !== 'undefined' && window.innerWidth < 640 ? 320 : 420),
     overscan: 5,
+    scrollMargin: parentRef.current?.offsetTop ?? 0,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
@@ -109,20 +111,21 @@ export default function VirtualizedGrid({
   }
 
   return (
-    <div className="flex flex-col">
+    <div ref={parentRef} className="flex flex-col">
       <div 
-        className="relative w-full transition-all" 
+        className="relative w-full" 
         style={{ height: `${virtualizer.getTotalSize()}px` }}
       >
         {virtualItems.map((virtualRow) => {
           const rowProducts = rows[virtualRow.index];
+          const scrollMargin = parentRef.current?.offsetTop ?? 0;
           return (
             <div
               key={virtualRow.key.toString()}
               data-index={virtualRow.index}
               ref={virtualizer.measureElement} // Ensures dynamic height works perfectly
               className="absolute top-0 left-0 w-full"
-              style={{ transform: `translateY(${virtualRow.start}px)` }}
+              style={{ transform: `translateY(${virtualRow.start - scrollMargin}px)` }}
             >
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 pb-4 sm:pb-6">
                 {rowProducts.map((product) => (

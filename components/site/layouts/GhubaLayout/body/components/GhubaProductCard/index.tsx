@@ -188,12 +188,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="relative group h-full"
-      >
+      <div className="relative group h-full">
         <div
           onClick={() => router.push(getListingPublicUrl(product))}
           className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col"
@@ -336,7 +331,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems }: an
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Options Selection Modal */}
       <AnimatePresence>
