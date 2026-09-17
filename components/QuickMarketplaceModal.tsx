@@ -35,6 +35,9 @@ export default function QuickMarketplaceModal({
   const [sellingPrice, setSellingPrice] = useState("");
   const [category, setCategory] = useState(categories[0]?.displayName || "General");
   const [productCategoryId, setProductCategoryId] = useState(categories[0]?.categoryId || "");
+  const [subCategory, setSubCategory] = useState("");
+  const [subCategoryName, setSubCategoryName] = useState("");
+  const [brand, setBrand] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<UploadedMediaItem[]>([]);
 
@@ -50,6 +53,15 @@ export default function QuickMarketplaceModal({
   const [successToast, setSuccessToast] = useState("");
 
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Derive available subcategories and brands
+  const activeCategory =
+    categories.find((c) => c.displayName === category || c.categoryId === productCategoryId) ||
+    categories[0];
+  const availableSubcategories =
+    activeCategory?.subcategories || activeCategory?.category?.subcategories || [];
+  const availableBrands =
+    activeCategory?.allBrands || activeCategory?.category?.allBrands || [];
 
   useEffect(() => {
     if (isOpen) {
@@ -92,6 +104,28 @@ export default function QuickMarketplaceModal({
       const match = categories.find((c) => c.displayName === product.category);
       if (match) setProductCategoryId(match.categoryId);
     }
+    if (product.subCategory) setSubCategory(product.subCategory);
+    if (product.subCategoryName) setSubCategoryName(product.subCategoryName);
+    if (product.brand) setBrand(product.brand);
+  };
+
+  const handleCategorySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const sel = e.target.value;
+    setCategory(sel);
+    const m = categories.find((c) => c.displayName === sel);
+    setProductCategoryId(m?.categoryId || "");
+    setSubCategory("");
+    setSubCategoryName("");
+    setBrand("");
+  };
+
+  const handleSubCategorySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSubCategory(val);
+    const matchSub = availableSubcategories.find(
+      (s: any) => (s.id || s.slug || s.name) === val || s.name === val
+    );
+    setSubCategoryName(matchSub?.name || val);
   };
 
   const handleSave = async (status: "ACTIVE" | "DRAFT" = "ACTIVE", addAnother = false) => {
@@ -117,6 +151,9 @@ export default function QuickMarketplaceModal({
         finalPrice: parsedPrice,
         category,
         productCategoryId: productCategoryId || undefined,
+        subCategory: subCategory || undefined,
+        subCategoryName: subCategoryName.trim() || undefined,
+        brand: brand.trim() || undefined,
         description: description.trim() || undefined,
         productId: attachedProduct?.id || undefined,
         images: images.map((img) => img.url),
@@ -143,6 +180,9 @@ export default function QuickMarketplaceModal({
       if (addAnother) {
         setName("");
         setSellingPrice("");
+        setSubCategory("");
+        setSubCategoryName("");
+        setBrand("");
         setDescription("");
         setImages([]);
         setAttachedProduct(null);
@@ -151,7 +191,7 @@ export default function QuickMarketplaceModal({
         onClose();
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "An error occurred while publishing.");
+      setErrorMessage(err.message || "Failed to save listing. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -309,12 +349,7 @@ export default function QuickMarketplaceModal({
               </label>
               <select
                 value={category}
-                onChange={(e) => {
-                  const sel = e.target.value;
-                  setCategory(sel);
-                  const m = categories.find((c) => c.displayName === sel);
-                  setProductCategoryId(m?.categoryId || "");
-                }}
+                onChange={handleCategorySelect}
                 className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all"
               >
                 {categories.map((cat) => (
@@ -323,6 +358,61 @@ export default function QuickMarketplaceModal({
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* Subcategory & Brand Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                Subcategory <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              {availableSubcategories.length > 0 ? (
+                <select
+                  value={subCategory}
+                  onChange={handleSubCategorySelect}
+                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all"
+                >
+                  <option value="">Select subcategory...</option>
+                  {availableSubcategories.map((sub: any) => (
+                    <option key={sub.id || sub.slug || sub.name} value={sub.id || sub.name}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={subCategoryName}
+                  onChange={(e) => {
+                    setSubCategoryName(e.target.value);
+                    setSubCategory(e.target.value);
+                  }}
+                  placeholder="e.g. Smart Watches, Laptops"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                Brand <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                list="quick-market-brands-list"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="e.g. Apple, Sony, Nike"
+                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all"
+              />
+              {availableBrands.length > 0 && (
+                <datalist id="quick-market-brands-list">
+                  {availableBrands.map((b: string) => (
+                    <option key={b} value={b} />
+                  ))}
+                </datalist>
+              )}
             </div>
           </div>
 
@@ -364,6 +454,10 @@ export default function QuickMarketplaceModal({
                 name,
                 sellingPrice: parseFloat(sellingPrice) || 0,
                 category,
+                productCategoryId,
+                subCategory,
+                subCategoryName,
+                brand,
                 description,
                 productId: attachedProduct?.id,
               });

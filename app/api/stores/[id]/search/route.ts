@@ -1,8 +1,9 @@
 /**
- * app/api/stores/[slug]/search/route.ts
+ * app/api/stores/[id]/search/route.ts
  *
  * Dedicated Tenant-Scoped Search Endpoint.
  * Strictly scopes product search to the specific merchant's company catalog.
+ * Accepts either store ID or slug as the route parameter.
  * Guarantees zero cross-tenant data leakage.
  */
 
@@ -19,20 +20,20 @@ const CORS_HEADERS = {
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ slug: string }> | { slug: string } }
+  { params }: { params: Promise<{ id?: string }> | { id?: string } }
 ) {
   try {
     const resolvedParams = await params;
-    const { slug } = resolvedParams;
+    const storeIdentifier = resolvedParams?.id;
 
-    if (!slug) {
+    if (!storeIdentifier) {
       return NextResponse.json(
-        { error: "Store slug is required" },
+        { error: "Store identifier is required" },
         { status: 400, headers: CORS_HEADERS }
       );
     }
 
-    const company = await findCompanyCached(slug, "lean");
+    const company = await findCompanyCached(storeIdentifier, "lean");
     if (!company) {
       return NextResponse.json(
         { error: "Store not found" },
@@ -59,7 +60,7 @@ export async function GET(
       q,
       scope: "STORE",
       companyId: company.id,
-      storeSlug: slug,
+      storeSlug: company.slug || storeIdentifier,
       sort,
       page,
       limit,
@@ -83,7 +84,7 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    console.error("[API/stores/[slug]/search] Error:", error);
+    console.error("[API/stores/[id]/search] Error:", error);
     return NextResponse.json(
       { error: "Store search failed", details: error.message },
       { status: 500, headers: CORS_HEADERS }

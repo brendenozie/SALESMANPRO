@@ -35,6 +35,9 @@ export default function QuickProductModal({
   const [name, setName] = useState("");
   const [category, setCategory] = useState(categories[0]?.displayName || "General");
   const [productCategoryId, setProductCategoryId] = useState(categories[0]?.categoryId || "");
+  const [subCategory, setSubCategory] = useState("");
+  const [subCategoryName, setSubCategoryName] = useState("");
+  const [brand, setBrand] = useState("");
   const [sellingPrice, setSellingPrice] = useState<string>("");
   const [costPrice, setCostPrice] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("1");
@@ -49,6 +52,15 @@ export default function QuickProductModal({
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  // Derive available subcategories and brands from currently selected category
+  const activeCategory =
+    categories.find((c) => c.displayName === category || c.categoryId === productCategoryId) ||
+    categories[0];
+  const availableSubcategories =
+    activeCategory?.subcategories || activeCategory?.category?.subcategories || [];
+  const availableBrands =
+    activeCategory?.allBrands || activeCategory?.category?.allBrands || [];
+
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => nameInputRef.current?.focus(), 150);
@@ -61,6 +73,18 @@ export default function QuickProductModal({
     setCategory(selectedName);
     const match = categories.find((c) => c.displayName === selectedName);
     setProductCategoryId(match?.categoryId || "");
+    setSubCategory("");
+    setSubCategoryName("");
+    setBrand("");
+  };
+
+  const handleSubCategorySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSubCategory(val);
+    const matchSub = availableSubcategories.find(
+      (s: any) => (s.id || s.slug || s.name) === val || s.name === val
+    );
+    setSubCategoryName(matchSub?.name || val);
   };
 
   const handleSave = async (addAnother = false) => {
@@ -87,6 +111,9 @@ export default function QuickProductModal({
         name: name.trim(),
         category,
         productCategoryId: productCategoryId || undefined,
+        subCategory: subCategory || undefined,
+        subCategoryName: subCategoryName.trim() || undefined,
+        brand: brand.trim() || undefined,
         sellingPrice: parsedSellingPrice,
         costPrice: parsedCostPrice,
         finalPrice: parsedSellingPrice,
@@ -115,20 +142,27 @@ export default function QuickProductModal({
       if (addAnother) {
         // Reset fields but keep category & tax setting for rapid sequential entry
         setName("");
+        setSubCategory("");
+        setSubCategoryName("");
+        setBrand("");
         setSellingPrice("");
         setCostPrice("");
         setQuantity("1");
         setSku("");
         setImages([]);
-        nameInputRef.current?.focus();
+        titleInputFocus();
       } else {
         onClose();
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "An error occurred while saving.");
+      setErrorMessage(err.message || "Failed to save product. Please try again.");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const titleInputFocus = () => {
+    setTimeout(() => nameInputRef.current?.focus(), 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -229,6 +263,61 @@ export default function QuickProductModal({
             </div>
           </div>
 
+          {/* Subcategory & Brand Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                Subcategory <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              {availableSubcategories.length > 0 ? (
+                <select
+                  value={subCategory}
+                  onChange={handleSubCategorySelect}
+                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                >
+                  <option value="">Select subcategory...</option>
+                  {availableSubcategories.map((sub: any) => (
+                    <option key={sub.id || sub.slug || sub.name} value={sub.id || sub.name}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={subCategoryName}
+                  onChange={(e) => {
+                    setSubCategoryName(e.target.value);
+                    setSubCategory(e.target.value);
+                  }}
+                  placeholder="e.g. Sneakers, Audio, Accessories"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                />
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                Brand <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                list="quick-product-brands-list"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="e.g. Apple, Nike, Samsung"
+                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+              />
+              {availableBrands.length > 0 && (
+                <datalist id="quick-product-brands-list">
+                  {availableBrands.map((b: string) => (
+                    <option key={b} value={b} />
+                  ))}
+                </datalist>
+              )}
+            </div>
+          </div>
+
           {/* Pricing & Stock Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -326,6 +415,10 @@ export default function QuickProductModal({
               onOpenDetailedForm?.({
                 name,
                 category,
+                productCategoryId,
+                subCategory,
+                subCategoryName,
+                brand,
                 sellingPrice: parseFloat(sellingPrice) || 0,
                 costPrice: parseFloat(costPrice) || 0,
                 quantity: parseInt(quantity, 10) || 1,

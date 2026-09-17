@@ -273,7 +273,34 @@ const DashboardCard = ({ href, title, icon: Icon, value, formatValue, progress, 
 };
 
 // --- MAIN DASHBOARD COMPONENT ---
-export default function EcomDashboardClient(props: DashboardData) {
+export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
+    const props = {
+        slug: rawProps.slug || '',
+        companyName: rawProps.companyName || 'Your Store',
+        currency: rawProps.currency || 'KES',
+        todaySales: rawProps.todaySales ?? 0,
+        completedOrdersToday: rawProps.completedOrdersToday ?? 0,
+        averageOrderValueToday: rawProps.averageOrderValueToday ?? 0,
+        totalRevenueMonth: rawProps.totalRevenueMonth ?? 0,
+        monthlyTarget: rawProps.monthlyTarget ?? 50000,
+        monthlyTargetProgress: rawProps.monthlyTargetProgress ?? 0,
+        newClients: rawProps.newClients ?? 0,
+        totalClients: rawProps.totalClients ?? 0,
+        topAgent: rawProps.topAgent || { name: 'N/A', totalSales: 0 },
+        lowStock: rawProps.lowStock ?? 0,
+        overdueTasksCount: rawProps.overdueTasksCount ?? 0,
+        activityBreakdown: rawProps.activityBreakdown || {
+            pendingOrders: 0,
+            pendingRequests: 0,
+            openTasks: 0,
+        },
+        commissionEarned: rawProps.commissionEarned ?? 0,
+        communicationsToday: rawProps.communicationsToday ?? 0,
+        pendingTasksList: rawProps.pendingTasksList || [],
+        recentOrders: rawProps.recentOrders || [],
+        activePromotions: rawProps.activePromotions || [],
+        salesLast7Days: rawProps.salesLast7Days || [],
+    };
 
     const dataCards: DashboardCardProps[] = [
         {

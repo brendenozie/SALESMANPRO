@@ -2,7 +2,11 @@ import { redirect } from 'next/navigation';
 import { getAuthSession } from '../../../lib/auth';
 import prisma from '@/server/db/prismadb';
 import { normalizeCategory } from '@/utils/normalizeCategory';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import {
+  getEcommerceDashboardData,
+  isEcommerceRetailCategory,
+} from '@/lib/admin-dashboard-service';
 
 import EcomDashboardClient from '@/components/admin/EcomDashboardClient';
 import RealEstateDashboardClient from '@/components/admin/RealEstateDashboardClient';
@@ -206,9 +210,25 @@ function logError(message: string, error?: unknown) {
   console.error(`[AdminDashboardPage] ${message}`, error || '');
 }
 
+// --- Internal Server Fetch Utility ---
+async function fetchServerInternal(path: string, cookiesHeader?: string) {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") || "localhost:3000";
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const fullUrl = path.startsWith("http") ? path : `${protocol}://${host}${path}`;
+    return await fetch(fullUrl, {
+      cache: "no-store",
+      headers: cookiesHeader ? { cookie: cookiesHeader } : undefined,
+    });
+  } catch (err) {
+    console.error("[fetchServerInternal error]", err);
+    return null;
+  }
+}
+
 // --- API URL Utility ---
 function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
-
   if (!apiBaseUrl) {
     logError('NEXT_PUBLIC_API_URL not set.');
     return null;
@@ -230,13 +250,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
   if (categoryKey === 'saas & web apps' || categoryKey === 'dashboards') return `${apiBaseUrl}/admin/dashboard/saas/${companyId}`;
   if (categoryKey === 'travel & tourism') return `${apiBaseUrl}/admin/dashboard/travel/${companyId}`;
   if (categoryKey === 'portfolio & personal branding') return `${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`;
-  // if (categoryKey === 'delivery & logistics') return `${apiBaseUrl}/admin/dashboard/directory/${companyId}`;
-  if (
-    [
-      'ecommerce', 'e-commerce', 'shoes store', 'directory & listings', 'marketplace',  
-      'fashion shop', 'furniture shop'
-    ].includes(categoryKey)
-  ) return `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`;
+  if (isEcommerceRetailCategory(categoryKey)) return `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`;
   return null;
 }
 
@@ -432,12 +446,9 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           // 1. Using the new optimized summary API that traverses the Classroom-Subject link
           // We pass currentUserId which is the Parent's ID
-          const res = await fetch(
+          const res = await fetchServerInternal(
             `${apiBaseUrl}/admin/dashboard/parent/${slug}?userId=${encodeURIComponent(currentUserId)}`,
-            { 
-              cache: 'no-store', 
-              headers: { cookie: cookiesHeader } 
-            }
+            cookiesHeader
           );
 
           if (res.ok) {
@@ -574,9 +585,9 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           isLoading = true;
           // Note: Ensure the URL spelling matches your folder structure (principal vs principle)
-          const res = await fetch(
+          const res = await fetchServerInternal(
             `${apiBaseUrl}/admin/dashboard/principle/${slug}?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
-            { cache: 'no-store', headers: { cookie: cookiesHeader } }
+            cookiesHeader
           );
 
           isLoading = false;
@@ -643,9 +654,9 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         let tutorDashboardData: any;
         try {
           isLoading = true;
-          const res = await fetch(
+          const res = await fetchServerInternal(
             `${apiBaseUrl}/admin/dashboard/educator/${slug}?userId=${encodeURIComponent(currentUserId)}`,
-            { cache: 'no-store', headers: { cookie: cookiesHeader } }
+            cookiesHeader
           );
           isLoading = false;
           if (res.ok) {
@@ -684,39 +695,33 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     let dashboardCategoryData: any = null;
 
     if (DashboardComponent) {
+      if (isEcommerceRetailCategory(categoryKey) || DashboardComponent === EcomDashboardClient) {
+        dashboardCategoryData = await getEcommerceDashboardData(companyId, company);
+      } else {
+        const targetApiUrl = getDashboardapiBaseUrl(categoryKey, companyId);
+        if (targetApiUrl) {
+          try {
+            isLoading = true;
+            const res = await fetchServerInternal(targetApiUrl, cookiesHeader);
+            isLoading = false;
 
-      const apiBaseUrl = getDashboardapiBaseUrl(categoryKey, companyId);
-
-      if (apiBaseUrl) {
-        try {
-
-          isLoading = true;
-
-          const res = await fetch(apiBaseUrl, {
-            cache: 'no-store',
-            headers: { cookie: cookiesHeader },
-          });
-
-          isLoading = false;
-
-          if (res.ok) {
-            dashboardCategoryData = (await res.json()).data;
-          } else {
-            error = `Failed to fetch dashboard data for category "${categoryKey}": ${res.statusText}`;
-            logError(error);
+            if (res && res.ok) {
+              dashboardCategoryData = (await res.json()).data;
+            } else {
+              error = `Failed to fetch dashboard data for category "${categoryKey}": ${res?.statusText || "Error"}`;
+              logError(error);
+            }
+          } catch (err) {
+            error = `Dashboard category fetch error for "${categoryKey}"`;
+            logError(error, err);
           }
-          
-        } catch (err) {
-          error = `Dashboard category fetch error for "${categoryKey}"`;
-          logError(error, err);
         }
       }
 
       if (isLoading) return <LoadingDashboard />;
-      // if (error) return <ErrorDashboard error={error} />;
       return (
         <DashboardComponent
-          {...(dashboardCategoryData ? { ...dashboardCategoryData, slug: companyId } : {})}
+          {...(dashboardCategoryData ? { ...dashboardCategoryData, slug: companyId } : { slug: companyId })}
         />
       );
     }

@@ -182,14 +182,24 @@ async function getStoreInventoryProducts(companyId, page = 1, limit = 50) {
             const companyStock = p.inventoryItems.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
             const agentStock = p.inventoryItems.reduce((sum, inv) => sum +
                 inv.AgentInventory.reduce((aSum, ai) => aSum + (ai.quantity || 0), 0), 0);
-            return {
+            const categoryDisplayName = overrideCat?.displayName ||
+                p.productCategory?.name ||
+                p.category ||
+                "General";
+            const categoryObj = {
+                id: overrideCat?.id || p.productCategoryId || "",
+                displayName: categoryDisplayName,
+                name: categoryDisplayName,
+                ...(overrideCat || {}),
+            };
+            const productItem = {
                 id: p.id,
                 companyId: p.companyId,
                 name: p.name,
                 description: p.description || "",
                 longDescription: p.longDescription || "",
                 tags: p.tags,
-                category: overrideCat,
+                category: categoryObj,
                 productCategoryId: p.productCategoryId || "",
                 subCategory: p.subCategory || null,
                 subCategoryName: p.subCategoryName || "",
@@ -236,10 +246,16 @@ async function getStoreInventoryProducts(companyId, page = 1, limit = 50) {
                 vin: p.vin || "",
                 logbookStatus: p.logbookStatus || "",
                 serviceHistory: p.serviceHistory || "",
+            };
+            return {
+                ...productItem,
                 inventoryIds,
                 companyStock,
                 agentStock,
                 totalStock: companyStock + agentStock,
+                sales: 0,
+                category: categoryObj,
+                productItem,
                 createdAt: p.createdAt?.toISOString() || new Date().toISOString(),
                 updatedAt: p.updatedAt?.toISOString() || new Date().toISOString(),
             };

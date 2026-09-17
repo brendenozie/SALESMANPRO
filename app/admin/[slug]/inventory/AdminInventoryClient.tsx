@@ -135,7 +135,7 @@ export default function AdminInventoryClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: product.productItem.id || product.id,
+            id: product.productItem?.id || product.id,
             companyId,
             name: product.name,
             publishToMarketplace: true,
@@ -265,11 +265,11 @@ export default function AdminInventoryClient({
                 product={product}
                 isSelected={selectedIds.has(product.id)}
                 onToggleSelect={() => toggleSelect(product.id)}
-                onEdit={() => openModal(product.productItem, setShowEditProductModal)}
-                onRestock={() => openModal(product.productItem, setShowRestockProductModal)}
-                onAssign={() => openModal(product.productItem, setShowAssignProductModal)}
-                onReturn={() => openModal(product.productItem, setShowReturnProductModal)}
-                onMarket={() => openModal(product.productItem, setShowAddToMarketProductModal)}
+                onEdit={() => openModal(product.productItem || (product as any), setShowEditProductModal)}
+                onRestock={() => openModal(product.productItem || (product as any), setShowRestockProductModal)}
+                onAssign={() => openModal(product.productItem || (product as any), setShowAssignProductModal)}
+                onReturn={() => openModal(product.productItem || (product as any), setShowReturnProductModal)}
+                onMarket={() => openModal(product.productItem || (product as any), setShowAddToMarketProductModal)}
               />
             ))}
           </div>
@@ -370,7 +370,7 @@ function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onRestock,
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">
-              {product.category?.displayName}
+              {product.category?.displayName || (product as any).category?.name || "General"}
             </span>
             {isMarketplaceActive ? (
               <span className="text-[10px] font-extrabold uppercase text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -386,7 +386,7 @@ function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onRestock,
             {product.name}
           </h3>
           <p className="text-xs text-gray-400 font-medium">
-            Price: KES {product.productItem?.sellingPrice || 0} • Cost: KES {product.productItem?.costPrice || 0}
+            Price: KES {product.productItem?.sellingPrice || (product as any).sellingPrice || (product as any).salesPrice || 0} • Cost: KES {product.productItem?.costPrice || (product as any).costPrice || 0}
           </p>
         </div>
         <button onClick={onEdit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">

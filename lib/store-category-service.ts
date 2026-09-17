@@ -196,14 +196,27 @@ export async function getStoreInventoryProducts(
         0
       );
 
-      return {
+      const categoryDisplayName =
+        overrideCat?.displayName ||
+        p.productCategory?.name ||
+        (p as any).category ||
+        "General";
+
+      const categoryObj = {
+        id: overrideCat?.id || p.productCategoryId || "",
+        displayName: categoryDisplayName,
+        name: categoryDisplayName,
+        ...(overrideCat || {}),
+      };
+
+      const productItem = {
         id: p.id,
         companyId: p.companyId!,
         name: p.name,
         description: p.description || "",
         longDescription: p.longDescription || "",
         tags: p.tags,
-        category: overrideCat,
+        category: categoryObj,
         productCategoryId: p.productCategoryId || "",
         subCategory: p.subCategory || null,
         subCategoryName: p.subCategoryName || "",
@@ -250,10 +263,17 @@ export async function getStoreInventoryProducts(
         vin: p.vin || "",
         logbookStatus: p.logbookStatus || "",
         serviceHistory: p.serviceHistory || "",
+      };
+
+      return {
+        ...productItem,
         inventoryIds,
         companyStock,
         agentStock,
         totalStock: companyStock + agentStock,
+        sales: 0,
+        category: categoryObj,
+        productItem,
         createdAt: p.createdAt?.toISOString() || new Date().toISOString(),
         updatedAt: p.updatedAt?.toISOString() || new Date().toISOString(),
       };
