@@ -22,7 +22,7 @@ const TABS: { label: string; value: FeedListingType | null }[] = [
 export const GhubaFeedFilter: React.FC<GhubaFeedFilterProps> = ({
   currentType,
   onSelectType,
-  backUrl = "/site/ghuba",
+  backUrl = "/",
 }) => {
   return (
     <header className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-4 pt-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
@@ -59,7 +59,7 @@ export const GhubaFeedFilter: React.FC<GhubaFeedFilterProps> = ({
 
       {/* Ghuba Live / Reels Badge */}
       <div className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-1 text-[11px] font-bold text-amber-400 backdrop-blur-md">
-        <HiSparkles className="h-3.5 w-3.5" />
+        {/* <HiSparkles className="h-3.5 w-3.5" /> */}
         <span className="hidden sm:inline">GHUBA REELS</span>
       </div>
     </header>

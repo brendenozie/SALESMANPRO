@@ -55,6 +55,13 @@ export default async function middleware(
   const { pathname } = url;
   const userAgent = request.headers.get("user-agent") || "";
 
+  const existingRequestId = request.headers.get("x-request-id");
+  const requestId =
+    existingRequestId ||
+    (typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g, "").slice(0, 16)
+      : Math.random().toString(36).slice(2, 14));
+
   const isDesktop =
     userAgent.includes("SalesmanProDesktop") ||
     userAgent.includes("SalesmanProAndroid");
@@ -67,6 +74,7 @@ export default async function middleware(
 
   if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
     const res = NextResponse.next();
+    res.headers.set("x-request-id", requestId);
     await attachAuthContextFromRequest(request, res);
     return res;
   }
@@ -75,11 +83,15 @@ export default async function middleware(
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-requested-host", host);
     requestHeaders.set("x-forwarded-proto", proto);
-    return NextResponse.next({
+    requestHeaders.set("x-request-id", requestId);
+    requestHeaders.set("x-request-start", Date.now().toString());
+    const res = NextResponse.next({
       request: {
         headers: requestHeaders,
       },
     });
+    res.headers.set("x-request-id", requestId);
+    return res;
   }
 
   if (host.startsWith("www.")) {

@@ -11023,4 +11023,242 @@ model GhubaDailyMetric {
   @@index([date])
 }
 
+// ==============================================================================
+// SUPERADMIN OBSERVABILITY & INFRASTRUCTURE MONITORING SUBSYSTEM
+// ==============================================================================
 
+enum MonitoringServerRole {
+  ALL_IN_ONE
+  APPLICATION
+  AUTH
+  WORKER
+  DATABASE
+  REDIS
+  MEDIA
+  SCHEDULER
+  LOAD_BALANCER
+  MONITORING
+}
+
+enum MonitoringServerStatus {
+  ONLINE
+  WARNING
+  DEGRADED
+  OFFLINE
+  DRAINING
+  MAINTENANCE
+}
+
+enum MonitoringErrorStatus {
+  NEW
+  ACKNOWLEDGED
+  INVESTIGATING
+  RESOLVED
+  IGNORED
+}
+
+enum MonitoringAlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum MonitoringAlertState {
+  OK
+  TRIGGERED
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum MonitoringIncidentStatus {
+  INVESTIGATING
+  IDENTIFIED
+  MONITORING
+  RESOLVED
+}
+
+model MonitoringServer {
+  id              String                 @id @default(auto()) @map("_id") @db.ObjectId
+  serverId        String                 @unique // e.g., "server-01", "node-1"
+  name            String                 // Human-readable name
+  hostname        String
+  ipAddress       String?
+  environment     String                 @default("production") // production, staging, dev
+  region          String                 @default("local-vps")
+  role            MonitoringServerRole   @default(ALL_IN_ONE)
+  status          MonitoringServerStatus @default(ONLINE)
+  version         String?                // App version / git commit
+  uptimeSeconds   Int                    @default(0)
+  cpuUsagePercent Float                  @default(0)
+  memoryTotalBytes Float                 @default(0)
+  memoryUsedBytes Float                  @default(0)
+  swapTotalBytes  Float                  @default(0)
+  swapUsedBytes   Float                  @default(0)
+  diskTotalBytes  Float                  @default(0)
+  diskUsedBytes   Float                  @default(0)
+  loadAvg1m       Float                  @default(0)
+  loadAvg5m       Float                  @default(0)
+  loadAvg15m      Float                  @default(0)
+  eventLoopLagMs  Float                  @default(0)
+  heapUsedBytes   Float                  @default(0)
+  pm2ProcessCount Int                    @default(0)
+  activeServices  String[]               @default([]) // ["nginx", "next.js", "mongodb", "redis", "workers"]
+  metadata        Json?
+  lastHeartbeatAt DateTime               @default(now())
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  metrics         MonitoringMetric[]
+  aggregates      MonitoringMetricAggregate[]
+
+  @@index([status])
+  @@index([lastHeartbeatAt])
+  @@index([role])
+}
+
+model MonitoringMetric {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  serverId    String   // Matches MonitoringServer.serverId
+  category    String   // "system", "traffic", "database", "redis", "worker", "auth", "payment"
+  metricType  String   // "cpu_percent", "memory_used", "requests_per_min", "p95_latency", "error_rate"
+  value       Float
+  unit        String?  // "percent", "bytes", "ms", "count", "rpm"
+  tags        Json?
+  timestamp   DateTime @default(now())
+
+  server      MonitoringServer? @relation(fields: [serverId], references: [serverId])
+
+  @@index([serverId, metricType, timestamp])
+  @@index([category, timestamp])
+  @@index([timestamp])
+}
+
+model MonitoringMetricAggregate {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  serverId    String   @default("global") // or specific serverId
+  metricType  String   // "requests", "duration_ms", "errors", "cpu", "memory"
+  period      String   // "minute", "hour", "day"
+  bucketStart DateTime
+  count       Int      @default(0)
+  avg         Float    @default(0)
+  min         Float    @default(0)
+  max         Float    @default(0)
+  p95         Float    @default(0)
+  p99         Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  server      MonitoringServer? @relation(fields: [serverId], references: [serverId])
+
+  @@unique([serverId, metricType, period, bucketStart])
+  @@index([metricType, period, bucketStart])
+}
+
+model MonitoringRequest {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  requestId          String   @unique
+  timestamp          DateTime @default(now())
+  method             String   // GET, POST, etc.
+  route              String   // Normalized route e.g. "/api/shop/orders"
+  rawPath            String?  // Exact path
+  hostname           String?  // "salesmanpro.site", "store.salesmanpro.site", etc.
+  tenantId           String?
+  statusCode         Int
+  durationMs         Float
+  authDurationMs     Float?
+  dbDurationMs       Float?
+  externalDurationMs Float?
+  isSlow             Boolean  @default(false)
+  isError            Boolean  @default(false)
+  errorMessage       String?
+  errorStack         String?
+  userRole           String?
+  ipHash             String?  // Anonymized/hashed client IP
+  userAgentCategory  String?  // "desktop", "mobile", "bot", "crawler"
+  serverId           String   @default("server-01")
+
+  @@index([isSlow, timestamp])
+  @@index([isError, timestamp])
+  @@index([route, timestamp])
+  @@index([tenantId, timestamp])
+  @@index([timestamp])
+}
+
+model MonitoringError {
+  id                 String                  @id @default(auto()) @map("_id") @db.ObjectId
+  fingerprint        String                  @unique // SHA-256 hash of error signature
+  title              String
+  message            String
+  errorType          String                  // "TypeError", "PrismaClientKnownRequestError", "RedisError", "OAuthError", etc.
+  status             MonitoringErrorStatus   @default(NEW)
+  severity           MonitoringAlertSeverity @default(WARNING)
+  stack              String?
+  firstSeenAt        DateTime                @default(now())
+  lastSeenAt         DateTime                @default(now())
+  count              Int                     @default(1)
+  affectedRoutes     String[]                @default([])
+  affectedTenants    String[]                @default([])
+  sampleRequestIds   String[]                @default([])
+  lastServerId       String?
+  resolvedAt         DateTime?
+  resolvedBy         String?
+  notes              String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  @@index([status, lastSeenAt])
+  @@index([severity, lastSeenAt])
+}
+
+model MonitoringAlert {
+  id                 String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  description        String?
+  metric             String                  // "cpu_percent", "memory_percent", "error_rate", "p95_latency", "db_down", "redis_down", "queue_backlog", "payment_failures"
+  condition          String                  // "gt", "gte", "lt", "lte", "eq", "missing"
+  threshold          Float
+  durationSeconds    Int                     @default(60) // Must persist for X seconds
+  severity           MonitoringAlertSeverity @default(WARNING)
+  enabled            Boolean                 @default(true)
+  cooldownMinutes    Int                     @default(15)
+  state              MonitoringAlertState    @default(OK)
+  lastTriggeredAt    DateTime?
+  lastResolvedAt     DateTime?
+  lastValue          Float?
+  acknowledgedAt     DateTime?
+  acknowledgedBy     String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  @@index([enabled, state])
+}
+
+model MonitoringIncident {
+  id                 String                   @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String
+  severity           MonitoringAlertSeverity  @default(WARNING)
+  status             MonitoringIncidentStatus @default(INVESTIGATING)
+  startedAt          DateTime                 @default(now())
+  resolvedAt         DateTime?
+  affectedServices   String[]                 @default([])
+  relatedAlertIds    String[]                 @default([])
+  relatedErrorFps    String[]                 @default([])
+  timeline           Json[]                   @default([]) // [{ time: ISO, message: string, author: string }]
+  notes              String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@index([status, startedAt])
+}
+
+model MonitoringExternalServiceCheck {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  serviceName    String   // "google_oauth", "mpesa", "paystack", "stripe", "paypal", "whatsapp", "openai", "groq", "s3"
+  isAvailable    Boolean  @default(true)
+  latencyMs      Float    @default(0)
+  statusCode     Int?
+  errorMessage   String?
+  lastCheckedAt  DateTime @default(now())
+
+  @@unique([serviceName])
+}

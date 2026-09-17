@@ -17,7 +17,7 @@ interface GhubaFeedContainerProps {
 export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   initialItems = [],
   initialCursor = null,
-  backUrl = "/site/ghuba",
+  backUrl = "/",
 }) => {
   const [items, setItems] = useState<GhubaFeedItemType[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);

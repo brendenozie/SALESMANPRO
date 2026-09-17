@@ -750,6 +750,39 @@ export const getCategoryMenus = (
             label: "seo",
             href: "/super-admin/seo",
             minTier: "Ghuba Pro",
+          },
+          {
+            label: "Observability",
+            href: "/super-admin/observability",
+            // icon: UsersIcon,
+            minTier: "Ghuba Pro",
+            // subItems: [
+            //   {
+            //     label: "Overview",
+            //     href: "/super-admin/observability",
+            //     minTier: "Ghuba Pro",
+            //   },
+            //   {
+            //     label: "Database",
+            //     href: "/super-admin/observability/database",
+            //     minTier: "Ghuba Pro",
+            //   },
+            //   {
+            //     label: "Storage",
+            //     href: "/super-admin/observability/storage",
+            //     minTier: "Ghuba Pro",
+            //   },
+            //   {
+            //     label: "Queues",
+            //     href: "/super-admin/observability/queues",
+            //     minTier: "Ghuba Pro",
+            //   },
+            //   {
+            //     label: "Alerts",
+            //     href: "/super-admin/observability/alerts",
+            //     minTier: "Ghuba Pro",
+            //   },
+            // ],  
           }
         ],
       },

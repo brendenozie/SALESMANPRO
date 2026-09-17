@@ -317,9 +317,6 @@ export default function ProductList() {
   return (
     <div className="mx-auto px-2.5 sm:px-4 lg:px-8 py-4 sm:py-8 bg-white dark:bg-gray-950 min-h-screen">
       <div className="mb-6 sm:mb-8 text-center space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/80 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] sm:text-xs font-black uppercase tracking-wider">
-          <SparklesIcon className="w-3.5 h-3.5" /> Curated Marketplace
-        </div>
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           Explore Our Collection
         </h2>
