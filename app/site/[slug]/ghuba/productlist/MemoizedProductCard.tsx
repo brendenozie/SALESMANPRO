@@ -25,7 +25,7 @@ const MemoizedProductCard = memo(({ product, isPriority }: any) => {
   }, [addToCart, product]);
 
   return (
-    <div className="group transform transition-all duration-300 hover:-translate-y-1 h-full">
+    <div className="h-full perf-card-contain">
       <GhubaProductCard 
         product={product} 
         isLiked={isLiked}
@@ -35,7 +35,13 @@ const MemoizedProductCard = memo(({ product, isPriority }: any) => {
       />
     </div>
   );
-}, (prevProps, nextProps) => prevProps.product.id === nextProps.product.id);
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.product?.id === nextProps.product?.id &&
+    prevProps.product?.updatedAt === nextProps.product?.updatedAt &&
+    prevProps.isPriority === nextProps.isPriority
+  );
+});
 
 MemoizedProductCard.displayName = "MemoizedProductCard";
 export default MemoizedProductCard;

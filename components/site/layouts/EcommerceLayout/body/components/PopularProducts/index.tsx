@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+import Link from 'next/link';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
 import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -72,12 +73,12 @@ export default function PopularProducts({ id }: { id: string }) {
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
             Weekly <span className="text-indigo-600 dark:text-indigo-400">Specials</span>
           </h2>
-          <button 
-            onClick={() => window.location.href = `/ecommerce/products?flag=isOnOffer`}
+          <Link 
+            href="/ecommerce/products?flag=isOnOffer"
             className="flex items-center text-gray-600 dark:text-gray-400 font-bold text-sm sm:text-base hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             Explore All <ArrowRightCircleIcon className="w-5 h-5 ml-1.5" />
-          </button>
+          </Link>
         </div>
 
         {/* Mobile Carousel */}

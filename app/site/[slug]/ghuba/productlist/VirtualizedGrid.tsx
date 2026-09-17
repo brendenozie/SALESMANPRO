@@ -20,19 +20,24 @@ export default function VirtualizedGrid({
 }: any) {
   const [columns, setColumns] = useState(4);
   const [mounted, setMounted] = useState(false);
+  const [scrollMargin, setScrollMargin] = useState(0);
   const parentRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
-    const updateColumns = () => {
+    const updateDimensions = () => {
       if (window.innerWidth < 640) setColumns(2);
       else if (window.innerWidth < 1024) setColumns(3);
       else setColumns(4);
+
+      if (parentRef.current) {
+        setScrollMargin(parentRef.current.offsetTop);
+      }
     };
-    updateColumns();
-    window.addEventListener("resize", updateColumns);
-    return () => window.removeEventListener("resize", updateColumns);
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
   // Save scroll position on scroll or before page unload
@@ -55,8 +60,8 @@ export default function VirtualizedGrid({
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => (typeof window !== 'undefined' && window.innerWidth < 640 ? 320 : 420),
-    overscan: 5,
-    scrollMargin: parentRef.current?.offsetTop ?? 0,
+    overscan: 8,
+    scrollMargin,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
@@ -118,7 +123,6 @@ export default function VirtualizedGrid({
       >
         {virtualItems.map((virtualRow) => {
           const rowProducts = rows[virtualRow.index];
-          const scrollMargin = parentRef.current?.offsetTop ?? 0;
           return (
             <div
               key={virtualRow.key.toString()}

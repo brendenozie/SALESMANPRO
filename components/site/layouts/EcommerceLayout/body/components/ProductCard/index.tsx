@@ -21,7 +21,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const [showQuickView, setShowQuickView] = useState(false);
@@ -72,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              loader={({ src }) => src}
+              loading="lazy"
               priority={false}
             />
           </Link>
@@ -258,5 +258,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     </>
   );
 };
+
+const ProductCard = React.memo(ProductCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.product.updatedAt === nextProps.product.updatedAt &&
+    prevProps.product.finalPrice === nextProps.product.finalPrice &&
+    prevProps.product.sellingPrice === nextProps.product.sellingPrice
+  );
+});
 
 export default ProductCard;

@@ -26,7 +26,7 @@ export function ProductGrid({
         {filteredProducts && filteredProducts.length > 0 ? (
           <motion.div
             key="products"
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full [contain:layout_style]"
             initial="hidden"
             animate="visible"
             variants={{
@@ -40,7 +40,6 @@ export function ProductGrid({
             {filteredProducts.map((product) => (
               <motion.div
                 key={product.id}
-                layout
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -49,8 +48,10 @@ export function ProductGrid({
               >
                 <div className="p-6 flex flex-col items-center justify-center shadow-lg rounded-2xl bg-white dark:bg-gray-800 transition-all duration-300 transform group-hover:-translate-y-1 group-hover:shadow-xl">
                   <img
-                    src={product.images[0].url || ""}
+                    src={product.images?.[0]?.url || ""}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="h-36 object-contain mb-4"
                   />
                   <div className="text-center mt-2">

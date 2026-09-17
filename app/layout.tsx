@@ -5,6 +5,7 @@ import "react-clock/dist/Clock.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./globals.css";
+import "./globals-perf.css";
 
 import { Suspense } from "react";
 import Providers from "./providers";

@@ -53,6 +53,12 @@ function getOrCreateObserver(): IntersectionObserver | null {
                   channel: data.context.channel,
                   sourceSection: data.context.sourceSection || "catalog_grid",
                 });
+                data.dwellTimer = null;
+                // Unobserve since impression has been tracked to eliminate observer overhead on future scrolls
+                if (sharedObserver) {
+                  sharedObserver.unobserve(entry.target);
+                }
+                observedElements.delete(entry.target);
               }, 1000);
             }
           } else {
@@ -73,15 +79,48 @@ function getOrCreateObserver(): IntersectionObserver | null {
 }
 
 export function useProductTelemetry() {
+  const currentObservedNode = useRef<HTMLElement | null>(null);
+
+  // Ensure element is unobserved on unmount
+  useEffect(() => {
+    return () => {
+      const node = currentObservedNode.current;
+      if (node) {
+        if (sharedObserver) {
+          sharedObserver.unobserve(node);
+        }
+        const data = observedElements.get(node);
+        if (data?.dwellTimer) {
+          clearTimeout(data.dwellTimer);
+        }
+        observedElements.delete(node);
+        currentObservedNode.current = null;
+      }
+    };
+  }, []);
+
   /**
-   * Ref callback to observe a product card's impression.
+   * Ref callback to observe a product card's impression with automatic unobserve cleanup.
    */
   const observeImpression = useCallback(
     (context: ProductTelemetryContext) => (node: HTMLElement | null) => {
       const observer = getOrCreateObserver();
-      if (!observer) return;
 
-      if (node) {
+      // If the node changed or unmounted, unobserve previous node
+      if (currentObservedNode.current && currentObservedNode.current !== node) {
+        if (observer) {
+          observer.unobserve(currentObservedNode.current);
+        }
+        const prevData = observedElements.get(currentObservedNode.current);
+        if (prevData?.dwellTimer) {
+          clearTimeout(prevData.dwellTimer);
+        }
+        observedElements.delete(currentObservedNode.current);
+      }
+
+      currentObservedNode.current = node;
+
+      if (node && observer) {
         observedElements.set(node, { context });
         observer.observe(node);
       }

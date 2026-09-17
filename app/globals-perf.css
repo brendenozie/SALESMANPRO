@@ -1,0 +1,36 @@
+/* ==========================================================================
+   SalesmanPro & Ghuba Mobile Performance Optimization Layer
+   ========================================================================== */
+
+/* 1. Content Visibility & Containment for Product Grids & Cards */
+.perf-card-contain {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 380px;
+}
+
+/* 2. Hardware-accelerated smooth scrolling on mobile viewports */
+@media (max-width: 768px) {
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+
+  /* Reduce paint jank during rapid touch scroll */
+  .touch-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* 3. Image Rendering Optimization */
+img, picture, svg {
+  text-rendering: optimizeLegibility;
+}
+
+/* 4. GPU composite isolation for active animated elements */
+.perf-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
