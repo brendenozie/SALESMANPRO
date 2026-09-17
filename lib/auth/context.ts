@@ -101,6 +101,11 @@ export async function isAllowedReturnUrl(raw: string | null | undefined): Promis
   const host = normalizeHost(url.hostname);
   if (isStaticallyAllowedReturnHost(host)) return true;
 
+  // In Edge runtime (e.g. Next.js middleware), TCP database & Redis sockets are unsupported
+  if (process.env.NEXT_RUNTIME === "edge") {
+    return false;
+  }
+
   try {
     const { fetchWithCache } = await import("../cache");
     const cacheKey = `allowed_return_host:${host}`;

@@ -167,6 +167,11 @@ module.exports = {
   },
 
   webpack: (config, { isServer }) => {
+    // In CI environments, disable Webpack disk packfile cache to prevent disk exhaustion (ENOSPC)
+    if (process.env.CI) {
+      config.cache = false;
+    }
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
