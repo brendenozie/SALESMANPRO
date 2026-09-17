@@ -74,9 +74,13 @@ function ProductListContent() {
     if (filters.sort) params.set('sort', filters.sort);
 
     startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      const paramsString = params.toString();
+      const newUrl = paramsString ? `${pathname}?${paramsString}` : pathname;
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", newUrl);
+      }
     });
-  }, [filters, deferredSearchTerm, pathname, router]);
+  }, [filters, deferredSearchTerm, pathname]);
 
   const {
     data,
@@ -145,25 +149,17 @@ function ProductListContent() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 items-start">
-      {/* Desktop Filter Sidebar */}
-      <aside className="hidden md:block md:sticky md:top-24 z-10 self-start">
+      {/* Filter Sidebar: Desktop Sticky Sidebar & Mobile Bottom Sheet Drawer */}
+      <div className="md:sticky md:top-24 z-10 self-start">
         <CategoryAwareFilterDrawer
           filters={filters}
           onFilterChange={handleFilterUpdate}
           category={filters.category?.[0]}
           scope="GHUBA"
+          isMobileDrawerOpen={isMobileFilterOpen}
+          onCloseMobileDrawer={() => setIsMobileFilterOpen(false)}
         />
-      </aside>
-
-      {/* Mobile Bottom Sheet Drawer */}
-      <CategoryAwareFilterDrawer
-        filters={filters}
-        onFilterChange={handleFilterUpdate}
-        category={filters.category?.[0]}
-        scope="GHUBA"
-        isMobileDrawerOpen={isMobileFilterOpen}
-        onCloseMobileDrawer={() => setIsMobileFilterOpen(false)}
-      />
+      </div>
 
       <main className="md:col-span-3 min-h-[50vh] flex flex-col gap-4">
         {/* Top Control & Active Filters Bar */}

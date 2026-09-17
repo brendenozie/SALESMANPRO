@@ -60,6 +60,28 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   // pageData.testimonials is already loaded server-side in pageDataInclude.
   const activeTestimonials = testimonials?.length ? testimonials : null;
 
+  // ⚙️ Pre-seed product feeds with server-provided marketplace listings for instant initial render
+  const initialFeatured = useMemo(
+    () => {
+      const items = (marketplaceListings || []).filter((item) => item.isFeatured);
+      return (items.length ? items : marketplaceListings || []).slice(0, 8);
+    },
+    [marketplaceListings]
+  );
+
+  const initialOffers = useMemo(
+    () => {
+      const items = (marketplaceListings || []).filter((item) => item.discount || (item.sellingPrice && item.finalPrice && item.sellingPrice > item.finalPrice));
+      return (items.length ? items : marketplaceListings || []).slice(0, 8);
+    },
+    [marketplaceListings]
+  );
+
+  const initialTrending = useMemo(
+    () => (marketplaceListings || []).slice(0, 8),
+    [marketplaceListings]
+  );
+
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
     () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),
@@ -89,7 +111,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     if (key === 'popular-products' || key.includes('popular-products') || key.includes('dynamicpopularproducts')) {
       return (
       <div id="section-popular-products" data-editor-section="popular-products" data-editor-component="DynamicPopularProducts" key={sec.id || idx}>
-        <DynamicPopularProducts id={id} />
+        <DynamicPopularProducts id={id} initialProducts={initialFeatured} />
       </div>
       );
     }
@@ -105,7 +127,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     if (key === 'trending' || key.includes('trending') || key.includes('dynamictrending')) {
       return (
       <div id="section-trending" data-editor-section="trending" data-editor-component="DynamicTrending" key={sec.id || idx}>
-        <DynamicTrending id={id} />
+        <DynamicTrending id={id} initialProducts={initialTrending} />
       </div>
       );
     }
@@ -113,7 +135,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     if (key === 'daily-best-sells' || key.includes('daily-best-sells') || key.includes('dynamicdailybestsells')) {
       return (
       <div id="section-daily-best-sells" data-editor-section="daily-best-sells" data-editor-component="DynamicDailyBestSells" key={sec.id || idx}>
-        <DynamicDailyBestSells id={id} />
+        <DynamicDailyBestSells id={id} initialProducts={initialOffers} />
       </div>
       );
     }

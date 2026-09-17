@@ -33,12 +33,13 @@ const NextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-export default function DailyBestSells({ id }: { id: string }) {
+export default function DailyBestSells({ id, initialProducts }: { id: string; initialProducts?: any[] }) {
   const url = `/api/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
   const fetcher = createCachedFetcher(cacheKey);
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: initialProducts && initialProducts.length > 0 ? { data: initialProducts } : undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
   });

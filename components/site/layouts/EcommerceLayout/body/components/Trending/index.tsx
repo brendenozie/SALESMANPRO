@@ -33,12 +33,13 @@ const NextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-export default function Trending({ id }: { id: string }) {
+export default function Trending({ id, initialProducts }: { id: string; initialProducts?: any[] }) {
   const url = `/api/site/productsByFlag?companyId=${id}&flag=isNewArrival&limit=8`;
   const cacheKey = `products-${id}-isNewArrival`;
   const fetcher = createCachedFetcher(cacheKey);
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: initialProducts && initialProducts.length > 0 ? { data: initialProducts } : undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
   });

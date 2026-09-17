@@ -47,17 +47,7 @@ import { useStateContext } from "@/contexts/ContextProvider";
 import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
 import { MarketListingForm } from "@/types/typings";
 
-const DynamicGhubaProductCard = dynamic(
-  () => import("@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard"),
-  {
-    loading: () => (
-      <div className="py-20 bg-gray-50 dark:bg-gray-900">
-        <SkeletonGrid count={4} />
-      </div>
-    ),
-    ssr: false,
-  }
-);
+import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
 
 const ProductCommentsSection = dynamic(
   () => import("@/components/ghuba/comments/ProductCommentsSection"),
@@ -976,7 +966,7 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
             <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-8">Related Listings</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {related.slice(0, 4).map((item) => (
-                <DynamicGhubaProductCard
+                <GhubaProductCard
                   key={item._id || item.id}
                   product={item}
                   toggleLike={toggleLike}

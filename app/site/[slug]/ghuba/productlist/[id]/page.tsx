@@ -128,6 +128,58 @@ const getCachedListing = (listingId: string) =>
     { ttlSeconds: 300, swrSeconds: 600 }
   );
 
+/**
+ * Cached similar listings fetcher with SWR to eliminate sequential waterfalls
+ */
+const getCachedSimilarListings = (categoryId?: string | null, excludeId?: string) =>
+  fetchWithCache(
+    `ghuba:similar:${categoryId || "all"}:${excludeId}`,
+    async () => {
+      let items = await prisma.marketplaceListings.findMany({
+        where: {
+          ...listingWhere,
+          productCategoryId: categoryId || undefined,
+          id: { not: excludeId },
+        },
+        include: {
+          product: { select: publicProductSelect },
+          company: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true,
+            },
+          },
+        },
+        take: 4,
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (items.length === 0 && excludeId) {
+        items = await prisma.marketplaceListings.findMany({
+          where: { ...listingWhere, id: { not: excludeId } },
+          include: {
+            product: { select: publicProductSelect },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logoUrl: true,
+              },
+            },
+          },
+          take: 4,
+          orderBy: { createdAt: "desc" },
+        });
+      }
+
+      return items;
+    },
+    { ttlSeconds: 300, swrSeconds: 600 }
+  );
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const listingId = extractListingId(id);
@@ -195,46 +247,9 @@ export default async function Page({ params }: PageProps) {
 
   const serializedListing = serialize(listing);
 
-  // Fetch similar listings with selective public projection
-  let similar = await prisma.marketplaceListings.findMany({
-    where: {
-      ...listingWhere,
-      productCategoryId: listing.productCategoryId || undefined,
-      id: { not: listing.id },
-    },
-    include: {
-      product: { select: publicProductSelect },
-      company: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          logoUrl: true,
-        },
-      },
-    },
-    take: 4,
-  });
-
-  if (similar.length === 0) {
-    similar = await prisma.marketplaceListings.findMany({
-      where: { ...listingWhere, id: { not: listingId } },
-      include: {
-        product: { select: publicProductSelect },
-        company: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logoUrl: true,
-          },
-        },
-      },
-      take: 4,
-    });
-  }
-
-  const serializedSimilar = similar.map(serialize);
+  // Fetch similar listings via cache (parallel-ready, no un-cached waterfalls)
+  const similar = await getCachedSimilarListings(listing.productCategoryId, listing.id);
+  const serializedSimilar = (similar || []).map(serialize);
 
   const isVehicle = Boolean(
     listing.make ||

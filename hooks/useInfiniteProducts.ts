@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 
 const getApiBaseUrl = () => {
   if (typeof window !== "undefined") return "/api";
@@ -90,6 +90,7 @@ export function useInfiniteProducts({
     getNextPageParam: (lastPage) => {
       return lastPage?.meta?.nextCursor ?? undefined;
     },
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 3,
     gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,

@@ -33,12 +33,13 @@ const NextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
-export default function PopularProducts({ id }: { id: string }) {
+export default function PopularProducts({ id, initialProducts }: { id: string; initialProducts?: any[] }) {
   const url = `/api/site/productsByFlag?companyId=${id}&flag=isFeatured&limit=8`;
   const cacheKey = `products-${id}-isFeatured`;
   const fetcher = createCachedFetcher(cacheKey);
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: initialProducts && initialProducts.length > 0 ? { data: initialProducts } : undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
   });

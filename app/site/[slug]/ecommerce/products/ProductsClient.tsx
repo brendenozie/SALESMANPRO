@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback, useTransition } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useTransition, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -47,6 +47,7 @@ export default function ProductsClient({
   const [totalCount, setTotalCount] = useState<number>(initialListings?.length || 0);
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const isInitialMount = useRef(true);
 
   const { restoreScrollPosition } = useScrollPositionPersistence({
     storageKey: `store_${slug}_products_scroll`,
@@ -67,9 +68,13 @@ export default function ProductsClient({
     if (sortBy && sortBy !== "newest") params.set("sort", sortBy);
 
     startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      const paramsString = params.toString();
+      const newUrl = paramsString ? `${pathname}?${paramsString}` : pathname;
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", newUrl);
+      }
     });
-  }, [searchQuery, selectedCategory, sortBy, pathname, router]);
+  }, [searchQuery, selectedCategory, sortBy, pathname]);
 
   // Server-side search execution against tenant endpoint
   const executeSearch = useCallback(
@@ -99,8 +104,13 @@ export default function ProductsClient({
     [slug]
   );
 
-  // Debounced search trigger when query, category, or sort changes
+  // Debounced search trigger when query, category, or sort changes (skips initial mount to preserve SSR data)
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
       executeSearch(searchQuery, selectedCategory, sortBy);
     }, 300);
