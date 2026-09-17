@@ -57,9 +57,12 @@ export default function CategoryAwareFilterDrawer({
 }: CategoryAwareFilterDrawerProps) {
   const [facetData, setFacetData] = useState<AvailableFiltersResponseDTO | null>(null);
   const [loading, setLoading] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    price: true,
+    category: true,
+    subCategory: true,
     brand: true,
+    price: true,
     condition: true,
     categorySpecific: true,
   });
@@ -77,17 +80,34 @@ export default function CategoryAwareFilterDrawer({
     setLocalMaxPrice(filters.maxPrice !== undefined ? String(filters.maxPrice) : "");
   }, [filters.minPrice, filters.maxPrice]);
 
+  // Stable category key to avoid redundant fetch cycles
+  const categoryKey = useMemo(() => {
+    const cats =
+      filters.category && filters.category.length > 0
+        ? filters.category
+        : category
+        ? [category]
+        : [];
+    return [...cats].sort().join(",");
+  }, [filters.category, category]);
+
   // Fetch dynamic available filter metadata for current category & scope
   useEffect(() => {
     const fetchFacets = async () => {
       setLoading(true);
       try {
-        const cat = category || (filters.category?.[0] ?? "");
         const params = new URLSearchParams({
           scope,
-          ...(cat && { category: cat }),
           ...(companyId && { companyId }),
         });
+
+        const cats =
+          filters.category && filters.category.length > 0
+            ? filters.category
+            : category
+            ? [category]
+            : [];
+        cats.forEach((c: string) => params.append("category", c));
 
         const res = await fetch(`/api/search/filters?${params}`);
         if (res.ok) {
@@ -102,13 +122,56 @@ export default function CategoryAwareFilterDrawer({
     };
 
     fetchFacets();
-  }, [category, filters.category, scope, companyId]);
+  }, [categoryKey, scope, companyId]);
+
+  const categoryOptions = useMemo(() => {
+    return (
+      facetData?.categories ||
+      facetData?.genericFilters?.find((g) => g.key === "category")?.options ||
+      []
+    );
+  }, [facetData]);
+
+  const filteredCategoryOptions = useMemo(() => {
+    if (!categorySearch.trim()) return categoryOptions;
+    const term = categorySearch.toLowerCase().trim();
+    return categoryOptions.filter((c) => c.label.toLowerCase().includes(term));
+  }, [categoryOptions, categorySearch]);
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const handleCategoryToggle = (categoryValue: string) => {
+    const current = (filters.category || []) as string[];
+    const exists = current.includes(categoryValue);
+    const updated = exists
+      ? current.filter((c) => c !== categoryValue)
+      : [...current, categoryValue];
+
+    // Reset subCategory and category-specific specs on category change
+    onFilterChange({
+      ...filters,
+      category: updated,
+      subCategory: [],
+      make: [],
+      model: [],
+      propertyType: [],
+      bedrooms: [],
+      bathrooms: [],
+      storage: [],
+      ram: [],
+      size: [],
+      gender: [],
+    });
+  };
+
   const handleCheckboxChange = (groupKey: string, value: string) => {
+    if (groupKey === "category") {
+      handleCategoryToggle(value);
+      return;
+    }
+
     const current = (filters[groupKey] || []) as string[];
     const exists = current.includes(value);
     const updated = exists ? current.filter((v) => v !== value) : [...current, value];
@@ -154,6 +217,7 @@ export default function CategoryAwareFilterDrawer({
     });
     setLocalMinPrice("");
     setLocalMaxPrice("");
+    setCategorySearch("");
   };
 
   const content = (
@@ -174,7 +238,141 @@ export default function CategoryAwareFilterDrawer({
         </button>
       </div>
 
-      {/* 1. Price Range Section */}
+      {/* 1. Category Section */}
+      <div className="space-y-3 pb-4 border-b border-zinc-200/60 dark:border-zinc-800/80">
+        <button
+          onClick={() => toggleSection("category")}
+          className="w-full flex items-center justify-between text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider"
+        >
+          <div className="flex items-center gap-2">
+            <span>Categories</span>
+            {filters.category && filters.category.length > 0 && (
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+            )}
+          </div>
+          <ChevronDownIcon
+            className={`w-4 h-4 transition-transform duration-200 ${
+              openSections.category ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        {openSections.category && (
+          <div className="space-y-2 pt-1">
+            {categoryOptions.length > 6 && (
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-amber-500 mb-1"
+              />
+            )}
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              {filteredCategoryOptions.map((cat) => {
+                const isChecked = (filters.category || []).includes(cat.value);
+                return (
+                  <label
+                    key={cat.value}
+                    className={`flex items-center justify-between text-xs cursor-pointer py-1 px-1.5 rounded-md transition-colors ${
+                      isChecked
+                        ? "bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 font-bold"
+                        : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleCategoryToggle(cat.value)}
+                        className="rounded border-zinc-300 text-amber-500 focus:ring-amber-500"
+                      />
+                      <span>{cat.label}</span>
+                    </div>
+                    {cat.count !== undefined && cat.count > 0 && (
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        {cat.count}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+              {filteredCategoryOptions.length === 0 && (
+                <p className="text-xs text-zinc-400 py-1 italic">
+                  {loading ? "Loading categories..." : "No categories found"}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Generic Facets (Subcategory, Brand, Condition) */}
+      {facetData?.genericFilters
+        ?.filter((group) => group.key !== "category")
+        .map((group) => {
+          const isOpen = openSections[group.key] ?? true;
+          const selectedValues = (filters[group.key] || []) as string[];
+
+          return (
+            <div
+              key={group.key}
+              className="space-y-3 pb-4 border-b border-zinc-200/60 dark:border-zinc-800/80"
+            >
+              <button
+                onClick={() => toggleSection(group.key)}
+                className="w-full flex items-center justify-between text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider"
+              >
+                <div className="flex items-center gap-2">
+                  <span>{group.title}</span>
+                  {selectedValues.length > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  )}
+                </div>
+                <ChevronDownIcon
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isOpen && group.options && group.options.length > 0 && (
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {group.options.map((opt) => {
+                    const isChecked = selectedValues.includes(opt.value);
+                    return (
+                      <label
+                        key={opt.value}
+                        className={`flex items-center justify-between text-xs cursor-pointer py-1 px-1.5 rounded-md transition-colors ${
+                          isChecked
+                            ? "bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 font-bold"
+                            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => handleCheckboxChange(group.key, opt.value)}
+                            className="rounded border-zinc-300 text-amber-500 focus:ring-amber-500"
+                          />
+                          <span>{opt.label}</span>
+                        </div>
+                        {opt.count !== undefined && opt.count > 0 && (
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                            {opt.count}
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+      {/* 3. Price Range Section */}
       <div className="space-y-3 pb-4 border-b border-zinc-200/60 dark:border-zinc-800/80">
         <button
           onClick={() => toggleSection("price")}
@@ -221,60 +419,6 @@ export default function CategoryAwareFilterDrawer({
           </div>
         )}
       </div>
-
-      {/* 2. Generic Facets (Brand, Condition, Subcategory) */}
-      {facetData?.genericFilters?.map((group) => {
-        const isOpen = openSections[group.key] ?? true;
-        const selectedValues = (filters[group.key] || []) as string[];
-
-        return (
-          <div
-            key={group.key}
-            className="space-y-3 pb-4 border-b border-zinc-200/60 dark:border-zinc-800/80"
-          >
-            <button
-              onClick={() => toggleSection(group.key)}
-              className="w-full flex items-center justify-between text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider"
-            >
-              <span>{group.title}</span>
-              <ChevronDownIcon
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  isOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {isOpen && group.options && group.options.length > 0 && (
-              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                {group.options.map((opt) => {
-                  const isChecked = selectedValues.includes(opt.value);
-                  return (
-                    <label
-                      key={opt.value}
-                      className="flex items-center justify-between text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white cursor-pointer py-1 px-1 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handleCheckboxChange(group.key, opt.value)}
-                          className="rounded border-zinc-300 text-amber-500 focus:ring-amber-500"
-                        />
-                        <span>{opt.label}</span>
-                      </div>
-                      {opt.count !== undefined && (
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-                          {opt.count}
-                        </span>
-                      )}
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })}
 
       {/* 3. Dynamic Category-Specific Attributes */}
       {facetData?.categorySpecificFilters && facetData.categorySpecificFilters.length > 0 && (

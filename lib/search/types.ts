@@ -206,6 +206,7 @@ export interface FilterFacetGroup {
 }
 
 export interface AvailableFiltersResponseDTO {
+  categories?: FilterFacetOption[];
   categorySlug?: string;
   categoryName?: string;
   priceRange: { min: number; max: number };

@@ -179,9 +179,36 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
   const itemType = useMemo(() => resolveProductType(listing), [listing]);
   const product = useMemo(() => withCapabilities(listing, itemType), [listing, itemType]);
 
+  // Universal Media Resolution (combines videos, WebP variants, guaranteed poster frames)
+  const resolvedMedia = useMemo(() => resolveProductMedia(listing), [listing]);
+  const gallery = resolvedMedia.gallery;
+
+  // Title and Host representation
+  const displayTitle = useMemo(() => {
+    return itemType === "AUTO" && listing.make
+      ? `${listing.make} ${listing.model || ""}`
+      : listing.title || listing.name || "Untitled Listing";
+  }, [itemType, listing.make, listing.model, listing.title, listing.name]);
+
+  const hostRole = itemType === "PROPERTY" ? "Property Consultant" : itemType === "AUTO" ? "Sales Specialist" : "Service Provider";
+  const host = useMemo(() => ({
+    name: listing.contactName || "Authorized Representative",
+    role: hostRole,
+    phone: listing.contact,
+    email: listing.email,
+  }), [listing.contactName, hostRole, listing.contact, listing.email]);
+
   // Lightbox & Gallery State
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const handleNextImage = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev + 1) % (gallery.length || 1));
+  }, [gallery.length]);
+
+  const handlePrevImage = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev - 1 + (gallery.length || 1)) % (gallery.length || 1));
+  }, [gallery.length]);
 
   // Scheduling & Inquiries State
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -324,7 +351,7 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isGalleryOpen]);
+  }, [isGalleryOpen, handlePrevImage, handleNextImage]);
 
   // --- SCHEDULING / INQUIRY HANDLERS ---
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -391,21 +418,7 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
     }
   };
 
-  // Universal Media Resolution (combines videos, WebP variants, guaranteed poster frames)
-  const resolvedMedia = useMemo(() => resolveProductMedia(listing), [listing]);
-  const gallery = resolvedMedia.gallery;
 
-  const handleNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
-  const handlePrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
-
-  const displayTitle = itemType === "AUTO" && listing.make ? `${listing.make} ${listing.model || ""}` : listing.title || listing.name || "Untitled Listing";
-  const hostRole = itemType === "PROPERTY" ? "Property Consultant" : itemType === "AUTO" ? "Sales Specialist" : "Service Provider";
-  const host = {
-    name: listing.contactName || "Authorized Representative",
-    role: hostRole,
-    phone: listing.contact,
-    email: listing.email,
-  };
 
   // --- RENDER SPECS GRID ---
   const renderSpecsGrid = () => {

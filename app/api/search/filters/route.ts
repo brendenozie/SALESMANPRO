@@ -18,7 +18,9 @@ const CORS_HEADERS = {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const category = searchParams.get("category") || undefined;
+    const categoryParam = searchParams.get("category");
+    const categoryList = searchParams.getAll("category").filter(Boolean);
+    const category = categoryList.length > 0 ? (categoryList.length === 1 ? categoryList[0] : categoryList) : categoryParam || undefined;
     const scope = (searchParams.get("scope")?.toUpperCase() as SearchScope) || "GHUBA";
     const companyId = searchParams.get("companyId") || undefined;
 
