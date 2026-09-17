@@ -24,9 +24,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const customLoader = ({ src }: { src: string }) => src;
-
-const TravelCard = ({ listing }: any) => {
+const TravelCardComponent = ({ listing }: any) => {
   const [isLiked, setIsLiked] = useState(false);
   const { storeFormData } = useStoreContext();
 
@@ -44,8 +42,10 @@ const TravelCard = ({ listing }: any) => {
         <Image
           src={listing.images?.[0] || listing.thumbnail || "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800"}
           alt={listing.name || "Destination"}
-          loader={customLoader}
+          unoptimized
+          loading="lazy"
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
         
@@ -124,5 +124,9 @@ const TravelCard = ({ listing }: any) => {
     </div>
   );
 };
+
+const TravelCard = React.memo(TravelCardComponent, (prev, next) => {
+  return prev.listing?.id === next.listing?.id && prev.listing?.finalPrice === next.listing?.finalPrice;
+});
 
 export default TravelCard;

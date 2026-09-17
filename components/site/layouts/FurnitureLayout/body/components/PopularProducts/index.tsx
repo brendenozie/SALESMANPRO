@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
@@ -65,15 +66,15 @@ export default function PopularProducts({ id }: { id: string }) {
             </h2>
           </div>
 
-          <button
-            onClick={() => { window.location.href = `/furnitureecommerce/products?filter=onOffer`; }}
+          <Link
+            href={`/furnitureecommerce/products?filter=onOffer`}
             className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white hover:opacity-70 transition-all self-start md:self-auto"
           >
             Explore All 
             <span className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-full group-hover:translate-x-1 transition-transform">
               <ArrowRightIcon className="w-4 h-4" />
             </span>
-          </button>
+          </Link>
         </div>
 
         {/* --- Carousel: Mobile --- */}

@@ -14,6 +14,7 @@ import {
 import { MarketListingForm } from "@/types/typings";
 import ProductCard from "@/components/site/layouts/EcommerceLayout/body/components/ProductCard";
 import NoResultsFallback from "@/components/search/NoResultsFallback";
+import { useScrollPositionPersistence } from "@/hooks/useScrollPositionPersistence";
 
 export default function ProductsClient({
   initialListings,
@@ -46,6 +47,17 @@ export default function ProductsClient({
   const [totalCount, setTotalCount] = useState<number>(initialListings?.length || 0);
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const { restoreScrollPosition } = useScrollPositionPersistence({
+    storageKey: `store_${slug}_products_scroll`,
+    debounceMs: 200,
+  });
+
+  useEffect(() => {
+    if (listings.length > 0) {
+      restoreScrollPosition();
+    }
+  }, [listings.length]);
 
   // URL state synchronization
   useEffect(() => {
@@ -347,7 +359,7 @@ export default function ProductsClient({
 
           {listings.length > 0 ? (
             <div
-              className={`grid gap-4 sm:gap-6 ${
+              className={`grid gap-4 sm:gap-6 [contain:layout_style] ${
                 viewMode === "grid"
                   ? "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
                   : "grid-cols-1"

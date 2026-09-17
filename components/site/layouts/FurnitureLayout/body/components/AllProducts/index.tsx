@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import ProductCard from '../ProductCard';
 import { motion } from 'framer-motion';
@@ -32,16 +33,15 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
             </h2>
           </div>
 
-          <motion.button 
-            whileHover={{ x: 5 }}
-            onClick={() => window.location.href = `/furnitureecommerce/products`}
+          <Link 
+            href={`/furnitureecommerce/products`}
             className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white"
           >
             Explore All 
             <div className="p-3 border border-zinc-200 dark:border-zinc-800 rounded-full group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-zinc-900 transition-all duration-300">
               <ArrowRightIcon className="w-4 h-4" />
             </div>
-          </motion.button>
+          </Link>
         </div>
 
         {/* --- PRODUCTS GRID --- */}

@@ -45,25 +45,7 @@ const itemVariants = {
   },
 };
 
-const customLoader = ({ src, width, quality }: any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-// Helper to extract a value if the field is an object or a primitive
-const safeRender = (val: any) => {
-  if (val === null || val === undefined) return "-";
-  if (typeof val === "number" || typeof val === "string") return val;
-  
-  // If it's the object from your error {type, size, price}
-  if (typeof val === "object") {
-    return val.size || val.value || val.price || "-"; 
-  }
-  return "-";
-};
-
-
-
-const PropertyCard = ({ item, key }: any) => {
+const PropertyCardComponent = ({ item, key }: any) => {
 
   const { storeFormData } = useStoreContext();
   const resolvedMedia = React.useMemo(() => resolveProductMedia(item), [item]);
@@ -99,8 +81,10 @@ const PropertyCard = ({ item, key }: any) => {
             src={resolvedMedia.primaryImageUrl}
             alt={item.name}
             fill
+            unoptimized
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
-            loader={customLoader}
           />
 
           {resolvedMedia.hasVideo && (
@@ -190,5 +174,9 @@ const PropertyCard = ({ item, key }: any) => {
     </Link>
   );
 };
+
+const PropertyCard = React.memo(PropertyCardComponent, (prev, next) => {
+  return prev.item?.id === next.item?.id && prev.item?.finalPrice === next.item?.finalPrice;
+});
 
 export default PropertyCard;

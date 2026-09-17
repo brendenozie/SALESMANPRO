@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   ArrowRightIcon, 
@@ -23,10 +24,10 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
       <div className="max-w-7xl mx-auto px-6">
         
         {/* --- Section Header --- */}
-        <div className="flex flex-col space-y-8 mb-16">
+        <div className="flex flex-col gap-8 mb-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-zinc-500">
                 <Squares2X2Icon className="w-4 h-4" />
                 <span>Full Catalog</span>
               </div>
@@ -35,15 +36,15 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
               </h2>
             </div>
 
-            <button
-              onClick={() => window.location.href = `/fashionecommerce/products`}
+            <Link
+              href={`/fashionecommerce/products`}
               className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] dark:text-white self-start md:self-auto"
             >
               Browse Archive 
               <div className="p-2 rounded-full border border-gray-200 dark:border-zinc-800 group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-all">
                 <ArrowRightIcon className="w-4 h-4" />
               </div>
-            </button>
+            </Link>
           </div>
 
           {/* --- Aesthetic Filter Bar (Visual) --- */}
@@ -53,13 +54,13 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
               Filter
             </button>
             {['New Arrivals', 'Best Sellers', 'Limited Edition', 'Archive'].map((filter) => (
-              <button 
+              <Link 
                 key={filter}
-                onClick={() => window.location.href = `/fashionecommerce/products?filter=${filter}`}
+                href={`/fashionecommerce/products?filter=${filter}`}
                 className="whitespace-nowrap px-4 py-2 rounded-full border border-gray-100 dark:border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:border-gray-900 dark:hover:border-white transition-all"
               >
                 {filter}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
@@ -84,12 +85,12 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-8">
             Showing {marketplaceListings.length} of {marketplaceListings.length}+ Styles
           </p>
-          <button 
-             onClick={() => window.location.href = `/fashionecommerce/products`}
-             className="px-12 py-5 border border-zinc-900 dark:border-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all rounded-full"
+          <Link 
+             href={`/fashionecommerce/products`}
+             className="inline-block px-12 py-5 border border-zinc-900 dark:border-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all rounded-full"
           >
             Load Entire Catalog
-          </button>
+          </Link>
         </div>
       </div>
     </section>

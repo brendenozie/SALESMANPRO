@@ -264,17 +264,12 @@ export default function ListingsSection({ listings, title, subtitle, name, descr
 
         {/* Bottom Action */}
         <div className="mt-16 text-center">
-            <motion.button
-                onClick={() => { window.location.href = '/travel/listings'; }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800 transition-all"
+            <Link
+                href="/travel/listings"
+                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
             >
                 View All Destinations
-            </motion.button>
+            </Link>
         </div>
       </div>
     </section>

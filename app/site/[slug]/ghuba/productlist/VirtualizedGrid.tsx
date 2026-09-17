@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import MemoizedProductCard from './MemoizedProductCard';
 import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
+import { storefrontPerformanceConfig } from '@/lib/performance/storefrontConfig';
+import { useScrollPositionPersistence } from '@/hooks/useScrollPositionPersistence';
 
 const SCROLL_STORAGE_KEY = 'ghuba_productlist_scroll_pos';
 
@@ -22,7 +24,14 @@ export default function VirtualizedGrid({
   const [mounted, setMounted] = useState(false);
   const [scrollMargin, setScrollMargin] = useState(0);
   const parentRef = useRef<HTMLDivElement>(null);
-  const scrollRestoredRef = useRef(false);
+
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false;
+  const perfSettings = storefrontPerformanceConfig.getSettings(isMobile);
+
+  const { restoreScrollPosition } = useScrollPositionPersistence({
+    storageKey: SCROLL_STORAGE_KEY,
+    debounceMs: perfSettings.scrollPersistenceDebounceMs,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -40,34 +49,12 @@ export default function VirtualizedGrid({
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  // Save scroll position with debouncing to prevent frame drops during active scroll
-  useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout | null = null;
-    const handleScroll = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        if (window.scrollY > 0) {
-          sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify({
-            scrollY: window.scrollY,
-            timestamp: Date.now(),
-          }));
-        }
-      }, 200);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
   const rows = useMemo(() => chunkArray(products, columns), [products, columns]);
 
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
-    estimateSize: () => (typeof window !== 'undefined' && window.innerWidth < 640 ? 360 : 420),
-    overscan: 14,
+    estimateSize: () => storefrontPerformanceConfig.getEstimatedRowHeight(typeof window !== 'undefined' && window.innerWidth < 640),
+    overscan: isMobile ? storefrontPerformanceConfig.mobile.overscanRows : storefrontPerformanceConfig.desktop.overscanRows,
     scrollMargin,
   });
 
@@ -75,27 +62,8 @@ export default function VirtualizedGrid({
 
   // Restore scroll position after rows have mounted and rendered
   useEffect(() => {
-    if (!mounted || rows.length === 0 || scrollRestoredRef.current) return;
-
-    try {
-      const saved = sessionStorage.getItem(SCROLL_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Only restore if within the last 30 minutes
-        if (parsed.scrollY && Date.now() - (parsed.timestamp || 0) < 1000 * 60 * 30) {
-          scrollRestoredRef.current = true;
-          // Use requestAnimationFrame to let virtualizer render initial slice
-          requestAnimationFrame(() => {
-            window.scrollTo({
-              top: parsed.scrollY,
-              behavior: 'instant' as ScrollBehavior,
-            });
-          });
-        }
-      }
-    } catch {
-      // Ignore sessionStorage parsing errors
-    }
+    if (!mounted || rows.length === 0) return;
+    restoreScrollPosition();
   }, [mounted, rows.length]);
 
   // NATIVE INFINITE SCROLL: Triggers based on the virtualizer's rendered items

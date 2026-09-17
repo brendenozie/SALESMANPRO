@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
@@ -84,15 +85,15 @@ export default function DailyBestSells({ id }: { id: string }) {
             </h2>
           </div>
           
-          <button 
-            onClick={() => window.location.href = `/fashionecommerce/products?companyId=${id}&flag=isOnOffer`}
+          <Link 
+            href={`/fashionecommerce/products?companyId=${id}&flag=isOnOffer`}
             className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] dark:text-white"
           >
             Explore the vault 
             <div className="p-2 rounded-full border border-gray-200 dark:border-zinc-800 group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-all">
               <ArrowRightIcon className="w-4 h-4" />
             </div>
-          </button>
+          </Link>
         </div>
 
         {/* Mobile View: High Impact Slider */}

@@ -18,8 +18,6 @@ import {
 import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
 
-const loader = ({ src }: { src: string }) => src;
-
 // Custom WhatsApp Icon Component
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -31,7 +29,7 @@ interface ProductCardProps {
   product: MarketListingForm;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
   const {
     id,
     name,
@@ -112,9 +110,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               src={img}
               alt={name}
               fill
-              loader={loader}
+              unoptimized
+              loading="lazy"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-[2s] scale-100 group-hover:scale-105 group-active:scale-102"
-              priority
             />
           </Link>
 
@@ -186,18 +185,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               style={{ backgroundColor: `${primaryColor}e6` }}
             >
               <PlusIcon className="w-5 h-5" />
-              <AnimatePresence>
-                {totalQuantityInCart > 0 && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-zinc-950 text-[9px] font-black rounded-full flex items-center justify-center shadow-md"
-                  >
-                    {totalQuantityInCart}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {totalQuantityInCart > 0 && (
+                <div
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-zinc-950 text-[9px] font-black rounded-full flex items-center justify-center shadow-md transition-transform scale-100"
+                >
+                  {totalQuantityInCart}
+                </div>
+              )}
             </button>
           </div>
 
@@ -254,6 +248,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       />
     </>
   );
-};
+});
+
+ProductCard.displayName = 'FashionProductCard';
 
 export default ProductCard;
