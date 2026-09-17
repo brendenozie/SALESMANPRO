@@ -10,6 +10,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
 // Hooks & Contexts
@@ -17,6 +18,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import UniversalSearchBar from '@/components/search/UniversalSearchBar';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   if (!src) return '';
@@ -34,9 +36,12 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const {
+    id: storeCompanyId,
+    slug: storeSlug,
     name,
     logoUrl,
     themeSettings = {},
@@ -121,6 +126,15 @@ export default function Header() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              {/* Search Toggle */}
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="p-2.5 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-900 transition-all"
+                aria-label="Search products in this store"
+              >
+                <MagnifyingGlassIcon className="w-5 h-5" />
+              </button>
+
               {/* Account */}
               <button
                 onClick={handleUserAction}
@@ -155,6 +169,40 @@ export default function Header() {
             </div>
           </motion.div>
         </div>
+
+        {/* Store Search Overlay */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="max-w-2xl mx-auto px-6 mt-2 relative z-50"
+            >
+              <div className="bg-white dark:bg-zinc-900 p-2 rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                <div className="flex-1">
+                  <UniversalSearchBar
+                    scope="STORE"
+                    companyId={storeCompanyId}
+                    storeSlug={storeSlug}
+                    placeholder="Search in this store..."
+                    autoFocus={true}
+                    onSearchSubmit={(term) => {
+                      setIsSearchOpen(false);
+                      router.push(`/ecommerce/products?search=${encodeURIComponent(term)}`);
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => setIsSearchOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Mobile Menu Slide */}
         <AnimatePresence>

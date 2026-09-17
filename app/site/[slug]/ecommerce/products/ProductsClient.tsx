@@ -1,45 +1,26 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  MagnifyingGlassIcon, 
-  XMarkIcon, 
+import {
+  MagnifyingGlassIcon,
+  XMarkIcon,
   AdjustmentsHorizontalIcon,
   Squares2X2Icon,
   ListBulletIcon,
-  FunnelIcon
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 import { MarketListingForm } from "@/types/typings";
 import ProductCard from "@/components/site/layouts/EcommerceLayout/body/components/ProductCard";
-
-/* -------------------------------------------------------------------------- */
-/* Sub-Components */
-/* -------------------------------------------------------------------------- */
-
-const GlassOption = ({ active, onClick, children }: any) => (
-  <button
-    onClick={onClick}
-    className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-300 ${
-      active 
-        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 translate-x-1" 
-        : "text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800"
-    }`}
-  >
-    {children}
-  </button>
-);
-
-/* -------------------------------------------------------------------------- */
-/* Main Client Component */
-/* -------------------------------------------------------------------------- */
+import NoResultsFallback from "@/components/search/NoResultsFallback";
 
 export default function ProductsClient({
   initialListings,
   categories,
   companyId,
   slug,
-  totalPages
+  totalPages: initialTotalPages,
 }: {
   initialListings: Array<MarketListingForm>;
   categories: any[];
@@ -47,223 +28,346 @@ export default function ProductsClient({
   slug: string;
   totalPages: number;
 }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [sortBy, setSortBy] = useState("newest");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const filteredListings = useMemo(() => {
-    return initialListings
-      .filter((item) => {
-        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCat = !selectedCategory || item.category?.id === selectedCategory;
-        return matchesSearch && matchesCat;
-      })
-      .sort((a, b) => {
-        if (sortBy === "priceAsc") return a.sellingPrice - b.sellingPrice;
-        if (sortBy === "priceDesc") return b.sellingPrice - a.sellingPrice;
-        return 0;
-      });
-  }, [initialListings, searchQuery, selectedCategory, sortBy]);
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || searchParams.get("q") || ""
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || ""
+  );
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const [listings, setListings] = useState<any[]>(initialListings || []);
+  const [totalCount, setTotalCount] = useState<number>(initialListings?.length || 0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  // URL state synchronization
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("search", searchQuery.trim());
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (sortBy && sortBy !== "newest") params.set("sort", sortBy);
+
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  }, [searchQuery, selectedCategory, sortBy, pathname, router]);
+
+  // Server-side search execution against tenant endpoint
+  const executeSearch = useCallback(
+    async (q: string, cat: string, sort: string) => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          limit: "48",
+          sort: sort === "priceAsc" ? "price_asc" : sort === "priceDesc" ? "price_desc" : sort,
+        });
+
+        if (q.trim()) params.set("q", q.trim());
+        if (cat) params.append("category", cat);
+
+        const res = await fetch(`/api/stores/${slug}/search?${params}`);
+        if (res.ok) {
+          const json = await res.json();
+          setListings(json.data || []);
+          setTotalCount(json.meta?.total ?? (json.data || []).length);
+        }
+      } catch (err) {
+        console.error("Failed to query store products:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [slug]
+  );
+
+  // Debounced search trigger when query, category, or sort changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      executeSearch(searchQuery, selectedCategory, sortBy);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedCategory, sortBy, executeSearch]);
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("");
+    setSortBy("newest");
+  };
+
+  const hasActiveFilters = Boolean(searchQuery.trim()) || Boolean(selectedCategory);
 
   return (
     <div className="min-h-screen bg-[#fafaf9] dark:bg-black transition-colors duration-300">
-      
-      {/* 1. STICKY NAVIGATION BAR - Fixed to Top */}
-      {/* If your main site header is also sticky, change top-0 to top-[HEIGHT_OF_MAIN_HEADER] */}
-      <nav className=" bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
+      {/* Sticky Header / Search Filter Bar */}
+      <nav className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <div className="relative w-full max-w-md group">
-              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
               <input
                 type="text"
-                placeholder="Search premium essentials..."
+                placeholder="Search products in this store..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 transition-all text-sm outline-none"
+                className="w-full pl-11 pr-10 py-2.5 sm:py-3 bg-slate-100 dark:bg-zinc-900 border border-transparent focus:border-indigo-500 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 transition-all text-xs sm:text-sm outline-none text-zinc-900 dark:text-white"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              )}
             </div>
+
+            {isLoading && (
+              <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin shrink-0" />
+            )}
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Sort Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="text-xs font-bold bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-zinc-200 border-none rounded-xl px-3 py-2 sm:py-2.5 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+            >
+              <option value="newest">Newest</option>
+              <option value="priceAsc">Price: Low to High</option>
+              <option value="priceDesc">Price: High to Low</option>
+              <option value="discount">Discounts</option>
+            </select>
+
             {/* View Switcher (Desktop Only) */}
-            <div className="hidden md:flex bg-slate-100 dark:bg-gray-900 p-1 rounded-xl">
-              <button 
+            <div className="hidden md:flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl">
+              <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white dark:bg-gray-800 shadow-sm text-indigo-600" : "text-slate-400"}`}
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === "grid"
+                    ? "bg-white dark:bg-zinc-800 shadow-sm text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-400"
+                }`}
+                aria-label="Grid view"
               >
-                <Squares2X2Icon className="w-5 h-5" />
+                <Squares2X2Icon className="w-4 h-4" />
               </button>
-              <button 
+              <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-800 shadow-sm text-indigo-600" : "text-slate-400"}`}
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === "list"
+                    ? "bg-white dark:bg-zinc-800 shadow-sm text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-400"
+                }`}
+                aria-label="List view"
               >
-                <ListBulletIcon className="w-5 h-5" />
+                <ListBulletIcon className="w-4 h-4" />
               </button>
             </div>
-            {/* Mobile Filter Toggle */}
-            <button 
+
+            {/* Mobile Filter Button */}
+            <button
               onClick={() => setIsFilterOpen(true)}
-              className="lg:hidden p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40"
+              className="lg:hidden p-2.5 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-500/20"
+              aria-label="Filter categories"
             >
-              <AdjustmentsHorizontalIcon className="w-6 h-6" />
+              <AdjustmentsHorizontalIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
+
+        {/* Active Filter Chips */}
+        {hasActiveFilters && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-3 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Active:
+            </span>
+
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 bg-slate-200 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 rounded-lg">
+                "{searchQuery}"
+                <button onClick={() => setSearchQuery("")} className="hover:text-red-500">
+                  <XMarkIcon className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {selectedCategory && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 rounded-lg">
+                {selectedCategory}
+                <button onClick={() => setSelectedCategory("")} className="hover:text-red-500">
+                  <XMarkIcon className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            <button
+              onClick={handleClearFilters}
+              className="text-[11px] font-bold text-red-500 hover:underline ml-auto"
+            >
+              Clear All
+            </button>
+          </div>
+        )}
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-12 flex gap-12">
-        {/* 2. DESKTOP SIDEBAR */}
-        <aside className="hidden lg:block w-64 shrink-0">
-          <div className="sticky top-32 space-y-10"> {/* top-32 accounts for nav height + padding */}
-            <section>
-              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500 mb-6 flex items-center gap-2">
-                <FunnelIcon className="w-4 h-4" /> Collections
-              </h3>
-              <div className="space-y-1">
-                <GlassOption active={!selectedCategory} onClick={() => setSelectedCategory("")}>
-                  All Pieces
-                </GlassOption>
-                {categories.map((cat) => (
-                  <GlassOption 
-                    key={cat.id} 
-                    active={selectedCategory === cat.id} 
-                    onClick={() => setSelectedCategory(cat.id)}
-                  >
-                    {cat.displayName}
-                  </GlassOption>
-                ))}
-              </div>
-            </section>
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex gap-8 lg:gap-12">
+        {/* Desktop Sidebar Categories */}
+        <aside className="hidden lg:block w-64 shrink-0 space-y-6">
+          <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-4 sticky top-36">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                Categories
+              </span>
+              {selectedCategory && (
+                <button
+                  onClick={() => setSelectedCategory("")}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  All
+                </button>
+              )}
+            </div>
 
-            <section>
-              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500 mb-6">
-                Sort By
-              </h3>
-              <div className="space-y-1">
-                {["newest", "priceAsc", "priceDesc"].map((sort) => (
-                  <GlassOption 
-                    key={sort} 
-                    active={sortBy === sort} 
-                    onClick={() => setSortBy(sort)}
+            <div className="space-y-1">
+              <button
+                onClick={() => setSelectedCategory("")}
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  !selectedCategory
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                    : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                All Categories
+              </button>
+
+              {categories.map((cat: any) => {
+                const catName = cat.displayName || cat.name || cat;
+                const isSelected = selectedCategory === catName;
+                return (
+                  <button
+                    key={cat.id || catName}
+                    onClick={() => setSelectedCategory(isSelected ? "" : catName)}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                      isSelected
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                        : "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                    }`}
                   >
-                    {sort === "newest" ? "Latest Arrivals" : sort === "priceAsc" ? "Price: Low to High" : "Price: High to Low"}
-                  </GlassOption>
-                ))}
-              </div>
-            </section>
+                    {catName}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </aside>
 
-        {/* 3. PRODUCT GRID */}
-        <main className="flex-1">
-          <div className="flex items-baseline justify-between mb-10">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {selectedCategory ? categories.find(c => c.id === selectedCategory)?.displayName : "Full Catalog"}
-              <span className="ml-3 text-sm font-medium text-slate-400 dark:text-gray-600">
-                ({filteredListings.length})
-              </span>
-            </h2>
+        {/* Mobile Slide-over for Categories */}
+        <AnimatePresence>
+          {isFilterOpen && (
+            <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
+              <div
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={() => setIsFilterOpen(false)}
+              />
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-80 bg-white dark:bg-zinc-900 h-full p-6 shadow-2xl overflow-y-auto space-y-6"
+              >
+                <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-zinc-800">
+                  <span className="text-base font-black text-slate-900 dark:text-white">
+                    Filter by Category
+                  </span>
+                  <button
+                    onClick={() => setIsFilterOpen(false)}
+                    className="p-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("");
+                      setIsFilterOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold ${
+                      !selectedCategory
+                        ? "bg-indigo-600 text-white"
+                        : "text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    All Categories
+                  </button>
+
+                  {categories.map((cat: any) => {
+                    const catName = cat.displayName || cat.name || cat;
+                    const isSelected = selectedCategory === catName;
+                    return (
+                      <button
+                        key={cat.id || catName}
+                        onClick={() => {
+                          setSelectedCategory(isSelected ? "" : catName);
+                          setIsFilterOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold ${
+                          isSelected
+                            ? "bg-indigo-600 text-white"
+                            : "text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                        }`}
+                      >
+                        {catName}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Product Grid */}
+        <main className="flex-1 min-w-0">
+          <div className="mb-4 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
+            <span>Showing {listings.length} items</span>
           </div>
 
-          <motion.div 
-            layout
-            className={`grid gap-8 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredListings.map((product, idx) => (
-                <motion.div
-                  key={product.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: idx * 0.05 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
+          {listings.length > 0 ? (
+            <div
+              className={`grid gap-4 sm:gap-6 ${
+                viewMode === "grid"
+                  ? "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1"
+              }`}
+            >
+              {listings.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
-            </AnimatePresence>
-          </motion.div>
-
-          {filteredListings.length === 0 && (
-            <div className="py-40 text-center">
-               <div className="inline-flex p-6 rounded-full bg-slate-100 dark:bg-gray-900 mb-4">
-                 <XMarkIcon className="w-10 h-10 text-slate-300" />
-               </div>
-               <h3 className="text-xl font-bold text-slate-900 dark:text-white">No results found</h3>
-               <p className="text-slate-500 mt-2">Try adjusting your filters or search terms.</p>
             </div>
+          ) : (
+            <NoResultsFallback
+              searchTerm={searchQuery}
+              category={selectedCategory}
+              hasActiveFilters={hasActiveFilters}
+              onClearFilters={handleClearFilters}
+              scope="STORE"
+            />
           )}
         </main>
       </div>
-
-      {/* 4. MOBILE DRAWER */}
-      <AnimatePresence>
-        {isFilterOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              onClick={() => setIsFilterOpen(false)}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" 
-            />
-            <motion.div 
-              initial={{ y: "100%" }} 
-              animate={{ y: 0 }} 
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-900 rounded-t-[3rem] p-8 lg:hidden max-h-[85vh] overflow-y-auto shadow-2xl"
-            >
-               <div className="w-12 h-1.5 bg-slate-200 dark:bg-gray-800 rounded-full mx-auto mb-8" />
-               <div className="flex justify-between items-center mb-8">
-                 <h2 className="text-2xl font-black text-slate-900 dark:text-white">Filters</h2>
-                 <button onClick={() => setIsFilterOpen(false)} className="p-2 bg-slate-100 dark:bg-gray-800 rounded-full">
-                   <XMarkIcon className="w-5 h-5" />
-                 </button>
-               </div>
-               
-               <div className="space-y-8">
-                 <section>
-                   <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Collections</h3>
-                   <div className="grid grid-cols-2 gap-2">
-                      <GlassOption active={!selectedCategory} onClick={() => {setSelectedCategory(""); setIsFilterOpen(false);}}>
-                        All
-                      </GlassOption>
-                      {categories.map((cat) => (
-                        <GlassOption 
-                          key={cat.id} 
-                          active={selectedCategory === cat.id} 
-                          onClick={() => {setSelectedCategory(cat.id); setIsFilterOpen(false);}}
-                        >
-                          {cat.displayName}
-                        </GlassOption>
-                      ))}
-                   </div>
-                 </section>
-
-                 <section className="pb-8">
-                   <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Sort By</h3>
-                   <div className="space-y-2">
-                      {["newest", "priceAsc", "priceDesc"].map((sort) => (
-                        <GlassOption 
-                          key={sort} 
-                          active={sortBy === sort} 
-                          onClick={() => {setSortBy(sort); setIsFilterOpen(false);}}
-                        >
-                          {sort === "newest" ? "Latest Arrivals" : sort === "priceAsc" ? "Price: Low to High" : "Price: High to Low"}
-                        </GlassOption>
-                      ))}
-                   </div>
-                 </section>
-               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

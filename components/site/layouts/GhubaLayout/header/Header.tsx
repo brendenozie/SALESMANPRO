@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "@/assets/shop.png";
 import {
   ShoppingBagIcon,
@@ -26,12 +26,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { debounce } from "lodash";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from '@/contexts/StoreContext';
-import { getListingPublicUrl } from "@/lib/ghuba-slug";
+import UniversalSearchBar from "@/components/search/UniversalSearchBar";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const defaultStoreData = {};
 
 const Header = () => {
@@ -105,8 +103,10 @@ const Header = () => {
               )}
             </Link>
 
-            {/* Search Center */}
-            <SearchBar />
+            {/* Desktop Search Center */}
+            <div className="hidden md:flex flex-1 max-w-lg mx-6">
+              <UniversalSearchBar scope="GHUBA" />
+            </div>
 
             {/* Actions Right */}
             <div className="flex items-center gap-4">
@@ -127,6 +127,11 @@ const Header = () => {
                  <Bars3BottomRightIcon className="w-6 h-6" />
               </button>
             </div>
+          </div>
+
+          {/* Mobile Search Row */}
+          <div className="md:hidden px-4 pb-3 pt-1">
+            <UniversalSearchBar scope="GHUBA" />
           </div>
 
           <DesktopMenu path={path} />
@@ -171,106 +176,6 @@ const TopBar = ({ locationName, isOpen, setIsOpen, phone, email }: any) => (
   </div>
 );
 
-const SearchBar = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const fetchSuggestions = async (query: string) => {
-    if (!query) return;
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/shop/products?search=${query}`);
-      const data = await response.json();
-      setSuggestions(data.data || []);
-      setIsDropdownVisible((data.data || []).length > 0);
-    } catch (err) {
-      console.error("Search error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 400), []);
-
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setSuggestions([]);
-      setIsDropdownVisible(false);
-    } else {
-      debouncedFetch(searchTerm);
-    }
-    return () => debouncedFetch.cancel();
-  }, [searchTerm, debouncedFetch]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      setIsDropdownVisible(false);
-      router.push(`/ghuba/productlist?search=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  };
-
-  return (
-    <div className="relative w-full max-w-lg hidden md:flex items-center group mx-6">
-      <form onSubmit={handleSearchSubmit} className="relative w-full flex items-center">
-        <div className="absolute left-4 text-zinc-400 group-focus-within:text-amber-500 transition-colors">
-          <MagnifyingGlassIcon className="w-5 h-5" />
-        </div>
-        <input
-          type="text"
-          placeholder="Search for products, brands, and more..."
-          className="w-full pl-12 pr-28 py-2.5 bg-zinc-100 dark:bg-zinc-900 border border-transparent focus:border-amber-500/50 focus:bg-white dark:focus:bg-zinc-950 rounded-full focus:ring-4 focus:ring-amber-500/10 focus:outline-none text-zinc-800 dark:text-zinc-200 text-sm transition-all shadow-inner"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => { if (suggestions.length > 0) setIsDropdownVisible(true) }}
-          onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
-        />
-        
-        <div className="absolute right-2 flex items-center gap-2">
-          {loading && (
-            <div className="w-4 h-4 border-2 border-zinc-300 border-t-amber-500 rounded-full animate-spin" />
-          )}
-          <Link 
-            href="/ghuba/productlist" 
-            prefetch={true}
-            className="text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all text-zinc-600 dark:text-zinc-300 hover:text-amber-500 active:scale-95"
-          >
-            Nearby
-          </Link>
-        </div>
-      </form>
-
-      <AnimatePresence>
-        {isDropdownVisible && (
-          <motion.ul 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            className="absolute top-full mt-3 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden"
-          >
-            {suggestions.map((item: any, i: number) => (
-              <li
-                key={item.id}
-                className={`px-5 py-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer text-sm text-zinc-700 dark:text-zinc-300 transition-colors ${i !== suggestions.length - 1 ? 'border-b border-zinc-100 dark:border-zinc-800' : ''}`}
-                onMouseDown={() => {
-                  setIsDropdownVisible(false);
-                  router.push(getListingPublicUrl(item));
-                }}
-              >
-                <span className="truncate pr-4">{item.title || item.name}</span>
-                <ArrowRightIcon className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
 const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }: any) => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -280,7 +185,6 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
 
   return (
     <div className="flex items-center space-x-1 sm:space-x-3">
-      {/* Desktop "Start Selling" Button positioned next to the profile for high visibility */}
       <button
         onClick={() => {
           if (typeof window !== "undefined") {
@@ -397,40 +301,71 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
   );
 };
 
+/* --- UPDATED CREATIVE 5-ITEM BOTTOM NAV BAR --- */
 const BottomNav = ({ path }: { path: string }) => {
+  const router = useRouter();
+
+  const handleSellClick = () => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
+        router.push("/stores");
+      } else {
+        window.location.href = "https://salesmanpro.site/stores";
+      }
+    }
+  };
+
   const items = [
     { name: "Home", icon: HomeIcon, link: "/" },
     { name: "Reels", icon: FilmIcon, link: "/ghuba/feed" },
+    { name: "Sell", icon: BuildingLibraryIcon, link: "/stores", isAction: true },
     { name: "Explore", icon: MagnifyingGlassIcon, link: "/ghuba/productlist" },
-    { name: "Sell", icon: BuildingLibraryIcon, link: "/stores" }, 
-    { name: "Deals", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
     { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white/90 dark:bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800/80 flex justify-around py-2 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:hidden z-40">
-      {items.map(({ name, icon: Icon, link }) => {
-        const isActive = path === link || (link !== "/" && path?.startsWith(link));
-        return (
-          <Link 
-            key={name} 
-            href={link}
-            prefetch={true}
-            className={`flex flex-col items-center p-2 rounded-xl transition-all active:scale-90 ${
-              isActive 
-                ? "text-amber-500 font-bold" 
-                : name === "Sell" 
-                  ? "text-zinc-800 dark:text-zinc-100 hover:text-amber-500" 
-                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-            }`}
-          >
-            <Icon className={`w-6 h-6 ${isActive ? "fill-amber-500/10 stroke-2 text-amber-500" : "stroke-[1.5]"}`} />
-            <span className={`text-[10px] mt-1 font-semibold ${isActive ? "font-bold text-amber-500" : ""}`}>
-              {name}
-            </span>
-          </Link>
-        );
-      })}
+    <div className="fixed bottom-0 left-0 w-full z-50 md:hidden px-4 pb-3 pt-1 pointer-events-none">
+      <nav className="pointer-events-auto max-w-md mx-auto bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center justify-around px-2 py-1.5 relative">
+        {items.map(({ name, icon: Icon, link, isAction }) => {
+          const isActive = path === link || (link !== "/" && path?.startsWith(link));
+
+          if (isAction) {
+            return (
+              <button
+                key={name}
+                onClick={handleSellClick}
+                className="relative -top-5 flex flex-col items-center justify-center active:scale-90 transition-transform group"
+              >
+                <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-500 text-zinc-950 shadow-lg shadow-amber-500/40 flex items-center justify-center border-4 border-white dark:border-zinc-950 group-hover:rotate-6 transition-all">
+                  <Icon className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <span className="text-[10px] font-black tracking-tight text-amber-600 dark:text-amber-400 mt-0.5">
+                  {name}
+                </span>
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={name}
+              href={link}
+              prefetch={true}
+              className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all active:scale-90 ${
+                isActive
+                  ? "text-amber-500"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+              }`}
+            >
+              <Icon className={`w-5 h-5 ${isActive ? "fill-amber-500/10 stroke-[2.2] text-amber-500 scale-110" : "stroke-[1.7]"} transition-transform`} />
+              <span className={`text-[10px] mt-1 font-semibold ${isActive ? "font-black text-amber-500" : ""}`}>
+                {name}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 };

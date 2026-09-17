@@ -9,15 +9,35 @@ const getApiBaseUrl = () => {
   return "/api";
 };
 
-export function useInfiniteProducts({ searchTerm, filters }) {
+export function useInfiniteProducts({
+  searchTerm,
+  filters,
+  scope = "GHUBA",
+  companyId,
+}: {
+  searchTerm: string;
+  filters: any;
+  scope?: "GHUBA" | "STORE";
+  companyId?: string;
+}) {
+  const brandSorted = [...(filters.brand || [])].sort();
+  const categorySorted = [...(filters.category || [])].sort();
+  const subCategorySorted = [...(filters.subCategory || [])].sort();
+  const conditionSorted = [...(filters.condition || [])].sort();
+  const makeSorted = [...(filters.make || [])].sort();
+
   const queryKey = [
-    "shop-products",
+    "search-products",
+    scope,
+    companyId || "global",
     searchTerm,
-    [...filters.brand].sort(),
-    [...filters.category].sort(),
-    [...filters.subCategory].sort(),
-    filters.priceRange[0],
-    filters.priceRange[1],
+    brandSorted,
+    categorySorted,
+    subCategorySorted,
+    conditionSorted,
+    makeSorted,
+    filters.minPrice,
+    filters.maxPrice,
     filters.sort,
   ];
 
@@ -26,22 +46,38 @@ export function useInfiniteProducts({ searchTerm, filters }) {
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam, signal }) => {
       const params = new URLSearchParams({
-        limit: "24", // Increased limit to satisfy virtualizer grid constraints
-        search: searchTerm ?? "",
-        minPrice: String(filters.priceRange[0]),
-        maxPrice: String(filters.priceRange[1]),
-        sort: filters.sort,
+        limit: "24",
+        scope,
+        sort: filters.sort || "newest",
       });
 
-      if (pageParam) {
-        params.set("cursor", pageParam);
+      if (searchTerm) params.set("q", searchTerm);
+      if (companyId) params.set("companyId", companyId);
+      if (pageParam) params.set("cursor", pageParam);
+
+      if (filters.minPrice !== undefined && filters.minPrice > 0) {
+        params.set("minPrice", String(filters.minPrice));
+      }
+      if (filters.maxPrice !== undefined && filters.maxPrice < 1e7) {
+        params.set("maxPrice", String(filters.maxPrice));
       }
 
-      filters.brand.forEach((b) => params.append("brand", b));
-      filters.category.forEach((c) => params.append("category", c));
-      filters.subCategory.forEach((s) => params.append("subCategory", s));
+      (filters.brand || []).forEach((b: string) => params.append("brand", b));
+      (filters.category || []).forEach((c: string) => params.append("category", c));
+      (filters.subCategory || []).forEach((s: string) => params.append("subCategory", s));
+      (filters.condition || []).forEach((c: string) => params.append("condition", c));
+      (filters.make || []).forEach((m: string) => params.append("make", m));
+      (filters.transmission || []).forEach((t: string) => params.append("transmission", t));
+      (filters.fuelType || []).forEach((f: string) => params.append("fuelType", f));
+      (filters.bodyType || []).forEach((b: string) => params.append("bodyType", b));
+      (filters.propertyType || []).forEach((p: string) => params.append("propertyType", p));
+      (filters.bedrooms || []).forEach((b: string) => params.append("bedrooms", b));
+      (filters.bathrooms || []).forEach((b: string) => params.append("bathrooms", b));
 
-      const response = await fetch(`${getApiBaseUrl()}/shop/products?${params}`, {
+      if (filters.yearFrom) params.set("yearFrom", String(filters.yearFrom));
+      if (filters.yearTo) params.set("yearTo", String(filters.yearTo));
+
+      const response = await fetch(`${getApiBaseUrl()}/search?${params}`, {
         signal,
       });
 
@@ -54,8 +90,8 @@ export function useInfiniteProducts({ searchTerm, filters }) {
     getNextPageParam: (lastPage) => {
       return lastPage?.meta?.nextCursor ?? undefined;
     },
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 3,
+    gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
   });
 }

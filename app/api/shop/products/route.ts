@@ -60,6 +60,9 @@ export async function GET(req: Request) {
       // Cache miss or error, continue
     }
 
+    const subCategories = searchParams.getAll("subCategory");
+    const makes = searchParams.getAll("make");
+
     const where: Prisma.marketplaceListingsWhereInput = {
       ...(agentId && { companyId: agentId }),
       company: {
@@ -73,16 +76,28 @@ export async function GET(req: Request) {
         OR: [
           { name: { contains: search, mode: "insensitive" } },
           { description: { contains: search, mode: "insensitive" } },
+          { brand: { contains: search, mode: "insensitive" } },
+          { model: { contains: search, mode: "insensitive" } },
+          { tags: { has: search } },
         ],
       }),
       ...((!isNaN(minPrice) || !isNaN(maxPrice)) && {
-        sellingPrice: {
+        finalPrice: {
           ...(!isNaN(minPrice) && { gte: minPrice }),
           ...(!isNaN(maxPrice) && { lte: maxPrice }),
         },
       }),
       ...(brands.length > 0 && { brand: { in: brands } }),
-      ...(categories.length > 0 && { category: { in: categories } }),
+      ...(makes.length > 0 && { make: { in: makes } }),
+      ...(categories.length > 0 && {
+        OR: [
+          { category: { in: categories } },
+          { productCategory: { name: { in: categories, mode: "insensitive" } } },
+        ],
+      }),
+      ...(subCategories.length > 0 && {
+        subCategoryName: { in: subCategories, mode: "insensitive" },
+      }),
       ...(statusParam && { status: statusParam as ListingStatus }),
       ...(ghubaAdminApprovedParam && { ghubaAdminApproved: true }),
       ...(ghubaStatusParam && { ghubaStatus: ghubaStatusParam }),
