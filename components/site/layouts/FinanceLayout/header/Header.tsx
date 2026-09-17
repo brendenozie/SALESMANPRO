@@ -14,6 +14,7 @@ import {
 import { useSession, signOut } from "next-auth/react";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -199,13 +200,10 @@ export default function FinanceHeader() {
             {/* ACTION CENTER */}
             <div className="flex items-center space-x-3 z-10">
               {/* SEARCH TRIGGER */}
-              <button
-                onClick={() => setSearchOpen(true)}
+              <StoreHeaderSearch
+                variant="button"
                 className="p-2 text-slate-500 hover:text-slate-900 transition-colors rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100"
-                aria-label="Open search pane"
-              >
-                <MagnifyingGlassIcon className="h-5 w-5 stroke-[2]" />
-              </button>
+              />
 
               {/* SECURITY / ACCOUNT MANAGEMENT */}
               {!user ? (

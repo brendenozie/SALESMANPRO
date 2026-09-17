@@ -7,6 +7,7 @@ import {
   XMarkIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { StoreHeaderSearch } from "@/components/search/StoreHeaderSearch";
 
 // --- Types (Kept the same) ---
 interface StoreForm {
@@ -208,7 +209,9 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
           </div>
 
           {/* CTA + Mobile Toggle */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <StoreHeaderSearch variant="button" />
+
             {/* CTA Button (Outside Nav Links for prominence) */}
             <motion.div
               className="hidden md:block"

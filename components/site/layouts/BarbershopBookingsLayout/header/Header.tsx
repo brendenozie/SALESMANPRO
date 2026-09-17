@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -117,14 +118,12 @@ export default function Header() {
 
           {/* RIGHT: ICON SYSTEM */}
           <div className="flex-1 flex items-center justify-end space-x-3 md:space-x-6">
-            <button 
-              className={`p-2 transition-colors hidden sm:block
-                ${scrolled ? 'text-zinc-600 dark:text-white/80' : 'text-white/80'}
-                hover:!text-opacity-100`}
-                style={{ color: scrolled ? undefined : 'white' }}
-            >
-              <MagnifyingGlassIcon className="h-5 w-5 hover:text-[var(--hover-color)]" style={{ '--hover-color': primaryColor } as any} />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className={`p-2 transition-colors ${
+                scrolled ? 'text-zinc-600 dark:text-white/80' : 'text-white/80'
+              }`}
+            />
 
             {user ? (
               <button 

@@ -14,8 +14,9 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession } from 'next-auth/react';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
+import { useSession } from 'next-auth/react';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -130,9 +131,10 @@ export default function Header() {
 
           {/* ACTION BUTTONS */}
           <div className="flex items-center justify-end gap-2 md:gap-4 flex-1 lg:flex-none">
-            <button className="hidden sm:flex p-3 text-white hover:bg-white/10 rounded-full transition-all">
-              <MagnifyingGlassIcon className="h-5 w-5 stroke-[2.5]" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className="p-3 text-white hover:bg-white/10 rounded-full transition-all"
+            />
 
             <button 
               onClick={handleUserAction}

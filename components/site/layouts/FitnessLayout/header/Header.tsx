@@ -14,6 +14,7 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import { EditableElement } from "@/contexts/EditableContentContext";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 const defaultStoreData = {
   name: "YourBrand",
@@ -162,9 +163,10 @@ export default function Header() {
           {/* RIGHT SIDE UTILITIES */}
           <div className="flex items-center space-x-3">
             {/* SEARCH */}
-            <button className="hidden sm:flex p-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800/60 rounded-full transition-all duration-200">
-              <MagnifyingGlassIcon className="w-4 h-4" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800/60 rounded-full transition-all duration-200"
+            />
 
             <div className="h-4 w-[1px] bg-neutral-200 dark:bg-neutral-800 hidden sm:block" />
             

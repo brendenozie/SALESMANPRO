@@ -14,8 +14,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -122,7 +122,13 @@ export default function PremiumMeatHeader() {
                 <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">NBO Delivery</span>
               </div>
 
-              {/* User Account */}
+              {/* Search */}
+            <StoreHeaderSearch
+              variant="button"
+              className={`p-3 rounded-xl transition-all border border-white/5 hover:bg-white hover:text-black ${scrolled ? 'text-white' : 'text-white bg-black/20'}`}
+            />
+
+            {/* User Account */}
               <button 
                 onClick={user ? () => router.push('/meatecommerce/profile') : handleGoogleSignIn}
                 className={`p-3 rounded-xl transition-all border border-white/5 hover:bg-white hover:text-black ${scrolled ? 'text-white' : 'text-white bg-black/20'}`}

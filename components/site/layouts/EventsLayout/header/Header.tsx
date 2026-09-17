@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useStoreContext } from '@/contexts/StoreContext';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 // --- Reusable NavLink Component ---
 const NavLink = ({
@@ -189,13 +190,10 @@ export default function Header() {
             {/* --- Right Actions --- */}
             <div className="flex items-center space-x-3 sm:space-x-4">
               {/* Search */}
-              <button
-                onClick={() => router.push(`/search`)}
-                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
-                aria-label="Search"
-              >
-                <MagnifyingGlassCircleIcon className="h-6 w-6" />
-              </button>
+              <StoreHeaderSearch
+                variant="button"
+                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200"
+              />
 
               {/* Profile */}
               {!user ? (

@@ -16,6 +16,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=80`;
 
@@ -84,11 +85,13 @@ export default function Header() {
               <Bars2Icon className="h-6 w-6 stroke-[1.5]" />
             </button>
             
-            <button className={`hidden md:block group transition-colors ${
-              scrolled ? 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white' : 'text-white/60 hover:text-white'
-            }`}>
-              <MagnifyingGlassIcon className="h-5 w-5 stroke-[1.5] group-hover:scale-110 transition-transform" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              buttonClassName={`group transition-colors ${
+                scrolled ? 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white' : 'text-white/80 hover:text-white'
+              }`}
+              iconClassName="h-5 w-5 stroke-[1.5] group-hover:scale-110 transition-transform"
+            />
           </div>
 
           {/* --- Center: Brand Identity --- */}

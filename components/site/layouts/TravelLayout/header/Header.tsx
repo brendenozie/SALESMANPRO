@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { useSession, signOut } from "next-auth/react";
 import { EditableElement } from "@/contexts/EditableContentContext";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 // Fallback sample data
 const sampleData = {
@@ -140,12 +141,12 @@ export default function Header() {
             {/* Desktop Action Utilities */}
             <div className="hidden lg:flex items-center space-x-3">
               {/* Search Utility Button */}
-              <button
-                onClick={() => router.push(`/search`)}
-                className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-white/90"
-              >
-                <MagnifyingGlassIcon className="h-5 w-5" />
-              </button>
+              <StoreHeaderSearch
+                variant="button"
+                buttonClassName="p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-white/90"
+                iconClassName="h-5 w-5"
+                placeholder="Search destinations, tours, packages..."
+              />
 
               {/* Chat Utility Button */}
               <button

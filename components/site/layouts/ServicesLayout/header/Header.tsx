@@ -19,6 +19,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { clsx } from 'clsx';
 import CartDrawer from './CartDrawer';
 import { EditableElement } from '@/contexts/EditableContentContext';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -279,41 +280,15 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
           {/* --- RIGHT: ACTIONS --- */}
           <div className="flex items-center gap-3">
             
-            {/* Search (Expanding) */}
-            <div className={clsx("relative flex items-center transition-all", isSearchOpen ? "w-64" : "w-auto")}>
-               <AnimatePresence>
-                 {isSearchOpen && (
-                   <motion.form
-                     initial={{ width: 0, opacity: 0 }}
-                     animate={{ width: '100%', opacity: 1 }}
-                     exit={{ width: 0, opacity: 0 }}
-                     onSubmit={handleSearchSubmit}
-                     className="absolute right-0 top-1/2 -translate-y-1/2 w-full"
-                   >
-                     <input
-                       autoFocus
-                       type="text"
-                       placeholder="Search..."
-                       value={searchTerm}
-                       onChange={(e) => setSearchTerm(e.target.value)}
-                       className="w-full h-10 pl-4 pr-10 rounded-full bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 focus:ring-[var(--primary)] text-gray-800 dark:text-white"
-                       style={{ '--primary': primaryColor } as React.CSSProperties}
-                       onBlur={() => !searchTerm && setIsSearchOpen(false)}
-                     />
-                   </motion.form>
-                 )}
-               </AnimatePresence>
-               
-               <button 
-                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                 className={clsx(
-                   "p-2.5 rounded-full transition-colors z-10", 
-                   isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
-                 )}
-               >
-                  <MagnifyingGlassIcon className="w-5 h-5" />
-               </button>
-            </div>
+            {/* Store Search */}
+            <StoreHeaderSearch
+              variant="button"
+              buttonClassName={clsx(
+                "p-2.5 rounded-full transition-colors z-10",
+                isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
+              )}
+              iconClassName="w-5 h-5"
+            />
 
             {/* Cart */}
               <button 

@@ -23,8 +23,9 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
-import { IStoreCategory } from '@/types/typings';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
+import { IStoreCategory } from '@/types/typings';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -177,28 +178,23 @@ export default function Header() {
 
         {/* SEARCH */}
         <div className="hidden md:flex flex-grow max-w-2xl items-center">
-          <div className="flex w-full items-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-gray-300 dark:focus-within:ring-gray-600">
-            <button className="px-4 text-gray-400 border-r border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <Squares2X2Icon className="h-5 w-5"/>
-            </button>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={onSearchChange}
-              placeholder="Search for products..."
-              className="flex-grow bg-transparent py-2.5 px-4 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
-            />
-            <button
-              className="p-3 text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <MagnifyingGlassIcon className="h-5 w-5"/>
-            </button>
-          </div>
+          <StoreHeaderSearch
+            variant="pill"
+            placeholder="Search for products..."
+            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl"
+          />
         </div>
 
         {/* ACTIONS */}
         <div className="flex items-center space-x-3 md:space-x-5">
+          {/* MOBILE SEARCH */}
+          <div className="md:hidden">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+            />
+          </div>
+
           <button className="hidden sm:block p-2 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
             <HeartIcon className="h-6 w-6"/>
           </button>

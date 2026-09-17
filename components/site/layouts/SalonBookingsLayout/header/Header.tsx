@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useStoreContext } from '@/contexts/StoreContext';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -157,6 +158,10 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-800 transition-colors"
+            />
             {/* User/Profile Button */}
             {!user ? (
               <div className="flex items-center gap-3">
@@ -214,13 +219,19 @@ export default function Header() {
             </motion.a> */}
           </div>
 
-          {/* Mobile Toggle */}
-          <button
-            onClick={() => setIsOpen(true)}
-            className="md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-800 transition-colors"
-          >
-            <Bars3Icon className="h-7 w-7" />
-          </button>
+          {/* Mobile Actions */}
+          <div className="md:hidden flex items-center gap-1">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-800 transition-colors"
+            />
+            <button
+              onClick={() => setIsOpen(true)}
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-800 transition-colors"
+            >
+              <Bars3Icon className="h-7 w-7" />
+            </button>
+          </div>
         </div>
       </motion.header>
 

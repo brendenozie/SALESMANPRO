@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useRouter } from "next/navigation";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 // Type definitions
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }
@@ -136,20 +137,24 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
 
           {/* Search */}
           <div className="flex-1 mx-6 hidden lg:block">
-            <div className="relative">
-              <input
-                type="search"
-                placeholder="Search products..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-sm rounded-full py-2 px-4 pl-10 shadow-sm focus:outline-none"
-                onFocus={(e) => (e.currentTarget.style.boxShadow = `0 0 0 2px ${primary}`)}
-                onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-              />
-              <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
+            <StoreHeaderSearch
+              variant="inline"
+              companyId={store.id}
+              storeSlug={store.slug}
+              placeholder="Search products, categories..."
+            />
           </div>
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
+            <div className="lg:hidden">
+              <StoreHeaderSearch
+                variant="button"
+                companyId={store.id}
+                storeSlug={store.slug}
+                iconClassName="h-6 w-6 text-gray-600 dark:text-gray-200"
+              />
+            </div>
             <motion.button whileHover={{ scale: 1.1 }} onClick={()=>{router.push(`/site/${store.slug}/profile`);}} className="text-gray-600 dark:text-gray-200">
               <UserIcon className="h-6 w-6" />
             </motion.button>

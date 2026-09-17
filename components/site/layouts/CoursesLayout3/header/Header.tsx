@@ -20,6 +20,7 @@ import {
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider'; // fallback cart provider
 import { useSession, signOut } from 'next-auth/react';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const loader = ({ src }: { src: string }) => {
   return src;
@@ -355,40 +356,12 @@ export default function Header() {
       </nav>
 
       {/* Search (center) */}
-      <div className="flex-1 flex justify-center">
-        <div className="relative w-full max-w-lg">
-          <input
-            ref={searchInputRef}
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search courses..."
-            className="w-full rounded-full pl-10 pr-4 py-2 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
-            style={{ caretColor: primaryColor }}
-          />
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-
-          {/* Suggestions */}
-          <AnimatePresence>
-            {searchOpen && (suggestions.length > 0 || loadingSuggestions) && (
-              <motion.div
-                className="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-100 dark:border-slate-700 z-50 overflow-hidden"
-              >
-                <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                  {suggestions.map((sug) => (
-                    <a
-                      key={sug.id}
-                      onMouseDown={(e) => { e.preventDefault(); goToCourse(sug.slug ?? sug.id); }}
-                      className="block px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-sm text-slate-700 dark:text-slate-200"
-                    >
-                      {sug.title}
-                    </a>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+      <div className="flex-1 flex justify-center max-w-lg">
+        <StoreHeaderSearch
+          variant="pill"
+          placeholder="Search courses..."
+          className="w-full"
+        />
       </div>
 
       {/* Right icons */}

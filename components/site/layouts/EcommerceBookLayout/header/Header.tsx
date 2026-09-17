@@ -24,8 +24,8 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
-import { IStoreCategory } from '@/types/typings';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -149,33 +149,23 @@ export default function Header() {
 
         {/* MODERN SEARCH ENGINE */}
         <div className="hidden md:flex flex-grow max-w-xl relative">
-          <motion.div 
-            animate={{ 
-              scale: isSearchFocused ? 1.02 : 1,
-              boxShadow: isSearchFocused ? "0 10px 25px -5px rgba(0,0,0,0.1)" : "0 0px 0px rgba(0,0,0,0)"
-            }}
-            className="flex w-full items-center bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden"
-          >
-            <div className="pl-4 text-gray-400">
-              <MagnifyingGlassIcon className="h-5 w-5" />
-            </div>
-            <input
-              type="text"
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-              value={searchQuery}
-              onChange={onSearchChange}
-              placeholder="Search by title, author, or ISBN..."
-              className="flex-grow bg-transparent py-3.5 px-4 text-sm text-gray-800 dark:text-gray-200 focus:outline-none"
-            />
-            <button className="px-5 py-2 mr-1.5 rounded-xl text-white text-xs font-bold transition-all hover:brightness-110" style={{ backgroundColor: primaryColor }}>
-              Find
-            </button>
-          </motion.div>
+          <StoreHeaderSearch
+            variant="pill"
+            placeholder="Search by title, author, or ISBN..."
+            className="w-full bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm"
+          />
         </div>
 
         {/* ACTION BUTTONS */}
         <div className="flex items-center space-x-2 md:space-x-4">
+          {/* MOBILE SEARCH */}
+          <div className="md:hidden">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 text-gray-700 dark:text-gray-300"
+            />
+          </div>
+
           <button className="hidden sm:flex p-2.5 text-gray-500 hover:text-red-500 transition-colors">
             <HeartIcon className="h-6 w-6" />
           </button>

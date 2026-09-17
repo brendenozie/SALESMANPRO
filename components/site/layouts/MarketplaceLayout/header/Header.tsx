@@ -21,6 +21,7 @@ import {
 import { useSession, signOut } from "next-auth/react";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -179,6 +180,9 @@ export default function Header() {
 
           {/* RIGHT: Icons */}
           <div className="flex items-center gap-6">
+
+            {/* Store Search */}
+            <StoreHeaderSearch variant="button" iconClassName="h-6 w-6 text-gray-900" />
 
             {/* Profile / Login */}
             {status === "loading" ? null : user ? (

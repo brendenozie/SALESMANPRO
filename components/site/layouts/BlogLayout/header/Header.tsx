@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 // --- Icons (Enhanced with generic wrapper for consistency) ---
 const IconWrapper = ({ children, className = "w-5 h-5" }: { children: React.ReactNode, className?: string }) => (
@@ -181,13 +182,10 @@ const Header = () => {
           {/* ===== RIGHT: ACTIONS ===== */}
           <div className="flex items-center gap-3">
             {/* Search Button */}
-            <motion.button
-              whileTap={{ scale: 0.95 }}
+            <StoreHeaderSearch
+              variant="button"
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg border border-transparent hover:border-slate-700 transition-all"
-              aria-label="Search"
-            >
-              <IconWrapper><MagnifyingGlassIcon /></IconWrapper>
-            </motion.button>
+            />
 
             {/* Profile / Auth Trigger */}
             <div className="hidden md:block">

@@ -17,6 +17,7 @@ interface UniversalSearchBarProps {
   scope?: "GHUBA" | "STORE";
   companyId?: string;
   storeSlug?: string;
+  productsBasePath?: string;
   placeholder?: string;
   className?: string;
   onSearchSubmit?: (query: string) => void;
@@ -27,6 +28,7 @@ export default function UniversalSearchBar({
   scope = "GHUBA",
   companyId,
   storeSlug,
+  productsBasePath = "/ecommerce/products",
   placeholder = "Search products, categories, brands...",
   className = "",
   onSearchSubmit,
@@ -118,12 +120,13 @@ export default function UniversalSearchBar({
       if (scope === "GHUBA") {
         return `/ghuba/productlist?search=${q}`;
       }
-      if (storeSlug) {
-        return `/site/${storeSlug}/ecommerce/products?search=${q}`;
+      const basePath = productsBasePath || "/ecommerce/products";
+      if (storeSlug && typeof window !== "undefined" && window.location.pathname.startsWith(`/site/${storeSlug}`)) {
+        return `/site/${storeSlug}${basePath}?search=${q}`;
       }
-      return `/ecommerce/products?search=${q}`;
+      return `${basePath}?search=${q}`;
     },
-    [scope, storeSlug]
+    [scope, storeSlug, productsBasePath]
   );
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -154,7 +157,12 @@ export default function UniversalSearchBar({
     if (scope === "GHUBA") {
       router.push(`/ghuba/productlist?category=${cat}`);
     } else {
-      router.push(`/ecommerce/products?category=${cat}`);
+      const basePath = productsBasePath || "/ecommerce/products";
+      if (storeSlug && typeof window !== "undefined" && window.location.pathname.startsWith(`/site/${storeSlug}`)) {
+        router.push(`/site/${storeSlug}${basePath}?category=${cat}`);
+      } else {
+        router.push(`${basePath}?category=${cat}`);
+      }
     }
   };
 
@@ -285,11 +293,15 @@ export default function UniversalSearchBar({
                     type="button"
                     onClick={() => {
                       setIsOpen(false);
-                      router.push(
-                        scope === "GHUBA"
-                          ? `/ghuba/productlist/${prod.id}`
-                          : `/ecommerce/products/${prod.id}`
-                      );
+                      if (scope === "GHUBA") {
+                        router.push(`/ghuba/productlist/${prod.id}`);
+                      } else {
+                        const basePath = productsBasePath || "/ecommerce/products";
+                        const targetUrl = (storeSlug && typeof window !== "undefined" && window.location.pathname.startsWith(`/site/${storeSlug}`))
+                          ? `/site/${storeSlug}${basePath}/${prod.id}`
+                          : `${basePath}/${prod.id}`;
+                        router.push(targetUrl);
+                      }
                     }}
                     className="w-full text-left p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors flex items-center gap-3 group"
                   >

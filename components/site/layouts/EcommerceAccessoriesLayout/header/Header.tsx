@@ -27,6 +27,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
 import { IStoreCategory } from '@/types/typings';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -133,13 +134,13 @@ export default function AutomotiveDukaHeader() {
           >
             <Bars3Icon className="h-6 w-6"/>
           </button>
-          <button 
-            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)} 
-            className="p-2 text-zinc-800 dark:text-zinc-200 hover:text-[var(--primary-color)] lg:hidden transition-colors"
-            aria-label="Toggle Search"
-          >
-            <MagnifyingGlassIcon className="h-5 w-5"/>
-          </button>
+          <div className="lg:hidden">
+            <StoreHeaderSearch
+              variant="button"
+              iconClassName="h-5 w-5 text-zinc-800 dark:text-zinc-200"
+              buttonClassName="p-2 hover:text-[var(--primary-color)] transition-colors"
+            />
+          </div>
         </div>
 
         {/* LOGO ENGINE */}
@@ -160,23 +161,10 @@ export default function AutomotiveDukaHeader() {
 
         {/* RACING GRID SEARCH VAULT (DESKTOP) */}
         <div className="hidden lg:flex flex-grow max-w-2xl xl:max-w-3xl items-center">
-          <div className="flex w-full items-center bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg focus-within:border-[var(--primary-color)] focus-within:ring-2 focus-within:ring-[var(--primary-color)]/20 transition-all duration-200 shadow-inner">
-            <button className="px-4 text-zinc-400 dark:text-zinc-500 hover:text-[var(--primary-color)] border-r border-zinc-200 dark:border-zinc-800 transition-colors">
-              <Squares2X2Icon className="h-5 w-5"/>
-            </button>
-            <input
-              type="text"
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                handleSearch(e.target.value);
-              }}
-              placeholder="Search by part number, OEM code, specs..."
-              className="flex-grow bg-transparent py-3 px-4 text-xs font-mono tracking-wide text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none"
-            />
-            <button className="p-3 mr-1 bg-zinc-900 dark:bg-zinc-800 hover:bg-[var(--primary-color)] text-white hover:text-zinc-950 rounded-md transition-all duration-200">
-              <MagnifyingGlassIcon className="h-4 w-4"/>
-            </button>
-          </div>
+          <StoreHeaderSearch
+            variant="inline"
+            placeholder="Search by part number, OEM code, specs..."
+          />
         </div>
 
         {/* SUITE OF COCKPIT ACTIONS */}

@@ -15,8 +15,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -134,11 +134,11 @@ export default function Header() {
 
           {/* 3. ACTION CENTER */}
           <div className="flex items-center gap-2 sm:gap-4">
-            
-            {/* Search Icon (Visible on desktop) */}
-            <button className="p-2.5 rounded-full hover:bg-slate-100 transition-colors text-slate-600 hidden md:block">
-              <MagnifyingGlassIcon className="h-5 w-5" />
-            </button>
+            {/* Search Icon */}
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2.5 rounded-full hover:bg-slate-100 transition-colors text-slate-600"
+            />
 
             {/* Auth Button */}
             <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block" />

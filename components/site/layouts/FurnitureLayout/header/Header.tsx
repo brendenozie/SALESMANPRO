@@ -15,6 +15,7 @@ import { useSession } from 'next-auth/react';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 export default function Header() {
   const { cart } = useStateContext();
@@ -143,12 +144,12 @@ export default function Header() {
 
             {/* UTILITIES */}
             <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-              <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/5 dark:bg-white/5 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all">
-                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
-                <span className="text-[10px] font-bold uppercase text-zinc-400">
-                  Search
-                </span>
-              </button>
+              <StoreHeaderSearch
+                variant="pill"
+                placeholder="Search furniture..."
+                buttonClassName="px-4 py-2 rounded-full bg-zinc-900/5 dark:bg-white/5 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all text-[10px] uppercase font-bold"
+                iconClassName="w-4 h-4 text-zinc-500"
+              />
 
               <div className="hidden md:block w-px h-6 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 

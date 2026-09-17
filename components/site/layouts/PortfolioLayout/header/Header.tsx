@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bars3Icon, UserIcon, XMarkIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
+import { StoreHeaderSearch } from '@/components/search/StoreHeaderSearch';
 
 // --- Custom Icon Components ---
 const FacebookIcon = ({ className }: { className?: string }) => (
@@ -152,6 +153,7 @@ export default function Header() {
 
         {/* Right Anchor: Secure Node Control Suite */}
         <div className="hidden md:flex items-center gap-4 relative z-20">
+          <StoreHeaderSearch variant="button" />
           
           {/* External Pipelines Group */}
           <div className="flex items-center border-r border-slate-200 dark:border-slate-800 pr-4 gap-2 text-slate-400 dark:text-slate-500">
@@ -219,13 +221,16 @@ export default function Header() {
         </div>
 
         {/* Mobile Grid Menu Trigger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2 rounded-xl text-slate-800 dark:text-slate-200 border border-transparent active:border-slate-200 dark:active:border-slate-800 relative z-20 transition-colors"
-          aria-label="Toggle structural menu"
-        >
-          {menuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
-        </button>
+        <div className="md:hidden flex items-center gap-2 relative z-20">
+          <StoreHeaderSearch variant="button" />
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 rounded-xl text-slate-800 dark:text-slate-200 border border-transparent active:border-slate-200 dark:active:border-slate-800 transition-colors"
+            aria-label="Toggle structural menu"
+          >
+            {menuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer Array */}

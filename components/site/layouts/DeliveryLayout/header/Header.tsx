@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -167,7 +168,10 @@ export default function Navbar() {
 
           {/* ACTION ICONS */}
           <div className="flex items-center justify-end gap-2 sm:gap-5 px-4 sm:px-6 shrink-0">
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 cursor-pointer hover:text-orange-500 hidden sm:block" />
+            <StoreHeaderSearch
+              variant="button"
+              className="p-1 text-gray-500 hover:text-orange-500 transition-colors"
+            />
             
             <div className="h-6 w-[1px] bg-gray-200 hidden sm:block" />
 

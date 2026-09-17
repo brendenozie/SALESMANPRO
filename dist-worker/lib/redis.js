@@ -11,7 +11,7 @@ const isBuildPhase = process.env.NEXT_IS_BUILD_PHASE === "true" ||
     process.env.NEXT_PHASE === "phase-production-build" ||
     process.env.npm_lifecycle_event === "build" ||
     process.env.NEXT_BUILD === "1" ||
-    (Array.isArray(process.argv) && process.argv.some(arg => typeof arg === "string" && arg.includes("build")));
+    (typeof process !== "undefined" && Array.isArray(process.argv) && process.argv.some((arg) => typeof arg === "string" && arg.includes("build")));
 /**
  * Creates a lightweight no-op mock for Next.js build-time static generation.
  * Prevents socket creation, DNS hangs, and EMFILE errors during build.

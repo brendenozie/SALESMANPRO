@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bars3Icon, XMarkIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'; 
 import { useStoreContext } from '@/contexts/StoreContext';
+import { StoreHeaderSearch } from '@/components/search/StoreHeaderSearch';
 import type { IconType } from 'react-icons';
 import type { SocialChannel as ExternalSocialChannel } from '@/types/typings';
 import {
@@ -141,6 +142,8 @@ export default function HeaderLightMode() {
 
         {/* DESKTOP OPERATIONS PANEL */}
         <div className="hidden lg:flex items-center gap-5">
+          <StoreHeaderSearch variant="button" />
+
           {socialLinks.length > 0 && (
             <div className="flex items-center gap-1 bg-gray-50/40 border border-gray-100 px-1.5 py-0.5 rounded-lg">
               {socialLinks.map(({ channel, url }) => (
@@ -170,13 +173,16 @@ export default function HeaderLightMode() {
         </div>
         
         {/* MOBILE COMMAND BURGER */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="lg:hidden p-2.5 rounded-xl border border-gray-200/60 bg-white shadow-sm hover:bg-gray-50 transition-colors z-50"
-          aria-label="Toggle command menu"
-        >
-          {menuOpen ? <XMarkIcon className="w-5 h-5 text-gray-900" /> : <Bars3Icon className="w-5 h-5 text-gray-900" />}
-        </button>
+        <div className="lg:hidden flex items-center gap-2 z-50">
+          <StoreHeaderSearch variant="button" />
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2.5 rounded-xl border border-gray-200/60 bg-white shadow-sm hover:bg-gray-50 transition-colors"
+            aria-label="Toggle command menu"
+          >
+            {menuOpen ? <XMarkIcon className="w-5 h-5 text-gray-900" /> : <Bars3Icon className="w-5 h-5 text-gray-900" />}
+          </button>
+        </div>
       </div>
 
       {/* FULL-WINDOW DRAWER FOR MOBILE MATRIX */}

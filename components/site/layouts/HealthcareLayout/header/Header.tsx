@@ -14,6 +14,7 @@ import {
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 import { EditableElement } from '@/contexts/EditableContentContext';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -216,6 +217,10 @@ export default function Header() {
 
           {/* SPLIT SECURITY AUTH LAYOUT */}
           <div className="flex items-center space-x-3 ml-4 border-l border-slate-200/60 dark:border-slate-800 pl-6">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+            />
             {!user ? (
               <>
                 <button

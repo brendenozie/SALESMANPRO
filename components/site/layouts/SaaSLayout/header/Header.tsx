@@ -11,6 +11,7 @@ import {
   RocketLaunchIcon, // A more engaging icon for "Get Started"
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 // Re-using the loader from your SaasSite component for consistency
 const loader = ({
@@ -108,6 +109,12 @@ export default function SaasHeader() {
             </motion.div>
           ))}
 
+          {/* Search Trigger */}
+          <StoreHeaderSearch
+            variant="button"
+            className="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+          />
+
           {/* Desktop CTA Button */}
           <motion.button
             onClick={() => router.push(`/${siteSlug}/signup`)}
@@ -119,15 +126,21 @@ export default function SaasHeader() {
           </motion.button>
         </nav>
 
-        {/* Mobile Menu Toggle Button */}
-        <motion.button
-          className="md:hidden text-gray-700 dark:text-gray-200 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Open menu"
-          whileTap={{ scale: 0.9 }}
-        >
-          <Bars3Icon className="h-8 w-8" /> {/* Larger, more modern icon */}
-        </motion.button>
+        {/* Mobile Menu Actions */}
+        <div className="md:hidden flex items-center gap-2">
+          <StoreHeaderSearch
+            variant="button"
+            className="text-gray-700 dark:text-gray-200 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          />
+          <motion.button
+            className="text-gray-700 dark:text-gray-200 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+            whileTap={{ scale: 0.9 }}
+          >
+            <Bars3Icon className="h-8 w-8" />
+          </motion.button>
+        </div>
       </div>
 
       {/* Mobile Menu Drawer */}

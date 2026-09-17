@@ -17,6 +17,7 @@ import { SubscriptionGraceBanner, SubscriptionInactiveView } from './Subscriptio
 import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registry';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import { SEOService } from '@/lib/seo';
+import TenantStoreBottomNav from '@/components/search/TenantStoreBottomNav';
 
 export const revalidate = 60;
 
@@ -266,6 +267,9 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
             <WhatsAppBubble productName={''} />
             <AnalyticsProvider config={raw.AnalyticsConfig} />
           </LayoutComponent>
+
+          {/* 📱 Mobile Discovery & Search Bar for all Tenant Storefronts */}
+          {!isGhuba && <TenantStoreBottomNav />}
         </div>
       </StoreContextProvider>
     </EditableContentProvider>

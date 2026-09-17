@@ -322,7 +322,7 @@ export class CategoryService {
   }>> {
     const cacheKey = `cat:tree:${companyId || "global"}`;
     try {
-      const cached = await cacheGet(cacheKey);
+      const cached = await cacheGet<any>(cacheKey);
       if (cached) return cached;
     } catch {}
 

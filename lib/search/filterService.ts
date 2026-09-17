@@ -141,7 +141,7 @@ export class FilterService {
     const cacheKey = `filter:facets:${scope}:${params.companyId || "all"}:${params.category || "all"}`;
 
     try {
-      const cached = await cacheGet(cacheKey);
+      const cached = await cacheGet<AvailableFiltersResponseDTO>(cacheKey);
       if (cached) return cached;
     } catch {}
 

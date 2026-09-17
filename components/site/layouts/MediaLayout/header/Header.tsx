@@ -15,6 +15,7 @@ import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext"; 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 // Mocking external hooks/context data to ensure the component is runnable
 // const useStoreContext = () => ({ storeFormData: { logoUrl: '', name: 'CorpTech' } });
@@ -153,15 +154,20 @@ export default function EnhancedMediaHeader() {
 
                     {/* Actions */}
                     <div className="flex items-center space-x-4">
-                        {/* Search */}
-                        <div className="relative hidden md:block">
-                            <input
-                                type="search"
-                                placeholder="Search..."
-                                // Light mode search bar
-                                className="pl-10 pr-4 py-2 rounded-full bg-gray-100 text-sm text-gray-800 placeholder-gray-500 border border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                        {/* Search Desktop */}
+                        <div className="hidden md:block">
+                            <StoreHeaderSearch
+                                variant="pill"
+                                className="bg-gray-100 text-sm text-gray-800 placeholder-gray-500 rounded-full"
                             />
-                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                        </div>
+
+                        {/* Search Mobile */}
+                        <div className="md:hidden">
+                            <StoreHeaderSearch
+                                variant="button"
+                                className="p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                            />
                         </div>
 
                         {/* Notifications */}

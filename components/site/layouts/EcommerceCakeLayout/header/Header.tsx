@@ -14,8 +14,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession } from 'next-auth/react';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -113,9 +113,10 @@ export default function Header() {
 
           {/* 3. ACTION ICONS - Elegant Thin Strokes */}
           <div className="flex-1 flex items-center justify-end space-x-6">
-            <button className={`${scrolled ? 'text-gray-900' : 'text-white'} hover:text-amber-600 transition-colors`}>
-              <MagnifyingGlassIcon className="h-5 w-5 stroke-[2px]" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className={`${scrolled ? 'text-gray-900' : 'text-white'} hover:text-amber-600 transition-colors`}
+            />
 
             <button 
               onClick={() => setIsCartOpen(true)}

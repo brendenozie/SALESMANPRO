@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
+import { StoreHeaderSearch } from "@/components/search/StoreHeaderSearch";
 
 // --- Types ---
 interface StoreForm {
@@ -107,7 +108,7 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
   const { data: session, status } = useSession();
-  const user = session?.user;
+  const user = session?.user as { role?: string; name?: string } | undefined;
 
   const handleScroll = useCallback(() => {
     setIsScrolled(window.scrollY > 120);
@@ -210,6 +211,8 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
           {/* CTA + Profile / Mobile Toggle */}
           {/* CTA + Profile / Mobile Toggle */}
 <div className="flex items-center space-x-3 sm:space-x-4">
+  <StoreHeaderSearch variant="button" />
+
   {/* --- Primary CTA / Sign Up (Only visible when user is NOT logged in) --- */}
   {!user && (
     <motion.div
@@ -255,7 +258,7 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
   </motion.button>
 
   {/* --- Mobile Menu Toggle --- */}
-  <div className="md:hidden z-50 relative">
+  <div className="md:hidden z-50 relative flex items-center gap-2">
     <motion.button
       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
       className={`p-3 rounded-full transition-colors shadow-lg border ${

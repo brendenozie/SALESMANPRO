@@ -14,8 +14,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -104,9 +104,10 @@ export default function Header() {
           {/* ACTION ICONS */}
           <div className="flex items-center space-x-5">
             {/* Search - Subtle Aesthetic */}
-            <button className="text-black hover:text-[#bc9c64] transition-colors">
-              <MagnifyingGlassIcon className="h-5 w-5 stroke-2" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className="text-black hover:text-[#bc9c64] transition-colors"
+            />
 
             {/* Cart with count - Styled like image_5f4e43.png */}
             <button 

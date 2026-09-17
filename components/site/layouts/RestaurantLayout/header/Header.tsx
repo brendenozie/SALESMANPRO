@@ -20,6 +20,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { EditableElement } from '@/contexts/EditableContentContext';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 import LiveSearchSideBar from './LiveSearchSideBar';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -139,10 +140,13 @@ export default function Header() {
 
             {/* --- ACTIONS --- */}
             <div className="flex items-center space-x-3">
-              {/* // Trigger in your header actions: */}
-              <button onClick={() => setSearchOpen(true)}>
-                <MagnifyingGlassIcon className="h-5 w-5  bg-zinc-900/50 text-white " />
-              </button>
+              {/* Search Trigger */}
+              <StoreHeaderSearch
+                variant="button"
+                buttonClassName="p-2.5 rounded-full bg-zinc-900/50 text-white border border-zinc-800 hover:bg-zinc-800 transition-all shadow-xl"
+                iconClassName="h-5 w-5 text-white"
+                placeholder="Search menu, dishes, cuisine..."
+              />
 
                 {/* Cart Trigger */}
                 <button 

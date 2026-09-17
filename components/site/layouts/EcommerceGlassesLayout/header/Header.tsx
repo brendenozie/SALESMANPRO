@@ -14,8 +14,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -106,9 +106,10 @@ export default function Header() {
 
           {/* RIGHT: ICON SYSTEM */}
           <div className="flex-1 flex items-center justify-end space-x-4 md:space-x-7">
-            <button className="p-2 hover:bg-black/5 rounded-full transition-colors hidden sm:block">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-900" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 hover:bg-black/5 rounded-full transition-colors text-gray-900"
+            />
 
             {user ? (
               <button 

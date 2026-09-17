@@ -17,6 +17,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -103,16 +104,25 @@ export default function Header() {
           <div className="flex items-center space-x-2 md:space-x-4">
             
             {/* Search Pill (Desktop) */}
-            <div className={`hidden md:flex items-center rounded-full px-4 py-1.5 border transition-all duration-300 ${
-              scrolled 
-                ? 'bg-gray-100 border-gray-200 text-gray-400 focus-within:ring-2 ring-green-500/20' 
-                : 'bg-white/10 border-white/20 text-white/60 focus-within:bg-white/20'
-            }`}>
-              <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                className="bg-transparent border-none focus:ring-0 text-sm placeholder-inherit text-current w-24 lg:w-40"
+            <div className="hidden md:block">
+              <StoreHeaderSearch
+                variant="pill"
+                placeholder="Search groceries..."
+                className={`transition-all duration-300 ${
+                  scrolled 
+                    ? 'bg-gray-100 border-gray-200 text-gray-700' 
+                    : 'bg-white/10 border-white/20 text-white placeholder:text-white/60'
+                }`}
+              />
+            </div>
+
+            {/* Mobile Search Button */}
+            <div className="md:hidden">
+              <StoreHeaderSearch
+                variant="button"
+                className={`p-2.5 rounded-full transition-all active:scale-95 ${
+                  scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                }`}
               />
             </div>
 

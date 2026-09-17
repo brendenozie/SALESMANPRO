@@ -18,8 +18,8 @@ import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { useRouter } from "next/navigation";
 
-// AUTH
 import { useSession, signOut } from "next-auth/react";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 // Fallback sample
 const defaultStoreData = {
@@ -170,38 +170,10 @@ export default function Header() {
           ))}
 
           {/* SEARCH */}
-          <div className="relative">
-            <button
-              onClick={() => setShowSearchInput(!showSearchInput)}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800"
-            >
-              <MagnifyingGlassIcon className="w-6 h-6" />
-            </button>
-
-            <AnimatePresence>
-              {showSearchInput && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 250, opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  className="absolute right-0 top-1/2 -translate-y-1/2"
-                >
-                  <input
-                    type="text"
-                    placeholder="Search listings..."
-                    className="pl-10 pr-4 py-2 w-full rounded-full bg-gray-100"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        router.push(`/propertymanagement/listings?q=${e.currentTarget.value.trim()}`);
-                        setShowSearchInput(false);
-                      }
-                    }}
-                  />
-                  <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <StoreHeaderSearch
+            variant="button"
+            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800"
+          />
         </nav>
 
         {/* AUTH + MOBILE TOGGLE */}

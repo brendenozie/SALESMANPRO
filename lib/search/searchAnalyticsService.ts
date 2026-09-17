@@ -162,3 +162,5 @@ export class SearchAnalyticsService {
     };
   }
 }
+
+export default SearchAnalyticsService;

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid'; 
 import { useStoreContext } from '@/contexts/StoreContext';
+import { StoreHeaderSearch } from '@/components/search/StoreHeaderSearch';
 import type { IconType } from 'react-icons';
 import type { SocialChannel as ExternalSocialChannel } from '@/types/typings';
 import {
@@ -133,6 +134,8 @@ export default function HeaderIndustrialGrid() {
 
         {/* RIGHT PANEL: TELEMETRY SOCIALS & SYSTEM ACTION BUTTON */}
         <div className="hidden lg:flex items-center h-full gap-6 pl-6 border-l border-gray-100">
+          <StoreHeaderSearch variant="button" />
+
           {socialLinks.length > 0 && (
             <div className="flex items-center gap-1 border-r border-gray-100 pr-4">
               {socialLinks.map(({ channel, url }) => (
@@ -154,13 +157,16 @@ export default function HeaderIndustrialGrid() {
         </div>
         
         {/* MOBILE INTERFACE TRIGGER */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="lg:hidden p-2 text-gray-900 hover:bg-gray-50 border border-gray-200 transition"
-          aria-label="Toggle system interface"
-        >
-          {menuOpen ? <XMarkIcon className="w-5 h-5" /> : <Bars3Icon className="w-5 h-5" />}
-        </button>
+        <div className="lg:hidden flex items-center gap-2">
+          <StoreHeaderSearch variant="button" />
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 text-gray-900 hover:bg-gray-50 border border-gray-200 transition"
+            aria-label="Toggle system interface"
+          >
+            {menuOpen ? <XMarkIcon className="w-5 h-5" /> : <Bars3Icon className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* MOBILE EXPANSION OVERLAY MODULE */}

@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { StoreForm } from "@/types/typings";
 import { EditableElement } from "@/contexts/EditableContentContext";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 interface HeaderProps {
   storeFormData?: StoreForm;
@@ -139,11 +140,12 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
         <div className="flex items-center gap-8">
           
           {/* Search Box */}
-          <div className="hidden md:flex items-center bg-zinc-100 dark:bg-white/5 rounded-full px-4 py-2 border border-zinc-200 dark:border-white/10 focus-within:border-blue-500/50 transition-all">
-            <MagnifyingGlassIcon className="h-4 w-4 text-zinc-400 dark:text-white/40" />
-            <input
+          <div className="hidden md:flex items-center">
+            <StoreHeaderSearch
+              variant="pill"
               placeholder="SEARCH ASSETS..."
-              className="bg-transparent border-none outline-none ml-3 text-[10px] font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/20 w-40 focus:w-56 transition-all"
+              buttonClassName="text-[10px] font-bold tracking-wider uppercase border-zinc-200 dark:border-white/10"
+              iconClassName="h-4 w-4"
             />
           </div>
 

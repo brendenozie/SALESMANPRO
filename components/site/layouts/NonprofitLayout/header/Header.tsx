@@ -13,6 +13,7 @@ import {
   UserIcon,
   ArrowRightOnRectangleIcon
 } from "@heroicons/react/24/outline";
+import { StoreHeaderSearch } from "@/components/search/StoreHeaderSearch";
 
 // Sample data fallback
 const sampleData = {
@@ -176,6 +177,7 @@ export default function Header() {
 
           {/* Interactive Utility Section */}
           <div className="hidden lg:flex items-center space-x-4">
+            <StoreHeaderSearch variant="button" />
             {user ? (
               <div className="flex items-center space-x-3 bg-slate-100/80 p-1.5 pr-4 rounded-xl border border-slate-200">
                 <button
@@ -219,7 +221,8 @@ export default function Header() {
           </div>
 
           {/* Responsive Menu Icon (Mobile/Tablet View) */}
-          <div className="flex items-center lg:hidden">
+          <div className="flex items-center space-x-2 lg:hidden">
+            <StoreHeaderSearch variant="button" />
             <button
               className="p-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 active:scale-95 transition-transform"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

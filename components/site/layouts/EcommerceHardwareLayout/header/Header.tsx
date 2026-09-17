@@ -24,8 +24,8 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
-import { IStoreCategory } from '@/types/typings';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -154,28 +154,23 @@ export default function IndustrialHeader() {
 
         {/* INDUSTRIAL SEARCH BAR (Desktop & Tablet) */}
         <div className="hidden md:flex flex-grow max-w-xl lg:max-w-3xl items-center">
-          <div className="flex w-full items-center bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-all">
-            <button className="px-3 lg:px-5 text-gray-400 dark:text-zinc-500 hover:text-amber-600 dark:hover:text-amber-500 border-r border-gray-200 dark:border-zinc-800 transition-colors">
-              <Squares2X2Icon className="h-4 w-4 lg:h-5 lg:w-5"/>
-            </button>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                handleSearch(e.target.value);
-              }}
-              placeholder="ENTER PART NO. OR CATEGORY..."
-              className="flex-grow bg-transparent py-2.5 lg:py-3 px-3 lg:px-6 text-[11px] lg:text-xs font-mono font-bold text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-600 outline-none"
-            />
-            <button className="p-2.5 lg:p-3.5 bg-amber-500 text-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
-              <MagnifyingGlassIcon className="h-5 w-5 lg:h-6 lg:w-6"/>
-            </button>
-          </div>
+          <StoreHeaderSearch
+            variant="pill"
+            placeholder="ENTER PART NO. OR CATEGORY..."
+            className="w-full bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 text-gray-900 dark:text-white font-mono text-xs"
+          />
         </div>
 
         {/* ACTION SUITE - Compact sizing on mobile */}
         <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
+          {/* MOBILE SEARCH TRIGGER */}
+          <div className="md:hidden">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:text-amber-600 dark:hover:text-amber-500 transition-all"
+            />
+          </div>
+
           {/* THEME TOGGLE */}
           <button 
             onClick={toggleTheme}

@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { StoreForm } from "@/types/typings";
+import StoreHeaderSearch from "@/components/search/StoreHeaderSearch";
 
 interface HeaderProps {
   storeFormData?: StoreForm;
@@ -207,19 +208,14 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
           <div className="flex items-center gap-3 sm:gap-4">
             
             {/* Search Pill */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className="hidden md:flex items-center bg-slate-100 dark:bg-slate-900/90 rounded-xl px-3.5 py-2 border border-slate-300 dark:border-slate-700/80 focus-within:border-amber-500/80 focus-within:ring-1 focus-within:ring-amber-500/40 transition-all"
-            >
-              <MagnifyingGlassIcon className="h-4 w-4 text-amber-500" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+            <div className="hidden md:flex items-center">
+              <StoreHeaderSearch
+                variant="pill"
                 placeholder="Search fleet stock..."
-                className="bg-transparent border-none outline-none ml-2 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 w-36 focus:w-48 transition-all"
+                buttonClassName="rounded-xl border-slate-300 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-900/90 text-xs"
+                iconClassName="h-4 w-4 text-amber-500"
               />
-            </form>
+            </div>
 
             {/* Verification Badge Marker */}
             <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">

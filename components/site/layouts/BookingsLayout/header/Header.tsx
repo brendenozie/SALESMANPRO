@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useStoreContext } from '@/contexts/StoreContext';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -148,6 +149,10 @@ export default function Header() {
 
           {/* DESKTOP AUTHENTICATION ACTIONS */}
           <div className="hidden md:flex items-center gap-3">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors"
+            />
             {!user ? (
               <div className="flex items-center gap-2.5">
                 <button
@@ -189,13 +194,19 @@ export default function Header() {
             )}
           </div>
 
-          {/* MOBILE NAV TOGGLE */}
-          <button
-            onClick={() => setIsOpen(true)}
-            className="md:hidden p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 transition-colors"
-          >
-            <Bars3Icon className="h-6 w-6" />
-          </button>
+          {/* MOBILE NAV TOGGLE & SEARCH */}
+          <div className="md:hidden flex items-center gap-1.5">
+            <StoreHeaderSearch
+              variant="button"
+              className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 transition-colors"
+            />
+            <button
+              onClick={() => setIsOpen(true)}
+              className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 transition-colors"
+            >
+              <Bars3Icon className="h-6 w-6" />
+            </button>
+          </div>
         </div>
       </motion.header>
 

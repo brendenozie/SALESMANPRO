@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 
 // --------------------------------------
@@ -285,6 +286,12 @@ export default function Header() {
 
             {/* RIGHT ICONS */}
             <div className="flex items-center space-x-5">
+
+              {/* SEARCH */}
+              <StoreHeaderSearch
+                variant="button"
+                className="text-gray-700 dark:text-gray-200 p-1 hover:text-black dark:hover:text-white transition-colors"
+              />
 
               {/* USER / PROFILE */}
               {!user ? (

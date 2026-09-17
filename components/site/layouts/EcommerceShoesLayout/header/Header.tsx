@@ -17,6 +17,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -164,33 +165,11 @@ export default function Header() {
           <div className="flex items-center gap-3 sm:gap-6">
             
             {/* Search Toggle */}
-            <div className="relative flex items-center">
-              <AnimatePresence>
-                {searchOpen && (
-                  <motion.div
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: 240, opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    className="absolute right-0 flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden"
-                  >
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      placeholder="Find your vibe..."
-                      className="bg-transparent px-4 py-2 text-xs font-bold outline-none w-full dark:text-white"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <button 
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 relative z-10 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors dark:text-white"
-              >
-                {searchOpen ? <XMarkIcon className="w-5 h-5" /> : <MagnifyingGlassIcon className="w-5 h-5" />}
-              </button>
-            </div>
+            <StoreHeaderSearch
+              variant="button"
+              buttonClassName="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors dark:text-white"
+              iconClassName="w-5 h-5"
+            />
 
             {/* Auth/Profile */}
             {user ? (

@@ -19,7 +19,7 @@ import {
 import { FilterService } from "./filterService";
 import { CategoryService } from "./categoryService";
 import { RecommendationService } from "@/lib/recommendations/recommendationService";
-import { SearchAnalyticsService } from "./searchAnalyticsService";
+import { SearchAnalyticsService } from "@/lib/search/searchAnalyticsService";
 
 const PUBLIC_SEARCH_SELECT = {
   id: true,
@@ -163,7 +163,7 @@ export class SearchService {
     })}`;
 
     try {
-      const cached = await cacheGet(cacheKey);
+      const cached = await cacheGet<SearchResponseDTO>(cacheKey);
       if (cached) {
         // Record telemetry asynchronously even on cache hit
         SearchAnalyticsService.logSearchEvent({
@@ -371,7 +371,7 @@ export class SearchService {
     const cacheKey = `ac:${scope}:${params.companyId || "all"}:${clean.toLowerCase()}`;
 
     try {
-      const cached = await cacheGet(cacheKey);
+      const cached = await cacheGet<AutocompleteResponseDTO>(cacheKey);
       if (cached) return cached;
     } catch {}
 
@@ -421,7 +421,7 @@ export class SearchService {
         ? prisma.company.findMany({
             where: {
               name: { contains: clean, mode: "insensitive" },
-              status: "ACTIVE",
+              showOnGhuba: true,
             },
             select: { id: true, name: true, slug: true, logoUrl: true },
             take: 3,

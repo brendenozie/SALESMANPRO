@@ -17,6 +17,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -108,6 +109,13 @@ export default function AgrovetHeader() {
 
             {/* ACTION ICONS */}
             <div className="flex items-center gap-2 md:gap-4">
+              {/* Store Search */}
+              <StoreHeaderSearch
+                variant="button"
+                iconClassName="w-5 h-5 text-slate-700"
+                buttonClassName="p-2.5 rounded-full text-slate-700 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-slate-100"
+              />
+
               {/* User Account */}
               <button 
                 onClick={user ? () => router.push('/agrovetecommerce/profile') : handleGoogleSignIn}

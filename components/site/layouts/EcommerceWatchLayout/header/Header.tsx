@@ -16,6 +16,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 import CartDrawer from './CartDrawer';
+import StoreHeaderSearch from '@/components/search/StoreHeaderSearch';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -115,9 +116,10 @@ export default function Header() {
 
           {/* ACTION ICONS - Right */}
           <div className="flex items-center space-x-5 md:space-x-8 order-3 flex-1 lg:flex-none justify-end">
-            <button className="text-white hover:text-[#C5A059] transition-colors hidden sm:block">
-              <MagnifyingGlassIcon className="h-5 w-5" />
-            </button>
+            <StoreHeaderSearch
+              variant="button"
+              className="text-white hover:text-[#C5A059] transition-colors"
+            />
 
             <button 
               onClick={handleUserAction}
