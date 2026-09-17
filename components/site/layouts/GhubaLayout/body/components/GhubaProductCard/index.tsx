@@ -244,6 +244,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
             <Image
               width={400}
               height={400}
+              unoptimized
               src={imageError ? 'https://via.placeholder.com/400x400?text=No+Image' : primaryImage}
               alt={displayTitle}
               priority={priority}

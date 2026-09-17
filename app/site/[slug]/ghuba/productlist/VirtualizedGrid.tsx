@@ -40,27 +40,34 @@ export default function VirtualizedGrid({
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  // Save scroll position on scroll or before page unload
+  // Save scroll position with debouncing to prevent frame drops during active scroll
   useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout | null = null;
     const handleScroll = () => {
-      if (window.scrollY > 0) {
-        sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify({
-          scrollY: window.scrollY,
-          timestamp: Date.now(),
-        }));
-      }
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (window.scrollY > 0) {
+          sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify({
+            scrollY: window.scrollY,
+            timestamp: Date.now(),
+          }));
+        }
+      }, 200);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const rows = useMemo(() => chunkArray(products, columns), [products, columns]);
 
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
-    estimateSize: () => (typeof window !== 'undefined' && window.innerWidth < 640 ? 320 : 420),
-    overscan: 8,
+    estimateSize: () => (typeof window !== 'undefined' && window.innerWidth < 640 ? 360 : 420),
+    overscan: 14,
     scrollMargin,
   });
 

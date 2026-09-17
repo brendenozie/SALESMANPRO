@@ -2,11 +2,9 @@
    SalesmanPro & Ghuba Mobile Performance Optimization Layer
    ========================================================================== */
 
-/* 1. Content Visibility & Containment for Product Grids & Cards */
+/* 1. Containment for Product Grids & Cards */
 .perf-card-contain {
-  contain: layout style paint;
-  content-visibility: auto;
-  contain-intrinsic-size: 0 380px;
+  contain: layout style;
 }
 
 /* 2. Hardware-accelerated smooth scrolling on mobile viewports */
