@@ -186,6 +186,13 @@ export default async function middleware(
     pathname === "/admin"
   ) {
     if (pathname.startsWith("/stores")) {
+      const isRSC =
+        url.searchParams.has("_rsc") ||
+        request.headers.has("rsc") ||
+        request.headers.get("purpose") === "prefetch";
+      if (isRSC) {
+        return new NextResponse(null, { status: 204 });
+      }
       return NextResponse.redirect(
         new URL(`https://${PRIMARY_HOST_NAME}${pathname}${url.search}`),
       );

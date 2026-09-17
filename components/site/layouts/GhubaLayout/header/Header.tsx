@@ -236,23 +236,33 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
 const DesktopMenu = ({ path }: { path: string }) => (
   <div className="hidden md:block w-full border-t border-zinc-100 dark:border-zinc-800/50">
     <ul className="container mx-auto flex items-center justify-center space-x-2 text-sm font-semibold text-zinc-600 dark:text-zinc-400 py-2">
-      {menuItems.map(({ name, icon, link }) => {
-        const isActive = path === link || (link !== "/" && path?.startsWith(link));
+      {menuItems.map(({ name, icon, link, isExternal }) => {
+        const isActive = !isExternal && (path === link || (link !== "/" && path?.startsWith(link)));
+        const href = isExternal && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"))
+          ? "/stores"
+          : link;
         return (
           <li key={name}>
-            <Link 
-              href={link} 
-              prefetch={true}
-              className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${
-                isActive
-                  ? "bg-amber-500 text-zinc-950 font-bold shadow-sm"
-                  : name === "Start Selling" 
-                    ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10" 
+            {isExternal ? (
+              <a
+                href={href}
+                className="flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+              >
+                <span className="opacity-70">{icon}</span> {name}
+              </a>
+            ) : (
+              <Link 
+                href={link} 
+                prefetch={false}
+                className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${
+                  isActive
+                    ? "bg-amber-500 text-zinc-950 font-bold shadow-sm"
                     : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
-              }`}
-            >
-              <span className={isActive ? "opacity-100" : "opacity-70"}>{icon}</span> {name}
-            </Link>
+                }`}
+              >
+                <span className={isActive ? "opacity-100" : "opacity-70"}>{icon}</span> {name}
+              </Link>
+            )}
           </li>
         );
       })}
@@ -276,26 +286,44 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
       </button>
       
       <div className="space-y-6">
-        {menuItems.map(({ name, icon, link }, i) => (
-          <motion.div
-            key={name}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <Link 
-              href={link} 
-              prefetch={true}
-              onClick={() => setIsMobileMenuOpen(false)} 
-              className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors active:scale-95"
+        {menuItems.map(({ name, icon, link, isExternal }, i) => {
+          const href = isExternal && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"))
+            ? "/stores"
+            : link;
+          return (
+            <motion.div
+              key={name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
             >
-               <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-amber-500">
-                 {icon}
-               </div>
-               {name}
-            </Link>
-          </motion.div>
-        ))}
+              {isExternal ? (
+                <a
+                  href={href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors active:scale-95"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-amber-500">
+                    {icon}
+                  </div>
+                  {name}
+                </a>
+              ) : (
+                <Link 
+                  href={link} 
+                  prefetch={false}
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors active:scale-95"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-amber-500">
+                    {icon}
+                  </div>
+                  {name}
+                </Link>
+              )}
+            </motion.div>
+          );
+        })}
       </div>
     </motion.div>
   );
@@ -528,12 +556,19 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
   );
 };
 
-const menuItems = [
+interface MenuItem {
+  name: string;
+  icon: React.ReactNode;
+  link: string;
+  isExternal?: boolean;
+}
+
+const menuItems: MenuItem[] = [
   { name: "Home", icon: <HomeIcon className="w-5 h-5" />, link: "/" },
   { name: "Reels Feed", icon: <FilmIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/feed" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
-  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "/stores" }, 
+  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.site/stores", isExternal: true }, 
   { name: "Track Order", icon: <TruckIcon className="w-5 h-5" />, link: "/ghuba/orderTracking" },
 ];
 

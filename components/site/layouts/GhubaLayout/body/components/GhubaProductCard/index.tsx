@@ -43,6 +43,9 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
   const [formError, setFormError] = useState('');
   const [isSaved, setIsSaved] = useState(Boolean(product.isSaved));
 
+  const itemType = useMemo(() => resolveProductType(product), [product]);
+  const displayTitle = itemType === "AUTO" && product.make ? `${product.make} ${product.model}` : product.name || product.title;
+
   const handleToggleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const nextSaved = !isSaved;
@@ -72,8 +75,6 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
       navigator.clipboard.writeText(url);
     }
   };
-
-  const itemType = useMemo(() => resolveProductType(product), [product]);
 
   // Resolve media using universal media engine (guaranteed poster, responsive WebP variants, video detection)
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
@@ -125,8 +126,6 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
     addToCart({ ...product, selectedOptions: { ...selectedOptions } });
     setIsModalOpen(false);
   };
-
-  const displayTitle = itemType === "AUTO" && product.make ? `${product.make} ${product.model}` : product.name || product.title;
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254700000000"}`;
   const message = encodeURIComponent(`I'm interested in: ${displayTitle}. Could you provide more details?`);
