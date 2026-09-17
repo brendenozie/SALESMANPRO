@@ -6,6 +6,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   useMemo,
   ReactNode,
   Dispatch,
@@ -86,9 +87,13 @@ export function StoreContextProvider({
 }: StoreContextProviderProps) {
   const [storeFormData, setStoreFormData] = useState<StoreForm | null>(initialStore);
   const [inquiryServiceId, setInquiryServiceId] = useState<string | number | null>(null);
+  const prevInitialKey = useRef<string | null>(null);
 
   useEffect(() => {
     if (initialStore) {
+      const currentKey = `${initialStore.id || ''}:${initialStore.slug || ''}:${(initialStore as any).updatedAt || ''}`;
+      if (prevInitialKey.current === currentKey) return;
+      prevInitialKey.current = currentKey;
       setStoreFormData((prev) => (prev ? { ...prev, ...initialStore } : initialStore));
     }
   }, [initialStore]);
@@ -124,9 +129,13 @@ export function StoreContextProvider({
  */
 export function StoreDataSync({ data }: { data: StoreForm | null }) {
   const { setStoreFormData } = useStoreContext();
+  const prevSyncKey = useRef<string | null>(null);
 
   useEffect(() => {
     if (data) {
+      const currentKey = `${data.id || ''}:${data.slug || ''}:${(data as any).updatedAt || ''}`;
+      if (prevSyncKey.current === currentKey) return;
+      prevSyncKey.current = currentKey;
       setStoreFormData((prev) => (prev ? { ...prev, ...data } : data));
     }
   }, [data, setStoreFormData]);

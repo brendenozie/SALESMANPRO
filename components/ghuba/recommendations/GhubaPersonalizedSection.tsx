@@ -20,13 +20,46 @@ export default function GhubaPersonalizedSection() {
   useEffect(() => {
     let isMounted = true;
     const visitorId = tracker.getVisitorId();
+    const cacheKey = `ghuba_recs_${visitorId || 'anon'}`;
 
+    // 1. Check client session cache first (5-minute TTL)
+    if (typeof window !== 'undefined') {
+      try {
+        const cachedStr = sessionStorage.getItem(cacheKey);
+        if (cachedStr) {
+          const cached = JSON.parse(cachedStr);
+          if (
+            cached &&
+            Date.now() - (cached.timestamp || 0) < 5 * 60 * 1000 &&
+            Array.isArray(cached.data) &&
+            cached.data.length > 0
+          ) {
+            setRecommendations(cached.data);
+            setSource(cached.source || 'personalized');
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {}
+    }
+
+    // 2. Only fetch from API if cache is missing or expired
     fetch(`/api/ghuba/recommendations?visitorId=${encodeURIComponent(visitorId)}&limit=8`)
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
         if (isMounted && data.recommendations && data.recommendations.length > 0) {
           setRecommendations(data.recommendations);
           setSource(data.source || 'personalized');
+          try {
+            sessionStorage.setItem(
+              cacheKey,
+              JSON.stringify({
+                data: data.recommendations,
+                source: data.source || 'personalized',
+                timestamp: Date.now(),
+              })
+            );
+          } catch {}
         }
       })
       .catch(() => {

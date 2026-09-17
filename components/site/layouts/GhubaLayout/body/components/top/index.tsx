@@ -51,6 +51,7 @@ const CategoryCard = ({ value }: { value: { id: string; name: string; image: str
   return (
     <Link
       href={`/ghuba/productlist?categoryId=${value.id}`}
+      prefetch={true}
       className="relative group cursor-pointer h-[380px] md:h-[460px] w-full overflow-hidden rounded-[2.5rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-md block bg-zinc-100 dark:bg-zinc-900"
     >
       <Image

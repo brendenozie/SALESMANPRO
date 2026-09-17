@@ -5,7 +5,7 @@ import { StoreDataSync } from '@/contexts/StoreContext';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import DiagnosticHudLoader from '@/components/website-builder/DiagnosticHudLoader';
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 interface StorePageProps {
   params: Promise<{
