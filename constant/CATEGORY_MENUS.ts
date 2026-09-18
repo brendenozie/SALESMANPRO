@@ -202,6 +202,16 @@ const commonEcommerce = (
           href: `/admin/${adminSlug}/mymarketplace`,
           minTier: "Ghuba Basic",
         },
+        {
+          label: "Product Analytics",
+          href: `/admin/${adminSlug}/analytics`,
+          minTier: "Ghuba Starter",
+        },
+        {
+          label: "Search Demand",
+          href: `/admin/${adminSlug}/search-analytics`,
+          minTier: "Ghuba Starter",
+        },
       ],
     },
     {
@@ -479,10 +489,26 @@ const commonEcommerce = (
       minTier: "Ghuba Pro",
     },
     {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
+      label: "Reports & Analytics",
       icon: ChartBarIcon,
       minTier: "Ghuba Starter",
+      subItems: [
+        {
+          label: "Product Analytics",
+          href: `/admin/${adminSlug}/analytics`,
+          minTier: "Ghuba Starter",
+        },
+        {
+          label: "Search Analytics",
+          href: `/admin/${adminSlug}/search-analytics`,
+          minTier: "Ghuba Starter",
+        },
+        {
+          label: "Revenue Reports",
+          href: `/admin/${adminSlug}/revenuereport`,
+          minTier: "Ghuba Starter",
+        },
+      ],
     },
     {
       label: "Blogs",
