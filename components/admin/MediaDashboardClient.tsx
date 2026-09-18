@@ -154,19 +154,26 @@ const MetricCard = ({ title, value, icon: Icon, trend, delay }: any) => {
 ---------------------------------- */
 
 export default function MediaDashboardClient({ metrics, tasks, slug: companyId }: Props) {
-  // const { slug: companyId } = useParams();
+  const safeMetrics = {
+    totalVideos: 0,
+    totalArticles: 0,
+    activeSubscribers: 0,
+    revenueThisMonth: 0,
+    premieresScheduled: 0,
+    ...(metrics || {})
+  };
 
   const metricsDetails = [
-    { title: "Videos", value: metrics.totalVideos, icon: FilmIcon, trend: 8.5 },
-    { title: "Subscribers", value: metrics.activeSubscribers, icon: UserGroupIcon, trend: 12.3 },
+    { title: "Videos", value: safeMetrics.totalVideos, icon: FilmIcon, trend: 8.5 },
+    { title: "Subscribers", value: safeMetrics.activeSubscribers, icon: UserGroupIcon, trend: 12.3 },
     {
       title: "Revenue",
-      value: `$${metrics.revenueThisMonth.toLocaleString()}`,
+      value: `$${(safeMetrics.revenueThisMonth ?? 0).toLocaleString()}`,
       icon: CurrencyDollarIcon,
       trend: 5.2,
     },
-    { title: "Scheduled", value: metrics.premieresScheduled, icon: PlayCircleIcon, trend: 0 },
-    { title: "Articles", value: metrics.totalArticles, icon: DocumentTextIcon, trend: -1.1 },
+    { title: "Scheduled", value: safeMetrics.premieresScheduled, icon: PlayCircleIcon, trend: 0 },
+    { title: "Articles", value: safeMetrics.totalArticles, icon: DocumentTextIcon, trend: -1.1 },
   ];
 
   return (

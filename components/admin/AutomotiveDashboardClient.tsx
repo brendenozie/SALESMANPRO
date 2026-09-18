@@ -159,21 +159,29 @@ const VehicleCategoriesChart = ({
 /* ================= MAIN COMPONENT ================= */
 
 export default function AutomotiveDashboardClient({ slug, metrics, charts, tasks }: Props) {
-  if (!metrics || !charts || !tasks) {
-    return (
-      <div className="p-10 text-center text-red-600">
-        <ExclamationCircleIcon className="w-12 h-12 mx-auto mb-4" />
-        No dashboard data provided
-      </div>
-    );
-  }
+  const adminSlug = slug || "dealership-admin";
 
-  const adminSlug = "dealership-admin";
+  const safeMetrics = {
+    totalVehicles: 0,
+    vehiclesSold: 0,
+    activeListings: 0,
+    revenueThisMonth: 0,
+    serviceBookingsToday: 0,
+    ...(metrics || {})
+  };
+
+  const safeCharts = {
+    salesTrend: [0, 0, 0, 0, 0],
+    inventoryBreakdown: [],
+    ...(charts || {})
+  };
+
+  const safeTasks = tasks || [];
 
   const cards: Metric[] = [
     {
       title: "Total Inventory",
-      value: metrics.totalVehicles,
+      value: safeMetrics.totalVehicles,
       icon: TruckIcon,
       trend: 2.5,
       color: "text-blue-600",
@@ -181,7 +189,7 @@ export default function AutomotiveDashboardClient({ slug, metrics, charts, tasks
     },
     {
       title: "Units Sold",
-      value: metrics.vehiclesSold,
+      value: safeMetrics.vehiclesSold,
       icon: ClipboardDocumentCheckIcon,
       trend: 10,
       color: "text-green-600",
@@ -189,7 +197,7 @@ export default function AutomotiveDashboardClient({ slug, metrics, charts, tasks
     },
     {
       title: "Active Listings",
-      value: metrics.activeListings,
+      value: safeMetrics.activeListings,
       icon: ChartBarIcon,
       trend: 1.2,
       color: "text-indigo-600",
@@ -197,19 +205,19 @@ export default function AutomotiveDashboardClient({ slug, metrics, charts, tasks
     },
     {
       title: "Revenue (MoM)",
-      value: `KES ${metrics.revenueThisMonth.toLocaleString()}`,
+      value: `KES ${(safeMetrics.revenueThisMonth ?? 0).toLocaleString()}`,
       icon: CurrencyDollarIcon,
-      trend: 15,
-      color: "text-orange-600",
-      link: `/admin/${adminSlug}/revenue`
+      trend: 5.4,
+      color: "text-yellow-600",
+      link: `/admin/${adminSlug}/finance`
     },
     {
-      title: "Service Bookings",
-      value: metrics.serviceBookingsToday,
+      title: "Service Appointments",
+      value: safeMetrics.serviceBookingsToday,
       icon: WrenchScrewdriverIcon,
-      trend: 0,
-      color: "text-teal-600",
-      link: `/admin/${adminSlug}/bookings`
+      trend: -1.5,
+      color: "text-red-600",
+      link: `/admin/${adminSlug}/services`
     }
   ];
 

@@ -55,8 +55,9 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     try {
       const res = await fetch(`${apiBaseUrl}/admin/customer-orders?companyId=${companyId}`);
       if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      setOrdersData(data);
+      const json = await res.json();
+      const list = json?.data?.data || json?.data?.orders || json?.data || [];
+      setOrdersData(Array.isArray(list) ? list : []);
       toast.success("Sync Complete");
     } catch (err) {
       toast.error("Sync Failed");
@@ -64,6 +65,11 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
       setLoading(false);
     }
   }, [companyId]);
+
+  const handleOrderUpdated = useCallback((updatedOrder: CustomerOrder) => {
+    setOrdersData(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+    setSelectedOrder(updatedOrder);
+  }, []);
 
   const filteredOrders = useMemo(() => {
     return ordersData.filter(order => {
@@ -180,7 +186,12 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
       </div>
 
       <Modal isOpen={isOrderDetailsModalOpen} onClose={() => setIsOrderDetailsModalOpen(false)} title="">
-        {selectedOrder && <OrderInspector order={selectedOrder} />}
+        {selectedOrder && (
+          <OrderInspector
+            order={selectedOrder}
+            onOrderUpdated={handleOrderUpdated}
+          />
+        )}
       </Modal>
     </div>
   );
@@ -203,9 +214,11 @@ const StatBox = ({ title, value, icon: Icon, color, glow }: any) => (
 const OrderTile = ({ order, onClick }: any) => {
   const statusConfig: any = {
     PENDING: { color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-400/10', border: 'border-amber-200 dark:border-amber-400/20', icon: ClockIcon },
+    PROCESSING: { color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-400/10', border: 'border-sky-200 dark:border-sky-400/20', icon: ClockIcon },
     COMPLETED: { color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-400/10', border: 'border-emerald-200 dark:border-emerald-400/20', icon: CheckCircleIcon },
     CANCELLED: { color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-400/10', border: 'border-rose-200 dark:border-rose-400/20', icon: XCircleIcon },
     SHIPPED: { color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-400/10', border: 'border-blue-200 dark:border-blue-400/20', icon: TruckIcon },
+    OUT_FOR_DELIVERY: { color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-400/10', border: 'border-indigo-200 dark:border-indigo-400/20', icon: TruckIcon },
   };
 
   const config = statusConfig[order.status] || statusConfig.PENDING;
@@ -243,46 +256,113 @@ const OrderTile = ({ order, onClick }: any) => {
   );
 };
 
-const OrderInspector = ({ order }: any) => (
-  <div className="p-2 text-slate-900 dark:text-slate-200">
-    <div className="flex items-center gap-4 mb-8">
-      <div className="h-16 w-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
-        <SparklesIcon className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-      </div>
-      <div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Order Insight</h2>
-        <p className="text-slate-500 font-bold">Meticulous breakdown of transaction</p>
-      </div>
-    </div>
+const OrderInspector = ({ order, onOrderUpdated }: { order: CustomerOrder; onOrderUpdated?: (o: CustomerOrder) => void }) => {
+  const [updating, setUpdating] = useState<boolean>(false);
 
-    <div className="space-y-4">
-      <div className="bg-slate-50 dark:bg-slate-950/50 p-6 rounded-3xl border border-slate-200 dark:border-white/5">
-        <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mb-4">Line Items</p>
-        <div className="space-y-4">
-          {order.items.map((item: any) => (
-            <div key={item.id} className="flex justify-between items-center">
-              <div>
-                <p className="font-bold text-slate-900 dark:text-white uppercase text-sm">{item.marketplaceListing.name}</p>
-                <p className="text-xs text-slate-500">{item.quantity} Unit(s) @ ${item.price}</p>
-              </div>
-              <p className="font-black text-emerald-600 dark:text-emerald-400">${(item.quantity * item.price).toFixed(2)}</p>
-            </div>
-          ))}
+  const handleStatusTransition = async (newStatus: string) => {
+    if (updating) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/customer-orders`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id, status: newStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to update order status");
+      }
+      toast.success(`Order marked as ${newStatus}`);
+      if (onOrderUpdated && json.data) {
+        onOrderUpdated(json.data);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Status update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const shippingInfo = order.shippingAddress ? (
+    typeof order.shippingAddress === 'string' 
+      ? order.shippingAddress 
+      : `${(order.shippingAddress as any).street || ''}, ${(order.shippingAddress as any).city || ''} ${(order.shippingAddress as any).zip || ''}`
+  ) : null;
+
+  return (
+    <div className="p-2 text-slate-900 dark:text-slate-200">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="h-16 w-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+          <SparklesIcon className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Order Insight</h2>
+          <p className="text-slate-500 font-bold">Meticulous breakdown of transaction #{order.id.slice(-8).toUpperCase()}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-4">
+        {/* Status Transition Bar */}
+        <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-3xl border border-slate-200 dark:border-white/5">
+          <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mb-3">Lifecycle & Fulfillment Actions</p>
+          <div className="flex flex-wrap gap-2">
+            {['PENDING', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'].map((st) => (
+              <button
+                key={st}
+                disabled={updating || order.status === st}
+                onClick={() => handleStatusTransition(st)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  order.status === st
+                    ? 'bg-emerald-600 text-white font-black cursor-default'
+                    : 'bg-white dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
+                } disabled:opacity-50`}
+              >
+                {st === order.status ? `✓ ${st}` : `Mark ${st}`}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="bg-slate-50 dark:bg-slate-950/50 p-6 rounded-3xl border border-slate-200 dark:border-white/5">
-          <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Customer</p>
-          <p className="font-bold text-slate-900 dark:text-white truncate">{order.name || 'N/A'}</p>
+          <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mb-4">Line Items</p>
+          <div className="space-y-4">
+            {order.items.map((item: any) => (
+              <div key={item.id} className="flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white uppercase text-sm">{item.marketplaceListing?.name || 'Item'}</p>
+                  <p className="text-xs text-slate-500">{item.quantity} Unit(s) @ ${item.price}</p>
+                </div>
+                <p className="font-black text-emerald-600 dark:text-emerald-400">${(item.quantity * item.price).toFixed(2)}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="bg-emerald-600 dark:bg-emerald-500 p-6 rounded-3xl">
-          <p className="text-xs font-black text-emerald-100/50 dark:text-emerald-900/50 uppercase mb-1">Grand Total</p>
-          <p className="text-2xl font-black text-white dark:text-emerald-950">${order.totalPrice.toFixed(2)}</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-slate-50 dark:bg-slate-950/50 p-6 rounded-3xl border border-slate-200 dark:border-white/5">
+            <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Customer</p>
+            <p className="font-bold text-slate-900 dark:text-white truncate">{order.name || 'Anonymous Client'}</p>
+            {order.email && <p className="text-xs text-slate-500 truncate">{order.email}</p>}
+            {order.phone && <p className="text-xs text-slate-500">{order.phone}</p>}
+          </div>
+          <div className="bg-emerald-600 dark:bg-emerald-500 p-6 rounded-3xl">
+            <p className="text-xs font-black text-emerald-100/50 dark:text-emerald-900/50 uppercase mb-1">Grand Total</p>
+            <p className="text-2xl font-black text-white dark:text-emerald-950">${order.totalPrice.toFixed(2)}</p>
+            <p className="text-xs font-bold text-emerald-100 dark:text-emerald-900 mt-1">Source: {order.orderSource || 'WEBSITE'}</p>
+          </div>
         </div>
+
+        {(shippingInfo || order.delivery) && (
+          <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-3xl border border-slate-200 dark:border-white/5">
+            <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Fulfillment & Shipping</p>
+            {shippingInfo && <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">Address: {shippingInfo}</p>}
+            {order.deliveryStatus && <p className="text-xs text-slate-500">Status: {order.deliveryStatus}</p>}
+            {order.estimatedArrival && <p className="text-xs text-slate-500">ETA: {new Date(order.estimatedArrival).toLocaleDateString()}</p>}
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default OrdersClient;

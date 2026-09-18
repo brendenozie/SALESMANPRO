@@ -194,13 +194,38 @@ const MembershipGoalTracker: React.FC<GoalTrackerProps> = ({ target, achieved, d
 };
 
 // --- MAIN DASHBOARD COMPONENT ---
-export default function FitnessDashboard() {
-    const { slug: companyId } = useParams();
-  const [data, setData] = useState<FitnessDashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+type Props = Partial<FitnessDashboardData> & {
+  slug?: string;
+};
+
+export default function FitnessDashboard({
+  stats: initialStats,
+  membershipGoal: initialGoal,
+  sessions: initialSessions,
+  charts: initialCharts,
+  slug: propSlug,
+}: Props) {
+  const { slug: paramSlug } = useParams();
+  const companyId = propSlug || (typeof paramSlug === 'string' ? paramSlug : '');
+  const adminSlug = companyId || 'gym-admin';
+
+  const initialData: FitnessDashboardData | null = initialStats ? {
+    stats: initialStats,
+    membershipGoal: initialGoal || { target: 50, achieved: 0 },
+    sessions: initialSessions || [],
+    charts: initialCharts || { checkInTrends: [], classAttendance: [] }
+  } : null;
+
+  const [data, setData] = useState<FitnessDashboardData | null>(initialData);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialData) return;
+    if (!companyId) {
+      setIsLoading(false);
+      return;
+    }
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
@@ -224,7 +249,7 @@ export default function FitnessDashboard() {
       }
     };
     fetchData();
-  }, []);
+  }, [companyId, initialData]);
 
   if (isLoading) {
     return (
@@ -246,7 +271,6 @@ export default function FitnessDashboard() {
   }
   
   const { stats, sessions, membershipGoal } = data;
-  const adminSlug = 'gym-admin';
 
   const cards: Metric[] = [
     { title: 'Total Members', value: stats.totalMembers, icon: UsersIcon, color: 'text-green-400', link: `/admin/${adminSlug}/members` },

@@ -116,11 +116,20 @@ export default function RealEstateDashboardClient({
     } as any
   };
 
+  const safeMetrics = {
+    totalProperties: 0,
+    totalAgents: 0,
+    totalClients: 0,
+    revenueThisMonth: 0,
+    appointmentsToday: 0,
+    ...(metrics || {})
+  };
+
   const cards = useMemo(() => [
-    { title: "Active Properties", value: metrics.totalProperties, icon: BuildingOfficeIcon, accent: "teal", link: "/admin/properties" },
-    { title: "Active Agents", value: metrics.totalAgents, icon: UsersIcon, accent: "blue", link: "/admin/agents" },
-    { title: "Total Clients", value: metrics.totalClients, icon: HomeIcon, accent: "indigo", link: "/admin/clients" },
-  ], [metrics]);
+    { title: "Active Properties", value: safeMetrics.totalProperties, icon: BuildingOfficeIcon, accent: "teal", link: companyId ? `/admin/${companyId}/properties` : "/admin/properties" },
+    { title: "Active Agents", value: safeMetrics.totalAgents, icon: UsersIcon, accent: "blue", link: companyId ? `/admin/${companyId}/agents` : "/admin/agents" },
+    { title: "Total Clients", value: safeMetrics.totalClients, icon: HomeIcon, accent: "indigo", link: companyId ? `/admin/${companyId}/clients` : "/admin/clients" },
+  ], [safeMetrics, companyId]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -132,14 +141,14 @@ export default function RealEstateDashboardClient({
         </header>
 
         <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
-            <a href="/admin/reports" className="col-span-1 lg:col-span-2 p-6 rounded-2xl bg-teal-600 text-white shadow-2xl transition duration-300 hover:bg-teal-700 flex flex-col justify-between">
+            <a href={companyId ? `/admin/${companyId}/reports` : "/admin/reports"} className="col-span-1 lg:col-span-2 p-6 rounded-2xl bg-teal-600 text-white shadow-2xl transition duration-300 hover:bg-teal-700 flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-4"><CurrencyDollarIcon className="w-10 h-10 text-white opacity-90" /><span className="text-lg font-semibold uppercase opacity-90">Revenue This Month</span></div>
-                <h2 className="text-5xl sm:text-6xl font-black leading-tight">${metrics.revenueThisMonth.toLocaleString()}</h2>
+                <h2 className="text-5xl sm:text-6xl font-black leading-tight">${(safeMetrics.revenueThisMonth ?? 0).toLocaleString()}</h2>
                 <p className="mt-2 text-sm opacity-80">Targeting Q4 closing goals. Click for full finance report.</p>
             </a>
-            <a href="/admin/appointments" className="col-span-1 p-6 rounded-2xl bg-orange-500 text-white shadow-xl transition duration-300 hover:bg-orange-600 flex flex-col justify-between">
+            <a href={companyId ? `/admin/${companyId}/appointments` : "/admin/appointments"} className="col-span-1 p-6 rounded-2xl bg-orange-500 text-white shadow-xl transition duration-300 hover:bg-orange-600 flex flex-col justify-between">
                  <div className="flex items-center justify-between mb-4"><CalendarDaysIcon className="w-10 h-10 text-white opacity-90" /><span className="text-lg font-semibold uppercase opacity-90">Appointments Today</span></div>
-                <h2 className="text-5xl font-black leading-tight">{metrics.appointmentsToday}</h2>
+                <h2 className="text-5xl font-black leading-tight">{safeMetrics.appointmentsToday ?? 0}</h2>
                 <p className="mt-2 text-sm opacity-80">Number of showing and consultation bookings.</p>
             </a>
         </section>

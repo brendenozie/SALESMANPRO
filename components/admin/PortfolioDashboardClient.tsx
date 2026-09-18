@@ -98,25 +98,21 @@ export default function PortfolioDashboardClient({
   charts,
   slug: companyId,
 }: Props) {
-
-  // 
-  // const { slug: companyId } = useParams();
-
-
-  // const cards = [
-  //   { title: 'Total Projects', value: metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500' },
-  //   { title: 'Core Skills', value: metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500' },
-  //   { title: 'Client Testimonials', value: metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500' },
-  //   { title: 'Inquiries (MoM)', value: metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500' },
-  //   { title: 'Upcoming Meetings', value: metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500' },
-  // ];
+  const safeMetrics = {
+    totalProjects: 0,
+    totalSkills: 0,
+    testimonials: 0,
+    inquiriesThisMonth: 0,
+    upcomingMeetings: 0,
+    ...(metrics || {})
+  };
 
   const cards = [
-    { title: 'Total Projects', value: metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: `/admin/${companyId}/projects`, description: 'Your body of work.' },
-    { title: 'Core Skills', value: metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: `/admin/${companyId}/skills`, description: 'Defined competencies.' },
-    { title: 'Client Testimonials', value: metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: `/admin/${companyId}/testimonials`, description: 'Positive feedback score.' },
-    { title: 'Inquiries (MoM)', value: metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: `/admin/${companyId}/inquiries`, description: 'Leads generated this month.'},
-    { title: 'Upcoming Meetings', value: metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: `/admin/${companyId}/calendar`, description: 'Scheduled this week.' },
+    { title: 'Total Projects', value: safeMetrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: `/admin/${companyId}/projects`, description: 'Your body of work.' },
+    { title: 'Core Skills', value: safeMetrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: `/admin/${companyId}/skills`, description: 'Defined competencies.' },
+    { title: 'Client Testimonials', value: safeMetrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: `/admin/${companyId}/testimonials`, description: 'Positive feedback score.' },
+    { title: 'Inquiries (MoM)', value: safeMetrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: `/admin/${companyId}/inquiries`, description: 'Leads generated this month.'},
+    { title: 'Upcoming Meetings', value: safeMetrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: `/admin/${companyId}/calendar`, description: 'Scheduled this week.' },
   ];
 
 

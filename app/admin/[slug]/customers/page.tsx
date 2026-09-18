@@ -50,19 +50,14 @@ export default async function ClientsPage({ params }: PageProps) {
     const companyId = company.id;
 
   try {
-    const res = await fetch(`${apiBaseUrl}/admin/clients`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/clients?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
-      clientsData = (await res.json()).data as Client[];
-    } else {
-      // console.error(
-      //   "[ClientsPage] Failed to fetch clients →",
-      //   res.status,
-      //   res.statusText
-      // );
+      const json = await res.json();
+      clientsData = (json.data || []) as Client[];
     }
   } catch (err: any) {
-    // console.error("[ClientsPage] Error fetching clients →", err.message);
+    // Error fetching clients
   }
 
-  return <ClientsClient initialClients={clientsData} />;
+  return <ClientsClient initialClients={clientsData} companyId={companyId} />;
 }

@@ -116,18 +116,34 @@ export type CompanyInfo = Company & {
 const AdminServicePOSClient: React.FC<{
     initialProducts?: MarketListingForm[];
     initialCategories?: IStoreCategory[];
+    initialCompanyInfo?: {
+      name: string;
+      address: string;
+      phone: string;
+      currency: string;
+      taxRate?: number;
+    };
+    initialStaff?: {
+      id: string;
+      name: string;
+      role: string;
+    }[];
     companyId: string;
     userName: string;
     userId: string | null;
     currentPage: number;
     totalPages: number;
-}> = ({ companyId, initialProducts, initialCategories, userName, userId, currentPage, totalPages }) => {
+}> = ({ companyId, initialProducts, initialCategories, initialCompanyInfo, initialStaff, userName, userId, currentPage, totalPages }) => {
     
     const { storeFormData } = useStoreContext();
     const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
-    const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+    const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(initialCompanyInfo as any || null);
+    const availableStaff = useMemo(() => {
+        if (initialStaff && initialStaff.length > 0) return initialStaff;
+        return [{ id: userId || 'staff-1', name: userName, role: 'Lead Specialist' }];
+    }, [initialStaff, userId, userName]);
 
     // --- Core Service States ---
     const [bookingMode, setBookingMode] = useState<'instant' | 'scheduled'>('instant');
@@ -196,8 +212,8 @@ const AdminServicePOSClient: React.FC<{
     }, [amountReceived, finalTotal]);
 
     const activeStaffName = useMemo(() => {
-        return 'Unassigned'; // AVAILABLE_STAFF.find(s => s.id === selectedStaffId)?.name || 'Unassigned';
-    }, [selectedStaffId]);
+        return availableStaff.find(s => s.id === selectedStaffId)?.name || (selectedStaffId ? 'Assigned Specialist' : 'Unassigned');
+    }, [availableStaff, selectedStaffId]);
 
     // Infinite Scroll Configuration
     const [page, setPage] = useState(1);
@@ -241,22 +257,23 @@ const AdminServicePOSClient: React.FC<{
 
     useEffect(() => {
         const fetchAgentAndCompany = async () => {
-            await new Promise(resolve => setTimeout(resolve, 300)); 
             setCurrentAgent({
                 id: userId || 'agent-001',
                 name: userName || 'System Operator',
                 dailySalesCount: 12,
                 dailySalesValue: 2450.00,
             });
-            setCompanyInfo({
-                name: 'Premium Service Hub',
-                address: '45 Corporate Plaza, Nairobi, Kenya',
-                phone: '+254 712 345 678',
-                currency: 'KES', 
-            });
+            if (!initialCompanyInfo) {
+                setCompanyInfo({
+                    name: 'Premium Service Hub',
+                    address: 'Headquarters',
+                    phone: '+254 700 000 000',
+                    currency: 'KES', 
+                } as any);
+            }
         };
         fetchAgentAndCompany();
-    }, [companyId, userId, userName]); 
+    }, [companyId, userId, userName, initialCompanyInfo]); 
 
     // --- Dynamic Receipt Formatting ---
     const generateReceiptHtml = (details: ReceiptDetails): string => {
@@ -498,6 +515,7 @@ const AdminServicePOSClient: React.FC<{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    companyId: companyId,
                     billing: { 
                         name: clientDetails.name,
                         email: clientDetails.email || 'walk-in-customer@store.com',
@@ -508,13 +526,14 @@ const AdminServicePOSClient: React.FC<{
                     splitLedger: isSplit ? splits : undefined,
                     transactionReference: transactionRef || undefined,
                     totalPrice: finalTotal,
-                    assignedStaffId: selectedStaffId,
+                    assignedStaffId: selectedStaffId || undefined,
                     serviceNotes: serviceNotes,
                     appointment: {
                         date: appointmentDate,
                         timeSlot: timeSlot,
                         locationType: "In-Store",
-                        mode: bookingMode
+                        mode: bookingMode,
+                        staffName: activeStaffName
                     },
                     items: itemsPayload,
                     listingId: cart[0]?.id,    
@@ -798,12 +817,12 @@ const AdminServicePOSClient: React.FC<{
                                                 className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold outline-none appearance-none focus:ring-2"
                                                 style={{ '--tw-ring-color': primaryColor } as any}
                                             >
-                                                <option value="">Assign Staff (Required)</option>
-                                                {/* {AVAILABLE_STAFF.map(staff => (
+                                                <option value="">Assign Specialist / Staff</option>
+                                                {availableStaff.map(staff => (
                                                     <option key={staff.id} value={staff.id}>
                                                         {staff.name} ({staff.role})
                                                     </option>
-                                                ))} */}
+                                                ))}
                                             </select>
                                         </div>
 

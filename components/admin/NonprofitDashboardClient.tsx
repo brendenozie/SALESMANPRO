@@ -132,40 +132,39 @@ export default function NonprofitDashboardClient({
   charts,
   slug: companyId,
 }: Props) {
-
-  // if (!data)
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center text-gray-400">
-  //       <RocketLaunchIcon className="w-6 h-6 mr-2 animate-bounce" />
-  //       Waiting for dashboard data…
-  //     </div>
-  //   );
+  const safeMetrics = {
+    totalDonations: 0,
+    activeCampaigns: 0,
+    totalVolunteers: 0,
+    upcomingEvents: 0,
+    ...(metrics || {})
+  };
 
   const cards = [
     {
       title: "Total Donations",
-      value: `$${metrics.totalDonations.toLocaleString()}`,
+      value: `$${(safeMetrics.totalDonations ?? 0).toLocaleString()}`,
       icon: GiftIcon,
       color: "text-orange-600 border-orange-400 bg-orange-50",
       description: "Funds raised year-to-date",
     },
     {
       title: "Active Campaigns",
-      value: metrics.activeCampaigns,
+      value: safeMetrics.activeCampaigns ?? 0,
       icon: MegaphoneIcon,
       color: "text-fuchsia-600 border-fuchsia-400 bg-fuchsia-50",
       description: "Currently running projects",
     },
     {
       title: "Total Volunteers",
-      value: metrics.totalVolunteers,
+      value: safeMetrics.totalVolunteers ?? 0,
       icon: UsersIcon,
       color: "text-indigo-600 border-indigo-400 bg-indigo-50",
       description: "Community helpers",
     },
     {
       title: "Upcoming Events",
-      value: metrics.upcomingEvents,
+      value: safeMetrics.upcomingEvents ?? 0,
       icon: CalendarDaysIcon,
       color: "text-green-600 border-green-400 bg-green-50",
       description: "Scheduled activities",

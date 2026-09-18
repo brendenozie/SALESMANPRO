@@ -119,34 +119,59 @@ const MainMetricCard: React.FC<{ card: any }> = ({ card }) => (
     </motion.a>
 );
 
-export default function CoachDashboardClient() {
-  const coachId = 'demo-coach-123';
-  const [data, setData] = useState<CoachDashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export default function CoachDashboardClient({
+  metrics: initialMetrics,
+  tasks: initialTasks,
+  charts: initialCharts,
+  slug,
+}: {
+  metrics?: CoachDashboardData["metrics"];
+  tasks?: CoachTask[];
+  charts?: CoachDashboardData["charts"];
+  slug?: string;
+}) {
+  const [data, setData] = useState<CoachDashboardData | null>(() => {
+    if (initialMetrics) {
+      return {
+        metrics: initialMetrics,
+        tasks: initialTasks || [],
+        charts: initialCharts || { qrr: null, funnel: null },
+      };
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(!initialMetrics);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialMetrics) {
+      setData({
+        metrics: initialMetrics,
+        tasks: initialTasks || [],
+        charts: initialCharts || { qrr: null, funnel: null },
+      });
+      setIsLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            // Simulated API response including chart data
-            await new Promise(r => setTimeout(r, 1000));
-            setData({
-                metrics: { activeClients: 42, sessionsThisWeek: 18, programSalesYTD: 124, billedRevenueYTD: 154780, openLeads: 9 },
-                tasks: [
-                    { id: 't1', name: 'Prep QBR deck for Zenith Corp.', dueDate: '2025-10-21', dueTime: '10:00 AM', priority: 'High' },
-                    { id: 't2', name: 'Follow up with 3 open leads.', dueDate: '2025-10-21', dueTime: '02:30 PM', priority: 'Medium' },
-                ],
-                charts: { qrr: null, funnel: null }
-            });
-        } catch (err: any) {
-            setError("Failed to sync growth data.");
-        } finally {
-            setIsLoading(false);
+      setIsLoading(true);
+      try {
+        const companyParam = slug || "";
+        const res = await fetch(`${apiBaseUrl}/admin/dashboard/coach/${companyParam}`);
+        if (!res.ok) throw new Error("Failed to load coach data");
+        const json = await res.json();
+        if (json.data) {
+          setData(json.data);
         }
+      } catch (err: any) {
+        setError("Failed to sync growth data.");
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
-  }, []);
+  }, [initialMetrics, initialTasks, initialCharts, slug]);
 
   if (isLoading) return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-indigo-600">

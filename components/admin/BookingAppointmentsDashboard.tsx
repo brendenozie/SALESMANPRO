@@ -142,17 +142,21 @@ export default function BookingAppointmentsDashboard({
 
   const { slug: companyId } = useParams();
 
-  const [loading, setLoading] = useState(true);
-  // const [stats, setStats] = useState<StatCardData[]>([]);
-  // const [appointments, setAppointments] = useState<Appointment[]>([]);
-  // const [charts, setCharts] = useState<ChartData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const safeStats = {
+    upcomingBookings: 0,
+    totalClients: 0,
+    completedSessions: 0,
+    hoursThisWeek: 0,
+    ...(stats || {})
+  };
+
+  const safeAppointments = appointments || [];
 
   const statCards: StatCardData[] = [
   {
     id: 's1',
     label: 'Upcoming Bookings',
-    value: stats.upcomingBookings,
+    value: safeStats.upcomingBookings,
     icon: <CalendarDaysIcon className="w-6 h-6" />,
     change: '+0%',
     trendColor: 'green',
@@ -161,7 +165,7 @@ export default function BookingAppointmentsDashboard({
   {
     id: 's2',
     label: 'Total Clients',
-    value: stats.totalClients,
+    value: safeStats.totalClients,
     icon: <UsersIcon className="w-6 h-6" />,
     change: '+0%',
     trendColor: 'green',
@@ -170,7 +174,7 @@ export default function BookingAppointmentsDashboard({
   {
     id: 's3',
     label: 'Completed Sessions',
-    value: stats.completedSessions,
+    value: safeStats.completedSessions,
     icon: <ChartBarIcon className="w-6 h-6" />,
     change: '+0%',
     trendColor: 'green',
@@ -179,7 +183,7 @@ export default function BookingAppointmentsDashboard({
   {
     id: 's4',
     label: 'Hours This Week',
-    value: stats.hoursThisWeek,
+    value: safeStats.hoursThisWeek,
     icon: <ClockIcon className="w-6 h-6" />,
     change: '+0%',
     trendColor: 'red',
@@ -293,21 +297,25 @@ export default function BookingAppointmentsDashboard({
                 <ClockIcon className="w-5 h-5 text-indigo-500" /> Urgent Schedule
               </h2>
               <div className="space-y-4">
-                {appointments.map(a => {
-                  const props = getAppointmentProps(a.type);
-                  return (
-                    <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border-l-4 border-indigo-500">
-                      <div>
-                        <p className="font-bold">{a.name}</p>
-                        <p className={`text-xs ${props.text}`}>{a.type}</p>
+                {safeAppointments.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic">No appointments scheduled for today.</p>
+                ) : (
+                  safeAppointments.map(a => {
+                    const props = getAppointmentProps(a.type);
+                    return (
+                      <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border-l-4 border-indigo-500">
+                        <div>
+                          <p className="font-bold">{a.name}</p>
+                          <p className={`text-xs ${props.text}`}>{a.type}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-black">{a.time}</p>
+                          <p className="text-[10px] text-gray-500">{a.date}</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-black">{a.time}</p>
-                        <p className="text-[10px] text-gray-500">{a.date}</p>
-                      </div>
-                    </div>
-                  )
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           </aside>

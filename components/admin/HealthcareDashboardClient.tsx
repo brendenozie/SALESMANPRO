@@ -112,14 +112,21 @@ const DashboardCard: React.FC<{
 
 /* -------------------- MAIN -------------------- */
 
-export default function HealthcareSystemOverview({ metrics, criticalAlerts, recentActivities, charts, slug: companyId }: Props) {
-  // const { slug: companyId } = useParams();
+export default function HealthcareSystemOverview({ metrics, criticalAlerts = [], recentActivities = [], charts, slug: companyId }: Props) {
+  const safeMetrics = {
+    totalActivePatients: 0,
+    upcomingAppointments: 0,
+    unsignedDocuments: 0,
+    activePhysicians: 0,
+    todaysRevenue: 0,
+    ...(metrics || {})
+  };
 
   const stats = [
     {
       icon: UsersIcon,
       title: "Active Patients",
-      value: metrics.totalActivePatients.toLocaleString(),
+      value: (safeMetrics.totalActivePatients ?? 0).toLocaleString(),
       description: "Currently under care",
       accentColor: "text-teal-600",
       link: `/admin/${companyId}/patients`,
@@ -128,7 +135,7 @@ export default function HealthcareSystemOverview({ metrics, criticalAlerts, rece
     {
       icon: CalendarDaysIcon,
       title: "Appointments Today",
-      value: metrics.upcomingAppointments.toLocaleString(),
+      value: (safeMetrics.upcomingAppointments ?? 0).toLocaleString(),
       description: "Scheduled consultations",
       accentColor: "text-blue-600",
       link: `/admin/${companyId}/appointments`,
@@ -137,7 +144,7 @@ export default function HealthcareSystemOverview({ metrics, criticalAlerts, rece
     {
       icon: ClipboardDocumentListIcon,
       title: "Unsigned Docs",
-      value: metrics.unsignedDocuments.toLocaleString(),
+      value: (safeMetrics.unsignedDocuments ?? 0).toLocaleString(),
       description: "Pending physician approval",
       accentColor: "text-orange-600",
       link: `/admin/${companyId}/documents`,
@@ -146,7 +153,7 @@ export default function HealthcareSystemOverview({ metrics, criticalAlerts, rece
     {
       icon: AcademicCapIcon,
       title: "Physicians On-Call",
-      value: metrics.activePhysicians.toLocaleString(),
+      value: (safeMetrics.activePhysicians ?? 0).toLocaleString(),
       description: "Active staff",
       accentColor: "text-indigo-600",
       link: `/admin/${companyId}/doctors`,

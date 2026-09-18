@@ -80,8 +80,10 @@ export default async function OrdersPage({ params }: PageProps) {
       { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
       let data = await ordersRes.json();
-      console.log("[OrdersPage] Fetched orders data →", data);
-      ordersData = data.data.orders || [];
+      ordersData = data?.data?.data || data?.data?.orders || data?.data || [];
+      if (!Array.isArray(ordersData)) {
+        ordersData = [];
+      }
       
     } else {
       error = `Failed to fetch orders: ${ordersRes.status} ${ordersRes.statusText}`;

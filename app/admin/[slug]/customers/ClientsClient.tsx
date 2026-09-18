@@ -23,44 +23,66 @@ import {
   EnvelopeIcon,
   PhoneIcon
 } from "@heroicons/react/24/outline";
+import Modal from "@/components/Modal";
+import toast from "react-hot-toast";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+
 export type Client = {
   id: string;
+  userId?: string;
   name: string;
   email: string;
   phone: string;
+  phoneNumber?: string;
   totalSales: number;
+  totalPurchases?: number;
   recentTransactionAmount: number;
-  recentTransactionDate: string;
+  recentTransactionDate: string | null;
+  lastPurchaseDate?: string | null;
   status: "new" | "active";
 };
 
 interface ClientProps {
   initialClients: Client[];
+  companyId?: string;
 }
 
-export default function ClientsClient({ initialClients }: ClientProps) {
-  const [searchTerm, setSearchTerm] = useState<string>("");
+export default function ClientsClient({ initialClients, companyId }: ClientProps) {
+  const [clients, setClients] = useState<Client[]>(initialClients);
+  const [searchTerm, setSearchTerm] = useState<string>("" );
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 6;
 
+  // Add / Edit Modal States
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+  // Form states
+  const [formName, setFormName] = useState<string>("");
+  const [formEmail, setFormEmail] = useState<string>("");
+  const [formPhone, setFormPhone] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   const filteredClients = useMemo(() => {
-    return initialClients.filter((client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase())
+    return clients.filter((client) =>
+      (client.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.email || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [initialClients, searchTerm]);
+  }, [clients, searchTerm]);
 
   const stats = useMemo(() => ({
-    total: initialClients.length,
-    new: initialClients.filter(c => c.status === "new").length,
-    active: initialClients.filter(c => c.status === "active").length,
-    revenue: initialClients.reduce((sum, c) => sum + c.totalSales, 0),
-  }), [initialClients]);
+    total: clients.length,
+    new: clients.filter(c => c.status === "new").length,
+    active: clients.filter(c => c.status === "active").length,
+    revenue: clients.reduce((sum, c) => sum + (c.totalSales || 0), 0),
+  }), [clients]);
 
-  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredClients.length / itemsPerPage));
   const paginatedClients = filteredClients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const doughnutData = {
@@ -75,6 +97,115 @@ export default function ClientsClient({ initialClients }: ClientProps) {
         spacing: 5,
       },
     ],
+  };
+
+  const handleOpenAddModal = () => {
+    setFormName("");
+    setFormEmail("");
+    setFormPhone("");
+    setIsAddModalOpen(true);
+  };
+
+  const handleOpenEditModal = (client: Client) => {
+    setSelectedClient(client);
+    setFormName(client.name || "");
+    setFormEmail(client.email || "");
+    setFormPhone(client.phone || client.phoneNumber || "");
+    setIsEditModalOpen(true);
+  };
+
+  const handleOpenDeleteModal = (client: Client) => {
+    setSelectedClient(client);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleAddClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formEmail.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/clients`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName.trim(),
+          email: formEmail.trim(),
+          phone: formPhone.trim(),
+          companyId,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to create client");
+      }
+      setClients((prev) => [json.data, ...prev]);
+      toast.success("Client added successfully");
+      setIsAddModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create client");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedClient) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/clients`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: selectedClient.id,
+          name: formName.trim(),
+          email: formEmail.trim(),
+          phone: formPhone.trim(),
+          companyId,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to update client");
+      }
+      setClients((prev) =>
+        prev.map((c) =>
+          c.id === selectedClient.id
+            ? { ...c, name: formName.trim(), email: formEmail.trim(), phone: formPhone.trim(), phoneNumber: formPhone.trim() }
+            : c
+        )
+      );
+      toast.success("Client updated successfully");
+      setIsEditModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update client");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!selectedClient) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/clients?clientId=${selectedClient.id}&companyId=${companyId}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to delete client");
+      }
+      setClients((prev) => prev.filter((c) => c.id !== selectedClient.id));
+      toast.success("Client removed successfully");
+      setIsDeleteModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete client");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,7 +223,10 @@ export default function ClientsClient({ initialClients }: ClientProps) {
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Manage and monitor customer lifecycle and lifetime value.</p>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">
+          <button 
+            onClick={handleOpenAddModal}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95"
+          >
             <PlusIcon className="h-5 w-5" />
             <span>ADD NEW CLIENT</span>
           </button>
@@ -140,7 +274,12 @@ export default function ClientsClient({ initialClients }: ClientProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {paginatedClients.map((client) => (
-                <ClientCard key={client.id} client={client} />
+                <ClientCard 
+                  key={client.id} 
+                  client={client} 
+                  onEdit={() => handleOpenEditModal(client)}
+                  onDelete={() => handleOpenDeleteModal(client)}
+                />
               ))}
             </div>
           )}
@@ -168,6 +307,140 @@ export default function ClientsClient({ initialClients }: ClientProps) {
           </footer>
         </section>
       </div>
+
+      {/* Add Client Modal */}
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Register New Client">
+        <form onSubmit={handleAddClient} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-500 mb-1">Full Name</label>
+            <input
+              type="text"
+              required
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="e.g. Sarah Jenkins"
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-500 mb-1">Email Address</label>
+            <input
+              type="email"
+              required
+              value={formEmail}
+              onChange={(e) => setFormEmail(e.target.value)}
+              placeholder="sarah@example.com"
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-500 mb-1">Phone Number</label>
+            <input
+              type="tel"
+              value={formPhone}
+              onChange={(e) => setFormPhone(e.target.value)}
+              placeholder="+254 700 000000"
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(false)}
+              className="px-5 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 font-bold text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md disabled:opacity-50"
+            >
+              {isSubmitting ? "Creating..." : "Save Client"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Client Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Client Information">
+        <form onSubmit={handleUpdateClient} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-500 mb-1">Full Name</label>
+            <input
+              type="text"
+              required
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-500 mb-1">Email Address</label>
+            <input
+              type="email"
+              required
+              value={formEmail}
+              onChange={(e) => setFormEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-black uppercase text-slate-500 mb-1">Phone Number</label>
+            <input
+              type="tel"
+              value={formPhone}
+              onChange={(e) => setFormPhone(e.target.value)}
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div className="pt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(false)}
+              className="px-5 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 font-bold text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md disabled:opacity-50"
+            >
+              {isSubmitting ? "Saving..." : "Update Client"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Client Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Confirm Removal">
+        <div className="p-6 space-y-4">
+          <p className="text-slate-600 dark:text-slate-300">
+            Are you sure you want to remove <span className="font-black text-slate-900 dark:text-white">{selectedClient?.name}</span> from your client roster?
+          </p>
+          <p className="text-xs text-slate-400">
+            This will dissociate the client profile from this tenant company. Their historical orders and invoices will remain intact for reporting.
+          </p>
+          <div className="pt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="px-5 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 font-bold text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleDeleteClient}
+              className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md disabled:opacity-50"
+            >
+              {isSubmitting ? "Removing..." : "Remove Client"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -192,28 +465,54 @@ const SummaryCard = ({ title, value, icon: Icon, color }: any) => {
   );
 };
 
-const ClientCard = ({ client }: { client: Client }) => {
+const ClientCard = ({ 
+  client, 
+  onEdit, 
+  onDelete 
+}: { 
+  client: Client; 
+  onEdit?: () => void; 
+  onDelete?: () => void;
+}) => {
   const isNew = client.status === "new";
+
+  const formattedDate = useMemo(() => {
+    const raw = client.recentTransactionDate || client.lastPurchaseDate;
+    if (!raw) return "No orders yet";
+    try {
+      return format(parseISO(raw), "MMM dd, yyyy");
+    } catch {
+      return "Recent";
+    }
+  }, [client.recentTransactionDate, client.lastPurchaseDate]);
 
   return (
     <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2.5rem] shadow-lg hover:border-indigo-500/50 transition-all relative overflow-hidden">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 bg-indigo-500 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20">
-            {client.name.charAt(0)}
+            {(client.name || "C").charAt(0).toUpperCase()}
           </div>
           <div>
-            <h3 className="font-black text-slate-900 dark:text-white uppercase truncate w-32 tracking-tight">{client.name}</h3>
+            <h3 className="font-black text-slate-900 dark:text-white uppercase truncate w-32 tracking-tight">{client.name || "Unnamed"}</h3>
             <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${isNew ? 'bg-indigo-500/10 text-indigo-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
               {client.status}
             </span>
           </div>
         </div>
         <div className="flex gap-2">
-           <button className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 hover:text-indigo-500 transition-colors">
+           <button 
+             onClick={onEdit}
+             title="Edit Client"
+             className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 hover:text-indigo-500 transition-colors"
+           >
               <PencilSquareIcon className="h-5 w-5" />
            </button>
-           <button className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 hover:text-rose-500 transition-colors">
+           <button 
+             onClick={onDelete}
+             title="Remove Client"
+             className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 hover:text-rose-500 transition-colors"
+           >
               <TrashIcon className="h-5 w-5" />
            </button>
         </div>
@@ -221,24 +520,24 @@ const ClientCard = ({ client }: { client: Client }) => {
 
       <div className="space-y-3 mb-6">
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-           <EnvelopeIcon className="h-4 w-4" />
-           <span className="text-xs font-bold truncate">{client.email}</span>
+           <EnvelopeIcon className="h-4 w-4 shrink-0" />
+           <span className="text-xs font-bold truncate">{client.email || "No email"}</span>
         </div>
         <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-           <PhoneIcon className="h-4 w-4" />
-           <span className="text-xs font-bold">{client.phone}</span>
+           <PhoneIcon className="h-4 w-4 shrink-0" />
+           <span className="text-xs font-bold">{client.phone || client.phoneNumber || "No phone"}</span>
         </div>
       </div>
 
       <div className="pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
         <div>
            <p className="text-[10px] font-black text-slate-400 uppercase">LTV</p>
-           <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">${client.totalSales.toFixed(0)}</p>
+           <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">${(client.totalSales || 0).toFixed(0)}</p>
         </div>
         <div>
            <p className="text-[10px] font-black text-slate-400 uppercase">Last Order</p>
            <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
-              {format(parseISO(client.recentTransactionDate), "MMM dd, yyyy")}
+              {formattedDate}
            </p>
         </div>
       </div>

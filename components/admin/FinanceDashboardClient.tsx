@@ -148,9 +148,10 @@ const RevenueGrowthChart: React.FC<{ data: number[] }> = ({ data }) => {
 };
 
 const CaseDistributionChart: React.FC<{
-  data: { type: string; count: number }[];
-}> = ({ data }) => {
-  const total = data.reduce((s, d) => s + d.count, 0);
+  data?: { type: string; count: number }[];
+}> = ({ data = [] }) => {
+  const safeData = data || [];
+  const total = safeData.reduce((s, d) => s + (d.count || 0), 0);
   const colors: Record<string, string> = {
     FINANCE: "bg-yellow-500",
     LEGAL: "bg-red-500",
@@ -164,23 +165,27 @@ const CaseDistributionChart: React.FC<{
         Case Distribution
       </h2>
 
-      <ul className="space-y-3">
-        {data.map((item) => (
-          <li key={item.type} className="flex items-center gap-3">
-            <span
-              className={`w-3 h-3 rounded-full ${
-                colors[item.type] || "bg-gray-500"
-              }`}
-            />
-            <span className="text-gray-200 font-medium">
-              {item.type}
-            </span>
-            <span className="text-gray-400">
-              {Math.round((item.count / total) * 100)}%
-            </span>
-          </li>
-        ))}
-      </ul>
+      {safeData.length === 0 || total === 0 ? (
+        <p className="text-sm text-gray-400 italic">No case distribution records.</p>
+      ) : (
+        <ul className="space-y-3">
+          {safeData.map((item) => (
+            <li key={item.type} className="flex items-center gap-3">
+              <span
+                className={`w-3 h-3 rounded-full ${
+                  colors[item.type] || "bg-gray-500"
+                }`}
+              />
+              <span className="text-gray-200 font-medium">
+                {item.type}
+              </span>
+              <span className="text-gray-400">
+                {total > 0 ? Math.round((item.count / total) * 100) : 0}%
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
@@ -190,12 +195,20 @@ const CaseDistributionChart: React.FC<{
 ---------------------------------- */
 
 export default function FinanceLegalDashboardClient({ metrics, tasks, charts, slug }: Props) {
-  const adminSlug = "firm-admin";
+  const adminSlug = slug || "firm-admin";
+  const safeMetrics = {
+    totalClients: 0,
+    activeContracts: 0,
+    pendingInvoices: 0,
+    revenueThisMonth: 0,
+    scheduledMeetings: 0,
+    ...(metrics || {})
+  };
 
   const cards = [
     {
       title: "Clients",
-      value: metrics.totalClients,
+      value: safeMetrics.totalClients,
       icon: UserGroupIcon,
       trend: 5,
       color: "text-blue-400",
@@ -203,7 +216,7 @@ export default function FinanceLegalDashboardClient({ metrics, tasks, charts, sl
     },
     {
       title: "Active Contracts",
-      value: metrics.activeContracts,
+      value: safeMetrics.activeContracts,
       icon: DocumentCheckIcon,
       trend: 2,
       color: "text-teal-400",
@@ -211,7 +224,7 @@ export default function FinanceLegalDashboardClient({ metrics, tasks, charts, sl
     },
     {
       title: "Pending Invoices",
-      value: metrics.pendingInvoices,
+      value: safeMetrics.pendingInvoices,
       icon: BriefcaseIcon,
       trend: 0,
       color: "text-red-400",
@@ -219,7 +232,7 @@ export default function FinanceLegalDashboardClient({ metrics, tasks, charts, sl
     },
     {
       title: "Monthly Revenue",
-      value: `$${metrics.revenueThisMonth.toLocaleString()}`,
+      value: `$${safeMetrics.revenueThisMonth.toLocaleString()}`,
       icon: CurrencyDollarIcon,
       trend: 8,
       color: "text-green-400",
@@ -227,7 +240,7 @@ export default function FinanceLegalDashboardClient({ metrics, tasks, charts, sl
     },
     {
       title: "Meetings",
-      value: metrics.scheduledMeetings,
+      value: safeMetrics.scheduledMeetings,
       icon: CalendarDaysIcon,
       trend: 0,
       color: "text-purple-400",
@@ -256,8 +269,8 @@ export default function FinanceLegalDashboardClient({ metrics, tasks, charts, sl
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          <RevenueGrowthChart data={charts.revenueGrowth} />
-          <CaseDistributionChart data={charts.caseDistribution} />
+          <RevenueGrowthChart data={charts?.revenueGrowth || []} />
+          <CaseDistributionChart data={charts?.caseDistribution || []} />
         </section>
 
         <section className="bg-gray-800 p-6 rounded-2xl shadow-xl">

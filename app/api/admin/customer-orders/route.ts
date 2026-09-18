@@ -70,14 +70,32 @@ export const GET = withApiHandler(
           id: true,
           companyId: true,
           consumerId: true,
+          name: true,
+          email: true,
+          phone: true,
+          status: true,
+          paymentStatus: true,
+          orderSource: true,
           delivery: true,
+          shippingAddress: true,
           totalPrice: true,
+          totalFinalPrice: true,
+          totalDiscount: true,
+          totalTax: true,
+          totalShipping: true,
+          deliveryStatus: true,
+          estimatedArrival: true,
+          deliveryPersonName: true,
+          deliveryPersonContact: true,
+          trackingNumber: true,
           createdAt: true,
+          updatedAt: true,
           items: {
             select: {
               id: true,
               quantity: true,
               price: true,
+              totalPrice: true,
               marketplaceListing: {
                 select: {
                   name: true,
@@ -94,6 +112,7 @@ export const GET = withApiHandler(
     const formatted = orders.map((order) => ({
       ...order,
       createdAt: order.createdAt?.toISOString(),
+      updatedAt: order.updatedAt?.toISOString(),
       items: order.items.map((item) => ({
         ...item,
         marketplaceListing: {
@@ -105,6 +124,7 @@ export const GET = withApiHandler(
 
     const responseData = {
       data: formatted,
+      orders: formatted,
       meta: {
         page,
         limit,
@@ -305,3 +325,168 @@ export const POST = withApiHandler(
   },
   { requireAuth: true, requireTenant: true },
 );
+
+const updateOrderSchema = z.object({
+  orderId: z.string().min(1, "Order ID is required"),
+  status: z
+    .enum([
+      "PENDING",
+      "COMPLETED",
+      "RECURRING",
+      "FAILED",
+      "PROCESSING",
+      "REFUNDED",
+      "DISPUTED",
+      "CHARGEBACK",
+      "PAID",
+      "SHIPPED",
+      "READY_FOR_PICKUP",
+      "OUT_FOR_DELIVERY",
+      "CANCELLED",
+    ])
+    .optional(),
+  deliveryStatus: z.string().optional(),
+  trackingNumber: z.string().optional(),
+  estimatedArrival: z.string().optional(),
+  deliveryPersonName: z.string().optional(),
+  deliveryPersonContact: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export const PATCH = withApiHandler(
+  async (request, context) => {
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return formatResponse(false, null, "Invalid JSON payload", 400);
+    }
+
+    const parsed = updateOrderSchema.safeParse(body);
+    if (!parsed.success) {
+      return formatResponse(false, null, parsed.error.errors, 400);
+    }
+
+    const companyId = context.companyId;
+    if (!companyId) {
+      return formatResponse(
+        false,
+        null,
+        "Authorized company context required",
+        403,
+      );
+    }
+
+    const { orderId, status, deliveryStatus, trackingNumber, estimatedArrival, deliveryPersonName, deliveryPersonContact, notes } = parsed.data;
+
+    // Verify order exists and belongs to this tenant
+    const existingOrder = await prisma.customerOrder.findFirst({
+      where: { id: orderId, companyId },
+      include: { items: true },
+    });
+
+    if (!existingOrder) {
+      return formatResponse(false, null, "Order not found or unauthorized", 404);
+    }
+
+    // Execute state transition atomically
+    const updated = await prisma.$transaction(async (tx) => {
+      // If status changed to CANCELLED from non-cancelled, restore inventory
+      if (status === "CANCELLED" && existingOrder.status !== "CANCELLED") {
+        for (const item of existingOrder.items) {
+          if (item.productId) {
+            await tx.inventoryItem.updateMany({
+              where: { companyId, productId: item.productId },
+              data: { quantity: { increment: item.quantity } },
+            });
+
+            await tx.inventoryLog.create({
+              data: {
+                inventoryItem: {
+                  connect: {
+                    productId_companyId: {
+                      productId: item.productId,
+                      companyId,
+                    },
+                  },
+                },
+                action: "RETURN",
+                quantity: item.quantity,
+                details: `Order #${existingOrder.id} cancelled by admin ${context.user?.id}`,
+              },
+            });
+          }
+        }
+      }
+
+      return tx.customerOrder.update({
+        where: { id: orderId },
+        data: {
+          ...(status && { status }),
+          ...(deliveryStatus !== undefined && { deliveryStatus }),
+          ...(trackingNumber !== undefined && { trackingNumber }),
+          ...(estimatedArrival && { estimatedArrival: new Date(estimatedArrival) }),
+          ...(deliveryPersonName !== undefined && { deliveryPersonName }),
+          ...(deliveryPersonContact !== undefined && { deliveryPersonContact }),
+          ...(notes !== undefined && { notes }),
+        },
+        select: {
+          id: true,
+          companyId: true,
+          consumerId: true,
+          name: true,
+          email: true,
+          phone: true,
+          status: true,
+          paymentStatus: true,
+          orderSource: true,
+          delivery: true,
+          shippingAddress: true,
+          totalPrice: true,
+          totalFinalPrice: true,
+          totalDiscount: true,
+          totalTax: true,
+          totalShipping: true,
+          deliveryStatus: true,
+          estimatedArrival: true,
+          deliveryPersonName: true,
+          deliveryPersonContact: true,
+          trackingNumber: true,
+          notes: true,
+          createdAt: true,
+          updatedAt: true,
+          items: {
+            select: {
+              id: true,
+              quantity: true,
+              price: true,
+              totalPrice: true,
+              marketplaceListing: {
+                select: {
+                  name: true,
+                  images: true,
+                  finalPrice: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+
+    try {
+      await cacheDel(`tenant:${companyId}:customer-orders:*`);
+    } catch (e) {}
+
+    return formatResponse(
+      true,
+      {
+        ...updated,
+        createdAt: updated.createdAt?.toISOString(),
+        updatedAt: updated.updatedAt?.toISOString(),
+      },
+      "Order updated successfully",
+      200,
+    );
+  },
+  { requireAuth: true, requireTenant: true },
+);
+

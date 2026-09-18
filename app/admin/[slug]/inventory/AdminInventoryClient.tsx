@@ -17,7 +17,9 @@ import {
   TableCellsIcon,
   CheckCircleIcon,
   RocketLaunchIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 // Modals & Tools
 import AddProductModal from "@/components/AddProductModal";
@@ -74,25 +76,67 @@ export default function AdminInventoryClient({
   const [isPublishingBulk, setIsPublishingBulk] = useState(false);
   const [bulkMessage, setBulkMessage] = useState("");
 
+  const [productsList, setProductsList] = useState<InventoryItem[]>(productsData);
   const [selectedProduct, setSelectedProduct] = useState<ProductForm | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const router = useRouter();
 
+  React.useEffect(() => {
+    setProductsList(productsData);
+  }, [productsData]);
+
   const refreshInventory = () => {
     router.refresh();
   };
 
+  const handleDeleteProduct = async (product: any) => {
+    if (!window.confirm(`Are you sure you want to delete "${product.name}"? This will permanently remove its inventory and marketplace listings.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to delete product");
+      }
+      setProductsList((prev) => prev.filter((p) => p.id !== product.id));
+      toast.success("Product deleted successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Delete failed");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} selected products?`)) {
+      return;
+    }
+    try {
+      const idsToDelete = Array.from(selectedIds);
+      await Promise.all(
+        idsToDelete.map((id) =>
+          fetch(`/api/admin/products/${id}`, { method: "DELETE" })
+        )
+      );
+      setProductsList((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+      setSelectedIds(new Set());
+      toast.success(`${idsToDelete.length} products deleted`);
+    } catch (err: any) {
+      toast.error("Failed to delete some products");
+    }
+  };
+
   // Filtering Logic
   const filteredProducts = useMemo(() => {
-    return productsData.filter((p) =>
+    return productsList.filter((p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [productsData, searchQuery]);
+  }, [productsList, searchQuery]);
 
   // Stat Calculations
-  const totalCompanyStock = productsData.reduce((acc, curr) => acc + curr.companyStock, 0);
-  const totalSales = productsData.reduce((acc, curr) => acc + curr.sales, 0);
+  const totalCompanyStock = productsList.reduce((acc, curr) => acc + curr.companyStock, 0);
+  const totalSales = productsList.reduce((acc, curr) => acc + curr.sales, 0);
 
   // Modal Triggers
   const openModal = (product: ProductForm, setter: (val: boolean) => void) => {
@@ -266,6 +310,7 @@ export default function AdminInventoryClient({
                 isSelected={selectedIds.has(product.id)}
                 onToggleSelect={() => toggleSelect(product.id)}
                 onEdit={() => openModal(product.productItem || (product as any), setShowEditProductModal)}
+                onDelete={() => handleDeleteProduct(product)}
                 onRestock={() => openModal(product.productItem || (product as any), setShowRestockProductModal)}
                 onAssign={() => openModal(product.productItem || (product as any), setShowAssignProductModal)}
                 onReturn={() => openModal(product.productItem || (product as any), setShowReturnProductModal)}
@@ -296,6 +341,13 @@ export default function AdminInventoryClient({
               <RocketLaunchIcon className="w-3.5 h-3.5 text-yellow-300" />
             )}
             Publish to Marketplace
+          </button>
+          <button
+            onClick={handleBulkDelete}
+            className="flex items-center gap-1 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold transition-all shadow-md"
+          >
+            <TrashIcon className="w-3.5 h-3.5" />
+            Delete
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
@@ -348,7 +400,7 @@ export default function AdminInventoryClient({
 
 // --- Sub-Components ---
 
-function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onRestock, onAssign, onReturn, onMarket }: any) {
+function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onDelete, onRestock, onAssign, onReturn, onMarket }: any) {
   const stockRatio = (product.companyStock / (product.companyStock + 100)) * 100;
   const isMarketplaceActive = product.productItem?.showOnGhuba || (product.productItem?.marketplaceListings && product.productItem.marketplaceListings.length > 0);
 
@@ -389,9 +441,14 @@ function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onRestock,
             Price: KES {product.productItem?.sellingPrice || (product as any).sellingPrice || (product as any).salesPrice || 0} • Cost: KES {product.productItem?.costPrice || (product as any).costPrice || 0}
           </p>
         </div>
-        <button onClick={onEdit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-          <PencilSquareIcon className="w-5 h-5 text-gray-400" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={onEdit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors" title="Edit Product">
+            <PencilSquareIcon className="w-5 h-5 text-gray-400 hover:text-indigo-600" />
+          </button>
+          <button onClick={onDelete} className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full transition-colors" title="Delete Product">
+            <TrashIcon className="w-5 h-5 text-gray-400 hover:text-rose-600" />
+          </button>
+        </div>
       </div>
 
       {/* Stock Levels */}

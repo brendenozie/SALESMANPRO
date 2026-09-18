@@ -193,7 +193,7 @@ export async function getEcommerceDashboardData(
         select: { id: true, title: true, description: true, badgeText: true },
       }).catch(() => []),
       prisma.customerOrder.aggregate({
-        where: { createdAt: { gte: todayStart }, companyId },
+        where: { createdAt: { gte: todayStart }, companyId, status: { notIn: ["CANCELLED", "FAILED"] } },
         _sum: { totalFinalPrice: true },
         _count: { id: true },
       }).catch(() => ({ _sum: { totalFinalPrice: 0 }, _count: { id: 0 } })),
@@ -205,7 +205,7 @@ export async function getEcommerceDashboardData(
         _sum: { commissionEarned: true },
       }).catch(() => ({ _sum: { commissionEarned: 0 } })),
       prisma.customerOrder.aggregate({
-        where: { createdAt: { gte: monthStart }, companyId },
+        where: { createdAt: { gte: monthStart }, companyId, status: { notIn: ["CANCELLED", "FAILED"] } },
         _sum: { totalFinalPrice: true },
       }).catch(() => ({ _sum: { totalFinalPrice: 0 } })),
       prisma.clientInventoryLog.groupBy({
@@ -224,7 +224,7 @@ export async function getEcommerceDashboardData(
           dayEnd.setHours(23, 59, 59, 999);
 
           const orderDay = await prisma.customerOrder.aggregate({
-            where: { createdAt: { gte: dayStart, lte: dayEnd }, companyId },
+            where: { createdAt: { gte: dayStart, lte: dayEnd }, companyId, status: { notIn: ["CANCELLED", "FAILED"] } },
             _sum: { totalFinalPrice: true },
           }).catch(() => ({ _sum: { totalFinalPrice: 0 } }));
 

@@ -250,6 +250,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
   if (categoryKey === 'saas & web apps' || categoryKey === 'dashboards') return `${apiBaseUrl}/admin/dashboard/saas/${companyId}`;
   if (categoryKey === 'travel & tourism') return `${apiBaseUrl}/admin/dashboard/travel/${companyId}`;
   if (categoryKey === 'portfolio & personal branding') return `${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`;
+  if (categoryKey === 'delivery & logistics') return `${apiBaseUrl}/admin/dashboard/logistics/${companyId}`;
   if (isEcommerceRetailCategory(categoryKey)) return `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`;
   return null;
 }

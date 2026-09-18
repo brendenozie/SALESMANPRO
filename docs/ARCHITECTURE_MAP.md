@@ -161,6 +161,10 @@ flowchart TD
 | **Media Pipeline** | Multi-tenant media library, Cloudinary/S3 upload, AI tags | `lib/media/queues.ts`, `workers/MediaJob.ts`, `app/admin/media/*` | `MediaPickerModal`, `MediaUploader`, `ImageOptimizer` | `/api/media/upload`, `/api/media/assets` | `MediaItem`, `MediaAlbum`, `MediaAsset` | Cloudinary SDK, AWS S3, BullMQ |
 | **POS System** | Fast physical store checkout, receipt printing, cash drawer | `app/pos/page.tsx`, `lib/pos/posService.ts` | `POSRegister`, `BarcodeScanner`, `ReceiptPrinter` | `/api/pos/orders`, `/api/pos/shift` | `CustomerOrder`, `InventoryItem`, `User` | WebUSB, Canvas, WebSocket |
 | **School Management** | Student grading, fee collection, classroom attendance | `app/school/*`, `lib/school/schoolService.ts` | `GradeBook`, `FeeCollector`, `AttendanceRoster` | `/api/school/*` | `Student`, `Classroom`, `FeeRecord`, `Attendance` | Prisma relational domains |
+| **Super Admin Console** | Global operations, multi-tenant telemetry, and subsystem command portals | `app/super-admin/page.tsx`, `app/super-admin/layout.tsx` | `SuperAdminLayout`, `SuperAdminPaymentsClient` | `/super-admin/*`, `/api/admin/payments/*` | `Company`, `User`, `CustomerOrder` | Server Components, NextAuth |
+| **Admin Orders HQ** | Real-time order monitoring, line item audit, and fulfillment status transitions | `app/admin/[slug]/orders/page.tsx`, `app/admin/[slug]/orders/OrdersClient.tsx` | `OrdersClient`, `OrderInspector`, `OrderTile` | `/api/admin/customer-orders` (GET, POST, PATCH) | `CustomerOrder`, `OrderItem`, `InventoryItem` | Atomic transactions, cacheDel |
+| **Admin CRM Portfolio** | Client lifecycle, contact info, transaction history, and retention tracking | `app/admin/[slug]/customers/page.tsx`, `app/admin/[slug]/customers/ClientsClient.tsx` | `ClientsClient`, `ClientCard`, Add/Edit/Delete modals | `/api/admin/clients` (GET, POST, PUT, DELETE) | `Client`, `User`, `CustomerOrder` | MongoDB groupBy aggregations |
+| **Vertical Industry Dashboards** | Industry-specific KPI aggregations (SaaS, Coach, Logistics, E-commerce) | `app/admin/[slug]/page.tsx`, `components/admin/*` | `SaaSDashboardClient`, `CoachDashboardClient`, `LogisticsDashboard` | `/api/admin/dashboard/saas/*`, `/coach/*`, `/logistics/*` | `Company`, `Booking`, `Delivery`, `Task` | Dynamic vertical router |
 
 ---
 
@@ -756,6 +760,10 @@ graph TD
 | **WhatsApp Action Router**| **CANONICAL** | `lib/whatsapp/actionRouter.ts` | Single dispatch point routing WhatsApp actions to domain logic. |
 | **Theme Cards** | **LAYOUT-SPECIFIC**| `components/site/layouts/{Theme}/components/` | Custom card renderers per vertical. Do NOT unify unless instructed. |
 | **Store Context** | **SHARED** | `contexts/StoreContext.tsx` | Shared client state for storefront forms, active services, and URLs. |
+| **Admin Orders HQ** | **CANONICAL** | `app/api/admin/customer-orders/route.ts` | Authoritative admin order monitoring and status transitions (PATCH). Atomic inventory rollback on cancellation. |
+| **Admin CRM Clients** | **CANONICAL** | `app/api/admin/clients/route.ts` | Multi-tenant client CRUD (GET, POST, PUT, DELETE) with MongoDB order aggregations. |
+| **Super Admin Root Console** | **CANONICAL** | `app/super-admin/layout.tsx` & `page.tsx` | Root platform operations console, telemetry aggregation, and subsystem routing. |
+| **Vertical Dashboards** | **CANONICAL** | `app/api/admin/dashboard/[vertical]/[slug]/route.ts` | Real-time vertical metric aggregators (SaaS, Coach, Logistics, E-commerce). |
 | **Legacy Order Scripts**| **DEPRECATED** | `scripts/old-order-import.ts` | Do not reuse or reference in new features. |
 
 ---
@@ -774,6 +782,8 @@ graph TD
 - **Invariant 3:** AI credit deductions must create a persistent, auditable `AiCreditTransaction` record.
 - **Invariant 4:** Background workers must never block edge middleware or storefront SSR page rendering.
 - **Invariant 5:** Dynamic routes utilizing request headers (e.g. `/api/ghuba/recommendations`) must declare `export const dynamic = "force-dynamic"`.
+- **Invariant 6:** Dashboard Revenue Invariant: All revenue aggregates and order sales metrics across admin dashboards and reporting services MUST filter out cancelled and failed orders (`status: { notIn: ["CANCELLED", "FAILED"] }`).
+- **Invariant 7:** Order Cancellation Inventory Rollback: Changing a customer order status to `CANCELLED` via admin actions MUST atomically increment `InventoryItem.quantity` for each product item and record a `RETURN` audit log in `InventoryLog`.
 
 ---
 

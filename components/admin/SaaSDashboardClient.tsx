@@ -44,12 +44,31 @@ const sampleData: SaaSDashboardData = {
   ],
 };
 
-export default function SaasDashboardClient() {
-  const [data, setData] = useState<SaaSDashboardData>(sampleData);
+interface SaaSDashboardProps {
+  metrics?: {
+    activeUsers: number;
+    totalPlans: number;
+    monthlyRevenue: number;
+    uptimePercentage: number;
+  };
+  tasks?: Task[];
+  slug?: string;
+}
+
+export default function SaasDashboardClient({ metrics: propMetrics, tasks: propTasks, slug }: SaaSDashboardProps) {
+  const [data, setData] = useState<SaaSDashboardData>({
+    metrics: propMetrics || sampleData.metrics,
+    tasks: propTasks || sampleData.tasks,
+  });
 
   useEffect(() => {
-    setData(sampleData);
-  }, []);
+    if (propMetrics) {
+      setData({
+        metrics: propMetrics,
+        tasks: propTasks || [],
+      });
+    }
+  }, [propMetrics, propTasks]);
 
   const { activeUsers, totalPlans, monthlyRevenue, uptimePercentage } = data.metrics;
 

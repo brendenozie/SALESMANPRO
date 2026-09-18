@@ -128,7 +128,8 @@ const mockData = {
   ]
 };
 
-export default function LogisticsDashboard({ data = mockData }: { data: any }) {
+export default function LogisticsDashboard({ data: propData, ...rest }: { data?: any; [key: string]: any }) {
+  const data = propData || (rest.logisticsStats ? rest : mockData);
 
   // Chart mapping: Delivery Volume vs Success Rate
   const chartOptions: any = {
@@ -136,7 +137,7 @@ export default function LogisticsDashboard({ data = mockData }: { data: any }) {
     colors: ['#3C50E0', '#10B981'],
     stroke: { curve: 'smooth', width: 3 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.6, opacityTo: 0.1 } },
-    xaxis: { categories: data.performanceData.days },
+    xaxis: { categories: data?.performanceData?.days || mockData.performanceData.days },
     yaxis: { labels: { formatter: (v: number) => `${v}` } },
     dataLabels: { enabled: false },
     tooltip: { x: { show: true }, marker: { show: true } }
