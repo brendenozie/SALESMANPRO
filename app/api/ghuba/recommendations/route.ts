@@ -9,7 +9,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { RecommendationService } from "@/lib/recommendations/recommendationService";
 
-export const revalidate = 60; // 1-minute edge cache
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
