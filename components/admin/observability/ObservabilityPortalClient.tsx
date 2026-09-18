@@ -1112,6 +1112,58 @@ export default function ObservabilityPortalClient() {
         {/* 6. REDIS & WORKERS TAB */}
         {activeTab === "workers" && workersData && (
           <div className="space-y-6">
+            {/* Redis Infrastructure KPI Header */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl">
+                <span className="text-xs text-slate-400">Redis Connection Status</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      workersData.redis?.status === "CONNECTED"
+                        ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                        : workersData.redis?.status === "DEGRADED"
+                        ? "bg-amber-400"
+                        : "bg-rose-500"
+                    }`}
+                  />
+                  <div className="text-xl font-bold text-white">
+                    {workersData.redis?.status || "UNKNOWN"}
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Role: <span className="font-mono text-slate-200">{workersData.redis?.role || "standalone"}</span>
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl">
+                <span className="text-xs text-slate-400">Ping Latency</span>
+                <div className="text-xl font-bold text-white mt-1 font-mono">
+                  {workersData.redis?.pingLatencyMs ?? 0} ms
+                </div>
+                <p className="text-[11px] text-emerald-400 mt-1">
+                  Uptime: {Math.floor((workersData.redis?.uptimeSeconds || 0) / 3600)}h {Math.floor(((workersData.redis?.uptimeSeconds || 0) % 3600) / 60)}m
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl">
+                <span className="text-xs text-slate-400">Memory Usage</span>
+                <div className="text-xl font-bold text-white mt-1 font-mono">
+                  {workersData.redis?.memoryUsedHuman || "0 B"}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Total Keys: <span className="font-mono text-slate-200">{workersData.redis?.totalKeys ?? 0}</span>
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-900/60 border border-slate-800/80 rounded-xl">
+                <span className="text-xs text-slate-400">Connected Clients</span>
+                <div className="text-xl font-bold text-white mt-1 font-mono">
+                  {workersData.redis?.connectedClients ?? 1}
+                </div>
+                <p className="text-[11px] text-indigo-400 mt-1">BullMQ & App Broker Active</p>
+              </div>
+            </div>
+
             <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">

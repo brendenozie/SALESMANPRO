@@ -114,7 +114,11 @@ if (!isBuildPhase) {
 
 export function isRedisAvailable(): boolean {
   if (isBuildPhase) return false;
-  return redisConnection.status === "ready";
+  const status = redisConnection.status;
+  if (status === "wait") {
+    redisConnection.connect().catch(() => {});
+  }
+  return status === "ready" || status === "connect";
 }
 
 /**

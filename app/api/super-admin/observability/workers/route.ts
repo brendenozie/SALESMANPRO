@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { requireSuperAdmin } from "@/lib/ai/authHelper";
 import { getAllQueueStatuses, retryFailedQueueJobs } from "@/lib/observability/queueMonitor";
+import { getRedisHealth } from "@/lib/observability/redisMonitor";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +22,14 @@ export async function GET(req: Request) {
   }
 
   try {
-    const queues = await getAllQueueStatuses();
-    return NextResponse.json({ success: true, data: { queues } });
+    const [queues, redis] = await Promise.all([
+      getAllQueueStatuses(),
+      getRedisHealth(),
+    ]);
+    return NextResponse.json({ success: true, data: { queues, redis } });
   } catch (err: any) {
     return NextResponse.json(
-      { success: false, error: err.message || "Failed to fetch queue telemetry" },
+      { success: false, error: err.message || "Failed to fetch queue and Redis telemetry" },
       { status: 500 },
     );
   }

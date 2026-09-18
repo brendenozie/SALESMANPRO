@@ -6,10 +6,9 @@ try {
   require('graceful-fs').gracefulify(fs);
 } catch (e) {}
 
-// Ensure build phase is marked across all compiler workers and child processes
-process.env.NEXT_IS_BUILD_PHASE = "true";
+const { PHASE_PRODUCTION_BUILD } = require('next/constants');
 
-module.exports = {
+const nextConfig = {
   // Opt into output tracing for lightweight standalone production builds
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname),
@@ -182,6 +181,14 @@ module.exports = {
         child_process: false,
       };
     }
-    return config;
   },
+};
+
+module.exports = (phase) => {
+  if (phase === PHASE_PRODUCTION_BUILD) {
+    process.env.NEXT_IS_BUILD_PHASE = "true";
+  } else if (process.env.npm_lifecycle_event !== "build" && !process.env.NEXT_BUILD) {
+    delete process.env.NEXT_IS_BUILD_PHASE;
+  }
+  return nextConfig;
 };

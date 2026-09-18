@@ -10,6 +10,7 @@ import {
 } from "@/lib/idempotency";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
+import { trackRequest } from "@/lib/observability/tracker";
 
 export type HandlerContext = {
   params: any;
@@ -95,6 +96,34 @@ export function withApiHandler(
     let lockAcquired = false;
     let lockTenantScope = "global";
 
+    const sendResponse = (
+      response: Response,
+      durationMs: number,
+      reqId: string = requestId,
+      extraHeaders: Record<string, string> = {},
+      errorObj?: any,
+    ) => {
+      if (request.method !== "OPTIONS" && !requestPath.startsWith("/api/super-admin/observability")) {
+        try {
+          trackRequest({
+            requestId: reqId,
+            method: request.method,
+            route: requestPath,
+            statusCode: response.status,
+            durationMs,
+            hostname: url.hostname,
+            tenantId: context.companyId,
+            userRole: context.user?.role,
+            ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+            userAgent: request.headers.get("user-agent") || undefined,
+            errorMessage: errorObj?.message,
+            errorStack: errorObj?.stack,
+          });
+        } catch {}
+      }
+      return applyHeadersAndTiming(response, durationMs, reqId, extraHeaders);
+    };
+
     try {
       // --- OPTIONS (preflight) ---
       if (request.method === "OPTIONS") {
@@ -117,7 +146,7 @@ export function withApiHandler(
         const auth = await verifyAuth(request);
 
         if (!auth.success || !auth.user) {
-          return applyHeadersAndTiming(
+          return sendResponse(
             formatResponse(
               false,
               null,
@@ -138,7 +167,7 @@ export function withApiHandler(
       if (options.requireRateLimit !== false) {
         const limitResponse = enforceRateLimit(request, context.user?.id);
         if (limitResponse) {
-          return applyHeadersAndTiming(
+          return sendResponse(
             limitResponse,
             Date.now() - startTime,
             requestId,
@@ -155,7 +184,7 @@ export function withApiHandler(
         );
 
         if (!userRole || !allowedRolesLower.includes(userRole)) {
-          return applyHeadersAndTiming(
+          return sendResponse(
             formatResponse(
               false,
               null,
@@ -180,7 +209,7 @@ export function withApiHandler(
           !canAccessDashboard(context.user) ||
           isConsumerOnlyAccount(context.user)
         ) {
-          return applyHeadersAndTiming(
+          return sendResponse(
             formatResponse(
               false,
               null,
@@ -209,7 +238,7 @@ export function withApiHandler(
         );
 
         if (!tenantResolution.authorized) {
-          return applyHeadersAndTiming(
+          return sendResponse(
             formatResponse(
               false,
               null,
@@ -233,7 +262,7 @@ export function withApiHandler(
         request.method === "PATCH";
 
       if (options.requireIdempotency && !idempotencyKey && isMutation) {
-        return applyHeadersAndTiming(
+        return sendResponse(
           formatResponse(
             false,
             null,
@@ -257,7 +286,7 @@ export function withApiHandler(
         );
 
         if (lockResult.state === "COMPLETED") {
-          return applyHeadersAndTiming(
+          return sendResponse(
             NextResponse.json(lockResult.response.body, {
               status: lockResult.response.status,
             }),
@@ -268,7 +297,7 @@ export function withApiHandler(
         }
 
         if (lockResult.state === "IN_FLIGHT") {
-          return applyHeadersAndTiming(
+          return sendResponse(
             formatResponse(
               false,
               null,
@@ -298,7 +327,7 @@ export function withApiHandler(
       ) {
         const contentType = request.headers.get("Content-Type");
         if (!contentType || !contentType.includes("application/json")) {
-          return applyHeadersAndTiming(
+          return sendResponse(
             formatResponse(
               false,
               null,
@@ -354,7 +383,7 @@ export function withApiHandler(
         );
       }
 
-      return applyHeadersAndTiming(response, duration, requestId);
+      return sendResponse(response, duration, requestId);
     } catch (error: any) {
       if (lockAcquired && idempotencyKey) {
         await releaseIdempotencyLock(idempotencyKey, lockTenantScope);
@@ -365,7 +394,7 @@ export function withApiHandler(
         console.error(
           `[API_TIMEOUT][${requestId}] ${request.method} ${requestPath} exceeded ${timeoutMs}ms limit`,
         );
-        return applyHeadersAndTiming(
+        return sendResponse(
           formatResponse(
             false,
             null,
@@ -376,12 +405,16 @@ export function withApiHandler(
           ),
           duration,
           requestId,
+          {},
+          error,
         );
       }
-      return applyHeadersAndTiming(
+      return sendResponse(
         handlePrismaError(error, requestId),
         duration,
         requestId,
+        {},
+        error,
       );
     }
   };

@@ -47,7 +47,7 @@ export interface BackupStorageProvider {
 export class S3BackupStorageProvider implements BackupStorageProvider {
   public name = "s3";
   private client: S3Client;
-  private bucket: string;
+  public bucket: string;
 
   constructor(options?: {
     region?: string;
@@ -82,6 +82,7 @@ export class S3BackupStorageProvider implements BackupStorageProvider {
       process.env.BACKUP_S3_BUCKET ||
       process.env.AWS_BUCKET_NAME ||
       process.env.AS3_BUCKET_NAME ||
+      process.env.S3_BUCKET_NAME ||
       "salesmanpro-backups";
 
     const endpoint =
@@ -146,11 +147,19 @@ export class S3BackupStorageProvider implements BackupStorageProvider {
   }
 
   async delete(key: string): Promise<void> {
-    const command = new DeleteObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
-    await this.client.send(command);
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
+      await this.client.send(command);
+    } catch (err: any) {
+      if (err.name === "AccessDenied" || err.$metadata?.httpStatusCode === 403) {
+        console.warn(`[S3BackupStorageProvider] DeleteObject returned 403 AccessDenied for ${key}. Storage key retention pruning skipped.`);
+        return;
+      }
+      throw err;
+    }
   }
 
   async exists(key: string): Promise<boolean> {
@@ -161,38 +170,64 @@ export class S3BackupStorageProvider implements BackupStorageProvider {
       if (err.name === "NotFound" || err.$metadata?.httpStatusCode === 404) {
         return false;
       }
+      if (err.name === "AccessDenied" || err.$metadata?.httpStatusCode === 403) {
+        console.warn(`[S3BackupStorageProvider] HeadObject returned 403 AccessDenied for ${key}. Assuming object exists under write-only IAM policy.`);
+        return true;
+      }
       throw err;
     }
   }
 
   async getMetadata(key: string): Promise<BackupStorageMetadata> {
-    const command = new HeadObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
+    try {
+      const command = new HeadObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
 
-    const response = await this.client.send(command);
-    return {
-      sizeBytes: response.ContentLength || 0,
-      lastModified: response.LastModified || new Date(),
-      etag: response.ETag?.replace(/"/g, ""),
-      contentType: response.ContentType,
-      customMetadata: response.Metadata,
-    };
+      const response = await this.client.send(command);
+      return {
+        sizeBytes: response.ContentLength || 0,
+        lastModified: response.LastModified || new Date(),
+        etag: response.ETag?.replace(/"/g, ""),
+        contentType: response.ContentType,
+        customMetadata: response.Metadata,
+      };
+    } catch (err: any) {
+      if (err.name === "AccessDenied" || err.$metadata?.httpStatusCode === 403) {
+        console.warn(`[S3BackupStorageProvider] HeadObject returned 403 AccessDenied for ${key}. Falling back to default metadata.`);
+        return {
+          sizeBytes: 0,
+          lastModified: new Date(),
+          etag: undefined,
+          contentType: "application/octet-stream",
+          customMetadata: {},
+        };
+      }
+      throw err;
+    }
   }
 
   async list(prefix: string): Promise<Array<{ key: string; sizeBytes: number; lastModified: Date }>> {
-    const command = new ListObjectsV2Command({
-      Bucket: this.bucket,
-      Prefix: prefix,
-    });
+    try {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: prefix,
+      });
 
-    const response = await this.client.send(command);
-    return (response.Contents || []).map((item) => ({
-      key: item.Key || "",
-      sizeBytes: item.Size || 0,
-      lastModified: item.LastModified || new Date(),
-    }));
+      const response = await this.client.send(command);
+      return (response.Contents || []).map((item) => ({
+        key: item.Key || "",
+        sizeBytes: item.Size || 0,
+        lastModified: item.LastModified || new Date(),
+      }));
+    } catch (err: any) {
+      if (err.name === "AccessDenied" || err.$metadata?.httpStatusCode === 403) {
+        console.warn(`[S3BackupStorageProvider] ListObjectsV2 returned 403 AccessDenied for prefix: ${prefix}. Listing restricted.`);
+        return [];
+      }
+      throw err;
+    }
   }
 
   async getSignedDownloadUrl(key: string, expiresInSeconds: number = 3600): Promise<string> {

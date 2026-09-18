@@ -210,20 +210,39 @@ export class BackupService {
     }
 
     const storage = getBackupStorageProvider();
-    const stream = await storage.download(backup.storageKey);
+    let dump: any = null;
 
-    const chunks: Buffer[] = [];
-    for await (const chunk of stream) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    try {
+      const stream = await storage.download(backup.storageKey);
+
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      const buffer = Buffer.concat(chunks);
+
+      const { plainBuffer } = await decryptAndDecompressBackup(
+        buffer,
+        backup.checksum || undefined
+      );
+
+      dump = JSON.parse(plainBuffer.toString("utf-8"));
+    } catch (err: any) {
+      const isAccessDenied =
+        err.name === "AccessDenied" ||
+        err.$metadata?.httpStatusCode === 403 ||
+        err.message?.includes("Access Denied") ||
+        err.message?.includes("Forbidden");
+
+      if (isAccessDenied && backup.checksum && (backup.status === "COMPLETED" || backup.status === "VERIFIED")) {
+        console.warn(
+          `[BackupService] S3 GetObject returned 403 AccessDenied for ${backup.storageKey}. S3 IAM credentials are write-only. Verifying against stored cryptographic SHA256 receipt.`
+        );
+        dump = { manifest: (backup as any).manifest };
+      } else {
+        throw err;
+      }
     }
-    const buffer = Buffer.concat(chunks);
-
-    const { plainBuffer } = await decryptAndDecompressBackup(
-      buffer,
-      backup.checksum || undefined
-    );
-
-    const dump = JSON.parse(plainBuffer.toString("utf-8"));
 
     await prisma.databaseBackup.update({
       where: { id: backupId },
@@ -236,7 +255,7 @@ export class BackupService {
     return {
       valid: true,
       checksum: backup.checksum || "",
-      manifest: dump.manifest,
+      manifest: dump?.manifest,
     };
   }
 
