@@ -46,6 +46,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   const { storeFormData } = useStoreContext();
   
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#18181b'; 
+  const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
 
   const groupedVariants = useMemo(() => {
     const options = (product.option || []) as VariantOptionItem[];

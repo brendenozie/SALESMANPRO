@@ -12,6 +12,7 @@ import {
   SearchScope,
   AvailableFiltersResponseDTO,
   FilterFacetGroup,
+  FilterFacetOption,
 } from "./types";
 import { CategoryService, CATEGORY_SPECS } from "./categoryService";
 import { cacheGet, cacheSet } from "@/lib/cache";
@@ -314,7 +315,16 @@ export class FilterService {
       for (const pc of matchedProductCats) {
         if (Array.isArray(pc.subcategories)) {
           for (const s of pc.subcategories) {
-            const name = typeof s === "string" ? s : s?.name;
+            const subObj =
+              s && typeof s === "object" && !Array.isArray(s)
+                ? (s as Record<string, any>)
+                : null;
+            const name =
+              typeof s === "string"
+                ? s
+                : typeof subObj?.name === "string"
+                ? subObj.name
+                : undefined;
             if (name && !subCategoryCounts.has(name)) {
               subCategoryCounts.set(name, 0);
             }
