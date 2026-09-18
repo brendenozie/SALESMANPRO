@@ -433,6 +433,8 @@ function mapBlogEventType(eventType: string): string | null {
       return "likes";
     case "BLOG_SHARE":
       return "shares";
+    case "BLOG_BOOKMARK":
+      return "bookmarks";
     case "BLOG_PAYWALL_VIEW":
       return "paywallViews";
     case "BLOG_PURCHASE":
@@ -454,6 +456,8 @@ function mapPodcastEventType(eventType: string): string | null {
       return "likes";
     case "PODCAST_SHARE":
       return "shares";
+    case "PODCAST_BOOKMARK":
+      return "bookmarks";
     case "PODCAST_PAYWALL_VIEW":
       return "paywallViews";
     case "PODCAST_PURCHASE":

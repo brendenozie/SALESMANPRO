@@ -13,6 +13,7 @@ import {
   LockClosedIcon,
   SparklesIcon,
   ShareIcon,
+  BookmarkIcon,
   HandThumbUpIcon,
   ArrowPathIcon
 } from "@heroicons/react/24/outline";
@@ -63,6 +64,7 @@ export default function PodcastEpisodeClient({ episode }: PodcastEpisodeClientPr
   const [playbackRate, setPlaybackRate] = useState(1);
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
+  const [hasBookmarked, setHasBookmarked] = useState(false);
 
   // Telemetry Hook
   const {
@@ -71,6 +73,7 @@ export default function PodcastEpisodeClient({ episode }: PodcastEpisodeClientPr
     recordPodcastProgress,
     recordPodcastLike,
     recordPodcastShare,
+    recordPodcastBookmark,
     recordPodcastPaywallView,
     recordPodcastPurchase,
   } = useContentTelemetry({
@@ -243,6 +246,23 @@ export default function PodcastEpisodeClient({ episode }: PodcastEpisodeClientPr
     recordPodcastShare();
   };
 
+  const handleBookmark = async () => {
+    const next = !hasBookmarked;
+    setHasBookmarked(next);
+    if (next) recordPodcastBookmark();
+    try {
+      await fetch(`/api/site/${episode.companyId}/me/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: next ? "bookmark" : "unbookmark",
+          contentType: "PODCAST",
+          contentId: episode.id,
+        }),
+      });
+    } catch {}
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-400 pb-32 font-sans relative selection:bg-slate-900 selection:text-white">
       {/* Nav Context Bar */}
@@ -261,6 +281,15 @@ export default function PodcastEpisodeClient({ episode }: PodcastEpisodeClientPr
                 <SparklesIcon className="w-3 h-3" /> Premium Episode
               </span>
             )}
+            <button
+              onClick={handleBookmark}
+              className={`flex items-center gap-1 transition-colors ${
+                hasBookmarked ? "text-amber-400 font-bold" : "hover:text-white"
+              }`}
+            >
+              <BookmarkIcon className={`w-3.5 h-3.5 ${hasBookmarked ? "fill-amber-400" : ""}`} />
+              {hasBookmarked ? "Saved" : "Save"}
+            </button>
             <button onClick={handleShare} className="flex items-center gap-1 hover:text-white transition-colors">
               <ShareIcon className="w-3.5 h-3.5" /> Share
             </button>

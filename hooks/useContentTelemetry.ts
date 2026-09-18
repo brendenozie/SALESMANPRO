@@ -93,6 +93,16 @@ export function useContentTelemetry(context: ContentTelemetryContext) {
     });
   }, [blogId, companyId, channel]);
 
+  const recordBlogBookmark = useCallback(() => {
+    if (!blogId || !companyId) return;
+    tracker.track({
+      eventType: "BLOG_BOOKMARK",
+      blogId,
+      companyId,
+      channel,
+    });
+  }, [blogId, companyId, channel]);
+
   // Track Blog Paywall
   const recordBlogPaywallView = useCallback((amount?: number) => {
     if (!blogId || !companyId) return;
@@ -189,6 +199,16 @@ export function useContentTelemetry(context: ContentTelemetryContext) {
     });
   }, [podcastId, companyId, channel]);
 
+  const recordPodcastBookmark = useCallback(() => {
+    if (!podcastId || !companyId) return;
+    tracker.track({
+      eventType: "PODCAST_BOOKMARK",
+      podcastId,
+      companyId,
+      channel,
+    });
+  }, [podcastId, companyId, channel]);
+
   const recordPodcastPaywallView = useCallback((amount?: number) => {
     if (!podcastId || !companyId) return;
     tracker.track({
@@ -215,6 +235,7 @@ export function useContentTelemetry(context: ContentTelemetryContext) {
     recordScrollDepth,
     recordBlogLike,
     recordBlogShare,
+    recordBlogBookmark,
     recordBlogPaywallView,
     recordBlogPurchase,
     recordPodcastImpression,
@@ -222,6 +243,7 @@ export function useContentTelemetry(context: ContentTelemetryContext) {
     recordPodcastProgress,
     recordPodcastLike,
     recordPodcastShare,
+    recordPodcastBookmark,
     recordPodcastPaywallView,
     recordPodcastPurchase,
   };

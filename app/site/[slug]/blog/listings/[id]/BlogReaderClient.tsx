@@ -10,6 +10,7 @@ import {
   LockClosedIcon,
   SparklesIcon,
   ShareIcon,
+  BookmarkIcon,
   CheckCircleIcon,
   ArrowPathIcon
 } from "@heroicons/react/24/outline";
@@ -51,12 +52,14 @@ export default function BlogReaderClient({ blog }: BlogReaderClientProps) {
   const [purchaseMessage, setPurchaseMessage] = useState<string | null>(null);
   const [likesCount, setLikesCount] = useState(blog.likes || 0);
   const [hasLiked, setHasLiked] = useState(false);
+  const [hasBookmarked, setHasBookmarked] = useState(false);
 
-  // Telemetry Hook
+  // Telemetry Engine Hook
   const {
     recordScrollDepth,
     recordBlogLike,
     recordBlogShare,
+    recordBlogBookmark,
     recordBlogPaywallView,
     recordBlogPurchase,
   } = useContentTelemetry({
@@ -158,6 +161,23 @@ export default function BlogReaderClient({ blog }: BlogReaderClientProps) {
     recordBlogShare();
   };
 
+  const handleBookmark = async () => {
+    const next = !hasBookmarked;
+    setHasBookmarked(next);
+    if (next) recordBlogBookmark();
+    try {
+      await fetch(`/api/site/${blog.companyId}/me/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: next ? "bookmark" : "unbookmark",
+          contentType: "BLOG",
+          contentId: blog.id,
+        }),
+      });
+    } catch {}
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 pb-32 font-sans relative selection:bg-slate-800 selection:text-white">
       {/* Reading Progress Bar */}
@@ -182,6 +202,15 @@ export default function BlogReaderClient({ blog }: BlogReaderClientProps) {
                 <SparklesIcon className="w-3 h-3" /> Premium
               </span>
             )}
+            <button
+              onClick={handleBookmark}
+              className={`flex items-center gap-1 transition-colors ${
+                hasBookmarked ? "text-amber-400 font-bold" : "hover:text-white"
+              }`}
+            >
+              <BookmarkIcon className={`w-3.5 h-3.5 ${hasBookmarked ? "fill-amber-400" : ""}`} />
+              {hasBookmarked ? "Saved" : "Save"}
+            </button>
             <button
               onClick={handleShare}
               className="flex items-center gap-1 hover:text-white transition-colors"

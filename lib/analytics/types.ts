@@ -48,6 +48,7 @@ export const InteractionEventType = {
   BLOG_READ: "BLOG_READ" as const,
   BLOG_LIKE: "BLOG_LIKE" as const,
   BLOG_SHARE: "BLOG_SHARE" as const,
+  BLOG_BOOKMARK: "BLOG_BOOKMARK" as const,
   BLOG_PAYWALL_VIEW: "BLOG_PAYWALL_VIEW" as const,
   BLOG_PURCHASE: "BLOG_PURCHASE" as const,
 
@@ -57,6 +58,7 @@ export const InteractionEventType = {
   PODCAST_PLAY_COMPLETE: "PODCAST_PLAY_COMPLETE" as const,
   PODCAST_LIKE: "PODCAST_LIKE" as const,
   PODCAST_SHARE: "PODCAST_SHARE" as const,
+  PODCAST_BOOKMARK: "PODCAST_BOOKMARK" as const,
   PODCAST_PAYWALL_VIEW: "PODCAST_PAYWALL_VIEW" as const,
   PODCAST_PURCHASE: "PODCAST_PURCHASE" as const,
 };

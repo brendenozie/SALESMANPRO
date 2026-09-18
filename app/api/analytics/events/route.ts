@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
         eventType: ev.eventType,
         marketplaceListingId: typeof ev.marketplaceListingId === "string" ? ev.marketplaceListingId.slice(0, 36) : undefined,
         productId: typeof ev.productId === "string" ? ev.productId.slice(0, 36) : undefined,
+        blogId: typeof ev.blogId === "string" ? ev.blogId.slice(0, 36) : undefined,
+        podcastId: typeof ev.podcastId === "string" ? ev.podcastId.slice(0, 36) : undefined,
         companyId: typeof ev.companyId === "string" ? ev.companyId.slice(0, 36) : undefined,
         storeId: typeof ev.storeId === "string" ? ev.storeId.slice(0, 64) : undefined,
         userId: authUserId || (typeof ev.userId === "string" ? ev.userId.slice(0, 36) : undefined),

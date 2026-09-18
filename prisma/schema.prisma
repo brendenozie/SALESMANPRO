@@ -11117,6 +11117,7 @@ enum InteractionEventType {
   BLOG_READ
   BLOG_LIKE
   BLOG_SHARE
+  BLOG_BOOKMARK
   BLOG_PAYWALL_VIEW
   BLOG_PURCHASE
 
@@ -11126,6 +11127,7 @@ enum InteractionEventType {
   PODCAST_PLAY_COMPLETE
   PODCAST_LIKE
   PODCAST_SHARE
+  PODCAST_BOOKMARK
   PODCAST_PAYWALL_VIEW
   PODCAST_PURCHASE
 }
@@ -11292,6 +11294,7 @@ model BlogDailyMetric {
   reads           Int                @default(0)
   likes           Int                @default(0)
   shares          Int                @default(0)
+  bookmarks       Int                @default(0)
   paywallViews    Int                @default(0)
   unlocks         Int                @default(0)
   revenue         Float              @default(0)
@@ -11316,6 +11319,7 @@ model PodcastDailyMetric {
   completions     Int                @default(0)
   likes           Int                @default(0)
   shares          Int                @default(0)
+  bookmarks       Int                @default(0)
   paywallViews    Int                @default(0)
   unlocks         Int                @default(0)
   revenue         Float              @default(0)
