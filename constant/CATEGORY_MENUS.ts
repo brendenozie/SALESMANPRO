@@ -2283,6 +2283,11 @@ export const getCategoryMenus = (
             href: `/admin/${adminSlug}/blogs`,
             minTier: "Ghuba Starter",
           },
+          {
+            label: "Content Analytics",
+            href: `/admin/${adminSlug}/analytics`,
+            minTier: "Ghuba Starter",
+          },
         ],
       },
       {
@@ -2299,9 +2304,20 @@ export const getCategoryMenus = (
       },
       {
         label: "Podcast",
-        href: `/admin/${adminSlug}/podcast`,
-        icon: ClipboardDocumentListIcon,
+        icon: PlayCircleIcon,
         minTier: "Ghuba Starter",
+        subItems: [
+          {
+            label: "All Episodes",
+            href: `/admin/${adminSlug}/podcast`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Podcast Analytics",
+            href: `/admin/${adminSlug}/analytics`,
+            minTier: "Ghuba Starter",
+          },
+        ],
       },
       {
         label: "Clients",
@@ -2390,9 +2406,21 @@ export const getCategoryMenus = (
         minTier: "Ghuba Growth",
       },
       {
+        label: "Finance & Royalties",
+        href: `/admin/${adminSlug}/finance`,
+        icon: BanknotesIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Payments",
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Settings",
+        href: `/admin/${adminSlug}/settings`,
+        icon: Cog6ToothIcon,
         minTier: "Ghuba Starter",
       },
     ]),

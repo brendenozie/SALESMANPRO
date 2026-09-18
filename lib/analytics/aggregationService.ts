@@ -84,6 +84,22 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
     increments: Record<string, number>;
   }>();
 
+  const blogIncrements = new Map<string, {
+    blogId: string;
+    companyId: string;
+    date: string;
+    channel: InteractionChannel;
+    increments: Record<string, number>;
+  }>();
+
+  const podcastIncrements = new Map<string, {
+    podcastId: string;
+    companyId: string;
+    date: string;
+    channel: InteractionChannel;
+    increments: Record<string, number>;
+  }>();
+
   for (const ev of events) {
     if (!ev.eventType) continue;
 
@@ -171,11 +187,47 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
       }
     }
 
+    // Accumulate BlogDailyMetric
+    if (ev.blogId && companyId) {
+      const blogField = mapBlogEventType(ev.eventType);
+      if (blogField) {
+        const key = `${ev.blogId}_${today}_${channel}`;
+        let item = blogIncrements.get(key);
+        if (!item) {
+          item = { blogId: ev.blogId, companyId, date: today, channel, increments: {} };
+          blogIncrements.set(key, item);
+        }
+        item.increments[blogField] = (item.increments[blogField] || 0) + 1;
+        if (ev.eventType === "BLOG_PURCHASE" && ev.metadata?.amount) {
+          item.increments["revenue"] = (item.increments["revenue"] || 0) + Number(ev.metadata.amount);
+        }
+      }
+    }
+
+    // Accumulate PodcastDailyMetric
+    if (ev.podcastId && companyId) {
+      const podcastField = mapPodcastEventType(ev.eventType);
+      if (podcastField) {
+        const key = `${ev.podcastId}_${today}_${channel}`;
+        let item = podcastIncrements.get(key);
+        if (!item) {
+          item = { podcastId: ev.podcastId, companyId, date: today, channel, increments: {} };
+          podcastIncrements.set(key, item);
+        }
+        item.increments[podcastField] = (item.increments[podcastField] || 0) + 1;
+        if (ev.eventType === "PODCAST_PURCHASE" && ev.metadata?.amount) {
+          item.increments["revenue"] = (item.increments["revenue"] || 0) + Number(ev.metadata.amount);
+        }
+      }
+    }
+
     // Prepare raw event for persistence (sampling high-volume impressions if needed)
     rawEventsToCreate.push({
       eventType: ev.eventType as any,
       marketplaceListingId: listingId || null,
       productId: productId || null,
+      blogId: ev.blogId || null,
+      podcastId: ev.podcastId || null,
       companyId: companyId || null,
       storeId: ev.storeId || null,
       userId: ev.userId || null,
@@ -299,10 +351,116 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
     }
   }
 
+  // 5. Atomic upsert to BlogDailyMetric
+  for (const item of blogIncrements.values()) {
+    try {
+      const incrementObj: Record<string, { increment: number }> = {};
+      const initialData: Record<string, any> = {
+        blogId: item.blogId,
+        companyId: item.companyId,
+        date: item.date,
+        channel: item.channel as any,
+      };
+
+      for (const [f, val] of Object.entries(item.increments)) {
+        incrementObj[f] = { increment: val };
+        initialData[f] = val;
+      }
+
+      await prisma.blogDailyMetric.upsert({
+        where: {
+          blogId_date_channel: {
+            blogId: item.blogId,
+            date: item.date,
+            channel: item.channel as any,
+          },
+        },
+        create: initialData as any,
+        update: incrementObj as any,
+      });
+    } catch (err: any) {
+      console.warn(`[AggregationService] Error upserting BlogDailyMetric for ${item.blogId}:`, err.message);
+    }
+  }
+
+  // 6. Atomic upsert to PodcastDailyMetric
+  for (const item of podcastIncrements.values()) {
+    try {
+      const incrementObj: Record<string, { increment: number }> = {};
+      const initialData: Record<string, any> = {
+        podcastId: item.podcastId,
+        companyId: item.companyId,
+        date: item.date,
+        channel: item.channel as any,
+      };
+
+      for (const [f, val] of Object.entries(item.increments)) {
+        incrementObj[f] = { increment: val };
+        initialData[f] = val;
+      }
+
+      await prisma.podcastDailyMetric.upsert({
+        where: {
+          podcastId_date_channel: {
+            podcastId: item.podcastId,
+            date: item.date,
+            channel: item.channel as any,
+          },
+        },
+        create: initialData as any,
+        update: incrementObj as any,
+      });
+    } catch (err: any) {
+      console.warn(`[AggregationService] Error upserting PodcastDailyMetric for ${item.podcastId}:`, err.message);
+    }
+  }
+
   return {
     processed: events.length,
-    aggregated: listingIncrements.size + storeIncrements.size + ghubaIncrements.size,
+    aggregated: listingIncrements.size + storeIncrements.size + ghubaIncrements.size + blogIncrements.size + podcastIncrements.size,
   };
+}
+
+function mapBlogEventType(eventType: string): string | null {
+  switch (eventType) {
+    case "BLOG_IMPRESSION":
+      return "impressions";
+    case "BLOG_VIEW":
+      return "views";
+    case "BLOG_READ":
+      return "reads";
+    case "BLOG_LIKE":
+      return "likes";
+    case "BLOG_SHARE":
+      return "shares";
+    case "BLOG_PAYWALL_VIEW":
+      return "paywallViews";
+    case "BLOG_PURCHASE":
+      return "unlocks";
+    default:
+      return null;
+  }
+}
+
+function mapPodcastEventType(eventType: string): string | null {
+  switch (eventType) {
+    case "PODCAST_IMPRESSION":
+      return "impressions";
+    case "PODCAST_PLAY_START":
+      return "playStarts";
+    case "PODCAST_PLAY_COMPLETE":
+      return "completions";
+    case "PODCAST_LIKE":
+      return "likes";
+    case "PODCAST_SHARE":
+      return "shares";
+    case "PODCAST_PAYWALL_VIEW":
+      return "paywallViews";
+    case "PODCAST_PURCHASE":
+      return "unlocks";
+    default:
+      return null;
+  }
 }
 
 function mapEventTypeToMetricField(eventType: string): string | null {

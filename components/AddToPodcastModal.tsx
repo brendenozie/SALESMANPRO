@@ -79,6 +79,10 @@ type Podcast = {
   tags: string[]; 
   coverImageUrl: string;
   isFeatured: boolean;
+  isPremium?: boolean;
+  price?: number;
+  currency?: string;
+  previewDuration?: number;
   companyId: string; 
   createdAt: string;
   updatedAt: string;
@@ -112,6 +116,10 @@ export default function AddToPodcastModal({
     tags: [],
     coverImageUrl: "",
     isFeatured: false,
+    isPremium: false,
+    price: 0,
+    currency: "KES",
+    previewDuration: 30,
     companyId: companyId,
   });
 
@@ -138,6 +146,10 @@ export default function AddToPodcastModal({
         tags: podcastToEdit.tags || [],
         coverImageUrl: podcastToEdit.coverImageUrl,
         isFeatured: podcastToEdit.isFeatured,
+        isPremium: (podcastToEdit as any).isPremium || false,
+        price: (podcastToEdit as any).price || 0,
+        currency: (podcastToEdit as any).currency || "KES",
+        previewDuration: (podcastToEdit as any).previewDuration ?? 30,
         companyId: companyId,
       });
     } else {
@@ -153,6 +165,10 @@ export default function AddToPodcastModal({
         coverImageUrl: "",
         companyId: companyId,
         isFeatured: false,
+        isPremium: false,
+        price: 0,
+        currency: "KES",
+        previewDuration: 30,
       });
     }
     setError(null);
@@ -512,6 +528,80 @@ export default function AddToPodcastModal({
                 onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500/20 border-slate-300 dark:border-slate-800 rounded cursor-pointer"
               />
+            </div>
+
+            {/* Paywall & Monetization Card */}
+            <div className="sm:col-span-2 p-4 bg-amber-500/5 dark:bg-amber-500/10 rounded-xl border border-amber-500/20 mt-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                    🔒 Premium Episode Paywall Gated
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+                    Require listeners to pay before streaming the full episode.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  name="isPremium"
+                  id="isPremium"
+                  checked={!!formData.isPremium}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isPremium: e.target.checked }))}
+                  className="h-4 w-4 text-amber-600 focus:ring-amber-500/20 border-slate-300 dark:border-slate-800 rounded cursor-pointer"
+                />
+              </div>
+
+              {formData.isPremium && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-amber-500/20">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Currency
+                    </label>
+                    <select
+                      name="currency"
+                      value={formData.currency || "KES"}
+                      onChange={handleInputChange}
+                      className="w-full p-2 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none"
+                    >
+                      <option value="KES">KES</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Unlock Price
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      min={0}
+                      step="any"
+                      value={formData.price ?? 0}
+                      onChange={handleInputChange}
+                      className="w-full p-2 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none font-bold"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Free Preview (Seconds)
+                    </label>
+                    <input
+                      type="number"
+                      name="previewDuration"
+                      min={0}
+                      value={formData.previewDuration ?? 30}
+                      onChange={handleInputChange}
+                      className="w-full p-2 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none"
+                      placeholder="30"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         </div>

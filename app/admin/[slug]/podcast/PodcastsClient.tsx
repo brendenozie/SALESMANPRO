@@ -160,12 +160,23 @@ export default function PodcastsClient({
                     />
                     
                     {/* Badge Overlay conditionally handled */}
-                    {podcast.isFeatured && (
-                      <span className="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white shadow-sm">
-                        <SparklesIcon className="h-3 w-3 mr-1 fill-white" />
-                        Featured
-                      </span>
-                    )}
+                    <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                      {podcast.isFeatured && (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white shadow-sm">
+                          <SparklesIcon className="h-3 w-3 mr-1 fill-white" />
+                          Featured
+                        </span>
+                      )}
+                      {(podcast as any).isPremium ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-amber-600/90 text-white shadow-sm backdrop-blur-md">
+                          🔒 {(podcast as any).currency || "KES"} {(podcast as any).price || 0}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-emerald-600/90 text-white shadow-sm backdrop-blur-md">
+                          Free
+                        </span>
+                      )}
+                    </div>
 
                     {/* Fast Play/Preview Blur Overlay */}
                     <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

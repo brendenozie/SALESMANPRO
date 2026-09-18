@@ -150,6 +150,17 @@ export default function BlogsClient({
                     <DocumentTextIcon className="h-12 w-12 opacity-50" />
                   </div>
                 )}
+                <div className="absolute top-3 left-3">
+                  {blog.isPremium ? (
+                    <span className="px-2.5 py-1 text-xs font-bold rounded-full border backdrop-blur-md bg-amber-500/90 text-white border-amber-400/50 shadow-sm">
+                      🔒 {blog.currency || "KES"} {blog.price || 0}
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 text-xs font-medium rounded-full border backdrop-blur-md bg-emerald-600/80 text-white border-emerald-500/50">
+                      Free Access
+                    </span>
+                  )}
+                </div>
                 <div className="absolute top-3 right-3">
                   <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border backdrop-blur-md ${getStatusStyles(blog.status)}`}>
                     {blog.status}

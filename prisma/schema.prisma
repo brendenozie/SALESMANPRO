@@ -2470,6 +2470,13 @@ model Blog {
   categories  String[] // Array of category names
   tags        String[] // Array of relevant tags
   authorName  String? // name profileImage
+
+  // Paywall & Monetization
+  isPremium      Boolean   @default(false)
+  price          Float     @default(0)
+  currency       String    @default("KES")
+  previewExcerpt String?
+  media          Json?
   seo         SeoBlog?
   status      BlogStatus @default(DRAFT)
   publishedAt DateTime?
@@ -6513,6 +6520,13 @@ model Podcast {
   // Media and categorization
   coverImageUrl String? // Optional URL for the podcast's cover art
   isFeatured    Boolean @default(false) // Flag to mark if the podcast is featured
+
+  // Paywall & Monetization
+  isPremium       Boolean   @default(false)
+  price           Float     @default(0)
+  currency        String    @default("KES")
+  previewDuration Float     @default(30)
+  media           Json?
 
   // Relationships to other models (MongoDB specific)
   // For many-to-many relationships in MongoDB, Prisma typically uses an array of ObjectIds.
@@ -11096,6 +11110,24 @@ enum InteractionEventType {
   REEL_LIKE
   SEARCH_IMPRESSION
   SEARCH_RESULT_CLICK
+
+  // Content (Blog & Podcast) Interaction Telemetry
+  BLOG_IMPRESSION
+  BLOG_VIEW
+  BLOG_READ
+  BLOG_LIKE
+  BLOG_SHARE
+  BLOG_PAYWALL_VIEW
+  BLOG_PURCHASE
+
+  PODCAST_IMPRESSION
+  PODCAST_PLAY_START
+  PODCAST_PLAY_PROGRESS
+  PODCAST_PLAY_COMPLETE
+  PODCAST_LIKE
+  PODCAST_SHARE
+  PODCAST_PAYWALL_VIEW
+  PODCAST_PURCHASE
 }
 
 model ProductInteractionEvent {
@@ -11103,6 +11135,8 @@ model ProductInteractionEvent {
   eventType            InteractionEventType
   marketplaceListingId String?              @db.ObjectId
   productId            String?              @db.ObjectId
+  blogId               String?              @db.ObjectId
+  podcastId            String?              @db.ObjectId
   companyId            String?              @db.ObjectId
   storeId              String?
   userId               String?              @db.ObjectId
@@ -11123,6 +11157,8 @@ model ProductInteractionEvent {
 
   @@index([marketplaceListingId, createdAt])
   @@index([productId, createdAt])
+  @@index([blogId, createdAt])
+  @@index([podcastId, createdAt])
   @@index([companyId, createdAt])
   @@index([eventType, createdAt])
   @@index([anonymousVisitorId, eventType])
@@ -11220,6 +11256,76 @@ model GhubaDailyMetric {
 
   @@unique([date, channel])
   @@index([date])
+}
+
+model ContentAccess {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId     String   @db.ObjectId
+  userId        String?  @db.ObjectId
+  consumerId    String?  @db.ObjectId
+  customerId    String?
+  contentType   String   // "BLOG" | "PODCAST"
+  contentId     String   @db.ObjectId
+  amount        Float    @default(0)
+  currency      String   @default("KES")
+  orderId       String?
+  paymentMethod String   @default("MPESA") // "MPESA", "CARD", "FREE_PASS"
+  paymentStatus String   @default("COMPLETED")
+  createdAt     DateTime @default(now())
+
+  @@index([companyId, contentType, contentId])
+  @@index([userId, contentId])
+  @@index([consumerId, contentId])
+  @@index([customerId, contentId])
+  @@index([createdAt])
+}
+
+model BlogDailyMetric {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  blogId          String             @db.ObjectId
+  companyId       String             @db.ObjectId
+  date            String             // YYYY-MM-DD
+  channel         InteractionChannel @default(STORE)
+
+  impressions     Int                @default(0)
+  views           Int                @default(0)
+  reads           Int                @default(0)
+  likes           Int                @default(0)
+  shares          Int                @default(0)
+  paywallViews    Int                @default(0)
+  unlocks         Int                @default(0)
+  revenue         Float              @default(0)
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([blogId, date, channel])
+  @@index([companyId, date])
+  @@index([blogId, date])
+}
+
+model PodcastDailyMetric {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  podcastId       String             @db.ObjectId
+  companyId       String             @db.ObjectId
+  date            String             // YYYY-MM-DD
+  channel         InteractionChannel @default(STORE)
+
+  impressions     Int                @default(0)
+  playStarts      Int                @default(0)
+  completions     Int                @default(0)
+  likes           Int                @default(0)
+  shares          Int                @default(0)
+  paywallViews    Int                @default(0)
+  unlocks         Int                @default(0)
+  revenue         Float              @default(0)
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([podcastId, date, channel])
+  @@index([companyId, date])
+  @@index([podcastId, date])
 }
 
 // ==============================================================================

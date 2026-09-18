@@ -10,9 +10,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/admin/podcasts
 const getPodcasts = async (request: Request) => {
-  
   const searchParams = new URL(request.url).searchParams;
-
   const companyId = searchParams.get("companyId");
 
   const whereClause: { creatorId?: string } = {};
@@ -50,7 +48,6 @@ const getPodcasts = async (request: Request) => {
 
 // POST /api/admin/podcasts
 const createPodcast = async (request: Request) => {
-  
   const body = await request.json();
   const {
     title,
@@ -66,6 +63,11 @@ const createPodcast = async (request: Request) => {
     creatorId,
     creatorType,
     companyId,
+    isPremium,
+    price,
+    currency,
+    previewDuration,
+    media,
   } = body;
 
   if (
@@ -117,6 +119,11 @@ const createPodcast = async (request: Request) => {
       releaseDate: new Date(releaseDate),
       coverImageUrl: coverImageUrl || "",
       isFeatured: isFeatured || false,
+      isPremium: isPremium !== undefined ? !!isPremium : false,
+      price: price !== undefined ? parseFloat(price) : 0,
+      currency: currency || "KES",
+      previewDuration: previewDuration !== undefined ? parseInt(previewDuration, 10) : null,
+      media: media || undefined,
       company: {
         connect: { id: companyId },
       },
@@ -135,12 +142,11 @@ const createPodcast = async (request: Request) => {
     },
   });
 
-  
-    try {
-      await cacheDel(`tenant:${companyId}:podcasts:*`);
-      await cacheDel(`admin:podcasts:*`);
-    } catch (e) {}
-    return formatResponse(true, newPodcast, null, 201);
+  try {
+    await cacheDel(`tenant:${companyId}:podcasts:*`);
+    await cacheDel(`admin:podcasts:*`);
+  } catch (e) {}
+  return formatResponse(true, newPodcast, null, 201);
 };
 
 // Wrap handlers withApiHandler for consistent error handling

@@ -41,6 +41,24 @@ export const InteractionEventType = {
   REEL_LIKE: "REEL_LIKE" as const,
   SEARCH_IMPRESSION: "SEARCH_IMPRESSION" as const,
   SEARCH_RESULT_CLICK: "SEARCH_RESULT_CLICK" as const,
+
+  // Content (Blog & Podcast) Interaction Telemetry
+  BLOG_IMPRESSION: "BLOG_IMPRESSION" as const,
+  BLOG_VIEW: "BLOG_VIEW" as const,
+  BLOG_READ: "BLOG_READ" as const,
+  BLOG_LIKE: "BLOG_LIKE" as const,
+  BLOG_SHARE: "BLOG_SHARE" as const,
+  BLOG_PAYWALL_VIEW: "BLOG_PAYWALL_VIEW" as const,
+  BLOG_PURCHASE: "BLOG_PURCHASE" as const,
+
+  PODCAST_IMPRESSION: "PODCAST_IMPRESSION" as const,
+  PODCAST_PLAY_START: "PODCAST_PLAY_START" as const,
+  PODCAST_PLAY_PROGRESS: "PODCAST_PLAY_PROGRESS" as const,
+  PODCAST_PLAY_COMPLETE: "PODCAST_PLAY_COMPLETE" as const,
+  PODCAST_LIKE: "PODCAST_LIKE" as const,
+  PODCAST_SHARE: "PODCAST_SHARE" as const,
+  PODCAST_PAYWALL_VIEW: "PODCAST_PAYWALL_VIEW" as const,
+  PODCAST_PURCHASE: "PODCAST_PURCHASE" as const,
 };
 
 export type InteractionEventType =
@@ -50,6 +68,8 @@ export interface TelemetryEventPayload {
   eventType: InteractionEventType;
   marketplaceListingId?: string;
   productId?: string;
+  blogId?: string;
+  podcastId?: string;
   companyId?: string;
   storeId?: string;
   userId?: string;

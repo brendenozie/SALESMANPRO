@@ -145,7 +145,11 @@ export default function AddEditBlogModal({
     excerpt: initialData.excerpt || "",
     content: initialData.content || "",
     isFeature: initialData.isFeature || false,
-    requiresSubscription: initialData.requiresSubscription || false,
+    isPremium: initialData.isPremium ?? initialData.requiresSubscription ?? false,
+    price: initialData.price ?? 0,
+    currency: initialData.currency || "KES",
+    previewExcerpt: initialData.previewExcerpt || initialData.excerpt || "",
+    requiresSubscription: initialData.requiresSubscription || initialData.isPremium || false,
     subscriptionTier: initialData.subscriptionTier || "premium",
     status: initialData.status || "DRAFT",
     categories: initialData.categories || [],
@@ -225,8 +229,12 @@ export default function AddEditBlogModal({
         excerpt: formData.excerpt,
         content: formData.content,
         isFeature: formData.isFeature,
-        requiresSubscription: formData.requiresSubscription,
-        subscriptionTier: formData.requiresSubscription ? formData.subscriptionTier : "free",
+        isPremium: !!formData.isPremium || !!formData.requiresSubscription,
+        price: parseFloat(formData.price) || 0,
+        currency: formData.currency || "KES",
+        previewExcerpt: formData.previewExcerpt || formData.excerpt,
+        requiresSubscription: formData.requiresSubscription || formData.isPremium,
+        subscriptionTier: formData.requiresSubscription || formData.isPremium ? (formData.subscriptionTier || "premium") : "free",
         status: formData.status,
         categories: formData.category?.displayName ? [formData.category.displayName] : [],
         tags: formData.tags,
@@ -446,44 +454,84 @@ export default function AddEditBlogModal({
                     <div className="h-px w-full bg-indigo-100 dark:bg-indigo-500/20"></div>
 
                     {/* Paywall Access Config Row */}
-                    <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between pt-1">
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                        <div className="relative flex items-center justify-center">
-                          <input
-                            type="checkbox"
-                            name="requiresSubscription"
-                            checked={formData.requiresSubscription}
-                            onChange={handleChange}
-                            className="peer sr-only"
-                          />
-                          <div className="w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer-checked:bg-amber-500 transition-colors duration-300"></div>
-                          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6"></div>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
-                          <LockClosedIcon className="h-4 w-4 text-amber-500" />
-                          Requires Subscription Paywall
-                        </span>
-                      </label>
-
-                      {formData.requiresSubscription && (
-                        <motion.div 
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-3 w-full sm:w-auto justify-end"
-                        >
-                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                            <KeyIcon className="h-4 w-4 text-gray-400" /> Tier Required:
+                    <div className="flex flex-col gap-4 pt-1">
+                      <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <div className="relative flex items-center justify-center">
+                            <input
+                              type="checkbox"
+                              name="isPremium"
+                              checked={!!formData.isPremium || !!formData.requiresSubscription}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setFormData((prev: any) => ({
+                                  ...prev,
+                                  isPremium: checked,
+                                  requiresSubscription: checked,
+                                }));
+                              }}
+                              className="peer sr-only"
+                            />
+                            <div className="w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer-checked:bg-amber-500 transition-colors duration-300"></div>
+                            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6"></div>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                            <LockClosedIcon className="h-4 w-4 text-amber-500" />
+                            Premium Paywall Gated
                           </span>
-                          <select
-                            name="subscriptionTier"
-                            value={formData.subscriptionTier}
-                            onChange={handleChange}
-                            className="bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-500/30 text-sm font-medium rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 outline-none text-amber-900 dark:text-amber-300"
+                        </label>
+
+                        {(formData.isPremium || formData.requiresSubscription) && (
+                          <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-3 w-full sm:w-auto justify-end"
                           >
-                            <option value="premium">Premium Access</option>
-                            <option value="gold">Gold Elite Tier</option>
-                            <option value="enterprise">Enterprise Team</option>
-                          </select>
+                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                              Unlock Price:
+                            </span>
+                            <select
+                              name="currency"
+                              value={formData.currency || "KES"}
+                              onChange={handleChange}
+                              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-amber-500 outline-none text-gray-900 dark:text-white"
+                            >
+                              <option value="KES">KES</option>
+                              <option value="USD">USD</option>
+                              <option value="EUR">EUR</option>
+                              <option value="GBP">GBP</option>
+                            </select>
+                            <input
+                              type="number"
+                              name="price"
+                              min={0}
+                              step="any"
+                              value={formData.price ?? 0}
+                              onChange={handleChange}
+                              placeholder="0"
+                              className="w-24 bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-500/30 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-amber-500 outline-none text-amber-900 dark:text-amber-300"
+                            />
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {(formData.isPremium || formData.requiresSubscription) && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="pt-2 border-t border-indigo-100/60 dark:border-indigo-500/10"
+                        >
+                          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                            Paywall Preview Excerpt (Free Teaser Text shown before Paywall Card):
+                          </label>
+                          <textarea
+                            name="previewExcerpt"
+                            value={formData.previewExcerpt || ""}
+                            onChange={handleChange}
+                            rows={2}
+                            placeholder="Hook your readers with a compelling excerpt before prompting them to unlock the full post..."
+                            className="w-full bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900/40 rounded-xl px-3 py-2 text-xs text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-amber-500 outline-none resize-none shadow-sm"
+                          />
                         </motion.div>
                       )}
                     </div>

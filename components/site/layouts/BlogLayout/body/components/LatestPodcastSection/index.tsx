@@ -3,6 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { PlayIcon, MicrophoneIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon } from '@heroicons/react/24/outline';
+import { resolvePodcastMedia } from "@/lib/media/content-media-resolver";
 
 // ---------------------------------------------------------
 // 1. MOCK DATA
@@ -135,6 +137,8 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
         >
           {podcastItems.map((pc, idx) => {
             const [isHovered, setIsHovered] = React.useState(false);
+            const media = resolvePodcastMedia(pc);
+            const isPremium = Boolean(pc.isPremium && (pc.price || 0) > 0);
 
             return (
               <motion.div
@@ -159,20 +163,32 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
                     </span>
 
                     {/* Fixed Size Square Aspect Thumb Cover */}
-                    <div className="w-14 h-14 bg-slate-900 rounded border border-slate-800 overflow-hidden shrink-0">
+                    <div className="w-14 h-14 bg-slate-900 rounded-lg border border-slate-800 overflow-hidden shrink-0 relative">
                       <img
-                        src={pc.coverImage || 'https://placehold.co/400x400'}
+                        src={media.coverUrl}
                         alt={pc.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-85 group-hover:opacity-100"
                         onError={handleImageError}
                       />
+                      {isPremium && (
+                        <div className="absolute top-1 right-1 bg-amber-500/90 text-slate-950 p-0.5 rounded shadow">
+                          <SparklesIcon className="w-3 h-3" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Metadata Header Identity Stack */}
                     <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-slate-200 tracking-wide line-clamp-1 group-hover:text-white transition-colors">
-                        {pc.title}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-slate-200 tracking-wide line-clamp-1 group-hover:text-white transition-colors">
+                          {pc.title}
+                        </h3>
+                        {isPremium && (
+                          <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 uppercase font-bold shrink-0">
+                            {pc.currency || "KES"} {pc.price}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-500 mt-1 line-clamp-1 max-w-2xl">
                         {pc.description}
                       </p>
@@ -186,12 +202,12 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
                     <div className="flex items-center gap-3">
                       <AudioWave isPlaying={isHovered} />
                       <span className="text-xs font-mono text-slate-500 tracking-wider">
-                        {pc.duration || "00:00"}
+                        {media.durationFormatted}
                       </span>
                     </div>
 
                     {/* Compact Interactive Play Square Trigger */}
-                    <div className="w-8 h-8 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
                       <PlayIcon className="w-3.5 h-3.5" />
                     </div>
 

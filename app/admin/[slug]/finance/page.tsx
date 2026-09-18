@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
 import FinanceHubClient from "./FinanceHubClient";
+import ContentFinanceHubClient from "@/components/admin/ContentFinanceHubClient";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -19,6 +20,22 @@ export default async function FinancePage({ params, searchParams }: PageProps) {
 
   if (!company) {
     notFound();
+  }
+
+  // Detect Blog & Content Stores
+  const isContentStore =
+    company.category === "Blog & Content" ||
+    company.category === "Media & Entertainment" ||
+    tab === "content";
+
+  if (isContentStore) {
+    return (
+      <ContentFinanceHubClient
+        companySlug={slug}
+        companyName={company.name || "Publishing"}
+        currency={company.currency || "KES"}
+      />
+    );
   }
 
   return (

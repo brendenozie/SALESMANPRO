@@ -36,16 +36,29 @@ const putHandler = async (
   if (body.coverImageUrl !== undefined)
     updateData.coverImageUrl = body.coverImageUrl;
   if (body.isFeatured !== undefined) updateData.isFeatured = body.isFeatured;
+  if (body.isPremium !== undefined) updateData.isPremium = !!body.isPremium;
+  if (body.price !== undefined) updateData.price = parseFloat(body.price);
+  if (body.currency !== undefined) updateData.currency = body.currency;
+  if (body.previewDuration !== undefined)
+    updateData.previewDuration = parseInt(body.previewDuration, 10);
+  if (body.media !== undefined) updateData.media = body.media;
 
   // Categories & tags (disconnect/reconnect)
   if (body.categories !== undefined) {
-    updateData.categories = {
-      set: body.categories.map((catId: string) => ({ id: catId })),
-    };
+    const catList = Array.isArray(body.categories)
+      ? body.categories
+      : typeof body.categories === "string"
+      ? body.categories.split(",").filter(Boolean)
+      : [];
+    if (catList.length > 0) {
+      updateData.productCategory = {
+        connect: { id: catList[0] },
+      };
+    }
   }
   if (body.tags !== undefined) {
     updateData.tags = {
-      set: body.tags.map((tagId: string) => ({ id: tagId })),
+      set: Array.isArray(body.tags) ? body.tags.map((tagId: string) => ({ id: tagId })) : [],
     };
   }
 
@@ -61,7 +74,6 @@ const putHandler = async (
       },
     });
 
-    
     try {
       await cacheDel(`tenant:${id}:podcasts:*`);
       await cacheDel(`admin:podcasts:*`);
@@ -94,7 +106,6 @@ const deleteHandler = async (
       where: { id },
     });
 
-    
     try {
       await cacheDel(`tenant:${id}:podcasts:*`);
       await cacheDel(`admin:podcasts:*`);

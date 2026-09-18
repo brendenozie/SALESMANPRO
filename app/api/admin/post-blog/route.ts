@@ -15,7 +15,6 @@ const parseJsonSafely = (data: any, fallback: any = null) => {
 };
 
 const createOrUpdateBlog = async (req: Request) => {
-
   const {
     id,
     companyId,
@@ -33,6 +32,11 @@ const createOrUpdateBlog = async (req: Request) => {
     seo,
     status,
     publishedAt,
+    isPremium,
+    price,
+    currency,
+    previewExcerpt,
+    media,
   } = await req.json();
 
   if (!companyId || !title || !slug || !content) {
@@ -74,6 +78,11 @@ const createOrUpdateBlog = async (req: Request) => {
     category: category || null,
     subCategory: subCategory || null,
     isFeature: !!isFeature,
+    isPremium: isPremium !== undefined ? !!isPremium : false,
+    price: price !== undefined ? parseFloat(price) : 0,
+    currency: currency || "KES",
+    previewExcerpt: previewExcerpt || excerpt || null,
+    media: media || undefined,
   };
 
   let blog;
@@ -139,15 +148,13 @@ const createOrUpdateBlog = async (req: Request) => {
     });
   }
 
-    try {
-      await cacheDel(`tenant:${companyId}:post-blog:*`);
-      await cacheDel(`admin:post-blog:*`);
-    } catch (e) {}
-    return formatResponse(true, { blog }, "Blog saved successfully.", 201);
+  try {
+    await cacheDel(`tenant:${companyId}:post-blog:*`);
+    await cacheDel(`admin:post-blog:*`);
+  } catch (e) {}
+  return formatResponse(true, { blog }, "Blog saved successfully.", 201);
 };
 
 // Export wrapped handler
 export const POST = withApiHandler(createOrUpdateBlog);
-
-
 export const PUT = withApiHandler(createOrUpdateBlog);
