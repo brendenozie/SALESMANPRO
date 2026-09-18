@@ -32,5 +32,5 @@ export default async function ReportsPage({ params }: PageProps) {
     // Use the actual database ID for your API calls, ensuring consistency
     const companyId = company.id;
 
-  return <ReportsClient />;
+  return <ReportsClient slug={slug} companyId={companyId} />;
 }

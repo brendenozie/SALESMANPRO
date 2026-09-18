@@ -49,8 +49,8 @@ export default async function InventoryDashboardPage({ params }: PageProps) {
 
   return (
     <PurchaseOrdersClient
-      // initialMembers={initialMembers}
-      // schoolId={companyId}
+      companyId={companyId}
+      slug={slug}
     />
   );
 }

@@ -29,7 +29,12 @@ interface TotalRevenueResponse {
   totalRevenue: number;
 }
 
-const ReportsClient: React.FC = () => {
+interface ReportsClientProps {
+  slug?: string;
+  companyId?: string;
+}
+
+const ReportsClient: React.FC<ReportsClientProps> = ({ slug, companyId }) => {
   // Default to one month ago → today
   const [startDate, setStartDate] = useState<Date>(
     new Date(new Date().setMonth(new Date().getMonth() - 1))
@@ -424,16 +429,55 @@ const ReportsClient: React.FC = () => {
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
       {/* Header Section */}
-      <header className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold text-gray-900 leading-tight mb-4 drop-shadow-sm flex items-center justify-center gap-4">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-indigo-600" viewBox="0 0 24 24" fill="currentColor">
+      <header className="text-center mb-8">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-3 drop-shadow-sm flex items-center justify-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-600" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
           </svg>
-          Admin Insights Dashboard
+          Business Intelligence & Reports
         </h1>
-        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-          Gain valuable insights into your orders, sales performance, and product trends with dynamic reports.
+        <p className="text-base text-gray-600 max-w-2xl mx-auto mb-6">
+          Gain authoritative insights into orders, sales performance, product trends, and real-time financial statements.
         </p>
+
+        {/* Operating Suite Navigation Tabs */}
+        {slug && (
+          <div className="flex flex-wrap justify-center items-center gap-2 max-w-4xl mx-auto p-2 bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-indigo-100">
+            <span className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow">
+              📊 Sales & Volume Trends
+            </span>
+            <a 
+              href={`/admin/${slug}/finance?tab=pnl`}
+              className="px-3 py-1.5 bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 rounded-xl text-xs font-bold transition-all border border-gray-200"
+            >
+              📈 Profit & Loss (P&L)
+            </a>
+            <a 
+              href={`/admin/${slug}/finance?tab=cashflow`}
+              className="px-3 py-1.5 bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 rounded-xl text-xs font-bold transition-all border border-gray-200"
+            >
+              💵 Cash Flow Statement
+            </a>
+            <a 
+              href={`/admin/${slug}/finance?tab=receivables`}
+              className="px-3 py-1.5 bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 rounded-xl text-xs font-bold transition-all border border-gray-200"
+            >
+              🧾 Accounts Receivable
+            </a>
+            <a 
+              href={`/admin/${slug}/finance?tab=payables`}
+              className="px-3 py-1.5 bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 rounded-xl text-xs font-bold transition-all border border-gray-200"
+            >
+              📦 Accounts Payable
+            </a>
+            <a 
+              href={`/admin/${slug}/finance?tab=tax`}
+              className="px-3 py-1.5 bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 rounded-xl text-xs font-bold transition-all border border-gray-200"
+            >
+              ⚖️ Tax / VAT Audit
+            </a>
+          </div>
+        )}
       </header>
 
       {/* Date Range Pickers & Apply Button (if needed) */}

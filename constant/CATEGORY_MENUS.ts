@@ -261,6 +261,71 @@ const commonEcommerce = (
       ],
     },
     {
+      label: "Invoices",
+      href: `/admin/${adminSlug}/invoices`,
+      icon: DocumentTextIcon,
+      minTier: "Ghuba Basic",
+    },
+    {
+      label: "Finance & Accounts",
+      icon: BanknotesIcon,
+      minTier: "Ghuba Basic",
+      subItems: [
+        {
+          label: "Finance Hub",
+          href: `/admin/${adminSlug}/finance`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Profit & Loss (P&L)",
+          href: `/admin/${adminSlug}/finance?tab=pnl`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Cash Flow Statement",
+          href: `/admin/${adminSlug}/finance?tab=cashflow`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Operating Expenses",
+          href: `/admin/${adminSlug}/finance?tab=expenses`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Accounts Receivable",
+          href: `/admin/${adminSlug}/finance?tab=receivables`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Accounts Payable",
+          href: `/admin/${adminSlug}/finance?tab=payables`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Tax / VAT Summary",
+          href: `/admin/${adminSlug}/finance?tab=tax`,
+          minTier: "Ghuba Basic",
+        },
+      ],
+    },
+    {
+      label: "Procurement",
+      icon: TruckIcon,
+      minTier: "Ghuba Starter",
+      subItems: [
+        {
+          label: "Purchase Orders",
+          href: `/admin/${adminSlug}/inventory-purchase-orders`,
+          minTier: "Ghuba Starter",
+        },
+        {
+          label: "Suppliers Directory",
+          href: `/admin/${adminSlug}/inventory-suppliers`,
+          minTier: "Ghuba Starter",
+        },
+      ],
+    },
+    {
       label: "Transport",
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,

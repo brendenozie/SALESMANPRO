@@ -477,6 +477,9 @@ model Company {
   staffAttendanceRecords    StaffAttendanceRecord[]
   payrollRecords            PayrollRecord[]
   expenses                  Expense[]
+  suppliers                 Supplier[]
+  purchaseOrders            PurchaseOrder[]
+  supplierBills             SupplierBill[]
   domainVerified            Boolean                   @default(false)
   candidates                candidate[]
   examCategories            ExamCategory[]
@@ -4176,6 +4179,7 @@ model CustomerOrder {
 
   externalReference String?
   etimsInvoices     ETIMSInvoice[]
+  invoices          Invoice[]
 
   // ============================================================
   // INDEXES
@@ -6966,11 +6970,17 @@ model Prescription {
 
 // NEW: InvoiceStatus Enum
 enum InvoiceStatus {
-  PAID
+  DRAFT
+  SENT
+  VIEWED
   PENDING
+  PARTIALLY_PAID
+  PAID
   OVERDUE
   CANCELED
+  CANCELLED
 }
+
 
 // =============================================================
 // ENUMS for Plans and Subscriptions
@@ -7879,7 +7889,7 @@ model FinanceAppointment {
   @@index([status])
 }
 
-// Invoice model: Represents a financial invoice for a client
+// Invoice model: Represents an authoritative business invoice
 model Invoice {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   clientId      String?       @db.ObjectId
@@ -7887,20 +7897,200 @@ model Invoice {
   consumerId    String?       @db.ObjectId
   consumer      Consumer?     @relation(fields: [consumerId], references: [id])
   invoiceNumber String        @unique
+  customerName  String?
+  customerEmail String?
+  customerPhone String?
+  subtotal      Float         @default(0)
+  taxAmount     Float         @default(0)
+  discountAmount Float        @default(0)
   amount        Float
-  issueDate     DateTime
+  amountPaid    Float         @default(0)
+  amountDue     Float         @default(0)
+  currency      String        @default("KES")
+  issueDate     DateTime      @default(now())
   dueDate       DateTime
   status        InvoiceStatus @default(PENDING)
   notes         String?
+  terms         String?
 
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
+
+  orderId String?        @db.ObjectId
+  order   CustomerOrder? @relation(fields: [orderId], references: [id])
+
+  items InvoiceItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
+  @@index([consumerId])
+  @@index([companyId])
+  @@index([orderId])
   @@index([status])
+  @@index([dueDate])
+}
+
+model InvoiceItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceId   String   @db.ObjectId
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float    @default(0)
+  taxRate     Float    @default(0)
+  discount    Float    @default(0)
+  totalPrice  Float    @default(0)
+
+  productId            String? @db.ObjectId
+  marketplaceListingId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+}
+
+// Supplier & Procurement Architecture
+model Supplier {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId          String   @db.ObjectId
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name               String
+  contactPerson      String?
+  email              String?
+  phone              String?
+  address            String?
+  taxPin             String?
+  category           String?  @default("General")
+  paymentTerms       String?  @default("Net 30")
+  status             String   @default("ACTIVE")
+  rating             Float    @default(5.0)
+  outstandingBalance Float    @default(0)
+  totalPurchases     Float    @default(0)
+  notes              String?
+
+  purchaseOrders PurchaseOrder[]
+  bills          SupplierBill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  IN_TRANSIT
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id           String              @id @default(auto()) @map("_id") @db.ObjectId
+  poNumber     String              @unique
+  companyId    String              @db.ObjectId
+  company      Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  supplierId   String              @db.ObjectId
+  supplier     Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  status       PurchaseOrderStatus @default(DRAFT)
+  issueDate    DateTime            @default(now())
+  expectedDate DateTime?
+  receivedDate DateTime?
+  subtotal     Float               @default(0)
+  taxAmount    Float               @default(0)
+  shippingCost Float               @default(0)
+  totalAmount  Float               @default(0)
+  notes        String?
+  approvedBy   String?
+
+  items PurchaseOrderItem[]
+  bills SupplierBill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([supplierId])
+  @@index([status])
+}
+
+model PurchaseOrderItem {
+  id                   String        @id @default(auto()) @map("_id") @db.ObjectId
+  purchaseOrderId      String        @db.ObjectId
+  purchaseOrder        PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  description          String
+  quantityOrdered      Int
+  quantityReceived     Int           @default(0)
+  unitCost             Float         @default(0)
+  totalCost            Float         @default(0)
+  productId            String?       @db.ObjectId
+  marketplaceListingId String?       @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([purchaseOrderId])
+}
+
+enum SupplierBillStatus {
+  DRAFT
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  VOID
+}
+
+model SupplierBill {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  billNumber      String             @unique
+  companyId       String             @db.ObjectId
+  company         Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  supplierId      String             @db.ObjectId
+  supplier        Supplier           @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  purchaseOrderId String?            @db.ObjectId
+  purchaseOrder   PurchaseOrder?     @relation(fields: [purchaseOrderId], references: [id])
+  amount          Float              @default(0)
+  amountPaid      Float              @default(0)
+  amountDue       Float              @default(0)
+  issueDate       DateTime           @default(now())
+  dueDate         DateTime
+  status          SupplierBillStatus @default(PENDING)
+  notes           String?
+  receiptUrl      String?
+
+  payments SupplierPayment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([supplierId])
+  @@index([purchaseOrderId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model SupplierPayment {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  billId        String       @db.ObjectId
+  bill          SupplierBill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String       @default("BANK")
+  reference     String?
+  paidAt        DateTime     @default(now())
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([billId])
 }
 
 enum Expertise {
@@ -9628,20 +9818,29 @@ model Deal {
 }
 
 model Expense {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  expenseId   String   @unique // e.g., "EXP-4022"
-  category    String // Utilities, Maintenance, etc.
-  description String
-  vendor      String
-  amount      Float
-  status      String   @default("Pending Approval") // Paid, Pending Approval, Processing
-  date        DateTime @default(now())
-  receiptUrl  String? // For the voucher/document button
-  companyId   String   @db.ObjectId
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  expenseId     String   @unique // e.g., "EXP-4022"
+  category      String   // Utilities, Maintenance, Rent, Salaries, Marketing, Fuel, Supplies, etc.
+  description   String
+  vendor        String
+  amount        Float
+  taxAmount     Float?   @default(0)
+  paymentMethod String?  @default("CASH") // CASH, MPESA, BANK, CARD
+  reference     String?
+  costCenter    String?  @default("Operations")
+  approvedBy    String?
+  isRecurring   Boolean  @default(false)
+  status        String   @default("Pending Approval") // Paid, Pending Approval, Processing, Approved, Rejected
+  date          DateTime @default(now())
+  receiptUrl    String?  // For the voucher/document button
+  notes         String?
+  companyId     String   @db.ObjectId
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  @@index([companyId, date])
+  @@index([companyId, status])
   @@map("expenses")
 }
 

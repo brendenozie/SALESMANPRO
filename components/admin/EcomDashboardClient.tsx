@@ -160,6 +160,15 @@ export interface DashboardData {
     completedOrdersToday: number;
     averageOrderValueToday: number;
     totalRevenueMonth: number;
+    netRevenueMonth?: number;
+    cogsMonth?: number;
+    grossProfitMonth?: number;
+    operatingExpensesMonth?: number;
+    netProfitMonth?: number;
+    accountsReceivableTotal?: number;
+    accountsPayableTotal?: number;
+    overdueInvoicesCount?: number;
+    pendingSupplierBillsCount?: number;
     monthlyTarget: number;
     monthlyTargetProgress: number;
     newClients: number;
@@ -300,6 +309,15 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
         recentOrders: rawProps.recentOrders || [],
         activePromotions: rawProps.activePromotions || [],
         salesLast7Days: rawProps.salesLast7Days || [],
+        netRevenueMonth: rawProps.netRevenueMonth ?? rawProps.totalRevenueMonth ?? 0,
+        cogsMonth: rawProps.cogsMonth ?? 0,
+        grossProfitMonth: rawProps.grossProfitMonth ?? 0,
+        operatingExpensesMonth: rawProps.operatingExpensesMonth ?? 0,
+        netProfitMonth: rawProps.netProfitMonth ?? 0,
+        accountsReceivableTotal: rawProps.accountsReceivableTotal ?? 0,
+        accountsPayableTotal: rawProps.accountsPayableTotal ?? 0,
+        overdueInvoicesCount: rawProps.overdueInvoicesCount ?? 0,
+        pendingSupplierBillsCount: rawProps.pendingSupplierBillsCount ?? 0,
     };
 
     const dataCards: DashboardCardProps[] = [
@@ -395,19 +413,65 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
         <div className="font-sans bg-gray-900 text-gray-100 min-h-screen p-4 sm:p-6 lg:p-10 transition-colors duration-500">
             <div className="absolute inset-0 z-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-color-gray-800)_0%,_var(--tw-color-gray-900)_100%)]"></div>
             <div className="relative z-10 max-w-screen-xl mx-auto">
-                <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-12">
-                    <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-2">
-                        {props.companyName} Control Center
-                    </h1>
-                    <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full mb-3"></div>
-                    <p className="text-lg text-gray-400 font-light">
-                        Actionable summary for <strong>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</strong>.
-                    </p>
+                <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-2">
+                            {props.companyName} Control Center
+                        </h1>
+                        <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full mb-3"></div>
+                        <p className="text-lg text-gray-400 font-light">
+                            Actionable summary for <strong>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</strong>.
+                        </p>
+                    </div>
+
+                    {/* Quick Access to Business Operating System */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <a 
+                            href={`/admin/${props.slug}/finance`} 
+                            className="px-3.5 py-2 bg-emerald-950/40 border border-emerald-500/40 hover:bg-emerald-900/50 text-emerald-400 text-xs font-bold rounded-xl transition-all shadow flex items-center gap-1.5"
+                        >
+                            <BanknotesIcon className="w-4 h-4" /> Finance Hub
+                        </a>
+                        <a 
+                            href={`/admin/${props.slug}/invoices`} 
+                            className="px-3.5 py-2 bg-slate-800/80 border border-slate-700 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                            <ClipboardDocumentListIcon className="w-4 h-4 text-cyan-400" /> Invoices
+                        </a>
+                        <a 
+                            href={`/admin/${props.slug}/inventory-purchase-orders`} 
+                            className="px-3.5 py-2 bg-slate-800/80 border border-slate-700 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                            <CubeTransparentIcon className="w-4 h-4 text-amber-400" /> Purchase Orders
+                        </a>
+                    </div>
                 </motion.header>
 
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="w-full lg:w-2/3 space-y-8">
                         <div className="space-y-4">
+                            {props.overdueInvoicesCount > 0 && (
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center p-4 rounded-xl bg-blue-950/40 text-blue-300 shadow-xl border border-blue-700/50">
+                                    <ClockIcon className="w-6 h-6 mr-4 text-blue-400 animate-pulse" />
+                                    <p className="text-sm font-medium flex-1">
+                                        <b>Receivables Alert:</b> <strong>{props.overdueInvoicesCount}</strong> overdue customer invoice(s) awaiting collection.
+                                    </p>
+                                    <a href={`/admin/${props.slug}/finance`} className="ml-4 text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+                                        View Invoices <ArrowRightIcon className="inline ml-1 w-3 h-3" />
+                                    </a>
+                                </motion.div>
+                            )}
+                            {props.pendingSupplierBillsCount > 0 && (
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center p-4 rounded-xl bg-amber-950/40 text-amber-300 shadow-xl border border-amber-700/50">
+                                    <BanknotesIcon className="w-6 h-6 mr-4 text-amber-400" />
+                                    <p className="text-sm font-medium flex-1">
+                                        <b>Payables Notice:</b> <strong>{props.pendingSupplierBillsCount}</strong> open supplier bill(s) pending payment in Accounts Payable.
+                                    </p>
+                                    <a href={`/admin/${props.slug}/finance`} className="ml-4 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors">
+                                        Pay Bills <ArrowRightIcon className="inline ml-1 w-3 h-3" />
+                                    </a>
+                                </motion.div>
+                            )}
                             {props.overdueTasksCount > 0 && (
                                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center p-4 rounded-xl bg-amber-900/40 text-amber-300 shadow-xl border border-amber-700/50">
                                     <ClockIcon className="w-6 h-6 mr-4 text-amber-400 animate-pulse" />
@@ -430,6 +494,79 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
                                     </a>
                                 </motion.div>
                             )}
+                        </div>
+
+                        {/* EXECUTIVE FINANCIAL HEALTH SUMMARY PANEL */}
+                        <div className="p-6 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-950 rounded-2xl border border-emerald-500/20 shadow-2xl">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 mb-5 border-b border-gray-800">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                                        <h2 className="text-sm font-black uppercase tracking-wider text-emerald-400">
+                                            Business Financial Health & P&L (Month-to-Date)
+                                        </h2>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-0.5">
+                                        Authoritative net figures calculated from real orders, COGS, expenses, and ledgers.
+                                    </p>
+                                </div>
+                                <a 
+                                    href={`/admin/${props.slug}/finance`}
+                                    className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-all bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-800/60"
+                                >
+                                    Full Finance Hub <ArrowRightIcon className="w-3.5 h-3.5" />
+                                </a>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 rounded-xl transition-all group">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1">
+                                        Net Profit (MTD)
+                                    </span>
+                                    <p className={`text-xl font-extrabold ${props.netProfitMonth >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                                        {formatCurrency(props.netProfitMonth, props.currency)}
+                                    </p>
+                                    <span className="text-[10px] text-gray-400 mt-1 block">
+                                        Gross: {formatCurrency(props.grossProfitMonth, props.currency)}
+                                    </span>
+                                </a>
+
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 rounded-xl transition-all group">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1">
+                                        COGS (Cost of Goods)
+                                    </span>
+                                    <p className="text-xl font-extrabold text-amber-400">
+                                        {formatCurrency(props.cogsMonth, props.currency)}
+                                    </p>
+                                    <span className="text-[10px] text-gray-400 mt-1 block">
+                                        Sales: {formatCurrency(props.netRevenueMonth, props.currency)}
+                                    </span>
+                                </a>
+
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 rounded-xl transition-all group">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1">
+                                        Accounts Receivable
+                                    </span>
+                                    <p className="text-xl font-extrabold text-cyan-400">
+                                        {formatCurrency(props.accountsReceivableTotal, props.currency)}
+                                    </p>
+                                    <span className="text-[10px] text-cyan-400/80 mt-1 block">
+                                        {props.overdueInvoicesCount} overdue invoice(s)
+                                    </span>
+                                </a>
+
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 rounded-xl transition-all group">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 block mb-1">
+                                        Accounts Payable
+                                    </span>
+                                    <p className="text-xl font-extrabold text-purple-400">
+                                        {formatCurrency(props.accountsPayableTotal, props.currency)}
+                                    </p>
+                                    <span className="text-[10px] text-purple-400/80 mt-1 block">
+                                        {props.pendingSupplierBillsCount} open bill(s)
+                                    </span>
+                                </a>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {dataCards.map((card, idx) => (

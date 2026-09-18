@@ -1,5 +1,6 @@
 import { buildTenantCacheKey, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
+import * as financeService from "@/lib/finance/financeService";
 
 // Helper: start of day
 const getStartOfDay = (date: Date) => {
@@ -16,6 +17,15 @@ export interface DashboardMetricData {
   completedOrdersToday: number;
   averageOrderValueToday: number;
   totalRevenueMonth: number;
+  netRevenueMonth?: number;
+  cogsMonth?: number;
+  grossProfitMonth?: number;
+  operatingExpensesMonth?: number;
+  netProfitMonth?: number;
+  accountsReceivableTotal?: number;
+  accountsPayableTotal?: number;
+  overdueInvoicesCount?: number;
+  pendingSupplierBillsCount?: number;
   monthlyTarget: number;
   monthlyTargetProgress: number;
   newClients: number;
@@ -150,6 +160,9 @@ export async function getEcommerceDashboardData(
       monthlyAggOrders,
       agentSalesGroup,
       salesLast7DaysArr,
+      pnlData,
+      arData,
+      apData,
     ] = await Promise.all([
       prisma.consumer.count({ where: { createdAt: { gte: todayStart }, companyId } }).catch(() => 0),
       prisma.consumer.count({ where: { companyId } }).catch(() => 0),
@@ -221,6 +234,9 @@ export async function getEcommerceDashboardData(
           };
         })
       ).then((data) => data.reverse()),
+      financeService.getIncomeStatement(companyId, monthStart, now).catch(() => null),
+      financeService.getAccountsReceivable(companyId).catch(() => null),
+      financeService.getAccountsPayable(companyId).catch(() => null),
     ]);
 
     const todaySales = customerOrderTodayAgg._sum.totalFinalPrice || 0;
@@ -274,6 +290,15 @@ export async function getEcommerceDashboardData(
       completedOrdersToday,
       averageOrderValueToday: Math.round(averageOrderValueToday * 100) / 100,
       totalRevenueMonth: Math.round(totalRevenueMonth * 100) / 100,
+      netRevenueMonth: pnlData?.revenue?.netRevenue ? Math.round(pnlData.revenue.netRevenue * 100) / 100 : Math.round(totalRevenueMonth * 100) / 100,
+      cogsMonth: pnlData?.cogs?.totalCOGS ? Math.round(pnlData.cogs.totalCOGS * 100) / 100 : 0,
+      grossProfitMonth: pnlData?.profitability?.grossProfit ? Math.round(pnlData.profitability.grossProfit * 100) / 100 : 0,
+      operatingExpensesMonth: pnlData?.profitability?.totalOperatingExpenses ? Math.round(pnlData.profitability.totalOperatingExpenses * 100) / 100 : 0,
+      netProfitMonth: pnlData?.profitability?.netProfit ? Math.round(pnlData.profitability.netProfit * 100) / 100 : 0,
+      accountsReceivableTotal: arData?.totalReceivables ? Math.round(arData.totalReceivables * 100) / 100 : 0,
+      accountsPayableTotal: apData?.totalPayables ? Math.round(apData.totalPayables * 100) / 100 : 0,
+      overdueInvoicesCount: arData?.unpaidInvoicesCount || 0,
+      pendingSupplierBillsCount: apData?.unpaidBillsCount || 0,
       monthlyTarget,
       monthlyTargetProgress: Math.round(monthlyTargetProgress),
       newClients,
