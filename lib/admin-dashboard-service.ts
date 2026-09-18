@@ -234,7 +234,7 @@ export async function getEcommerceDashboardData(
           };
         })
       ).then((data) => data.reverse()),
-      financeService.getIncomeStatement(companyId, monthStart, now).catch(() => null),
+      financeService.getIncomeStatement(companyId, { startDate: monthStart, endDate: now }).catch(() => null),
       financeService.getAccountsReceivable(companyId).catch(() => null),
       financeService.getAccountsPayable(companyId).catch(() => null),
     ]);
