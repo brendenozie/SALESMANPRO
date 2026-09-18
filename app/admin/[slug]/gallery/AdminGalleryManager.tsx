@@ -232,13 +232,19 @@ export default function AdminGalleryManager({ companyId }: { companyId: string }
         }
       }
 
-      // 2. Stream Uploads to S3
-      const uploaded = await uploadFiles(processed, "image", (progress, file) => {
-        setUploadProgress((prev) => ({
-          ...prev,
-          [file.name]: progress,
-        }));
-      });
+      // 2. Stream Uploads to S3 with correct media type per file
+      const uploaded = await Promise.all(
+        processed.map(async (file, idx) => {
+          const isVideo = file.type.startsWith("video/") || previews[idx]?.type === "VIDEO";
+          const res = await uploadFiles([file], isVideo ? "video" : "image", (progress, f) => {
+            setUploadProgress((prev) => ({
+              ...prev,
+              [f.name]: progress,
+            }));
+          });
+          return res[0];
+        })
+      );
 
       // 3. Save payload references into DB
       const response = await fetch("/api/admin/galleries-items", {
@@ -539,16 +545,21 @@ export function GalleryItemEditor({ item }: { item: any }) {
   const [featured, setFeatured] = useState(item.featured);
   const [isSaving, setIsSaving] = useState(false);
 
-  const save = async () => {
+  const save = async (overrideFeatured?: boolean) => {
     setIsSaving(true);
     try {
-      await fetch(`/api/galleries-items/${item.id}`, {
+      await fetch(`/api/admin/galleries-items`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption, altText, featured }),
+        body: JSON.stringify({
+          id: item.id,
+          caption,
+          altText,
+          featured: overrideFeatured !== undefined ? overrideFeatured : featured,
+        }),
       });
     } catch (e) {
-      console.error(e);
+      console.error("Failed to update gallery item:", e);
     } finally {
       setIsSaving(false);
     }
@@ -584,15 +595,9 @@ export function GalleryItemEditor({ item }: { item: any }) {
             type="checkbox"
             checked={featured}
             onChange={(e) => {
-              setFeatured(e.target.checked);
-              // Small state synchronization hack because check box operations complete before DOM bubble renders values on blur
-              setTimeout(() => {
-                fetch(`/api/galleries-items/${item.id}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ caption, altText, featured: e.target.checked }),
-                });
-              }, 50);
+              const val = e.target.checked;
+              setFeatured(val);
+              save(val);
             }}
             className="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5 bg-white dark:bg-slate-800"
           />

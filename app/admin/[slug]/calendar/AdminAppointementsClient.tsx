@@ -214,46 +214,35 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         );
         toast.success(`Appointment "${selectedItem.service}" status updated to "${newStatus}"!`);
       } else { // It's an OrderItem
-        // Mock API call for order item status update - REPLACE WITH YOUR REAL API
-        // console.log(`Simulating API call to update OrderItem ${selectedItem.id} to status: ${newStatus}, Rider: ${rider}`);
-        const res = await fetch(
-          `${apiBaseUrl}/admin/orders/${selectedItem.id}/status`, // Example API endpoint
-          {
-            method: "PUT",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus, riderId: rider }), // Ensure your backend expects riderId
-          }
-        );
+        const res = await fetch(`/api/admin/calendar-services`, {
+          method: "PATCH",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderItemId: selectedItem.id,
+            status: newStatus,
+            riderId: rider || undefined,
+          }),
+        });
 
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || res.statusText);
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Failed to update status on server");
         }
 
-        const updatedOrder = await res.json(); // Assuming backend returns the updated item
-        // setUnifiedItems(prev =>
-        //   prev.map(item =>
-        //     item.id === selectedItem.id ? {
-        //       ...item,
-        //       status: updatedOrder.status,
-        //       order: { ...item.order, status: updatedOrder.status, rider: updatedOrder.rider }
-        //     } : item
-        //   )
-        // );
         setUnifiedItems(prev =>
-            prev.map(item => {
-              if (item.id === selectedItem.id && "order" in item) {
-                return {
-                  ...item,
-                  status: updatedOrder.status,
-                  order: { ...item.order, status: updatedOrder.status, rider: updatedOrder.rider }
-                };
-              }
-              return item;
-            })
-          );
+          prev.map(item => {
+            if (item.id === selectedItem.id && "order" in item) {
+              return {
+                ...item,
+                status: newStatus,
+                order: item.order ? { ...item.order, status: newStatus, rider: rider || item.order.rider } : undefined,
+              };
+            }
+            return item;
+          })
+        );
 
-          toast.success(`Order for "${selectedItem.marketplaceListing?.name || selectedItem.name}" updated to "${newStatus}"!`);
+        toast.success(`Service "${selectedItem.marketplaceListing?.name || selectedItem.name}" updated to "${newStatus}"!`);
       }
       closeModal();
     } catch (error: any) {

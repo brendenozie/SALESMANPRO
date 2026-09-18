@@ -181,6 +181,8 @@ const nextConfig = {
         child_process: false,
       };
     }
+
+    return config;
   },
 };
 

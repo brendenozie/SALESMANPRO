@@ -1,217 +1,127 @@
-// app/[slug]/appointments/page.tsx
 import React from "react";
-import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppointementsClient"; // Updated import to include OrderItem type
-import { cookies } from "next/headers";
+import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppointementsClient";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-// export interface OrderItem {
-//   id: string;
-//   price: number;
-//   name?: string; // Made optional as it might come from marketplaceListing
-//   email?: string;
-//   phone?: string;
-//   quantity: number;
-//   status?: string;
-//   date?: string;
-//   timeSlot?: string;
-//   marketplaceListing?: {
-//     title?: string;
-//     name?: string;
-//   };
-//   order?: {
-//     status?: string;
-//     rider?: string;
-//     createdAt?: string;
-//     name?: string;
-//     title?: string;
-//     email?: string;
-//     phone?: string;
-//     consumer?: {
-//       name?: string;
-//     };
-//   };
-// }
+import prisma from "@/server/db/prismadb";
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
-
-// Sample data for appointments
-const sampleAppointments: AppointmentItem[] = [
-  {
-    id: "apt_001",
-    service: "Dental Checkup",
-    date: "2025-07-25", // Changed date to be in the future for better demo
-    timeSlot: "10:00 AM",
-    client: {
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      phone: "+254712345678",
-    },
-    status: "Scheduled",
-    notes: "First-time visitor",
-  },
-  {
-    id: "apt_002",
-    service: "Therapy Session",
-    date: "2025-07-26", // Changed date
-    timeSlot: "02:30 PM",
-    client: {
-      name: "Bob Smith",
-      email: "bob.smith@example.com",
-      phone: "+254798765432",
-    },
-    status: "Scheduled", // Changed to Scheduled for demo
-    notes: "Follow-up in two weeks",
-  },
-  {
-    id: "apt_003",
-    service: "Consultation",
-    date: "2025-07-27", // Changed date
-    timeSlot: "11:15 AM",
-    client: {
-      name: "Carol Lee",
-      email: "carol.lee@example.com",
-      phone: "+254701234567",
-    },
-    status: "Cancelled",
-    notes: "Client requested reschedule",
-  },
-  {
-    id: "apt_004",
-    service: "Yoga Class",
-    date: "2025-07-25",
-    timeSlot: "09:00 AM",
-    client: {
-      name: "David Green",
-      email: "david.green@example.com",
-      phone: "+254722334455",
-    },
-    status: "Scheduled",
-    notes: "Beginner session",
-  },
-];
-
-// Sample data for order items that might have a date/time
-const sampleOrderItems: OrderItem[] = [
-  {
-    id: "ord_item_001",
-    price: 50.00,
-    name: "Home Cleaning Service",
-    quantity: 1,
-    status: "PENDING",
-    date: "2025-07-25",
-    timeSlot: "01:00 PM",
-    marketplaceListing: {
-      title: "Standard Home Cleaning",
-    },
-    order: {
-      id: "order_xyz_123",
-      status: "PENDING",
-      name: "Emily White",
-      email: "emily.white@example.com",
-      phone: "+254733445566",
-    },
-  },
-  {
-    id: "ord_item_002",
-    price: 120.00,
-    name: "Plumbing Repair",
-    quantity: 1,
-    status: "PROCESSING",
-    date: "2025-07-26",
-    timeSlot: "09:30 AM",
-    marketplaceListing: {
-      title: "Emergency Plumbing",
-    },
-    order: {
-      id: "order_abc_456",
-      status: "PROCESSING",
-      rider: "Rider101",
-      name: "Frank Black",
-      email: "frank.black@example.com",
-      phone: "+254744556677",
-    },
-  },
-  {
-    id: "ord_item_003",
-    price: 75.00,
-    name: "Car Wash & Detailing",
-    quantity: 1,
-    status: "DELIVERED",
-    date: "2025-07-24", // Past date to show completed
-    timeSlot: "03:00 PM",
-    marketplaceListing: {
-      title: "Premium Car Detailing",
-    },
-    order: {
-      id: "order_def_789",
-      status: "DELIVERED",
-      rider: "Rider102",
-      name: "Grace Hall",
-      email: "grace.hall@example.com",
-      phone: "+254755667788",
-    },
-  },
-];
 
 export default async function AppointmentsPage({ params }: Props) {
   const { slug } = await params;
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const session = await getAuthSession();
 
-  let orderItems: OrderItem[] = [];
+  // 1. Safely resolve company
+  const identifier = slug || session?.user?.id || "";
+  const company = await findCompanyCached(identifier, "page");
 
-  // In a real application, you would fetch both appointments and order items
-  // based on the companyId from your API.
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 },
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookieHeader,
-        },
-     } // SSR on every request
+  if (!company) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] text-slate-500">
+        Company not found
+      </div>
     );
-    if (res.ok) {
-      const json = (await res.json()).data as { orderItems: OrderItem[] };
-      // Filter orderItems to include only those with date/timeSlot if necessary
-      orderItems = json.orderItems.filter(item => item.date && item.timeSlot) || [];
-    } else {
-      console.error(
-        "[AppointmentsPage] Failed to fetch order items →",
-        res.status,
-        res.statusText
-      );
-    }
-  } catch (err: any) {
-    console.error("[AppointmentsPage] Error fetching order items →", err.message);
   }
 
-  // Combine sample data with fetched data for demonstration purposes
-  const initialAppointments = sampleAppointments;
-  const combinedInitialOrderItems = [...sampleOrderItems, ...orderItems]; // Combine fetched with sample
+  const companyId = company.id;
 
-  // console.log("Initial Appointments:", initialAppointments);
-  // console.log("Initial Order Items (with date/time):", combinedInitialOrderItems);
+  // 2. Fetch live customer order items that have service scheduling (date/timeSlot) or are part of SERVICE orders
+  let liveOrderItems: OrderItem[] = [];
+  try {
+    const ordersWithItems = await prisma.customerOrder.findMany({
+      where: {
+        companyId,
+        OR: [
+          { orderType: "SERVICE" },
+          { items: { some: { date: { not: null } } } },
+          { items: { some: { timeSlot: { not: null } } } },
+        ],
+      },
+      include: {
+        items: {
+          include: {
+            marketplaceListing: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
 
-  return <AdminAppointmentsClient initialAppointments={initialAppointments} initialOrderItems={combinedInitialOrderItems} />;
+    for (const order of ordersWithItems) {
+      for (const item of order.items) {
+        // Only include items with scheduled dates, or fallback to order creation date for service items
+        const itemDate = item.date 
+          ? item.date.toISOString().split("T")[0] 
+          : order.deliveryDate 
+            ? order.deliveryDate.toISOString().split("T")[0]
+            : order.createdAt.toISOString().split("T")[0];
+
+        const itemTimeSlot = item.timeSlot || order.deliveryTimeSlot || "10:00 AM";
+
+        liveOrderItems.push({
+          id: item.id,
+          price: Number(item.totalPrice ?? item.price ?? 0),
+          name: item.marketplaceListing?.name || item.serviceNotes || "Service Order",
+          email: order.email || undefined,
+          phone: order.phone || undefined,
+          quantity: item.quantity,
+          status: order.status,
+          date: itemDate,
+          timeSlot: itemTimeSlot,
+          marketplaceListing: {
+            id: item.marketplaceListing?.id,
+            name: item.marketplaceListing?.name || item.serviceNotes || "Service",
+            title: item.marketplaceListing?.name,
+          },
+          order: {
+            id: order.id,
+            status: order.status,
+            rider: order.deliveryPersonName || (order as any).riderId || undefined,
+            createdAt: order.createdAt.toISOString(),
+            name: order.name || "Customer",
+            email: order.email || undefined,
+            phone: order.phone || undefined,
+            consumer: {
+              name: order.name || undefined,
+              email: order.email || undefined,
+              phone: order.phone || undefined,
+            },
+          },
+        });
+      }
+    }
+  } catch (err: any) {
+    console.error("[CalendarPage] Error querying live customer orders:", err);
+  }
+
+  // If no live order items exist yet, provide helpful initial placeholder data
+  const fallbackAppointments: AppointmentItem[] = liveOrderItems.length === 0 ? [
+    {
+      id: "apt_welcome_1",
+      service: "Consultation & Service Checkup",
+      date: new Date().toISOString().split("T")[0],
+      timeSlot: "11:00 AM",
+      client: {
+        name: "Welcome Client",
+        email: "client@example.com",
+        phone: "+254 700 000 000",
+      },
+      status: "Scheduled",
+      notes: "Sample service appointment. Book new services in Service POS to see them appear live.",
+    },
+  ] : [];
+
+  return (
+    <AdminAppointmentsClient 
+      initialAppointments={fallbackAppointments} 
+      initialOrderItems={liveOrderItems} 
+    />
+  );
 }

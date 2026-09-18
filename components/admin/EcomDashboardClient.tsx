@@ -307,7 +307,7 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
     const dataCards: DashboardCardProps[] = [
         { href: `/admin/${props.slug}/sales`, title: 'Today\'s Sales', icon: ArrowTrendingUpIcon, value: props.todaySales, formatValue: (val) => formatCurrency(val, props.currency), footerText: 'View Sales Report', ...COLOR_PALETTE.sales },
         { href: `/admin/${props.slug}/targets`, title: 'Monthly Revenue', icon: BanknotesIcon, value: props.totalRevenueMonth, formatValue: (val) => `${formatCurrency(val, props.currency)}`, progress: props.monthlyTargetProgress, footerText: `Target: ${formatCurrency(props.monthlyTarget, props.currency)}`, ...COLOR_PALETTE.revenue },
-        { href: `/admin/${props.slug}/customerorders`, title: 'Completed Orders', icon: CheckCircleIcon, value: props.completedOrdersToday, footerText: 'View All Orders', ...COLOR_PALETTE.orders },
+        { href: `/admin/${props.slug}/orders`, title: 'Completed Orders', icon: CheckCircleIcon, value: props.completedOrdersToday, footerText: 'View All Orders', ...COLOR_PALETTE.orders },
         { href: `/admin/${props.slug}/sales`, title: 'Avg. Order Value', icon: CurrencyDollarIcon, value: props.averageOrderValueToday, formatValue: (val) => formatCurrency(val, props.currency), footerText: 'View Analytics', ...COLOR_PALETTE.avg },
         { href: `/admin/${props.slug}/consumers`, title: 'New Clients Today', icon: UsersIcon, value: props.newClients, footerText: `of ${props.totalClients} total`, ...COLOR_PALETTE.clients },
         { href: `/admin/${props.slug}/agents`, title: `Top Agent: ${props.topAgent?.name || 'N/A'}`, icon: ChartBarIcon, value: props.topAgent?.totalSales || 0, formatValue: (val) => formatCurrency(val, props.currency), footerText: 'View Leaderboard', ...COLOR_PALETTE.agent },
@@ -492,7 +492,7 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
                             </div>
                             <div className="space-y-3">
                                 {props.recentOrders?.length > 0 ? props.recentOrders?.map((order, i) => (
-                                    <motion.a key={order.id} href={`/admin/${props.slug}/customerorders`} className="block group" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 + 0.8 }}>
+                                    <motion.a key={order.id} href={`/admin/${props.slug}/orders/${order.id}`} className="block group" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 + 0.8 }}>
                                         <div className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all flex items-center gap-4 border border-gray-100 dark:border-gray-700">
                                             <ShoppingCartIcon className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                                             <div className="flex-1 overflow-hidden">

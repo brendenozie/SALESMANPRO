@@ -91,6 +91,9 @@ interface ReceiptDetails {
   storeAddress: string;
   storePhone: string;
   currencySymbol: string;
+  clientName?: string;
+  clientPhone?: string;
+  clientEmail?: string;
   appointment?: {
     date: string;
     timeSlot: string;
@@ -286,12 +289,21 @@ const AdminServicePOSClient: React.FC<{
             </div>
         `).join('');
 
+        const clientInfoHtml = details.clientName ? `
+            <div style="background-color: #f8fafc; padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 12px; border: 1px solid #e2e8f0;">
+                <div style="font-weight: 800; margin-bottom: 4px; color: #1e293b; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">Client Information</div>
+                <div style="font-weight: 600; color: #0f172a;">${details.clientName}</div>
+                ${details.clientPhone ? `<div style="color: #64748b; margin-top: 2px;">📞 ${details.clientPhone}</div>` : ''}
+                ${details.clientEmail ? `<div style="color: #64748b; margin-top: 2px;">✉️ ${details.clientEmail}</div>` : ''}
+            </div>
+        ` : '';
+
         const serviceMetaHtml = details.appointment ? `
-            <div style="background-color: #f9f9f9; padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 12px; border: 1px solid #f0f0f0;">
-                <div style="font-weight: bold; margin-bottom: 4px; color: #555;">Booking Information</div>
+            <div style="background-color: #f0fdfa; padding: 10px; border-radius: 8px; margin: 12px 0; font-size: 12px; border: 1px solid #ccfbf1;">
+                <div style="font-weight: 800; margin-bottom: 4px; color: #0f766e; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">Service Appointment</div>
                 <div><b>Schedule:</b> ${details.appointment.date} @ ${details.appointment.timeSlot}</div>
-                <div><b>Specialist:</b> ${details.appointment.staffName}</div>
-                ${details.appointment.notes ? `<div><b>Notes:</b> ${details.appointment.notes}</div>` : ''}
+                <div><b>Assigned Specialist:</b> ${details.appointment.staffName}</div>
+                ${details.appointment.notes ? `<div style="margin-top: 4px; font-style: italic; color: #475569;"><b>Notes:</b> ${details.appointment.notes}</div>` : ''}
             </div>
         ` : '';
 
@@ -314,7 +326,8 @@ const AdminServicePOSClient: React.FC<{
 
         return `
             <div style="font-family: 'Inter', sans-serif; width: 320px; margin: 0 auto; padding: 24px; color: #222; background-color: #fff; border: 1px solid #eaeaea; border-radius: 12px;">
-                <h2 style="text-align: center; font-size: 22px; font-weight: 900; margin-bottom: 4px; color: #111; tracking-tight: -0.5px;">${details.storeName}</h2>
+                <h2 style="text-align: center; font-size: 20px; font-weight: 900; margin-bottom: 2px; color: #111;">${details.storeName}</h2>
+                <div style="text-align: center; font-size: 10px; font-weight: 700; color: #0d9488; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Service Invoice & Receipt</div>
                 <p style="text-align: center; font-size: 11px; margin-bottom: 12px; color: #666; line-height: 1.4;">${details.storeAddress}<br>${details.storePhone}</p>
                 <hr style="border: none; border-top: 1px dashed #ddd; margin: 16px 0;">
 
@@ -322,9 +335,10 @@ const AdminServicePOSClient: React.FC<{
                     <span>Date / Time:</span><span>${details.date} ${details.time}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 12px; color: #555;">
-                    <span>Order ID:</span><span style="font-family: monospace;">${details.transactionId}</span>
+                    <span>Invoice / Order #:</span><span style="font-family: monospace; font-weight: bold;">${details.transactionId}</span>
                 </div>
 
+                ${clientInfoHtml}
                 ${serviceMetaHtml}
 
                 <div style="font-size: 14px; font-weight: 800; margin-bottom: 8px; color: #333;">Services Booked:</div>
@@ -564,6 +578,9 @@ const AdminServicePOSClient: React.FC<{
                 storeAddress: companyInfo?.address || 'Nairobi',
                 storePhone: companyInfo?.phone || 'Active',
                 currencySymbol,
+                clientName: clientDetails.name || undefined,
+                clientPhone: clientDetails.phone || undefined,
+                clientEmail: clientDetails.email || undefined,
                 appointment: {
                     date: appointmentDate,
                     timeSlot: timeSlot,
