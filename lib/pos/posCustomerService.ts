@@ -1,24 +1,8 @@
 import prisma from "@/server/db/prismadb";
 
-export interface POSCustomerRecord {
-  id: string; // User ID
-  clientId?: string;
-  name: string;
-  phone: string;
-  email: string;
-  address?: string;
-  notes?: string;
-  customerNumber?: string;
-  orderCount?: number;
-  totalSpent?: number;
-  lastPurchaseDate?: string | null;
-}
+import type { POSCustomerRecord, SearchPOSCustomersInput, CreatePOSCustomerInput } from "@/types/pos";
 
-export interface SearchPOSCustomersInput {
-  companyId: string;
-  query: string;
-  limit?: number;
-}
+export type { POSCustomerRecord, SearchPOSCustomersInput, CreatePOSCustomerInput };
 
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -126,14 +110,6 @@ export async function searchPOSCustomers(
   });
 }
 
-export interface CreatePOSCustomerInput {
-  companyId: string;
-  name: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  notes?: string;
-}
 
 export interface CreatePOSCustomerResult {
   duplicate: boolean;
@@ -268,7 +244,7 @@ export async function createPOSCustomer(
     }
 
     return { user, client, consumer };
-  });
+  }, { maxWait: 10000, timeout: 20000 });
 
   return {
     duplicate: false,

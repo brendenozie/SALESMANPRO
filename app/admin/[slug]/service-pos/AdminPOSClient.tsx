@@ -32,10 +32,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IStoreCategory, MarketListingForm } from '@/types/typings';
-import { Company } from '@prisma/client';
-import POSOperatorModal, { POSOperator } from '@/components/pos/POSOperatorModal';
-import POSSessionHeader, { POSSession } from '@/components/pos/POSSessionHeader';
-import POSCustomerSelector, { POSCustomer } from '@/components/pos/POSCustomerSelector';
+import type { Company } from '@prisma/client';
+import POSOperatorModal from '@/components/pos/POSOperatorModal';
+import POSSessionHeader from '@/components/pos/POSSessionHeader';
+import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
+import type { POSCustomerRecord as POSCustomer, POSOperatorInfo as POSOperator, POSSessionInfo as POSSession } from '@/types/pos';
 
 // --- Persistent State Hook ---
 function usePersistentState<T>(key: string, initial: T) {
@@ -177,10 +178,11 @@ const AdminServicePOSClient: React.FC<{
                 const res = await fetch(`/api/pos/session?companyId=${companyId}&terminalId=T01`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.session && isMounted) {
-                        setPosSession(data.session);
-                        if (data.session.operator) {
-                            setOperator(data.session.operator);
+                    const sessionData = data.data || data.session;
+                    if (sessionData && isMounted) {
+                        setPosSession(sessionData);
+                        if (sessionData.operator) {
+                            setOperator(sessionData.operator);
                         }
                     }
                 }

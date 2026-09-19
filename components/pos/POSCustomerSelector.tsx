@@ -13,11 +13,14 @@ import {
   InformationCircleIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { POSCustomerRecord } from '@/lib/pos/posCustomerService';
+import type { POSCustomerRecord, POSCustomer } from '@/types/pos';
 
-interface POSCustomerSelectorProps {
+export type { POSCustomerRecord, POSCustomer };
+
+export interface POSCustomerSelectorProps {
   companyId: string;
-  currentCustomer: POSCustomerRecord | null;
+  currentCustomer?: POSCustomerRecord | null;
+  selectedCustomer?: POSCustomerRecord | null;
   onSelectCustomer: (customer: POSCustomerRecord | null) => void;
   required?: boolean;
 }
@@ -25,9 +28,11 @@ interface POSCustomerSelectorProps {
 export default function POSCustomerSelector({
   companyId,
   currentCustomer,
+  selectedCustomer,
   onSelectCustomer,
   required = false,
 }: POSCustomerSelectorProps) {
+  const activeCustomer = currentCustomer ?? selectedCustomer ?? null;
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'search' | 'create'>('search');
 
@@ -144,7 +149,7 @@ export default function POSCustomerSelector({
       {/* Current Customer Context Banner */}
       <div
         className={`w-full py-2 px-4 rounded-xl flex items-center justify-between border transition-all ${
-          currentCustomer
+          activeCustomer
             ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800'
             : required
             ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 animate-pulse'
@@ -154,7 +159,7 @@ export default function POSCustomerSelector({
         <div className="flex items-center gap-3 min-w-0">
           <div
             className={`p-2 rounded-lg shrink-0 ${
-              currentCustomer
+              activeCustomer
                 ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30'
                 : required
                 ? 'bg-amber-500 text-white'
@@ -165,20 +170,20 @@ export default function POSCustomerSelector({
           </div>
 
           <div className="min-w-0">
-            {currentCustomer ? (
+            {activeCustomer ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                  {currentCustomer.name}
+                  {activeCustomer.name}
                 </span>
-                {currentCustomer.phone && (
+                {activeCustomer.phone && (
                   <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
                     <PhoneIcon className="w-3 h-3" />
-                    {currentCustomer.phone}
+                    {activeCustomer.phone}
                   </span>
                 )}
-                {currentCustomer.customerNumber && (
+                {activeCustomer.customerNumber && (
                   <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono font-bold">
-                    #{currentCustomer.customerNumber}
+                    #{activeCustomer.customerNumber}
                   </span>
                 )}
               </div>
@@ -200,7 +205,7 @@ export default function POSCustomerSelector({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          {currentCustomer ? (
+          {activeCustomer ? (
             <>
               <button
                 type="button"

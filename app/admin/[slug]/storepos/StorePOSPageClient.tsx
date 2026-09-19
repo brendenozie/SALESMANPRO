@@ -21,12 +21,12 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
-import { Company } from '@prisma/client';
+import type { Company } from '@prisma/client';
 import { receiptRenderer } from '@/lib/receipts/receiptRenderer';
-import POSOperatorModal, { POSOperatorInfo, POSSessionInfo } from '@/components/pos/POSOperatorModal';
+import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
-import { POSCustomerRecord } from '@/lib/pos/posCustomerService';
+import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api";
 
@@ -313,13 +313,16 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       try {
         const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
         const data = await res.json();
-        if (res.ok && data.success && data.data) {
-          setOperator(data.data.operator);
+        const sessionData = data.data || data.session;
+        if (res.ok && sessionData) {
+          if (sessionData.operator) {
+            setOperator(sessionData.operator);
+          }
           setPosSession({
-            id: data.data.id,
-            terminalId: data.data.terminalId,
-            status: data.data.status,
-            openedAt: data.data.openedAt,
+            id: sessionData.id,
+            terminalId: sessionData.terminalId,
+            status: sessionData.status,
+            openedAt: sessionData.openedAt,
           });
           setShowAuthModal(false);
         }

@@ -10,21 +10,9 @@ import {
   UserIcon,
 } from '@heroicons/react/24/outline';
 
-export interface POSOperatorInfo {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  jobTitle?: string;
-  staffProfileId?: string;
-}
+import type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession } from '@/types/pos';
 
-export interface POSSessionInfo {
-  id: string;
-  terminalId: string;
-  status: string;
-  openedAt: string | Date;
-}
+export type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession };
 
 interface POSOperatorModalProps {
   isOpen: boolean;

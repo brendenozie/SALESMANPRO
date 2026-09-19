@@ -7,7 +7,9 @@ import {
   ComputerDesktopIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
-import { POSOperatorInfo, POSSessionInfo } from './POSOperatorModal';
+import type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession } from '@/types/pos';
+
+export type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession };
 
 interface POSSessionHeaderProps {
   companyId: string;
