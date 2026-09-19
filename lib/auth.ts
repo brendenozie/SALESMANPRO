@@ -249,7 +249,7 @@ function sessionUserFromDb(user: {
   };
 }
 
-export const authOptions = (
+export const createAuthOptions = (
   ctx: string | AuthRequestContext = {},
 ): NextAuthOptions => {
   const requestCtx: AuthRequestContext =
@@ -763,4 +763,15 @@ export const authOptions = (
   };
 };
 
-export const getAuthSession = () => getServerSession(authOptions());
+export type AuthOptionsFunction = {
+  (ctx?: string | AuthRequestContext): NextAuthOptions;
+} & NextAuthOptions;
+
+const defaultAuthOptions = createAuthOptions();
+
+export const authOptions: AuthOptionsFunction = Object.assign(
+  (ctx?: string | AuthRequestContext) => (ctx ? createAuthOptions(ctx) : defaultAuthOptions),
+  defaultAuthOptions
+);
+
+export const getAuthSession = () => getServerSession(authOptions);

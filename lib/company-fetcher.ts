@@ -9,7 +9,7 @@ const requestCache = ((React as any).cache || (<T extends (...args: any[]) => an
 
 
 // Define the valid strategies to ensure type safety across the file
-type FetchStrategy = "lean" | "page";
+export type FetchStrategy = "lean" | "page" | "api" | "full";
 
 function getIncludeForCategory(category: string) {
   switch (category) {
@@ -66,9 +66,11 @@ const latestSubscriptionInclude = {
   },
 };
 
-const INCLUDE_MAP = {
+const INCLUDE_MAP: Record<FetchStrategy, any> = {
   lean: leanShellInclude(),
   page: pageDataInclude(),
+  api: leanShellInclude(),
+  full: pageDataInclude(),
 };
 
 /**
@@ -102,7 +104,7 @@ async function findCompanyFn(cleanIdentifier: string, strategy: FetchStrategy) {
     return null;
   }
 
-  const latestSubscription = company.subscriptionCompanies?.[0] || null;
+  const latestSubscription: any = (company as any).subscriptionCompanies?.[0] || null;
 
   return {
     ...company,
@@ -145,7 +147,7 @@ export const findCompanyCached = requestCache(async (
 
   // 1.5️⃣ Fast-path: If requesting 'lean', check if the richer 'page' entry is already cached!
   // Because 'page' is a complete superset of 'lean', it immediately satisfies the shell layout.
-  if (strategy === "lean") {
+  if (strategy === "lean" || strategy === "api") {
     const pageKey = buildTenantCacheKey(cleanIdentifier, "company_details", { strategy: "page" });
     const cachedPage = await cacheGet<any>(pageKey);
     if (cachedPage) {
@@ -181,8 +183,8 @@ export const findCompanyCached = requestCache(async (
         data = await findCompanyFn(cleanIdentifier, strategy);
       }
 
-      // If we loaded the rich 'page' strategy, simultaneously warm the 'lean' cache key!
-      if (data && strategy === "page") {
+      // If we loaded the rich 'page' or 'full' strategy, simultaneously warm the 'lean' cache key!
+      if (data && (strategy === "page" || strategy === "full")) {
         const leanKey = buildTenantCacheKey(cleanIdentifier, "company_details", { strategy: "lean" });
         cacheSet(leanKey, data, 600).catch(() => {});
         // Also cross-link under canonical company id if identifier was a slug/domain
