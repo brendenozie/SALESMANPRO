@@ -13,6 +13,7 @@ export interface AuthenticateOperatorInput {
 }
 
 export interface AuthenticatedOperatorResult {
+  success: boolean;
   operator: {
     id: string;
     name: string;
@@ -27,6 +28,7 @@ export interface AuthenticatedOperatorResult {
     status: PosSessionStatus;
     openedAt: Date;
   };
+  session: any;
 }
 
 export async function authenticatePOSOperator(
