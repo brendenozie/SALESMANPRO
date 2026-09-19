@@ -22,7 +22,9 @@ import {
   ClipboardDocumentListIcon,
   CalendarDaysIcon,
   ChatBubbleBottomCenterTextIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
+import TeacherAIPanel from "./TeacherAIPanel";
 
 // --- Type Definitions ---
 
@@ -59,9 +61,17 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- MAIN COMPONENT ---
 export default function StaffDashboard({ companyId, currentUserId, data }: StaffDashboardProps) {
-  const router = useRouter();
-  console.log("[StaffDashboard] Received data:", data);
-  const { teacherName, teacherRole, teacherStats, assignments, recentAnnouncements, myClasses } = data;
+  const safeData = data || ({} as any);
+  const teacherName = safeData.teacherName || "Educator";
+  const teacherRole = safeData.teacherRole || "Teacher";
+  const teacherStats = safeData.teacherStats || [
+    { title: 'Total Students', value: '0', color: 'bg-blue-50' },
+    { title: 'Assignments Due', value: '0', color: 'bg-purple-50' },
+    { title: "Today's Classes", value: '0', color: 'bg-yellow-50' },
+  ];
+  const assignments = safeData.assignments || [];
+  const recentAnnouncements = safeData.recentAnnouncements || [];
+  const myClasses = safeData.myClasses || [];
 
   // Attendance & Scanner States
   const [attendanceStatus, setAttendanceStatus] = useState<"NOT_STARTED" | "CLOCKED_IN" | "CLOCKED_OUT">("NOT_STARTED");
@@ -237,6 +247,9 @@ export default function StaffDashboard({ companyId, currentUserId, data }: Staff
               ))}
             </div>
           </div> */}
+
+          {/* AI TEACHING COPILOT */}
+          <TeacherAIPanel companyId={companyId} currentUserId={currentUserId} />
 
           {/* LIVE ASSIGNMENTS */}
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">

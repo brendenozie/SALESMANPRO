@@ -190,7 +190,7 @@ export class CentralVideoProvider {
             await prisma.product.update({
               where: { id: product.id },
               data: {
-                videos: [...currentVideos, params.videoUrl],
+                videos: [...currentVideos, params.videoUrl] as any,
               },
             });
           }
@@ -206,7 +206,7 @@ export class CentralVideoProvider {
                 await prisma.marketplaceListings.update({
                   where: { id: listing.id },
                   data: {
-                    videos: [...listingVideos, params.videoUrl],
+                    videos: [...listingVideos, params.videoUrl] as any,
                   },
                 });
               }
@@ -230,7 +230,7 @@ export class CentralVideoProvider {
             await prisma.marketplaceListings.update({
               where: { id: listing.id },
               data: {
-                videos: [...currentVideos, params.videoUrl],
+                videos: [...currentVideos, params.videoUrl] as any,
               },
             });
           }
@@ -246,7 +246,7 @@ export class CentralVideoProvider {
                 await prisma.product.update({
                   where: { id: parentProduct.id },
                   data: {
-                    videos: [...parentVideos, params.videoUrl],
+                    videos: [...parentVideos, params.videoUrl] as any,
                   },
                 });
               }

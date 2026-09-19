@@ -49,10 +49,10 @@ const sampleDrawingPromptsData = {
 
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; promptId: string }>;
 }
 
-export default async function DrawingCanvasPage() {
+export default function DrawingCanvasPage() {
   const params = useParams();
   const router = useRouter();
   const promptSlug = Array.isArray(params.promptId) ? params.promptId[0] : params.promptId;
@@ -60,6 +60,7 @@ export default async function DrawingCanvasPage() {
   const [currentPromptData, setCurrentPromptData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -284,7 +285,7 @@ export default async function DrawingCanvasPage() {
     }
   };
 
-  const downloadDrawing = () => {
+  const downloadDrawing = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const image = canvas.toDataURL('image/png');
@@ -294,8 +295,24 @@ export default async function DrawingCanvasPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    // Replaced alert() with a console log for better practice in iframes
-    // console.log('Your masterpiece is saved!');
+
+    setSaveStatus('saving');
+    try {
+      await fetch('/api/admin/activity-attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activityAssignmentId: currentPromptData.id || promptSlug,
+          data: { drawingSaved: true, promptTitle: currentPromptData.title },
+          isCompleted: true,
+        }),
+      });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch {
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
   };
 
   if (isLoading || !currentPromptData) {
@@ -383,9 +400,11 @@ export default async function DrawingCanvasPage() {
           </button>
           <button
             onClick={downloadDrawing}
+            disabled={saveStatus === 'saving'}
             className="px-6 py-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-colors text-3xl font-bold transform active:scale-95 flex items-center gap-2"
           >
-            <span className="text-4xl">💾</span> Save Art
+            <span className="text-4xl">{saveStatus === 'saved' ? '⭐' : '💾'}</span>
+            <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : 'Save Art'}</span>
           </button>
         </div>
 

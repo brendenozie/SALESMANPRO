@@ -20,7 +20,7 @@ export type HandlerContext = {
 };
 
 export type HandlerFn = (
-  request: Request,
+  request: any,
   context: HandlerContext,
 ) => Promise<Response>;
 

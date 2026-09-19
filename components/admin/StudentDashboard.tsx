@@ -82,14 +82,19 @@ const quickLinks = [
 ];
 
 export default function StudentDashboard({
-  studentName,
-  studentGradeLevel,
-  studentStats,
-  upcomingAssignments,
-  myCourses,
-  recentGrades,
-  personalTimetable,
-  studentAnnouncements,
+  studentName = "Student",
+  studentGradeLevel = "Enrolled",
+  studentStats = [
+    { title: 'Current GPA', value: '3.5', description: 'Cumulative grade point', color: 'bg-blue-50' },
+    { title: 'Assignments Due', value: '0', description: 'Pending tasks', color: 'bg-purple-50' },
+    { title: 'Classes Today', value: '0', description: 'Scheduled courses', color: 'bg-yellow-50' },
+    { title: 'Attendance', value: '100%', description: 'Overall rate', color: 'bg-green-50' },
+  ],
+  upcomingAssignments = [],
+  myCourses = [],
+  recentGrades = [],
+  personalTimetable = [],
+  studentAnnouncements = [],
   companyId,
   currentUserId,
 }: StudentDashboardProps) {

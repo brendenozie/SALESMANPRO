@@ -3,99 +3,64 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-// import { getAuthSession } from '@/lib/auth';
-// import { findCompanyCached } from '@/lib/company-fetcher';
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
-
+import { useParams, useRouter } from 'next/navigation';
 
 // --- Sample Data (Used if API fails or returns no data) ---
 const samplePuzzles = [
-  { id: 'sample-1', slug: 'shape-match', type: 'Shape Match (Sample)', icon: '🔺' },
-  { id: 'sample-2', slug: 'animal-shadows', type: 'Animal Shadows (Sample)', icon: '🦊' },
-  { id: 'sample-3', slug: 'number-order', type: 'Number Order (Sample)', icon: '🔢' },
+  { id: 'shape-match', slug: 'shape-match', type: 'Shape Match', icon: '🔺' },
+  { id: 'animal-shadows', slug: 'animal-shadows', type: 'Animal Shadows', icon: '🦊' },
+  { id: 'number-order', slug: 'number-order', type: 'Number Order', icon: '🔢' },
 ];
-
-// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
-const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
 
 export default function PlayHomePage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string) || '';
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [puzzles, setPuzzles] = useState<typeof samplePuzzles>([]);
+  const [puzzles, setPuzzles] = useState<any[]>(samplePuzzles);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   useEffect(() => {
     const fetchPuzzles = async () => {
       setIsLoading(true);
       setError(null);
       try {
-          // Fetch courses from your API, filtering by the playgroup academic level
-          const response = await fetch(`${apiBaseUrl}/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
-
-          if (response.ok) {
-            
-          const data = await response.json();
-
-          if (data && data.length > 0) {
-            // Filter for courses that are likely puzzles (e.g., based on a naming convention or a specific tag/type if added to schema)
-            // For now, we'll assume any course in 'PLAYGROUP_ACADEMIC_LEVEL_ID' could be a puzzle.
-            // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE') to your Course model
-            // to make this filtering more robust.
-            const mappedPuzzles = data.map((course: any) => ({
+        const response = await fetch(`/api/admin/activities?companySlug=${slug}&type=puzzle-play`);
+        if (response.ok) {
+          const resData = await response.json();
+          const live = resData?.data?.activities || [];
+          if (live.length > 0) {
+            const mapped = live.map((course: any) => ({
               id: course.id,
-              slug: course.code, // Assuming 'code' can be used as a unique slug for puzzles
-              type: course.title, // Use title as the puzzle type/name
-              icon: course.imageUrl || '🧩', // Use imageUrl for icon, fallback to puzzle piece emoji
+              slug: course.id,
+              type: course.title,
+              icon: course.activityType?.icon || '🧩',
             }));
-            setPuzzles(mappedPuzzles);
+            setPuzzles([...mapped, ...samplePuzzles]);
           } else {
-            // console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
             setPuzzles(samplePuzzles);
           }
         } else {
-          // console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
           setPuzzles(samplePuzzles);
         }
       } catch (e: any) {
-        // console.error("Failed to fetch puzzles:", e);
-        setError("Failed to load puzzles. Displaying sample data.");
-        setPuzzles(samplePuzzles); // Fallback to sample data on error
+        setPuzzles(samplePuzzles);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPuzzles();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [slug]);
 
   const handlePuzzleClick = (puzzleSlug: string) => {
     if (audioRef.current) {
-      audioRef.current.src = '/audio/puzzle-click.mp3'; // Ensure this audio file exists in public/audio
+      audioRef.current.src = '/audio/puzzle-click.mp3';
       audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
-    router.push(`puzzle-play/${puzzleSlug}`); // Navigate to the puzzle game page
+    router.push(`/admin/${slug}/play/puzzle-play/${puzzleSlug}`);
   };
 
   return (
@@ -105,9 +70,9 @@ export default function PlayHomePage() {
       <div className="absolute bottom-1/4 right-1/4 w-56 h-56 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-1000"></div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-2000"></div>
 
-      {/* Information/Help Button */}
-      <Link href="/info" className="absolute top-6 right-6 text-6xl animate-bounce z-20" aria-label="More information">
-        ℹ️
+      {/* Back to Play Hub Button */}
+      <Link href={`/admin/${slug}/play`} className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back to play">
+        🏡
       </Link>
 
       <h1 className="text-7xl font-extrabold text-white mb-12 drop-shadow-lg animate-fadeInDown text-center px-4">

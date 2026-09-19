@@ -3,125 +3,83 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-// import { getAuthSession } from '@/lib/auth';
-// import { findCompanyCached } from '@/lib/company-fetcher';
+import { useParams, useRouter } from 'next/navigation';
 
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
-
-
-// --- Sample Data (Used if API fails or returns no data) ---
-// This structure mimics what we'd map from your Course model
+// --- Sample Data (Used if API returns no data) ---
 const sampleStories = [
   {
-    id: 'sample-1',
+    id: 'the-little-bear',
     slug: 'the-little-bear',
-    title: 'The Little Bear Who Lost His Roar (Sample)',
-    imageUrl: 'https://placehold.co/400x300/A78BFA/ffffff?text=Bear+Story', // Placeholder image
-    audioUrl: '/audio/bear-roar.mp3', // Sample audio path
+    title: 'The Little Bear Who Lost His Roar',
+    imageUrl: 'https://placehold.co/400x300/A78BFA/ffffff?text=Bear+Story',
+    audioUrl: '/audio/bear-roar.mp3',
   },
   {
-    id: 'sample-2',
+    id: 'brave-princess-lily',
     slug: 'brave-princess-lily',
-    title: 'Brave Princess Lily (Sample)',
-    imageUrl: 'https://placehold.co/400x300/F472B6/ffffff?text=Princess+Story', // Placeholder image
-    audioUrl: '/audio/princess-lily.mp3', // Sample audio path
+    title: 'Brave Princess Lily',
+    imageUrl: 'https://placehold.co/400x300/F472B6/ffffff?text=Princess+Story',
+    audioUrl: '/audio/princess-lily.mp3',
   },
   {
-    id: 'sample-3',
+    id: 'the-giggle-monster',
     slug: 'the-giggle-monster',
-    title: 'The Giggle Monster (Sample)',
-    imageUrl: 'https://placehold.co/400x300/60A5FA/ffffff?text=Monster+Story', // Placeholder image
-    audioUrl: '/audio/giggle-monster.mp3', // Sample audio path
+    title: 'The Giggle Monster',
+    imageUrl: 'https://placehold.co/400x300/60A5FA/ffffff?text=Monster+Story',
+    audioUrl: '/audio/giggle-monster.mp3',
   },
 ];
 
-// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
-// You would typically create an AcademicLevel entry for "Playgroup" first.
-const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
-
 export default function StoryTimePage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string) || '';
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [stories, setStories] = useState<typeof sampleStories>([]);
+  const [stories, setStories] = useState<any[]>(sampleStories);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   useEffect(() => {
     const fetchStories = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`${apiBaseUrl}/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
-
+        const response = await fetch(`/api/admin/activities?companySlug=${slug}&type=story-time`);
         if (response.ok) {
-          // throw new Error(`HTTP error! status: ${response.status}`);
-    
-            const data = await response.json();
-
-            if (data && data.length > 0) {
-              // Map API Course data to the format expected by your UI
-              const mappedStories = data.map((course: any) => ({
-                id: course.id,
-                slug: course.code, // Assuming 'code' can be used as a unique slug for stories
-                title: course.title,
-                cover: course.imageUrl || `https://placehold.co/400x300/A78BFA/ffffff?text=${encodeURIComponent(course.title)}`, // Use imageUrl from API, fallback to placeholder
-                audio: course.audioUrl || `/audio/${course.code}-full.mp3`, // Assuming audioUrl exists or can be derived
-              }));
-              setStories(mappedStories);
-            } else {
-              // No data from API, use sample data
-              // console.warn("No courses found for Playgroup academic level. Displaying sample data.");
-              setStories(sampleStories);
-            }
-          }
-          else{
-            // No data from API, use sample data
-            // console.warn("No courses found for Playgroup academic level. Displaying sample data.");
+          const resData = await response.json();
+          const liveActivities = resData?.data?.activities || [];
+          if (liveActivities.length > 0) {
+            const mapped = liveActivities.map((act: any) => ({
+              id: act.id,
+              slug: act.id,
+              title: act.title,
+              imageUrl: act.mediaAsset?.url || `https://placehold.co/400x300/A78BFA/ffffff?text=${encodeURIComponent(act.title)}`,
+              audioUrl: null,
+            }));
+            setStories([...mapped, ...sampleStories]);
+          } else {
             setStories(sampleStories);
           }
+        } else {
+          setStories(sampleStories);
+        }
       } catch (e: any) {
-        // console.error("Failed to fetch stories:", e);
-        setError("Failed to load stories. Displaying sample data.");
-        setStories(sampleStories); // Fallback to sample data on error
+        setStories(sampleStories);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchStories();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [slug]);
 
   const handleStorySelect = (story: any) => {
-    // Optional: Play a short click/selection sound before navigating
-    if (audioRef.current && story.audio) {
-      audioRef.current.src = story.audio;
+    if (audioRef.current && story.audioUrl) {
+      audioRef.current.src = story.audioUrl;
       audioRef.current.play().catch(e => console.error("Error playing preview sound:", e));
     }
-
-    // Navigate to the specific story's view page using its slug
-    router.push(`story-time/${story.slug}`);
+    router.push(`/admin/${slug}/play/story-time/${story.slug || story.id}`);
   };
 
   return (
@@ -131,7 +89,7 @@ export default function StoryTimePage() {
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-1000"></div>
 
       {/* Back to Home Button */}
-      <Link href="/play" className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
+      <Link href={`/admin/${slug}/play`} className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
         🏡
       </Link>
 

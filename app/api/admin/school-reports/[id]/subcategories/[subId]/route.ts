@@ -93,7 +93,6 @@ async function deleteSubcategory(req: Request, { params }: { params: { id: strin
 
     
     try {
-      await cacheDel(`tenant:${slug}:subcategories:*`);
       await cacheDel(`admin:subcategories:*`);
     } catch (e) {}
     return formatResponse(true, { deletedSubId: subId }, "Subcategory deleted successfully", 200);

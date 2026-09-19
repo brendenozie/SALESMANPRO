@@ -3,107 +3,66 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-// import { getAuthSession } from '@/lib/auth';
-// import { findCompanyCached } from '@/lib/company-fetcher';
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
-
+import { useParams, useRouter } from 'next/navigation';
 
 // --- Sample Data (Used if API fails or returns no data) ---
 const sampleFriendActivities = [
-  { id: 'sample-1', slug: 'learn-sharing', title: 'Learn About Sharing (Sample)', icon: '🍎', introAudio: '/audio/sharing-intro.mp3' },
-  { id: 'sample-2', slug: 'practice-hello', title: 'Practice Saying Hello (Sample)', icon: '👋', introAudio: '/audio/hello-intro.mp3' },
-  { id: 'sample-3', slug: 'play-together', title: 'Play a Game Together (Sample)', icon: '🎲', introAudio: '/audio/game-intro.mp3' },
+  { id: 'learn-sharing', slug: 'learn-sharing', title: 'Learn About Sharing', icon: '🍎', introAudio: '/audio/sharing-intro.mp3' },
+  { id: 'practice-hello', slug: 'practice-hello', title: 'Practice Saying Hello', icon: '👋', introAudio: '/audio/hello-intro.mp3' },
+  { id: 'play-together', slug: 'play-together', title: 'Play a Game Together', icon: '🎲', introAudio: '/audio/game-intro.mp3' },
 ];
-
-// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
-// Or create a specific "Social Skills" AcademicLevel if you want to categorize them separately.
-const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
 
 export default function MakeFriendsPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string) || '';
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [friendActivities, setFriendActivities] = useState<typeof sampleFriendActivities>([]);
+  const [friendActivities, setFriendActivities] = useState<any[]>(sampleFriendActivities);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   useEffect(() => {
     const fetchActivities = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`${apiBaseUrl}/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
-
+        const response = await fetch(`/api/admin/activities?companySlug=${slug}&type=make-friends`);
         if (response.ok) {
-          // throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          // Filter for courses that are likely friendship activities (e.g., based on audioUrl and description)
-          // You might want to add a 'type' field (e.g., 'SOCIAL_SKILL') to your Course model
-          // to make this filtering more robust.
-            const mappedActivities = data
-                .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description
-                .map((course: any) => ({
-                  id: course.id,
-                  slug: course.code, // Assuming 'code' can be used as a unique slug for activities
-                  title: course.title,
-                  icon: course.imageUrl || '🤝', // Use imageUrl for icon, fallback to handshake emoji
-                  introAudio: course.audioUrl,
-                  description: course.description, // Map Course.description to activity.description
-                }));
-              setFriendActivities(mappedActivities);
-            } else {
-              // console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
-              setFriendActivities(sampleFriendActivities);
-            }
+          const resData = await response.json();
+          const live = resData?.data?.activities || [];
+          if (live.length > 0) {
+            const mapped = live.map((course: any) => ({
+              id: course.id,
+              slug: course.id,
+              title: course.title,
+              icon: course.activityType?.icon || '🤝',
+              introAudio: course.mediaAsset?.url || null,
+              description: course.description,
+            }));
+            setFriendActivities([...mapped, ...sampleFriendActivities]);
           } else {
-            // console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
             setFriendActivities(sampleFriendActivities);
           }
+        } else {
+          setFriendActivities(sampleFriendActivities);
+        }
       } catch (e: any) {
-        // console.error("Failed to fetch friendship activities:", e);
-        setError("Failed to load activities. Displaying sample data.");
-        setFriendActivities(sampleFriendActivities); // Fallback to sample data on error
+        setFriendActivities(sampleFriendActivities);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchActivities();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [slug]);
 
   const handleActivitySelect = (activity: any) => {
-    // Optional: Play a short click sound effect or activity-specific intro sound
-    if (audioRef.current) {
-      audioRef.current.src = activity.introAudio || '/audio/activity-click.mp3'; // Fallback to generic click sound
+    if (audioRef.current && activity.introAudio) {
+      audioRef.current.src = activity.introAudio;
       audioRef.current.play().catch(e => console.error("Error playing activity sound:", e));
     }
-    // Navigate to the dedicated activity view page using the activity's slug
-    router.push(`make-friends/${activity.slug}`);
+    router.push(`/admin/${slug}/play/make-friends/${activity.slug || activity.id}`);
   };
 
   return (
@@ -113,7 +72,7 @@ export default function MakeFriendsPage() {
       <div className="absolute bottom-10 right-10 w-36 h-36 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-1000"></div>
 
       {/* Back to Home Button */}
-      <Link href="/play" className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
+      <Link href={`/admin/${slug}/play`} className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
         🏡
       </Link>
 

@@ -538,6 +538,12 @@ model Company {
   socialBrandProfile     SocialBrandProfile?
   posSessions            PosSession[]
 
+  // Early Learning / Activity System
+  activityTypes          ActivityType[]          @relation("ActivityTypes")
+  activities             Activity[]              @relation("Activities")
+  activityAssignments    ActivityAssignment[]    @relation("ActivityAssignments")
+  activityAttempts       ActivityAttempt[]       @relation("ActivityAttempts")
+
   @@index([userId])
   @@index([name])
   @@index([companyCategoryId])
@@ -3025,6 +3031,10 @@ model User {
   aiAgentTasks            AIAgentTask[]
   aiAgentEscalations      AIAgentEscalation[]
 
+  // Early Learning
+  createdActivities       Activity[]              @relation("ActivityCreators")
+  activityAssignmentsGiven ActivityAssignment[]   @relation("ActivityAssigners")
+
   @@index([companyId])
   // @@index([settingsId])
   @@index([educatorId])
@@ -4697,6 +4707,10 @@ model Student {
   hostelMember   HostelMember?
   hostelVisitors HostelVisitor[]
 
+  // Early Learning
+  activityAssignments ActivityAssignment[] @relation("StudentActivityAssignments")
+  activityAttempts    ActivityAttempt[]    @relation("StudentActivityAttempts")
+
   // @@index([userId])
   @@index([parentId])
   @@index([companyId])
@@ -4856,6 +4870,9 @@ model Classroom {
   studentAcademicLevels            StudentAcademicLevel[]
   exams                            Exam[]
   courseAssignments                CourseAssignment[]
+
+  // Early Learning
+  activityAssignments ActivityAssignment[] @relation("ClassroomActivityAssignments")
 
   @@index([companyId])
   @@index([academicLevelId])
@@ -7689,6 +7706,10 @@ model MediaAsset {
   photo     Photo?
   video     Video?
   document  Document?
+
+  // Early Learning
+  activities       Activity[]       @relation("ActivityMedia")
+  activityAttempts ActivityAttempt[] @relation("AttemptMedia")
 
   @@index([ownerId])
   @@index([companyId])
@@ -11615,5 +11636,153 @@ model PosSession {
   @@index([companyId, status])
   @@index([operatorId])
   @@index([terminalId])
+}
+
+// ─────────────────────────────────────────────────────────
+// EARLY LEARNING / ACTIVITY SYSTEM
+// ─────────────────────────────────────────────────────────
+
+/// Defines a category of educational activity (drawing, story-time, puzzle-play, etc.)
+/// New activity types can be added without code changes to the activity framework.
+model ActivityType {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String   @db.ObjectId
+  company     Company  @relation("ActivityTypes", fields: [companyId], references: [id])
+
+  name        String   // e.g. "Drawing", "Story Time", "Puzzle Play", "Sing Along", "Make Friends"
+  slug        String   // e.g. "drawing", "story-time", "puzzle-play", "sing-along", "make-friends"
+  description String?
+  icon        String?  // emoji or icon identifier
+  color       String?  // hex colour for UI card
+
+  ageMin Int?   // minimum recommended age in years
+  ageMax Int?   // maximum recommended age in years
+
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities Activity[]
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+  @@index([companyId, isActive])
+}
+
+/// A specific activity instance within a type (e.g. "Draw a Happy Sun", "The Three Bears")
+model Activity {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId      String       @db.ObjectId
+  company        Company      @relation("Activities", fields: [companyId], references: [id])
+
+  activityTypeId String       @db.ObjectId
+  activityType   ActivityType @relation(fields: [activityTypeId], references: [id])
+
+  title        String
+  description  String?
+  instructions String?   // student-facing instructions
+
+  ageMin Int?
+  ageMax Int?
+
+  durationMins Int?      // estimated time to complete
+
+  /// Flexible content payload - structure depends on activityType.slug:
+  /// drawing:    { prompts: string[], guidedSteps: string[] }
+  /// story-time: { text: string, pages: { text, imageUrl }[], questions: string[] }
+  /// puzzle-play:{ type: "matching"|"ordering"|"memory", items: any[] }
+  /// sing-along: { lyrics: string, audioUrl: string }
+  /// make-friends: { scenario: string, options: string[], reflection: string }
+  content Json?
+
+  mediaAssetId String?     @db.ObjectId
+  mediaAsset   MediaAsset? @relation("ActivityMedia", fields: [mediaAssetId], references: [id])
+
+  createdById String  @db.ObjectId
+  createdBy   User    @relation("ActivityCreators", fields: [createdById], references: [id])
+
+  isPublished Boolean @default(false)
+  isAiGenerated Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments ActivityAssignment[]
+
+  @@index([companyId])
+  @@index([activityTypeId])
+  @@index([companyId, isPublished])
+}
+
+/// Teacher assigns an Activity to a student or a whole classroom
+model ActivityAssignment {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId    String   @db.ObjectId
+  company      Company  @relation("ActivityAssignments", fields: [companyId], references: [id])
+
+  activityId   String   @db.ObjectId
+  activity     Activity @relation(fields: [activityId], references: [id])
+
+  assignedById String   @db.ObjectId
+  assignedBy   User     @relation("ActivityAssigners", fields: [assignedById], references: [id])
+
+  /// If null → whole classroom is assigned. If set → only this student.
+  studentId    String?    @db.ObjectId
+  student      Student?   @relation("StudentActivityAssignments", fields: [studentId], references: [id])
+
+  /// Which classroom this assignment targets (used for classroom-wide assignments)
+  classroomId  String?    @db.ObjectId
+  classroom    Classroom? @relation("ClassroomActivityAssignments", fields: [classroomId], references: [id])
+
+  dueDate      DateTime?
+  instructions String?   // teacher's additional instructions
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attempts ActivityAttempt[]
+
+  @@index([companyId])
+  @@index([activityId])
+  @@index([studentId])
+  @@index([classroomId])
+  @@index([assignedById])
+}
+
+/// Records a student's attempt / completion of an assigned activity
+model ActivityAttempt {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId            String             @db.ObjectId
+  company              Company            @relation("ActivityAttempts", fields: [companyId], references: [id])
+
+  activityAssignmentId String             @db.ObjectId
+  activityAssignment   ActivityAssignment @relation(fields: [activityAssignmentId], references: [id])
+
+  studentId  String  @db.ObjectId
+  student    Student @relation("StudentActivityAttempts", fields: [studentId], references: [id])
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  isCompleted Boolean   @default(false)
+
+  /// Drawing: stores base64 or Cloudinary URL of canvas snapshot
+  mediaAssetId String?     @db.ObjectId
+  mediaAsset   MediaAsset? @relation("AttemptMedia", fields: [mediaAssetId], references: [id])
+
+  /// Flexible data: puzzle score, story comprehension answers, etc.
+  data Json?
+
+  teacherNote String?  // teacher's feedback/note on this attempt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([activityAssignmentId])
+  @@index([studentId])
+  @@index([isCompleted])
 }
 

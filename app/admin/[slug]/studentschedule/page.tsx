@@ -58,14 +58,14 @@ export default async function StudentScheduleServerPage({ params }: PageProps) {
   // const studentId = studentSlug || MOCK_CURRENT_STUDENT_ID;
   const cookiesStore = (await cookies()).toString();
   const session = await getAuthSession();
-  const studentId = session?.user?.id || "";
+  const studentId = (session?.user as any)?.id || "";
 
   let schedulePageData: StudentSchedulePageData | null = null;
   let fetchError: string | null = null;
 
   
     // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = studentSlug || session?.user?.id || '';
+    const identifier = studentSlug || (session?.user as any)?.id || '';
   
     // 2. Retrieve the memoized company data (no extra DB cost)
     const company = await findCompanyCached(identifier, "page");
@@ -101,13 +101,13 @@ export default async function StudentScheduleServerPage({ params }: PageProps) {
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Schedule</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load student schedule data."}</p>
-        <button
-          onClick={() => window.history.back()}
+        <a
+          href={`/admin/${studentSlug}`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
                      hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </button>
+        </a>
       </div>
     );
   }

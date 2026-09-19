@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// OPTIMIZATION: Selection object to flatten data at the DB level
+// Selection object to flatten data at DB level
 const SUBMISSION_SELECT = {
   id: true,
   assignmentId: true,
@@ -13,14 +13,14 @@ const SUBMISSION_SELECT = {
   gradedAt: true,
   submittedAt: true,
   submissionUrl: true,
+  submissionContent: true,
   comments: true,
-  assignment: { select: { title: true } },
+  assignment: { select: { title: true, maxGrade: true } },
   course: { select: { title: true } },
   student: { select: { user: { select: { name: true } } } },
   reviewedBy: { select: { user: { select: { name: true } } } },
 };
 
-// Sync mapper to clean up the nested Prisma structure
 const flattenSubmission = (s: any) => ({
   ...s,
   assignmentTitle: s.assignment?.title || 'N/A',
@@ -80,10 +80,41 @@ async function getSubmissions(request: Request) {
 
 async function createSubmission(request: Request) {
   const body = await request.json();
-  const { assignmentId, studentId, courseId, companyId, submissionContent, submissionUrl, responses } = body;
+  let { assignmentId, studentId, courseId, companyId, submissionContent, submissionUrl, responses } = body;
 
-  if (!assignmentId || !studentId || !courseId) {
-    return formatResponse(false, null, "Missing required IDs.", 400);
+  if (!assignmentId || !studentId) {
+    return formatResponse(false, null, "Missing assignmentId or studentId.", 400);
+  }
+
+  // Auto-resolve courseId & companyId from assignment if not provided
+  if (!courseId || !companyId) {
+    const assignment = await prisma.courseAssignment.findUnique({
+      where: { id: assignmentId },
+      select: { courseId: true, companyId: true },
+    });
+    if (assignment) {
+      if (!courseId) courseId = assignment.courseId;
+      if (!companyId) companyId = assignment.companyId;
+    }
+  }
+
+  // Resolve studentId if User.id was provided
+  const directStudent = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { id: true },
+  });
+  if (!directStudent) {
+    const studentByUser = await prisma.student.findFirst({
+      where: { userId: studentId, ...(companyId ? { companyId } : {}) },
+      select: { id: true },
+    });
+    if (studentByUser) {
+      studentId = studentByUser.id;
+    }
+  }
+
+  if (!courseId || !companyId) {
+    return formatResponse(false, null, "Could not resolve course or school identifier.", 400);
   }
 
   try {
@@ -103,16 +134,20 @@ async function createSubmission(request: Request) {
           })) || []
         }
       },
-      select: { id: true, submittedAt: true }
+      select: {
+        id: true,
+        submittedAt: true,
+        submissionUrl: true,
+        submissionContent: true,
+      }
     });
 
     try {
       await cacheDel(`tenant:${companyId}:assignment-submissions:*`);
-      await cacheDel(`tenant:${companyId}:assignment-submissions:*`);
       await cacheDel(`admin:assignment-submissions:*`);
     } catch (e) {}
 
-    return formatResponse(true, newSubmission, "Submission received.", 201);
+    return formatResponse(true, { ...newSubmission, submission: newSubmission }, "Submission received.", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {
       return formatResponse(false, null, "You have already submitted this assignment.", 409);
@@ -123,61 +158,3 @@ async function createSubmission(request: Request) {
 
 export const GET = withApiHandler(getSubmissions);
 export const POST = withApiHandler(createSubmission);
-
-
-//   return formatResponse(true, { data: submissions.map(transformSubmissionResponse) }, null, 200);
-// }
-
-// // POST: Student submits an assignment
-// async function createSubmission(request: Request) {
-//   const body = await request.json();
-//   const { 
-//     assignmentId, 
-//     studentId, 
-//     courseId, 
-//     companyId, 
-//     submissionContent, 
-//     submissionUrl, 
-//     responses // Array of { questionId, responseText, selectedOptions }
-//   } = body;
-
-//   if (!assignmentId || !studentId || !courseId) {
-//     return formatResponse(false, null, "Missing required submission IDs.", 400);
-//   }
-
-//   try {
-//     // We use a transaction to ensure both submission and responses are saved
-//     const newSubmission = await prisma.$transaction(async (tx) => {
-//       return tx.assignmentSubmission.create({
-//         data: {
-//           assignmentId,
-//           studentId,
-//           courseId,
-//           companyId,
-//           submissionContent,
-//           submissionUrl,
-//           assignmentQuestionResponses: {
-//             create: responses.map((r: any) => ({
-//               questionId: r.questionId,
-//               responseText: r.responseText,
-//               selectedOptions: r.selectedOptions || [],
-//             }))
-//           }
-//         },
-//         include: {
-//           assignmentQuestionResponses: true
-//         }
-//       });
-//     });
-
-//     return formatResponse(true, { data: newSubmission }, "Submission received.", 201);
-//   } catch (error: any) {
-//     if (error.code === 'P2002') {
-//       return formatResponse(false, null, "You have already submitted this assignment.", 409);
-//     }
-//     throw error;
-//   }
-// }
-
-// export const GET = withApiHandler(getSubmissions);
-// export const POST = withApiHandler(createSubmission);

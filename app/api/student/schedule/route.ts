@@ -42,7 +42,7 @@ const getStudentSchedule = async (request: Request) => {
 
     const studentInfo = {
       id: student.id,
-      name: student.user.name,
+      name: student.user?.name || "N/A",
       gradeLevel: levelEntry?.academicLevel.name || "N/A",
       classroom: levelEntry?.classRoom?.name || "N/A",
     };
@@ -81,7 +81,7 @@ const getStudentSchedule = async (request: Request) => {
 
     // 3. One-off events: fetch registrations by userId
     const registrations = await prisma.eventRegistration.findMany({
-      where: { userId: student.user.id },
+      where: { userId: student.user?.id || student.userId || "" },
       include: { event: true },
     });
 

@@ -56,7 +56,8 @@ const sampleStoryData = {
 export default function StoryViewPage() {
   const params = useParams();
   const router = useRouter();
-  const storyId = Array.isArray(params.storyId) ? params.storyId[0] : params.storyId;
+  const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string) || '';
+  const storyId = Array.isArray(params.storyId) ? params.storyId[0] : (params.storyId as string) || '';
 
   const [currentStoryData, setCurrentStoryData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,108 +65,105 @@ export default function StoryViewPage() {
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isReadingAloud, setIsReadingAloud] = useState(false);
+  const [completedSaved, setCompletedSaved] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   // Fetch story data based on storyId
   useEffect(() => {
     const fetchStory = async () => {
       setIsLoading(true);
       setError(null);
-      setCurrentStoryData(null); // Clear previous data
+
+      // Check sample stories first
+      const sample = sampleStoryData[storyId as keyof typeof sampleStoryData];
+      if (sample) {
+        setCurrentStoryData(sample);
+        setIsLoading(false);
+        return;
+      }
 
       try {
-        const response = await fetch(`${apiBaseUrl}/courses/${storyId}`);
-
+        const response = await fetch(`/api/admin/activities?companySlug=${slug}&type=story-time`);
         if (response.ok) {
-          // throw new Error(`HTTP error! status: ${response.status}`);
-
-          const courseData = await response.json();
-
-          if (courseData) {
-            // Map Course data to your story view format
-            // Assuming CourseMaterial represents pages
-            const mappedPages = courseData.CourseMaterial
-              ?.sort((a: any, b: any) => a.order - b.order) // Sort pages by order
-              .map((material: any) => ({
-                id: material.id,
-                image: material.fileUrl || `https://placehold.co/800x600/CCCCCC/000000?text=Page+${material.order}`, // Use fileUrl for image
-                text: material.content, // Use content for page text
-                // You could add page-specific audio here if CourseMaterial had an audioUrl field
-              })) || [];
-
+          const resData = await response.json();
+          const found = (resData?.data?.activities || []).find((a: any) => a.id === storyId);
+          if (found && found.content?.pages?.length > 0) {
             setCurrentStoryData({
-              title: courseData.title,
-              pages: mappedPages.length > 0 ? mappedPages : sampleStoryData[storyId as keyof typeof sampleStoryData]?.pages || [], // Fallback to sample pages if no materials
-              audio: {
-                fullStory: courseData.audioUrl || sampleStoryData[storyId as keyof typeof sampleStoryData]?.audio?.fullStory, // Assuming audioUrl exists on Course
-              }
+              title: found.title,
+              pages: found.content.pages.map((p: any, idx: number) => ({
+                id: `p-${idx}`,
+                image: p.imageUrl || found.mediaAsset?.url || `https://placehold.co/800x600/FFD700/000000?text=Page+${idx + 1}`,
+                text: p.text || found.description || '',
+              })),
             });
-          } else {
-            // No data from API, try to use specific sample data or generic fallback
-            // console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
-            setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
-            if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
-              setError("Story not found. Redirecting...");
-              router.replace('/play/story-time');
-              return;
-            }
-          }
-        } else {
-          // No data from API, try to use specific sample data or generic fallback
-          // console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
-          setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
-          if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
-            setError("Story not found. Redirecting...");
-            router.replace('/play/story-time');
+            setIsLoading(false);
             return;
           }
         }
       } catch (e: any) {
-        console.error("Failed to fetch story:", e);
-        setError("Failed to load story. Displaying sample data.");
-        setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
-        if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
-          router.replace('/play/story-time');
-          return;
-        }
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch custom story:", e);
       }
+
+      // Fallback to first sample story if not matched
+      setCurrentStoryData(sampleStoryData['the-little-bear']);
+      setIsLoading(false);
     };
 
     fetchStory();
-  }, [storyId, router]); // Re-fetch if storyId changes
+  }, [storyId, slug]);
 
-  // Handle audio playback for the full story
+  // Speech synthesis for reading aloud
   useEffect(() => {
-    if (audioRef.current && currentStoryData?.audio?.fullStory) {
-      if (isReadingAloud) {
-        audioRef.current.src = currentStoryData.audio.fullStory;
-        audioRef.current.currentTime = 0; // Start from beginning
-        audioRef.current.play().catch(e => console.error("Error playing full story audio:", e));
-      } else {
-        audioRef.current.pause();
+    if (!isReadingAloud) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
       }
+      return;
     }
-  }, [isReadingAloud, currentStoryData]);
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && currentStoryData?.pages?.[currentPageIndex]?.text) {
+      window.speechSynthesis.cancel();
+      const text = currentStoryData.pages[currentPageIndex].text;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.1;
+      utterance.onend = () => {
+        // Can optionally auto advance or wait for child
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [isReadingAloud, currentPageIndex, currentStoryData]);
+
+  // Reset current page when story changes
+  useEffect(() => {
+    setCurrentPageIndex(0);
+    setIsReadingAloud(false);
+    setCompletedSaved(false);
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  }, [storyId]);
+
+  // Record attempt when last page is reached
+  useEffect(() => {
+    if (currentStoryData?.pages?.length && currentPageIndex === currentStoryData.pages.length - 1 && !completedSaved) {
+      setCompletedSaved(true);
+      fetch('/api/admin/activity-attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companySlug: slug,
+          activityId: storyId,
+          isCompleted: true,
+          data: {
+            title: currentStoryData.title,
+            pagesRead: currentStoryData.pages.length,
+            completedAt: new Date().toISOString(),
+          },
+        }),
+      }).catch(err => console.warn("Could not save attempt:", err));
+    }
+  }, [currentPageIndex, currentStoryData, completedSaved, slug, storyId]);
 
   // Reset current page when storyData changes (e.g., if a user manually changes URL storyId)
   useEffect(() => {
@@ -218,7 +216,7 @@ export default function StoryViewPage() {
       <div className="absolute bottom-1/4 right-1/4 w-60 h-60 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob-slow animation-delay-1500"></div>
 
       {/* Back to Stories Button */}
-      <Link href="/play/story-time" className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back to stories">
+      <Link href={`/admin/${slug}/play/story-time`} className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back to stories">
         📖
       </Link>
 
@@ -275,7 +273,7 @@ export default function StoryViewPage() {
               🎉 The End! Great Job! 🎉
             </p>
             <Link
-              href="/play/story-time"
+              href={`/admin/${slug}/play/story-time`}
               className="px-8 py-4 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-colors text-3xl font-bold transform hover:scale-105 active:scale-95"
             >
               Read Another Story!

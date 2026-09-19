@@ -17,7 +17,7 @@ export async function GET(
 ) {
   try {
     const authResult = await verifyAuth(req);
-    if (!authResult.authorized || !authResult.user) {
+    if (!authResult.success || !authResult.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

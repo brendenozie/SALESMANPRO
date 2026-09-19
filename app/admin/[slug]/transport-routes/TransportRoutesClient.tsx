@@ -35,7 +35,7 @@ interface TransportRoute {
 }
 
 const TransportRoutesClient = ({ initialRoutes, schoolId }: { initialRoutes: TransportRoute[], schoolId: string }) => {
-  const [routes, setRoutes] = useState<TransportRoute[]>(initialRoutes);
+  const [routes, setRoutes] = useState<TransportRoute[]>(Array.isArray(initialRoutes) ? initialRoutes : []);
   const [expandedRoute, setExpandedRoute] = useState<string | null>(null);
   
   const [isModalOpen, setIsModalOpen] = useState(false);

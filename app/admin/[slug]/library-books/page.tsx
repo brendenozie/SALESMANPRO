@@ -16,7 +16,7 @@ export default async function LibraryBooksPage({ params }: PageProps) {
     const session = await getAuthSession();
   
     // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
+    const identifier = slug || (session?.user as any)?.id || '';
   
     // 2. Retrieve the memoized company data (no extra DB cost)
     const company = await findCompanyCached(identifier, "page");

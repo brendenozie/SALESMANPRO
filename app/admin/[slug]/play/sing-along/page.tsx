@@ -3,112 +3,65 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-// import { getAuthSession } from '@/lib/auth';
-// import { findCompanyCached } from '@/lib/company-fetcher';
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
-
+import { useParams, useRouter } from 'next/navigation';
 
 // --- Sample Data (Used if API fails or returns no data) ---
-// This structure mimics what we'd map from your Course model
 const sampleSongs = [
-  { id: 'sample-1', slug: 'twinkle-twinkle', title: 'Twinkle, Twinkle Little Star (Sample)', icon: '🌟', audio: '/audio/twinkle.mp3' },
-  { id: 'sample-2', slug: 'wheels-on-the-bus', title: 'Wheels on the Bus (Sample)', icon: '🚌', audio: '/audio/wheels.mp3' },
-  { id: 'sample-3', slug: 'old-macdonald', title: 'Old MacDonald (Sample)', icon: '🐷', audio: '/audio/macdonald.mp3' },
+  { id: 'twinkle-twinkle', slug: 'twinkle-twinkle', title: 'Twinkle, Twinkle Little Star', icon: '🌟', audio: '/audio/twinkle.mp3' },
+  { id: 'wheels-on-the-bus', slug: 'wheels-on-the-bus', title: 'Wheels on the Bus', icon: '🚌', audio: '/audio/wheels.mp3' },
+  { id: 'old-macdonald', slug: 'old-macdonald', title: 'Old MacDonald Had a Farm', icon: '🐷', audio: '/audio/macdonald.mp3' },
 ];
-
-// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
-// Or create a specific "Sing Along" AcademicLevel if you want to categorize them separately.
-const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
 
 export default function SingAlongPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string) || '';
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [songs, setSongs] = useState<typeof sampleSongs>([]);
+  const [songs, setSongs] = useState<any[]>(sampleSongs);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   useEffect(() => {
     const fetchSongs = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`${apiBaseUrl}/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
-
+        const response = await fetch(`/api/admin/activities?companySlug=${slug}&type=sing-along`);
         if (response.ok) {
-          // throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          // Map API Course data to the format expected by your UI
-          const mappedSongs = data
-            .filter((course: any) => course.audioUrl) // Only include courses that have an audioUrl
-            .map((course: any) => ({
+          const resData = await response.json();
+          const live = resData?.data?.activities || [];
+          if (live.length > 0) {
+            const mapped = live.map((course: any) => ({
               id: course.id,
-              slug: course.code, // Assuming 'code' can be used as a unique slug for songs
+              slug: course.id,
               title: course.title,
-              // For the icon, you can use imageUrl if you store image icons,
-              // or keep a hardcoded emoji based on title/type if needed.
-              // For simplicity, we'll use a generic music note emoji or a placeholder if imageUrl is not an emoji.
-              icon: course.imageUrl || '🎵', // Use imageUrl if it's an emoji/short string, else default
-              audio: course.audioUrl,
+              icon: course.activityType?.icon || '🎵',
+              audio: course.mediaAsset?.url || null,
             }));
-          setSongs(mappedSongs);
+            setSongs([...mapped, ...sampleSongs]);
+          } else {
+            setSongs(sampleSongs);
+          }
         } else {
-          // No data from API, use sample data
-          // console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
           setSongs(sampleSongs);
         }
-      }
-      else {
-        // No data from API, use sample data
-        // console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
-        setSongs(sampleSongs);
-      }
-
       } catch (e: any) {
-        // console.error("Failed to fetch songs:", e);
-        setError("Failed to load songs. Displaying sample data.");
-        setSongs(sampleSongs); // Fallback to sample data on error
+        setSongs(sampleSongs);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchSongs();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [slug]);
 
   const handleSongSelect = (song: any) => {
-    // Optional: Play a short click sound effect before navigating
     if (audioRef.current && song.audio) {
       audioRef.current.src = song.audio;
       audioRef.current.play().catch(e => console.error("Error playing sound:", e));
     }
-    // Navigate to the dedicated song view page using the song's slug
-    router.push(`sing-along/${song.slug}`);
+    router.push(`/admin/${slug}/play/sing-along/${song.slug || song.id}`);
   };
 
   return (
@@ -118,7 +71,7 @@ export default function SingAlongPage() {
       <div className="absolute bottom-10 right-10 w-36 h-36 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-1000"></div>
 
       {/* Back to Home Button */}
-      <Link href="/play" className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
+      <Link href={`/admin/${slug}/play`} className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
         🏡
       </Link>
 

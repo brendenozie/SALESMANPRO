@@ -59,7 +59,7 @@ export default async function TeachersScheduleServerPage({ params }: PageProps) 
   // const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID;
 
   const session = await getAuthSession();
-  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+  const educatorId = (session?.user as any)?.id || MOCK_CURRENT_EDUCATOR_ID;
 
   let schedulePageData: TeacherSchedulePageData | null = null;
   let fetchError: string | null = null;
@@ -101,13 +101,13 @@ export default async function TeachersScheduleServerPage({ params }: PageProps) 
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Schedule</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load teacher schedule data."}</p>
-        <button
-          onClick={() => window.history.back()}
+        <a
+          href={`/admin/${slug}`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
                      hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </button>
+        </a>
       </div>
     );
   }

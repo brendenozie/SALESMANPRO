@@ -1,4 +1,4 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -8,7 +8,7 @@ interface Params {
 }
 
 // =======================
-// PATCH — Update submission
+// PATCH — Update submission & grade
 // =======================
 async function updateSubmission(request: Request, { params }: Params) {
   const { id } = params;
@@ -30,7 +30,7 @@ async function updateSubmission(request: Request, { params }: Params) {
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
-      // ✅ Bulk update question responses
+      // 1. Bulk update question responses
       if (Array.isArray(questionGrades) && questionGrades.length) {
         await Promise.all(
           questionGrades.map((qg) =>
@@ -42,8 +42,8 @@ async function updateSubmission(request: Request, { params }: Params) {
         );
       }
 
-      // ✅ Update main submission
-      return tx.assignmentSubmission.update({
+      // 2. Update main submission
+      const sub = await tx.assignmentSubmission.update({
         where: { id },
         data: updateData,
         select: {
@@ -53,6 +53,10 @@ async function updateSubmission(request: Request, { params }: Params) {
           reviewedById: true,
           gradedAt: true,
           reviewedAt: true,
+          assignmentId: true,
+          studentId: true,
+          courseId: true,
+          companyId: true,
           assignmentQuestionResponses: {
             select: {
               id: true,
@@ -62,13 +66,60 @@ async function updateSubmission(request: Request, { params }: Params) {
           },
         },
       });
+
+      // 3. Synchronize to authoritative Grade model for GPA and report cards
+      if (grade !== undefined && sub.studentId && sub.courseId && sub.companyId) {
+        const numericScore = typeof grade === "number" ? grade : parseFloat(grade) || 0;
+        let letterGrade = "B";
+        if (numericScore >= 90) letterGrade = "A+";
+        else if (numericScore >= 80) letterGrade = "A";
+        else if (numericScore >= 70) letterGrade = "B";
+        else if (numericScore >= 60) letterGrade = "C";
+        else if (numericScore >= 50) letterGrade = "D";
+        else letterGrade = "E";
+
+        const existingGrade = await tx.grade.findFirst({
+          where: {
+            studentId: sub.studentId,
+            courseId: sub.courseId,
+            courseAssignmentId: sub.assignmentId,
+          },
+        });
+
+        if (existingGrade) {
+          await tx.grade.update({
+            where: { id: existingGrade.id },
+            data: {
+              score: numericScore,
+              gradeValue: letterGrade,
+              comments: comments ?? existingGrade.comments,
+              recordedById: reviewedById ?? existingGrade.recordedById,
+            },
+          });
+        } else {
+          await tx.grade.create({
+            data: {
+              studentId: sub.studentId,
+              courseId: sub.courseId,
+              courseAssignmentId: sub.assignmentId,
+              companyId: sub.companyId,
+              score: numericScore,
+              gradeValue: letterGrade,
+              comments: comments,
+              recordedById: reviewedById,
+            },
+          });
+        }
+      }
+
+      return sub;
     });
 
     try {
       await cacheDel(`tenant:${id}:assignment-submissions:*`);
       await cacheDel(`admin:assignment-submissions:*`);
     } catch (e) {}
-    
+
     return formatResponse(true, updated, "Grading updated successfully.", 200);
   } catch (error: any) {
     if (error.code === "P2025") {
@@ -99,7 +150,6 @@ async function deleteSubmission(_request: Request, { params }: Params) {
       return formatResponse(false, null, "Submission not found.", 404);
     }
 
-    // Clear cache for this specific submission
     await cacheDel(`admin:assignment-submission:${id}`);
     return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
   } catch (error) {
@@ -110,76 +160,3 @@ async function deleteSubmission(_request: Request, { params }: Params) {
 
 export const PATCH = withApiHandler(updateSubmission);
 export const DELETE = withApiHandler(deleteSubmission);
-
-//         );
-//         await Promise.all(updatePromises);
-//       }
-
-//       return tx.assignmentSubmission.update({
-//         where: { id },
-//         data: updateData,
-//         // OPTIMIZATION: Selective return to keep response payload small
-//         select: {
-//           id: true,
-//           grade: true,
-//           gradedAt: true,
-//           status: true,
-//         }
-//       });
-//     });
-
-//     return formatResponse(true, result, "Grading updated successfully.", 200);
-//   } catch (error) {
-//     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-//       return formatResponse(false, null, "Submission not found.", 404);
-//     }
-//     throw error;
-//   }
-// });
-
-// export const DELETE = withApiHandler(async (request: Request, { params }: Params) => {
-//   const { id } = params;
-//   try {
-//     // OPTIMIZATION: Atomic Delete (removes findUnique check)
-//     await prisma.assignmentSubmission.delete({ where: { id } });
-//     
-    // 
-    // return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
-//   } catch (error) {
-//     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-//       return formatResponse(false, null, "Submission not found.", 404);
-//     }
-//     throw error;
-//   }
-// });
-
-//         }
-//       }
-
-//       // 2. Update the main submission
-//       return tx.assignmentSubmission.update({
-//         where: { id },
-//         data: updateData,
-//         include: { assignmentQuestionResponses: true }
-//       });
-//     });
-
-//     return formatResponse(true, { data: updated }, "Grading updated successfully.", 200);
-//   } catch (error: any) {
-//     if (error.code === 'P2025') return formatResponse(false, null, "Submission not found.", 404);
-//     throw error;
-//   }
-// }
-
-// async function deleteSubmission(request: Request, { params }: Params) {
-//   const { id } = params;
-//   try {
-//     await prisma.assignmentSubmission.delete({ where: { id } });
-//     return formatResponse(true, { message: "Submission deleted." }, null, 200);
-//   } catch (error) {
-//     return formatResponse(false, null, "Failed to delete submission.", 500);
-//   }
-// }
-
-// export const PATCH = withApiHandler(updateSubmission);
-// export const DELETE = withApiHandler(deleteSubmission);

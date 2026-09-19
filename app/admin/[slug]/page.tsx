@@ -182,6 +182,22 @@ function getFallbackDashboardData(type: 'student' | 'principal' | 'tutor' | 'par
   }
   // Tutor
   return {
+    teacherName: 'Lead Educator',
+    teacherRole: 'Teacher',
+    teacherStats: [
+      { title: 'Total Students', value: '120', color: 'bg-blue-50' },
+      { title: 'Assignments Due', value: '15', color: 'bg-purple-50' },
+      { title: "Today's Classes", value: '4', color: 'bg-yellow-50' },
+    ],
+    assignments: [
+      { id: 'mock-a1', title: 'Algebra Problem Set', class: 'Mathematics', dueDate: 'Friday', status: 'Published', color: 'bg-emerald-500' },
+    ],
+    recentAnnouncements: [
+      { id: 'ann-1', text: 'Faculty meeting this Friday at 3 PM', type: 'info' as const },
+    ],
+    myClasses: [
+      { id: 'c-1', name: 'Mathematics 10A', students: 30, schedule: '08:30 - 09:30 AM' },
+    ],
     tutorStats: [
       { title: 'Courses Assigned', value: '3', description: 'Currently teaching', color: 'bg-blue-50' },
       { title: 'Total Students', value: '120', description: 'Across all courses', color: 'bg-green-50' },

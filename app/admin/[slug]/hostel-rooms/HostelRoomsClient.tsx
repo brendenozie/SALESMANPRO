@@ -15,22 +15,28 @@ import CheckInForm from "./CheckInForm";
 import { toast } from "react-hot-toast";
 
 interface Props {
-  initiablocks: any[];
+  initialBlocks?: any[];
+  initiablocks?: any[];
   schoolId: string;
 }
 
-const HostelRoomsClient = ({ initiablocks, schoolId }: Props) => {
+const HostelRoomsClient = ({ initialBlocks, initiablocks, schoolId }: Props) => {
+  const safeInitialBlocks = Array.isArray(initialBlocks)
+    ? initialBlocks
+    : Array.isArray(initiablocks)
+    ? initiablocks
+    : [];
   const [rooms, setRooms] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [blocks, setBlocks] = useState(initiablocks);
+  const [blocks, setBlocks] = useState<any[]>(safeInitialBlocks);
   
-  const [activeBlockId, setActiveBlockId] = useState(
-    blocks && blocks.length > 0 && blocks[0]?.id ? blocks[0].id : ""
+  const [activeBlockId, setActiveBlockId] = useState<string>(
+    safeInitialBlocks.length > 0 && safeInitialBlocks[0]?.id ? safeInitialBlocks[0].id : ""
   );
-  const [selectedBlock, setSelectedBlock] = useState(
-    blocks && blocks.length > 0 ? blocks[0] : null
+  const [selectedBlock, setSelectedBlock] = useState<any>(
+    safeInitialBlocks.length > 0 ? safeInitialBlocks[0] : null
   );
 
   const fetchBlocks = async () => {

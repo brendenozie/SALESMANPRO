@@ -13,12 +13,29 @@ import {
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export default function PrincipalDashboard({ data }: { data: any }) {
+  const safeData = data || {};
+  const trendCategories = safeData.trendData?.categories || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const trendSeries = safeData.trendData?.series || [
+    { name: 'Academic Trend', data: [75, 80, 82, 85, 88, 90] },
+    { name: 'Teacher Effectiveness', data: [80, 82, 85, 87, 86, 90] },
+  ];
+  const principalStats = safeData.principalStats || [
+    { title: 'Total Students', value: '0', description: 'Enrolled across all grades', color: 'text-blue-600' },
+    { title: 'Total Teachers', value: '0', description: 'Active faculty members', color: 'text-emerald-600' },
+    { title: 'Total Classes', value: '0', description: 'Active classrooms', color: 'text-violet-600' },
+    { title: 'Upcoming Events', value: '0', description: 'Events this week', color: 'text-amber-600' },
+  ];
+  const impactReport = safeData.impactReport || [];
+  const spotlight = safeData.spotlight || { student: 'None recorded this week', teacher: 'None recorded this week' };
+  const announcements = safeData.announcements || [];
+  const recentStaffMessages = safeData.recentStaffMessages || [];
+
   const chartOptions: any = {
     chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
     colors: ['#3C50E0', '#10B981'],
     stroke: { curve: 'smooth', width: 3 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.6, opacityTo: 0.1 } },
-    xaxis: { categories: data.trendData.categories },
+    xaxis: { categories: trendCategories },
     yaxis: { max: 100, labels: { formatter: (v: number) => `${v}%` } },
     dataLabels: { enabled: false },
     tooltip: { x: { show: false }, marker: { show: true } }
@@ -49,13 +66,13 @@ export default function PrincipalDashboard({ data }: { data: any }) {
 
       {/* 1. Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {data.principalStats.map((stat: any, i: number) => (
+        {principalStats.map((stat: any, i: number) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-              {statIcons[stat.title]}
+              {statIcons[stat.title] || <BookOpenIcon className="h-6 w-6 text-blue-600" />}
             </div>
-            <h3 className={`text-2xl font-black ${stat.color}`}>{stat.value}</h3>
+            <h3 className={`text-2xl font-black ${stat.color || 'text-slate-900'}`}>{stat.value}</h3>
             <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-wider font-bold">{stat.description}</p>
           </div>
         ))}
@@ -70,7 +87,7 @@ export default function PrincipalDashboard({ data }: { data: any }) {
               <h2 className="text-xl font-bold text-slate-800">Operational Performance</h2>
               <p className="text-sm text-slate-500">Correlation between teaching quality and academic results.</p>
             </div>
-            <ApexCharts options={chartOptions} series={data.trendData.series} type="area" height={350} />
+            <ApexCharts options={chartOptions} series={trendSeries} type="area" height={350} />
           </div>
 
           {/* Impact Drill-down Section */}
@@ -80,20 +97,24 @@ export default function PrincipalDashboard({ data }: { data: any }) {
                 <ArrowTrendingUpIcon className="h-5 w-5 text-blue-600" /> Academic Volatility
               </h3>
               <div className="space-y-4">
-                {data.impactReport.map((item: any, i: number) => (
-                  <div key={i} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                    <div>
-                      <p className="text-sm font-bold">{item.courseName}</p>
-                      <p className="text-[10px] text-slate-400">Impacted by: {item.keyExam}</p>
+                {impactReport.length === 0 ? (
+                  <p className="text-sm text-slate-400 py-4 text-center">No volatility events recorded.</p>
+                ) : (
+                  impactReport.map((item: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                      <div>
+                        <p className="text-sm font-bold">{item.courseName}</p>
+                        <p className="text-[10px] text-slate-400">Impacted by: {item.keyExam}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-sm font-black ${item.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {item.change >= 0 ? '+' : ''}{item.change}%
+                        </span>
+                        <p className="text-[10px] text-slate-400">Avg: {item.currentAvg}%</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className={`text-sm font-black ${item.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {item.change >= 0 ? '+' : ''}{item.change}%
-                      </span>
-                      <p className="text-[10px] text-slate-400">Avg: {item.currentAvg}%</p>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
@@ -125,14 +146,14 @@ export default function PrincipalDashboard({ data }: { data: any }) {
                   <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">🎓</div>
                   <div>
                     <p className="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Student of the Week</p>
-                    <p className="font-bold text-slate-800">{data.spotlight.student}</p>
+                    <p className="font-bold text-slate-800">{spotlight.student}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">👨‍🏫</div>
                   <div>
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Teacher of the Week</p>
-                    <p className="font-bold text-slate-800">{data.spotlight.teacher}</p>
+                    <p className="font-bold text-slate-800">{spotlight.teacher}</p>
                   </div>
                 </div>
               </div>
@@ -145,11 +166,15 @@ export default function PrincipalDashboard({ data }: { data: any }) {
               <MegaphoneIcon className="h-5 w-5 text-blue-600" /> Announcements
             </h3>
             <div className="space-y-3">
-              {data.announcements.map((note:any) => (
-                <div key={note.id} className={`p-3 rounded-xl text-sm border-l-4 ${note.type === 'warning' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}>
-                  {note.text}
-                </div>
-              ))}
+              {announcements.length === 0 ? (
+                <p className="text-sm text-slate-400 py-2">No active announcements.</p>
+              ) : (
+                announcements.map((note: any) => (
+                  <div key={note.id || Math.random()} className={`p-3 rounded-xl text-sm border-l-4 ${note.type === 'warning' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-blue-50 border-blue-500 text-blue-700'}`}>
+                    {note.text || note.title}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -159,18 +184,24 @@ export default function PrincipalDashboard({ data }: { data: any }) {
               <ChatBubbleBottomCenterTextIcon className="h-5 w-5 text-emerald-600" /> Staff Activity
             </h3>
             <div className="space-y-4">
-              {data.recentStaffMessages.map((msg:any) => (
-                <div key={msg.id} className="flex gap-3 items-start border-b border-slate-50 pb-3 last:border-0">
-                  <div className="h-8 w-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs font-bold">{msg.name[0]}</div>
-                  <div>
-                    <div className="flex justify-between items-center w-full">
-                      <p className="text-sm font-bold">{msg.name}</p>
-                      <span className="text-[10px] text-slate-400">{msg.time}</span>
+              {recentStaffMessages.length === 0 ? (
+                <p className="text-sm text-slate-400 py-2">No recent staff activity.</p>
+              ) : (
+                recentStaffMessages.map((msg: any) => (
+                  <div key={msg.id || Math.random()} className="flex gap-3 items-start border-b border-slate-50 pb-3 last:border-0">
+                    <div className="h-8 w-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                      {msg.name?.[0] || 'S'}
                     </div>
-                    <p className="text-xs text-slate-500 line-clamp-2">{msg.message}</p>
+                    <div>
+                      <div className="flex justify-between items-center w-full">
+                        <p className="text-sm font-bold">{msg.name || 'Staff Member'}</p>
+                        <span className="text-[10px] text-slate-400">{msg.time || ''}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 line-clamp-2">{msg.message || ''}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
           

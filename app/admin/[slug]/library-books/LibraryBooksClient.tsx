@@ -35,7 +35,7 @@ interface Props {
 }
 
 const LibraryBooksClient: React.FC<Props> = ({ initialBooks, schoolId }) => {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [books, setBooks] = useState<Book[]>(Array.isArray(initialBooks) ? initialBooks : []);
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
