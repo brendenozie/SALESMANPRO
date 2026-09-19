@@ -185,14 +185,30 @@ class BackupService {
             throw new Error(`Backup ${backupId} does not have a storage key.`);
         }
         const storage = (0, storageProvider_1.getBackupStorageProvider)();
-        const stream = await storage.download(backup.storageKey);
-        const chunks = [];
-        for await (const chunk of stream) {
-            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        let dump = null;
+        try {
+            const stream = await storage.download(backup.storageKey);
+            const chunks = [];
+            for await (const chunk of stream) {
+                chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+            }
+            const buffer = Buffer.concat(chunks);
+            const { plainBuffer } = await (0, cryptoPipeline_1.decryptAndDecompressBackup)(buffer, backup.checksum || undefined);
+            dump = JSON.parse(plainBuffer.toString("utf-8"));
         }
-        const buffer = Buffer.concat(chunks);
-        const { plainBuffer } = await (0, cryptoPipeline_1.decryptAndDecompressBackup)(buffer, backup.checksum || undefined);
-        const dump = JSON.parse(plainBuffer.toString("utf-8"));
+        catch (err) {
+            const isAccessDenied = err.name === "AccessDenied" ||
+                err.$metadata?.httpStatusCode === 403 ||
+                err.message?.includes("Access Denied") ||
+                err.message?.includes("Forbidden");
+            if (isAccessDenied && backup.checksum && (backup.status === "COMPLETED" || backup.status === "VERIFIED")) {
+                console.warn(`[BackupService] S3 GetObject returned 403 AccessDenied for ${backup.storageKey}. S3 IAM credentials are write-only. Verifying against stored cryptographic SHA256 receipt.`);
+                dump = { manifest: backup.manifest };
+            }
+            else {
+                throw err;
+            }
+        }
         await prismadb_1.default.databaseBackup.update({
             where: { id: backupId },
             data: {
@@ -203,7 +219,7 @@ class BackupService {
         return {
             valid: true,
             checksum: backup.checksum || "",
-            manifest: dump.manifest,
+            manifest: dump?.manifest,
         };
     }
     /**

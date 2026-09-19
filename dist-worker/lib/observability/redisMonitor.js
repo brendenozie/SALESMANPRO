@@ -9,26 +9,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRedisHealth = void 0;
 const redis_1 = require("@/lib/redis");
 async function getRedisHealth() {
-    if (!(0, redis_1.isRedisAvailable)()) {
-        return {
-            status: "DISCONNECTED",
-            pingLatencyMs: 0,
-            memoryUsedHuman: "0 B",
-            memoryUsedBytes: 0,
-            connectedClients: 0,
-            totalKeys: 0,
-            uptimeSeconds: 0,
-            role: "unknown",
-        };
-    }
     const client = (0, redis_1.getRedisClient)();
     const start = Date.now();
     try {
+        if (client.status === "wait") {
+            await client.connect().catch(() => { });
+        }
         const pong = await Promise.race([
             client.ping(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000)),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2500)),
         ]);
-        const pingLatencyMs = Date.now() - start;
+        const pingLatencyMs = Math.max(1, Date.now() - start);
         let info = "";
         try {
             info = await client.info();

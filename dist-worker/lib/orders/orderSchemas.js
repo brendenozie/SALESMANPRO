@@ -57,6 +57,8 @@ exports.unifiedOrderSchema = zod_1.z.object({
     customerPin: zod_1.z.string().optional(),
     terminalId: zod_1.z.string().optional(),
     cashierName: zod_1.z.string().optional(),
+    posSessionId: zod_1.z.string().optional(),
+    operatorId: zod_1.z.string().optional(),
     paymentData: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).optional(),
     metadata: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).optional(),
 });

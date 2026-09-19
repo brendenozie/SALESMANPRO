@@ -64,6 +64,8 @@ const latestSubscriptionInclude = {
 const INCLUDE_MAP = {
     lean: leanShellInclude(),
     page: pageDataInclude(),
+    api: leanShellInclude(),
+    full: pageDataInclude(),
 };
 /**
  * 🔍 Optimized Single-Query Company Finder
@@ -129,7 +131,7 @@ exports.findCompanyCached = requestCache(async (identifier, strategy = "lean") =
         return null;
     // 1.5️⃣ Fast-path: If requesting 'lean', check if the richer 'page' entry is already cached!
     // Because 'page' is a complete superset of 'lean', it immediately satisfies the shell layout.
-    if (strategy === "lean") {
+    if (strategy === "lean" || strategy === "api") {
         const pageKey = (0, cache_2.buildTenantCacheKey)(cleanIdentifier, "company_details", { strategy: "page" });
         const cachedPage = await (0, cache_2.cacheGet)(pageKey);
         if (cachedPage) {
@@ -157,8 +159,8 @@ exports.findCompanyCached = requestCache(async (identifier, strategy = "lean") =
             // Fallback for environments where incrementalCache is not initialized (e.g. workers, tests, CLI)
             data = await findCompanyFn(cleanIdentifier, strategy);
         }
-        // If we loaded the rich 'page' strategy, simultaneously warm the 'lean' cache key!
-        if (data && strategy === "page") {
+        // If we loaded the rich 'page' or 'full' strategy, simultaneously warm the 'lean' cache key!
+        if (data && (strategy === "page" || strategy === "full")) {
             const leanKey = (0, cache_2.buildTenantCacheKey)(cleanIdentifier, "company_details", { strategy: "lean" });
             (0, cache_2.cacheSet)(leanKey, data, 600).catch(() => { });
             // Also cross-link under canonical company id if identifier was a slug/domain

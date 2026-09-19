@@ -11,14 +11,15 @@ exports.retryFailedQueueJobs = exports.getAllQueueStatuses = void 0;
 const bullmq_1 = require("bullmq");
 const redis_1 = require("@/lib/redis");
 const MONITORED_QUEUES = [
-    { name: "whatsapp-messages", displayName: "WhatsApp AI & Outbound" },
-    { name: "ai-jobs", displayName: "AI Model Inference & Generation" },
-    { name: "ai-workforce-tasks", displayName: "Autonomous AI Workforce" },
-    { name: "social-media-jobs", displayName: "Social Publishing & Sync" },
-    { name: "backup-jobs", displayName: "Database Automated Backups" },
-    { name: "restore-jobs", displayName: "Database Disaster Recovery" },
-    { name: "email-queue", displayName: "Transactional Email Delivery" },
-    { name: "email-broadcast-queue", displayName: "Marketing Broadcasts" },
+    { name: "whatsapp-inbound", displayName: "WhatsApp AI & Outbound" },
+    { name: "salesmanpro-ai-jobs", displayName: "AI Model Inference & Generation" },
+    { name: "salesmanpro-ai-workforce", displayName: "Autonomous AI Workforce" },
+    { name: "salesmanpro-social-jobs", displayName: "Social Publishing & Sync" },
+    { name: "salesmanpro-database-backups", displayName: "Database Automated Backups" },
+    { name: "salesmanpro-database-restores", displayName: "Database Disaster Recovery" },
+    { name: "salesmanpro-database-maintenance", displayName: "Database Maintenance & Pruning" },
+    { name: "email-delivery", displayName: "Transactional Email Delivery" },
+    { name: "email-broadcast", displayName: "Marketing Broadcasts" },
     { name: "media-ai", displayName: "Media AI Tagging & Vision" },
     { name: "media-processing", displayName: "Image & Video Compression" },
     { name: "analytics-events", displayName: "Analytics Batch Processing" },

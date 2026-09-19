@@ -35,6 +35,7 @@ const tenantScope_1 = require("@/lib/auth/tenantScope");
 const idempotency_1 = require("@/lib/idempotency");
 const crypto_1 = __importDefault(require("crypto"));
 const server_1 = require("next/server");
+const tracker_1 = require("@/lib/observability/tracker");
 /* -----------------------------------------
    GLOBAL CORS HEADERS (APPLIED TO ALL ROUTES)
 ------------------------------------------ */
@@ -78,6 +79,28 @@ function withApiHandler(handler, options = {
             request.headers.get("x-idempotency-key");
         let lockAcquired = false;
         let lockTenantScope = "global";
+        const sendResponse = (response, durationMs, reqId = requestId, extraHeaders = {}, errorObj) => {
+            if (request.method !== "OPTIONS" && !requestPath.startsWith("/api/super-admin/observability")) {
+                try {
+                    (0, tracker_1.trackRequest)({
+                        requestId: reqId,
+                        method: request.method,
+                        route: requestPath,
+                        statusCode: response.status,
+                        durationMs,
+                        hostname: url.hostname,
+                        tenantId: context.companyId,
+                        userRole: context.user?.role,
+                        ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
+                        userAgent: request.headers.get("user-agent") || undefined,
+                        errorMessage: errorObj?.message,
+                        errorStack: errorObj?.stack,
+                    });
+                }
+                catch { }
+            }
+            return applyHeadersAndTiming(response, durationMs, reqId, extraHeaders);
+        };
         try {
             // --- OPTIONS (preflight) ---
             if (request.method === "OPTIONS") {
@@ -90,7 +113,7 @@ function withApiHandler(handler, options = {
             if (shouldRequireAuth) {
                 const auth = await (0, verifyAuth_1.verifyAuth)(request);
                 if (!auth.success || !auth.user) {
-                    return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, auth.error || "Unauthorized: No valid session found", 401, undefined, requestId), Date.now() - startTime, requestId);
+                    return sendResponse((0, formatResponse_1.formatResponse)(false, null, auth.error || "Unauthorized: No valid session found", 401, undefined, requestId), Date.now() - startTime, requestId);
                 }
                 context = { ...context, user: auth.user };
             }
@@ -98,7 +121,7 @@ function withApiHandler(handler, options = {
             if (options.requireRateLimit !== false) {
                 const limitResponse = (0, enforceRateLimit_1.enforceRateLimit)(request, context.user?.id);
                 if (limitResponse) {
-                    return applyHeadersAndTiming(limitResponse, Date.now() - startTime, requestId);
+                    return sendResponse(limitResponse, Date.now() - startTime, requestId);
                 }
             }
             // --- Role-based Access Control ---
@@ -107,7 +130,7 @@ function withApiHandler(handler, options = {
                 const userRole = context.user?.role?.toLowerCase();
                 const allowedRolesLower = effectiveAllowedRoles.map((role) => role.toLowerCase());
                 if (!userRole || !allowedRolesLower.includes(userRole)) {
-                    return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "Forbidden: Insufficient role permissions", 403, undefined, requestId), Date.now() - startTime, requestId);
+                    return sendResponse((0, formatResponse_1.formatResponse)(false, null, "Forbidden: Insufficient role permissions", 403, undefined, requestId), Date.now() - startTime, requestId);
                 }
             }
             else if (shouldRequireAuth &&
@@ -116,7 +139,7 @@ function withApiHandler(handler, options = {
                 const { canAccessDashboard, isConsumerOnlyAccount } = await Promise.resolve().then(() => __importStar(require("@/lib/auth/authorization")));
                 if (!canAccessDashboard(context.user) ||
                     isConsumerOnlyAccount(context.user)) {
-                    return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "Forbidden: Insufficient role permissions for administrative access", 403, undefined, requestId), Date.now() - startTime, requestId);
+                    return sendResponse((0, formatResponse_1.formatResponse)(false, null, "Forbidden: Insufficient role permissions for administrative access", 403, undefined, requestId), Date.now() - startTime, requestId);
                 }
             }
             // --- Tenant Isolation Resolution ---
@@ -127,7 +150,7 @@ function withApiHandler(handler, options = {
                 const queryCompanyId = url.searchParams.get("companyId");
                 const tenantResolution = await (0, tenantScope_1.resolveAuthorizedCompany)(context.user, queryCompanyId);
                 if (!tenantResolution.authorized) {
-                    return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, tenantResolution.error || "Forbidden: Tenant access denied", tenantResolution.status || 403, undefined, requestId), Date.now() - startTime, requestId);
+                    return sendResponse((0, formatResponse_1.formatResponse)(false, null, tenantResolution.error || "Forbidden: Tenant access denied", tenantResolution.status || 403, undefined, requestId), Date.now() - startTime, requestId);
                 }
                 context.companyId = tenantResolution.companyId;
             }
@@ -136,19 +159,19 @@ function withApiHandler(handler, options = {
                 request.method === "PUT" ||
                 request.method === "PATCH";
             if (options.requireIdempotency && !idempotencyKey && isMutation) {
-                return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "Idempotency-Key header is required for this mutation.", 400, undefined, requestId), Date.now() - startTime, requestId);
+                return sendResponse((0, formatResponse_1.formatResponse)(false, null, "Idempotency-Key header is required for this mutation.", 400, undefined, requestId), Date.now() - startTime, requestId);
             }
             if (idempotencyKey && isMutation) {
                 lockTenantScope =
                     context.companyId || context.user?.id || "global";
                 const lockResult = await (0, idempotency_1.acquireIdempotencyLock)(idempotencyKey, lockTenantScope);
                 if (lockResult.state === "COMPLETED") {
-                    return applyHeadersAndTiming(server_1.NextResponse.json(lockResult.response.body, {
+                    return sendResponse(server_1.NextResponse.json(lockResult.response.body, {
                         status: lockResult.response.status,
                     }), Date.now() - startTime, requestId, { "x-idempotent-replay": "true" });
                 }
                 if (lockResult.state === "IN_FLIGHT") {
-                    return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "A request with this idempotency key is currently processing. Please retry shortly.", 409, undefined, requestId), Date.now() - startTime, requestId);
+                    return sendResponse((0, formatResponse_1.formatResponse)(false, null, "A request with this idempotency key is currently processing. Please retry shortly.", 409, undefined, requestId), Date.now() - startTime, requestId);
                 }
                 lockAcquired = true;
             }
@@ -162,7 +185,7 @@ function withApiHandler(handler, options = {
                 request.method !== "OPTIONS") {
                 const contentType = request.headers.get("Content-Type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "Content-Type must be application/json", 415, undefined, requestId), Date.now() - startTime, requestId);
+                    return sendResponse((0, formatResponse_1.formatResponse)(false, null, "Content-Type must be application/json", 415, undefined, requestId), Date.now() - startTime, requestId);
                 }
             }
             // --- Handle Query Parameters ---
@@ -195,7 +218,7 @@ function withApiHandler(handler, options = {
             if (duration > 500 && process.env.NODE_ENV !== "production") {
                 console.warn(`[SLOW_API_ROUTE][${requestId}] ${request.method} ${requestPath} completed in ${duration}ms (status: ${response.status})`);
             }
-            return applyHeadersAndTiming(response, duration, requestId);
+            return sendResponse(response, duration, requestId);
         }
         catch (error) {
             if (lockAcquired && idempotencyKey) {
@@ -204,9 +227,9 @@ function withApiHandler(handler, options = {
             const duration = Date.now() - startTime;
             if (error?.message?.startsWith("API_TIMEOUT")) {
                 console.error(`[API_TIMEOUT][${requestId}] ${request.method} ${requestPath} exceeded ${timeoutMs}ms limit`);
-                return applyHeadersAndTiming((0, formatResponse_1.formatResponse)(false, null, "Request timed out. Downstream operations took too long.", 504, undefined, requestId), duration, requestId);
+                return sendResponse((0, formatResponse_1.formatResponse)(false, null, "Request timed out. Downstream operations took too long.", 504, undefined, requestId), duration, requestId, {}, error);
             }
-            return applyHeadersAndTiming((0, handlePrismaError_1.handlePrismaError)(error, requestId), duration, requestId);
+            return sendResponse((0, handlePrismaError_1.handlePrismaError)(error, requestId), duration, requestId, {}, error);
         }
     };
 }

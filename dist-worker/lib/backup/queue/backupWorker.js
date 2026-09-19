@@ -224,15 +224,20 @@ async function reconcileStorageAndRegistry() {
         });
         const dbKeys = new Set(dbBackups.map((b) => b.storageKey).filter(Boolean));
         const cloudKeys = new Set(cloudObjects.map((o) => o.key));
-        // Check for DB records pointing to missing cloud artifacts
-        for (const b of dbBackups) {
-            if (b.storageKey && !cloudKeys.has(b.storageKey)) {
-                console.warn(`[Reconciliation] Missing cloud artifact for DB backup: ${b.id} (${b.storageKey})`);
-                await prismadb_1.default.databaseBackup.update({
-                    where: { id: b.id },
-                    data: { status: "CORRUPTED", failureReason: "Object missing in cloud storage" },
-                });
+        // Check for DB records pointing to missing cloud artifacts only if listing returned items
+        if (cloudObjects.length > 0) {
+            for (const b of dbBackups) {
+                if (b.storageKey && !cloudKeys.has(b.storageKey)) {
+                    console.warn(`[Reconciliation] Missing cloud artifact for DB backup: ${b.id} (${b.storageKey})`);
+                    await prismadb_1.default.databaseBackup.update({
+                        where: { id: b.id },
+                        data: { status: "CORRUPTED", failureReason: "Object missing in cloud storage" },
+                    });
+                }
             }
+        }
+        else {
+            console.log("[Reconciliation] Cloud storage listing returned 0 items or is restricted; skipping missing artifact check.");
         }
         // Check for orphaned cloud artifacts
         let orphanCount = 0;

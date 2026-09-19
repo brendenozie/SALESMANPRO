@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuthSession = exports.authOptions = void 0;
+exports.getAuthSession = exports.authOptions = exports.createAuthOptions = void 0;
 const prisma_adapter_1 = require("@next-auth/prisma-adapter");
 const next_1 = require("next-auth/next");
 const google_1 = __importDefault(require("next-auth/providers/google"));
@@ -133,6 +133,13 @@ async function findUserByLoginCode(loginCode) {
     });
     if (parent)
         return { user: parent.user, role: "PARENT" };
+    const staff = await prismadb_1.default.staffProfile.findUnique({
+        where: { loginCode },
+        include: { user: true },
+    });
+    if (staff && staff.user && staff.employmentStatus === "ACTIVE") {
+        return { user: staff.user, role: staff.user.role || "STAFF" };
+    }
     return null;
 }
 async function resolveHasTenantAccess(userId, role, companyId) {
@@ -210,7 +217,7 @@ function sessionUserFromDb(user) {
         hasTenantAccess: user.hasTenantAccess,
     };
 }
-const authOptions = (ctx = {}) => {
+const createAuthOptions = (ctx = {}) => {
     const requestCtx = typeof ctx === "string" ? { host: ctx } : ctx || {};
     const secret = getSharedSecret();
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
@@ -652,6 +659,8 @@ const authOptions = (ctx = {}) => {
         },
     };
 };
-exports.authOptions = authOptions;
-const getAuthSession = () => (0, next_1.getServerSession)((0, exports.authOptions)());
+exports.createAuthOptions = createAuthOptions;
+const defaultAuthOptions = (0, exports.createAuthOptions)();
+exports.authOptions = Object.assign((ctx) => (ctx ? (0, exports.createAuthOptions)(ctx) : defaultAuthOptions), defaultAuthOptions);
+const getAuthSession = () => (0, next_1.getServerSession)(exports.authOptions);
 exports.getAuthSession = getAuthSession;

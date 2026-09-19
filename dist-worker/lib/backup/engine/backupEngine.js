@@ -150,7 +150,12 @@ class BackupEngine {
             backupId,
             backupType,
             storageProvider: storageProvider.name,
-            storageBucket: process.env.BACKUP_S3_BUCKET || process.env.AWS_BUCKET_NAME,
+            storageBucket: storageProvider.bucket ||
+                process.env.BACKUP_S3_BUCKET ||
+                process.env.AWS_BUCKET_NAME ||
+                process.env.AS3_BUCKET_NAME ||
+                process.env.S3_BUCKET_NAME ||
+                "salesmanpro-backups",
             storageKey,
             sizeBytes: uploadResult.sizeBytes,
             checksum,

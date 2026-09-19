@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,6 +29,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEcommerceDashboardData = exports.isEcommerceRetailCategory = exports.ECOMMERCE_RETAIL_CATEGORIES = void 0;
 const cache_1 = require("@/lib/cache");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+const financeService = __importStar(require("@/lib/finance/financeService"));
 // Helper: start of day
 const getStartOfDay = (date) => {
     const newDate = new Date(date);
@@ -101,7 +125,7 @@ async function getEcommerceDashboardData(companyId, cachedCompany) {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         // Parallelize independent KPI counts and aggregations
-        const [newClients, totalClients, lowStock, communicationsToday, pendingOrders, pendingRequests, openTasksCount, overdueTasksCount, pendingTasksListRaw, recentOrdersRaw, activePromotionsRaw, customerOrderTodayAgg, completedOrdersToday, commissionAgg, monthlyAggOrders, agentSalesGroup, salesLast7DaysArr,] = await Promise.all([
+        const [newClients, totalClients, lowStock, communicationsToday, pendingOrders, pendingRequests, openTasksCount, overdueTasksCount, pendingTasksListRaw, recentOrdersRaw, activePromotionsRaw, customerOrderTodayAgg, completedOrdersToday, commissionAgg, monthlyAggOrders, agentSalesGroup, salesLast7DaysArr, pnlData, arData, apData,] = await Promise.all([
             prismadb_1.default.consumer.count({ where: { createdAt: { gte: todayStart }, companyId } }).catch(() => 0),
             prismadb_1.default.consumer.count({ where: { companyId } }).catch(() => 0),
             prismadb_1.default.inventoryItem.count({ where: { quantity: { lte: 5 }, companyId } }).catch(() => 0),
@@ -131,7 +155,7 @@ async function getEcommerceDashboardData(companyId, cachedCompany) {
                 select: { id: true, title: true, description: true, badgeText: true },
             }).catch(() => []),
             prismadb_1.default.customerOrder.aggregate({
-                where: { createdAt: { gte: todayStart }, companyId },
+                where: { createdAt: { gte: todayStart }, companyId, status: { notIn: ["CANCELLED", "FAILED"] } },
                 _sum: { totalFinalPrice: true },
                 _count: { id: true },
             }).catch(() => ({ _sum: { totalFinalPrice: 0 }, _count: { id: 0 } })),
@@ -143,7 +167,7 @@ async function getEcommerceDashboardData(companyId, cachedCompany) {
                 _sum: { commissionEarned: true },
             }).catch(() => ({ _sum: { commissionEarned: 0 } })),
             prismadb_1.default.customerOrder.aggregate({
-                where: { createdAt: { gte: monthStart }, companyId },
+                where: { createdAt: { gte: monthStart }, companyId, status: { notIn: ["CANCELLED", "FAILED"] } },
                 _sum: { totalFinalPrice: true },
             }).catch(() => ({ _sum: { totalFinalPrice: 0 } })),
             prismadb_1.default.clientInventoryLog.groupBy({
@@ -160,7 +184,7 @@ async function getEcommerceDashboardData(companyId, cachedCompany) {
                 const dayEnd = new Date(dayStart);
                 dayEnd.setHours(23, 59, 59, 999);
                 const orderDay = await prismadb_1.default.customerOrder.aggregate({
-                    where: { createdAt: { gte: dayStart, lte: dayEnd }, companyId },
+                    where: { createdAt: { gte: dayStart, lte: dayEnd }, companyId, status: { notIn: ["CANCELLED", "FAILED"] } },
                     _sum: { totalFinalPrice: true },
                 }).catch(() => ({ _sum: { totalFinalPrice: 0 } }));
                 return {
@@ -168,6 +192,9 @@ async function getEcommerceDashboardData(companyId, cachedCompany) {
                     total: orderDay._sum.totalFinalPrice || 0,
                 };
             })).then((data) => data.reverse()),
+            financeService.getIncomeStatement(companyId, { startDate: monthStart, endDate: now }).catch(() => null),
+            financeService.getAccountsReceivable(companyId).catch(() => null),
+            financeService.getAccountsPayable(companyId).catch(() => null),
         ]);
         const todaySales = customerOrderTodayAgg._sum.totalFinalPrice || 0;
         const totalOrdersToday = customerOrderTodayAgg._count.id || 0;
@@ -214,6 +241,15 @@ async function getEcommerceDashboardData(companyId, cachedCompany) {
             completedOrdersToday,
             averageOrderValueToday: Math.round(averageOrderValueToday * 100) / 100,
             totalRevenueMonth: Math.round(totalRevenueMonth * 100) / 100,
+            netRevenueMonth: pnlData?.revenue?.netRevenue ? Math.round(pnlData.revenue.netRevenue * 100) / 100 : Math.round(totalRevenueMonth * 100) / 100,
+            cogsMonth: pnlData?.cogs?.totalCOGS ? Math.round(pnlData.cogs.totalCOGS * 100) / 100 : 0,
+            grossProfitMonth: pnlData?.profitability?.grossProfit ? Math.round(pnlData.profitability.grossProfit * 100) / 100 : 0,
+            operatingExpensesMonth: pnlData?.profitability?.totalOperatingExpenses ? Math.round(pnlData.profitability.totalOperatingExpenses * 100) / 100 : 0,
+            netProfitMonth: pnlData?.profitability?.netProfit ? Math.round(pnlData.profitability.netProfit * 100) / 100 : 0,
+            accountsReceivableTotal: arData?.totalReceivables ? Math.round(arData.totalReceivables * 100) / 100 : 0,
+            accountsPayableTotal: apData?.totalPayables ? Math.round(apData.totalPayables * 100) / 100 : 0,
+            overdueInvoicesCount: arData?.unpaidInvoicesCount || 0,
+            pendingSupplierBillsCount: apData?.unpaidBillsCount || 0,
             monthlyTarget,
             monthlyTargetProgress: Math.round(monthlyTargetProgress),
             newClients,
