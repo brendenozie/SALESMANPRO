@@ -132,6 +132,14 @@ async function findUserByLoginCode(loginCode: string) {
   });
   if (parent) return { user: parent.user, role: "PARENT" };
 
+  const staff = await prisma.staffProfile.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (staff && staff.user && staff.employmentStatus === "ACTIVE") {
+    return { user: staff.user, role: staff.user.role || "STAFF" };
+  }
+
   return null;
 }
 

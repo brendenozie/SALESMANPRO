@@ -73,6 +73,9 @@ export const POST = withApiHandler(
         orderType: "SERVICE",
         source: incoming.source ?? "WEBSITE",
         paymentOption: incoming.paymentOption ?? "cod",
+        posSessionId: incoming.posSessionId,
+        operatorId: incoming.operatorId,
+        cashierName: incoming.cashierName,
         items: rawItems.map((item: any) => ({
           marketplaceListingId: item.marketplaceListingId ?? item.listingId,
           quantity: Number(item.quantity ?? 1),
@@ -106,6 +109,17 @@ export const POST = withApiHandler(
           channel: "SERVICE",
         },
       };
+
+      // Server-side enforcement: Services require identifiable customer details
+      if (!normalized.name || normalized.name.trim().toLowerCase() === "walk-in customer" && !normalized.phone) {
+        return response(
+          {
+            success: false,
+            error: "Customer required: Please select or create an identifiable customer before booking a service.",
+          },
+          400
+        );
+      }
 
       /**
        * --------------------------------------------------
@@ -149,6 +163,9 @@ export const POST = withApiHandler(
         notes: data.notes,
         trackingNumber: data.trackingNumber,
         idempotencyKey: data.idempotencyKey,
+        posSessionId: data.posSessionId,
+        operatorId: data.operatorId,
+        cashierName: data.cashierName,
         metadata: {
           ...(data.metadata ?? {}),
           appointment,

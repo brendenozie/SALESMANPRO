@@ -591,10 +591,14 @@ Commerce & Catalog Domain
 └── Cart / CartItem: Persistent server-side buyer shopping carts
 
 Orders & Fulfillment Domain
-├── CustomerOrder: Master commercial document (orderNumber, totals, status, paymentStatus, companyId)
+├── CustomerOrder: Master commercial document (orderNumber, totals, status, paymentStatus, posSessionId, operatorId, cashierName, companyId)
 ├── OrderItem: Line item snapshots (quantity, frozen unit price, unit costPrice)
 ├── Customer: Buyer profile, lifetime spend, loyalty points, contact history
 └── Delivery / ShippingAddress: Carrier tracking, dispatched timestamps, GPS coordinates
+
+POS & Session Management Domain
+├── PosSession: Physical terminal shifts, active cashier operator, opening/closing balance, aggregated sales and transaction counts
+└── StaffProfile / User: Scoped operator mapping via unique loginCode, cashier role attribution, rate-limited PIN verification
 
 Finance & Accounting Domain
 ├── Payment: Master payment record tied to a CustomerOrder
@@ -705,7 +709,11 @@ WhatsApp Worker                workers/whatsapp-worker.ts
 AI Studio & Generation         app/admin/ai/studio/page.tsx & lib/ai/queue/aiQueue.ts
 AI Credit Ledger               lib/ai/credits/creditService.ts
 Media Management & Upload      lib/media/queues.ts & workers/MediaJob.ts & app/admin/media/page.tsx
-POS Terminal System            app/pos/page.tsx & lib/pos/posService.ts
+POS StorePOS Register         app/admin/[slug]/storepos/ (StorePOSPageClient.tsx)
+POS ServicePOS Register       app/admin/[slug]/service-pos/ (AdminPOSClient.tsx)
+POS Components & UI           components/pos/ (POSOperatorModal, POSSessionHeader, POSCustomerSelector)
+POS Session & Customer Logic  lib/pos/ (posSessionService.ts, posCustomerService.ts)
+POS Backend APIs              app/api/pos/ (auth/login-code, session, session/end, customers)
 School Management System       app/school/* & lib/school/schoolService.ts
 Background Worker Supervisor   workers/ (Individual ts worker files)
 ```
@@ -764,6 +772,8 @@ graph TD
 | **Admin CRM Clients** | **CANONICAL** | `app/api/admin/clients/route.ts` | Multi-tenant client CRUD (GET, POST, PUT, DELETE) with MongoDB order aggregations. |
 | **Super Admin Root Console** | **CANONICAL** | `app/super-admin/layout.tsx` & `page.tsx` | Root platform operations console, telemetry aggregation, and subsystem routing. |
 | **Vertical Dashboards** | **CANONICAL** | `app/api/admin/dashboard/[vertical]/[slug]/route.ts` | Real-time vertical metric aggregators (SaaS, Coach, Logistics, E-commerce). |
+| **POS Operator Sessions** | **CANONICAL** | `lib/pos/posSessionService.ts` | **Mandatory:** POS shifts, terminal PIN authentication, shift handoffs, and sales aggregations. |
+| **POS Customer CRM Sync** | **CANONICAL** | `lib/pos/posCustomerService.ts` | **Mandatory:** In-POS customer search, creation, and deduplication synced to canonical `User` + `Client` + `Consumer`. |
 | **Legacy Order Scripts**| **DEPRECATED** | `scripts/old-order-import.ts` | Do not reuse or reference in new features. |
 
 ---

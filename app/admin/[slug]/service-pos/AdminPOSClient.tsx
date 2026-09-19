@@ -33,6 +33,9 @@ import {
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IStoreCategory, MarketListingForm } from '@/types/typings';
 import { Company } from '@prisma/client';
+import POSOperatorModal, { POSOperator } from '@/components/pos/POSOperatorModal';
+import POSSessionHeader, { POSSession } from '@/components/pos/POSSessionHeader';
+import POSCustomerSelector, { POSCustomer } from '@/components/pos/POSCustomerSelector';
 
 // --- Persistent State Hook ---
 function usePersistentState<T>(key: string, initial: T) {
@@ -157,9 +160,53 @@ const AdminServicePOSClient: React.FC<{
     
     // Client & session details
     const [clientDetails, setClientDetails] = useState({ name: '', email: '', phone: '' });
+    const [currentCustomer, setCurrentCustomer] = useState<POSCustomer | null>(null);
     const [serviceNotes, setServiceNotes] = useState('');
     const [selectedStaffId, setSelectedStaffId] = useState('');
     
+    // POS Session & Operator States
+    const [operator, setOperator] = useState<POSOperator | null>(null);
+    const [posSession, setPosSession] = useState<POSSession | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+
+    // Check for active POS session on load
+    useEffect(() => {
+        let isMounted = true;
+        const checkActiveSession = async () => {
+            try {
+                const res = await fetch(`/api/pos/session?companyId=${companyId}&terminalId=T01`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.session && isMounted) {
+                        setPosSession(data.session);
+                        if (data.session.operator) {
+                            setOperator(data.session.operator);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch active POS session:", err);
+            }
+        };
+        checkActiveSession();
+        return () => { isMounted = false; };
+    }, [companyId]);
+
+    const handleOperatorAuthenticated = (newOperator: POSOperator, newSession: POSSession) => {
+        setOperator(newOperator);
+        setPosSession(newSession);
+        setShowAuthModal(false);
+    };
+
+    const handleSessionEnded = () => {
+        setOperator(null);
+        setPosSession(null);
+        setCurrentCustomer(null);
+        setClientDetails({ name: '', email: '', phone: '' });
+        setCart([]);
+        setShowAuthModal(true);
+    };
+
     const [isLoading, setIsLoading] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -489,9 +536,9 @@ const AdminServicePOSClient: React.FC<{
 
     const handleProcessPayment = useCallback(() => {
       if (cart.length === 0) return alert('Cart is empty.');
-      if (!clientDetails.name) return alert("Please enter the customer's name.");
-    //   if (!selectedStaffId) return alert("Please assign a staff member to this service.");
-    // selectedStaffId
+      if (!currentCustomer && !clientDetails.name) {
+        return alert("Please select or create a customer. ServicePOS requires customer details for services and appointments.");
+      }
       
       setAmountReceived('');
       setTransactionRef('');
@@ -499,7 +546,7 @@ const AdminServicePOSClient: React.FC<{
       setIsSplit(false);
       setIsPending(false);
       setShowPaymentModal(true);
-    }, [cart.length, clientDetails.name,  finalTotal]);
+    }, [cart.length, currentCustomer, clientDetails.name, finalTotal]);
 
     // --- Complete Order & Sync Live Payload ---
     const finalizeSale = useCallback(async () => {
@@ -531,11 +578,14 @@ const AdminServicePOSClient: React.FC<{
                 body: JSON.stringify({
                     companyId: companyId,
                     billing: { 
-                        name: clientDetails.name,
-                        email: clientDetails.email || 'walk-in-customer@store.com',
-                        phone: clientDetails.phone || 'N/A',
+                        name: currentCustomer?.name || clientDetails.name,
+                        email: currentCustomer?.email || clientDetails.email || 'customer@store.com',
+                        phone: currentCustomer?.phone || clientDetails.phone || 'N/A',
                     },
-                    consumerId: userId || 'pos-service-agent',
+                    consumerId: currentCustomer?.id || (userId && userId !== 'null' ? userId : undefined),
+                    posSessionId: posSession?.id,
+                    operatorId: operator?.id || (userId && userId !== 'null' ? userId : undefined),
+                    cashierName: operator?.name || userName,
                     paymentOption: isPending ? 'credit' : (isSplit ? 'split' : selectedPaymentMethod), 
                     splitLedger: isSplit ? splits : undefined,
                     transactionReference: transactionRef || undefined,
@@ -569,8 +619,8 @@ const AdminServicePOSClient: React.FC<{
                 amountReceived: (!isSplit && selectedPaymentMethod === 'cash') ? (parseFloat(amountReceived) || finalTotal) : undefined,
                 changeDue: (!isSplit && selectedPaymentMethod === 'cash') ? changeDue : undefined,
                 transactionReference: transactionRef || undefined,
-                agentId: currentAgent?.id || 'N/A',
-                agentName: currentAgent?.name || 'N/A', 
+                agentId: operator?.id || currentAgent?.id || 'N/A',
+                agentName: operator?.name || currentAgent?.name || 'N/A', 
                 transactionId: result.data?.trackingNumber || `SRV-${Date.now()}`, 
                 date: now.toISOString().split('T')[0], 
                 time: now.toTimeString().split(' ')[0], 
@@ -578,9 +628,9 @@ const AdminServicePOSClient: React.FC<{
                 storeAddress: companyInfo?.address || 'Nairobi',
                 storePhone: companyInfo?.phone || 'Active',
                 currencySymbol,
-                clientName: clientDetails.name || undefined,
-                clientPhone: clientDetails.phone || undefined,
-                clientEmail: clientDetails.email || undefined,
+                clientName: currentCustomer?.name || clientDetails.name || undefined,
+                clientPhone: currentCustomer?.phone || clientDetails.phone || undefined,
+                clientEmail: currentCustomer?.email || clientDetails.email || undefined,
                 appointment: {
                     date: appointmentDate,
                     timeSlot: timeSlot,
@@ -592,9 +642,8 @@ const AdminServicePOSClient: React.FC<{
             const receiptHtml = generateReceiptHtml(receiptDetails);
             printReceipt(receiptHtml, receiptDetails);
 
-            // Complete Reset
+            // Reset items & checkout, preserve currentCustomer for reuse across session
             setCart([]);
-            setClientDetails({ name: '', email: '', phone: '' });
             setServiceNotes('');
             setSelectedStaffId('');
             setDiscountPercent(0);
@@ -606,7 +655,7 @@ const AdminServicePOSClient: React.FC<{
         } finally {
             setIsLoading(false);
         }
-    }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, apiBaseUrl, userId, currentAgent, companyInfo, currencySymbol, isSplit, isPending, splits, selectedPaymentMethod, amountReceived, changeDue, transactionRef, selectedStaffId, serviceNotes, appointmentDate, timeSlot, bookingMode, activeStaffName]);
+    }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, apiBaseUrl, userId, currentAgent, operator, posSession, currentCustomer, clientDetails, companyInfo, currencySymbol, isSplit, isPending, splits, selectedPaymentMethod, amountReceived, changeDue, transactionRef, selectedStaffId, serviceNotes, appointmentDate, timeSlot, bookingMode, activeStaffName]);
 
     const filteredServices = useMemo(() => {
         return products.filter(p => {
@@ -618,10 +667,18 @@ const AdminServicePOSClient: React.FC<{
     }, [products, searchTerm, selectedCategory]);
 
     return (
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden font-sans text-gray-900 dark:text-gray-100 selection:bg-teal-200 dark:selection:bg-teal-900">
-            
-            {/* --- Main Catalog Grid --- */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden w-full relative z-10">
+        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden font-sans text-gray-900 dark:text-gray-100 selection:bg-teal-200 dark:selection:bg-teal-900">
+            {/* POS SESSION OPERATOR HEADER */}
+            <POSSessionHeader
+                companyId={companyId}
+                operator={operator}
+                posSession={posSession}
+                onEndSession={handleSessionEnded}
+            />
+
+            <div className="flex flex-1 overflow-hidden w-full relative">
+                {/* --- Main Catalog Grid --- */}
+                <div className="flex-1 flex flex-col h-full overflow-hidden w-full relative z-10">
                 
                 {/* Header */}
                 <header className="px-4 py-5 md:px-6 md:py-6 shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl z-20">
@@ -791,38 +848,23 @@ const AdminServicePOSClient: React.FC<{
                             <div className="flex-1 overflow-y-auto p-4 md:p-5 custom-scrollbar flex flex-col gap-4">
                                 <div className="space-y-3 bg-gray-50 dark:bg-gray-800/40 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800/80">
                                     <div className="text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">1. Customer Details</div>
-                                    <div className="relative">
-                                        <UserCircleIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                        <input 
-                                            placeholder="Customer Name (Required)" 
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold focus:ring-2 outline-none transition-all"
-                                            style={{ '--tw-ring-color': primaryColor } as any}
-                                            value={clientDetails.name}
-                                            onChange={e => setClientDetails({...clientDetails, name: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div className="relative">
-                                            <DevicePhoneMobileIcon className="absolute left-2.5 top-3 w-4 h-4 text-gray-400" />
-                                            <input 
-                                                placeholder="Phone Number" 
-                                                value={clientDetails.phone}
-                                                className="w-full pl-8 pr-2 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs font-medium outline-none focus:ring-2"
-                                                style={{ '--tw-ring-color': primaryColor } as any}
-                                                onChange={e => setClientDetails({...clientDetails, phone: e.target.value})}
-                                            />
-                                        </div>
-                                        <div className="relative">
-                                            <EnvelopeIcon className="absolute left-2.5 top-3 w-4 h-4 text-gray-400" />
-                                            <input 
-                                                placeholder="Email Address" 
-                                                value={clientDetails.email}
-                                                className="w-full pl-8 pr-2 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs font-medium outline-none focus:ring-2"
-                                                style={{ '--tw-ring-color': primaryColor } as any}
-                                                onChange={e => setClientDetails({...clientDetails, email: e.target.value})}
-                                            />
-                                        </div>
-                                    </div>
+                                    <POSCustomerSelector
+                                        companyId={companyId}
+                                        selectedCustomer={currentCustomer}
+                                        onSelectCustomer={(cust) => {
+                                            setCurrentCustomer(cust);
+                                            if (cust) {
+                                                setClientDetails({
+                                                    name: cust.name,
+                                                    email: cust.email || '',
+                                                    phone: cust.phone || '',
+                                                });
+                                            } else {
+                                                setClientDetails({ name: '', email: '', phone: '' });
+                                            }
+                                        }}
+                                        required={true}
+                                    />
 
                                     <div className="pt-2 border-t border-gray-200/60 dark:border-gray-700/50 space-y-2.5">
                                         <div className="text-[11px] font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">2. Service Setup</div>
@@ -1259,6 +1301,16 @@ const AdminServicePOSClient: React.FC<{
                     </div>
                 )}
             </AnimatePresence>
+            </div>
+
+            {/* POS OPERATOR AUTH MODAL */}
+            <POSOperatorModal
+                isOpen={showAuthModal}
+                companyId={companyId}
+                terminalId={posSession?.terminalId || "T01"}
+                storeName={companyInfo?.name || "ServicePOS"}
+                onSuccess={handleOperatorAuthenticated}
+            />
 
             <style>{`
                 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }

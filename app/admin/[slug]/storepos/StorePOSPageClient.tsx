@@ -23,6 +23,10 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
 import { Company } from '@prisma/client';
 import { receiptRenderer } from '@/lib/receipts/receiptRenderer';
+import POSOperatorModal, { POSOperatorInfo, POSSessionInfo } from '@/components/pos/POSOperatorModal';
+import POSSessionHeader from '@/components/pos/POSSessionHeader';
+import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
+import { POSCustomerRecord } from '@/lib/pos/posCustomerService';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api";
 
@@ -295,6 +299,50 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+
+  // POS Session & Operator State
+  const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
+  const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(true);
+
+  // POS Customer State
+  const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
+        const data = await res.json();
+        if (res.ok && data.success && data.data) {
+          setOperator(data.data.operator);
+          setPosSession({
+            id: data.data.id,
+            terminalId: data.data.terminalId,
+            status: data.data.status,
+            openedAt: data.data.openedAt,
+          });
+          setShowAuthModal(false);
+        }
+      } catch (err) {
+        console.error("Failed to check active POS session", err);
+      }
+    }
+    checkSession();
+  }, [companyId]);
+
+  const handleOperatorAuthenticated = (data: { operator: POSOperatorInfo; posSession: POSSessionInfo }) => {
+    setOperator(data.operator);
+    setPosSession(data.posSession);
+    setShowAuthModal(false);
+  };
+
+  const handleSessionEnded = () => {
+    setOperator(null);
+    setPosSession(null);
+    setCurrentCustomer(null);
+    setCart([]);
+    setShowAuthModal(true);
+  };
   
   // Variants Modal State
   const [variantModalProduct, setVariantModalProduct] = useState<MarketListingForm | null>(null);
@@ -546,18 +594,20 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     setPaymentStatus(null);
 
     const orderPayload = {
-      name: "Walk-in Customer",
-      email: "pos-customer@store.com",
-      phone: "0000000000",
-      consumerId: userId || 'pos-agent',
+      name: currentCustomer?.name || "Walk-in Customer",
+      email: currentCustomer?.email || "pos-customer@store.com",
+      phone: currentCustomer?.phone || "0000000000",
+      consumerId: currentCustomer?.id || userId || undefined,
       companyId: companyId,
+      posSessionId: posSession?.id || undefined,
+      operatorId: operator?.id || userId || undefined,
+      cashierName: operator?.name || userName || "Cashier",
       // Store 'split', 'pending', or the singular choice
       paymentOption: isPending ? "pending" : (isSplit ? "split" : splits[0].method),
       totalPrice: subtotal,
       totalFinalPrice: finalTotal,
       customerPin: customerPin ? customerPin.trim() : undefined,
-      terminalId: "T01",
-      cashierName: currentAgent?.name || userName || "Cashier",
+      terminalId: posSession?.terminalId || "T01",
       items: cart.map(item => ({
         marketplaceListingId: item.id,
         quantity: item.quantity,
@@ -567,10 +617,10 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         selectedOptions: item.selectedOptions || null,
       })),
       paymentData: {
-        notes: `POS Sale by ${currentAgent?.name} ${isPending ? '[CREDIT/PENDING]' : ''}`,
+        notes: `POS Sale by ${operator?.name || userName} ${isPending ? '[CREDIT/PENDING]' : ''}`,
         discountApplied: totalDiscountAmount,
         customerPin: customerPin ? customerPin.trim() : undefined,
-        cashierName: currentAgent?.name || userName || "Cashier",
+        cashierName: operator?.name || userName || "Cashier",
         paymentMethodDetails: isPending ? "PENDING/CREDIT" : (isSplit ? "SPLIT BILL" : splits[0].method.toUpperCase()),
         paymentBreakdown: isPending ? [] : splits,
       }
@@ -726,6 +776,14 @@ const handleProcessPayment = useCallback(() => {
     <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300">
       <InlineStyles />
 
+      {/* POS SESSION OPERATOR HEADER */}
+      <POSSessionHeader
+        companyId={companyId}
+        operator={operator}
+        posSession={posSession}
+        onEndSession={handleSessionEnded}
+      />
+
       {/* TOP NAVIGATION BAR */}
       <nav className="sticky top-0 z-30 glass-panel h-16 px-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
@@ -823,13 +881,23 @@ const handleProcessPayment = useCallback(() => {
         {/* RIGHT: CART SYSTEM */}
         <div className="hidden lg:flex lg:col-span-4 flex-col glass-panel rounded-[2rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl">
           <div className="p-6 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-black flex items-center gap-2">
                 Current Order <span className="bg-indigo-600 text-[10px] text-white px-2 py-0.5 rounded-full">{cart.length}</span>
               </h2>
               <button onClick={handleClearCart} className="text-xs font-bold text-zinc-400 hover:text-red-500 transition-colors uppercase tracking-widest">
                 Reset
               </button>
+            </div>
+
+            {/* POS CUSTOMER SELECTOR */}
+            <div className="mb-4">
+              <POSCustomerSelector
+                companyId={companyId}
+                selectedCustomer={currentCustomer}
+                onSelectCustomer={setCurrentCustomer}
+                required={false}
+              />
             </div>
 
             {/* CART ITEMS */}
@@ -1032,6 +1100,16 @@ const handleProcessPayment = useCallback(() => {
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
+            </div>
+
+            {/* POS CUSTOMER SELECTOR (MOBILE) */}
+            <div className="p-4 border-b border-zinc-100 dark:border-zinc-900">
+              <POSCustomerSelector
+                companyId={companyId}
+                selectedCustomer={currentCustomer}
+                onSelectCustomer={setCurrentCustomer}
+                required={false}
+              />
             </div>
 
             {/* Scrollable Items */}
@@ -1365,6 +1443,14 @@ const handleProcessPayment = useCallback(() => {
               </div>
             </div>
           )}
+      {/* POS OPERATOR AUTH MODAL */}
+      <POSOperatorModal
+        isOpen={showAuthModal}
+        companyId={companyId}
+        terminalId={posSession?.terminalId || "T01"}
+        storeName={companyInfo?.name || "StorePOS"}
+        onSuccess={handleOperatorAuthenticated}
+      />
     </div>
   );
 };

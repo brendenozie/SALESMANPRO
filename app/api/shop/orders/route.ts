@@ -103,6 +103,9 @@ export const POST = withApiHandler(
         notes: data.notes,
         trackingNumber: data.trackingNumber,
         idempotencyKey: data.idempotencyKey,
+        posSessionId: data.posSessionId,
+        operatorId: data.operatorId,
+        cashierName: data.cashierName,
         metadata: {
           ...(data.metadata ?? {}),
           channel: "SHOP",

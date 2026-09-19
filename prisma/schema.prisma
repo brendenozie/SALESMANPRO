@@ -536,6 +536,7 @@ model Company {
   socialPosts            SocialMediaPost[]
   socialPublications     SocialPublication[]
   socialBrandProfile     SocialBrandProfile?
+  posSessions            PosSession[]
 
   @@index([userId])
   @@index([name])
@@ -2967,6 +2968,8 @@ model User {
   assignedDeliveries            Delivery[]             @relation("RiderDeliveries")
   assignedWhatsAppConversations WhatsAppConversation[] @relation("WhatsAppConversationAssignee")
   aiReviewedOrders              CustomerOrder[]        @relation("AIOrderReviewer")
+  operatorSessions              PosSession[]           @relation("OperatorSessions")
+  operatedOrders                CustomerOrder[]        @relation("OrderOperator")
 
   Video Video[]
 
@@ -4188,6 +4191,13 @@ model CustomerOrder {
   etimsInvoices     ETIMSInvoice[]
   invoices          Invoice[]
 
+  // POS Session & Operator Attribution
+  posSessionId      String?        @db.ObjectId
+  posSession        PosSession?    @relation("SessionOrders", fields: [posSessionId], references: [id])
+  operatorId        String?        @db.ObjectId
+  operator          User?          @relation("OrderOperator", fields: [operatorId], references: [id])
+  cashierName       String?
+
   // ============================================================
   // INDEXES
   // ============================================================
@@ -4214,6 +4224,8 @@ model CustomerOrder {
   @@index([trackingNumber])
   @@index([transactionReference])
   @@index([phone])
+  @@index([posSessionId])
+  @@index([operatorId])
 }
 
 model OrderItem {
@@ -6881,7 +6893,8 @@ model StaffProfile {
   sickLeaveRemaining   Int @default(10)
 
   // Relations
-  backupFor LeaveRequest[] @relation("BackupCoverage")
+  backupFor   LeaveRequest[] @relation("BackupCoverage")
+  posSessions PosSession[]
 
   @@index([companyId])
   @@index([jobTitle])
@@ -11571,3 +11584,36 @@ model MonitoringExternalServiceCheck {
 
   @@unique([serviceName])
 }
+
+enum PosSessionStatus {
+  OPEN
+  CLOSED
+}
+
+model PosSession {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String            @db.ObjectId
+  company           Company           @relation(fields: [companyId], references: [id])
+  operatorId        String            @db.ObjectId
+  operator          User              @relation("OperatorSessions", fields: [operatorId], references: [id])
+  staffProfileId    String?           @db.ObjectId
+  staffProfile      StaffProfile?     @relation(fields: [staffProfileId], references: [id])
+  terminalId        String            @default("T01")
+  status            PosSessionStatus  @default(OPEN)
+  openedAt          DateTime          @default(now())
+  closedAt          DateTime?
+  openingBalance    Float             @default(0)
+  closingBalance    Float?
+  totalSales        Float             @default(0)
+  totalTransactions Int               @default(0)
+  notes             String?
+  orders            CustomerOrder[]   @relation("SessionOrders")
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([companyId, status])
+  @@index([operatorId])
+  @@index([terminalId])
+}
+

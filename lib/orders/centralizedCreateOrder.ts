@@ -82,6 +82,9 @@ export interface CreateOrderInput {
   deliveryInstructions?: string | null;
   externalReference?: string | null;
   idempotencyKey?: string | null;
+  posSessionId?: string | null;
+  operatorId?: string | null;
+  cashierName?: string | null;
   metadata?: Record<string, unknown>;
   totalPrice?: number;
   totalFinalPrice?: number;
@@ -295,6 +298,9 @@ export async function createOrder(
           totalShipping: pricing.shipping,
           totalFinalPrice: pricing.total,
           idempotencyKey: input.idempotencyKey ?? undefined,
+          posSessionId: input.posSessionId ?? undefined,
+          operatorId: input.operatorId ?? undefined,
+          cashierName: input.cashierName ?? undefined,
           items: {
             create: pricing.items.map((pItem) => {
               const origItem = input.items.find(
@@ -328,6 +334,17 @@ export async function createOrder(
           items: true,
         },
       });
+
+      // Increment POS session stats if order is linked to a session
+      if (input.posSessionId) {
+        await tx.posSession.update({
+          where: { id: input.posSessionId },
+          data: {
+            totalSales: { increment: pricing.total },
+            totalTransactions: { increment: 1 },
+          },
+        }).catch(() => null);
+      }
 
       // Stock Decrement Loop with Atomic Concurrency Check
       for (const pItem of pricing.items) {
