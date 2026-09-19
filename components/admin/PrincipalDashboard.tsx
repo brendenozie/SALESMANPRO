@@ -2,6 +2,7 @@
 
 import React from 'react';
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { 
   UsersIcon, BriefcaseIcon, BookOpenIcon, CalendarDaysIcon, 
   StarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, RocketLaunchIcon, 
@@ -12,8 +13,9 @@ import {
 
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-export default function PrincipalDashboard({ data }: { data: any }) {
+export default function PrincipalDashboard({ data, adminSlug }: { data: any; adminSlug?: string }) {
   const safeData = data || {};
+  const currentSlug = adminSlug || safeData.adminSlug || safeData.companyId || "";
   const trendCategories = safeData.trendData?.categories || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   const trendSeries = safeData.trendData?.series || [
     { name: 'Academic Trend', data: [75, 80, 82, 85, 88, 90] },
@@ -123,10 +125,20 @@ export default function PrincipalDashboard({ data }: { data: any }) {
                 <RocketLaunchIcon className="h-5 w-5 text-blue-400" /> Admin Quick Links
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                {['Financials', 'Staffing', 'Exam Board', 'Reports'].map(link => (
-                  <button key={link} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-semibold text-left transition-all border border-white/5">
-                    {link}
-                  </button>
+                {[
+                  { label: "Financials", href: `/admin/${currentSlug}/fee` },
+                  { label: "Staffing", href: `/admin/${currentSlug}/staff-members` },
+                  { label: "Exam Board", href: `/admin/${currentSlug}/grading-report-card` },
+                  { label: "Reports", href: `/admin/${currentSlug}/school-reports` },
+                ].map(item => (
+                  <Link 
+                    key={item.label} 
+                    href={item.href}
+                    className="p-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-semibold text-left transition-all border border-white/5 flex items-center justify-between"
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-white/40 text-[10px]">→</span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -146,14 +158,18 @@ export default function PrincipalDashboard({ data }: { data: any }) {
                   <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">🎓</div>
                   <div>
                     <p className="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Student of the Week</p>
-                    <p className="font-bold text-slate-800">{spotlight.student}</p>
+                    <p className="font-bold text-slate-800">
+                      {spotlight.student && spotlight.student !== "TBD" ? spotlight.student : "Honor Roll Scholar"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">👨‍🏫</div>
                   <div>
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Teacher of the Week</p>
-                    <p className="font-bold text-slate-800">{spotlight.teacher}</p>
+                    <p className="font-bold text-slate-800">
+                      {spotlight.teacher && spotlight.teacher !== "TBD" ? spotlight.teacher : "Senior Faculty"}
+                    </p>
                   </div>
                 </div>
               </div>

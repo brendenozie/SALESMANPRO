@@ -2451,7 +2451,11 @@ export const getCategoryMenus = (
             href: `/admin/${adminSlug}/academic-years`,
             minTier: "Ghuba Starter",
           },
-          // { label: "Terms/Semesters", href: `/admin/${adminSlug}/terms` },
+          {
+            label: "Academic Terms",
+            href: `/admin/${adminSlug}/academic-terms`,
+            minTier: "Ghuba Starter",
+          },
           {
             label: "Departments",
             href: `/admin/${adminSlug}/departments`,
@@ -2534,6 +2538,38 @@ export const getCategoryMenus = (
           {
             label: "Grades & Report Card",
             href: `/admin/${adminSlug}/grading-report-card`,
+            minTier: "Ghuba Starter",
+          },
+        ],
+      },
+      {
+        label: "Early Learning & Play",
+        icon: PuzzlePieceIcon,
+        minTier: "Ghuba Starter",
+        subItems: [
+          {
+            label: "Drawing & Art",
+            href: `/admin/${adminSlug}/play/drawing`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Story Time",
+            href: `/admin/${adminSlug}/play/story-time`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Puzzle Play",
+            href: `/admin/${adminSlug}/play/puzzle-play`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Sing-Along",
+            href: `/admin/${adminSlug}/play/sing-along`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Make Friends",
+            href: `/admin/${adminSlug}/play/make-friends`,
             minTier: "Ghuba Starter",
           },
         ],
@@ -6966,14 +7002,23 @@ export const getCategoryMenus = (
     Teacher: filterTiers([
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
       {
-        label: "Assigned Classes",
-        href: `/admin/${adminSlug}/teacherclasslist`,
+        label: "My Classes & Students",
         icon: UsersIcon,
+        subItems: [
+          { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist` },
+          { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist` },
+          { label: "Student Roster", href: `/admin/${adminSlug}/teacherstudents` },
+          { label: "Course Materials", href: `/admin/${adminSlug}/teachermaterials` },
+        ],
       },
       {
-        label: "Assigned Subjects",
-        href: `/admin/${adminSlug}/teachersubjectlist`,
+        label: "Academic Work",
         icon: ClipboardDocumentListIcon,
+        subItems: [
+          { label: "Assignments & Submissions", href: `/admin/${adminSlug}/teacherassignments` },
+          { label: "Grades & Grading", href: `/admin/${adminSlug}/teachergrades` },
+          { label: "Attendance Register", href: `/admin/${adminSlug}/teacherattendance` },
+        ],
       },
       {
         label: "Schedule",
@@ -6990,27 +7035,6 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
       },
-      // {
-      //   label: "My Classes",
-      //   icon: ClipboardDocumentListIcon,
-      //   subItems: [
-      //     { label: "Class List", href: `/admin/${adminSlug}/teacherclasseslist` },
-      //     { label: "Assignments", href: `/admin/${adminSlug}/teacherassignments` },
-      //     { label: "Materials", href: `/admin/${adminSlug}/teachermaterials` },
-      //   ],
-      // },
-      // {
-      //   label: "Students",
-      //   icon: UsersIcon,
-      //   subItems: [
-      //     { label: "Student List", href: `/admin/${adminSlug}/teacherstudents` },
-      //     { label: "Grades & Feedback", href: `/admin/${adminSlug}/teachergrades` },
-      //     { label: "Attendance", href: `/admin/${adminSlug}/teacherattendance` },
-      //   ],
-      // },
-      // { label: "Schedule", href: `/admin/${adminSlug}/teacherschedule`, icon: CalendarIcon },
-      // { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-      // { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
     ]),
 
     Student: filterTiers([
@@ -7049,6 +7073,17 @@ export const getCategoryMenus = (
 
     Pupil: filterTiers([
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+      {
+        label: "Play & Activities",
+        icon: PuzzlePieceIcon,
+        subItems: [
+          { label: "Drawing & Art", href: `/admin/${adminSlug}/play/drawing` },
+          { label: "Story Time", href: `/admin/${adminSlug}/play/story-time` },
+          { label: "Puzzles", href: `/admin/${adminSlug}/play/puzzle-play` },
+          { label: "Sing-Along", href: `/admin/${adminSlug}/play/sing-along` },
+          { label: "Make Friends", href: `/admin/${adminSlug}/play/make-friends` },
+        ],
+      },
       {
         label: "My Classes",
         href: `/admin/${adminSlug}/studentclasses`,
@@ -7106,27 +7141,50 @@ export const getCategoryMenus = (
     "School Head": filterTiers([
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
       {
-        label: "Management",
-        icon: ClipboardDocumentListIcon,
+        label: "Academics & Classes",
+        icon: AcademicCapIcon,
+        subItems: [
+          { label: "Classrooms", href: `/admin/${adminSlug}/classrooms` },
+          { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },
+          { label: "Academic Years", href: `/admin/${adminSlug}/academic-years` },
+          { label: "Academic Terms", href: `/admin/${adminSlug}/academic-terms` },
+          { label: "Courses", href: `/admin/${adminSlug}/courses` },
+          { label: "Timetable / Schedule", href: `/admin/${adminSlug}/lessons` },
+        ],
+      },
+      {
+        label: "Faculty & Students",
+        icon: UsersIcon,
         subItems: [
           { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
           { label: "Students", href: `/admin/${adminSlug}/students` },
-          { label: "Classes", href: `/admin/${adminSlug}/classes` },
+          { label: "Parents", href: `/admin/${adminSlug}/parents` },
+          { label: "Staff Members", href: `/admin/${adminSlug}/staff-members` },
+        ],
+      },
+      {
+        label: "Exams & Grading",
+        icon: ClipboardDocumentListIcon,
+        subItems: [
+          { label: "Exams", href: `/admin/${adminSlug}/exams` },
+          { label: "Report Cards & Transcripts", href: `/admin/${adminSlug}/grading-report-card` },
+          { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
+        ],
+      },
+      {
+        label: "Operations & Finance",
+        icon: BanknotesIcon,
+        subItems: [
+          { label: "Fee Management", href: `/admin/${adminSlug}/fee` },
+          { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+          { label: "Events", href: `/admin/${adminSlug}/school-events` },
+          { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
         ],
       },
       {
         label: "Reports",
+        href: `/admin/${adminSlug}/school-reports`,
         icon: ChartBarIcon,
-        subItems: [
-          {
-            label: "Attendance Report",
-            href: `/admin/${adminSlug}/reports/attendance`,
-          },
-          {
-            label: "Performance",
-            href: `/admin/${adminSlug}/reports/performance`,
-          },
-        ],
       },
       {
         label: "Messages",
@@ -7143,27 +7201,43 @@ export const getCategoryMenus = (
     "Head Teacher": filterTiers([
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
       {
-        label: "Management",
-        icon: ClipboardDocumentListIcon,
+        label: "Academics & Classes",
+        icon: AcademicCapIcon,
         subItems: [
-          { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
-          { label: "Students", href: `/admin/${adminSlug}/students` },
-          { label: "Classes", href: `/admin/${adminSlug}/classes` },
+          { label: "Classrooms", href: `/admin/${adminSlug}/classrooms` },
+          { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },
+          { label: "Courses", href: `/admin/${adminSlug}/courses` },
+          { label: "Course Materials", href: `/admin/${adminSlug}/course-materials` },
+          { label: "Timetable / Lessons", href: `/admin/${adminSlug}/lessons` },
         ],
       },
       {
-        label: "Reports",
-        icon: ChartBarIcon,
+        label: "Faculty & Students",
+        icon: UsersIcon,
         subItems: [
-          {
-            label: "Attendance Report",
-            href: `/admin/${adminSlug}/reports/attendance`,
-          },
-          {
-            label: "Performance",
-            href: `/admin/${adminSlug}/reports/performance`,
-          },
+          { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
+          { label: "Students", href: `/admin/${adminSlug}/students` },
+          { label: "Parents", href: `/admin/${adminSlug}/parents` },
         ],
+      },
+      {
+        label: "Exams & Grading",
+        icon: ClipboardDocumentListIcon,
+        subItems: [
+          { label: "Exams", href: `/admin/${adminSlug}/exams` },
+          { label: "Report Cards & Transcripts", href: `/admin/${adminSlug}/grading-report-card` },
+          { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
+        ],
+      },
+      {
+        label: "Attendance",
+        href: `/admin/${adminSlug}/attendance`,
+        icon: ClipboardDocumentCheckIcon,
+      },
+      {
+        label: "Reports",
+        href: `/admin/${adminSlug}/school-reports`,
+        icon: ChartBarIcon,
       },
       {
         label: "Messages",

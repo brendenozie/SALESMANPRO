@@ -160,24 +160,26 @@ function getFallbackDashboardData(type: 'student' | 'principal' | 'tutor' | 'par
         { label: 'Exam Timetables', href: `/admin/fallback-company-id/events` },
         { label: 'School Announcements', href: `/admin/fallback-company-id/messages` },
       ],
+      spotlight: {
+        student: 'Honor Roll Scholar',
+        teacher: 'Senior Faculty'
+      },
+      trendData: {
+        series: [
+          { name: "Academic Excellence (Avg %)", data: [80, 82, 85, 84, 88, 90] },
+          { name: "Teacher Effectiveness (Weighted %)", data: [88, 89, 90, 92, 91, 94] }
+        ],
+        categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+      },
+      impactReport: [
+        { courseName: "Core Curriculum", change: 3.5, currentAvg: 88, keyExam: "Continuous Assessment" },
+        { courseName: "STEM Programs", change: 2.1, currentAvg: 84, keyExam: "Practical Lab" }
+      ],
       announcements: [
-        { id: 1, text: '📢 Midterm exams begin next Monday.', type: 'info' },
-        { id: 2, text: '🧪 Science fair projects due Friday. Submit early!', type: 'warning' },
-        { id: 3, text: '📌 New cafeteria schedule published. Check details.', type: 'info' },
+        { id: 1, text: '📢 Term curriculum schedule published.', type: 'info' },
+        { id: 2, text: '🧪 Science and arts exhibition on Friday.', type: 'warning' },
       ],
-      recentStaffMessages: [
-        { id: 'mock1', name: 'Mrs. Owino', message: 'Submitted report on 10A performance.', time: '10:30 AM' },
-        { id: 'mock2', name: 'Mr. Kiptoo', message: 'Requesting projector for staff meeting.', time: 'Yesterday' },
-        { id: 'mock3', name: 'Ms. Cherono', message: 'New student registration complete.', time: '2 hours ago' },
-      ],
-      performanceOverviewData: {
-        series: [{ name: "Student Performance", data: [85, 88, 90, 87, 89, 91, 92] }, { name: "Teacher Effectiveness", data: [78, 80, 82, 85, 83, 86, 88] }],
-        categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-      },
-      attendanceInsightsData: {
-        series: [45, 30, 15, 10],
-        labels: ["Students", "Teachers", "Staff", "Other"],
-      },
+      recentStaffMessages: [],
     };
   }
   // Tutor
@@ -468,7 +470,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
             cookiesHeader
           );
 
-          if (res.ok) {
+          if (res && res.ok) {
             const responseJson = await res.json();
             const data = responseJson.data;
             
@@ -609,7 +611,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
           isLoading = false;
 
-          if (res.ok) {
+          if (res && res.ok) {
             const jsonResponse =( await res.json());
             
             // console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
@@ -646,7 +648,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
               // });
             }
           } else {
-            error = `Principal API Error: ${res.status} ${res.statusText}`;
+            error = `Principal API Error: ${res ? `${res.status} ${res.statusText}` : 'Network Failure'}`;
             logError(error);
             principalDashboardData = getFallbackDashboardData('principal');
           }
@@ -660,10 +662,8 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         // if (error) return <ErrorDashboard error={error} />;
         return (
           <PrincipalDashboard
-            // {...principalDashboardData}
             data={principalDashboardData}
-            // companyId={companyId}
-            // currentUserId={currentUserId}
+            adminSlug={slug}
           />
         );
       } else {
@@ -676,12 +676,12 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
             cookiesHeader
           );
           isLoading = false;
-          if (res.ok) {
+          if (res && res.ok) {
             let resData = await res.json();
             // console.log("[AdminDashboardPage] Raw Tutor API response:", resData);
             tutorDashboardData = resData.data; // Assuming API returns { data: { ...tutorDashboardData } }
           } else {
-            error = `Failed to fetch tutor dashboard data: ${res.statusText}`;
+            error = `Failed to fetch tutor dashboard data: ${res ? res.statusText : 'Network Error'}`;
             logError(error);
             tutorDashboardData = getFallbackDashboardData('tutor');
           }
