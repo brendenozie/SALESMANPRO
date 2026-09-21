@@ -54,9 +54,9 @@ async function getDepartments(request: Request) {
     updatedAt: d.updatedAt,
   }));
 
-  try { await cacheSet(cacheKey, { data: response }, 300); } catch (e) {}
+  try { await cacheSet(cacheKey, response, 300); } catch (e) {}
   
-  return formatResponse(true, { data: response }, null, 200);
+  return formatResponse(true, response, "Departments fetched successfully", 200);
 }
 
 // --- POST /api/departments ---
@@ -75,12 +75,12 @@ async function createDepartment(request: Request) {
       data: parsed.data,
     });
 
-    
     try {
       await cacheDel(`tenant:${parsed.data.companyId}:departments:*`);
       await cacheDel(`admin:departments:*`);
     } catch (e) {}
-    return formatResponse(true, { data: newDepartment }, null, 201);
+
+    return formatResponse(true, newDepartment, "Department created successfully", 201);
   } catch (error: any) {
     if (error.code === "P2002" && error.meta?.target?.includes("name")) {
       return formatResponse(false, null, "A department with this name already exists.", 409);

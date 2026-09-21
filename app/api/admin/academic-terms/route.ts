@@ -88,15 +88,42 @@ export const POST = withApiHandler(
       );
     }
 
-    const { name, startDate, endDate, termNumber, academicYearId } = body;
+    let { name, startDate, endDate, termNumber, academicYearId } = body;
 
-    if (!name || !startDate || !endDate || !termNumber || !academicYearId) {
+    if (!name || !startDate || !endDate) {
       return formatResponse(
         false,
         null,
-        "Missing required payload fields: name, startDate, endDate, termNumber, academicYearId",
+        "Missing required payload fields: name, startDate, endDate",
         400,
       );
+    }
+
+    if (!academicYearId) {
+      const activeYear = await prisma.academicYear.findFirst({
+        where: { companyId, isActive: true },
+        select: { id: true },
+      }) || await prisma.academicYear.findFirst({
+        where: { companyId },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      });
+
+      if (activeYear) {
+        academicYearId = activeYear.id;
+      } else {
+        const currentYear = new Date().getFullYear();
+        const createdYear = await prisma.academicYear.create({
+          data: {
+            name: `Academic Year ${currentYear}/${currentYear + 1}`,
+            yearStart: new Date(`${currentYear}-01-01`),
+            yearEnd: new Date(`${currentYear}-12-31`),
+            companyId,
+            isActive: true,
+          },
+        });
+        academicYearId = createdYear.id;
+      }
     }
 
     // Tenant boundary: verify academic year belongs to this company
@@ -114,12 +141,14 @@ export const POST = withApiHandler(
       );
     }
 
+    const effectiveTermNumber = termNumber ? parseInt(String(termNumber), 10) : 1;
+
     const newTerm = await prisma.term.create({
       data: {
         name,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        termNumber: parseInt(String(termNumber), 10),
+        termNumber: effectiveTermNumber,
         academicYearId,
         companyId,
         isActive: false,

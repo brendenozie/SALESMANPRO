@@ -23,6 +23,7 @@ import {
 
 import CourseFormModal from './CourseFormModal'; // Import the new modal component
 import { useRouter } from 'next/navigation';
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -125,47 +126,35 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     setIsLoading(true);
     setError(null);
     try {
-      const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`);
-      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
-      const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const [coursesRes, educatorsRes, departmentsRes, academicLevelsRes] = await Promise.all([
+        clientFetchJson<CourseType[]>(`/api/admin/courses?companyId=${encodeURIComponent(companyId)}`),
+        clientFetchJson<any[]>(`/api/admin/educators?companyId=${encodeURIComponent(companyId)}`),
+        clientFetchJson<DepartmentOption[]>(`/api/admin/departments?companyId=${encodeURIComponent(companyId)}`),
+        clientFetchJson<AcademicLevelOption[]>(`/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`),
+      ]);
 
-      if (coursesRes.ok) {
-        const data: CourseType[] = (await coursesRes.json()).data;
-        
-        setCourses(data);
+      if (coursesRes.success && Array.isArray(coursesRes.data)) {
+        setCourses(coursesRes.data);
       } else {
-        const errorData = await coursesRes.json();
-        setError(errorData.message || "Failed to fetch courses.");
+        setError(coursesRes.message || "Failed to fetch courses.");
         setCourses(initialCourses);
       }
 
-      if (educatorsRes.ok) {
-        const fetchedEducators = (await educatorsRes.json()).data.data as any[];
-        setEducators(fetchedEducators.map(e => ({ id: e.id, name: e.name, email: e.email })));
+      if (educatorsRes.success && Array.isArray(educatorsRes.data)) {
+        setEducators(educatorsRes.data.map((e: any) => ({ id: e.id, name: e.name, email: e.email })));
       } else {
-        const errorData = await educatorsRes.json();
-        setError(errorData.message || "Failed to fetch educators.");
         setEducators(allEducators);
       }
 
-      if (departmentsRes.ok) {
-        const data: DepartmentOption[] = (await departmentsRes.json()).data.data;
-        
-        setDepartments(data);
+      if (departmentsRes.success && Array.isArray(departmentsRes.data)) {
+        setDepartments(departmentsRes.data);
       } else {
-        const errorData = await departmentsRes.json();
-        setError(errorData.message || "Failed to fetch departments.");
         setDepartments(allDepartments);
       }
 
-      if (academicLevelsRes.ok) {
-        const data: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
-        
-        setAcademicLevels(data);
+      if (academicLevelsRes.success && Array.isArray(academicLevelsRes.data)) {
+        setAcademicLevels(academicLevelsRes.data);
       } else {
-        const errorData = await academicLevelsRes.json();
-        setError(errorData.message || "Failed to fetch academic levels.");
         setAcademicLevels(allAcademicLevels);
       }
 
@@ -178,7 +167,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId, initialCourses, allEducators, allDepartments, allAcademicLevels]);
+  }, [companyId, initialCourses, allEducators, allDepartments, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -222,19 +211,18 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
         // academicLevelIds and educatorIds will be handled by the backend
       };
 
-      const res = await fetch(url, {
+      const res = await clientFetchJson(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchCoursesAndDependencies(); // Re-fetch to get the latest data with calculated counts
         setShowFormModal(false);
         setEditingCourse(null);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} course.`);
+        setError(res.message || `Failed to ${method === 'POST' ? 'add' : 'update'} course.`);
       }
     } catch (err: any) {
       setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} course.`);
@@ -251,15 +239,14 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/courses/${courseId}`, {
+      const res = await clientFetchJson(`/api/admin/courses/${courseId}`, {
         method: 'DELETE',
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchCoursesAndDependencies();
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to delete course.");
+        setError(res.message || "Failed to delete course.");
       }
     } catch (err: any) {
       setError(err.message || "Network error deleting course.");

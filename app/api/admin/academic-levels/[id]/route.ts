@@ -1,109 +1,84 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import { cacheDel } from "@/lib/cache";
 
-export const GET = withApiHandler(async (req, context) => {
-  const { id } = context.params;
-  const { searchParams } = new URL(req.url);
-  const companyId = searchParams.get("companyId");
+export const PATCH = withApiHandler(
+  async (req, context) => {
+    const companyId = context.companyId;
+    const levelId = context.params?.id;
 
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID required", 400);
-  }
+    if (!levelId) {
+      return formatResponse(false, null, "Level ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(false, null, "Authorized company context required", 403);
+    }
 
-  // FIX: Separate unique cache key for item vs list
-  const cacheKey = `admin:academic-levels:${companyId}:id:${id}`;
+    const body = await req.json().catch(() => null);
+    if (!body) {
+      return formatResponse(false, null, "Invalid JSON payload", 400);
+    }
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    const existing = await prisma.academicLevel.findFirst({
+      where: { id: levelId, companyId },
+      select: { id: true },
+    });
 
-  const academicLevel = await prisma.academicLevel.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      sortOrder: true,
-      companyId: true, // Essential to verify ownership context
-    },
-  });
+    if (!existing) {
+      return formatResponse(false, null, "Academic level not found in this company", 404);
+    }
 
-  if (!academicLevel || academicLevel.companyId !== companyId) {
-    return formatResponse(false, null, "Not found", 404);
-  }
+    const updated = await prisma.academicLevel.update({
+      where: { id: levelId },
+      data: {
+        name: body.name !== undefined ? body.name : undefined,
+        description: body.description !== undefined ? body.description : undefined,
+        sortOrder: body.sortOrder !== undefined ? Number(body.sortOrder) : undefined,
+      },
+    });
 
-  try {
-    await cacheSet(cacheKey, academicLevel, 60);
-  } catch (e) {}
+    try {
+      await cacheDel(`tenant:${companyId}:academic-levels:*`);
+      await cacheDel(`admin:academic-levels:*`);
+    } catch {}
 
-  const response = formatResponse(true, academicLevel, "Fetched", 200);
-  response.headers.set(
-    "Cache-Control",
-    "private, s-maxage=60, stale-while-revalidate=30",
-  );
+    return formatResponse(true, updated, "Academic level updated successfully", 200);
+  },
+  { requireAuth: true, requireTenant: true }
+);
 
-  return response;
-});
+export const DELETE = withApiHandler(
+  async (_req, context) => {
+    const companyId = context.companyId;
+    const levelId = context.params?.id;
 
-export const PATCH = withApiHandler(async (request, context) => {
-  const { id } = context.params;
-  const body = await request.json();
-  const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+    if (!levelId) {
+      return formatResponse(false, null, "Level ID is required", 400);
+    }
+    if (!companyId) {
+      return formatResponse(false, null, "Authorized company context required", 403);
+    }
 
-  if (!companyId)
-    return formatResponse(false, null, "Company ID required", 400);
-  if (!body.name) return formatResponse(false, null, "Name is required", 400);
+    const existing = await prisma.academicLevel.findFirst({
+      where: { id: levelId, companyId },
+      select: { id: true },
+    });
 
-  // FIX: Force both id and companyId matching to avoid cross-tenant mutations
-  const updated = await prisma.academicLevel.update({
-    where: {
-      id,
-      companyId: companyId, // No '|| undefined'
-    },
-    data: {
-      name: body.name,
-      description: body.description,
-      sortOrder: body.sortOrder,
-    },
-  });
+    if (!existing) {
+      return formatResponse(false, null, "Academic level not found in this company", 404);
+    }
 
-  // Purge both list and item cache explicitly
-  try {
-    await cacheDel(`tenant:${companyId}:academic-levels:*`);
-    await cacheDel(`tenant:${companyId}:academic-levels:*`);
-    await cacheDel(`admin:academic-levels:*`);
-    await cacheDel(`admin:academic-levels:${companyId}:id:${id}`);
-  } catch (e) {}
+    const deleted = await prisma.academicLevel.delete({
+      where: { id: levelId },
+    });
 
-  return formatResponse(true, updated, "Updated", 200);
-});
+    try {
+      await cacheDel(`tenant:${companyId}:academic-levels:*`);
+      await cacheDel(`admin:academic-levels:*`);
+    } catch {}
 
-export const DELETE = withApiHandler(async (request, context) => {
-  const { id } = context.params;
-  const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
-
-  if (!companyId)
-    return formatResponse(false, null, "Company ID required", 400);
-
-  await prisma.academicLevel.delete({
-    where: {
-      id,
-      companyId: companyId,
-    },
-  });
-
-  try {
-    await cacheDel(`tenant:${companyId}:academic-levels:*`);
-    await cacheDel(`tenant:${companyId}:academic-levels:*`);
-    await cacheDel(`admin:academic-levels:*`);
-    await cacheDel(`admin:academic-levels:${companyId}:id:${id}`);
-  } catch (e) {}
-
-
-  return formatResponse(true, null, "Deleted", 200);
-});
+    return formatResponse(true, deleted, "Academic level deleted successfully", 200);
+  },
+  { requireAuth: true, requireTenant: true }
+);

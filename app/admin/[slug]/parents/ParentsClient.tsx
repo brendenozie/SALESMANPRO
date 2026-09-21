@@ -19,6 +19,7 @@ import {
 import { AcademicCapIcon } from '@heroicons/react/24/solid'; // Using solid for a stronger icon for overall parents
 
 import ParentFormModal from './ParentFormModal'; // Import the new modal component
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -64,26 +65,26 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
-      if (res.ok) {
-        const data: ParentType[] = (await res.json()).data;
-        setParents(data);
+      const res = await clientFetchJson<ParentType[]>(
+        `/api/admin/parents?companyId=${encodeURIComponent(companyId)}`
+      );
+      if (res.success && Array.isArray(res.data)) {
+        setParents(res.data);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch parents.");
-        setParents(initialParents); // Fallback to initial data on client-side fetch error
+        setError(res.message || "Failed to fetch parents.");
+        setParents(initialParents);
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching parents.");
-      setParents(initialParents); // Fallback to initial data on network error
+      setParents(initialParents);
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId, initialParents]);
+  }, [companyId, initialParents]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialParents.length === 0) {
+    if (!initialParents || initialParents.length === 0) {
       fetchParents();
     }
   }, [fetchParents, initialParents]);
@@ -107,27 +108,25 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
     setError(null);
     const method = parentData.id ? 'PATCH' : 'POST';
     try {
-      const url = parentData.id ? `${apiBaseUrl}/admin/parents/${parentData.id}` : `${apiBaseUrl}/admin/parents`;
+      const url = parentData.id ? `/api/admin/parents/${parentData.id}` : `/api/admin/parents`;
 
       const payload = {
         ...parentData,
         companyId: companyId, // Ensure companyId is always included for new parents
       };
 
-      const res = await fetch(url, {
+      const res = await clientFetchJson(url, {
         method: method,
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchParents(); // Re-fetch to get the latest data
         setShowFormModal(false);
         setEditingParent(null);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} parent.`);
+        setError(res.message || `Failed to ${method === 'POST' ? 'add' : 'update'} parent.`);
       }
     } catch (err: any) {
       setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} parent.`);
@@ -144,16 +143,14 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/parents/${parentId}`, {
-        credentials: 'include',
+      const res = await clientFetchJson(`/api/admin/parents/${parentId}`, {
         method: 'DELETE',
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchParents();
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to delete parent.");
+        setError(res.message || "Failed to delete parent.");
       }
     } catch (err: any) {
       setError(err.message || "Network error deleting parent.");

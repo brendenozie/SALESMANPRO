@@ -2543,33 +2543,43 @@ export const getCategoryMenus = (
         ],
       },
       {
-        label: "Early Learning & Play",
+        label: "Activities & Early Learning",
         icon: PuzzlePieceIcon,
         minTier: "Ghuba Starter",
         subItems: [
           {
+            label: "All Activities",
+            href: `/admin/${adminSlug}/activities`,
+            minTier: "Ghuba Starter",
+          },
+          {
             label: "Drawing & Art",
-            href: `/admin/${adminSlug}/play/drawing`,
+            href: `/admin/${adminSlug}/activities?type=drawing`,
             minTier: "Ghuba Starter",
           },
           {
             label: "Story Time",
-            href: `/admin/${adminSlug}/play/story-time`,
+            href: `/admin/${adminSlug}/activities?type=story-time`,
             minTier: "Ghuba Starter",
           },
           {
             label: "Puzzle Play",
-            href: `/admin/${adminSlug}/play/puzzle-play`,
+            href: `/admin/${adminSlug}/activities?type=puzzle-play`,
             minTier: "Ghuba Starter",
           },
           {
             label: "Sing-Along",
-            href: `/admin/${adminSlug}/play/sing-along`,
+            href: `/admin/${adminSlug}/activities?type=sing-along`,
             minTier: "Ghuba Starter",
           },
           {
             label: "Make Friends",
-            href: `/admin/${adminSlug}/play/make-friends`,
+            href: `/admin/${adminSlug}/activities?type=make-friends`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Pupil Play Mode",
+            href: `/admin/${adminSlug}/play/drawing`,
             minTier: "Ghuba Starter",
           },
         ],

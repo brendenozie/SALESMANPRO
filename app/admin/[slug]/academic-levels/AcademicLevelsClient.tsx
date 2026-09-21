@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import AcademicLevelFormModal from './AcademicLevelFormModal'; // Import the new modal component
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 // --- Type Definitions (matching API response) ---
 export type AcademicLevelType = {
@@ -50,26 +51,26 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
-      if (res.ok) {
-        const data: AcademicLevelType[] = await res.json();
-        setAcademicLevels(data.sort((a, b) => a.sortOrder - b.sortOrder)); // Ensure sorted by sortOrder
+      const response = await clientFetchJson<AcademicLevelType[]>(
+        `/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`
+      );
+      if (response.success && Array.isArray(response.data)) {
+        setAcademicLevels([...response.data].sort((a, b) => a.sortOrder - b.sortOrder));
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch academic levels.");
-        setAcademicLevels(initialAcademicLevels); // Fallback to initial data on client-side fetch error
+        setError(response.message || "Failed to fetch academic levels.");
+        setAcademicLevels(initialAcademicLevels);
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching academic levels.");
-      setAcademicLevels(initialAcademicLevels); // Fallback to initial data on network error
+      setAcademicLevels(initialAcademicLevels);
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId, initialAcademicLevels]);
+  }, [companyId, initialAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialAcademicLevels.length === 0) {
+    if (!initialAcademicLevels || initialAcademicLevels.length === 0) {
       fetchAcademicLevels();
     }
   }, [fetchAcademicLevels, initialAcademicLevels]);
@@ -92,27 +93,25 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     const method = academicLevelData.id ? 'PATCH' : 'POST';
 
     try {
-
-      const url = academicLevelData.id ? `${apiBaseUrl}/admin/academic-levels/${academicLevelData.id}` : `${apiBaseUrl}/admin/academic-levels`;
+      const url = academicLevelData.id ? `/api/admin/academic-levels/${academicLevelData.id}` : `/api/admin/academic-levels`;
 
       const payload = {
         ...academicLevelData,
         companyId: companyId, // Ensure companyId is always included
       };
 
-      const res = await fetch(url, {
+      const res = await clientFetchJson(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchAcademicLevels(); // Re-fetch to get the latest data
         setShowFormModal(false);
         setEditingAcademicLevel(null);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} academic level.`);
+        setError(res.message || `Failed to ${method === 'POST' ? 'add' : 'update'} academic level.`);
       }
     } catch (err: any) {
       setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} academic level.`);
@@ -129,15 +128,14 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/academic-levels/${academicLevelId}`, {
+      const res = await clientFetchJson(`/api/admin/academic-levels/${academicLevelId}`, {
         method: 'DELETE',
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchAcademicLevels();
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to delete academic level.");
+        setError(res.message || "Failed to delete academic level.");
       }
     } catch (err: any) {
       setError(err.message || "Network error deleting academic level.");

@@ -60,9 +60,9 @@ const formatStudentResponse = (student: any) => ({
   admissionNumber: student.admissionNumber,
   parentId: student.parentId,
   parentName: student.parent?.user?.name,
-  academicRecords: student.StudentAcademicLevel.map((sal: any) => ({
-    academicLevelId: sal.academicLevel.id,
-    academicLevelName: sal.academicLevel.name,
+  academicRecords: (student.StudentAcademicLevel || []).map((sal: any) => ({
+    academicLevelId: sal.academicLevel?.id || "",
+    academicLevelName: sal.academicLevel?.name || "Unassigned",
     classRoomId: sal.classRoom?.id || null,
     classRoomName: sal.classRoom?.name || null,
     year: sal.year,

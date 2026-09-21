@@ -146,6 +146,12 @@ function getFallbackDashboardData(type: 'student' | 'principal' | 'tutor' | 'par
       ],
     };
   }
+  if (type === 'parent') {
+    return {
+      stats: { totalChildren: 0, familyPendingTasks: 0, attendanceAlerts: 0 },
+      children: [],
+    };
+  }
   if (type === 'principal') {
     return {
       principalStats: [
@@ -420,25 +426,17 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       let studentDashboardData: any;
       try {
         isLoading = true;
-        const res = await fetch(
+        const res = await fetchServerInternal(
           `${apiBaseUrl}/admin/dashboard/student/${slug}?userId=${encodeURIComponent(currentUserId)}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+          cookiesHeader
         );
         isLoading = false;
-        if (res.ok) {
+        if (res && res.ok) {
           const data = (await res.json()).data;
             // console.log("[AdminDashboardPage] Raw Student API response:", data);
             studentDashboardData = data;
-          // const parsed = StudentDashboardSchema.safeParse(data);
-          // if (!parsed.success) {
-          //   error = 'Student dashboard data is invalid!';
-          //   logError(error, parsed.error);
-          //   studentDashboardData = getFallbackDashboardData('student');
-          // } else {
-          //   studentDashboardData = parsed.data;
-          // }
         } else {
-          error = `Failed to fetch student dashboard data: ${res.statusText}`;
+          error = `Failed to fetch student dashboard data: ${res?.statusText || 'Network Error'}`;
           logError(error);
           studentDashboardData = getFallbackDashboardData('student');
         }
@@ -514,7 +512,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
             // };
 
           } else {
-            error = `Failed to fetch parent dashboard: ${res.statusText}`;
+            error = `Failed to fetch parent dashboard: ${res?.statusText || 'Network Error'}`;
             logError(error);
             parentDashboardData = getFallbackDashboardData('parent');
           }

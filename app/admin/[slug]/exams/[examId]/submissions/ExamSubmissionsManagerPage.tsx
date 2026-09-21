@@ -14,8 +14,7 @@ import {
   XMarkIcon, // For closing modals/errors
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 // --- Type Definitions (Aligned with ExamSubmission API Response) ---
 export type ExamSubmissionData = {
@@ -197,15 +196,11 @@ const SubmissionDetailsViewModal: React.FC<SubmissionDetailsViewModalProps> = ({
       setIsLoadingQuestions(true);
       setQuestionsError(null);
       try {
-        const res = await fetch(`${apiBaseUrl}/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
-          next: { revalidate: 60 },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setQuestions(data.data.sort((a: any, b: any) => a.order - b.order));
+        const res = await clientFetchJson<any[]>(`/api/admin/exam-questions?examId=${encodeURIComponent(examDetails.id)}`);
+        if (res.success && Array.isArray(res.data)) {
+          setQuestions([...res.data].sort((a: any, b: any) => a.order - b.order));
         } else {
-          const errorData = await res.json();
-          setQuestionsError(errorData.message || "Failed to load questions for review.");
+          setQuestionsError(res.message || "Failed to load questions for review.");
         }
       } catch (err: any) {
         setQuestionsError(err.message || "Network error loading questions.");
@@ -322,19 +317,18 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
   const [error, setError] = useState<string | null>(null);
 
   // Fetch submissions from API
+  // Fetch submissions from API
   const fetchSubmissions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/exam-submissions?examId=${encodeURIComponent(examDetails.id)}`, {
-        next: { revalidate: 60 },
-      });
-      if (res.ok) {
-        const data: ExamSubmissionData[] = await res.json();
-        setSubmissions(data.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())); // Sort by most recent
+      const res = await clientFetchJson<ExamSubmissionData[]>(
+        `/api/admin/exam-submissions?examId=${encodeURIComponent(examDetails.id)}`
+      );
+      if (res.success && Array.isArray(res.data)) {
+        setSubmissions([...res.data].sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()));
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch submissions.");
+        setError(res.message || "Failed to fetch submissions.");
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching submissions.");
@@ -345,7 +339,7 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
 
   useEffect(() => {
     // Only fetch if initial data is empty (meaning server fetch failed or was empty)
-    if (initialSubmissions.length === 0 && !isLoading && !error) {
+    if ((!initialSubmissions || initialSubmissions.length === 0) && !isLoading && !error) {
       fetchSubmissions();
     }
   }, [initialSubmissions, isLoading, error, fetchSubmissions]);
@@ -373,19 +367,18 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
     setError(null);
 
     try {
-      const res = await fetch(`${apiBaseUrl}/exam-submissions/${id}`, {
+      const res = await clientFetchJson(`/api/admin/exam-submissions/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ score, feedback }),
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchSubmissions(); // Re-fetch all submissions to update the list
         setShowFormModal(false);
         setEditingSubmission(null);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || `Failed to update submission.`);
+        setError(res.message || `Failed to update submission.`);
       }
     } catch (err: any) {
       setError(err.message || `Network error updating submission.`);
@@ -395,22 +388,21 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
   };
 
   const handleDeleteSubmission = async (submissionId: string) => {
-    if (!confirm("Are you sure you want to delete this submission? This action cannot be undone.")) { // Replace with custom modal
+    if (!confirm("Are you sure you want to delete this submission? This action cannot be undone.")) {
       return;
     }
 
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/exam-submissions/${submissionId}`, {
+      const res = await clientFetchJson(`/api/admin/exam-submissions/${submissionId}`, {
         method: 'DELETE',
       });
 
-      if (res.ok) {
+      if (res.success) {
         await fetchSubmissions();
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to delete submission.");
+        setError(res.message || "Failed to delete submission.");
       }
     } catch (err: any) {
       setError(err.message || "Network error deleting submission.");
