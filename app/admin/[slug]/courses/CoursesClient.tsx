@@ -99,10 +99,10 @@ interface CoursesClientProps {
 }
 
 export default function CoursesClient({ initialCourses, allEducators, allDepartments, allAcademicLevels, companyId, apiBaseUrl }: CoursesClientProps) {
-  const [courses, setCourses] = useState<CourseType[]>(initialCourses);
-  const [educators, setEducators] = useState<EducatorOption[]>(allEducators);
-  const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
-  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
+  const [courses, setCourses] = useState<CourseType[]>(initialCourses || []);
+  const [educators, setEducators] = useState<EducatorOption[]>(allEducators || []);
+  const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments || []);
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('All');
   const [filterAcademicLevel, setFilterAcademicLevel] = useState('All');
@@ -133,37 +133,37 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
         clientFetchJson<AcademicLevelOption[]>(`/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`),
       ]);
 
-      if (coursesRes.success && Array.isArray(coursesRes.data)) {
+      if (coursesRes.ok && Array.isArray(coursesRes.data)) {
         setCourses(coursesRes.data);
       } else {
-        setError(coursesRes.message || "Failed to fetch courses.");
-        setCourses(initialCourses);
+        setError(coursesRes.error || coursesRes.message || "Failed to fetch courses.");
+        setCourses(initialCourses || []);
       }
 
-      if (educatorsRes.success && Array.isArray(educatorsRes.data)) {
+      if (educatorsRes.ok && Array.isArray(educatorsRes.data)) {
         setEducators(educatorsRes.data.map((e: any) => ({ id: e.id, name: e.name, email: e.email })));
       } else {
-        setEducators(allEducators);
+        setEducators(allEducators || []);
       }
 
-      if (departmentsRes.success && Array.isArray(departmentsRes.data)) {
+      if (departmentsRes.ok && Array.isArray(departmentsRes.data)) {
         setDepartments(departmentsRes.data);
       } else {
-        setDepartments(allDepartments);
+        setDepartments(allDepartments || []);
       }
 
-      if (academicLevelsRes.success && Array.isArray(academicLevelsRes.data)) {
+      if (academicLevelsRes.ok && Array.isArray(academicLevelsRes.data)) {
         setAcademicLevels(academicLevelsRes.data);
       } else {
-        setAcademicLevels(allAcademicLevels);
+        setAcademicLevels(allAcademicLevels || []);
       }
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
-      setCourses(initialCourses);
-      setEducators(allEducators);
-      setDepartments(allDepartments);
-      setAcademicLevels(allAcademicLevels);
+      setCourses(initialCourses || []);
+      setEducators(allEducators || []);
+      setDepartments(allDepartments || []);
+      setAcademicLevels(allAcademicLevels || []);
     } finally {
       setIsLoading(false);
     }
@@ -171,29 +171,30 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialCourses.length === 0 || allEducators.length === 0 || allDepartments.length === 0 || allAcademicLevels.length === 0) {
+    if (!initialCourses?.length || !allEducators?.length || !allDepartments?.length || !allAcademicLevels?.length) {
       fetchCoursesAndDependencies();
     }
   }, [fetchCoursesAndDependencies, initialCourses, allEducators, allDepartments, allAcademicLevels]);
 
 
   const filteredCourses = useMemo(() => {
-    return courses.filter(course => {
+    return (courses || []).filter(course => {
       const matchesSearch = (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (course.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (course.code?.toLowerCase().includes(searchTerm.toLowerCase()) || '') || // NEW: Search by code
-                            course.educators.some(e =>
-                              e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (course.educators || []).some(e =>
+                              (e.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                               (e.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
                             ) || // UPDATED: Search through educators array
                             (course.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            course.academicLevels.some(level => level.name.toLowerCase().includes(searchTerm.toLowerCase()));
+                            (course.academicLevels || []).some(level => (level.name || '').toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesDepartment = filterDepartment === 'All' || course.departmentId === filterDepartment;
-      const matchesAcademicLevel = filterAcademicLevel === 'All' || course.academicLevels.some(level => level.id === filterAcademicLevel);
+      const matchesAcademicLevel = filterAcademicLevel === 'All' ||
+                                    (course.academicLevels || []).some(level => level.id === filterAcademicLevel);
 
       return matchesSearch && matchesDepartment && matchesAcademicLevel;
-    }).sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically by title
+    }).sort((a, b) => (a.title || '').localeCompare(b.title || '')); // Sort alphabetically by title
   }, [courses, searchTerm, filterDepartment, filterAcademicLevel]);
 
   // --- API Interaction Functions ---

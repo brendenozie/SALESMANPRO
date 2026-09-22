@@ -238,10 +238,18 @@ function logError(message: string, error?: unknown) {
 async function fetchServerInternal(path: string, cookiesHeader?: string) {
   try {
     const headersList = await headers();
-    const host = headersList.get("host") || "localhost:3000";
-    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-    const fullUrl = path.startsWith("http") ? path : `${protocol}://${host}${path}`;
-    return await fetch(fullUrl, {
+    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
+    const headerProto = headersList.get("x-forwarded-proto");
+    let protocol = "http";
+    if (headerProto) {
+      protocol = headerProto;
+    } else if (host && (host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":3000") || host.includes(":3001"))) {
+      protocol = "http";
+    } else if (process.env.NODE_ENV === "production" && !host?.includes("localhost")) {
+      protocol = "https";
+    }
+    const cleanPath = path.startsWith("http") ? path : `${protocol}://${host}${path.startsWith('/') ? path : `/${path}`}`;
+    return await fetch(cleanPath, {
       cache: "no-store",
       headers: cookiesHeader ? { cookie: cookiesHeader } : undefined,
     });
@@ -432,9 +440,13 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         );
         isLoading = false;
         if (res && res.ok) {
-          const data = (await res.json()).data;
-            // console.log("[AdminDashboardPage] Raw Student API response:", data);
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const data = (await res.json()).data;
             studentDashboardData = data;
+          } else {
+            studentDashboardData = getFallbackDashboardData('student');
+          }
         } else {
           error = `Failed to fetch student dashboard data: ${res?.statusText || 'Network Error'}`;
           logError(error);
@@ -469,48 +481,13 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           );
 
           if (res && res.ok) {
-            const responseJson = await res.json();
-            const data = responseJson.data;
-            
-            // console.log("[AdminDashboardPage] New Parent API response:", data);
-            parentDashboardData = data;
-
-            // 2. Mapping the new API response to the ParentDashboard props
-            // Since our API returns a list of children, we'll focus on the first child 
-            // for the main dashboard view, or you can iterate if desired.
-            // const primaryChild = data.children[0]; 
-
-            // parentDashboardData = {
-            //   studentName: primaryChild?.name || "Student",
-            //   studentGradeLevel: primaryChild?.gradeLevel || "N/A",
-            //   classroomName: primaryChild?.roomName || "Unassigned",
-            //   studentStats: [
-            //     { 
-            //       title: 'Assignments Due', 
-            //       value: primaryChild?.totalPendingTasks || 0, 
-            //       description: 'Across all subjects', 
-            //       color: 'border-purple-100' 
-            //     },
-            //     { 
-            //       title: 'Recent Grade', 
-            //       value: primaryChild?.recentGrade || 'N/A', 
-            //       description: 'Latest performance', 
-            //       color: 'border-blue-100' 
-            //     },
-            //     { 
-            //       title: 'Attendance', 
-            //       value: primaryChild?.lastAttendance || 'No Data', 
-            //       description: 'Last recorded status', 
-            //       color: 'border-yellow-100' 
-            //     }
-            //   ],
-            //   // These will be populated by the classroom courses link in our detailed API
-            //   upcomingAssignments: primaryChild?.upcomingAssignments || [],
-            //   myCourses: primaryChild?.courses || [],
-            //   personalTimetable: primaryChild?.timetable || [],
-            //   studentAnnouncements: data.stats?.announcements || []
-            // };
-
+            const contentType = res.headers.get("content-type") || "";
+            if (contentType.includes("application/json")) {
+              const responseJson = await res.json();
+              parentDashboardData = responseJson.data || responseJson;
+            } else {
+              parentDashboardData = getFallbackDashboardData('parent');
+            }
           } else {
             error = `Failed to fetch parent dashboard: ${res?.statusText || 'Network Error'}`;
             logError(error);
@@ -610,40 +587,29 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           isLoading = false;
 
           if (res && res.ok) {
-            const jsonResponse =( await res.json());
-            
-            // console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
-            // Validate against the new schema (validating the nested 'data' property)
-            const parsed = PrincipalDashboardSchema.safeParse(jsonResponse.data);
-
-            if (!parsed.success) {
-              error = 'Principal dashboard data validation failed!';
-              logError(error, parsed.error);
-              // It's helpful to see exactly what failed in development
-              // console.error("Zod Issues:", parsed.error.format()); 
+            const contentType = res.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) {
               principalDashboardData = getFallbackDashboardData('principal');
-
             } else {
-              // --- Data Transformation Layer ---
-              principalDashboardData = {
-                ...parsed.data,
-                // Map Prisma Announcement types to UI types (info/warning/error)
-                announcements: parsed.data.announcements?.map((a: any) => ({
-                  id: a.id,
-                  text: a.summary || a.title, // Use summary as display text
-                  type: (a.type === 'ALERT' || a.type === 'POLICY_UPDATE') ? 'warning' : 'info'
-                })) || [],
-                
-                // Ensure recentStaffMessages has a fallback if the API returns null
-                recentStaffMessages: parsed.data.recentStaffMessages || [],
-                
-                // trendData and impactReport are passed through as-is from the validated schema
-              };
+              const jsonResponse = await res.json();
+              const parsed = PrincipalDashboardSchema.safeParse(jsonResponse.data);
 
-              // console.log("[AdminDashboardPage] Successfully synced Principal Analytics:", {
-              //   trendPoints: principalDashboardData.trendData.series[0].data.length,
-              //   volatilityCount: principalDashboardData.impactReport.length
-              // });
+              if (!parsed.success) {
+                error = 'Principal dashboard data validation failed!';
+                logError(error, parsed.error);
+                principalDashboardData = getFallbackDashboardData('principal');
+              } else {
+                // --- Data Transformation Layer ---
+                principalDashboardData = {
+                  ...parsed.data,
+                  announcements: parsed.data.announcements?.map((a: any) => ({
+                    id: a.id,
+                    text: a.summary || a.title,
+                    type: (a.type === 'ALERT' || a.type === 'POLICY_UPDATE') ? 'warning' : 'info'
+                  })) || [],
+                  recentStaffMessages: parsed.data.recentStaffMessages || [],
+                };
+              }
             }
           } else {
             error = `Principal API Error: ${res ? `${res.status} ${res.statusText}` : 'Network Failure'}`;
@@ -675,9 +641,13 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           );
           isLoading = false;
           if (res && res.ok) {
-            let resData = await res.json();
-            // console.log("[AdminDashboardPage] Raw Tutor API response:", resData);
-            tutorDashboardData = resData.data; // Assuming API returns { data: { ...tutorDashboardData } }
+            const contentType = res.headers.get("content-type") || "";
+            if (contentType.includes("application/json")) {
+              let resData = await res.json();
+              tutorDashboardData = resData.data;
+            } else {
+              tutorDashboardData = getFallbackDashboardData('tutor');
+            }
           } else {
             error = `Failed to fetch tutor dashboard data: ${res ? res.statusText : 'Network Error'}`;
             logError(error);
@@ -721,7 +691,10 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
             isLoading = false;
 
             if (res && res.ok) {
-              dashboardCategoryData = (await res.json()).data;
+              const contentType = res.headers.get("content-type") || "";
+              if (contentType.includes("application/json")) {
+                dashboardCategoryData = (await res.json()).data;
+              }
             } else {
               error = `Failed to fetch dashboard data for category "${categoryKey}": ${res?.statusText || "Error"}`;
               logError(error);

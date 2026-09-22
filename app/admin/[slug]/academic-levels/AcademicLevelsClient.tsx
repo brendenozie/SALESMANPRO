@@ -33,7 +33,7 @@ interface AcademicLevelsClientProps {
 }
 
 export default function AcademicLevelsClient({ initialAcademicLevels, companyId, apiBaseUrl }: AcademicLevelsClientProps) {
-  const [academicLevels, setAcademicLevels] = useState<AcademicLevelType[]>(initialAcademicLevels);
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelType[]>(initialAcademicLevels || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingAcademicLevel, setEditingAcademicLevel] = useState<AcademicLevelType | null>(null);
@@ -54,15 +54,15 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
       const response = await clientFetchJson<AcademicLevelType[]>(
         `/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`
       );
-      if (response.success && Array.isArray(response.data)) {
+      if (response.ok && Array.isArray(response.data)) {
         setAcademicLevels([...response.data].sort((a, b) => a.sortOrder - b.sortOrder));
       } else {
-        setError(response.message || "Failed to fetch academic levels.");
-        setAcademicLevels(initialAcademicLevels);
+        setError(response.error || response.message || "Failed to fetch academic levels.");
+        setAcademicLevels(initialAcademicLevels || []);
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching academic levels.");
-      setAcademicLevels(initialAcademicLevels);
+      setAcademicLevels(initialAcademicLevels || []);
     } finally {
       setIsLoading(false);
     }
@@ -77,10 +77,10 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
 
 
   const filteredAcademicLevels = useMemo(() => {
-    return academicLevels.filter(level => {
+    return (academicLevels || []).filter(level => {
       const matchesSearch = (level.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (level.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (level.sortOrder.toString().includes(searchTerm.toLowerCase()));
+                            (level.sortOrder?.toString().includes(searchTerm.toLowerCase()) || '');
       return matchesSearch;
     });
   }, [academicLevels, searchTerm]);

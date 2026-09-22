@@ -27,6 +27,7 @@ import {
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
 import PromoteStudentModal from './PromoteStudentModal';
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -109,9 +110,9 @@ interface StudentsClientProps {
 }
 
 export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, allClassRooms, allStudentLevelStatusOptions, companyId, apiBaseUrl }: StudentsClientProps) {
-  const [students, setStudents] = useState<StudentType[]>(initialStudents);
-  const [parents, setParents] = useState<ParentOption[]>(allParents);
-  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
+  const [students, setStudents] = useState<StudentType[]>(initialStudents || []);
+  const [parents, setParents] = useState<ParentOption[]>(allParents || []);
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels || []);
   const [classRooms, setClassRooms] = useState<ClassRoomOption[]>(allClassRooms || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAcademicLevel, setFilterAcademicLevel] = useState('All'); // Filter by academic level ID
@@ -151,72 +152,59 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setIsLoading(true);
     setError(null);
     try {
-      const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,{credentials: 'include'});
-      const parentsRes = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, {credentials: 'include'});
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {credentials: 'include'});
-      const classRoomsRes = await fetch(`${apiBaseUrl}/admin/classrooms?companyId=${encodeURIComponent(companyId)}`, {credentials: 'include'});
+      const [studentsRes, parentsRes, academicLevelsRes, classRoomsRes] = await Promise.all([
+        clientFetchJson<StudentType[]>(`/api/admin/students?companyId=${encodeURIComponent(companyId)}`),
+        clientFetchJson<ParentOption[]>(`/api/admin/parents?companyId=${encodeURIComponent(companyId)}`),
+        clientFetchJson<AcademicLevelOption[]>(`/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`),
+        clientFetchJson<ClassRoomOption[]>(`/api/admin/classrooms?companyId=${encodeURIComponent(companyId)}`),
+      ]);
 
-      if (studentsRes.ok) {
-        const studentsData: StudentType[] = (await studentsRes.json()).data;
-        setStudents(studentsData);
+      if (studentsRes.ok && Array.isArray(studentsRes.data)) {
+        setStudents(studentsRes.data);
       } else {
-        const errorData = await studentsRes.json();
-        setError(errorData.message || "Failed to fetch students.");
-        // Fallback to initial data if fetch fails
-        setStudents(initialStudents);
+        setStudents(initialStudents || []);
       }
 
-      if (parentsRes.ok) {
-        const parentsData: ParentOption[] = (await parentsRes.json()).data;
-        setParents(parentsData);
+      if (parentsRes.ok && Array.isArray(parentsRes.data)) {
+        setParents(parentsRes.data);
       } else {
-        const errorData = await parentsRes.json();
-        setError(errorData.message || "Failed to fetch parents.");
-        // Fallback to initial data if fetch fails
-        setParents(allParents);
+        setParents(allParents || []);
       }
 
-      if (academicLevelsRes.ok) {
-        const academicLevelsData: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
-        setAcademicLevels(academicLevelsData);
+      if (academicLevelsRes.ok && Array.isArray(academicLevelsRes.data)) {
+        setAcademicLevels(academicLevelsRes.data);
       } else {
-        const errorData = await academicLevelsRes.json();
-        setError(errorData.message || "Failed to fetch academic levels.");
-        // Fallback to initial data if fetch fails
-        setAcademicLevels(allAcademicLevels);
+        setAcademicLevels(allAcademicLevels || []);
       }
 
-      if (classRoomsRes.ok) {
-        const classRoomsData: ClassRoomOption[] = (await classRoomsRes.json()).data;
-        setClassRooms(classRoomsData);
+      if (classRoomsRes.ok && Array.isArray(classRoomsRes.data)) {
+        setClassRooms(classRoomsRes.data);
       } else {
-        const errorData = await classRoomsRes.json();
-        setError(errorData.message || "Failed to fetch classrooms.");
-        // Fallback to initial data if fetch fails
         setClassRooms(allClassRooms || []);
       }
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
-      // Ensure state is reset to initial if network error occurs
-      setStudents(initialStudents);
-      setParents(allParents);
-      setAcademicLevels(allAcademicLevels);
+      setStudents(initialStudents || []);
+      setParents(allParents || []);
+      setAcademicLevels(allAcademicLevels || []);
       setClassRooms(allClassRooms || []);
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId, initialStudents, allParents, allAcademicLevels, allClassRooms]);
+  }, [companyId, initialStudents, allParents, allAcademicLevels, allClassRooms]);
+
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
-    if (initialStudents.length === 0 || allParents.length === 0 || allAcademicLevels.length === 0 || allClassRooms.length === 0) {
+    if (!initialStudents?.length || !allParents?.length || !allAcademicLevels?.length || !allClassRooms?.length) {
       fetchStudentsAndParentsAndAcademicLevels();
     }
   }, [fetchStudentsAndParentsAndAcademicLevels, initialStudents, allParents, allAcademicLevels, allClassRooms]);
 
   const filteredStudents = useMemo(() => {
-    return students.filter(student => {
+    return (students || []).filter(student => {
       const current = getCurrentAcademicRecord(student);
+
 
       const matchesSearch =
         (student.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||

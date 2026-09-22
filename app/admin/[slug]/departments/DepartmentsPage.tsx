@@ -12,7 +12,7 @@ import {
   AcademicCapIcon, // For class count
 } from '@heroicons/react/24/outline';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 // Define the shape of department data received from API
 export type DepartmentData = {
@@ -60,30 +60,18 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/departments?companyId=${companyId}`);
-      if (res.ok) {
-        const data: DepartmentData[] = await res.json();
-        setDepartments(data);
+      const res = await clientFetchJson<DepartmentData[]>(
+        `/api/admin/departments?companyId=${encodeURIComponent(companyId || '')}`
+      );
+      if (res.ok && Array.isArray(res.data)) {
+        setDepartments(res.data);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch departments.");
-        // Fallback to initial data if API fails after initial load
-        if (initialDepartments.length > 0) {
-          setDepartments(initialDepartments);
-        } else {
-          // If even initial data is empty, use a small sample for display
-          setDepartments(sampleDepartmentsDataFallback);
-        }
+        setError(res.error || res.message || "Failed to fetch departments.");
+        setDepartments(initialDepartments || []);
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching departments.");
-      // Fallback to initial data if API fails after initial load
-      if (initialDepartments.length > 0) {
-        setDepartments(initialDepartments);
-      } else {
-        // If even initial data is empty, use a small sample for display
-        setDepartments(sampleDepartmentsDataFallback);
-      }
+      setDepartments(initialDepartments || []);
     } finally {
       setIsLoading(false);
     }
@@ -91,82 +79,38 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
 
   // Fetch departments on mount if initial data is empty (e.g., server fetch failed)
   useEffect(() => {
-    if (initialDepartments.length === 0) {
+    if (!initialDepartments || initialDepartments.length === 0) {
       fetchDepartments();
     }
   }, [initialDepartments]);
 
-
-  // Sample Data (Fallback for when API data is not available or empty)
-  const sampleDepartmentsDataFallback: DepartmentData[] = [
-    // {
-    //   id: 'D001',
-    //   name: 'Mathematics Department',
-    //   head: { id: 'user_mock_1', name: 'Mr. John Doe', email: 'john.doe@example.com' },
-    //   description: 'Responsible for all mathematics curriculum and instruction from Grade 7 to 12.',
-    //   educatorCount: 5, // Sample count
-    //   courseCount: 12,  // Sample count
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    // },
-    // {
-    //   id: 'D002',
-    //   name: 'English Department',
-    //   head: { id: 'user_mock_2', name: 'Mrs. Jane Smith', email: 'jane.smith@example.com' },
-    //   description: 'Focuses on language arts, literature, and communication skills.',
-    //   educatorCount: 7,
-    //   courseCount: 15,
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    // },
-    // {
-    //   id: 'D003',
-    //   name: 'Science Department',
-    //   head: { id: 'user_mock_3', name: 'Ms. Emily White', email: 'emily.white@example.com' },
-    //   description: 'Covers Biology, Chemistry, and Physics curricula.',
-    //   educatorCount: 6,
-    //   courseCount: 10,
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    // },
-  ];
-
-
   const filteredDepartments = useMemo(() => {
-    return departments && departments.length > 0 ? departments.filter(dept =>
-      dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    return Array.isArray(departments) && departments.length > 0 ? departments.filter(dept =>
+      (dept.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dept.head?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dept.description || '').toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a, b) => a.name.localeCompare(b.name)) : [];
+    ).sort((a, b) => (a.name || '').localeCompare(b.name || '')) : [];
   }, [departments, searchTerm]);
 
-  const totalDepartments = departments.length;
-  // These counts would ideally come from the API or be calculated on the backend
-  // For now, using simplified counts based on the current `departments` state
-  const totalTeachersAcrossDepartments =  departments &&  departments.length > 0 ? departments.reduce((sum, dept) => sum + (dept.educatorCount || 0), 0) : 0  ;
-  const totalClassesAcrossDepartments =  departments && departments.length > 0 ? departments.reduce((sum, dept) => sum + (dept.courseCount || 0), 0) : 0 ;
-
+  const totalDepartments = Array.isArray(departments) ? departments.length : 0;
+  const totalTeachersAcrossDepartments = Array.isArray(departments) && departments.length > 0 ? departments.reduce((sum, dept) => sum + (dept.educatorCount || 0), 0) : 0;
+  const totalClassesAcrossDepartments = Array.isArray(departments) && departments.length > 0 ? departments.reduce((sum, dept) => sum + (dept.courseCount || 0), 0) : 0;
 
   // Event handlers for CRUD operations via API
   const handleAddNewDepartment = async (newDeptData: { name: string; description: string; headId?: string, companyId?: string }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/departments`, {
+      const res = await clientFetchJson(`/api/admin/departments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({...newDeptData, companyId}), // Ensure companyId is included
+        body: JSON.stringify({ ...newDeptData, companyId }),
       });
 
       if (res.ok) {
-        // Re-fetch all departments to get the latest data including counts
         await fetchDepartments();
         setShowFormModal(false);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to add department.");
+        setError(res.error || res.message || "Failed to add department.");
       }
     } catch (err: any) {
       setError(err.message || "Network error adding department.");
@@ -179,22 +123,17 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/departments/${updatedDeptData.id}`, {
+      const res = await clientFetchJson(`/api/admin/departments/${updatedDeptData.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(updatedDeptData),
       });
 
       if (res.ok) {
-        // Re-fetch all departments to get the latest data including counts
         await fetchDepartments();
         setShowFormModal(false);
         setEditingDepartment(null);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to update department.");
+        setError(res.error || res.message || "Failed to update department.");
       }
     } catch (err: any) {
       setError(err.message || "Network error updating department.");
@@ -211,16 +150,14 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/departments/${deptId}`, {
+      const res = await clientFetchJson(`/api/admin/departments/${deptId}`, {
         method: 'DELETE',
       });
 
       if (res.ok) {
-        // Re-fetch all departments to get the latest data
         await fetchDepartments();
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to delete department.");
+        setError(res.error || res.message || "Failed to delete department.");
       }
     } catch (err: any) {
       setError(err.message || "Network error deleting department.");
@@ -228,6 +165,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
       setIsLoading(false);
     }
   };
+
 
   // --- Department Form Modal ---
   type DepartmentFormModalProps = {

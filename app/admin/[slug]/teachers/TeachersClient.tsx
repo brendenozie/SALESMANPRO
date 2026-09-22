@@ -28,6 +28,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import EducatorFormModal from './EducatorFormModal';
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -42,15 +43,22 @@ export type ClassroomOption = {
   id: string;
   name: string;
   academicLevelId?: string;
+  academicLevel?: AcademicLevelOption;
 };
 
 export type EducatorAcademicLevelAssignment = {
   id: string;
   academicLevelId: string;
-  academicLevel: AcademicLevelOption;
-  classRoom: ClassroomOption | null;
-  classRoomId: string | null;
-  roleInLevel?: string;
+  classRoomId?: string | null;
+  academicLevel?: {
+    id: string;
+    name: string;
+    sortOrder?: number;
+  };
+  classRoom?: {
+    id: string;
+    name: string;
+  };
 };
 
 export type EducatorType = {
@@ -106,10 +114,10 @@ export default function TeachersClient({
   companyId, 
   apiBaseUrl 
 }: TeachersClientProps) {
-  const [educators, setEducators] = useState<EducatorType[]>(initialEducators);
-  const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
-  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
-  const [classrooms, setClassrooms] = useState<ClassroomOption[]>(allClassrooms);
+  const [educators, setEducators] = useState<EducatorType[]>(initialEducators || []);
+  const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments || []);
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels || []);
+  const [classrooms, setClassrooms] = useState<ClassroomOption[]>(allClassrooms || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -129,32 +137,47 @@ export default function TeachersClient({
     try {
       const query = `?companyId=${encodeURIComponent(companyId)}`;
       const [educatorsRes, departmentsRes, levelsRes, roomsRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/educators${query}`, { credentials: 'include' }),
-        fetch(`${apiBaseUrl}/admin/departments${query}`, { credentials: 'include' }),
-        fetch(`${apiBaseUrl}/admin/academic-levels${query}`, { credentials: 'include' }),
-        fetch(`${apiBaseUrl}/admin/classrooms${query}`, { credentials: 'include' })
+        clientFetchJson<EducatorType[]>(`/api/admin/educators${query}`),
+        clientFetchJson<DepartmentOption[]>(`/api/admin/departments${query}`),
+        clientFetchJson<AcademicLevelOption[]>(`/api/admin/academic-levels${query}`),
+        clientFetchJson<ClassroomOption[]>(`/api/admin/classrooms${query}`)
       ]);
 
-      if (educatorsRes.ok) setEducators((await educatorsRes.json()).data.data);
-      if (departmentsRes.ok) setDepartments((await departmentsRes.json()).data.data);
-      if (levelsRes.ok) setAcademicLevels((await levelsRes.json()).data);
-      if (roomsRes.ok) setClassrooms((await roomsRes.json()).data);
+      if (educatorsRes.ok && Array.isArray(educatorsRes.data)) {
+        setEducators(educatorsRes.data);
+      } else if (educatorsRes.ok && educatorsRes.data && Array.isArray((educatorsRes.data as any).data)) {
+        setEducators((educatorsRes.data as any).data);
+      }
+
+      if (departmentsRes.ok && Array.isArray(departmentsRes.data)) {
+        setDepartments(departmentsRes.data);
+      } else if (departmentsRes.ok && departmentsRes.data && Array.isArray((departmentsRes.data as any).data)) {
+        setDepartments((departmentsRes.data as any).data);
+      }
+
+      if (levelsRes.ok && Array.isArray(levelsRes.data)) {
+        setAcademicLevels(levelsRes.data);
+      }
+
+      if (roomsRes.ok && Array.isArray(roomsRes.data)) {
+        setClassrooms(roomsRes.data);
+      }
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId]);
+  }, [companyId]);
 
   useEffect(() => {
-    if (initialEducators.length === 0) {
+    if (!initialEducators || initialEducators.length === 0) {
       fetchEducatorsAndDependencies();
     }
-  }, [fetchEducatorsAndDependencies, initialEducators.length]);
+  }, [fetchEducatorsAndDependencies, initialEducators]);
 
   const filteredEducators = useMemo(() => {
-    return educators.filter(educator => {
+    return (educators || []).filter(educator => {
       const matchesSearch = (educator.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (educator.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (educator.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()));

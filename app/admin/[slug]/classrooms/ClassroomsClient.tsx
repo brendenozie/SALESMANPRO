@@ -13,6 +13,7 @@ import {
   Squares2X2Icon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { clientFetchJson } from '@/lib/api/clientFetch';
 
 export type ClassroomType = {
   id: string;
@@ -41,7 +42,7 @@ interface ClassroomsClientProps {
 }
 
 export default function ClassroomsClient({ initialClassrooms, academicLevels, companyId, apiBaseUrl }: ClassroomsClientProps) {
-  const [classrooms, setClassrooms] = useState<ClassroomType[]>(initialClassrooms);
+  const [classrooms, setClassrooms] = useState<ClassroomType[]>(initialClassrooms || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<string>('ALL');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -57,22 +58,21 @@ export default function ClassroomsClient({ initialClassrooms, academicLevels, co
   const fetchClassrooms = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/classrooms?companyId=${companyId}`);
-      if (res.ok) {
-        const json = await res.json();
-        setClassrooms(json.data || json);
+      const res = await clientFetchJson<ClassroomType[]>(`/api/admin/classrooms?companyId=${encodeURIComponent(companyId)}`);
+      if (res.ok && Array.isArray(res.data)) {
+        setClassrooms(res.data);
       }
     } catch (err) {
       setError("Failed to refresh classrooms collection.");
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId]);
+  }, [companyId]);
 
   // Combined Search and Level filter mapping logic
   const filteredClassrooms = useMemo(() => {
-    return classrooms.filter(c => {
-      const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return (classrooms || []).filter(c => {
+      const matchesSearch = c.name?.toLowerCase().includes(searchTerm.toLowerCase());
       // Explicit string comparison matching target academicLevelId
       const matchesLevel = selectedLevelFilter === 'ALL' || c.academicLevelId === selectedLevelFilter;
       return matchesSearch && matchesLevel;
@@ -95,11 +95,12 @@ export default function ClassroomsClient({ initialClassrooms, academicLevels, co
       if (selectedLevelFilter !== 'ALL') {
         setFormLevelId(selectedLevelFilter);
       } else {
-        setFormLevelId(academicLevels[0]?.id || '');
+        setFormLevelId(Array.isArray(academicLevels) && academicLevels.length > 0 ? academicLevels[0].id : '');
       }
     }
     setShowFormModal(true);
   };
+
 
   const handleSaveSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -47,7 +47,7 @@ interface ParentsClientProps {
 }
 
 export default function ParentsClient({ initialParents, companyId, apiBaseUrl }: ParentsClientProps) {
-  const [parents, setParents] = useState<ParentType[]>(initialParents);
+  const [parents, setParents] = useState<ParentType[]>(initialParents || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingParent, setEditingParent] = useState<ParentType | null>(null);
@@ -68,15 +68,15 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
       const res = await clientFetchJson<ParentType[]>(
         `/api/admin/parents?companyId=${encodeURIComponent(companyId)}`
       );
-      if (res.success && Array.isArray(res.data)) {
+      if (res.ok && Array.isArray(res.data)) {
         setParents(res.data);
       } else {
-        setError(res.message || "Failed to fetch parents.");
-        setParents(initialParents);
+        setError(res.error || res.message || "Failed to fetch parents.");
+        setParents(initialParents || []);
       }
     } catch (err: any) {
       setError(err.message || "Network error fetching parents.");
-      setParents(initialParents);
+      setParents(initialParents || []);
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +91,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
 
 
   const filteredParents = useMemo(() => {
-    return parents.filter(parent => {
+    return (parents || []).filter(parent => {
       const matchesSearch = (parent.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (parent.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
                             (parent.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
@@ -101,6 +101,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
       return matchesSearch;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
   }, [parents, searchTerm]);
+
 
   // --- API Interaction Functions ---
   const handleSaveParent = async (parentData: Omit<ParentType, 'id' | 'userId' | 'loginCode' | 'totalChildren' | 'createdAt' | 'updatedAt'> & { id?: string; userId?: string }) => {

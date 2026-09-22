@@ -1,8 +1,10 @@
 export interface ClientFetchResult<T = any> {
+  success: boolean;
   ok: boolean;
   status: number;
   data: T | null;
   error?: string;
+  message?: string;
   rawJson?: any;
 }
 
@@ -40,10 +42,12 @@ export async function clientFetchJson<T = any>(
         : `Server returned non-JSON response (${res.status}): ${text.slice(0, 100)}`;
 
       return {
+        success: false,
         ok: false,
         status: res.status,
         data: null,
         error: errorMsg,
+        message: errorMsg,
       };
     }
 
@@ -68,20 +72,27 @@ export async function clientFetchJson<T = any>(
       }
     }
 
+    const isSuccess = res.ok && (json && typeof json === "object" && "success" in json ? Boolean(json.success) : true);
+
     return {
+      success: isSuccess,
       ok: res.ok,
       status: res.status,
       data: extractedData as T,
-      error: !res.ok ? (extractedError || `Request failed with status ${res.status}`) : undefined,
+      error: !res.ok || !isSuccess ? (extractedError || json?.message || `Request failed with status ${res.status}`) : undefined,
+      message: extractedError || json?.message,
       rawJson: json,
     };
   } catch (err: any) {
     console.error(`[clientFetchJson Error] ${url}:`, err);
     return {
+      success: false,
       ok: false,
       status: 0,
       data: null,
       error: err?.message || "Network request failed",
+      message: err?.message || "Network request failed",
     };
   }
 }
+
