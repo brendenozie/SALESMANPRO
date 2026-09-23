@@ -28,7 +28,7 @@ async function handleGetFeeRecords(request: Request) {
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
-  const records = getStudentFeeRecords(schoolId);
+  const records = await getStudentFeeRecords(schoolId);
 
   try {
     if (records) {

@@ -4,6 +4,7 @@ import TeachersSubjectListPage from "./TeachersSubjectListPage";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from '@/lib/company-fetcher';
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
 // Define shared types for the API and client component
 // In a real project, these would be in a separate `types.ts` file
@@ -235,9 +236,6 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
     teacherClasses: sampleClasses,
   };
 };
-
-/**
-import { serverFetchJson } from "@/lib/api/serverFetch";
 
 export default async function TeachersSubjectPage({ params }: Props) {
   const { slug } = await params;

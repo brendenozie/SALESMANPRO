@@ -13,8 +13,7 @@ import AdminAnnouncementsPage, {
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
 import { cookies } from "next/headers";
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -40,12 +39,6 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
   }
 
   const companyId = company.id;
-  const requestConfig: RequestInit = {
-    next: { revalidate: 60 },
-    headers: { cookie: cookieHeaders },
-  };
-
-import { serverFetchJson } from "@/lib/api/serverFetch";
 
   // Helper function to safely fetch API data
   const fetchData = async <T,>(endpoint: string, transform?: (data: any[]) => T[]): Promise<T[]> => {

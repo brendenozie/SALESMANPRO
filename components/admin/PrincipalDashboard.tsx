@@ -8,7 +8,8 @@ import {
   StarIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, RocketLaunchIcon, 
   ClockIcon,
   ChatBubbleBottomCenterTextIcon,
-  MegaphoneIcon
+  MegaphoneIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline';
 
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -49,6 +50,7 @@ export default function PrincipalDashboard({ data, adminSlug }: { data: any; adm
     'Total Students': <UsersIcon className="h-6 w-6 text-blue-600" />,
     'Total Teachers': <BriefcaseIcon className="h-6 w-6 text-emerald-600" />,
     'Total Classes': <BookOpenIcon className="h-6 w-6 text-violet-600" />,
+    'Fee Collection': <BanknotesIcon className="h-6 w-6 text-amber-600" />,
     'Upcoming Events': <CalendarDaysIcon className="h-6 w-6 text-amber-600" />,
     'Pending Approvals': <ClockIcon className="h-6 w-6 text-rose-600" />,
   };
@@ -147,6 +149,51 @@ export default function PrincipalDashboard({ data, adminSlug }: { data: any; adm
 
         {/* Right: Spotlights & Feed */}
         <div className="lg:col-span-4 space-y-6">
+
+          {/* Quick Management Shortcuts */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <RocketLaunchIcon className="h-5 w-5 text-indigo-600" /> Command Shortcuts
+            </h3>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Link
+                href={`/admin/${currentSlug}/fee-invoices`}
+                className="p-3 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 border border-slate-100 rounded-2xl transition-all group"
+              >
+                <div className="text-emerald-600 font-bold text-xs group-hover:translate-x-0.5 transition-transform">
+                  Fee Invoices →
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Mass billing & items</div>
+              </Link>
+              <Link
+                href={`/admin/${currentSlug}/fee`}
+                className="p-3 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 border border-slate-100 rounded-2xl transition-all group"
+              >
+                <div className="text-blue-600 font-bold text-xs group-hover:translate-x-0.5 transition-transform">
+                  Fee Ledger →
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Student balances</div>
+              </Link>
+              <Link
+                href={`/admin/${currentSlug}/grading-report-card`}
+                className="p-3 bg-slate-50 hover:bg-violet-50 hover:border-violet-200 border border-slate-100 rounded-2xl transition-all group"
+              >
+                <div className="text-violet-600 font-bold text-xs group-hover:translate-x-0.5 transition-transform">
+                  Report Cards →
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Transcripts & grades</div>
+              </Link>
+              <Link
+                href={`/admin/${currentSlug}/attendance`}
+                className="p-3 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 border border-slate-100 rounded-2xl transition-all group"
+              >
+                <div className="text-amber-600 font-bold text-xs group-hover:translate-x-0.5 transition-transform">
+                  Attendance →
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Daily roll call</div>
+              </Link>
+            </div>
+          </div>
 
           <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-1 rounded-3xl shadow-lg shadow-orange-100">
             <div className="bg-white/95 backdrop-blur-sm p-6 rounded-[calc(1.5rem-1px)]">

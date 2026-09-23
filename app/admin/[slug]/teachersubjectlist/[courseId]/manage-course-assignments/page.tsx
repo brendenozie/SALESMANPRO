@@ -1,19 +1,17 @@
-// app/admin/[slug]/teacher-classes/[courseId]/manage-assignments/page.tsx
 import React from "react";
-import ManageAssignmentsPageClient from "./ManageAssignmentsPageClient"; // Renamed client component
-import { cookies } from "next/headers";
+import ManageAssignmentsPageClient from "./ManageAssignmentsPageClient";
+import Link from "next/link";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
 // IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
 interface PageProps {
-  params: { courseId: string; slug: string };
-  searchParams: { classroomId?: string; scheduleId?: string };
+  params: Promise<{ courseId: string; slug: string }>;
+  searchParams: Promise<{ classroomId?: string; scheduleId?: string }>;
 }
 
 // Define types for data fetched by the server component
@@ -65,11 +63,6 @@ export interface ManageAssignmentsPageData {
   assignments: AssignmentData[];
   educatorId: string; // Pass educator ID to client for API calls
 }
-
-export default async function ManageAssignmentsServerPage({ params, searchParams }: PageProps) {
-
-import Link from "next/link";
-import { serverFetchJson } from "@/lib/api/serverFetch";
 
 export default async function ManageAssignmentsServerPage({ params, searchParams }: PageProps) {
   const { slug, courseId } = await params;

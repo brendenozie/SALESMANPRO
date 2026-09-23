@@ -34,14 +34,27 @@ export const GET = withApiHandler(async (request: any) => {
   } catch (e) {}
 
   // 1. Basic Stats
-  const [studentCount, teacherCount, classCount, upcomingEvents] = await Promise.all([
+  const [studentCount, teacherCount, classCount, upcomingEvents, feeRecords] = await Promise.all([
     prisma.student.count({ where: { companyId } }),
     prisma.educator.count({ where: { companyId } }),
     prisma.classroom.count({ where: { companyId } }),
     prisma.event.count({ 
       where: { companyId, startDateTime: { gte: now } } 
     }),
+    prisma.studentFeeRecord.findMany({
+      where: { student: { companyId } },
+      select: { amountPaid: true, appliedFeeItems: true },
+    }),
   ]);
+
+  let totalBilled = 0;
+  let totalCollected = 0;
+  feeRecords.forEach((r) => {
+    totalCollected += r.amountPaid || 0;
+    const items = (r.appliedFeeItems as any[]) || [];
+    totalBilled += items.reduce((s: number, it: any) => s + (Number(it.amount) || 0), 0);
+  });
+  const collectionRate = totalBilled > 0 ? Math.round((totalCollected / totalBilled) * 100) : 0;
 
   // 2. Spotlight: Real Student & Teacher of the Week
   const [topWeeklyGrade, topEducator, fallbackStudent] = await Promise.all([
@@ -155,7 +168,7 @@ export const GET = withApiHandler(async (request: any) => {
       { title: "Total Students", value: studentCount.toLocaleString(), description: "Active Enrollment", color: "text-blue-600" },
       { title: "Total Teachers", value: teacherCount.toLocaleString(), description: "Staff Reliability: 96%", color: "text-emerald-600" },
       { title: "Total Classes", value: classCount.toLocaleString(), description: "Active Classrooms", color: "text-violet-600" },
-      { title: "Upcoming Events", value: upcomingEvents.toString(), description: "Scheduled this term", color: "text-amber-600" },
+      { title: "Fee Collection", value: `${collectionRate}%`, description: `KES ${totalCollected.toLocaleString()} Collected`, color: "text-amber-600" },
     ],
     spotlight: {
       student: spotlightStudent,

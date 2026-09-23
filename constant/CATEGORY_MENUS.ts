@@ -7220,12 +7220,24 @@ export const getCategoryMenus = (
         ],
       },
       {
-        label: "Operations & Finance",
+        label: "School Finance & Fees",
         icon: BanknotesIcon,
         subItems: [
-          { label: "Fee Management", href: `/admin/${adminSlug}/fee` },
+          { label: "Fee Ledger & Balances", href: `/admin/${adminSlug}/fee` },
+          { label: "Student Invoices", href: `/admin/${adminSlug}/fee-invoices` },
+          { label: "Payment Transactions", href: `/admin/${adminSlug}/fee-transactions` },
+          { label: "Fee Structures", href: `/admin/${adminSlug}/fee-structure` },
+          { label: "Fee Items & Setup", href: `/admin/${adminSlug}/fee-items` },
+          { label: "School Expenses", href: `/admin/${adminSlug}/fee-expenses` },
+          { label: "Profit & Loss Reports", href: `/admin/${adminSlug}/fee-profit-loss` },
+        ],
+      },
+      {
+        label: "School Operations",
+        icon: ClipboardDocumentCheckIcon,
+        subItems: [
           { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
-          { label: "Events", href: `/admin/${adminSlug}/school-events` },
+          { label: "School Events", href: `/admin/${adminSlug}/school-events` },
           { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
         ],
       },
@@ -7278,9 +7290,26 @@ export const getCategoryMenus = (
         ],
       },
       {
-        label: "Attendance",
-        href: `/admin/${adminSlug}/attendance`,
+        label: "School Finance & Fees",
+        icon: BanknotesIcon,
+        subItems: [
+          { label: "Fee Ledger & Balances", href: `/admin/${adminSlug}/fee` },
+          { label: "Student Invoices", href: `/admin/${adminSlug}/fee-invoices` },
+          { label: "Payment Transactions", href: `/admin/${adminSlug}/fee-transactions` },
+          { label: "Fee Structures", href: `/admin/${adminSlug}/fee-structure` },
+          { label: "Fee Items & Setup", href: `/admin/${adminSlug}/fee-items` },
+          { label: "School Expenses", href: `/admin/${adminSlug}/fee-expenses` },
+          { label: "Profit & Loss Reports", href: `/admin/${adminSlug}/fee-profit-loss` },
+        ],
+      },
+      {
+        label: "School Operations",
         icon: ClipboardDocumentCheckIcon,
+        subItems: [
+          { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+          { label: "School Events", href: `/admin/${adminSlug}/school-events` },
+          { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
+        ],
       },
       {
         label: "Reports",

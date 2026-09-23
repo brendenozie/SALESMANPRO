@@ -426,9 +426,10 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     const isPrincipalLike =
       ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey) ||
       [
-        'PRINCIPAL', 'HEAD_OF_SCHOOL', 'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER',
-        'EDUCATIONAL_MANAGER', 'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR',
-        'EDUCATIONAL_SUPERVISOR', 'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER'
+        'PRINCIPAL', 'HEAD_OF_SCHOOL', 'SCHOOL_HEAD', 'HEAD_TEACHER', 'HEADTEACHER',
+        'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER', 'EDUCATIONAL_MANAGER',
+        'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR', 'EDUCATIONAL_SUPERVISOR',
+        'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER'
       ].includes(userRole);
 
     // --- Loading State for Playgroup ---

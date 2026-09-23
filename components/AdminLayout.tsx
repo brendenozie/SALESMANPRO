@@ -149,10 +149,22 @@ function getMenuItemsFor(
     case "STORE_DRIVER":
       return allCategoryMenus.STORE_DRIVER ?? defaultFallbackMenu;
     case "HEADTEACHER":
+    case "HEAD_TEACHER":
     case "PRINCIPAL":
     case "HEAD_OF_SCHOOL":
     case "SCHOOL_HEAD":
+    case "EDUCATIONAL_ADMIN":
+    case "EDUCATIONAL_LEADER":
+    case "EDUCATIONAL_MANAGER":
+    case "EDUCATIONAL_COORDINATOR":
+    case "EDUCATIONAL_DIRECTOR":
+    case "EDUCATIONAL_SUPERVISOR":
+    case "EDUCATIONAL_ADMINISTRATOR":
+    case "EDUCATIONAL_OFFICER":
       return (
+        allCategoryMenus["School Head"] ??
+        allCategoryMenus["Head Teacher"] ??
+        allCategoryMenus["Educational & Online Courses"] ??
         allCategoryMenus.Principal ??
         allCategoryMenus.Teacher ??
         allCategoryMenus.Educator ??
@@ -164,6 +176,8 @@ function getMenuItemsFor(
     case "EDUCATOR":
       if (isPrincipalCategory(categoryType)) {
         return (
+          allCategoryMenus["School Head"] ??
+          allCategoryMenus["Head Teacher"] ??
           allCategoryMenus.Principal ??
           allCategoryMenus.Teacher ??
           allCategoryMenus.Educator ??

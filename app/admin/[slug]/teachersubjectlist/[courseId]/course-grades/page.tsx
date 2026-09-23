@@ -1,24 +1,15 @@
-// app/admin/[slug]/teacher-classes/[courseId]/consolidated-grades/page.tsx
-
 import React from "react";
 import ConsolidatedGradesPageClient from "./ConsolidatedGradesPageClient";
-import { cookies } from "next/headers";
+import Link from "next/link";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
-// interface PageProps {
-//   params: Promise<{
-//     slug: string; // companyId
-//     courseId: string;
-//   }>;
-// }
 interface PageProps {
-  params: { courseId: string; slug: string };
-  searchParams: { classroomId?: string; scheduleId?: string };
+  params: Promise<{ courseId: string; slug: string }>;
+  searchParams: Promise<{ classroomId?: string; scheduleId?: string }>;
 }
 
 export interface StudentGradeData {
@@ -62,9 +53,6 @@ export interface ConsolidatedGradesPageData {
   educatorId: string;
   companyId: string;
 }
-
-import Link from "next/link";
-import { serverFetchJson } from "@/lib/api/serverFetch";
 
 export default async function ConsolidatedGradesServerPage({ params, searchParams }: PageProps) {
   const { slug, courseId } = await params;
