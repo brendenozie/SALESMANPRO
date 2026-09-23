@@ -148,21 +148,34 @@ function getMenuItemsFor(
       return allCategoryMenus.SCHOOL_DRIVER ?? defaultFallbackMenu;
     case "STORE_DRIVER":
       return allCategoryMenus.STORE_DRIVER ?? defaultFallbackMenu;
+    case "HEADTEACHER":
+    case "PRINCIPAL":
+    case "HEAD_OF_SCHOOL":
+    case "SCHOOL_HEAD":
+      return (
+        allCategoryMenus.Principal ??
+        allCategoryMenus.Teacher ??
+        allCategoryMenus.Educator ??
+        defaultFallbackMenu
+      );
+    case "TEACHER":
+    case "LECTURER":
+    case "TUTOR":
     case "EDUCATOR":
       if (isPrincipalCategory(categoryType)) {
         return (
           allCategoryMenus.Principal ??
+          allCategoryMenus.Teacher ??
           allCategoryMenus.Educator ??
           defaultFallbackMenu
         );
       }
       return (
+        allCategoryMenus.Teacher ??
         allCategoryMenus.Educator ??
         allCategoryMenus.Tutor ??
         defaultFallbackMenu
       );
-    case "TUTOR":
-      return allCategoryMenus.Tutor ?? defaultFallbackMenu;
     default:
       return allCategoryMenus[categoryType] ?? defaultFallbackMenu;
   }

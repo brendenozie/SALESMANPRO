@@ -400,14 +400,21 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
   // 4. Cached company fetch using the page strategy
   const company = await findCompanyCached(slug, "page");
 
-  const companyId =  ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
-    ? session.user.id
-    :  company?.id || company?.slug ;
+  const educationRolesList = [
+    'STUDENT', 'EDUCATOR', 'TEACHER', 'TUTOR', 'LECTURER',
+    'HEADTEACHER', 'HEAD_TEACHER', 'PRINCIPAL', 'HEAD_OF_SCHOOL',
+    'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER',
+    'EDUCATIONAL_MANAGER', 'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR',
+    'EDUCATIONAL_SUPERVISOR', 'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER',
+    'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'
+  ];
+
+  const companyId = company?.id || (session.user as any)?.companyId || slug;
       
   isLoading = false;
 
   if (
-    userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
+    userRole !== 'STUDENT' && !company && !educationRolesList.includes(userRole)
   ) {
     redirect('/dashboards');
   }
@@ -665,8 +672,8 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
         return (
           <TutorDashboard
-            // {...tutorDashboardData}
             data={tutorDashboardData}
+            adminSlug={slug}
             companyId={companyId}
             currentUserId={currentUserId}
           />

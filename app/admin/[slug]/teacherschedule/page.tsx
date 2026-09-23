@@ -1,11 +1,8 @@
-// app/admin/[slug]/teacher-schedule/page.tsx
 import React from "react";
 import TeachersSchedulePageClient from "./TeachersSchedulePageClient";
-import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
 // IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
@@ -53,42 +50,25 @@ export interface TeacherSchedulePageData {
 }
 
 export default async function TeachersScheduleServerPage({ params }: PageProps) {
-  const cookieStore = (await cookies()).toString();
-
-  const { slug }  = await params;
-  // const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID;
-
+  const { slug } = await params;
   const session = await getAuthSession();
-  const educatorId = (session?.user as any)?.id || MOCK_CURRENT_EDUCATOR_ID;
+  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
 
   let schedulePageData: TeacherSchedulePageData | null = null;
   let fetchError: string | null = null;
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/teacher/schedule?educatorId=${encodeURIComponent(educatorId)}`,
-      { headers: { cookie: cookieStore }, next: { revalidate: 60 } } // Ensure fresh data
+    const res = await serverFetchJson<TeacherSchedulePageData>(
+      `/api/teacher/schedule?educatorId=${encodeURIComponent(educatorId)}`
     );
 
-    if (res.ok) {
-      schedulePageData = (await res.json()).data as TeacherSchedulePageData;
-      // schedulePageData.companyId = companyId; // Ensure companyId is passed down
+    if (res.ok && res.data) {
+      schedulePageData = res.data;
+      if (!schedulePageData.companyId) {
+        schedulePageData.companyId = slug;
+      }
     } else {
-      const errorData = (await res.json()).data;
-      fetchError = errorData.message || `Failed to fetch teacher schedule: ${res.status} ${res.statusText}`;
+      fetchError = res.error || res.message || "Failed to fetch teacher schedule";
       console.error("[TeachersScheduleServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {

@@ -30,7 +30,7 @@ const isLive = (schedule: any) => {
   return now.getTime() >= start && now.getTime() <= end;
 };
 
-export default function PremiumTeacherDashboard({ teacherClasses, teacherUserId }: any) {
+export default function PremiumTeacherDashboard({ teacherClasses, teacherUserId, adminSlug }: any) {
   const [search, setSearch] = useState("");
   const today = getTodayName();
 
@@ -77,6 +77,7 @@ export default function PremiumTeacherDashboard({ teacherClasses, teacherUserId 
                 key={course.id} 
                 course={course} 
                 teacherUserId={teacherUserId}
+                adminSlug={adminSlug}
                 today={today}
               />
             ))}
@@ -87,8 +88,9 @@ export default function PremiumTeacherDashboard({ teacherClasses, teacherUserId 
   );
 }
 
-function CourseCommanderCard({ course, teacherUserId, today }: any) {
+function CourseCommanderCard({ course, teacherUserId, adminSlug, today }: any) {
   const router = useRouter();
+  const schoolSlug = adminSlug || teacherUserId;
   
   // Group unique classrooms
   const classrooms = useMemo(() => {
@@ -109,7 +111,7 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
   const liveNow = isLive(activeSchedule);
 
   const handleAction = (path: string) => {
-    router.push(`/admin/${teacherUserId}/teachersubjectlist/${course.id}/${path}?classroomId=${activeSchedule.classroom?.id}&scheduleId=${activeSchedule.id}`);
+    router.push(`/admin/${schoolSlug}/teachersubjectlist/${course.id}/${path}?classroomId=${activeSchedule.classroom?.id}&scheduleId=${activeSchedule.id}`);
   };
 
   return (

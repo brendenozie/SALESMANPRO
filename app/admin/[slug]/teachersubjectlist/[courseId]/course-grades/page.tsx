@@ -63,57 +63,47 @@ export interface ConsolidatedGradesPageData {
   companyId: string;
 }
 
-export default async function ConsolidatedGradesServerPage({ params, searchParams }: PageProps) {
+import Link from "next/link";
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
-  const { courseId } = params;
-  const { classroomId, scheduleId } = searchParams;
+export default async function ConsolidatedGradesServerPage({ params, searchParams }: PageProps) {
+  const { slug, courseId } = await params;
+  const sParams = await searchParams;
+  const classroomId = sParams?.classroomId || "";
+  const scheduleId = sParams?.scheduleId || "";
 
   const session = await getAuthSession();
-  const cookiesStore = (await cookies()).toString();
-
-  // const courseId = (await params).courseId;
   const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   let gradesPageData: ConsolidatedGradesPageData | null = null;
   let fetchError: string | null = null;
 
-  
-    const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
-
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}&classroomId=${encodeURIComponent(classroomId || "")}&scheduleId=${encodeURIComponent(scheduleId || "")}`,
-      { next: { revalidate: 60 }, headers: { 'Cookie': cookiesStore || '' } }
+    const res = await serverFetchJson<ConsolidatedGradesPageData>(
+      `/api/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}&classroomId=${encodeURIComponent(classroomId)}&scheduleId=${encodeURIComponent(scheduleId)}`
     );
 
-    if (res.ok) {
-      const data = await res.json();
+    if (res.ok && res.data) {
+      const data = res.data;
       gradesPageData = {
         course: data.course,
         students: data.students,
         assessments: data.assessments,
         grades: data.grades,
         educatorId: educatorId,
-        companyId: data.companyId, // Ensure companyId is passed from the API response
+        companyId: companyId,
       };
     } else {
-      const errorData = await res.json();
-      fetchError = errorData.message || `Failed to fetch grades data: ${res.status} ${res.statusText}`;
+      fetchError = res.error || res.message || "Failed to fetch grades data";
       console.error("[ConsolidatedGradesServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
@@ -126,13 +116,13 @@ export default async function ConsolidatedGradesServerPage({ params, searchParam
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Grades</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load grades data for this course."}</p>
-        <button
-          onClick={() => window.history.back()}
+        <Link
+          href={`/admin/${slug}/teachersubjectlist`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
                        hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </button>
+        </Link>
       </div>
     );
   }

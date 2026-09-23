@@ -1,11 +1,9 @@
-// app/student/[slug]/my-classes/[courseId]/assignments/page.tsx
 import React from "react";
 import StudentAssignmentsPageClient from "./StudentAssignmentsPageClient";
-import { cookies } from "next/headers";
+import Link from "next/link";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
 // IMPORTANT: In a real application, these IDs would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use hardcoded mock IDs.
@@ -19,6 +17,7 @@ interface PageProps {
   }>;
   searchParams: Promise<{
     companyId?: string; // Expect companyId as a query parameter
+    courseId?: string;
   }>;
 }
 
@@ -56,59 +55,53 @@ export interface StudentAssignmentsPageData {
 }
 
 export default async function StudentAssignmentsServerPage({ params, searchParams }: PageProps) {
-  const { slug: studentSlug, courseId } = await params;
-  const cookiesStore = (await cookies()).toString();
+  const { slug: studentSlug } = await params;
+  const sParams = await searchParams;
+  const courseId = sParams?.courseId;
+
   const session = await getAuthSession();
   const studentId = session?.user?.id || "";
-  // const studentId = studentSlug || MOCK_CURRENT_STUDENT_USER_ID;
-  // const companyId = searchParams.companyId || MOCK_COMPANY_ID; // Get companyId from search params or use mock
   
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = studentSlug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const identifier = studentSlug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   let assignmentsPageData: StudentAssignmentsPageData | null = null;
   let fetchError: string | null = null;
 
   try {
-    const url = new URL(`${apiBaseUrl}/student/assignments`);
-    url.searchParams.append('studentId', studentId);
-    // url.searchParams.append('companyId', companyId); // Always append companyId
+    const queryParams = new URLSearchParams({ studentId });
     if (courseId) {
-      url.searchParams.append('courseId', courseId);
+      queryParams.append('courseId', courseId);
     }
 
-    const res = await fetch(url.toString(), { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } ); // Ensure fresh data
+    const res = await serverFetchJson<StudentAssignmentsPageData>(
+      `/api/student/assignments?${queryParams.toString()}`
+    );
 
-    if (res.ok) {
-      const data = (  await res.json()).data as StudentAssignmentsPageData;
+    if (res.ok && res.data) {
+      const data = res.data;
       assignmentsPageData = {
         studentName: data.studentName,
         studentGradeLevel: data.studentGradeLevel,
         assignments: data.assignments,
-        studentId: studentId, // Ensure studentId is passed down
-        companyId: "companyId", // Ensure companyId is passed down
+        studentId: studentId,
+        companyId: companyId,
       };
 
       if (courseId) {
-        // If a specific course was requested, add its info for the client component header
         assignmentsPageData.courseInfo = {
           id: courseId,
-          title: assignmentsPageData.assignments[0]?.className || 'Unknown Course', // Use first assignment's class name or fallback
+          title: assignmentsPageData.assignments[0]?.className || 'Unknown Course',
         };
       }
     } else {
-      const errorData = (await res.json()).data;
-      fetchError = errorData.message || `Failed to fetch student assignments: ${res.status} ${res.statusText}`;
+      fetchError = res.error || res.message || "Failed to fetch student assignments";
       console.error("[StudentAssignmentsServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
@@ -121,13 +114,13 @@ export default async function StudentAssignmentsServerPage({ params, searchParam
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Assignments</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load student assignment data."}</p>
-        <button
-          onClick={() => window.history.back()}
+        <Link
+          href={`/admin/${studentSlug}`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
                        hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </button>
+        </Link>
       </div>
     );
   }

@@ -36,43 +36,37 @@ export interface StudentClassesPageData {
   companyId: string; // Pass company ID to client for API calls
 }
 
+import Link from "next/link";
+import { serverFetchJson } from "@/lib/api/serverFetch";
+
 export default async function StudentClassesServerPage({ params }: PageProps) {
   const { slug: studentSlug } = await params;
-  // const studentId = studentSlug || MOCK_CURRENT_STUDENT_ID;
-  const cookiesStore = (await cookies()).toString();
   const session = await getAuthSession();
   const studentId = session?.user?.id || "";
 
   let classesPageData: StudentClassesPageData | null = null;
   let fetchError: string | null = null;
   
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = studentSlug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const identifier = studentSlug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/student/classes?studentId=${encodeURIComponent(studentId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } // Ensure fresh data
+    const res = await serverFetchJson<StudentClassesPageData>(
+      `/api/student/classes?studentId=${encodeURIComponent(studentId)}`
     );
 
-    if (res.ok) {
-      classesPageData = (await res.json()).data as StudentClassesPageData;
-      // console.log("[StudentClassesServerPage] Fetched classes data:", classesPageData);
-      classesPageData.studentId = studentId; // Ensure studentId is passed down
-      // classesPageData.companyId = companyId; // Ensure companyId is passed down
+    if (res.ok && res.data) {
+      classesPageData = res.data;
+      classesPageData.studentId = studentId;
+      classesPageData.companyId = companyId;
     } else {
-      const errorData = (await res.json()).data;
-      fetchError = errorData.message || `Failed to fetch student classes: ${res.status} ${res.statusText}`;
+      fetchError = res.error || res.message || "Failed to fetch student classes";
       console.error("[StudentClassesServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
@@ -85,13 +79,13 @@ export default async function StudentClassesServerPage({ params }: PageProps) {
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Classes</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load student class data."}</p>
-        <button
-          onClick={() => window.history.back()}
+        <Link
+          href={`/admin/${studentSlug}`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
                      hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </button>
+        </Link>
       </div>
     );
   }

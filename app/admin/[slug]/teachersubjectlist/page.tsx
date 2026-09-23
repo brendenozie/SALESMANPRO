@@ -237,47 +237,32 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
 };
 
 /**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
+import { serverFetchJson } from "@/lib/api/serverFetch";
+
 export default async function TeachersSubjectPage({ params }: Props) {
-
-  // const teacherUserId = (await params).slug || MOCK_CURRENT_TEACHER_USER_ID; // In a real app, get this from auth context
-  const cookiesStore = (await cookies()).toString()
+  const { slug } = await params;
   const session = await getAuthSession();
-
   const teacherUserId = session?.user?.id || MOCK_CURRENT_TEACHER_USER_ID;
 
   let pageData: TeacherClassesPageData | null = null;
   let fetchError: boolean = false;
-  
-    const { slug } = await params;
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
 
   try {
-    // Call the new API route
-    const res = await fetch(
-      `${apiBaseUrl}/teacher/teacher-assigned-subjects?teacherUserId=${encodeURIComponent(teacherUserId)}`,
-      { headers: { cookie:cookiesStore  }, next: { revalidate: 60 } } // equivalent to SSR on every request
+    const res = await serverFetchJson<TeacherClassesPageData>(
+      `/api/teacher/teacher-assigned-subjects?teacherUserId=${encodeURIComponent(teacherUserId)}`
     );
 
-    if (res.ok) {
-      pageData = (await res.json()).data as TeacherClassesPageData;
+    if (res.ok && res.data) {
+      pageData = res.data;
     } else {
-      console.error(`[TeachersClassPage] Failed to fetch teacher classes: ${res.status} ${res.statusText}`);
+      console.error(`[TeachersClassPage] Failed to fetch teacher classes:`, res.error);
       fetchError = true;
     }
   } catch (err: any) {
@@ -287,7 +272,6 @@ export default async function TeachersSubjectPage({ params }: Props) {
 
   // If fetch failed or data is missing, use sample data as fallback
   if (fetchError || !pageData || !pageData.teacherClasses || !pageData.teacherInfo) {
-    // console.log("[TeachersClassPage] Using sample data as fallback.");
     pageData = generateSampleTeacherClassesData(teacherUserId, teacherUserId);
   }
 
@@ -295,8 +279,9 @@ export default async function TeachersSubjectPage({ params }: Props) {
     <TeachersSubjectListPage
       teacherInfo={pageData.teacherInfo}
       themeSettings={pageData.themeSettings}
-      // teacherClasses={pageData.teacherClasses}
       teacherUserId={teacherUserId} 
-      teacherClasses={pageData.teacherClasses}    />
+      teacherClasses={pageData.teacherClasses}
+      adminSlug={slug}
+    />
   );
 }

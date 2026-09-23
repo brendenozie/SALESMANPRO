@@ -13,8 +13,8 @@ export interface SubjectGrade {
   history: { date: string; score: number }[]; // For the line chart
 }
 
-export default async function ParentGradesPage({ params }: { params: Promise<{ adminSlug: string }> }) {
-  const { adminSlug } = await params;
+export default async function ParentGradesPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
 
     // const { slug } = await params;

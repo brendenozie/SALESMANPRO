@@ -45,20 +45,21 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     headers: { cookie: cookieHeaders },
   };
 
+import { serverFetchJson } from "@/lib/api/serverFetch";
+
   // Helper function to safely fetch API data
   const fetchData = async <T,>(endpoint: string, transform?: (data: any[]) => T[]): Promise<T[]> => {
     try {
-      const res = await fetch(`${apiBaseUrl}${endpoint}?companyId=${encodeURIComponent(companyId)}`, requestConfig);
+      const res = await serverFetchJson(`/api${endpoint}?companyId=${encodeURIComponent(companyId)}`);
       if (!res.ok) {
-        console.warn(`[API Fetch Warning] Failed: ${endpoint} Status: ${res.status}`);
+        console.warn(`[API Fetch Warning] Failed: ${endpoint}`, res.error);
         return [];
       }
-      const payload = await res.json();
-      const rawData = payload?.data?.data || payload?.data || payload;
-      const list = Array.isArray(rawData) ? rawData : [];
+      const rawData = res.data;
+      const list = Array.isArray(rawData) ? rawData : (rawData?.data || []);
       return transform ? transform(list) : (list as T[]);
     } catch (err: any) {
-      console.error(`[API Fetch Error] Failed on endpoint ${endpoint}:`, err.message);
+      console.error(`[API Fetch Error] Failed on endpoint ${endpoint}:`, err?.message || err);
       return [];
     }
   };

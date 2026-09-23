@@ -61,13 +61,17 @@ const sampleClassRosters: Record<ClassId, ClassRoster> = {
   }
 };
 
-// For demonstration, let's pick a default class ID
-const defaultClassId = 'CL101'; // This would come from routing in a real app
+interface TeachersStudentListPageProps {
+  initialRosters?: Record<string, ClassRoster>;
+  educatorName?: string;
+  schoolSlug?: string;
+}
 
-export default function TeachersStudentListPage() {
-  
-  const [currentClassId, setCurrentClassId] = useState<ClassId>(defaultClassId);
-  const currentClass = sampleClassRosters[currentClassId];
+export default function TeachersStudentListPage({ initialRosters, educatorName, schoolSlug }: TeachersStudentListPageProps = {}) {
+  const rosters = (initialRosters && Object.keys(initialRosters).length > 0) ? initialRosters : sampleClassRosters;
+  const classKeys = Object.keys(rosters);
+  const [currentClassId, setCurrentClassId] = useState<string>(classKeys[0] || 'CL101');
+  const currentClass = rosters[currentClassId] || rosters[classKeys[0]];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -83,15 +87,14 @@ export default function TeachersStudentListPage() {
       <div className="p-8 text-center bg-gray-100 min-h-screen font-sans">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Class Roster</h1>
         <p className="text-gray-600">Please select a valid class to view its student list.</p>
-        {/* Simple dropdown to pick a class for demo purposes */}
         <select
           value={currentClassId}
-          onChange={(e) => setCurrentClassId(e.target.value as ClassId)}
+          onChange={(e) => setCurrentClassId(e.target.value)}
           className="mt-6 block mx-auto py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option value="">-- Select a Class --</option>
-          {Object.keys(sampleClassRosters).map(id => (
-            <option key={id} value={id}>{sampleClassRosters[id as ClassId].name}</option>
+          {classKeys.map(id => (
+            <option key={id} value={id}>{rosters[id]?.name}</option>
           ))}
         </select>
       </div>

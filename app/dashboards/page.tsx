@@ -15,6 +15,7 @@ import {
   CircleStackIcon,
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
+  AcademicCapIcon,
 } from "@heroicons/react/24/outline";
 
 import fit1 from "@/assets/fit1.png";
@@ -138,14 +139,51 @@ export default function WelcomePage() {
     return null;
   }
 
+  const [schoolSlug, setSchoolSlug] = useState<string | null>(null);
+
+  const userRole = ((session?.user as any)?.role || "").toUpperCase();
+  const isEducationRole = [
+    "EDUCATOR",
+    "TEACHER",
+    "TUTOR",
+    "LECTURER",
+    "HEADTEACHER",
+    "PRINCIPAL",
+    "STUDENT",
+    "PARENT",
+  ].includes(userRole);
+
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good Morning");
     else if (hour < 18) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
+
+    fetch("/api/stores", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data && Array.isArray(json.data) && json.data.length > 0) {
+          const first = json.data[0];
+          if (first?.slug) setSchoolSlug(first.slug);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const launchActions = [
+    ...(schoolSlug || isEducationRole
+      ? [
+          {
+            title: isEducationRole ? "School Command Center" : "School Portal",
+            desc: "Open your active school workspace, classes, and schedule.",
+            icon: <AcademicCapIcon />,
+            color: "text-indigo-600 dark:text-indigo-400",
+            bg: "bg-indigo-50 dark:bg-indigo-950/30",
+            border: "hover:border-indigo-500/40",
+            href: schoolSlug ? `/admin/${schoolSlug}` : "/stores",
+          },
+        ]
+      : []),
     {
       title: "My Stores",
       desc: "Access active digital marketplace environments.",

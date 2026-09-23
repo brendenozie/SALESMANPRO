@@ -6,12 +6,19 @@
 
 export const DASHBOARD_ROLES = new Set([
   "ADMIN",
+  "SUPER_ADMIN",
   "STAFF",
   "STAFF_MEMBER",
   "AGENT",
   "MODERATOR",
   "EDUCATOR",
+  "TEACHER",
+  "TUTOR",
+  "LECTURER",
   "HEADTEACHER",
+  "PRINCIPAL",
+  "HEAD_OF_SCHOOL",
+  "SCHOOL_HEAD",
   "SERVICE_PROVIDER",
 ]);
 

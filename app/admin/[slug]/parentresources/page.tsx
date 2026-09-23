@@ -20,8 +20,8 @@ export interface Resource {
   thumbnail?: string;
 }
 
-export default async function ParentResourcesPage({ params }: { params: Promise<{ adminSlug: string }> }) {
-  const { adminSlug } = await params;
+export default async function ParentResourcesPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
 
     // const { slug } = await params;

@@ -45,28 +45,113 @@ async function getCompanies(req: Request, context: HandlerContext) {
       console.error("Failed to retrieve companies from cache:", e);
     }
 
-    // Fetch all companies (stores) + active subscription status
-    const companies = await prisma.company.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "asc" },
-      include: {
-        subscriptionCompanies: {
-          // ACTIVE or AWAITING_CONFIRMATION
-          where: {
-            status: {
-              in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+    // Fetch all companies owned or affiliated (educator, staff, student) + active subscription status
+    const [ownedCompanies, educatorProfiles, staffProfiles, studentProfiles] =
+      await Promise.all([
+        prisma.company.findMany({
+          where: { userId: user.id },
+          orderBy: { createdAt: "asc" },
+          include: {
+            subscriptionCompanies: {
+              where: {
+                status: {
+                  in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+                },
+              },
+              select: {
+                status: true,
+                renewalDate: true,
+              },
+              orderBy: { createdAt: "desc" },
+              take: 1,
             },
           },
-          select: {
-            status: true,
-            renewalDate: true,
+        }),
+        prisma.educator.findMany({
+          where: { userId: user.id },
+          include: {
+            Company: {
+              include: {
+                subscriptionCompanies: {
+                  where: {
+                    status: {
+                      in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+                    },
+                  },
+                  select: {
+                    status: true,
+                    renewalDate: true,
+                  },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
           },
-          // sort lates date first
-          orderBy: { createdAt: "desc" },
-          take: 1, // Only need the latest subscription to determine status
-        },
-      },
-    });
+        }),
+        prisma.staffProfile.findMany({
+          where: { userId: user.id },
+          include: {
+            company: {
+              include: {
+                subscriptionCompanies: {
+                  where: {
+                    status: {
+                      in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+                    },
+                  },
+                  select: {
+                    status: true,
+                    renewalDate: true,
+                  },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+          },
+        }),
+        prisma.student.findMany({
+          where: { userId: user.id },
+          include: {
+            Company: {
+              include: {
+                subscriptionCompanies: {
+                  where: {
+                    status: {
+                      in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+                    },
+                  },
+                  select: {
+                    status: true,
+                    renewalDate: true,
+                  },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+          },
+        }),
+      ]);
+
+    const companyMap = new Map<string, any>();
+    for (const c of ownedCompanies) {
+      if (c && !companyMap.has(c.id)) companyMap.set(c.id, c);
+    }
+    for (const e of educatorProfiles) {
+      if (e.Company && !companyMap.has(e.Company.id))
+        companyMap.set(e.Company.id, e.Company);
+    }
+    for (const s of staffProfiles) {
+      if (s.company && !companyMap.has(s.company.id))
+        companyMap.set(s.company.id, s.company);
+    }
+    for (const st of studentProfiles) {
+      if (st.Company && !companyMap.has(st.Company.id))
+        companyMap.set(st.Company.id, st.Company);
+    }
+    const companies = Array.from(companyMap.values());
 
     // Format into the structure your frontend expects
     const formattedStores = companies.map((c) => ({

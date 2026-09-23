@@ -36,6 +36,7 @@ interface ClassTeacherAcademicLevelsPageProps {
   };
   assignedAcademicLevels: AssignedAcademicLevel[];
   teacherId: string; // Passed from server component for dynamic links
+  adminSlug?: string;
 }
 
 export default function ClassTeacherAcademicLevelsPage({
@@ -43,8 +44,10 @@ export default function ClassTeacherAcademicLevelsPage({
   themeSettings,
   assignedAcademicLevels,
   teacherId,
+  adminSlug,
 }: ClassTeacherAcademicLevelsPageProps) {
   const router = useRouter();
+  const schoolSlug = adminSlug || teacherId;
 
   // Use state for colors to ensure Tailwind JIT can process them correctly
   const [primaryColor] = useState(themeSettings.primaryColor);
@@ -69,27 +72,27 @@ export default function ClassTeacherAcademicLevelsPage({
   // --- Action Handlers for Academic Levels ---
   
   const handleClassSchedule = (academicLevelId: string, classId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-schedule`);
+    router.push(`/admin/${schoolSlug}/teacherclasslist/${academicLevelId}/${classId}/class-schedule`);
   };
   
   const handleManageAcademicLevelEvents = (academicLevelId: string, classId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-event`);
+    router.push(`/admin/${schoolSlug}/teacherclasslist/${academicLevelId}/${classId}/class-event`);
   };
 
   const handleSendAcademicLevelAnnouncement = (academicLevelId: string, classId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-announcements`);
+    router.push(`/admin/${schoolSlug}/teacherclasslist/${academicLevelId}/${classId}/class-announcements`);
   };
 
   const handleViewAcademicLevelReports = (academicLevelId: string, classId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-reports`);
+    router.push(`/admin/${schoolSlug}/teacherclasslist/${academicLevelId}/${classId}/class-reports`);
   };
 
   const handleTakeAcademicLevelAttendance = (academicLevelId: string, classId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-attendance`);
+    router.push(`/admin/${schoolSlug}/teacherclasslist/${academicLevelId}/${classId}/class-attendance`);
   };
 
   const handleManageStudentsInLevel = (academicLevelId: string, classId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/manage-students`);
+    router.push(`/admin/${schoolSlug}/teacherclasslist/${academicLevelId}/${classId}/manage-students`);
   };
 
   // Framer Motion Variants

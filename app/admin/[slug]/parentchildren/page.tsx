@@ -39,49 +39,30 @@ const SummaryCard = ({ title, value, icon: Icon, colorClass }: any) => (
   </div>
 );
 
-export default async function ParentChildrenPage({ params }: { params: Promise<{ adminSlug: string }> }) {
-  // const { adminSlug } = await params;
-  const cookieheader = (await cookies()).toString();
-  const MOCK_PARENT_ID = "685084cc4da288b5c3156e4a"; // Replace with actual parent ID from session or params
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
+export default async function ParentChildrenPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const session = await getAuthSession();
-    const parentId = session?.user?.id || MOCK_PARENT_ID; // Fallback to adminSlug if session is not available
-  
-  const response = await fetch(`${apiBaseUrl}/parent/children?userId=${parentId}`, {
-    cache: 'no-store', // Ensures we get fresh data every time the page is visited
-    headers: {
-      Cookie: cookieheader,
-    },
-  });
+  const parentId = session?.user?.id;
 
-  const result = (await response.json());
+  let stats = {
+    totalChildren: 0,
+    avgFamilyAttendance: 0,
+    totalFamilyPending: 0,
+  };
+  let children: any[] = [];
 
+  if (parentId) {
+    const res = await serverFetchJson(
+      `/api/parent/children?userId=${encodeURIComponent(parentId)}`
+    );
 
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
-
-  // console.log("API Result:", result); // Debug log to check the API response
-
-  if (!result.success) {
-    // console.error("API Fetch Error:", result.message);
-    return notFound();
+    if (res.ok && res.data) {
+      stats = res.data.stats || stats;
+      children = res.data.children || [];
+    }
   }
-
-  const { stats, children } = result.data;
 
   return (
     <div className="p-4 sm:p-8 space-y-8 bg-[#fdfeff] min-h-screen">
@@ -123,7 +104,7 @@ export default async function ParentChildrenPage({ params }: { params: Promise<{
       </div>
 
       {/* 3. Passing dynamic data to the Client Page */}
-      <ChildrenClientPage adminSlug={MOCK_PARENT_ID} initialData={children} />
+      <ChildrenClientPage adminSlug={slug} initialData={children} />
     </div>
   );
 }

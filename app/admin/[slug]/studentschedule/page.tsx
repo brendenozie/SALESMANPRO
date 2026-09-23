@@ -4,7 +4,7 @@ import StudentSchedulePageClient from "./StudentSchedulePageClient";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from '@/lib/api/serverFetch';
 
 // IMPORTANT: In a real application, the currentStudentId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
@@ -55,44 +55,37 @@ export interface StudentSchedulePageData {
 
 export default async function StudentScheduleServerPage({ params }: PageProps) {
   const { slug: studentSlug } = await params;
-  // const studentId = studentSlug || MOCK_CURRENT_STUDENT_ID;
-  const cookiesStore = (await cookies()).toString();
   const session = await getAuthSession();
   const studentId = (session?.user as any)?.id || "";
 
   let schedulePageData: StudentSchedulePageData | null = null;
   let fetchError: string | null = null;
 
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = studentSlug || (session?.user as any)?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const identifier = studentSlug || (session?.user as any)?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/student/schedule?studentId=${encodeURIComponent(studentId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } // Ensure fresh data
+    const res = await serverFetchJson<StudentSchedulePageData>(
+      `/api/student/schedule?studentId=${encodeURIComponent(studentId)}&companyId=${encodeURIComponent(companyId)}`
     );
 
-    if (res.ok) {
-      schedulePageData = (await res.json()).data as StudentSchedulePageData;
-      // schedulePageData.companyId = companyId; // Ensure companyId is passed down
+    if (res.success && res.data) {
+      schedulePageData = res.data;
+      if (!schedulePageData.companyId) {
+        schedulePageData.companyId = companyId;
+      }
     } else {
-      const errorData = (await res.json()).data;
-      fetchError = errorData.message || `Failed to fetch student schedule: ${res.status} ${res.statusText}`;
+      fetchError = res.error || `Failed to fetch student schedule: ${res.status}`;
       console.error("[StudentScheduleServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
-    fetchError = `Network or server error: ${err.message}`;
+    fetchError = `Network or server error: ${err?.message || err}`;
     console.error("[StudentScheduleServerPage] Catch error:", err);
   }
 

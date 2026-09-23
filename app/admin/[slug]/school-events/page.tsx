@@ -20,27 +20,20 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function EventsManagerPage({ params }: PageProps) {
-  // const { slug: } = await params;  
-  const cookieHeaders = (await cookies()).toString();
+import { serverFetchJson } from "@/lib/api/serverFetch";
 
-  
-    const { slug } = await params;
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+export default async function EventsManagerPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
@@ -51,64 +44,51 @@ export default async function EventsManagerPage({ params }: PageProps) {
   let allParents: ParentOption[] = [];
   let allOrganizers: OrganizerOption[] = [];
 
-  const fetchOptions = {
-    next: { revalidate: 60 },
-    headers: { cookie: cookieHeaders },
-  };
-
   try {
-    // Parallelize all endpoint requests to eliminate slow network waterfalls
-    const responses = await Promise.allSettled([
-      fetch(`${apiBaseUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
-      fetch(`${apiBaseUrl}/admin/staff?companyId=${encodeURIComponent(companyId)}`, fetchOptions),
+    const [eventsRes, academicLevelsRes, coursesRes, educatorsRes, studentsRes, deptsRes, parentsRes, staffRes] = await Promise.all([
+      serverFetchJson(`/api/admin/events?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/courses?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/educators?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/students?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/departments?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/parents?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson(`/api/admin/staff?companyId=${encodeURIComponent(companyId)}`),
     ]);
 
-    // Safely unpack results with custom backend map layouts
-    if (responses[0].status === "fulfilled" && responses[0].value.ok) {
-      initialEvents = (await responses[0].value.json()).data || [];
-    }
-    if (responses[1].status === "fulfilled" && responses[1].value.ok) {
-      allAcademicLevels = (await responses[1].value.json()).data || [];
-    }
-    if (responses[2].status === "fulfilled" && responses[2].value.ok) {
-      allCourses = (await responses[2].value.json()).data || [];
-    }
-    if (responses[3].status === "fulfilled" && responses[3].value.ok) {
-      const educatorsRaw = (await responses[3].value.json()).data || [];
+    if (eventsRes.ok && eventsRes.data) initialEvents = Array.isArray(eventsRes.data) ? eventsRes.data : eventsRes.data.data || [];
+    if (academicLevelsRes.ok && academicLevelsRes.data) allAcademicLevels = Array.isArray(academicLevelsRes.data) ? academicLevelsRes.data : academicLevelsRes.data.data || [];
+    if (coursesRes.ok && coursesRes.data) allCourses = Array.isArray(coursesRes.data) ? coursesRes.data : coursesRes.data.data || [];
+    if (educatorsRes.ok && educatorsRes.data) {
+      const educatorsRaw = Array.isArray(educatorsRes.data) ? educatorsRes.data : educatorsRes.data.data || [];
       allEducators = educatorsRaw.map((e: any) => ({
         id: e.id,
         name: e.user?.name || "N/A",
         email: e.user?.email || "N/A",
       }));
     }
-    if (responses[4].status === "fulfilled" && responses[4].value.ok) {
-      const studentsRaw = (await responses[4].value.json()).data || [];
+    if (studentsRes.ok && studentsRes.data) {
+      const studentsRaw = Array.isArray(studentsRes.data) ? studentsRes.data : studentsRes.data.data || [];
       allStudents = studentsRaw.map((s: any) => ({
         id: s.id,
         name: s.user?.name || "N/A",
         email: s.user?.email || "N/A",
       }));
     }
-    if (responses[5].status === "fulfilled" && responses[5].value.ok) {
-      const deptsRaw = (await responses[5].value.json()).data?.data || [];
+    if (deptsRes.ok && deptsRes.data) {
+      const deptsRaw = Array.isArray(deptsRes.data) ? deptsRes.data : deptsRes.data.data || [];
       allDepartments = deptsRaw.map((d: any) => ({ id: d.id, name: d.name || "N/A" }));
     }
-    if (responses[6].status === "fulfilled" && responses[6].value.ok) {
-      const parentsRaw = (await responses[6].value.json()).data || [];
+    if (parentsRes.ok && parentsRes.data) {
+      const parentsRaw = Array.isArray(parentsRes.data) ? parentsRes.data : parentsRes.data.data || [];
       allParents = parentsRaw.map((p: any) => ({
         id: p.id,
         name: p.user?.name || "N/A",
         email: p.user?.email || "N/A",
       }));
     }
-    if (responses[7].status === "fulfilled" && responses[7].value.ok) {
-      const organizersRaw = (await responses[7].value.json()).data || [];
+    if (staffRes.ok && staffRes.data) {
+      const organizersRaw = Array.isArray(staffRes.data) ? staffRes.data : staffRes.data.data || [];
       allOrganizers = organizersRaw.map((o: any) => ({
         id: o.id,
         name: o.name || "N/A",

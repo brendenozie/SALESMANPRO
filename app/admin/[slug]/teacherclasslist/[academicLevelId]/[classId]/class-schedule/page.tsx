@@ -6,15 +6,13 @@ import { cookies } from "next/headers";
 import { ClassroomOption } from "@/app/admin/[slug]/teachers/TeachersClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
+import { serverFetchJson } from '@/lib/api/serverFetch';
 
 interface PageProps {
   params: Promise<{
-    // slug: string; // teacherId
-    academicLevelId: string; // The ID of the academic level
-    classId: string; // The ID of the academic level/class
+    slug: string;
+    academicLevelId: string;
+    classId: string;
   }>;
 }
 
@@ -153,8 +151,7 @@ const generateSampleTimetableData = (academicLevelId: string, classId: string): 
 
 
 export default async function TimetableManagerPage({ params }: PageProps) {
-  const { academicLevelId, classId } = await params;
-  const cookieHeader = (await cookies()).toString();
+  const { slug, academicLevelId, classId } = await params;
 
   let initialTimetable: TimetableEntry[] = [];
   let allCourses: CourseOption[] = [];
@@ -163,124 +160,69 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   let allClassrooms: ClassroomOption[] = [];
   let fetchError: boolean = false;
 
-  
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+  const companyId = company?.id || '';
 
   try {
-    // Fetch timetable entries with related course and educator info
-    const timetableRes = await fetch(
-      `${apiBaseUrl}/admin/class-schedules?academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, // Corrected API path
-      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } } // SSR on every request
-    );
-    if (timetableRes.ok) {
-      initialTimetable = (await timetableRes.json()) as any[];
-      // console.log(`[TimetableManagerPage] Fetched timetable entries.`,initialTimetable);
-      
-    } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch timetable →",
-        timetableRes.status,
-        timetableRes.statusText
-      );
-      fetchError = true;
+    const [timetableRes, coursesRes, educatorsRes, academicLevelsRes, classroomsRes] = await Promise.all([
+      serverFetchJson<any[]>(
+        `/api/admin/class-schedules?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`
+      ),
+      serverFetchJson<any[]>(
+        `/api/admin/courses?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`
+      ),
+      serverFetchJson<any>(
+        `/api/admin/educators?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`
+      ),
+      serverFetchJson<any[]>(
+        `/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`
+      ),
+      serverFetchJson<any[]>(
+        `/api/admin/classrooms?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`
+      ),
+    ]);
+
+    if (timetableRes.success && timetableRes.data) {
+      initialTimetable = Array.isArray(timetableRes.data) ? timetableRes.data : [];
     }
 
-    // Fetch all courses for dropdowns
-    const coursesRes = await fetch(
-      `${apiBaseUrl}/admin/courses?academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, // Corrected API path
-      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
-    );
-    if (coursesRes.ok) {
-      const fetchedCourses = (await coursesRes.json()).data as any[];
-      
+    if (coursesRes.success && coursesRes.data) {
+      const fetchedCourses = Array.isArray(coursesRes.data) ? coursesRes.data : [];
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
-        code: c.code, // Include course code
-        academicLevels: c.academicLevels, // This should now be an array of {id, name}
+        code: c.code,
+        academicLevels: c.academicLevels,
       }));
-    } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch courses →",
-        coursesRes.status,
-        coursesRes.statusText
-      );
-      fetchError = true;
     }
 
-    // Fetch all educators for dropdowns
-    const educatorsRes = await fetch(
-      `${apiBaseUrl}/admin/educators?academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, // Corrected API path
-      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
-    );
-    if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()).data.data as any[];
-      
-      allEducators = fetchedEducators.map(e => ({
+    if (educatorsRes.success && educatorsRes.data) {
+      const rawEducators = Array.isArray(educatorsRes.data)
+        ? educatorsRes.data
+        : (educatorsRes.data.data && Array.isArray(educatorsRes.data.data) ? educatorsRes.data.data : []);
+      allEducators = rawEducators.map((e: any) => ({
         id: e.id,
         name: e.name,
         email: e.email,
       }));
-    } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch educators →",
-        educatorsRes.status,
-        educatorsRes.statusText
-      );
-      fetchError = true;
     }
 
-    // Fetch all academic levels (for display in course options)
-    const academicLevelsRes = await fetch(
-      `${apiBaseUrl}/admin/academic-levels?academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, // Corrected API path
-      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
-    );
-    if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()).data as any[];
-      
-    } else {
-      console.error(
-        `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
-      fetchError = true;
+    if (academicLevelsRes.success && academicLevelsRes.data) {
+      allAcademicLevels = Array.isArray(academicLevelsRes.data) ? academicLevelsRes.data : [];
     }
 
-    // Fetch all classrooms (for display in timetable entries)
-    const classroomsRes = await fetch(
-      `${apiBaseUrl}/admin/classrooms?academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, // Corrected API path
-      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
-    );
-    if (!classroomsRes.ok) {
-      console.error(
-        `[TimetableManagerPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
-      );
-      fetchError = true;
-    } else {
-      allClassrooms = (await classroomsRes.json()).data as any[];
+    if (classroomsRes.success && classroomsRes.data) {
+      allClassrooms = Array.isArray(classroomsRes.data) ? classroomsRes.data : [];
     }
   } catch (err: any) {
-    console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
+    console.error("[TimetableManagerPage] Error fetching initial data →", err?.message || err);
     fetchError = true;
   }
 
   // If no data was fetched from the API, generate and use sample data
-  if (fetchError || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
-    // console.log("[TimetableManagerPage] No data fetched, generating sample data...");
+  if (fetchError || (initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0)) {
     const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(academicLevelId, classId);
     initialTimetable = sampleTimetableEntries;
     allCourses = sampleCourses;

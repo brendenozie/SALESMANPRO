@@ -57,63 +57,52 @@ export interface StudentGradesPageData {
 }
 
 // Server Component: Fetches data and passes it to the client
+import Link from "next/link";
+import { serverFetchJson } from "@/lib/api/serverFetch";
+
 export default async function StudentGradesServerPage({ params }: PageProps) {
-  
   const { slug: studentSlug, courseId } = await params;
-  // The 'slug' from the URL is the student's User ID
-  // const studentId = studentSlug || MOCK_CURRENT_USER_ID;
-  const cookiesStore = (await cookies()).toString();
-    const session = await getAuthSession();
-    const studentId = session?.user?.id || "";
-  // const studentId = params.slug || MOCK_CURRENT_USER_ID; 
-  // const courseId = params.courseId;
+  const session = await getAuthSession();
+  const studentId = session?.user?.id || "";
 
   let gradesPageData: StudentGradesPageData | null = null;
   let fetchError: string | null = null;
 
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = studentSlug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const identifier = studentSlug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   try {
-    const url = new URL(`${apiBaseUrl}/student/grades`);
-    // The API expects `studentId` which is the User ID
-    url.searchParams.append('studentId', studentId); 
-    
+    const queryParams = new URLSearchParams({ studentId });
     if (courseId) {
-      url.searchParams.append('courseId', courseId);
+      queryParams.append('courseId', courseId);
     }
 
-    const res = await fetch(url.toString(), { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } );
+    const res = await serverFetchJson<StudentGradesPageData>(
+      `/api/student/grades?${queryParams.toString()}`
+    );
 
-    if (res.ok) {
-      // The API response structure is now different
-      const data = (await res.json()).data as StudentGradesPageData;
+    if (res.ok && res.data) {
+      const data = res.data;
       gradesPageData = {
         ...data,
         studentId: studentId,
-        companyId: studentSlug, // Assuming companyId is the slug for routing purposes
+        companyId: companyId,
       };
       
-      if (gradesPageData && courseId && data.courseGrades.length > 0) {
-        // If filtering by course, find its name from the fetched data
+      if (gradesPageData && courseId && data.courseGrades?.length > 0) {
         gradesPageData.courseInfo = {
           id: courseId,
           title: data.courseGrades[0]?.name || 'Course',
         };
       }
     } else {
-      const errorData = (await res.json()).data;
-      fetchError = errorData.message || `Failed to fetch student grades: ${res.status} ${res.statusText}`;
+      fetchError = res.error || res.message || "Failed to fetch student grades";
       console.error("[StudentGradesServerPage] Fetch error:", fetchError);
     }
   } catch (err: any) {
@@ -126,13 +115,12 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
       <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Grades</h2>
         <p className="text-red-600 mb-6">{fetchError || "Could not load student grade data."}</p>
-        <a
-          href="#"
-          onClick={(e) => { e.preventDefault(); window.history.back(); }}
+        <Link
+          href={`/admin/${studentSlug}`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
         >
           Go Back
-        </a>
+        </Link>
       </div>
     );
   }

@@ -177,46 +177,33 @@ const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLev
   };
 };
 
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
+import { serverFetchJson } from "@/lib/api/serverFetch";
+
 export default async function ClassTeacherAcademicLevelsPageServer({ params }: Props) {
   const { slug } = await params;
-    
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  const cookieStore = (await cookies()).toString();
+  if (!company) {
+    return <div>Company not found</div>;
+  }
 
+  const companyId = company.id;
   const teacherId = session?.user?.id || companyId || MOCK_CURRENT_TEACHER_USER_ID;
 
-  let pageData: ClassTeacherAcademicLevelsPageData | null = null; // Changed type to ClassTeacherAcademicLevelsPageData
+  let pageData: ClassTeacherAcademicLevelsPageData | null = null;
   let fetchError: boolean = false;
 
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, // Updated API path
-      { next: { revalidate: 60 }, headers: { cookie: cookieStore } } // equivalent to SSR on every request
+    const res = await serverFetchJson<ClassTeacherAcademicLevelsPageData>(
+      `/api/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`
     );
 
-    if (res.ok) {
-      pageData = (await res.json()).data as ClassTeacherAcademicLevelsPageData; // Cast to the new type
+    if (res.ok && res.data) {
+      pageData = res.data;
     } else {
-      console.error(`[ClassTeacherAcademicLevelsPageServer] Failed to fetch data: ${res.status} ${res.statusText}`);
+      console.error(`[ClassTeacherAcademicLevelsPageServer] Failed to fetch data:`, res.error);
       fetchError = true;
     }
   } catch (err: any) {
@@ -226,8 +213,7 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
 
   // If fetch failed or data is missing, use sample data as fallback
   if (fetchError || !pageData || !pageData.assignedAcademicLevels) {
-    // console.log("[ClassTeacherAcademicLevelsPageServer] Using sample data as fallback.");
-    pageData = generateSampleClassTeacherAcademicLevelsData(); // Assign the full sample data
+    pageData = generateSampleClassTeacherAcademicLevelsData();
   }
 
   const resolvedThemeSettings: { primaryColor: string; accentColor: string } = {
@@ -240,7 +226,8 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
       classTeacherInfo={pageData.classTeacherInfo}
       themeSettings={resolvedThemeSettings}
       assignedAcademicLevels={pageData.assignedAcademicLevels}
-      teacherId={teacherId} // Pass teacherId for navigation
+      teacherId={teacherId}
+      adminSlug={slug}
     />
   );
 }

@@ -1,127 +1,63 @@
-// app/admin/[slug]/inventory/page.tsx
-
 import React from "react";
 import TeachersStudentListPage from "./TeachersStudentListPage";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-type Product = {
-  id: string;
-  name: string;
-  companyId: string;
-  inventoryId: string;
-  category: string;
-  agentStock: number;
-  companyStock: number;
-  sales: number;
-  costPrice: number;
-  salesPrice: number;
-  commissionRate: number;
-  commissionType: number;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
+import { serverFetchJson } from '@/lib/api/serverFetch';
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
-export default async function AdminInventoryPage({ params }: Props) {
-  const { slug }  = await params;
+export default async function TeacherStudentsPage({ params }: Props) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const teacherId = session?.user?.id;
 
-  let productsData: Product[] = [];
-  let categoriesData: Category[] = [];
-  let agentsData: Agent[] = [];
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  let initialRosters: Record<string, any> = {};
 
   try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiBaseUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
-    );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
-    }
+    if (teacherId) {
+      const res = await serverFetchJson(
+        `/api/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`
+      );
 
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { next: { revalidate: 60 } }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
-    }
+      if (res.ok && res.data?.assignedAcademicLevels?.length > 0) {
+        res.data.assignedAcademicLevels.forEach((level: any) => {
+          const classKey = level.id || level.name;
+          const students = (level.students || []).map((s: any) => ({
+            id: s.studentId || s.id,
+            name: s.name,
+            email: s.email || `${s.name?.toLowerCase().replace(/\s+/g, '.')}@school.com`,
+            parentName: s.parentName || "Parent / Guardian",
+            parentPhone: s.parentPhone || "N/A",
+            status: "Active",
+            gradeLevel: level.name || "N/A",
+          }));
 
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiBaseUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
-    }
-
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
+          initialRosters[classKey] = {
+            name: `${level.name}${level.classroom?.name ? ` - ${level.classroom.name}` : ''}`,
+            teacher: session.user?.name || "Teacher",
+            students: students,
+          };
+        });
+      }
     }
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    console.error("[TeacherStudentsPage] Failed to fetch academic levels:", err?.message || err);
   }
 
   return (
-    <TeachersStudentListPage />
+    <TeachersStudentListPage
+      initialRosters={Object.keys(initialRosters).length > 0 ? initialRosters : undefined}
+      educatorName={session?.user?.name || "Teacher"}
+      schoolSlug={slug}
+    />
   );
 }

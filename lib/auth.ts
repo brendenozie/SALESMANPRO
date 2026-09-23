@@ -96,16 +96,27 @@ async function findExistingUserByEmail(email: string) {
 async function findUserByLoginCode(loginCode: string) {
   const student = await prisma.student.findUnique({
     where: { loginCode },
-    include: { user: true },
+    include: { user: true, Company: true },
   });
   if (student)
-    return { user: student.user, role: student.levelStatus || "STUDENT" };
+    return {
+      user: student.user,
+      role: student.levelStatus || "STUDENT",
+      companyId: student.companyId,
+      companySlug: student.Company?.slug,
+    };
 
   const educator = await prisma.educator.findUnique({
     where: { loginCode },
-    include: { user: true },
+    include: { user: true, Company: true },
   });
-  if (educator) return { user: educator.user, role: "EDUCATOR" };
+  if (educator)
+    return {
+      user: educator.user,
+      role: "EDUCATOR",
+      companyId: educator.companyId,
+      companySlug: educator.Company?.slug,
+    };
 
   const consumer = await prisma.consumer.findUnique({
     where: { loginCode },
@@ -158,20 +169,26 @@ async function resolveHasTenantAccess(
     return await fetchWithCache(
       `tenant_access:${userId}`,
       async () => {
-        const [owned, staff] = await Promise.all([
+        const [owned, staff, educator, student, parent] = await Promise.all([
           prisma.company.findFirst({ where: { userId }, select: { id: true } }),
           prisma.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+          prisma.educator.findUnique({ where: { userId }, select: { id: true } }),
+          prisma.student.findUnique({ where: { userId }, select: { id: true } }),
+          prisma.parent.findUnique({ where: { userId }, select: { id: true } }),
         ]);
-        return !!(owned || staff);
+        return !!(owned || staff || educator || student || parent);
       },
       { ttlSeconds: 600 },
     );
   } catch {
-    const [owned, staff] = await Promise.all([
+    const [owned, staff, educator, student, parent] = await Promise.all([
       prisma.company.findFirst({ where: { userId }, select: { id: true } }),
       prisma.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+      prisma.educator.findUnique({ where: { userId }, select: { id: true } }),
+      prisma.student.findUnique({ where: { userId }, select: { id: true } }),
+      prisma.parent.findUnique({ where: { userId }, select: { id: true } }),
     ]);
-    return !!(owned || staff);
+    return !!(owned || staff || educator || student || parent);
   }
 }
 
@@ -561,6 +578,23 @@ export const createAuthOptions = (
                 isActive = dbUser.isActive ?? isActive;
                 companyId = dbUser.companyId ?? companyId;
               }
+              if (!companyId && user.id) {
+                const educatorRec = await prisma.educator.findUnique({
+                  where: { userId: user.id },
+                  select: { companyId: true },
+                });
+                if (educatorRec?.companyId) {
+                  companyId = educatorRec.companyId;
+                } else {
+                  const studentRec = await prisma.student.findUnique({
+                    where: { userId: user.id },
+                    select: { companyId: true },
+                  });
+                  if (studentRec?.companyId) {
+                    companyId = studentRec.companyId;
+                  }
+                }
+              }
             }
           }
 
@@ -600,10 +634,29 @@ export const createAuthOptions = (
             token.emailVerified = dbUser.emailVerified;
             token.isActive = dbUser.isActive;
             token.companyId = dbUser.companyId;
+
+            if (!token.companyId && token.id) {
+              const educatorRec = await prisma.educator.findUnique({
+                where: { userId: String(token.id) },
+                select: { companyId: true },
+              });
+              if (educatorRec?.companyId) {
+                token.companyId = educatorRec.companyId;
+              } else {
+                const studentRec = await prisma.student.findUnique({
+                  where: { userId: String(token.id) },
+                  select: { companyId: true },
+                });
+                if (studentRec?.companyId) {
+                  token.companyId = studentRec.companyId;
+                }
+              }
+            }
+
             token.hasTenantAccess = await resolveHasTenantAccess(
               String(token.id),
               dbUser.role,
-              dbUser.companyId,
+              (token.companyId as string) || dbUser.companyId,
             );
           } else {
             token.hasTenantAccess = false;

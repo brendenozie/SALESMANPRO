@@ -13,7 +13,13 @@ export const dynamic = "force-dynamic";
 const EDUCATION_ROLES = new Set([
   "STUDENT",
   "EDUCATOR",
+  "TEACHER",
+  "TUTOR",
+  "LECTURER",
   "HEADTEACHER",
+  "PRINCIPAL",
+  "HEAD_OF_SCHOOL",
+  "SCHOOL_HEAD",
   "PARENT",
   "JUNIOR",
   "SENIOR",
@@ -46,7 +52,7 @@ export default async function AdminStoreLayout({ params, children }: Props) {
   const identifier = slug || session.user.id;
   const rawCompany = await findCompanyCached(identifier, "page");
 
-  if (!rawCompany && !EDUCATION_ROLES.has(String(user.role || "").toUpperCase())) {
+  if (!rawCompany) {
     notFound();
   }
 
@@ -54,6 +60,34 @@ export default async function AdminStoreLayout({ params, children }: Props) {
     where: { userId: session.user.id },
     select: { companyId: true },
   });
+
+  const userRoleUpper = String(user.role || "").toUpperCase();
+  const isEducationRole = EDUCATION_ROLES.has(userRoleUpper);
+
+  let isEducationAuthorized = false;
+  if (isEducationRole) {
+    if (user.companyId === rawCompany.id) {
+      isEducationAuthorized = true;
+    } else {
+      const [educator, student, parent] = await Promise.all([
+        prisma.educator.findFirst({
+          where: { userId: session.user.id, companyId: rawCompany.id },
+          select: { id: true },
+        }),
+        prisma.student.findFirst({
+          where: { userId: session.user.id, companyId: rawCompany.id },
+          select: { id: true },
+        }),
+        prisma.parent.findFirst({
+          where: { userId: session.user.id, companyId: rawCompany.id },
+          select: { id: true },
+        }),
+      ]);
+      if (educator || student || parent) {
+        isEducationAuthorized = true;
+      }
+    }
+  }
 
   const related =
     canAccessCompanyAdmin({
@@ -66,9 +100,7 @@ export default async function AdminStoreLayout({ params, children }: Props) {
       },
       company: { id: rawCompany.id, userId: rawCompany.userId },
       staffCompanyId: staff?.companyId,
-    }) ||
-    (EDUCATION_ROLES.has(String(user.role || "").toUpperCase()) &&
-      user.companyId === rawCompany.id);
+    }) || isEducationAuthorized;
 
   if (!related) {
     redirect("/unauthorized?reason=forbidden");

@@ -5,7 +5,7 @@ import AdminReportsPageClient,{ OverallStats, StudentPerformanceData, StaffRepor
 
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import { serverFetchJson } from '@/lib/api/serverFetch';
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -124,25 +124,24 @@ export default async function AdminReportsPage({ params }: PageProps) {
     const companyId = company.id;
 
   try {
-    const reportsRes = await fetch(
-      `${apiBaseUrl}/school-reports?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+    const reportsRes = await serverFetchJson<any>(
+      `/api/admin/school-reports?companyId=${encodeURIComponent(companyId)}`
     );
 
-    if (reportsRes.ok) {
-      const data = await reportsRes.json();
+    if (reportsRes.success && reportsRes.data) {
+      const data = reportsRes.data;
       overallStats = data.overallStats;
       studentPerformanceData = data.studentPerformanceData;
       staffReportsData = data.staffReportsData;
       academicReportsData = data.academicReportsData;
       upcomingEventsSummary = data.upcomingEventsSummary;
     } else {
-      console.error(`[AdminReportsPage] Failed to fetch reports: ${reportsRes.status} ${reportsRes.statusText}`);
+      console.error(`[AdminReportsPage] Failed to fetch reports: ${reportsRes.error || reportsRes.status}`);
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("AdminReportsPage-fetch error:", err.message);
+    console.error("AdminReportsPage-fetch error:", err?.message || err);
     fetchError = true;
   }
 

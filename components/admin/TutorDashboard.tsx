@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   UsersIcon,
   BookOpenIcon,
@@ -30,6 +31,7 @@ import TeacherAIPanel from "./TeacherAIPanel";
 
 export interface StaffDashboardProps {
   companyId?: string; // Optional if derived from backend
+  adminSlug?: string;
   currentUserId: string;
   data: {
     teacherName: string;
@@ -60,7 +62,8 @@ export interface StaffDashboardProps {
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // --- MAIN COMPONENT ---
-export default function StaffDashboard({ companyId, currentUserId, data }: StaffDashboardProps) {
+export default function StaffDashboard({ companyId, adminSlug, currentUserId, data }: StaffDashboardProps) {
+  const schoolSlug = adminSlug || companyId || "";
   const safeData = data || ({} as any);
   const teacherName = safeData.teacherName || "Educator";
   const teacherRole = safeData.teacherRole || "Teacher";
@@ -84,10 +87,10 @@ export default function StaffDashboard({ companyId, currentUserId, data }: Staff
 
   // Quick Actions (Static UI helpers)
   const quickActions = [
-    { label: 'Mark Attendance', icon: <UsersIcon className="h-6 w-6" />, href: '#' },
-    { label: 'Enter Grades', icon: <PencilSquareIcon className="h-6 w-6" />, href: '#' },
-    { label: 'Post Announcement', icon: <MegaphoneIcon className="h-6 w-6" />, href: "#" },
-    { label: 'My Calendar', icon: <CalendarDaysIcon className="h-6 w-6" />, href: "#" },
+    { label: 'Mark Attendance', icon: <UsersIcon className="h-6 w-6" />, href: schoolSlug ? `/admin/${schoolSlug}/teacherattendance` : '#' },
+    { label: 'Enter Grades', icon: <PencilSquareIcon className="h-6 w-6" />, href: schoolSlug ? `/admin/${schoolSlug}/teachergrades` : '#' },
+    { label: 'Class Schedule', icon: <CalendarDaysIcon className="h-6 w-6" />, href: schoolSlug ? `/admin/${schoolSlug}/teacherschedule` : "#" },
+    { label: 'Messages', icon: <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />, href: schoolSlug ? `/admin/${schoolSlug}/messages` : "#" },
   ];
 
   // Sync Attendance Status
@@ -234,19 +237,23 @@ export default function StaffDashboard({ companyId, currentUserId, data }: Staff
           </div>
 
           {/* QUICK ACTIONS */}
-          {/* <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
-              <RocketLaunchIcon className="h-5 w-5 text-red-500" /> Quick Actions
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+            <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <RocketLaunchIcon className="h-5 w-5 text-indigo-600" /> Quick Actions
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {quickActions.map((action, idx) => (
-                <a key={idx} href={action.href} className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors">
-                  <div className="text-indigo-500 mb-2">{action.icon}</div>
-                  <span className="text-center text-sm font-medium text-gray-700">{action.label}</span>
-                </a>
+                <Link
+                  key={idx}
+                  href={action.href}
+                  className="flex flex-col items-center p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-indigo-50/60 hover:border-indigo-200 transition-all group"
+                >
+                  <div className="text-indigo-600 mb-2 transition-transform group-hover:scale-110">{action.icon}</div>
+                  <span className="text-center text-xs font-semibold text-slate-700 group-hover:text-indigo-900">{action.label}</span>
+                </Link>
               ))}
             </div>
-          </div> */}
+          </div>
 
           {/* AI TEACHING COPILOT */}
           <TeacherAIPanel companyId={companyId} currentUserId={currentUserId} />
