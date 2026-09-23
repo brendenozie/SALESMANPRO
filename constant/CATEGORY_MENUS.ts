@@ -7047,6 +7047,44 @@ export const getCategoryMenus = (
       },
     ]),
 
+    Educator: filterTiers([
+      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+      {
+        label: "My Classes & Students",
+        icon: UsersIcon,
+        subItems: [
+          { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist` },
+          { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist` },
+          { label: "Student Roster", href: `/admin/${adminSlug}/teacherstudents` },
+          { label: "Course Materials", href: `/admin/${adminSlug}/teachermaterials` },
+        ],
+      },
+      {
+        label: "Academic Work",
+        icon: ClipboardDocumentListIcon,
+        subItems: [
+          { label: "Assignments & Submissions", href: `/admin/${adminSlug}/teacherassignments` },
+          { label: "Grades & Grading", href: `/admin/${adminSlug}/teachergrades` },
+          { label: "Attendance Register", href: `/admin/${adminSlug}/teacherattendance` },
+        ],
+      },
+      {
+        label: "Schedule",
+        href: `/admin/${adminSlug}/teacherschedule`,
+        icon: CalendarIcon,
+      },
+      {
+        label: "Messages",
+        href: `/admin/${adminSlug}/messages`,
+        icon: ChatBubbleBottomCenterTextIcon,
+      },
+      {
+        label: "Settings",
+        href: `/admin/${adminSlug}/settings`,
+        icon: Cog6ToothIcon,
+      },
+    ]),
+
     Student: filterTiers([
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
       {
