@@ -60,8 +60,8 @@ export default async function ConsumersPage({ params }: PageProps) {
   }
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans text-gray-800 dark:text-gray-200">
-      <header className="flex justify-between items-end">
+    <div className="space-y-8 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans text-gray-800 dark:text-gray-200">
+      {/* <header className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold">Consumer Management</h1>
           <p>Oversee retail profiles and login credentials.</p>
@@ -91,7 +91,7 @@ export default async function ConsumersPage({ params }: PageProps) {
           icon={ClockIcon} 
           colorClass="bg-amber-600" 
         />
-      </div>
+      </div> */}
 
       <ConsumersClientPage 
         adminSlug={companyId} 
