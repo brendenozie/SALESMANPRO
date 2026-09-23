@@ -30,7 +30,7 @@ const FuelLogsClient = ({ initialData, schoolId }: FuelLogsClientProps) => {
   const [logs, setLogs] = useState<any[]>(initialData.logs || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   // Form State
   const [formData, setFormData] = useState({

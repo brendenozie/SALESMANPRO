@@ -34,7 +34,7 @@ interface Props {
 const LibraryAcquisitionsClient: React.FC<Props> = ({ initialOrders = [], schoolId = "" }) => {
   const [orders, setOrders] = useState<Acquisition[]>(initialOrders);
   const [filter, setFilter] = useState('All Stages');
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   // Sync Theme
   useEffect(() => {

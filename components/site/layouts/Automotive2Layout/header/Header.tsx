@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Sync initial theme mode preference
   useEffect(() => {

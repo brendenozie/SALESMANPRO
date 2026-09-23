@@ -36,7 +36,7 @@ interface Props {
 const LibraryInventoryClient: React.FC<Props> = ({ initialItems = [], schoolId = "" }) => {
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<InventoryItem[]>(initialItems);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   // Theme Persistence
   useEffect(() => {

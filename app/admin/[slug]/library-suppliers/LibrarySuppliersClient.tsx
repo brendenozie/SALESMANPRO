@@ -74,7 +74,7 @@ const LibrarySuppliersClient: React.FC<Props> = ({ initialSuppliers, initialCate
   const [isCreatingInline, setIsCreatingInline] = useState(false);
 
   // Theme Syncing State
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize System / LocalStorage Theme Preference

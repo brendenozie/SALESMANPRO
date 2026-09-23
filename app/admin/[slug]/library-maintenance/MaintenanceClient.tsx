@@ -15,7 +15,7 @@ const MaintenanceClient = ({ schoolId, initialBooks }: any) => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   
   // Theme state synced with localStorage and system settings
-  // const [theme, setTheme] = useState<"light" | "dark">("dark");
+  // const [theme, setTheme] = useState<"light" | "dark">("light");
 
   // useEffect(() => {
   //   const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
