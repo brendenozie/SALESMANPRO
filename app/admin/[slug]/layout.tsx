@@ -46,7 +46,7 @@ export default async function AdminStoreLayout({ params, children }: Props) {
   const identifier = slug || session.user.id;
   const rawCompany = await findCompanyCached(identifier, "page");
 
-  if (!rawCompany) {
+  if (!rawCompany && !EDUCATION_ROLES.has(String(user.role || "").toUpperCase())) {
     notFound();
   }
 
