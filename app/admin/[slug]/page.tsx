@@ -402,7 +402,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
   const companyId =  ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
     ? session.user.id
-    : company?.id || '';
+    : company?.slug || company?.id;
       
   isLoading = false;
 

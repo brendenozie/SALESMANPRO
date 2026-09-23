@@ -47,8 +47,8 @@ const CountUp = ({ to, format }: { to: number; format?: (val: number) => string;
 const SimpleBarChart = ({ data, currency }: { data: { name: string, total: number }[], currency: string }) => {
     if (!data || data.length === 0) {
         return (
-            <div className="w-full h-52 flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+            <div className="w-full h-52 flex items-center justify-center p-4 bg-gray-100 dark:bg-slate-800/50 rounded-xl border border-gray-200 dark:border-slate-700/50">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     No sales data available for this period.
                 </span>
             </div>
@@ -57,20 +57,20 @@ const SimpleBarChart = ({ data, currency }: { data: { name: string, total: numbe
     const maxValue = Math.max(...data.map(d => d.total), 0);
 
     return (
-        <div className="h-64 flex items-end justify-around space-x-2 pt-4">
+        <div className="h-64 flex items-end justify-around space-x-1 sm:space-x-2 pt-4">
             {data.map((item, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center group relative">
                     <motion.div
-                        className="w-full bg-cyan-500 rounded-t-md"
+                        className="w-full bg-cyan-500 hover:bg-cyan-400 dark:bg-cyan-500/80 dark:hover:bg-cyan-400 rounded-t-md transition-colors cursor-pointer"
                         initial={{ height: 0 }}
                         animate={{ height: `${maxValue > 0 ? (item.total / maxValue) * 100 : 0}%` }}
                         transition={{ duration: 0.8, delay: index * 0.1, ease: "easeOut" }}
                     >
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded py-1 px-2 absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap shadow-lg">
+                        <div className="opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 bg-gray-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold rounded py-1 px-2 absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap shadow-md">
                             {formatCurrency(item.total, currency)}
                         </div>
                     </motion.div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{item.name}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-2 truncate max-w-full">{item.name}</span>
                 </div>
             ))}
         </div>
@@ -80,8 +80,8 @@ const SimpleBarChart = ({ data, currency }: { data: { name: string, total: numbe
 const ActivityDonutChart = ({ data }: { data: { pendingOrders: number; pendingRequests: number; openTasks: number; } }) => {
     if (!data || Object.keys(data).length === 0) {
         return (
-            <div className="w-full h-52 flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+            <div className="w-full h-52 flex items-center justify-center p-4 bg-gray-100 dark:bg-slate-800/50 rounded-xl border border-gray-200 dark:border-slate-700/50">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     No activity data available.
                 </span>
             </div>
@@ -98,10 +98,10 @@ const ActivityDonutChart = ({ data }: { data: { pendingOrders: number; pendingRe
     let offset = 0;
 
     return (
-        <div className="flex flex-col md:flex-row items-center justify-center gap-8 h-64">
-            <div className="relative w-40 h-40">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 h-auto sm:h-64 py-4">
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0">
                 <svg className="w-full h-full" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="15.9155" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="2" fill="transparent"></circle>
+                    <circle cx="18" cy="18" r="15.9155" className="stroke-current text-gray-100 dark:text-slate-700/50" strokeWidth="3" fill="transparent"></circle>
                     {chartData.map((item, index) => {
                         const percentage = total > 0 ? (item.value / total) * 100 : 0;
                         const strokeDasharray = `${percentage} ${100 - percentage}`;
@@ -114,7 +114,7 @@ const ActivityDonutChart = ({ data }: { data: { pendingOrders: number; pendingRe
                                 cy="18"
                                 r="15.9155"
                                 className={item.ringColor}
-                                strokeWidth="2.5"
+                                strokeWidth="3"
                                 fill="transparent"
                                 strokeDasharray={strokeDasharray}
                                 strokeDashoffset={strokeDashoffset}
@@ -122,21 +122,24 @@ const ActivityDonutChart = ({ data }: { data: { pendingOrders: number; pendingRe
                                 animate={{ strokeDasharray: `${percentage} ${100 - percentage}` }}
                                 transition={{ duration: 0.8, delay: index * 0.2, ease: "circOut" }}
                                 transform="rotate(-90 18 18)"
+                                strokeLinecap="round"
                             />
                         );
                     })}
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center flex-col">
-                    <span className="text-3xl font-bold text-gray-900 dark:text-white">{total}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Total</span>
+                    <span className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{total}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</span>
                 </div>
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
                 {chartData.map((item, index) => (
-                    <div key={index} className="flex items-center">
-                        <span className={`w-3 h-3 rounded-full mr-3 ${item.ringColor.replace('stroke-', 'bg-')}`}></span>
-                        <span className={`font-medium text-gray-700 dark:text-gray-300`}>{item.name}</span>
-                        <span className="ml-auto text-gray-900 dark:text-gray-100 font-bold">{item.value}</span>
+                    <div key={index} className="flex items-center justify-between sm:justify-start">
+                        <div className="flex items-center">
+                            <span className={`w-3 h-3 rounded-full mr-3 ${item.ringColor.replace('stroke-', 'bg-')}`}></span>
+                            <span className={`text-sm font-medium text-gray-600 dark:text-slate-300`}>{item.name}</span>
+                        </div>
+                        <span className="ml-4 text-sm text-gray-900 dark:text-slate-100 font-bold">{item.value}</span>
                     </div>
                 ))}
             </div>
@@ -188,15 +191,15 @@ const formatCurrency = (amount: number, currency: string) => {
 };
 
 const COLOR_PALETTE = {
-    sales: { color: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-500/50', iconBg: 'bg-cyan-100 dark:bg-cyan-900/50', bar: 'bg-cyan-500' },
-    revenue: { color: 'text-pink-600 dark:text-pink-400', border: 'border-pink-200 dark:border-pink-500/50', iconBg: 'bg-pink-100 dark:bg-pink-900/50', bar: 'bg-pink-500' },
-    orders: { color: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-500/50', iconBg: 'bg-emerald-100 dark:bg-emerald-900/50', bar: 'bg-emerald-500' },
-    clients: { color: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-500/50', iconBg: 'bg-green-100 dark:bg-green-900/50', bar: 'bg-green-500' },
-    agent: { color: 'text-yellow-600 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-500/50', iconBg: 'bg-yellow-100 dark:bg-yellow-900/50', bar: 'bg-yellow-500' },
-    stock: { color: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-500/50', iconBg: 'bg-red-100 dark:bg-red-900/50', bar: 'bg-red-500' },
-    tasks: { color: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/50', iconBg: 'bg-amber-100 dark:bg-amber-900/50', bar: 'bg-amber-500' },
-    avg: { color: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-500/50', iconBg: 'bg-indigo-100 dark:bg-indigo-900/50', bar: 'bg-indigo-500' },
-    comms: { color: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-500/50', iconBg: 'bg-purple-100 dark:bg-purple-900/50', bar: 'bg-purple-500' },
+    sales: { color: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-500/30', iconBg: 'bg-cyan-100 dark:bg-cyan-900/40', bar: 'bg-cyan-500' },
+    revenue: { color: 'text-pink-600 dark:text-pink-400', border: 'border-pink-200 dark:border-pink-500/30', iconBg: 'bg-pink-100 dark:bg-pink-900/40', bar: 'bg-pink-500' },
+    orders: { color: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-500/30', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40', bar: 'bg-emerald-500' },
+    clients: { color: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-500/30', iconBg: 'bg-green-100 dark:bg-green-900/40', bar: 'bg-green-500' },
+    agent: { color: 'text-yellow-600 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-500/30', iconBg: 'bg-yellow-100 dark:bg-yellow-900/40', bar: 'bg-yellow-500' },
+    stock: { color: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-500/30', iconBg: 'bg-red-100 dark:bg-red-900/40', bar: 'bg-red-500' },
+    tasks: { color: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/30', iconBg: 'bg-amber-100 dark:bg-amber-900/40', bar: 'bg-amber-500' },
+    avg: { color: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-500/30', iconBg: 'bg-indigo-100 dark:bg-indigo-900/40', bar: 'bg-indigo-500' },
+    comms: { color: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-500/30', iconBg: 'bg-purple-100 dark:bg-purple-900/40', bar: 'bg-purple-500' },
 };
 
 export interface DashboardCardProps {
@@ -214,10 +217,10 @@ export interface DashboardCardProps {
 }
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    hidden: { opacity: 0, y: 20, scale: 0.98 },
     visible: (i: number) => ({
         opacity: 1, y: 0, scale: 1,
-        transition: { delay: i * 0.08 + 0.1, duration: 0.4, ease: 'easeOut' },
+        transition: { delay: i * 0.05 + 0.1, duration: 0.4, ease: 'easeOut' },
     }),
 };
 
@@ -227,29 +230,29 @@ const DashboardCard = ({ href, title, icon: Icon, value, formatValue, progress, 
     const hasProgress = progress !== undefined;
 
     return (
-        <a href={href} className={`flex flex-col justify-between p-6 rounded-xl transition-all transform hover:scale-[1.02] group relative overflow-hidden cursor-pointer bg-white dark:bg-gray-800/80 border ${border} shadow-sm dark:shadow-none hover:shadow-xl dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:bg-gray-50 dark:hover:bg-gray-800/90 ${isDanger ? 'ring-2 ring-red-500/50 dark:ring-red-500' : ''} min-h-[15rem]`}>
-            <div className={`absolute top-0 left-0 right-0 h-1 ${bar} transition-all duration-300`}></div>
+        <a href={href} className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden bg-white dark:bg-slate-800 border ${border} shadow-sm dark:shadow-none hover:shadow-lg dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-gray-50 dark:hover:bg-slate-700/80 ${isDanger ? 'ring-2 ring-red-500/40 dark:ring-red-500/50' : ''} min-h-[14rem]`}>
+            <div className={`absolute top-0 left-0 right-0 h-1 ${bar} opacity-80 group-hover:opacity-100 transition-opacity duration-300`}></div>
             <div className='flex flex-col gap-4'>
                 <div className="flex items-center justify-between">
-                    <div className={`p-3 rounded-full shadow-sm dark:shadow-lg ${iconBg} ${color} transition-all duration-300`}>
-                        <Icon className={`w-5 h-5`} />
+                    <div className={`p-3 rounded-xl shadow-sm dark:shadow-md ${iconBg} ${color} transition-all duration-300`}>
+                        <Icon className={`w-6 h-6`} />
                     </div>
-                    <h3 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 text-right">{title}</h3>
+                    <h3 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 text-right">{title}</h3>
                 </div>
                 <div>
-                    <div className={`text-4xl font-extrabold ${color} whitespace-nowrap overflow-hidden text-ellipsis`}>
+                    <div className={`text-3xl sm:text-4xl font-black ${color} whitespace-nowrap overflow-hidden text-ellipsis`}>
                         <CountUp to={value} format={formatValue} />
                     </div>
                 </div>
             </div>
-            <div className="w-full relative z-10">
+            <div className="w-full relative z-10 mt-4">
                 {hasProgress && (
-                    <div className="mb-2">
-                        <div className="flex justify-between items-center text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                    <div className="mb-3">
+                        <div className="flex justify-between items-center text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">
                             <span>Target Progress</span>
                             <span>{Math.round(progressPercent)}%</span>
                         </div>
-                        <div className="relative w-full h-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                        <div className="relative w-full h-1.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
                             <motion.div
                                 className={`${bar} absolute top-0 left-0 h-full rounded-full`}
                                 initial={{ width: 0 }}
@@ -259,10 +262,10 @@ const DashboardCard = ({ href, title, icon: Icon, value, formatValue, progress, 
                         </div>
                     </div>
                 )}
-                <div className="flex justify-between items-center text-xs font-medium text-gray-500 dark:text-gray-400 relative z-10 pt-3 border-t border-gray-100 dark:border-gray-700/50 mt-auto">
-                    <span>{footerText}</span>
-                    <span className="flex items-center text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300">
-                        View <ArrowRightIcon className="ml-1 w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                <div className="flex justify-between items-center text-xs font-medium text-gray-500 dark:text-slate-400 relative z-10 pt-3 border-t border-gray-100 dark:border-slate-700/60 mt-auto">
+                    <span className="truncate pr-2">{footerText}</span>
+                    <span className="flex items-center text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300 flex-shrink-0">
+                        View <ArrowRightIcon className="ml-1 w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </span>
                 </div>
             </div>
@@ -318,128 +321,131 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
     ];
 
     return (
-        <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-4 sm:p-6 lg:p-10 transition-colors duration-500 relative overflow-hidden">
-            <div className="absolute inset-0 z-0 opacity-0 dark:opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-color-gray-800)_0%,_var(--tw-color-gray-900)_100%)] pointer-events-none"></div>
+        <div className="font-sans bg-gray-50/50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 min-h-screen p-3 sm:p-6 lg:p-10 transition-colors duration-500 relative overflow-hidden">
+            <div className="absolute inset-0 z-0 opacity-0 dark:opacity-100 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-color-slate-800)_0%,_transparent_50%)] pointer-events-none"></div>
             
             <div className="relative z-10 max-w-screen-2xl mx-auto">
-                <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <motion.header initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-6 sm:mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-5 sticky top-0 bg-gray-50/90 dark:bg-slate-900/90 backdrop-blur-md z-20 py-2 sm:py-0 sm:relative sm:bg-transparent dark:sm:bg-transparent">
                     <div>
-                        <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">
+                        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
                             {props.companyName} Control Center
                         </h1>
-                        <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full mb-3"></div>
-                        <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 font-medium">
+                        <div className="w-16 h-1 sm:h-1.5 bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full mb-3"></div>
+                        <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-slate-400 font-medium">
                             Actionable summary for <strong>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</strong>.
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <a href={`/admin/${props.slug}/finance`} className="px-4 py-2.5 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-500/40 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-400 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2">
-                            <BanknotesIcon className="w-4 h-4" /> Finance Hub
+                    <div className="flex flex-wrap items-center gap-3">
+                        <a href={`/admin/${props.slug}/finance`} className="flex-1 sm:flex-none justify-center px-4 py-3 sm:py-2.5 bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 min-h-[44px]">
+                            <BanknotesIcon className="w-4 h-4 sm:w-5 sm:h-5" /> Finance Hub
                         </a>
-                        <a href={`/admin/${props.slug}/invoices`} className="px-4 py-2.5 bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2">
-                            <ClipboardDocumentListIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> Invoices
+                        <a href={`/admin/${props.slug}/invoices`} className="flex-1 sm:flex-none justify-center px-4 py-3 sm:py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/80 text-gray-700 dark:text-slate-200 text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 min-h-[44px]">
+                            <ClipboardDocumentListIcon className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" /> Invoices
                         </a>
-                        <a href={`/admin/${props.slug}/inventory-purchase-orders`} className="px-4 py-2.5 bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2">
-                            <CubeTransparentIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" /> Purchase Orders
+                        <a href={`/admin/${props.slug}/inventory-purchase-orders`} className="flex-1 sm:flex-none justify-center px-4 py-3 sm:py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/80 text-gray-700 dark:text-slate-200 text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 min-h-[44px]">
+                            <CubeTransparentIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400" /> Purchases
                         </a>
                     </div>
                 </motion.header>
 
-                <div className="flex flex-col lg:flex-row gap-8">
-                    <div className="w-full lg:w-2/3 space-y-8">
-                        <div className="space-y-4">
+                <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
+                    <div className="w-full xl:w-2/3 space-y-6 lg:space-y-8">
+                        {/* Alerts Section */}
+                        <div className="space-y-3 sm:space-y-4">
                             {props.overdueInvoicesCount > 0 && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-300 shadow-sm dark:shadow-xl border border-blue-200 dark:border-blue-700/50 gap-4">
-                                    <ClockIcon className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-pulse flex-shrink-0" />
+                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-300 shadow-sm border border-blue-200 dark:border-blue-700/30 gap-3 sm:gap-4">
+                                    <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 animate-pulse flex-shrink-0" />
                                     <p className="text-sm font-medium flex-1">
                                         <b>Receivables Alert:</b> <strong>{props.overdueInvoicesCount}</strong> overdue customer invoice(s) awaiting collection.
                                     </p>
-                                    <a href={`/admin/${props.slug}/finance`} className="text-sm font-bold text-blue-700 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors whitespace-nowrap">
+                                    <a href={`/admin/${props.slug}/finance`} className="text-sm font-bold text-blue-700 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 flex items-center">
                                         View Invoices <ArrowRightIcon className="inline ml-1 w-3 h-3" />
                                     </a>
                                 </motion.div>
                             )}
                             {props.pendingSupplierBillsCount > 0 && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 shadow-sm dark:shadow-xl border border-amber-200 dark:border-amber-700/50 gap-4">
-                                    <BanknotesIcon className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-300 shadow-sm border border-amber-200 dark:border-amber-700/30 gap-3 sm:gap-4">
+                                    <BanknotesIcon className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                                     <p className="text-sm font-medium flex-1">
                                         <b>Payables Notice:</b> <strong>{props.pendingSupplierBillsCount}</strong> open supplier bill(s) pending payment.
                                     </p>
-                                    <a href={`/admin/${props.slug}/finance`} className="text-sm font-bold text-amber-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition-colors whitespace-nowrap">
+                                    <a href={`/admin/${props.slug}/finance`} className="text-sm font-bold text-amber-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 flex items-center">
                                         Pay Bills <ArrowRightIcon className="inline ml-1 w-3 h-3" />
                                     </a>
                                 </motion.div>
                             )}
                             {props.overdueTasksCount > 0 && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 shadow-sm dark:shadow-xl border border-amber-300 dark:border-amber-700/50 gap-4">
-                                    <ClockIcon className="w-6 h-6 text-amber-600 dark:text-amber-400 animate-pulse flex-shrink-0" />
+                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-900 dark:text-orange-300 shadow-sm border border-orange-200 dark:border-orange-700/30 gap-3 sm:gap-4">
+                                    <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400 animate-pulse flex-shrink-0" />
                                     <p className="text-sm font-medium flex-1">
                                         <b>Action Required:</b> <strong>{props.overdueTasksCount}</strong> overdue task(s).
                                     </p>
-                                    <a href={`/admin/${props.slug}/tasks`} className="text-sm font-bold text-amber-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition-colors whitespace-nowrap">
+                                    <a href={`/admin/${props.slug}/tasks`} className="text-sm font-bold text-orange-700 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 flex items-center">
                                         Resolve Now <ArrowRightIcon className="inline ml-1 w-3 h-3" />
                                     </a>
                                 </motion.div>
                             )}
                             {props.lowStock > 0 && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-red-50 dark:bg-red-900/40 text-red-900 dark:text-red-300 shadow-sm dark:shadow-xl border border-red-200 dark:border-red-700/50 gap-4">
-                                    <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400 animate-pulse flex-shrink-0" />
+                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-300 shadow-sm border border-red-200 dark:border-red-700/30 gap-3 sm:gap-4">
+                                    <ExclamationTriangleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400 animate-pulse flex-shrink-0" />
                                     <p className="text-sm font-medium flex-1">
                                         <b>Critical Alert:</b> <strong>{props.lowStock}</strong> products are low on stock.
                                     </p>
-                                    <a href={`/admin/${props.slug}/inventory`} className="text-sm font-bold text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors whitespace-nowrap">
+                                    <a href={`/admin/${props.slug}/inventory`} className="text-sm font-bold text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors whitespace-nowrap min-h-[44px] sm:min-h-0 flex items-center">
                                         Restock Now <ArrowRightIcon className="inline ml-1 w-3 h-3" />
                                     </a>
                                 </motion.div>
                             )}
                         </div>
 
-                        <div className="p-6 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-950 rounded-2xl border border-gray-200 dark:border-emerald-500/20 shadow-md dark:shadow-2xl">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 mb-5 border-b border-gray-200 dark:border-gray-800">
+                        {/* MTD Finances */}
+                        <div className="p-5 sm:p-6 bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-md">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 mb-5 border-b border-gray-100 dark:border-slate-700/60">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-                                        <h2 className="text-sm font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                        <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                                             Business Financial Health (MTD)
                                         </h2>
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <p className="text-[11px] sm:text-xs text-gray-500 dark:text-slate-400 mt-1">
                                         Authoritative net figures calculated from real orders, COGS, expenses, and ledgers.
                                     </p>
                                 </div>
-                                <a href={`/admin/${props.slug}/finance`} className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1 transition-all bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800/60 mt-2 sm:mt-0">
+                                <a href={`/admin/${props.slug}/finance`} className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 flex items-center justify-center gap-1 transition-all bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2.5 sm:py-2 rounded-xl border border-emerald-200 dark:border-emerald-500/30 w-full sm:w-auto min-h-[44px] sm:min-h-0">
                                     Full Finance Hub <ArrowRightIcon className="w-3.5 h-3.5" />
                                 </a>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-700/60 rounded-xl transition-all shadow-sm dark:shadow-none">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">Net Profit</span>
-                                    <p className={`text-xl font-extrabold ${props.netProfitMonth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-700/80 border border-gray-100 dark:border-slate-700/60 rounded-xl transition-all shadow-sm">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 block mb-1">Net Profit</span>
+                                    <p className={`text-lg sm:text-xl font-black ${props.netProfitMonth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                                         {formatCurrency(props.netProfitMonth, props.currency)}
                                     </p>
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 block">Gross: {formatCurrency(props.grossProfitMonth, props.currency)}</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-slate-500 mt-1 block">Gross: {formatCurrency(props.grossProfitMonth, props.currency)}</span>
                                 </a>
-                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-700/60 rounded-xl transition-all shadow-sm dark:shadow-none">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">COGS</span>
-                                    <p className="text-xl font-extrabold text-amber-600 dark:text-amber-400">{formatCurrency(props.cogsMonth, props.currency)}</p>
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 block">Sales: {formatCurrency(props.netRevenueMonth, props.currency)}</span>
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-700/80 border border-gray-100 dark:border-slate-700/60 rounded-xl transition-all shadow-sm">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 block mb-1">COGS</span>
+                                    <p className="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400">{formatCurrency(props.cogsMonth, props.currency)}</p>
+                                    <span className="text-[10px] text-gray-500 dark:text-slate-500 mt-1 block">Sales: {formatCurrency(props.netRevenueMonth, props.currency)}</span>
                                 </a>
-                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-700/60 rounded-xl transition-all shadow-sm dark:shadow-none">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">Receivables</span>
-                                    <p className="text-xl font-extrabold text-cyan-600 dark:text-cyan-400">{formatCurrency(props.accountsReceivableTotal, props.currency)}</p>
-                                    <span className="text-[10px] text-cyan-700 dark:text-cyan-400/80 mt-1 block">{props.overdueInvoicesCount} overdue invoice(s)</span>
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-700/80 border border-gray-100 dark:border-slate-700/60 rounded-xl transition-all shadow-sm">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 block mb-1">Receivables</span>
+                                    <p className="text-lg sm:text-xl font-black text-cyan-600 dark:text-cyan-400">{formatCurrency(props.accountsReceivableTotal, props.currency)}</p>
+                                    <span className="text-[10px] text-cyan-700 dark:text-cyan-500 mt-1 block">{props.overdueInvoicesCount} overdue invoice(s)</span>
                                 </a>
-                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-100 dark:border-gray-700/60 rounded-xl transition-all shadow-sm dark:shadow-none">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1">Payables</span>
-                                    <p className="text-xl font-extrabold text-purple-600 dark:text-purple-400">{formatCurrency(props.accountsPayableTotal, props.currency)}</p>
-                                    <span className="text-[10px] text-purple-700 dark:text-purple-400/80 mt-1 block">{props.pendingSupplierBillsCount} open bill(s)</span>
+                                <a href={`/admin/${props.slug}/finance`} className="p-4 bg-white dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-700/80 border border-gray-100 dark:border-slate-700/60 rounded-xl transition-all shadow-sm">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 block mb-1">Payables</span>
+                                    <p className="text-lg sm:text-xl font-black text-purple-600 dark:text-purple-400">{formatCurrency(props.accountsPayableTotal, props.currency)}</p>
+                                    <span className="text-[10px] text-purple-700 dark:text-purple-500 mt-1 block">{props.pendingSupplierBillsCount} open bill(s)</span>
                                 </a>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {/* KPI Cards Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                             {dataCards.map((card, idx) => (
                                 <motion.div key={card.title} custom={idx} variants={cardVariants} initial="hidden" animate="visible">
                                     <DashboardCard {...card} />
@@ -447,86 +453,96 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
                             ))}
                         </div>
 
-                        <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
-                            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-2xl border border-gray-200 dark:border-gray-700/50">
-                                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Sales This Week 📈</h2>
+                        {/* Charts Area */}
+                        <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
+                            <div className="p-5 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700/50">
+                                <h2 className="text-lg sm:text-xl font-black mb-4 text-gray-900 dark:text-white">Sales This Week 📈</h2>
                                 <SimpleBarChart data={props.salesLast7Days} currency={props.currency} />
                             </div>
-                            <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-2xl border border-gray-200 dark:border-gray-700/50">
-                                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Activity Breakdown 📊</h2>
+                            <div className="p-5 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700/50">
+                                <h2 className="text-lg sm:text-xl font-black mb-4 text-gray-900 dark:text-white">Activity Breakdown 📊</h2>
                                 <ActivityDonutChart data={props.activityBreakdown} />
                             </div>
                         </motion.div>
                     </div>
 
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="w-full lg:w-1/3 space-y-8">
-                        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-2xl border border-gray-200 dark:border-gray-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-extrabold text-gray-900 dark:text-white">Today's Focus</h3>
-                                <a href={`/admin/${props.slug}/tasks`} className="py-1 px-3 text-xs font-semibold bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-700 transition-all">View All</a>
+                    {/* Sidebar / Lists Area */}
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="w-full xl:w-1/3 space-y-6 lg:space-y-8">
+                        
+                        {/* Tasks */}
+                        <div className="p-5 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700/50">
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white">Today's Focus</h3>
+                                <a href={`/admin/${props.slug}/tasks`} className="py-2 px-4 text-xs font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all min-h-[36px] flex items-center">View All</a>
                             </div>
                             <div className="space-y-3">
                                 {props.pendingTasksList?.length > 0 ? props.pendingTasksList?.map((task, i) => (
-                                    <motion.a key={task.id} href={`/admin/${props.slug}/tasks/${task.id}`} className="block group" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 + 0.5 }}>
-                                        <div className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all flex items-center border border-gray-100 dark:border-gray-700">
-                                            <ClipboardDocumentListIcon className="w-5 h-5 mr-3 text-amber-500 dark:text-amber-400 flex-shrink-0" />
+                                    <motion.a key={task.id} href={`/admin/${props.slug}/tasks/${task.id}`} className="block group" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 + 0.3 }}>
+                                        <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all flex items-center border border-gray-100 dark:border-slate-700">
+                                            <ClipboardDocumentListIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-3 text-amber-500 dark:text-amber-400 flex-shrink-0" />
                                             <div className='flex-1 overflow-hidden'>
-                                                <h4 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors truncate">{task.taskName}</h4>
-                                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+                                                <h4 className="font-semibold text-sm text-gray-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors truncate">{task.taskName}</h4>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
                                             </div>
-                                            <ArrowRightIcon className="w-4 h-4 ml-4 text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                                            <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-4 text-gray-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-transform" />
                                         </div>
                                     </motion.a>
                                 )) : (
-                                    <div className="text-center py-4 text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                    <div className="text-center py-6 text-sm text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700">
                                         🎉 No urgent tasks. Great job!
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-2xl border border-gray-200 dark:border-gray-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-extrabold text-gray-900 dark:text-white">Recent Orders</h3>
-                                <a href={`/admin/${props.slug}/orders`} className="py-1 px-3 text-xs font-semibold bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-700 transition-all">View All</a>
+                        {/* Recent Orders */}
+                        <div className="p-5 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700/50">
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white">Recent Orders</h3>
+                                <a href={`/admin/${props.slug}/orders`} className="py-2 px-4 text-xs font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all min-h-[36px] flex items-center">View All</a>
                             </div>
                             <div className="space-y-3">
                                 {props.recentOrders?.length > 0 ? props.recentOrders?.map((order, i) => (
-                                    <motion.a key={order.id} href={`/admin/${props.slug}/orders/${order.id}`} className="block group" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 + 0.8 }}>
-                                        <div className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all flex items-center gap-4 border border-gray-100 dark:border-gray-700">
-                                            <ShoppingCartIcon className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                                    <motion.a key={order.id} href={`/admin/${props.slug}/orders/${order.id}`} className="block group" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 + 0.4 }}>
+                                        <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all flex items-center gap-4 border border-gray-100 dark:border-slate-700">
+                                            <ShoppingCartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                                             <div className="flex-1 overflow-hidden">
-                                                <h4 className="font-medium text-gray-800 dark:text-gray-200 truncate">{order.name || `Order #${order.id.slice(-6)}`}</h4>
-                                                <p className="text-sm text-gray-500">{formatCurrency(order.totalPrice || 0, props.currency)}</p>
+                                                <h4 className="font-semibold text-sm text-gray-800 dark:text-slate-200 truncate">{order.name || `Order #${order.id.slice(-6)}`}</h4>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{formatCurrency(order.totalPrice || 0, props.currency)}</p>
                                             </div>
-                                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 flex-shrink-0">{order.status}</span>
+                                            <span className="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 flex-shrink-0">{order.status}</span>
                                         </div>
                                     </motion.a>
                                 )) : (
-                                    <div className="text-center py-4 text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-lg">No recent orders yet.</div>
+                                    <div className="text-center py-6 text-sm text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700">
+                                        No recent orders yet.
+                                    </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-2xl border border-gray-200 dark:border-gray-700/50">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-extrabold text-gray-900 dark:text-white">Active Promotions</h3>
-                                <a href={`/admin/${props.slug}/promotions`} className="py-1 px-3 text-xs font-semibold bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-700 transition-all">Manage</a>
+                        {/* Active Promotions */}
+                        <div className="p-5 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700/50">
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white">Active Promos</h3>
+                                <a href={`/admin/${props.slug}/promotions`} className="py-2 px-4 text-xs font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all min-h-[36px] flex items-center">Manage</a>
                             </div>
                             <div className="space-y-3">
                                 {props.activePromotions?.length > 0 ? props.activePromotions?.map((promo, i) => (
-                                    <motion.a key={promo.id} href={`/admin/${props.slug}/promotions/${promo.id}`} className="block group" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 + 0.9 }}>
-                                        <div className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all flex items-center gap-3 border border-gray-100 dark:border-gray-700">
-                                            <TagIcon className="w-5 h-5 text-pink-500 dark:text-pink-400 flex-shrink-0" />
+                                    <motion.a key={promo.id} href={`/admin/${props.slug}/promotions/${promo.id}`} className="block group" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 + 0.5 }}>
+                                        <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all flex items-center gap-3 border border-gray-100 dark:border-slate-700">
+                                            <TagIcon className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 dark:text-pink-400 flex-shrink-0" />
                                             <div className="flex-1 overflow-hidden">
-                                                <h4 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors truncate">{promo.title}</h4>
-                                                {promo.badgeText && <p className="text-xs text-gray-500 mt-0.5">{promo.badgeText}</p>}
+                                                <h4 className="font-semibold text-sm text-gray-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors truncate">{promo.title}</h4>
+                                                {promo.badgeText && <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-slate-400 mt-1">{promo.badgeText}</p>}
                                             </div>
-                                            <ArrowRightIcon className="w-4 h-4 ml-auto text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                                            <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-auto text-gray-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-transform" />
                                         </div>
                                     </motion.a>
                                 )) : (
-                                    <div className="text-center py-4 text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-lg">No active promotions.</div>
+                                    <div className="text-center py-6 text-sm text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700">
+                                        No active promotions.
+                                    </div>
                                 )}
                             </div>
                         </div>
