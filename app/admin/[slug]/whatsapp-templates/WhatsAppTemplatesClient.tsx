@@ -17,6 +17,7 @@ import {
   CogIcon,
   MegaphoneIcon,
   UserGroupIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 export interface Template {
@@ -63,9 +64,44 @@ export default function WhatsAppTemplatesClient({
 
   // Broadcast Form State
   const [broadcastData, setBroadcastData] = useState({
-    audienceSegment: "ALL_CUSTOMERS",
+    audienceSegment: "ALL_PARENTS",
     customNumbers: "",
   });
+
+  const schoolPresets = [
+    {
+      name: "school_fee_reminder",
+      category: "UTILITY" as Template["category"],
+      headerText: "School Fee Reminder",
+      bodyText:
+        "Dear Parent, this is a reminder from {{1}} that {{2}} (Adm: {{3}}) has an outstanding fee balance of KES {{4}}. Please clear by {{5}} via Paybill {{6}}. For queries, contact {{7}}.",
+      footerText: "Official School Finance Office",
+    },
+    {
+      name: "student_absence_alert",
+      category: "UTILITY" as Template["category"],
+      headerText: "Daily Attendance Alert",
+      bodyText:
+        "Dear Parent, your child {{1}} has been recorded as {{2}} at school today, {{3}}. If you are aware of this absence, please notify the school office at {{4}}.",
+      footerText: "School Administration",
+    },
+    {
+      name: "report_card_notification",
+      category: "MARKETING" as Template["category"],
+      headerText: "Academic Performance Reports",
+      bodyText:
+        "Dear Parent, the end-of-term academic report card for {{1}} is now ready. You can access the report on the portal or visit the school on {{2}} from 9:00 AM.",
+      footerText: "Principal's Office",
+    },
+    {
+      name: "term_opening_notice",
+      category: "MARKETING" as Template["category"],
+      headerText: "School Resumption Notice",
+      bodyText:
+        "Greetings from {{1}}. School resumes for Term {{2}} on {{3}}. Boarding students should report between 8:00 AM and 4:00 PM with all required items.",
+      footerText: "Office of the Headteacher",
+    },
+  ];
 
   const filteredTemplates = templates.filter((t) => {
     const matchesSearch =
@@ -365,6 +401,34 @@ export default function WhatsAppTemplatesClient({
 
             <form onSubmit={handleCreateTemplate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <SparklesIcon className="h-4 w-4" /> Quick Load School Preset
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {schoolPresets.map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => {
+                          setFormData({
+                            name: preset.name,
+                            category: preset.category,
+                            language: "en_US",
+                            headerText: preset.headerText,
+                            bodyText: preset.bodyText,
+                            footerText: preset.footerText,
+                          });
+                          toast.success(`Loaded preset: ${preset.headerText}`);
+                        }}
+                        className="px-2.5 py-2 text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-500 transition-colors truncate shadow-sm"
+                      >
+                        {preset.headerText}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="col-span-2 space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">
                     Template Identifier Name
@@ -519,8 +583,10 @@ export default function WhatsAppTemplatesClient({
                   }
                   className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 px-4 text-xs text-slate-900 dark:text-white focus:border-emerald-500 outline-none cursor-pointer"
                 >
-                  <option value="ALL_CUSTOMERS">All Registered Customers</option>
-                  <option value="RECENT_BUYERS">Active Buyers (Past 30 Days)</option>
+                  <option value="ALL_PARENTS">All Registered Parents</option>
+                  <option value="FEE_DEFAULTERS">Parents with Fee Balances (Defaulters)</option>
+                  <option value="TEACHERS_STAFF">Teaching & Administrative Staff</option>
+                  <option value="ALL_CUSTOMERS">General WhatsApp Opted-in Contacts</option>
                   <option value="CUSTOM_LIST">Custom Phone Number List</option>
                 </select>
               </div>

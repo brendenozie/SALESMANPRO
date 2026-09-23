@@ -11,12 +11,33 @@ export default async function AiStudioPage({ params, searchParams }: PageProps) 
   // Await both promises for Next.js 15+ compatibility
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  
+
   const session = await getAuthSession();
-  const identifier = slug || session?.user?.id || "";
+  const identifier = slug || (session?.user as any)?.id || "";
   const company = await findCompanyCached(identifier, "page");
-  
-  // Extract values directly from the awaited object
+
+  if (!company) {
+    return <div className="p-8 text-slate-500">Company configuration not found.</div>;
+  }
+
+  // Detect whether this organization or logged in user is in the Educational domain
+  const isEducational =
+    [
+      "Educational & Online Courses",
+      "Head Teacher",
+      "School Head",
+      "School",
+      "Education",
+    ].includes(company?.category || "") ||
+    [
+      "HEADTEACHER",
+      "HEAD_TEACHER",
+      "PRINCIPAL",
+      "TEACHER",
+      "EDUCATOR",
+      "SCHOOL_HEAD",
+    ].includes((session?.user as any)?.role || "");
+
   const initialProductContext = {
     productId: resolvedSearchParams?.productId as string | undefined,
     name: resolvedSearchParams?.name as string | undefined,
@@ -27,9 +48,12 @@ export default async function AiStudioPage({ params, searchParams }: PageProps) 
     imageUrl: resolvedSearchParams?.image as string | undefined,
   };
 
-  if (!company) {
-    return <div className="p-8 text-slate-500">Company configuration not found.</div>;
-  }
-
-  return <AiStudioPageClient initialProduct={initialProductContext} companyId={company.id} slug={slug} />;
+  return (
+    <AiStudioPageClient
+      initialProduct={initialProductContext}
+      companyId={company.id}
+      slug={slug}
+      isEducational={isEducational}
+    />
+  );
 }

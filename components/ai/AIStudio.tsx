@@ -1479,7 +1479,7 @@ export default function AIStudio({ companyId, slug, initialProduct }: AIStudioPr
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {(transactionsData?.transactions || []).map((tx) => (
+                    {(transactionsData?.transactions || []).map((tx: any) => (
                       <tr key={tx.id} className="hover:bg-slate-50 transition">
                         <td className="px-6 py-3.5 text-slate-500 whitespace-nowrap font-medium">
                           {new Date(tx.createdAt).toLocaleString()}

@@ -35,9 +35,51 @@ export async function POST(req: Request) {
 
     if (audienceSegment === "CUSTOM_LIST" && Array.isArray(customNumbers)) {
       targetPhoneNumbers = customNumbers.filter(
-        (n: string) => n.trim().length > 0,
+        (n: string) => typeof n === "string" && n.trim().length > 0,
       );
+    } else if (audienceSegment === "ALL_PARENTS") {
+      const parents = await prisma.parent.findMany({
+        where: { companyId },
+        select: { phone: true, user: { select: { phone: true } } },
+      });
+      targetPhoneNumbers = parents
+        .map((p) => p.phone || p.user?.phone)
+        .filter((phone): phone is string => Boolean(phone && phone.trim()));
+    } else if (audienceSegment === "FEE_DEFAULTERS") {
+      const records = await prisma.studentFeeRecord.findMany({
+        where: {
+          student: { companyId },
+          paymentStatus: { in: ["PENDING", "PARTIALLY_PAID"] },
+        },
+        include: {
+          student: {
+            include: {
+              parent: { select: { phone: true, user: { select: { phone: true } } } },
+            },
+          },
+        },
+      });
+      const numbers = new Set<string>();
+      for (const rec of records) {
+        const pPhone = rec.student?.parent?.phone || rec.student?.parent?.user?.phone;
+        if (pPhone && pPhone.trim()) {
+          numbers.add(pPhone.trim());
+        }
+      }
+      targetPhoneNumbers = Array.from(numbers);
+    } else if (audienceSegment === "TEACHERS_STAFF") {
+      const staffUsers = await prisma.user.findMany({
+        where: {
+          companyId,
+          role: { in: ["EDUCATOR", "HEADTEACHER", "STAFF", "STAFF_MEMBER"] },
+        },
+        select: { phone: true },
+      });
+      targetPhoneNumbers = staffUsers
+        .map((u) => u.phone)
+        .filter((phone): phone is string => Boolean(phone && phone.trim()));
     } else {
+      // Default to general WhatsApp contacts
       const contacts = await prisma.whatsAppContact.findMany({
         where: { companyId, optedIn: true, blocked: false },
         select: { phoneNumber: true },
@@ -64,14 +106,15 @@ export async function POST(req: Request) {
     return formatResponse(
       true,
       { campaignId: campaign.id, totalRecipients: targetPhoneNumbers.length },
-      "Broadcast queued successfully",
+      `Broadcast successfully queued for ${targetPhoneNumbers.length} recipients`,
       201,
     );
-  } catch (error) {
+  } catch (error: any) {
+    console.error("[WHATSAPP_BROADCAST_ERROR]", error);
     return formatResponse(
       false,
       null,
-      "Failed to process broadcast dispatch",
+      error.message || "Failed to process broadcast dispatch",
       500,
     );
   }

@@ -873,8 +873,8 @@ export const getCategoryMenus = (
             //     href: "/super-admin/observability/alerts",
             //     minTier: "Ghuba Pro",
             //   },
-            // ],  
-          }
+            // ],
+          },
         ],
       },
       {
@@ -7015,19 +7015,40 @@ export const getCategoryMenus = (
         label: "My Classes & Students",
         icon: UsersIcon,
         subItems: [
-          { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist` },
-          { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist` },
-          { label: "Student Roster", href: `/admin/${adminSlug}/teacherstudents` },
-          { label: "Course Materials", href: `/admin/${adminSlug}/teachermaterials` },
+          {
+            label: "Assigned Classes",
+            href: `/admin/${adminSlug}/teacherclasslist`,
+          },
+          {
+            label: "Assigned Subjects",
+            href: `/admin/${adminSlug}/teachersubjectlist`,
+          },
+          {
+            label: "Student Roster",
+            href: `/admin/${adminSlug}/teacherstudents`,
+          },
+          {
+            label: "Course Materials",
+            href: `/admin/${adminSlug}/teachermaterials`,
+          },
         ],
       },
       {
         label: "Academic Work",
         icon: ClipboardDocumentListIcon,
         subItems: [
-          { label: "Assignments & Submissions", href: `/admin/${adminSlug}/teacherassignments` },
-          { label: "Grades & Grading", href: `/admin/${adminSlug}/teachergrades` },
-          { label: "Attendance Register", href: `/admin/${adminSlug}/teacherattendance` },
+          {
+            label: "Assignments & Submissions",
+            href: `/admin/${adminSlug}/teacherassignments`,
+          },
+          {
+            label: "Grades & Grading",
+            href: `/admin/${adminSlug}/teachergrades`,
+          },
+          {
+            label: "Attendance Register",
+            href: `/admin/${adminSlug}/teacherattendance`,
+          },
         ],
       },
       {
@@ -7053,19 +7074,40 @@ export const getCategoryMenus = (
         label: "My Classes & Students",
         icon: UsersIcon,
         subItems: [
-          { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist` },
-          { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist` },
-          { label: "Student Roster", href: `/admin/${adminSlug}/teacherstudents` },
-          { label: "Course Materials", href: `/admin/${adminSlug}/teachermaterials` },
+          {
+            label: "Assigned Classes",
+            href: `/admin/${adminSlug}/teacherclasslist`,
+          },
+          {
+            label: "Assigned Subjects",
+            href: `/admin/${adminSlug}/teachersubjectlist`,
+          },
+          {
+            label: "Student Roster",
+            href: `/admin/${adminSlug}/teacherstudents`,
+          },
+          {
+            label: "Course Materials",
+            href: `/admin/${adminSlug}/teachermaterials`,
+          },
         ],
       },
       {
         label: "Academic Work",
         icon: ClipboardDocumentListIcon,
         subItems: [
-          { label: "Assignments & Submissions", href: `/admin/${adminSlug}/teacherassignments` },
-          { label: "Grades & Grading", href: `/admin/${adminSlug}/teachergrades` },
-          { label: "Attendance Register", href: `/admin/${adminSlug}/teacherattendance` },
+          {
+            label: "Assignments & Submissions",
+            href: `/admin/${adminSlug}/teacherassignments`,
+          },
+          {
+            label: "Grades & Grading",
+            href: `/admin/${adminSlug}/teachergrades`,
+          },
+          {
+            label: "Attendance Register",
+            href: `/admin/${adminSlug}/teacherattendance`,
+          },
         ],
       },
       {
@@ -7129,7 +7171,10 @@ export const getCategoryMenus = (
           { label: "Story Time", href: `/admin/${adminSlug}/play/story-time` },
           { label: "Puzzles", href: `/admin/${adminSlug}/play/puzzle-play` },
           { label: "Sing-Along", href: `/admin/${adminSlug}/play/sing-along` },
-          { label: "Make Friends", href: `/admin/${adminSlug}/play/make-friends` },
+          {
+            label: "Make Friends",
+            href: `/admin/${adminSlug}/play/make-friends`,
+          },
         ],
       },
       {
@@ -7193,11 +7238,23 @@ export const getCategoryMenus = (
         icon: AcademicCapIcon,
         subItems: [
           { label: "Classrooms", href: `/admin/${adminSlug}/classrooms` },
-          { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },
-          { label: "Academic Years", href: `/admin/${adminSlug}/academic-years` },
-          { label: "Academic Terms", href: `/admin/${adminSlug}/academic-terms` },
+          {
+            label: "Academic Levels",
+            href: `/admin/${adminSlug}/academic-levels`,
+          },
+          {
+            label: "Academic Years",
+            href: `/admin/${adminSlug}/academic-years`,
+          },
+          {
+            label: "Academic Terms",
+            href: `/admin/${adminSlug}/academic-terms`,
+          },
           { label: "Courses", href: `/admin/${adminSlug}/courses` },
-          { label: "Timetable / Schedule", href: `/admin/${adminSlug}/lessons` },
+          {
+            label: "Timetable / Schedule",
+            href: `/admin/${adminSlug}/lessons`,
+          },
         ],
       },
       {
@@ -7215,7 +7272,10 @@ export const getCategoryMenus = (
         icon: ClipboardDocumentListIcon,
         subItems: [
           { label: "Exams", href: `/admin/${adminSlug}/exams` },
-          { label: "Report Cards & Transcripts", href: `/admin/${adminSlug}/grading-report-card` },
+          {
+            label: "Report Cards & Transcripts",
+            href: `/admin/${adminSlug}/grading-report-card`,
+          },
           { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
         ],
       },
@@ -7224,21 +7284,168 @@ export const getCategoryMenus = (
         icon: BanknotesIcon,
         subItems: [
           { label: "Fee Ledger & Balances", href: `/admin/${adminSlug}/fee` },
-          { label: "Student Invoices", href: `/admin/${adminSlug}/fee-invoices` },
-          { label: "Payment Transactions", href: `/admin/${adminSlug}/fee-transactions` },
-          { label: "Fee Structures", href: `/admin/${adminSlug}/fee-structure` },
+          {
+            label: "Student Invoices",
+            href: `/admin/${adminSlug}/fee-invoices`,
+          },
+          {
+            label: "Payment Transactions",
+            href: `/admin/${adminSlug}/fee-transactions`,
+          },
+          {
+            label: "Fee Structures",
+            href: `/admin/${adminSlug}/fee-structure`,
+          },
           { label: "Fee Items & Setup", href: `/admin/${adminSlug}/fee-items` },
-          { label: "School Expenses", href: `/admin/${adminSlug}/fee-expenses` },
-          { label: "Profit & Loss Reports", href: `/admin/${adminSlug}/fee-profit-loss` },
+          {
+            label: "School Expenses",
+            href: `/admin/${adminSlug}/fee-expenses`,
+          },
+          {
+            label: "Profit & Loss Reports",
+            href: `/admin/${adminSlug}/fee-profit-loss`,
+          },
         ],
       },
       {
         label: "School Operations",
         icon: ClipboardDocumentCheckIcon,
         subItems: [
-          { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+          {
+            label: "Attendance Register",
+            href: `/admin/${adminSlug}/attendance`,
+          },
           { label: "School Events", href: `/admin/${adminSlug}/school-events` },
-          { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
+          {
+            label: "Announcements & Notices",
+            href: `/admin/${adminSlug}/schoolAnnouncements`,
+          },
+        ],
+      },
+      {
+        label: "Library Management",
+        icon: BookOpenIcon,
+        subItems: [
+          { label: "Book Catalog", href: `/admin/${adminSlug}/library-books` },
+          {
+            label: "Member Directory",
+            href: `/admin/${adminSlug}/library-members`,
+          },
+          {
+            label: "Book Issuance & Returns",
+            href: `/admin/${adminSlug}/library-issuance-records`,
+          },
+          { label: "Overdue Fines", href: `/admin/${adminSlug}/library-fines` },
+          {
+            label: "Library Reports",
+            href: `/admin/${adminSlug}/library-reports`,
+          },
+        ],
+      },
+      {
+        label: "Transport & Fleet",
+        icon: TruckIcon,
+        subItems: [
+          {
+            label: "School Vehicles",
+            href: `/admin/${adminSlug}/transport-vehicles`,
+          },
+          {
+            label: "Drivers Directory",
+            href: `/admin/${adminSlug}/transport-drivers`,
+          },
+          {
+            label: "Transport Routes",
+            href: `/admin/${adminSlug}/transport-routes`,
+          },
+          {
+            label: "Trip Schedules",
+            href: `/admin/${adminSlug}/transport-schedules`,
+          },
+          {
+            label: "Transport Reports",
+            href: `/admin/${adminSlug}/transport-reports`,
+          },
+        ],
+      },
+      {
+        label: "Hostel & Boarding",
+        icon: BuildingOfficeIcon,
+        subItems: [
+          { label: "Hostel Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
+          { label: "Rooms & Suites", href: `/admin/${adminSlug}/hostel-rooms` },
+          {
+            label: "Boarding Residents",
+            href: `/admin/${adminSlug}/hostel-residents`,
+          },
+          {
+            label: "Room Allocations",
+            href: `/admin/${adminSlug}/hostel-room-assignments`,
+          },
+          {
+            label: "Hostel Reports",
+            href: `/admin/${adminSlug}/hostel-reports`,
+          },
+        ],
+      },
+      {
+        label: "Staff & Human Resources",
+        icon: BriefcaseIcon,
+        subItems: [
+          {
+            label: "Staff Directory",
+            href: `/admin/${adminSlug}/staff-members`,
+          },
+          {
+            label: "Staff Departments",
+            href: `/admin/${adminSlug}/staff-departments`,
+          },
+          {
+            label: "Staff Attendance",
+            href: `/admin/${adminSlug}/staff-attendance`,
+          },
+          {
+            label: "Leave Management",
+            href: `/admin/${adminSlug}/staff-leave-management`,
+          },
+          { label: "Staff Payroll", href: `/admin/${adminSlug}/staff-payroll` },
+          { label: "Staff Reports", href: `/admin/${adminSlug}/staff-reports` },
+        ],
+      },
+      {
+        label: "Inventory & Assets",
+        icon: CubeIcon,
+        subItems: [
+          {
+            label: "Inventory Dashboard",
+            href: `/admin/${adminSlug}/inventory-dashboard`,
+          },
+          { label: "Stock Items", href: `/admin/${adminSlug}/inventory-items` },
+          {
+            label: "Fixed Assets Register",
+            href: `/admin/${adminSlug}/inventory-assets-list`,
+          },
+          {
+            label: "Inventory Reports",
+            href: `/admin/${adminSlug}/inventory-reports`,
+          },
+        ],
+      },
+      {
+        label: "School AI Studio",
+        href: `/admin/${adminSlug}/ai-studio`,
+        icon: SparklesIcon,
+      },
+      {
+        label: "WhatsApp Engine",
+        icon: ChatBubbleLeftRightIcon,
+        subItems: [
+          { label: "WhatsApp Dashboard", href: `/admin/${adminSlug}/whatsapp` },
+          {
+            label: "School Notice Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+          },
+          { label: "Live Inbox", href: `/admin/${adminSlug}/whatsapp-inbox` },
         ],
       },
       {
@@ -7247,9 +7454,18 @@ export const getCategoryMenus = (
         icon: ChartBarIcon,
       },
       {
-        label: "Messages",
-        href: `/admin/${adminSlug}/messages`,
+        label: "Messages & Circulars",
         icon: ChatBubbleBottomCenterTextIcon,
+        subItems: [
+          {
+            label: "Communication Center",
+            href: `/admin/${adminSlug}/messages`,
+          },
+          {
+            label: "Parent Messages",
+            href: `/admin/${adminSlug}/parentmessages`,
+          },
+        ],
       },
       {
         label: "Settings",
@@ -7265,9 +7481,24 @@ export const getCategoryMenus = (
         icon: AcademicCapIcon,
         subItems: [
           { label: "Classrooms", href: `/admin/${adminSlug}/classrooms` },
-          { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },
+          {
+            label: "Academic Levels",
+            href: `/admin/${adminSlug}/academic-levels`,
+          },
+          {
+            label: "Academic Years",
+            href: `/admin/${adminSlug}/academic-years`,
+          },
+          {
+            label: "Academic Terms",
+            href: `/admin/${adminSlug}/academic-terms`,
+          },
           { label: "Courses", href: `/admin/${adminSlug}/courses` },
-          { label: "Course Materials", href: `/admin/${adminSlug}/course-materials` },
+          {
+            label: "Course Materials",
+            href: `/admin/${adminSlug}/course-materials`,
+          },
+
           { label: "Timetable / Lessons", href: `/admin/${adminSlug}/lessons` },
         ],
       },
@@ -7278,6 +7509,7 @@ export const getCategoryMenus = (
           { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
           { label: "Students", href: `/admin/${adminSlug}/students` },
           { label: "Parents", href: `/admin/${adminSlug}/parents` },
+          { label: "Staff Members", href: `/admin/${adminSlug}/staff-members` },
         ],
       },
       {
@@ -7285,7 +7517,10 @@ export const getCategoryMenus = (
         icon: ClipboardDocumentListIcon,
         subItems: [
           { label: "Exams", href: `/admin/${adminSlug}/exams` },
-          { label: "Report Cards & Transcripts", href: `/admin/${adminSlug}/grading-report-card` },
+          {
+            label: "Report Cards & Transcripts",
+            href: `/admin/${adminSlug}/grading-report-card`,
+          },
           { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
         ],
       },
@@ -7294,21 +7529,168 @@ export const getCategoryMenus = (
         icon: BanknotesIcon,
         subItems: [
           { label: "Fee Ledger & Balances", href: `/admin/${adminSlug}/fee` },
-          { label: "Student Invoices", href: `/admin/${adminSlug}/fee-invoices` },
-          { label: "Payment Transactions", href: `/admin/${adminSlug}/fee-transactions` },
-          { label: "Fee Structures", href: `/admin/${adminSlug}/fee-structure` },
+          {
+            label: "Student Invoices",
+            href: `/admin/${adminSlug}/fee-invoices`,
+          },
+          {
+            label: "Payment Transactions",
+            href: `/admin/${adminSlug}/fee-transactions`,
+          },
+          {
+            label: "Fee Structures",
+            href: `/admin/${adminSlug}/fee-structure`,
+          },
           { label: "Fee Items & Setup", href: `/admin/${adminSlug}/fee-items` },
-          { label: "School Expenses", href: `/admin/${adminSlug}/fee-expenses` },
-          { label: "Profit & Loss Reports", href: `/admin/${adminSlug}/fee-profit-loss` },
+          {
+            label: "School Expenses",
+            href: `/admin/${adminSlug}/fee-expenses`,
+          },
+          {
+            label: "Profit & Loss Reports",
+            href: `/admin/${adminSlug}/fee-profit-loss`,
+          },
         ],
       },
       {
         label: "School Operations",
         icon: ClipboardDocumentCheckIcon,
         subItems: [
-          { label: "Attendance", href: `/admin/${adminSlug}/attendance` },
+          {
+            label: "Attendance Register",
+            href: `/admin/${adminSlug}/attendance`,
+          },
           { label: "School Events", href: `/admin/${adminSlug}/school-events` },
-          { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements` },
+          {
+            label: "Announcements & Notices",
+            href: `/admin/${adminSlug}/schoolAnnouncements`,
+          },
+        ],
+      },
+      {
+        label: "Library Management",
+        icon: BookOpenIcon,
+        subItems: [
+          { label: "Book Catalog", href: `/admin/${adminSlug}/library-books` },
+          {
+            label: "Member Directory",
+            href: `/admin/${adminSlug}/library-members`,
+          },
+          {
+            label: "Book Issuance & Returns",
+            href: `/admin/${adminSlug}/library-issuance-records`,
+          },
+          { label: "Overdue Fines", href: `/admin/${adminSlug}/library-fines` },
+          {
+            label: "Library Reports",
+            href: `/admin/${adminSlug}/library-reports`,
+          },
+        ],
+      },
+      {
+        label: "Transport & Fleet",
+        icon: TruckIcon,
+        subItems: [
+          {
+            label: "School Vehicles",
+            href: `/admin/${adminSlug}/transport-vehicles`,
+          },
+          {
+            label: "Drivers Directory",
+            href: `/admin/${adminSlug}/transport-drivers`,
+          },
+          {
+            label: "Transport Routes",
+            href: `/admin/${adminSlug}/transport-routes`,
+          },
+          {
+            label: "Trip Schedules",
+            href: `/admin/${adminSlug}/transport-schedules`,
+          },
+          {
+            label: "Transport Reports",
+            href: `/admin/${adminSlug}/transport-reports`,
+          },
+        ],
+      },
+      {
+        label: "Hostel & Boarding",
+        icon: BuildingOfficeIcon,
+        subItems: [
+          { label: "Hostel Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
+          { label: "Rooms & Suites", href: `/admin/${adminSlug}/hostel-rooms` },
+          {
+            label: "Boarding Residents",
+            href: `/admin/${adminSlug}/hostel-residents`,
+          },
+          {
+            label: "Room Allocations",
+            href: `/admin/${adminSlug}/hostel-room-assignments`,
+          },
+          {
+            label: "Hostel Reports",
+            href: `/admin/${adminSlug}/hostel-reports`,
+          },
+        ],
+      },
+      {
+        label: "Staff & Human Resources",
+        icon: BriefcaseIcon,
+        subItems: [
+          {
+            label: "Staff Directory",
+            href: `/admin/${adminSlug}/staff-members`,
+          },
+          {
+            label: "Staff Departments",
+            href: `/admin/${adminSlug}/staff-departments`,
+          },
+          {
+            label: "Staff Attendance",
+            href: `/admin/${adminSlug}/staff-attendance`,
+          },
+          {
+            label: "Leave Management",
+            href: `/admin/${adminSlug}/staff-leave-management`,
+          },
+          { label: "Staff Payroll", href: `/admin/${adminSlug}/staff-payroll` },
+          { label: "Staff Reports", href: `/admin/${adminSlug}/staff-reports` },
+        ],
+      },
+      {
+        label: "Inventory & Assets",
+        icon: CubeIcon,
+        subItems: [
+          {
+            label: "Inventory Dashboard",
+            href: `/admin/${adminSlug}/inventory-dashboard`,
+          },
+          { label: "Stock Items", href: `/admin/${adminSlug}/inventory-items` },
+          {
+            label: "Fixed Assets Register",
+            href: `/admin/${adminSlug}/inventory-assets-list`,
+          },
+          {
+            label: "Inventory Reports",
+            href: `/admin/${adminSlug}/inventory-reports`,
+          },
+        ],
+      },
+      {
+        label: "School AI Studio",
+        href: `/admin/${adminSlug}/ai-studio`,
+        icon: SparklesIcon,
+      },
+      {
+        label: "WhatsApp Engine",
+        icon: ChatBubbleLeftRightIcon,
+        subItems: [
+          { label: "WhatsApp Dashboard", href: `/admin/${adminSlug}/whatsapp` },
+          {
+            label: "School Notice Broadcasts",
+            href: `/admin/${adminSlug}/whatsapp-templates`,
+          },
+          { label: "Live Inbox", href: `/admin/${adminSlug}/whatsapp-inbox` },
         ],
       },
       {
@@ -7317,9 +7699,18 @@ export const getCategoryMenus = (
         icon: ChartBarIcon,
       },
       {
-        label: "Messages",
-        href: `/admin/${adminSlug}/messages`,
+        label: "Messages & Circulars",
         icon: ChatBubbleBottomCenterTextIcon,
+        subItems: [
+          {
+            label: "Communication Center",
+            href: `/admin/${adminSlug}/messages`,
+          },
+          {
+            label: "Parent Messages",
+            href: `/admin/${adminSlug}/parentmessages`,
+          },
+        ],
       },
       {
         label: "Settings",
