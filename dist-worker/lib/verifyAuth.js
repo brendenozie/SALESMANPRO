@@ -21,16 +21,16 @@ async function verifyAuth(request) {
                 : "next-auth.session-token",
         });
         if (!token) {
-            return { success: false, error: "Unauthorized: No valid session found" };
+            return { success: false, authorized: false, error: "Unauthorized: No valid session found" };
         }
         // The 'token' object is the decoded JWT payload.
         // We can cast it to our VerifiedUser interface for type safety.
         const user = token;
-        return { success: true, user: user };
+        return { success: true, authorized: true, user: user };
     }
     catch (error) {
         console.error("Authentication verification failed:", error);
-        return { success: false, error: "Internal Server Error during authentication" };
+        return { success: false, authorized: false, error: "Internal Server Error during authentication" };
     }
 }
 exports.verifyAuth = verifyAuth;

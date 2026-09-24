@@ -230,10 +230,16 @@ exports.getUserTravel = getUserTravel;
  */
 async function getUserFitness(userId, slug, filters = {}) {
     const { status, limit = 20, cursor, sort = "desc" } = filters;
+    // Resolve consumer IDs if user has associated consumers
+    const consumers = await prismadb_1.default.consumer.findMany({
+        where: { userId },
+        select: { id: true },
+    });
+    const studentIds = [userId, ...consumers.map((c) => c.id)];
     // Get user's course enrollments as fitness programs
     const enrollments = await prismadb_1.default.courseEnrollment.findMany({
         where: {
-            studentId: userId,
+            studentId: { in: studentIds },
             ...(status && { status: status }),
         },
         take: limit,

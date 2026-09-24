@@ -99,16 +99,26 @@ async function findExistingUserByEmail(email) {
 async function findUserByLoginCode(loginCode) {
     const student = await prismadb_1.default.student.findUnique({
         where: { loginCode },
-        include: { user: true },
+        include: { user: true, Company: true },
     });
     if (student)
-        return { user: student.user, role: student.levelStatus || "STUDENT" };
+        return {
+            user: student.user,
+            role: student.levelStatus || "STUDENT",
+            companyId: student.companyId,
+            companySlug: student.Company?.slug,
+        };
     const educator = await prismadb_1.default.educator.findUnique({
         where: { loginCode },
-        include: { user: true },
+        include: { user: true, Company: true },
     });
     if (educator)
-        return { user: educator.user, role: "EDUCATOR" };
+        return {
+            user: educator.user,
+            role: "EDUCATOR",
+            companyId: educator.companyId,
+            companySlug: educator.Company?.slug,
+        };
     const consumer = await prismadb_1.default.consumer.findUnique({
         where: { loginCode },
         include: { user: true },
@@ -149,19 +159,25 @@ async function resolveHasTenantAccess(userId, role, companyId) {
     try {
         const { fetchWithCache } = await Promise.resolve().then(() => __importStar(require("./cache")));
         return await fetchWithCache(`tenant_access:${userId}`, async () => {
-            const [owned, staff] = await Promise.all([
+            const [owned, staff, educator, student, parent] = await Promise.all([
                 prismadb_1.default.company.findFirst({ where: { userId }, select: { id: true } }),
                 prismadb_1.default.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+                prismadb_1.default.educator.findUnique({ where: { userId }, select: { id: true } }),
+                prismadb_1.default.student.findUnique({ where: { userId }, select: { id: true } }),
+                prismadb_1.default.parent.findUnique({ where: { userId }, select: { id: true } }),
             ]);
-            return !!(owned || staff);
+            return !!(owned || staff || educator || student || parent);
         }, { ttlSeconds: 600 });
     }
     catch {
-        const [owned, staff] = await Promise.all([
+        const [owned, staff, educator, student, parent] = await Promise.all([
             prismadb_1.default.company.findFirst({ where: { userId }, select: { id: true } }),
             prismadb_1.default.staffProfile.findUnique({ where: { userId }, select: { id: true } }),
+            prismadb_1.default.educator.findUnique({ where: { userId }, select: { id: true } }),
+            prismadb_1.default.student.findUnique({ where: { userId }, select: { id: true } }),
+            prismadb_1.default.parent.findUnique({ where: { userId }, select: { id: true } }),
         ]);
-        return !!(owned || staff);
+        return !!(owned || staff || educator || student || parent);
     }
 }
 async function resolveFlowContext(opts) {
@@ -475,6 +491,24 @@ const createAuthOptions = (ctx = {}) => {
                                 isActive = dbUser.isActive ?? isActive;
                                 companyId = dbUser.companyId ?? companyId;
                             }
+                            if (!companyId && user.id) {
+                                const educatorRec = await prismadb_1.default.educator.findUnique({
+                                    where: { userId: user.id },
+                                    select: { companyId: true },
+                                });
+                                if (educatorRec?.companyId) {
+                                    companyId = educatorRec.companyId;
+                                }
+                                else {
+                                    const studentRec = await prismadb_1.default.student.findUnique({
+                                        where: { userId: user.id },
+                                        select: { companyId: true },
+                                    });
+                                    if (studentRec?.companyId) {
+                                        companyId = studentRec.companyId;
+                                    }
+                                }
+                            }
                         }
                     }
                     const hasTenantAccess = u.hasTenantAccess ??
@@ -511,7 +545,25 @@ const createAuthOptions = (ctx = {}) => {
                         token.emailVerified = dbUser.emailVerified;
                         token.isActive = dbUser.isActive;
                         token.companyId = dbUser.companyId;
-                        token.hasTenantAccess = await resolveHasTenantAccess(String(token.id), dbUser.role, dbUser.companyId);
+                        if (!token.companyId && token.id) {
+                            const educatorRec = await prismadb_1.default.educator.findUnique({
+                                where: { userId: String(token.id) },
+                                select: { companyId: true },
+                            });
+                            if (educatorRec?.companyId) {
+                                token.companyId = educatorRec.companyId;
+                            }
+                            else {
+                                const studentRec = await prismadb_1.default.student.findUnique({
+                                    where: { userId: String(token.id) },
+                                    select: { companyId: true },
+                                });
+                                if (studentRec?.companyId) {
+                                    token.companyId = studentRec.companyId;
+                                }
+                            }
+                        }
+                        token.hasTenantAccess = await resolveHasTenantAccess(String(token.id), dbUser.role, token.companyId || dbUser.companyId);
                     }
                     else {
                         token.hasTenantAccess = false;

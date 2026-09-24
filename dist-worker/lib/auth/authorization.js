@@ -8,12 +8,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isConsumerOnlyAccount = exports.canAccessCompanyAdmin = exports.canAccessDashboard = exports.isAccountActive = exports.isEmailVerifiedForAccess = exports.hasDashboardRole = exports.normalizeRole = exports.CONSUMER_ACCOUNT_ROLES = exports.DASHBOARD_ROLES = void 0;
 exports.DASHBOARD_ROLES = new Set([
     "ADMIN",
+    "SUPER_ADMIN",
     "STAFF",
     "STAFF_MEMBER",
     "AGENT",
     "MODERATOR",
     "EDUCATOR",
+    "TEACHER",
+    "TUTOR",
+    "LECTURER",
     "HEADTEACHER",
+    "PRINCIPAL",
+    "HEAD_OF_SCHOOL",
+    "SCHOOL_HEAD",
     "SERVICE_PROVIDER",
 ]);
 exports.CONSUMER_ACCOUNT_ROLES = new Set(["USER", "CONSUMER"]);

@@ -179,6 +179,9 @@ function withApiHandler(handler, options = {
             if (!context.params) {
                 context.params = {};
             }
+            else if (typeof context.params?.then === "function" || context.params instanceof Promise) {
+                context.params = await context.params;
+            }
             // --- Ensure JSON Content-Type for non-GET requests ---
             if (request.method !== "GET" &&
                 request.method !== "DELETE" &&
