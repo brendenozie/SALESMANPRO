@@ -145,22 +145,22 @@ export default async function ShowingsPage({ params }: ShowingsPageProps) {
         clientsResult,
         agentsResult,
     ] = await Promise.all([
-        fetchData<Showing[]>('admin/showings', companyId, cookiesHeaders, generateSampleShowings),
-        fetchData<SelectOption[]>('admin/my-market-place', companyId, cookiesHeaders, generateSampleProperties),
-        fetchData<SelectOption[]>('admin/properties-clients', companyId, cookiesHeaders, generateSampleClients),
-        fetchData<SelectOption[]>('admin/sales-agents', companyId, cookiesHeaders, generateSampleAgents),
+        fetchData<Showing[]>('admin/showings', companyId, cookiesHeaders, () => []),
+        fetchData<SelectOption[]>('admin/my-market-place', companyId, cookiesHeaders, () => []),
+        fetchData<SelectOption[]>('admin/properties-clients', companyId, cookiesHeaders, () => []),
+        fetchData<SelectOption[]>('admin/sales-agents', companyId, cookiesHeaders, () => []),
     ]);
 
     // Consolidate data and error handling
-    let initialShowings: Showing[] = showingsResult.data || generateSampleShowings();
+    let initialShowings: Showing[] = showingsResult.data || [];
     if (initialShowings.length > 0) {
          // Sort only if data is present
          initialShowings = initialShowings.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
     }
 
-    const allProperties: SelectOption[] = propertiesResult.data || generateSampleProperties();
-    const allClients: SelectOption[] = clientsResult.data || generateSampleClients();
-    const allAgents: SelectOption[] = agentsResult.data || generateSampleAgents();
+    const allProperties: SelectOption[] = propertiesResult.data || [];
+    const allClients: SelectOption[] = clientsResult.data || [];
+    const allAgents: SelectOption[] = agentsResult.data || [];
 
     const initialLoadSuccessful = !showingsResult.error && !propertiesResult.error && !clientsResult.error && !agentsResult.error;
     const serverLoadError: string | null = showingsResult.error || propertiesResult.error || clientsResult.error || agentsResult.error;

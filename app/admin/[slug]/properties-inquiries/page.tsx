@@ -83,7 +83,7 @@ export default async function InquiriesPage({ params }: InquiriesPageProps) {
   // --- app/admin/[slug]/inquiries/page.tsx ---
 
   try {
-    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, { 
+    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${companyId}`, { 
       headers: { cookie: cookiesHeader },
       cache: 'no-store' // Ensure fresh data
     });

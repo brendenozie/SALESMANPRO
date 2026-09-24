@@ -212,7 +212,7 @@ export default async function PropertyManagementPage({ params }: PropertyPagePro
       const companyId = company.id;
 
     // --- 1. Fetch Properties (Market Listings) ---
-    const propertiesResult = await fetchData<any>('admin/my-market-place', companyId, cookiesHeaders, generateMockProperties);
+    const propertiesResult = await fetchData<any>('admin/my-market-place', companyId, cookiesHeaders, () => ({ results: [] }));
     
     // --- 2. Fetch Categories ---
     // NOTE: The original component had a complicated fetch/mapping for categories. We simplify the fetch call here.

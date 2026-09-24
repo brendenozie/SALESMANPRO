@@ -1,29 +1,33 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-
-
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { Prisma } from "@prisma/client";
 
-// Define the expected structure for route parameters (empty for a collection route)
 type RouteParams = { params: {} };
+const VALID_STATUSES = ["Pending", "Accepted", "Rejected", "Closed"];
 
-const VALID_STATUSES = ['Pending', 'Accepted', 'Rejected', 'Closed'];
+async function resolveCompanyId(idOrSlug: string): Promise<string> {
+  if (/^[0-9a-fA-F]{24}$/.test(idOrSlug)) {
+    return idOrSlug;
+  }
+  const comp = await prisma.company.findFirst({
+    where: { slug: idOrSlug },
+    select: { id: true },
+  });
+  return comp?.id || idOrSlug;
+}
 
 // --- GET Handler Core Logic ---
-
 async function handleGetOffers(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get('companyId');
+  const rawCompanyId = searchParams.get("companyId");
 
-  if (!companyId) {
-    // Manually format a 400 response for missing required query param
-    return formatResponse(false, null, 'Company ID is required to fetch offers.', 400);
+  if (!rawCompanyId) {
+    return formatResponse(false, null, "Company ID is required to fetch offers.", 400);
   }
 
-  
-    const cacheKey = buildTenantCacheKey(companyId, "offers", {});
+  const companyId = await resolveCompanyId(rawCompanyId);
+  const cacheKey = buildTenantCacheKey(companyId, "offers", {});
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -35,9 +39,9 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
       companyId: companyId,
     },
     orderBy: {
-      offerDate: 'desc', // Order by offer date, newest first
+      offerDate: "desc",
     },
-    include: { // Include relations for richer data
+    include: {
       property: {
         select: { name: true, id: true, images: true }
       },
@@ -50,7 +54,6 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
     },
   });
 
-  // Format the response to match the frontend's expected OfferContract type
   const formattedOffers = offers.map(offer => ({
     id: offer.id,
     propertyId: offer.propertyId,
@@ -75,20 +78,19 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
     }
   } catch (e) {}
 
-  // withApiHandler handles wrapping this result in a success formatResponse with status 200
   return formatResponse(true, { results: formattedOffers }, "Offers fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---
-
 async function handlePostOffer(request: Request, { params }: RouteParams) {
   const body = await request.json();
-  const {
-    companyId,
+  let {
+    companyId: rawCompanyId,
     propertyId,
     propertyName,
     clientId,
     clientName,
+    clientEmail,
     agentId,
     agentName,
     offerAmount,
@@ -99,77 +101,118 @@ async function handlePostOffer(request: Request, { params }: RouteParams) {
     contractUrl,
   } = body;
 
-  // Basic validation
-  if (!companyId || !propertyId || !clientId || !agentId || offerAmount === undefined || !offerDate) {
+  if (!rawCompanyId || !propertyId || offerAmount === undefined) {
     return formatResponse(
       false,
       null,
-      'Missing required fields (companyId, propertyId, clientId, agentId, offerAmount, offerDate).',
+      "Missing required fields (companyId, propertyId, offerAmount).",
       400
     );
   }
 
-  if (isNaN(parseFloat(offerAmount))) {
-    return formatResponse(false, null, 'Offer amount must be a valid number.', 400);
-  }
-  if (isNaN(new Date(offerDate).getTime())) {
-    return formatResponse(false, null, 'Invalid offerDate format. Must be a valid date string.', 400);
+  const companyId = await resolveCompanyId(rawCompanyId);
+  const parsedAmount = parseFloat(offerAmount);
+
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    return formatResponse(false, null, "Offer amount must be a positive number.", 400);
   }
 
-  // Validate status if provided
-  if (status && !VALID_STATUSES.includes(status)) {
-    return formatResponse(
-      false,
-      null,
-      `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
-      400
-    );
+  // Resolve property
+  const property = await prisma.marketplaceListings.findUnique({
+    where: { id: propertyId },
+    select: { id: true, name: true, sellerId: true, companyId: true },
+  });
+
+  if (!property) {
+    return formatResponse(false, null, "Property not found", 404);
   }
+
+  propertyName = propertyName || property.name;
+
+  // Resolve Client (User)
+  if (!clientId) {
+    if (clientEmail) {
+      let clientUser = await prisma.user.findFirst({ where: { email: clientEmail } });
+      if (!clientUser) {
+        clientUser = await prisma.user.create({
+          data: {
+            email: clientEmail,
+            name: clientName || "Prospective Buyer",
+            role: "CONSUMER",
+          },
+        });
+      }
+      clientId = clientUser.id;
+      clientName = clientName || clientUser.name;
+    } else {
+      // Find company first user or fallback user
+      const defaultUser = await prisma.user.findFirst({
+        where: { companyId },
+        select: { id: true, name: true },
+      });
+      clientId = defaultUser?.id;
+      clientName = clientName || defaultUser?.name || "Client";
+    }
+  }
+
+  // Resolve Agent (User)
+  if (!agentId) {
+    if (property.sellerId) {
+      agentId = property.sellerId;
+    } else {
+      const companyUser = await prisma.user.findFirst({
+        where: { companyId, role: { in: ["ADMIN", "MANAGER", "STAFF", "SALES_AGENT"] } },
+        select: { id: true, name: true },
+      });
+      agentId = companyUser?.id;
+      agentName = agentName || companyUser?.name || "Agent";
+    }
+  }
+
+  // Fallback for agentId if still missing
+  if (!agentId) {
+    const anyUser = await prisma.user.findFirst({ select: { id: true, name: true } });
+    agentId = anyUser?.id;
+    agentName = agentName || anyUser?.name || "Agent";
+  }
+
+  if (!clientId || !agentId) {
+    return formatResponse(false, null, "Could not resolve valid client and agent references for offer.", 400);
+  }
+
+  const validStatus = status && VALID_STATUSES.includes(status) ? status : "Pending";
+  const finalOfferDate = offerDate ? new Date(offerDate) : new Date();
+
+  const newOffer = await prisma.offerContract.create({
+    data: {
+      companyId,
+      propertyId,
+      propertyName,
+      clientId,
+      clientName: clientName || "Client",
+      agentId,
+      agentName: agentName || "Agent",
+      offerAmount: parsedAmount,
+      status: validStatus,
+      offerDate: finalOfferDate,
+      closureDate: closureDate ? new Date(closureDate) : null,
+      notes: notes || null,
+      contractUrl: contractUrl || null,
+    },
+    include: {
+      property: { select: { id: true, name: true, images: true } },
+      client: { select: { id: true, name: true, email: true } },
+      agent: { select: { id: true, name: true, email: true } },
+    },
+  });
 
   try {
-    // Optional: Fetch names if not provided (to ensure consistency/denormalization)
-    const [property, client, agent] = await Promise.all([
-      propertyName ? Promise.resolve(null) : prisma.marketplaceListings.findUnique({ where: { id: propertyId }, select: { name: true } }),
-      clientName ? Promise.resolve(null) : prisma.user.findUnique({ where: { id: clientId }, select: { name: true } }),
-      agentName ? Promise.resolve(null) : prisma.user.findUnique({ where: { id: agentId }, select: { name: true } }),
-    ]);
+    await cacheDel(`tenant:${companyId}:offers:*`);
+    await cacheDel(`admin:offers:*`);
+  } catch (e) {}
 
-    const newOffer = await prisma.offerContract.create({
-      data: {
-        companyId,
-        propertyId,
-        propertyName: propertyName || property?.name || 'N/A',
-        clientId,
-        clientName: clientName || client?.name || 'N/A',
-        agentId,
-        agentName: agentName || agent?.name || 'N/A',
-        offerAmount: parseFloat(offerAmount),
-        status: status || 'Pending',
-        offerDate: new Date(offerDate),
-        closureDate: closureDate ? new Date(closureDate) : null,
-        notes,
-        contractUrl,
-      },
-    });
-
-    // Explicitly return success with status 201
-    
-    try {
-      await cacheDel(`tenant:${companyId}:offers:*`);
-      await cacheDel(`admin:offers:*`);
-    } catch (e) {}
-
-    return formatResponse(true, newOffer, null, 201);
-    
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      // Prisma error for record not found (e.g., if foreign key relations fail)
-      return formatResponse(false, null, 'Referenced property, client, or agent not found.', 404);
-    }
-    throw error; // Let withApiHandler catch other errors
-  }
+  return formatResponse(true, newOffer, "Offer created successfully", 201);
 }
 
-// Export the wrapped handlers. withApiHandler handles auth and try/catch.
 export const GET = withApiHandler(handleGetOffers);
-export const POST = withApiHandler(handlePostOffer);
+export const POST = withApiHandler(handlePostOffer, { requireAuth: false });

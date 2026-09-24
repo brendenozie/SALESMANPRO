@@ -160,21 +160,21 @@ export default async function OffersPage({ params }: OffersPageProps) {
         clientsResult,
         agentsResult,
     ] = await Promise.all([
-        fetchData<OfferContract[]>('admin/offers', slug, cookiesHeaders, generateSampleOffers),
-        fetchData<SelectOption[]>('admin/my-market-place', slug, cookiesHeaders, generateSampleProperties),
-        fetchData<SelectOption[]>('admin/clients', slug, cookiesHeaders, generateSampleClients),
-        fetchData<SelectOption[]>('admin/sales-agents', slug, cookiesHeaders, generateSampleAgents),
+        fetchData<OfferContract[]>('admin/offers', companyId, cookiesHeaders, () => []),
+        fetchData<SelectOption[]>('admin/my-market-place', companyId, cookiesHeaders, () => []),
+        fetchData<SelectOption[]>('admin/clients', companyId, cookiesHeaders, () => []),
+        fetchData<SelectOption[]>('admin/sales-agents', companyId, cookiesHeaders, () => []),
     ]);
 
     // Consolidate data and error handling
-    let initialOffers: OfferContract[] = offersResult.data || generateSampleOffers();
+    let initialOffers: OfferContract[] = offersResult.data || [];
     if (initialOffers.length > 0) {
          initialOffers = initialOffers.sort((a, b) => new Date(b.offerDate).getTime() - new Date(a.offerDate).getTime());
     }
 
-    const allProperties: SelectOption[] = propertiesResult.data || generateSampleProperties();
-    const allClients: SelectOption[] = clientsResult.data || generateSampleClients();
-    const allAgents: SelectOption[] = agentsResult.data || generateSampleAgents();
+    const allProperties: SelectOption[] = propertiesResult.data || [];
+    const allClients: SelectOption[] = clientsResult.data || [];
+    const allAgents: SelectOption[] = agentsResult.data || [];
 
     const isInitialLoadSuccessful = !offersResult.error && !propertiesResult.error && !clientsResult.error && !agentsResult.error;
     const serverLoadError: string | null = offersResult.error || propertiesResult.error || clientsResult.error || agentsResult.error;

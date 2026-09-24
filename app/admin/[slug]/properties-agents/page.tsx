@@ -89,11 +89,7 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
     if (!res.ok) throw new Error('Failed to fetch agents');
     let intialRes = await res.json();
     // console.log("Fetched initial agents:", intialRes);
-    initialAgents = intialRes.data as AgentProfile[];
-    // If the fetch fails, we fall back to sample data for demonstration purposes
-    if (initialAgents.length === 0) {
-      initialAgents = generateSampleAgents().sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime());
-    }
+    initialAgents = (intialRes.data as AgentProfile[]) || [];
   } catch (e) {
     console.error("Server-side initial data fetch failed:", e);
     isInitialLoadSuccessful = false;
