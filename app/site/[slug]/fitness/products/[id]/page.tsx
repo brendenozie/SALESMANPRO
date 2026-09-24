@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProductPage({ params }: PageProps) {
   const resolved = params instanceof Promise ? await params : params;
-  const { id } = resolved || {};
+  const { id, slug } = resolved || {};
 
   if (!id) {
     notFound();
@@ -96,6 +96,7 @@ export default async function ProductPage({ params }: PageProps) {
         totalModules={totalModules}
         totalLessons={totalLessons}
         totalDuration={totalDuration}
+        slug={slug || "fitness"}
       />
       <NewsletterSection />
     </div>

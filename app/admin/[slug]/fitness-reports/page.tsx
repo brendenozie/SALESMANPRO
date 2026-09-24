@@ -1,7 +1,7 @@
 // app/reports/page.tsx
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-import { getReportsData } from '@/constant/Data';
+import { getFitnessReportData } from '@/server/services/fitnessService';
 import ReportsClient from './ReportsClient';
 
 interface PageProps {
@@ -28,8 +28,8 @@ export default async function ReportsPage({ params }: PageProps) {
     );
   }
 
-  // 3. Fetch data directly on the server
-  const reports = getReportsData(company.id);
+  // 3. Fetch real authoritative reports directly from MongoDB via Prisma
+  const reports = await getFitnessReportData(company.id, 'last30days');
 
   // Pass pre-fetched data directly to the Client Component
   return <ReportsClient reports={reports} />;

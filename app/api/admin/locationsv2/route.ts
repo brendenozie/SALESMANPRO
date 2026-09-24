@@ -3,6 +3,7 @@ import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { resolveCompany } from "@/server/services/fitnessService";
 
 // Define the expected structure for route parameters (although not used in URL, the structure is necessary for type safety)
 type RouteParams = { params: { adminSlug: string } };
@@ -40,8 +41,11 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
+  const company = await resolveCompany(companyId);
+  const resolvedCompanyId = company ? company.id : companyId;
+
   const companyLocations = await prisma.companyLocation.findMany({
-    where: { companyId },
+    where: { companyId: resolvedCompanyId },
     include: { location: true },
     orderBy: { sortOrder: "asc" },
   });
@@ -156,19 +160,17 @@ async function handlePostLocation(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, "Missing companyId.", 400);
   }
 
-  const company = await prisma.company.findUnique({
-    where: { id: companyId },
-    select: { id: true },
-  });
+  const company = await resolveCompany(companyId);
 
   if (!company) {
     return formatResponse(
       false,
       null,
-      "Company not found for the given id.",
+      "Company not found for the given id or slug.",
       404,
     );
   }
+  const resolvedCompanyId = company.id;
 
   if (!name || !city || !country) {
     return formatResponse(
@@ -216,7 +218,7 @@ async function handlePostLocation(request: Request, { params }: RouteParams) {
   // 2. Create CompanyLocation link
   const companyLocation = await prisma.companyLocation.create({
     data: {
-      company: { connect: { id: companyId } },
+      company: { connect: { id: resolvedCompanyId } },
       location: { connect: { id: newLocation.id } },
     },
     include: { location: true },

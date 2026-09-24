@@ -1,256 +1,157 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  CalendarDaysIcon, // For date
-  UsersIcon, // For students list
-  MagnifyingGlassIcon, // For search
-  EyeIcon, // For view details
-  PaperAirplaneIcon, // For message parent/student
-  AcademicCapIcon, // For student's grade
-} from '@heroicons/react/24/outline';
+  UsersIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
 
-// Types for class roster and student
-type Student = {
+interface CheckInRecord {
   id: string;
-  name: string;
-  email: string;
-  parentName: string;
-  parentPhone: string;
+  checkInTime: string;
   status: string;
-  gradeLevel: string;
-};
+  method: string;
+  notes?: string;
+  consumer?: {
+    membershipType?: string;
+    membershipStatus?: string;
+    user?: {
+      name?: string;
+      email?: string;
+      phone?: string;
+    };
+  };
+  location?: {
+    name?: string;
+  };
+}
 
-type ClassRoster = {
-  name: string;
-  teacher: string;
-  students: Student[];
-};
+export default function FitnessOperationsMonitor({ companyId }: { companyId: string }) {
+  const [checkIns, setCheckIns] = useState<CheckInRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-type ClassId = 'CL101' | 'CL102' | 'CL103';
-
-const sampleClassRosters: Record<ClassId, ClassRoster> = {
-  'CL101': {
-    name: 'Grade 7 Mathematics',
-    teacher: 'Mr. John Doe',
-    students: [
-      { id: 'S001', name: 'Alice Smith', email: 'alice.s@school.com', parentName: 'Mr. Alex Smith', parentPhone: '+254711111111', status: 'Active', gradeLevel: '7' },
-      { id: 'S005', name: 'Fatuma Hassan', email: 'fatuma.h@school.com', parentName: 'Ahmed Hassan', parentPhone: '+254722222222', status: 'Active', gradeLevel: '7' },
-      { id: 'S011', name: 'George Kinyanjui', email: 'george.k@school.com', parentName: 'Mary Kinyanjui', parentPhone: '+254733333333', status: 'Active', gradeLevel: '7' },
-      { id: 'S012', name: 'Hannah Wambui', email: 'hannah.w@school.com', parentName: 'Peter Wambui', parentPhone: '+254744444444', status: 'Active', gradeLevel: '7' },
-      { id: 'S013', name: 'Isaac Kipchoge', email: 'isaac.k@school.com', parentName: 'Sarah Kipchoge', parentPhone: '+254755555555', status: 'Inactive', gradeLevel: '7' }, // Example inactive student
-    ],
-  },
-  'CL102': {
-    name: 'Grade 8 English Language',
-    teacher: 'Mrs. Jane Smith',
-    students: [
-      { id: 'S002', name: 'Kevin Otieno', email: 'kevin.o@school.com', parentName: 'David Otieno', parentPhone: '+254766666666', status: 'Active', gradeLevel: '8' },
-      { id: 'S004', name: 'Michael Njoroge', email: 'michael.n@school.com', parentName: 'Ruth Njoroge', parentPhone: '+254777777777', status: 'Active', gradeLevel: '8' },
-      { id: 'S014', name: 'Naomi Chebet', email: 'naomi.c@school.com', parentName: 'Ben Chebet', parentPhone: '+254788888888', status: 'Active', gradeLevel: '8' },
-      { id: 'S015', name: 'Paul Omondi', email: 'paul.o@school.com', parentName: 'Grace Omondi', parentPhone: '+254799999999', status: 'Active', gradeLevel: '8' },
-    ],
-  },
-  'CL103': {
-    name: 'Grade 9 Algebra',
-    teacher: 'Mr. John Doe',
-    students: [
-        { id: 'S003', name: 'Sarah Kimani', email: 'sarah.k@school.com', parentName: 'Elizabeth Kimani', parentPhone: '+254710101010', status: 'Active', gradeLevel: '9' },
-        { id: 'S016', name: 'Quentin Onyango', email: 'quentin.o@school.com', parentName: 'Rose Onyango', parentPhone: '+254711223344', status: 'Active', gradeLevel: '9' },
-    ]
-  }
-};
-
-// For demonstration, let's pick a default class ID
-const defaultClassId = 'CL101'; // This would come from routing in a real app
-
-export default function TeachersStudentListPage() {
-  
-  const [currentClassId, setCurrentClassId] = useState<ClassId>(defaultClassId);
-  const currentClass = sampleClassRosters[currentClassId];
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
-
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  if (!currentClass) {
-    return (
-      <div className="p-8 text-center bg-gray-100 min-h-screen font-sans">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Class Roster</h1>
-        <p className="text-gray-600">Please select a valid class to view its student list.</p>
-        {/* Simple dropdown to pick a class for demo purposes */}
-        <select
-          value={currentClassId}
-          onChange={(e) => setCurrentClassId(e.target.value as ClassId)}
-          className="mt-6 block mx-auto py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-          <option value="">-- Select a Class --</option>
-          {Object.keys(sampleClassRosters).map(id => (
-            <option key={id} value={id}>{sampleClassRosters[id as ClassId].name}</option>
-          ))}
-        </select>
-      </div>
-    );
-  }
-
-  const filteredStudents = currentClass.students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          student.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'All' || student.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  }).sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Inactive': return 'bg-red-100 text-red-800';
-      case 'Transferred': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+  const fetchCheckIns = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/fitness/check-in?companyId=${companyId}`);
+      if (res.ok) {
+        const json = await res.json();
+        setCheckIns(json.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to load check-ins:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Placeholder functions for actions
-  const handleViewStudentProfile = (studentId: string) => {
-    // console.log(`Viewing profile for student ID: ${studentId}`);
-    alert(`Redirecting to student profile for: ${studentId}`);
-    // In a real app, route to student profile page: Router.push(`/student/${studentId}/profile`);
-  };
+  useEffect(() => {
+    if (companyId) {
+      fetchCheckIns();
+    }
+  }, [companyId]);
 
-  const handleMessageParent = (parentId: string, studentName: string) => {
-    // console.log(`Messaging parent of ${studentName} (Parent ID: ${parentId})`);
-    alert(`Opening message composer for parent of ${studentName}`);
-    // In a real app, open a messaging interface
-  };
+  const filtered = checkIns.filter((ci) => {
+    const name = ci.consumer?.user?.name?.toLowerCase() || "";
+    const email = ci.consumer?.user?.email?.toLowerCase() || "";
+    const loc = ci.location?.name?.toLowerCase() || "";
+    const q = search.toLowerCase();
+    return name.includes(q) || email.includes(q) || loc.includes(q);
+  });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Student Roster: {currentClass.name}
-            <span className="ml-2 text-blue-600 text-base sm:text-xl">👥</span>
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">Managed by {currentClass.teacher}. Total Students: {currentClass.students.length}</p>
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+            <UsersIcon className="w-6 h-6 text-emerald-500" />
+            Live Gym Check-In Monitor
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            Real-time physical attendance and membership access verification log.
+          </p>
         </div>
-        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{today}</span>
+
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-3 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search member or facility..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none focus:border-emerald-500"
+            />
+          </div>
+          <button
+            onClick={fetchCheckIns}
+            className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
+            title="Refresh logs"
+          >
+            <ArrowPathIcon className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 ${loading ? "animate-spin" : ""}`} />
+          </button>
         </div>
       </div>
 
-      {/* Student List Section */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <UsersIcon className="h-5 w-5 text-indigo-500" /> Students in Class
-          </h3>
-          {/* For demo: Class selection dropdown for easy switching */}
-          <select
-            value={currentClassId}
-            onChange={(e) => setCurrentClassId(e.target.value as ClassId)}
-            className="block py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            {Object.keys(sampleClassRosters).map(id => (
-              <option key={id} value={id}>{sampleClassRosters[id as ClassId].name}</option>
-            ))}
-          </select>
+      {loading ? (
+        <div className="py-12 text-center text-sm text-zinc-400">Loading live check-ins...</div>
+      ) : filtered.length === 0 ? (
+        <div className="py-12 text-center text-sm text-zinc-400">
+          No check-ins recorded for this period yet.
         </div>
-
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search student by name or ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Students Table */}
+      ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="w-full text-left text-xs text-zinc-600 dark:text-zinc-300">
+            <thead className="bg-zinc-50 dark:bg-zinc-800/60 uppercase text-[10px] tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name (ID)</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade Level</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
+                <th className="py-3 px-4">Member</th>
+                <th className="py-3 px-4">Membership</th>
+                <th className="py-3 px-4">Location</th>
+                <th className="py-3 px-4">Method</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Time</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((student) => (
-                  <tr key={student.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {student.name} <span className="text-gray-500 text-xs">({student.id})</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <AcademicCapIcon className="h-4 w-4 inline-block mr-1 text-gray-500" /> {student.gradeLevel}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.parentName} <br /> <span className="text-xs">{student.parentPhone}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(student.status)}`}>
-                        {student.status}
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {filtered.map((ci) => (
+                <tr key={ci.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition">
+                  <td className="py-3 px-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                    {ci.consumer?.user?.name || "Member"}
+                    <span className="block text-[10px] text-zinc-400 font-normal">
+                      {ci.consumer?.user?.email || "No email"}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 font-medium">
+                      {ci.consumer?.membershipType || "Standard"}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">{ci.location?.name || "Main Gym"}</td>
+                  <td className="py-3 px-4 uppercase text-[10px] text-zinc-400">{ci.method}</td>
+                  <td className="py-3 px-4">
+                    {ci.status === "SUCCESS" ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                        <CheckCircleIcon className="w-4 h-4" /> Granted
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleViewStudentProfile(student.id)}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          title="View Student Profile"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleMessageParent(student.parentPhone, student.name)}
-                          className="text-green-600 hover:text-green-900 flex items-center"
-                          title="Message Parent"
-                        >
-                          <PaperAirplaneIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No students found in this class matching your criteria.</td>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-rose-500 font-bold">
+                        <XCircleIcon className="w-4 h-4" /> {ci.status.replace("DENIED_", "")}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-zinc-400">
+                    {new Date(ci.checkInTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                  </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
     </div>
   );
 }

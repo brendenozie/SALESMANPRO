@@ -464,12 +464,26 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
       };
     
     const featured = useMemo(
-          () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),
-          [marketplaceListings]
-        );
-      
+      () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),
+      [marketplaceListings]
+    );
 
-    
+    const realVirtualTours = useMemo(() => {
+      const contents = (pageData as any)?.Content || (pageData as any)?.virtualTours || [];
+      return contents
+        .filter((c: any) => c.contentType === 'VIDEO' || c.videoUrl)
+        .map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          description: c.description || c.location,
+          thumbnail: c.thumbnailUrl || c.imageUrl || "https://images.unsplash.com/photo-1599058917232-d750c185967c?q=80&w=2000&auto=format&fit=crop",
+          videoUrl: c.videoUrl || "",
+          duration: c.duration || "45 MIN",
+          instructor: c.author || "Certified Coach",
+          category: c.category || "TRAINING",
+        }));
+    }, [pageData]);
+
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': (
       <HeroSection
@@ -512,8 +526,8 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
     'listings-grid': <ListingsGrid programs={featured}/>,
     'classes-grid': <ClassesGrid courses={siteData?.courses}/>,
     'locations': <LocationsSection />,
-    'virtual-tours': <VirtualTours videos={[]} />,
-    'experts': <ExpertsSection educators={siteData?.Educator} />,
+    'virtual-tours': <VirtualTours videos={realVirtualTours} />,
+    'experts': <ExpertsSection educators={siteData?.Educator || (pageData as any)?.educators} />,
     'market-insights': <MarketInsights blogs={storeFormData?.blogs} />,
     'gallery': <GallerySection/>,
     'testimonials': <TestimonialsSection testimonials={storeFormData?.testimonials} />,

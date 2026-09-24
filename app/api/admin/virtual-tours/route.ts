@@ -21,12 +21,6 @@ export const GET = withApiHandler(async (request: Request) => {
     select: { id: true },
   });
 
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
-
   if (!company) {
     return formatResponse(false, null, 'Company not found for the given slug.', 404);
   }

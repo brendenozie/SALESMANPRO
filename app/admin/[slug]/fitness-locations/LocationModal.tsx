@@ -76,6 +76,7 @@ interface LocationModalProps {
   onSave: (location: LocationData) => void;
   location?: LocationData | null;
   slug: string;
+  companyId?: string;
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -95,7 +96,7 @@ const FieldGroup = motion.div;
 const inputClasses = "w-full px-4 py-3 mt-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/60 text-gray-900 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200";
 const labelClasses = "block text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-zinc-400";
 
-const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, location, slug }) => {
+const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, location, slug, companyId }) => {
   const [name, setName] = useState(location?.name || '');
   const [address, setAddress] = useState(location?.address || '');
   const [city, setCity] = useState(location?.city || '');
@@ -202,8 +203,9 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
       return;
     }
 
+    const effectiveCompanyId = companyId || slug;
     const method = location ? 'PUT' : 'POST';
-    const url = location ? `${apiBaseUrl}/admin/locationsv2/${location.id}` : `${apiBaseUrl}/admin/locationsv2?companyId=${slug}`;
+    const url = location ? `${apiBaseUrl}/admin/locationsv2/${location.id}` : `${apiBaseUrl}/admin/locationsv2?companyId=${effectiveCompanyId}`;
 
     try {
       const response = await fetch(url, {
@@ -220,7 +222,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
           capacity: capacity || null,
           openHours: openHours || null,
           status,
-          companyId: slug
+          companyId: effectiveCompanyId
         }),
       });
 

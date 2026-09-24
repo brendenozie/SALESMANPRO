@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { 
   FireIcon, 
   ClockIcon, 
@@ -8,7 +9,8 @@ import {
   BoltIcon, 
   MapPinIcon, 
   TrophyIcon,
-  MoonIcon,
+  CheckBadgeIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/solid';
 import { ArrowTrendingUpIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
@@ -20,11 +22,14 @@ interface DashboardViewProps {
     location: string;
     streak: string;
   };
-  programs: any[];
+  programs?: any[];
+  memberships?: any[];
+  checkIns?: any[];
+  bookings?: any[];
+  slug?: string;
 }
 
 // --- TAILWIND SAFELIST MAP ---
-// Required because Tailwind cannot compile dynamic strings like `bg-${color}-100`
 const colorStyles: Record<string, { bg: string, text: string, stroke: string }> = {
   emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', stroke: 'stroke-emerald-500' },
   red: { bg: 'bg-red-100', text: 'text-red-600', stroke: 'stroke-red-500' },
@@ -35,16 +40,16 @@ const colorStyles: Record<string, { bg: string, text: string, stroke: string }> 
   green: { bg: 'bg-green-100', text: 'text-green-600', stroke: 'stroke-green-500' },
 };
 
-// --- ICONS ---
-const WaterDropIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className || "w-5 h-5"}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-2.485 2.77-6.75 7.44-6.75 11.25a6.75 6.75 0 0013.5 0c0-3.81-4.265-8.48-6.75-11.25z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 22.5c4.97 0 9-4.03 9-9h-18c0 4.97 4.03 9 9 9z" />
-  </svg>
-);
+export default function DashboardView({ 
+  displayUser, 
+  programs = [], 
+  memberships = [], 
+  checkIns = [], 
+  bookings = [], 
+  slug = 'fitness' 
+}: DashboardViewProps) {
+  const activePlanName = memberships[0]?.plan?.name || (memberships.length > 0 ? 'Active Member' : 'Guest Tier');
 
-// --- MAIN VIEW COMPONENT ---
-export default function DashboardView({ displayUser, programs }: DashboardViewProps) {
   return (
     <div className="pb-10">
       {/* Top Header / Profile Card */}
@@ -60,28 +65,30 @@ export default function DashboardView({ displayUser, programs }: DashboardViewPr
             </div>
             
             <div>
-              <p className="text-sm font-medium text-emerald-600 uppercase tracking-widest">Welcome Back</p>
+              <p className="text-sm font-medium text-emerald-600 uppercase tracking-widest">Athlete Dashboard</p>
               <h1 className="text-4xl font-extrabold text-gray-900 mt-1">{displayUser.name}</h1>
               <div className="flex items-center gap-4 mt-2 text-gray-500 text-sm">
-                <span className="flex items-center gap-1">
-                  <MapPinIcon className="w-4 h-4 text-red-500" /> {displayUser.location}
+                <span className="flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                  <CheckBadgeIcon className="w-4 h-4 text-emerald-600" /> {activePlanName}
                 </span>
                 <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
-                <span className="font-semibold text-gray-700">Active Streak: {displayUser.streak}</span>
+                <span className="font-semibold text-gray-700">Total Visits: {displayUser.streak}</span>
               </div>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-4">
-             <button className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30">
-               <BoltIcon className="w-5 h-5" /> Start Workout
-             </button>
+             <Link href={`/site/${slug}/fitness/listings`}>
+               <button className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30">
+                 <BoltIcon className="w-5 h-5" /> Browse Courses
+               </button>
+             </Link>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto mt-8">
           <blockquote className="text-lg text-gray-500 border-l-4 border-emerald-400 pl-4">
-            "Today's efforts determine tomorrow's results. Keep pushing your limits."
+            "Discipline is the bridge between goals and accomplishment."
           </blockquote>
         </div>
       </div>
@@ -89,85 +96,121 @@ export default function DashboardView({ displayUser, programs }: DashboardViewPr
       {/* Dashboard Grid */}
       <div className="max-w-7xl mx-auto px-8">
         
-        {/* 4-COLUMN METRICS GRID */}
+        {/* 4-COLUMN AUTHORITATIVE METRICS GRID */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <MetricCard 
-            title="Steps" value="12,450" unit="/ 10k Goal" 
-            icon={<ArrowTrendingUpIcon className="w-6 h-6" />} progress={124.5} color="emerald"
+            title="Memberships" 
+            value={memberships.length} 
+            unit={memberships.length > 0 ? "Active Plan" : "None Active"} 
+            icon={<CheckBadgeIcon className="w-6 h-6" />} 
+            progress={memberships.length > 0 ? 100 : 0} 
+            color="emerald"
           />
           <MetricCard 
-            title="Calories Burned" value="680" unit="/ 750 kcal" 
-            icon={<FireIcon className="w-6 h-6" />} progress={90} color="red"
+            title="Gym Check-ins" 
+            value={checkIns.length} 
+            unit="Verified Visits" 
+            icon={<MapPinIcon className="w-6 h-6" />} 
+            progress={Math.min(checkIns.length * 10, 100)} 
+            color="teal"
           />
           <MetricCard 
-            title="Active Minutes" value="85" unit="/ 60 mins" 
-            icon={<ClockIcon className="w-6 h-6" />} progress={141.6} color="teal"
+            title="Enrolled Courses" 
+            value={programs.length} 
+            unit="Digital Curriculums" 
+            icon={<BoltIcon className="w-6 h-6" />} 
+            progress={Math.min(programs.length * 25, 100)} 
+            color="indigo"
           />
           <MetricCard 
-            title="Sleep Score" value="7.5" unit="Hours Last Night" 
-            icon={<MoonIcon className="w-6 h-6" />} progress={75} color="indigo"
+            title="Bookings" 
+            value={bookings.length} 
+            unit="Sessions & Classes" 
+            icon={<CalendarDaysIcon className="w-6 h-6" />} 
+            progress={Math.min(bookings.length * 20, 100)} 
+            color="orange"
           />
         </section>
 
-        {/* ACTIVITY LOG & TRACKERS SPLIT */}
+        {/* RECENT ACTIVITY & MEMBERSHIP DETAILS */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* LEFT COLUMN: Activity Feed & Trophies */}
+          {/* LEFT COLUMN: Activity Feed */}
           <div className="lg:col-span-2 space-y-8">
              <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <BoltIcon className="w-6 h-6 text-yellow-500" /> Recent Activity
+                  <BoltIcon className="w-6 h-6 text-emerald-600" /> Recent Activity & Check-Ins
                 </h2>
-                <a href="#" className="text-sm font-medium text-emerald-600 hover:text-emerald-800">View All</a>
              </div>
 
              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <ActivityList />
-             </div>
-
-             <div className="mt-8">
-               <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <TrophyIcon className="w-6 h-6 text-yellow-500" /> Personal Bests
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                   <TrophyCard title="Max Bench" value="185 kg" icon={<FireIcon className="w-5 h-5"/>} color="red" />
-                   <TrophyCard title="Fastest Mile" value="5:32 min" icon={<ClockIcon className="w-5 h-5"/>} color="blue" />
-                   <TrophyCard title="200-Day Streak" value="Achieved!" icon={<SunIcon className="w-5 h-5"/>} color="orange" />
-                   <TrophyCard title="Half Marathon" value="1:45:00" icon={<MapPinIcon className="w-5 h-5"/>} color="green" />
-                </div>
+                {checkIns.length === 0 && bookings.length === 0 ? (
+                  <div className="py-8 text-center text-gray-400">
+                    <CalendarDaysIcon className="w-12 h-12 mx-auto mb-2 opacity-50 text-emerald-500" />
+                    <p className="font-semibold text-gray-600">No recorded activity yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Check in at any gym facility or book a class to view attendance records here.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {checkIns.slice(0, 5).map((ci: any) => (
+                      <div key={ci.id} className="flex items-center justify-between py-4 px-4 -mx-4 rounded-2xl hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-emerald-100 text-emerald-600">
+                            <MapPinIcon className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900">{ci.location?.name || 'Gym Facility Check-in'}</h4>
+                            <p className="text-xs font-medium text-gray-400">
+                              {new Date(ci.checkInTime).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">
+                          VERIFIED
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
              </div>
           </div>
           
-          {/* RIGHT COLUMN: Daily Trackers */}
+          {/* RIGHT COLUMN: Active Membership Details */}
           <div className="lg:col-span-1 space-y-6">
-            
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-4">
-                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <WaterDropIcon className="w-5 h-5 text-blue-500" /> Water Intake
-                 </h3>
-                 <span className="text-sm font-semibold text-blue-600">8 / 10 Glasses</span>
-              </div>
-              <div className="w-full h-3 bg-blue-100 rounded-full overflow-hidden">
-                 <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400" style={{ width: '80%' }}></div>
-              </div>
-              <div className="mt-4 flex justify-between">
-                 <button className="text-blue-500 text-sm font-medium hover:text-blue-700">+ Add Glass</button>
-                 <button className="text-gray-400 text-sm hover:text-gray-600">Reset</button>
-              </div>
-            </div>
-
-             <div className="bg-emerald-500 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mt-10 -mr-10"></div>
-                <h3 className="font-bold text-lg mb-1 relative z-10">28-Day Marathon Plan</h3>
-                <p className="text-sm opacity-90 relative z-10 mb-4">You are on Week 2, Day 3. Keep focused!</p>
-                <div className="w-full h-2 bg-white/30 rounded-full overflow-hidden mb-4">
-                   <div className="h-full bg-white" style={{ width: '45%' }}></div>
+              <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                <CheckBadgeIcon className="w-5 h-5 text-emerald-600" /> Current Membership
+              </h3>
+              {memberships.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-gray-500 mb-4">No active gym membership subscription.</p>
+                  <Link href={`/site/${slug}/fitness/listings`}>
+                    <button className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors">
+                      View Plans
+                    </button>
+                  </Link>
                 </div>
-                <button className="w-full py-3 bg-white text-emerald-700 font-bold rounded-xl text-sm hover:bg-gray-50 transition-colors">
-                  Check Today's Workout
-                </button>
-             </div>
+              ) : (
+                <div className="space-y-4">
+                  {memberships.map((m: any) => (
+                    <div key={m.id} className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-emerald-950 text-base">{m.plan?.name || 'Membership'}</h4>
+                        <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                          {m.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">
+                        Valid: {new Date(m.startDate).toLocaleDateString()} - {new Date(m.endDate).toLocaleDateString()}
+                      </p>
+                      <div className="text-xs text-emerald-700 font-semibold">
+                        Access: {m.plan?.locationAccess || 'ALL_LOCATIONS'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>
@@ -183,11 +226,11 @@ const ProgressRing = ({ progress, color }: { progress: number, color: string }) 
   const style = colorStyles[color] || colorStyles.emerald;
 
   return (
-    <div className="w-20 h-20 relative">
+    <div className="w-16 h-16 relative">
       <svg className="w-full h-full transform -rotate-90">
-        <circle cx="50%" cy="50%" r="40%" strokeWidth="8" className="stroke-gray-100 fill-none" />
+        <circle cx="50%" cy="50%" r="40%" strokeWidth="6" className="stroke-gray-100 fill-none" />
         <circle
-          cx="50%" cy="50%" r="40%" strokeWidth="8"
+          cx="50%" cy="50%" r="40%" strokeWidth="6"
           className={`fill-none ${style.stroke}`}
           strokeDasharray="360"
           strokeDashoffset={strokeDashoffset}
@@ -196,73 +239,41 @@ const ProgressRing = ({ progress, color }: { progress: number, color: string }) 
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold text-gray-900">{Math.round(progress)}%</span>
+        <span className="text-xs font-bold text-gray-900">{Math.round(progress)}%</span>
       </div>
-      {progress > 100 && (
-         <div className="absolute top-0 right-0 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
-      )}
     </div>
   );
 };
 
-const MetricCard = ({ title, value, unit, icon, progress, color }: { title: string, value: number | string, unit: string, icon: React.ReactNode, progress: number, color: string }) => {
+const MetricCard = ({ 
+  title, 
+  value, 
+  unit, 
+  icon, 
+  progress, 
+  color 
+}: { 
+  title: string; 
+  value: number | string; 
+  unit: string; 
+  icon: React.ReactNode; 
+  progress: number; 
+  color: string; 
+}) => {
   const style = colorStyles[color] || colorStyles.emerald;
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
+    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between transition-transform hover:-translate-y-1 duration-300">
       <div>
         <div className={`p-2.5 w-fit rounded-xl mb-4 ${style.bg} ${style.text}`}>
           {icon}
         </div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">{title}</p>
         <h3 className="text-3xl font-black text-gray-900 mt-1">{value}</h3>
-        <p className="text-xs font-semibold text-gray-400 mt-1">{unit}</p>
+        <p className="text-xs font-semibold text-emerald-600 mt-1">{unit}</p>
       </div>
       <div className="ml-2">
         <ProgressRing progress={progress} color={color} />
       </div>
-    </div>
-  );
-};
-
-const ActivityItem = ({ type, duration, calories, icon, color }: { type: string, duration: string, calories: number | string, icon: React.ReactNode, color: string }) => {
-  const style = colorStyles[color] || colorStyles.emerald;
-  return (
-    <div className="flex items-center justify-between py-4 px-4 -mx-4 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer group">
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${style.bg} ${style.text}`}>
-          <div className="w-6 h-6">{icon}</div>
-        </div>
-        <div>
-          <h4 className="font-bold text-gray-900">{type}</h4>
-          <p className="text-sm font-medium text-gray-500">{duration}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-         <span className="text-sm font-bold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">{calories} kcal</span>
-         <ChevronRightIcon className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-      </div>
-    </div>
-  );
-};
-
-const ActivityList = () => (
-  <div className="divide-y divide-gray-50">
-    <ActivityItem type="Outdoor Run" duration="45 min" calories="410" icon={<MapPinIcon />} color="emerald" />
-    <ActivityItem type="Strength Training" duration="60 min" calories="350" icon={<BoltIcon />} color="red" />
-    <ActivityItem type="Yoga & Meditation" duration="30 min" calories="120" icon={<SunIcon />} color="orange" />
-    <ActivityItem type="Cycling" duration="90 min" calories="600" icon={<ClockIcon />} color="teal" />
-  </div>
-);
-
-const TrophyCard = ({ title, value, icon, color }: { title: string, value: number | string, icon: React.ReactNode, color: string }) => {
-  const style = colorStyles[color] || colorStyles.emerald;
-  return (
-    <div className="p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center bg-white hover:shadow-md transition-shadow">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${style.bg} ${style.text}`}>
-         {icon}
-      </div>
-      <p className="text-[11px] text-gray-400 uppercase font-bold tracking-wider mb-1">{title}</p>
-      <h5 className="font-black text-lg text-gray-900 leading-tight">{value}</h5>
     </div>
   );
 };

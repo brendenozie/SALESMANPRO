@@ -1,201 +1,226 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { resolveCompany } from "@/server/services/fitnessService";
 
-import prisma from '@/server/db/prismadb';
-// Incorporate the new utilities
-import { withApiHandler } from '@/lib/hooks/withApiHandler';
-import { formatResponse } from '@/lib/formatResponse'; 
+const formatDate = (date: Date | null) =>
+  date ? new Date(date).toISOString().split("T")[0] : "N/A";
+const formatTime = (date: Date | null) =>
+  date
+    ? new Date(date).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "N/A";
 
-// Type definition for the context object, which includes dynamic parameters
-type RouteContext = {
-    params: {
-        adminSlug: string; // The dynamic part of the URL: /admin/[adminSlug]
-    };
-};
+// --- GET Handler (Fetch All Bookings for a Company) ---
+const getBookingsLogic = async (req: Request) => {
+  const { searchParams } = new URL(req.url);
+  const companyIdentifier = searchParams.get("companyId") || searchParams.get("slug");
 
-// Helper function to format dates and times for frontend (Duplicated for self-containment)
-const formatDate = (date: Date | null) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
-const formatTime = (date: Date | null) => date ? new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A';
+  if (!companyIdentifier) {
+    return formatResponse(false, null, "companyId or slug query parameter is required.", 400);
+  }
 
-// --- GET Handler Logic (Fetch All Bookings for a Company) ---
-const getBookingsLogic = async (req: Request, context: RouteContext) => {
-    // Note: The original code used companyId from the query string, which we will maintain.
-      
-    const { searchParams } = new URL(req.url);
-    
-    const companyId = searchParams.get('companyId');
-    // const adminSlug = context.params.adminSlug; // available if needed
+  const company = await resolveCompany(companyIdentifier);
+  if (!company) {
+    return formatResponse(false, null, "Company not found.", 404);
+  }
 
-    if (!companyId) {
-        return formatResponse(false, null, 'companyId query parameter is required.', 400);
-    }
+  const cacheKey = buildTenantCacheKey(company.id, "fitness-bookings", {});
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
-    // 1. Verify Company
-    
-    const cacheKey = buildTenantCacheKey(companyId, "fitness-bookings", {});
+  const bookings = await prisma.booking.findMany({
+    where: {
+      companyId: company.id,
+    },
+    include: {
+      client: {
+        select: { user: { select: { name: true, email: true } } },
+      },
+      educator: {
+        select: { user: { select: { name: true } } },
+      },
+      location: {
+        select: { name: true },
+      },
+    },
+    orderBy: {
+      startTime: "desc",
+    },
+  });
+
+  const formattedBookings = bookings.map((booking) => ({
+    id: booking.id,
+    title: booking.title,
+    description: booking.description || "",
+    bookingType: booking.bookingType,
+    startTime: booking.startTime?.toISOString(),
+    endTime: booking.endTime?.toISOString(),
+    date: formatDate(booking.startTime),
+    time: `${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}`,
+    status: booking.status,
+    clientName: booking.client?.user?.name || "Unknown Client",
+    clientId: booking.clientId,
+    educatorName: booking.educator?.user?.name || "N/A",
+    educatorId: booking.educatorId || null,
+    locationName: booking.location?.name || "N/A",
+    locationId: booking.locationId || null,
+    notes: booking.notes || "",
+  }));
 
   try {
+    await cacheSet(cacheKey, formattedBookings, 60);
+  } catch (e) {}
 
-    const cached = await cacheGet(cacheKey);
-
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);  } catch (e) {}
-
-    const company = await prisma.company.findUnique({
-            where: { id: companyId },
-            select: { id: true },
-        });
-
-    if (!company) {
-        return formatResponse(false, null, 'Company not found.', 404);
-    }
-
-    // 2. Fetch Bookings
-    const bookings = await prisma.booking.findMany({
-        where: {
-            companyId: companyId,
-        },
-        include: {
-            client: {
-                select: { user: { select: { name: true, email: true } } },
-            },
-            educator: {
-                select: { user: { select: { name: true } } },
-            },
-            location: {
-                select: { name: true },
-            },
-        },
-        orderBy: {
-            startTime: 'desc',
-        },
-    });
-
-    // 3. Map Prisma Booking model to a frontend-friendly interface
-    const formattedBookings = bookings.map(booking => ({
-        id: booking.id,
-        title: booking.title,
-        description: booking.description || '',
-        bookingType: booking.bookingType,
-        startTime: booking.startTime?.toISOString(),
-        endTime: booking.endTime?.toISOString(),
-        date: formatDate(booking.startTime),
-        time: `${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}`,
-        status: booking.status,
-        clientName: booking.client.user?.name || 'Unknown Client',
-        clientId: booking.clientId,
-        educatorName: booking.educator?.user?.name || 'N/A',
-        educatorId: booking.educatorId || null,
-        locationName: booking.location?.name || 'N/A',
-        locationId: booking.locationId || null,
-        notes: booking.notes || '',
-    }));
-
-    // Use formatResponse for success
-    try { await cacheSet(cacheKey, formattedBookings, 60); } catch (e) {}
-
-    return formatResponse(true, formattedBookings, 'Bookings retrieved successfully', 200);
+  return formatResponse(true, formattedBookings, "Bookings retrieved successfully", 200);
 };
 
-// Export the wrapped GET function
 export const GET = withApiHandler(getBookingsLogic);
 
+// --- POST Handler (Create New Booking with Conflict Prevention) ---
+const postBookingLogic = async (req: Request) => {
+  const body = await req.json();
+  const { searchParams } = new URL(req.url);
+  const {
+    title,
+    description,
+    bookingType,
+    startTime,
+    endTime,
+    status,
+    clientId,
+    educatorId,
+    locationId,
+    notes,
+    companyId,
+  } = body;
 
-// --- POST Handler Logic (Create New Booking) ---
-const postBookingLogic = async (req: Request, context: RouteContext) => {
-    const body = await req.json();
-    const {
-        title,
-        description,
-        bookingType,
-        startTime,
-        endTime,
-        status,
-        clientId,
+  const companyIdentifier = companyId || searchParams.get("companyId") || searchParams.get("slug");
+  if (!companyIdentifier) {
+    return formatResponse(false, null, "companyId is required.", 400);
+  }
+
+  const company = await resolveCompany(companyIdentifier);
+  if (!company) {
+    return formatResponse(false, null, "Company not found.", 404);
+  }
+
+  if (!title || !bookingType || !startTime || !endTime || !clientId) {
+    return formatResponse(
+      false,
+      null,
+      "Title, booking type, start time, end time, and client are required.",
+      400
+    );
+  }
+
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+
+  if (start >= end) {
+    return formatResponse(false, null, "Start time must be before end time.", 400);
+  }
+
+  const activeStatus = status || "PENDING";
+
+  // Prevent Trainer double-booking conflict
+  if (educatorId && ["PENDING", "CONFIRMED"].includes(activeStatus)) {
+    const trainerConflict = await prisma.booking.findFirst({
+      where: {
         educatorId,
-        locationId,
-        notes,
-        companyId // Passed in the body in the original code, but often derived from auth/slug
-    } = body;
-    
-    if (!companyId) {
-        // Fallback check, though company check below covers this if companyId is missing in body
-        return formatResponse(false, null, 'companyId is required in the body.', 400);
-    }
-
-    // 1. Verify Company
-    const company = await prisma.company.findUnique({
-        where: { id: companyId },
-        select: { id: true },
+        status: { in: ["CONFIRMED", "PENDING"] },
+        AND: [{ startTime: { lt: end } }, { endTime: { gt: start } }],
+      },
     });
 
-    if (!company) {
-        return formatResponse(false, null, 'Company not found.', 404);
+    if (trainerConflict) {
+      return formatResponse(
+        false,
+        null,
+        "Trainer already has an overlapping booking during this scheduled time slot.",
+        409
+      );
     }
+  }
 
-    // 2. Basic validation
-    if (!title || !bookingType || !startTime || !endTime || !clientId) {
-        return formatResponse(false, null, 'Title, booking type, start time, end time, and client are required.', 400);
-    }
-    if (new Date(startTime) >= new Date(endTime)) {
-        return formatResponse(false, null, 'Start time must be before end time.', 400);
-    }
-
-    // 3. Create the Booking
-    const newBooking = await prisma.booking.create({
-        data: {
-            title: title,
-            description: description || null,
-            bookingType: bookingType,
-            startTime: new Date(startTime),
-            endTime: new Date(endTime),
-            status: status || 'PENDING',
-            notes: notes || null,
-            company: { connect: { id: companyId } },
-            client: { connect: { id: clientId } },
-            ...(educatorId && { educator: { connect: { id: educatorId } } }),
-            ...(locationId && { location: { connect: { id: locationId } } }),
-        },
-        include: {
-            client: {
-                select: { user: { select: { name: true, email: true } } },
-            },
-            educator: {
-                select: { user: { select: { name: true } } },
-            },
-            location: {
-                select: { name: true },
-            },
-        },
+  // Prevent Client double-booking conflict
+  if (clientId && ["PENDING", "CONFIRMED"].includes(activeStatus)) {
+    const clientConflict = await prisma.booking.findFirst({
+      where: {
+        clientId,
+        status: { in: ["CONFIRMED", "PENDING"] },
+        AND: [{ startTime: { lt: end } }, { endTime: { gt: start } }],
+      },
     });
 
-    // 4. Format the new booking data for frontend display
-    const formattedNewBooking = {
-        id: newBooking.id,
-        title: newBooking.title,
-        description: newBooking.description || '',
-        bookingType: newBooking.bookingType,
-        startTime: newBooking.startTime?.toISOString(),
-        endTime: newBooking.endTime?.toISOString(),
-        date: formatDate(newBooking.startTime),
-        time: `${formatTime(newBooking.startTime)} - ${formatTime(newBooking.endTime)}`,
-        status: newBooking.status,
-        clientName: newBooking.client.user?.name || 'Unknown Client',
-        clientId: newBooking.clientId,
-        educatorName: newBooking.educator?.user?.name || 'N/A',
-        educatorId: newBooking.educatorId || null,
-        locationName: newBooking.location?.name || 'N/A',
-        locationId: newBooking.locationId || null,
-        notes: newBooking.notes || '',
-    };
+    if (clientConflict) {
+      return formatResponse(
+        false,
+        null,
+        "Client already has an overlapping booking during this scheduled time slot.",
+        409
+      );
+    }
+  }
 
-    // Use formatResponse for success
-    
-    try {
-      await cacheDel(`tenant:${companyId}:fitness-bookings:*`);
-      await cacheDel(`admin:fitness-bookings:*`);
-    } catch (e) {}
-    
-    return formatResponse(true, formattedNewBooking, 'Booking created successfully', 201);
+  const newBooking = await prisma.booking.create({
+    data: {
+      title,
+      description: description || null,
+      bookingType,
+      startTime: start,
+      endTime: end,
+      status: activeStatus,
+      notes: notes || null,
+      company: { connect: { id: company.id } },
+      client: { connect: { id: clientId } },
+      ...(educatorId && { educator: { connect: { id: educatorId } } }),
+      ...(locationId && { location: { connect: { id: locationId } } }),
+    },
+    include: {
+      client: {
+        select: { user: { select: { name: true, email: true } } },
+      },
+      educator: {
+        select: { user: { select: { name: true } } },
+      },
+      location: {
+        select: { name: true },
+      },
+    },
+  });
+
+  const formattedNewBooking = {
+    id: newBooking.id,
+    title: newBooking.title,
+    description: newBooking.description || "",
+    bookingType: newBooking.bookingType,
+    startTime: newBooking.startTime?.toISOString(),
+    endTime: newBooking.endTime?.toISOString(),
+    date: formatDate(newBooking.startTime),
+    time: `${formatTime(newBooking.startTime)} - ${formatTime(newBooking.endTime)}`,
+    status: newBooking.status,
+    clientName: newBooking.client?.user?.name || "Unknown Client",
+    clientId: newBooking.clientId,
+    educatorName: newBooking.educator?.user?.name || "N/A",
+    educatorId: newBooking.educatorId || null,
+    locationName: newBooking.location?.name || "N/A",
+    locationId: newBooking.locationId || null,
+    notes: newBooking.notes || "",
+  };
+
+  try {
+    await cacheDel(`tenant:${company.id}:fitness-bookings:*`);
+    await cacheDel(`admin:fitness-bookings:*`);
+  } catch (e) {}
+
+  return formatResponse(true, formattedNewBooking, "Booking created successfully", 201);
 };
 
-// Export the wrapped POST function
 export const POST = withApiHandler(postBookingLogic);

@@ -40,6 +40,7 @@ interface TrainerSelectOption {
 
 interface Props {
   slug: string;
+  companyId?: string;
 }
 
 // --- UTILS: S3 UPLOAD HELPER ---
@@ -238,8 +239,9 @@ const ProgramFormModal = ({ isOpen, onClose, onSave, program, slug }: any) => {
     if (isOpen && slug) {
       const fetchTrainers = async () => {
         setLoadingTrainers(true);
+        const effectiveId = companyId || slug;
         try {
-          const res = await fetch(`${apiBaseUrl}/admin/trainers?companyId=${slug}`, { credentials: "include" });
+          const res = await fetch(`${apiBaseUrl}/admin/trainers?companyId=${effectiveId}`, { credentials: "include" });
           if (res.ok) {
             const result = await res.json();
             setTrainers(result.data || []);
@@ -267,7 +269,7 @@ const ProgramFormModal = ({ isOpen, onClose, onSave, program, slug }: any) => {
         status: program.status || "draft",
         type: program.type || "program",
         imageUrl: program.imageUrl || "",
-        companyId: slug
+        companyId: companyId || slug
       });
     } else {
       setFormData({
@@ -281,7 +283,7 @@ const ProgramFormModal = ({ isOpen, onClose, onSave, program, slug }: any) => {
         status: "draft",
         type: "program",
         imageUrl: "",
-        companyId: slug
+        companyId: companyId || slug
       });
     }
     setSelectedFile(null);
@@ -560,7 +562,7 @@ const ProgramFormModal = ({ isOpen, onClose, onSave, program, slug }: any) => {
 };
 
 // --- Main Client Component Area Layout Engine ---
-export default function ProgramsClient({ slug }: Props) {
+export default function ProgramsClient({ slug, companyId }: Props) {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -568,8 +570,9 @@ export default function ProgramsClient({ slug }: Props) {
 
   useEffect(() => {
     const fetchPrograms = async () => {
+      const effectiveId = companyId || slug;
       try {
-        const res = await fetch(`${apiBaseUrl}/admin/fitness-classes?id=${slug}`, { credentials: "include" });
+        const res = await fetch(`${apiBaseUrl}/admin/fitness-classes?id=${effectiveId}`, { credentials: "include" });
         const json = await res.json();
         setPrograms(json.data || []);
       } catch (error) {
@@ -602,8 +605,9 @@ export default function ProgramsClient({ slug }: Props) {
   const handleDeleteProgram = async (programId: string) => {
     if (!window.confirm("Are you absolutely sure you want to terminate this operational program module path?")) return;
 
+    const effectiveId = companyId || slug;
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/fitness-classes/${programId}?id=${slug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/fitness-classes/${programId}?id=${effectiveId}`, {
         method: "DELETE"
       });
       const responseData = await res.json();

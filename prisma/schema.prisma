@@ -416,6 +416,16 @@ model Company {
   Invoice                         Invoice[]
   Package                         Package[]
 
+  // --- FITNESS & WELLNESS DOMAIN ---
+  equipment                       Equipment[]
+  equipmentMaintenance            EquipmentMaintenance[]
+  membershipPlans                 MembershipPlan[]
+  fitnessMemberships              FitnessMembership[]
+  fitnessEntitlements             FitnessEntitlement[]
+  gymCheckIns                     GymCheckIn[]
+  fitnessTrainingPlans            FitnessTrainingPlan[]
+  fitnessExercises                FitnessExercise[]
+
   sEOId String? @unique @db.ObjectId
   SEO   SEO?    @relation(fields: [sEOId], references: [id], onDelete: NoAction)
 
@@ -3945,6 +3955,12 @@ model Consumer {
   ConsumerInventoryLog ConsumerInventoryLog[]
   hostelMember         HostelMember?
 
+  // --- FITNESS & WELLNESS RELATIONS ---
+  fitnessMemberships   FitnessMembership[]
+  fitnessEntitlements  FitnessEntitlement[]
+  gymCheckIns          GymCheckIn[]
+  fitnessTrainingPlans FitnessTrainingPlan[]
+
   @@unique([userId, companyId])
   @@index([companyId])
   @@index([type])
@@ -4352,6 +4368,8 @@ model Location {
   Property            Property[]
   Destination         Destination[]
   Booking             Booking[]
+  equipment           Equipment[]
+  gymCheckIns         GymCheckIn[]
 
   @@index([companyId])
   @@index([parentId])
@@ -4807,6 +4825,7 @@ model Educator {
   libraryMember            LibraryMember?
   hostelMember             HostelMember?
   hostelVisitors           HostelVisitor[]
+  fitnessTrainingPlans     FitnessTrainingPlan[]
   // courseMaterials          CourseMaterial[]
 
   // @@index([userId])
@@ -4953,6 +4972,7 @@ model Course {
 
   CourseEducatorAssignment CourseEducatorAssignment[]
   modules                  Module[]
+  fitnessEntitlements      FitnessEntitlement[]
 
   @@index([companyId])
   @@index([departmentId])
@@ -11784,5 +11804,294 @@ model ActivityAttempt {
   @@index([activityAssignmentId])
   @@index([studentId])
   @@index([isCompleted])
+}
+
+// ==========================================
+// FITNESS & WELLNESS EXTENSIONS
+// ==========================================
+
+enum EquipmentCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  CRITICAL
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  OUT_OF_SERVICE
+  RETIRED
+}
+
+model Equipment {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String             @db.ObjectId
+  company         Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  locationId      String?            @db.ObjectId
+  location        Location?          @relation(fields: [locationId], references: [id])
+  name            String
+  category        String             // e.g., "Cardio", "Strength", "Free Weights", "Recovery"
+  roomOrArea      String?            // e.g., "Studio 1", "Main Gym Floor"
+  serialNumber    String?
+  purchaseDate    DateTime?
+  purchaseCost    Float?
+  condition       EquipmentCondition @default(GOOD)
+  status          EquipmentStatus    @default(AVAILABLE)
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  notes           String?
+  imageUrl        String?
+
+  maintenanceLogs EquipmentMaintenance[]
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([companyId])
+  @@index([locationId])
+  @@index([status])
+  @@index([category])
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model EquipmentMaintenance {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String            @db.ObjectId
+  company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  equipmentId       String            @db.ObjectId
+  equipment         Equipment         @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  status            MaintenanceStatus @default(SCHEDULED)
+  technicianName    String?
+  vendorName        String?
+  cost              Float             @default(0)
+  maintenanceDate   DateTime          @default(now())
+  nextScheduledDate DateTime?
+  notes             String?
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([companyId])
+  @@index([equipmentId])
+  @@index([status])
+}
+
+enum MembershipInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+model MembershipPlan {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId          String             @db.ObjectId
+  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name               String             // e.g., "All-Access Gold", "Online Only", "Weekend Warrior"
+  description        String?
+  price              Float
+  interval           MembershipInterval @default(MONTHLY)
+  durationDays       Int                @default(30)
+  hasGymAccess       Boolean            @default(true)
+  hasClassAccess      Boolean            @default(true)
+  hasDigitalAccess   Boolean            @default(true)
+  allowedLocationIds String[]           // Empty = all locations, or specific location ObjectIds
+  features           String[]
+  isActive           Boolean            @default(true)
+
+  memberships        FitnessMembership[]
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([companyId])
+  @@index([isActive])
+}
+
+enum FitnessMembershipStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  SUSPENDED
+  PENDING
+}
+
+model FitnessMembership {
+  id         String                  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId  String                  @db.ObjectId
+  company    Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  consumerId String                  @db.ObjectId
+  consumer   Consumer                @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  planId     String                  @db.ObjectId
+  plan       MembershipPlan          @relation(fields: [planId], references: [id])
+  startDate  DateTime                @default(now())
+  endDate    DateTime
+  status     FitnessMembershipStatus @default(ACTIVE)
+  notes      String?
+  orderId    String?                 // Reference to canonical CustomerOrder if bought via shop/POS
+
+  checkIns   GymCheckIn[]
+
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+
+  @@index([companyId])
+  @@index([consumerId])
+  @@index([planId])
+  @@index([status])
+  @@index([endDate])
+}
+
+enum EntitlementTargetType {
+  COURSE
+  PROGRAM
+  CLASS
+  TRAINING_PLAN
+  GENERAL_DIGITAL
+}
+
+enum EntitlementSource {
+  PURCHASE
+  MEMBERSHIP
+  SUBSCRIPTION
+  MANUAL_GRANT
+  PROMOTIONAL
+  TRAINER_ASSIGNMENT
+}
+
+enum EntitlementStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model FitnessEntitlement {
+  id          String                @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String                @db.ObjectId
+  company     Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  consumerId  String                @db.ObjectId
+  consumer    Consumer              @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  targetType  EntitlementTargetType @default(COURSE)
+  targetId    String                // Course ID, Program ID, etc.
+  courseId    String?               @db.ObjectId
+  course      Course?               @relation(fields: [courseId], references: [id])
+  source      EntitlementSource     @default(PURCHASE)
+  sourceRefId String?               // Order ID or Membership ID
+  validFrom   DateTime              @default(now())
+  validUntil  DateTime?             // null = lifetime access
+  status      EntitlementStatus     @default(ACTIVE)
+
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([companyId])
+  @@index([consumerId])
+  @@index([targetType, targetId])
+  @@index([status])
+}
+
+enum CheckInStatus {
+  SUCCESS
+  DENIED_NO_MEMBERSHIP
+  DENIED_EXPIRED
+  DENIED_WRONG_LOCATION
+  DENIED_SUSPENDED
+}
+
+enum CheckInMethod {
+  MANUAL_STAFF
+  QR_CODE
+  KIOSK
+  NFC
+}
+
+model GymCheckIn {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId    String             @db.ObjectId
+  company      Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  consumerId   String             @db.ObjectId
+  consumer     Consumer           @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  locationId   String?            @db.ObjectId
+  location     Location?          @relation(fields: [locationId], references: [id])
+  membershipId String?            @db.ObjectId
+  membership   FitnessMembership? @relation(fields: [membershipId], references: [id])
+  status       CheckInStatus      @default(SUCCESS)
+  method       CheckInMethod      @default(MANUAL_STAFF)
+  checkInTime  DateTime           @default(now())
+  notes        String?
+
+  createdAt    DateTime           @default(now())
+
+  @@index([companyId])
+  @@index([consumerId])
+  @@index([locationId])
+  @@index([checkInTime])
+}
+
+enum TrainingPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model FitnessTrainingPlan {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId    String             @db.ObjectId
+  company      Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  consumerId   String?            @db.ObjectId
+  consumer     Consumer?          @relation(fields: [consumerId], references: [id])
+  trainerId    String?            @db.ObjectId
+  trainer      Educator?          @relation(fields: [trainerId], references: [id])
+  status       TrainingPlanStatus @default(ACTIVE)
+  weeksCount   Int                @default(4)
+  difficulty   String             @default("INTERMEDIATE")
+  scheduleJson Json?
+
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([companyId])
+  @@index([consumerId])
+  @@index([trainerId])
+}
+
+model FitnessExercise {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String   @db.ObjectId
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  category        String   // Cardio, Strength, Flexibility, Core, Olympic
+  muscleGroup     String   // Chest, Back, Legs, Shoulders, Arms, Full Body
+  equipmentNeeded String?  // Barbell, Dumbbell, Bodyweight, Cable, Machine
+  difficulty      String   @default("INTERMEDIATE")
+  instructions    String?
+  videoUrl        String?
+  imageUrl        String?
+  defaultSets     Int?     @default(3)
+  defaultReps     Int?     @default(10)
+  restDurationSec Int?     @default(60)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([category])
+  @@index([muscleGroup])
 }
 

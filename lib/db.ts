@@ -869,3 +869,76 @@ export async function getUserResources(
 
   return resources;
 }
+
+/**
+ * Get user fitness programs / course entitlements for a specific vertical/site
+ */
+export async function getUserFitness(
+  userId: string,
+  slug?: string,
+  filters: { status?: string; limit?: number; cursor?: string; sort?: "asc" | "desc" } = {},
+) {
+  const { limit = 20, cursor, sort = "desc" } = filters;
+
+  // 1. Resolve company if slug provided
+  let companyId: string | undefined = undefined;
+  if (slug) {
+    const comp = await prisma.company.findFirst({
+      where: { OR: [{ slug }, { id: /^[0-9a-fA-F]{24}$/.test(slug) ? slug : undefined }] },
+      select: { id: true },
+    });
+    if (comp) companyId = comp.id;
+  }
+
+  // 2. Resolve consumer record for this user and company
+  const consumers = await prisma.consumer.findMany({
+    where: {
+      userId,
+      ...(companyId ? { companyId } : {}),
+    },
+    select: { id: true },
+  });
+  const consumerIds = consumers.map((c) => c.id);
+
+  // 3. Query FitnessEntitlements for these consumers
+  const entitlements = await prisma.fitnessEntitlement.findMany({
+    where: {
+      consumerId: { in: consumerIds },
+      targetType: "COURSE",
+      status: "ACTIVE",
+      ...(companyId ? { companyId } : {}),
+    },
+    take: limit,
+    ...(cursor && { skip: 1, cursor: { id: cursor } }),
+    orderBy: { createdAt: sort },
+    include: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          imageUrl: true,
+          duration: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  return entitlements.map((e) => ({
+    id: e.id,
+    status: e.status,
+    course: e.course
+      ? {
+          id: e.course.id,
+          title: e.course.title,
+          description: e.course.description,
+          image: e.course.imageUrl,
+          duration: e.course.duration,
+          status: e.course.status,
+        }
+      : null,
+    createdAt: e.createdAt,
+    updatedAt: e.updatedAt,
+  }));
+}

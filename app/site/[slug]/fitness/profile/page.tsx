@@ -12,27 +12,12 @@ import ProgramsView from './components/dashboard/Views/ProgramsView';
 import SettingsView from './components/dashboard/Views/SettingsView';
 import WorkoutsView from './components/dashboard/Views/WorkoutsView';
 
-// import Sidebar from '@/components/dashboard/Sidebar';
-// import DashboardView from '@/components/dashboard/views/DashboardView';
-
 interface UserProfile {
   id: string;
   name: string | null;
   email: string;
   avatar: string | null;
   tier?: string;
-}
-
-interface FitnessProgram {
-  id: string;
-  status: string;
-  course?: {
-    title: string;
-    description?: string;
-    image?: string;
-  };
-  progress?: number;
-  nextSession?: string;
 }
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -43,7 +28,19 @@ export default function FitnessDashboard() {
   
   const [activeView, setActiveView] = useState('dashboard');
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [programs, setPrograms] = useState<FitnessProgram[]>([]);
+  const [fitnessData, setFitnessData] = useState<{
+    items: any[];
+    memberships: any[];
+    checkIns: any[];
+    trainingPlans: any[];
+    bookings: any[];
+  }>({
+    items: [],
+    memberships: [],
+    checkIns: [],
+    trainingPlans: [],
+    bookings: [],
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,8 +65,14 @@ export default function FitnessDashboard() {
       }
 
       if (fitnessRes.ok) {
-        const fitnessData = await fitnessRes.json();
-        setPrograms(fitnessData.items || []);
+        const resData = await fitnessRes.json();
+        setFitnessData({
+          items: resData.items || [],
+          memberships: resData.memberships || [],
+          checkIns: resData.checkIns || [],
+          trainingPlans: resData.trainingPlans || [],
+          bookings: resData.bookings || [],
+        });
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -107,25 +110,53 @@ export default function FitnessDashboard() {
   const displayUser = {
     name: user?.name || session?.user?.name || 'Athlete',
     avatar: user?.avatar || session?.user?.image || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop',
-    location: 'Los Angeles',
-    streak: programs.length > 0 ? `${programs.length * 10} Days 🔥` : '0 Days',
+    location: 'Active Gym Member',
+    streak: `${fitnessData.checkIns.length} Check-ins`,
   };
 
   const renderContent = () => {
     switch (activeView) {
       case 'dashboard': 
-        return <DashboardView displayUser={displayUser} programs={programs} />;
+        return (
+          <DashboardView 
+            displayUser={displayUser} 
+            programs={fitnessData.items} 
+            memberships={fitnessData.memberships}
+            checkIns={fitnessData.checkIns}
+            bookings={fitnessData.bookings}
+            slug={slug}
+          />
+        );
       case 'workouts':
-        return <WorkoutsView programs={programs} />;
+        return (
+          <WorkoutsView 
+            trainingPlans={fitnessData.trainingPlans} 
+            slug={slug} 
+          />
+        );
       case 'programs':
-        return <ProgramsView programs={programs} />;
+        return (
+          <ProgramsView 
+            programs={fitnessData.items} 
+            slug={slug} 
+          />
+        );
       case 'messages':
-        return <MessagesView />;
+        return <MessagesView slug={slug} bookings={fitnessData.bookings} />;
       case 'settings':
         return <SettingsView />;
 
       default: 
-        return <DashboardView displayUser={displayUser} programs={programs} />;
+        return (
+          <DashboardView 
+            displayUser={displayUser} 
+            programs={fitnessData.items} 
+            memberships={fitnessData.memberships}
+            checkIns={fitnessData.checkIns}
+            bookings={fitnessData.bookings}
+            slug={slug}
+          />
+        );
     }
   };
 

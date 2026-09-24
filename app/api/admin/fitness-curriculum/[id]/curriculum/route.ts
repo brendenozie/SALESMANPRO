@@ -6,7 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 export const GET = withApiHandler(async (request, context) => {
   const { params } = context;
-  const courseId = params?.courseId;
+  const courseId = params?.id || params?.courseId;
 
   if (!courseId) {
     return formatResponse(false, null, "Course ID is required", 400);

@@ -216,7 +216,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
     }
 
     const method = booking ? 'PUT' : 'POST';
-    const url = booking ? `${apiBaseUrl}/admin/fitness-bookings/${booking.id}` : `${apiBaseUrl}/admin/fitness-bookings?companyId=${slug}`;
+    const url = booking ? `${apiBaseUrl}/admin/fitness-bookings/${booking.id}?companyId=${slug}` : `${apiBaseUrl}/admin/fitness-bookings`;
     const toastId = toast.loading(booking ? 'Updating booking...' : 'Creating booking...');
 
     try {
@@ -224,6 +224,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          companyId: slug,
           title, description: description || null, bookingType, startTime, endTime, status, clientId,
           educatorId: educatorId || null, locationId: locationId || null, notes: notes || null,
         }),
@@ -234,7 +235,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
         throw new Error(errorData.message || `Failed to ${booking ? 'update' : 'create'} booking.`);
       }
 
-      const savedBooking: BookingData = await response.json();
+      const result = await response.json();
+      const savedBooking: BookingData = result.data || result;
       onSave(savedBooking);
       onClose();
       toast.success(`Booking "${savedBooking.title}" ${booking ? 'updated' : 'created'} successfully!`, { id: toastId });

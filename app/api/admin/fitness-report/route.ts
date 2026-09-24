@@ -1,241 +1,184 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
+import { buildTenantCacheKey, cacheGet, cacheSet } from "@/lib/cache";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { resolveCompany, getFitnessReportData } from "@/server/services/fitnessService";
 
+type DateRange = { gte: Date; lte: Date };
 
-import prisma from '@/server/db/prismadb'; // Adjust this path
-// New Imports
-import { withApiHandler } from '@/lib/hooks/withApiHandler';
-import { formatResponse } from '@/lib/formatResponse';
-
-// Type definitions
-type DateRange = { gte: Date, lte: Date };
-type RouteContext = {
-    params: {
-        adminSlug: string;
-    };
-};
-
-// Helper to get date ranges
 const getDateRange = (period: string): DateRange => {
-    const now = new Date();
-    let startDate: Date;
+  const now = new Date();
+  let startDate: Date;
 
-    switch (period) {
-        case 'last7days':
-            startDate = new Date(now.setDate(now.getDate() - 7));
-            break;
-        case 'last30days':
-            startDate = new Date(now.setDate(now.getDate() - 30));
-            break;
-        case 'lastyear':
-            // Setting the month and date preserves the time of day, but we usually want midnight
-            startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-            break;
-        case 'alltime':
-        default:
-            startDate = new Date(0); // Epoch start
-            break;
-    }
-    return { gte: startDate, lte: new Date() };
+  switch (period) {
+    case "last7days":
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case "last30days":
+      startDate = new Date(now.setDate(now.getDate() - 30));
+      break;
+    case "lastyear":
+      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      break;
+    case "alltime":
+    default:
+      startDate = new Date(0);
+      break;
+  }
+  return { gte: startDate, lte: new Date() };
 };
 
-// --- GET Handler Logic (Fetches aggregated report data) ---
-const getReportsLogic = async (request: Request, { params }: RouteContext) => {
-    const { adminSlug } = params;
-    
-    const { searchParams } = new URL(request.url);
+const getReportsLogic = async (request: Request, context: any) => {
+  const { searchParams } = new URL(request.url);
+  const companyIdentifier =
+    searchParams.get("companyId") ||
+    searchParams.get("id") ||
+    searchParams.get("adminSlug") ||
+    searchParams.get("slug") ||
+    context?.params?.adminSlug;
 
-    const period = searchParams.get('period') || 'last30days';
+  if (!companyIdentifier) {
+    return formatResponse(false, null, "Company identifier is required", 400);
+  }
 
-    // const companyId = searchParams.get('id');
-    
-    const cacheKey = buildTenantCacheKey(adminSlug, "fitness-report", {});
+  const company = await resolveCompany(companyIdentifier);
+  if (!company) {
+    return formatResponse(false, null, "Company not found for the given identifier.", 404);
+  }
+
+  const period = searchParams.get("period") || "last30days";
+  const cacheKey = buildTenantCacheKey(company.id, "fitness-report", { period });
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
-  const company = await prisma.company.findUnique({
-        where: { slug: adminSlug },
-        select: { id: true },
-    });
+  const companyId = company.id;
+  const dateRange = getDateRange(period);
 
+  const baseMetrics = await getFitnessReportData(companyId, period);
 
-    if (!company) {
-        // Use formatResponse for 404
-        return formatResponse(false, null, 'Company not found for the given slug.', 404);
-    }
+  // Booking Type Distribution (for chart)
+  const bookingTypeDistribution = await prisma.booking.groupBy({
+    by: ["bookingType"],
+    where: {
+      companyId: companyId,
+      status: "CONFIRMED",
+      startTime: dateRange,
+    },
+    _count: {
+      id: true,
+    },
+    orderBy: {
+      _count: {
+        id: "desc",
+      },
+    },
+  });
 
-    const companyId = company.id;
-    const dateRange = getDateRange(period);
+  const formattedBookingTypes = bookingTypeDistribution.map((item) => ({
+    name: item.bookingType.replace(/_/g, " "),
+    value: item._count.id,
+  }));
 
-    // 1. Total Revenue (from confirmed bookings with a price)
-    const revenueResult = await prisma.booking.aggregate({
-        where: {
+  // Monthly/Daily Revenue Trend
+  const trendData: { name: string; revenue: number }[] = [];
+  const tempNow = new Date();
+
+  if (period === "lastyear" || period === "alltime") {
+    for (let i = 11; i >= 0; i--) {
+      const monthStart = new Date(tempNow.getFullYear(), tempNow.getMonth() - i, 1);
+      const monthEnd = new Date(tempNow.getFullYear(), tempNow.getMonth() - i + 1, 0, 23, 59, 59, 999);
+
+      const [monthlyBookingRev, monthlyOrderRev] = await Promise.all([
+        prisma.booking.aggregate({
+          where: {
             companyId: companyId,
-            status: 'CONFIRMED',
+            status: "CONFIRMED",
             price: { not: null },
-            startTime: dateRange,
-        },
-        _sum: {
-            price: true,
-        },
-    });
-    const totalRevenue = revenueResult._sum.price || 0;
-
-    // 2. New Members
-    const newMembersCount = await prisma.client.count({
-        where: {
+            startTime: { gte: monthStart, lte: monthEnd },
+          },
+          _sum: { price: true },
+        }),
+        prisma.customerOrder.aggregate({
+          where: {
             companyId: companyId,
-            joinDate: dateRange,
-        },
-    });
+            status: "COMPLETED",
+            createdAt: { gte: monthStart, lte: monthEnd },
+          },
+          _sum: { totalAmount: true },
+        }),
+      ]);
 
-    // 3. Total Confirmed Bookings
-    const totalConfirmedBookings = await prisma.booking.count({
-        where: {
-            companyId: companyId,
-            status: 'CONFIRMED',
-            startTime: dateRange,
-        },
-    });
+      const totalMonthRev = (monthlyBookingRev._sum.price || 0) + (monthlyOrderRev._sum.totalAmount || 0);
 
-    // 4. Booking Type Distribution (for chart)
-    const bookingTypeDistribution = await prisma.booking.groupBy({
-        by: ['bookingType'],
-        where: {
-            companyId: companyId,
-            status: 'CONFIRMED',
-            startTime: dateRange,
-        },
-        _count: {
-            id: true,
-        },
-        orderBy: {
-            _count: {
-                id: 'desc',
-            },
-        },
-    });
-    const formattedBookingTypes = bookingTypeDistribution.map(item => ({
-        name: item.bookingType.replace(/_/g, ' '),
-        value: item._count.id,
-    }));
-
-    // 5. Monthly/Daily Revenue Trend (for chart)
-    const trendData: { name: string, revenue: number }[] = [];
-    const tempNow = new Date(); // Use a temp variable for iteration to avoid mutation issues
-
-    // Logic for Monthly (Year/All-time)
-    if (period === 'lastyear' || period === 'alltime') {
-        for (let i = 11; i >= 0; i--) {
-            const monthStart = new Date(tempNow.getFullYear(), tempNow.getMonth() - i, 1);
-            const monthEnd = new Date(tempNow.getFullYear(), tempNow.getMonth() - i + 1, 0, 23, 59, 59, 999);
-
-            const monthlyRevenue = await prisma.booking.aggregate({
-                where: {
-                    companyId: companyId,
-                    status: 'CONFIRMED',
-                    price: { not: null },
-                    startTime: { gte: monthStart, lte: monthEnd },
-                },
-                _sum: { price: true },
-            });
-            trendData.push({
-                name: monthStart.toLocaleString('en-US', { month: 'short', year: '2-digit' }),
-                revenue: monthlyRevenue._sum.price || 0,
-            });
-        }
-    } else {
-        // Logic for Daily (Last 7 or 30 days)
-        const daysInPeriod = Math.ceil((dateRange.lte.getTime() - dateRange.gte.getTime()) / (1000 * 60 * 60 * 24));
-        // Reset tempNow for accurate day iteration starting from the start date
-        const iterationDate = new Date(dateRange.gte);
-
-        for (let i = 0; i <= daysInPeriod; i++) {
-            const dayStart = new Date(iterationDate.getFullYear(), iterationDate.getMonth(), iterationDate.getDate(), 0, 0, 0, 0);
-            const dayEnd = new Date(iterationDate.getFullYear(), iterationDate.getMonth(), iterationDate.getDate(), 23, 59, 59, 999);
-
-            const dailyRevenue = await prisma.booking.aggregate({
-                where: {
-                    companyId: companyId,
-                    status: 'CONFIRMED',
-                    price: { not: null },
-                    startTime: { gte: dayStart, lte: dayEnd },
-                },
-                _sum: { price: true },
-            });
-            trendData.push({
-                name: dayStart.toLocaleString('en-US', { day: 'numeric', month: 'short' }),
-                revenue: dailyRevenue._sum.price || 0,
-            });
-            // Move to the next day
-            iterationDate.setDate(iterationDate.getDate() + 1);
-        }
+      trendData.push({
+        name: monthStart.toLocaleString("en-US", { month: "short", year: "2-digit" }),
+        revenue: totalMonthRev,
+      });
     }
+  } else {
+    const daysInPeriod = Math.ceil((dateRange.lte.getTime() - dateRange.gte.getTime()) / (1000 * 60 * 60 * 24));
+    const iterationDate = new Date(dateRange.gte);
 
-    // 6. Most Booked Trainer
-    const mostBookedTrainerResult = await prisma.booking.groupBy({
-        by: ['educatorId'],
-        where: {
+    for (let i = 0; i <= Math.min(daysInPeriod, 31); i++) {
+      const dayStart = new Date(iterationDate.getFullYear(), iterationDate.getMonth(), iterationDate.getDate(), 0, 0, 0, 0);
+      const dayEnd = new Date(iterationDate.getFullYear(), iterationDate.getMonth(), iterationDate.getDate(), 23, 59, 59, 999);
+
+      const [dailyBookingRev, dailyOrderRev] = await Promise.all([
+        prisma.booking.aggregate({
+          where: {
             companyId: companyId,
-            status: 'CONFIRMED',
-            bookingType: 'PERSONAL_TRAINING',
-            educatorId: { not: null },
-            startTime: dateRange,
-        },
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 1,
-    });
+            status: "CONFIRMED",
+            price: { not: null },
+            startTime: { gte: dayStart, lte: dayEnd },
+          },
+          _sum: { price: true },
+        }),
+        prisma.customerOrder.aggregate({
+          where: {
+            companyId: companyId,
+            status: "COMPLETED",
+            createdAt: { gte: dayStart, lte: dayEnd },
+          },
+          _sum: { totalAmount: true },
+        }),
+      ]);
 
-    let mostBookedTrainerName = 'N/A';
-    if (mostBookedTrainerResult.length > 0 && mostBookedTrainerResult[0].educatorId) {
-        const trainer = await prisma.educator.findUnique({
-            where: { id: mostBookedTrainerResult[0].educatorId },
-            include: { user: { select: { name: true } } },
-        });
-        mostBookedTrainerName = trainer?.user?.name || 'Unknown Trainer';
+      const totalDayRev = (dailyBookingRev._sum.price || 0) + (dailyOrderRev._sum.totalAmount || 0);
+
+      trendData.push({
+        name: dayStart.toLocaleString("en-US", { day: "numeric", month: "short" }),
+        revenue: totalDayRev,
+      });
+
+      iterationDate.setDate(iterationDate.getDate() + 1);
     }
+  }
 
-    // 7. Top Class (by confirmed bookings)
-    const topClassResult = await prisma.booking.groupBy({
-        by: ['title'],
-        where: {
-            companyId: companyId,
-            status: 'CONFIRMED',
-            bookingType: 'CLASS',
-            startTime: dateRange,
-        },
-        _count: { id: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 1,
-    });
-    const topPerformingClassName = topClassResult.length > 0 ? topClassResult[0].title : 'N/A';
+  const reportSummary = {
+    period: period,
+    totalRevenue: parseFloat(baseMetrics.totalRevenue.toFixed(2)),
+    newMembers: baseMetrics.newMembers,
+    totalMembers: baseMetrics.totalMembers,
+    activeMembers: baseMetrics.activeMembers,
+    attendanceRate: baseMetrics.attendanceRate,
+    classAttendanceRate: baseMetrics.classAttendanceRate,
+    totalBookings: baseMetrics.totalBookings,
+    checkInsCount: baseMetrics.checkInsCount,
+    mostBookedTrainer: baseMetrics.mostBookedTrainer,
+    topPerformingClass: baseMetrics.topPerformingClass,
+    equipmentRequiringMaint: baseMetrics.equipmentRequiringMaint,
+    bookingTypeChartData: formattedBookingTypes,
+    revenueTrendChartData: trendData,
+  };
 
+  try {
+    await cacheSet(cacheKey, reportSummary, 60);
+  } catch (e) {}
 
-    const reportSummary = {
-        period: period,
-        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-        newMembers: newMembersCount,
-        totalBookings: totalConfirmedBookings,
-        mostBookedTrainer: mostBookedTrainerName,
-        topPerformingClass: topPerformingClassName,
-        bookingTypeChartData: formattedBookingTypes,
-        revenueTrendChartData: trendData,
-    };
-
-    
-    try {
-        if (company) {
-        await cacheSet(cacheKey, reportSummary, 60);
-        }
-    } catch (e) {}
-
-    // Use formatResponse for success
-    return formatResponse(true, reportSummary, 'Reports fetched successfully', 200);
+  return formatResponse(true, reportSummary, "Reports fetched successfully", 200);
 };
 
-// Export the wrapped GET function
-// Authentication and error handling are now centralized
 export const GET = withApiHandler(getReportsLogic);

@@ -14,6 +14,8 @@ import {
 
 interface SettingsClientProps {
   initialSettings: GeneralSettings;
+  companyId?: string;
+  slug?: string;
 }
 
 const containerVariants = {
@@ -31,7 +33,7 @@ const formFieldVariants = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
 };
 
-export default function SettingsClient({ initialSettings }: SettingsClientProps) {
+export default function SettingsClient({ initialSettings, companyId, slug }: SettingsClientProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [currentSettings, setCurrentSettings] = useState<GeneralSettings>(initialSettings);
 
@@ -45,10 +47,23 @@ export default function SettingsClient({ initialSettings }: SettingsClientProps)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate API call or Server Action update
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSaving(false);
-    alert('Settings saved successfully!');
+    try {
+      const res = await fetch(`/api/admin/fitness-settings?companyId=${companyId || slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentSettings),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Settings saved successfully!');
+      } else {
+        alert(data.message || 'Failed to save settings');
+      }
+    } catch (err: any) {
+      alert(`Error saving settings: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

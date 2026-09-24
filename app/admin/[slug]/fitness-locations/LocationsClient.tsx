@@ -342,6 +342,7 @@ export default function LocationsClient({ companyId, slug }: LocationsClientProp
         onSave={handleSaveLocation}
         location={currentLocation}
         slug={slug}
+        companyId={companyId}
       />
 
       <ConfirmationModal

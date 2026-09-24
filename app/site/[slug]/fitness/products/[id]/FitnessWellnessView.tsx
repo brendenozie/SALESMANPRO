@@ -20,7 +20,9 @@ import {
   CheckBadgeIcon,
   BookOpenIcon,
   ArrowDownTrayIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
+import CourseCheckoutView from "../../listings/[id]/CourseCheckoutView";
 
 const loader = ({
   src,
@@ -33,9 +35,20 @@ export default function FitnessWellnessView({
   totalModules,
   totalLessons,
   totalDuration,
+  slug,
 }: any) {
-  const [openModule, setOpenModule] =
-    useState<string | null>(null);
+  const [openModule, setOpenModule] = useState<string | null>(null);
+  const [checkedOut, setCheckedOut] = useState(false);
+
+  if (checkedOut) {
+    return (
+      <CourseCheckoutView
+        course={program}
+        companyId={program?.companyId || ""}
+        slug={slug || "fitness"}
+      />
+    );
+  }
 
   const instructor =
     program?.CourseEducatorAssignment?.[0]
@@ -182,11 +195,17 @@ export default function FitnessWellnessView({
             {/* CTA */}
 
             <div className="flex flex-wrap gap-5 items-center">
-              <button className="h-16 px-10 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-[0.2em] text-xs hover:scale-105 transition-all">
+              <button
+                onClick={() => setCheckedOut(true)}
+                className="h-16 px-10 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-[0.2em] text-xs hover:scale-105 transition-all"
+              >
                 Start Training
               </button>
 
-              <button className="flex items-center gap-3 uppercase tracking-[0.2em] text-xs font-black text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
+              <button
+                onClick={() => setCheckedOut(true)}
+                className="flex items-center gap-3 uppercase tracking-[0.2em] text-xs font-black text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
+              >
                 <PlayIcon className="w-6 h-6" />
                 Watch Preview
               </button>
@@ -308,32 +327,18 @@ export default function FitnessWellnessView({
 
                           {/* MATERIALS */}
 
-                          {lesson.materials
-                            ?.length > 0 && (
+                          {lesson.materials?.length > 0 && (
                             <div className="mt-6 flex flex-wrap gap-3">
-                              {lesson.materials.map(
-                                (
-                                  material: any,
-                                ) => (
-                                  <a
-                                    key={
-                                      material.id
-                                    }
-                                    href={
-                                      material.fileUrl ||
-                                      material.linkUrl
-                                    }
-                                    target="_blank"
-                                    className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-xs font-black uppercase tracking-widest hover:scale-105 transition-all"
-                                  >
-                                    <ArrowDownTrayIcon className="w-4 h-4" />
-
-                                    {
-                                      material.title
-                                    }
-                                  </a>
-                                ),
-                              )}
+                              {lesson.materials.map((material: any) => (
+                                <div
+                                  key={material.id}
+                                  title="Enroll to access this material"
+                                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-xs font-black uppercase tracking-widest text-zinc-500 cursor-not-allowed select-none"
+                                >
+                                  <LockClosedIcon className="w-4 h-4 text-zinc-400" />
+                                  {material.title} (Locked)
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -373,7 +378,10 @@ export default function FitnessWellnessView({
             </div>
 
             <div>
-              <button className="w-full h-16 rounded-2xl bg-black dark:bg-white text-white dark:text-black uppercase text-xs tracking-[0.3em] font-black hover:scale-[1.02] transition-all">
+              <button
+                onClick={() => setCheckedOut(true)}
+                className="w-full h-16 rounded-2xl bg-black dark:bg-white text-white dark:text-black uppercase text-xs tracking-[0.3em] font-black hover:scale-[1.02] transition-all"
+              >
                 Enroll In Course
               </button>
             </div>

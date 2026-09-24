@@ -775,6 +775,9 @@ graph TD
 | **Vertical Dashboards** | **CANONICAL** | `app/api/admin/dashboard/[vertical]/[slug]/route.ts` | Real-time vertical metric aggregators (SaaS, Coach, Logistics, E-commerce). |
 | **POS Operator Sessions** | **CANONICAL** | `lib/pos/posSessionService.ts` | **Mandatory:** POS shifts, terminal PIN authentication, shift handoffs, and sales aggregations. |
 | **POS Customer CRM Sync** | **CANONICAL** | `lib/pos/posCustomerService.ts` | **Mandatory:** In-POS customer search, creation, and deduplication synced to canonical `User` + `Client` + `Consumer`. |
+| **Fitness Domain Service** | **CANONICAL** | `server/services/fitnessService.ts` | **Mandatory:** Equipment maintenance, membership plans, authoritative gym check-in, and course entitlement verification. |
+| **Fitness Check-In & Gate** | **CANONICAL** | `app/api/fitness/check-in/route.ts` | Authoritative physical gym check-in verifying active membership and location scope. |
+| **Fitness Entitlements** | **CANONICAL** | `app/api/fitness/entitlements/verify/route.ts` | Server-side digital access verification for courses, videos, and lesson attachments. |
 | **Legacy Order Scripts**| **DEPRECATED** | `scripts/old-order-import.ts` | Do not reuse or reference in new features. |
 
 ---
@@ -798,10 +801,17 @@ graph TD
 - **Invariant 8:** Ticket Allocation Concurrency Guard: `EventTicket.quantitySold` must never exceed `quantityTotal`. Ticket purchase mutations must enforce atomic increments guarded by `withDistributedLock` and `lte: dbTicket.quantityTotal - requestedTicket.quantity`.
 - **Invariant 9:** Gate Check-In Idempotency & Duplicate Prevention: A ticket pass can only be checked in once (`checkInStatus: "CHECKED_IN"`). Subsequent scans must be rejected server-side with `ALREADY_CHECKED_IN` returning previous timestamp and operator. Cancelled or refunded tickets (`checkInStatus: "CANCELLED"`) must be unconditionally rejected.
 - **Invariant 10:** Event Order Refund Reinstatement: Changing an `EventTicketPurchase` to `REFUNDED` or `CANCELLED` must atomically decrement `EventTicket.quantitySold` by the purchase quantity and mark all child `EventTicketAttendee` records as `CANCELLED`.
+- **Invariant 11:** Fitness Digital Entitlement Security: Private and paid digital training courses, curriculum lessons, and video materials must be gated server-side via `verifyEntitlement` (`server/services/fitnessService.ts`). Gated content is never served to unauthenticated or unentitled users.
+- **Invariant 12:** Gym Check-In Validity & Multi-Location Isolation: A gym check-in (`GymCheckIn`) requires an active membership (`FitnessMembershipStatus === "ACTIVE"`) within its valid date range and matching the customer's permitted location scope (`ALL_LOCATIONS` or matching `locationId`).
+- **Invariant 13:** Trainer & Class Scheduling Conflict Guard: A trainer cannot be assigned overlapping sessions with active status (`CONFIRMED` or `PENDING`), and client double-bookings within the same time slot must be rejected with HTTP 409.
 
 ---
 
 ## 22. "If You Change This..." Impact Warnings
+
+### If You Change `server/services/fitnessService.ts` or `app/api/fitness/check-in/route.ts`:
+- **You Risk Breaking:** Physical gym attendance check-ins, member admission verification, multi-location restrictions, digital course access gating, and equipment maintenance tracking.
+- **Mandatory Verification:** Test checking in an active member (verify success), an expired member (verify rejection), and checking course entitlement access control.
 
 ### If You Change `app/api/events/checkout/route.ts` or `app/api/admin/events/[id]/tickets/route.ts`:
 - **You Risk Breaking:** Event ticket inventory allocations, ticket generation, free registration bypass, scannable QR generation, and customer ticket access.

@@ -233,7 +233,7 @@ export default function FitnessCoursesListingView({
                   }}
                 >
                   <Link
-                    href={`/fitness/listings/${course.id}`}
+                    href={`/site/${company?.slug || "fitness"}/fitness/listings/${course.id}`}
                     className="group block"
                   >
                     <div className="relative rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">

@@ -34,13 +34,7 @@ async function handleGET(request: Request) {
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
   const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
-    if (!company) return formatResponse(false, null, 'Company not found', 404);
+  if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     const trainers = await prisma.educator.findMany({
       where: { companyId: company.id },
