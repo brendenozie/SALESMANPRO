@@ -1,4 +1,4 @@
-import { PATCH as updateHandler, PUT as putHandler } from "../[id]/route";
+import { PATCH as updateHandler, PUT as putHandler } from "@/app/api/admin/my-market-place/[id]/route";
 
 export const PATCH = updateHandler;
 export const PUT = putHandler;
