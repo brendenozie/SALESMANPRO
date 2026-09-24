@@ -456,8 +456,9 @@ model Company {
   libraryIssuances LibraryIssuance[]
 
   // Transport Management relations
-  transportVehicles TransportVehicle[]
-  transportRoutes   TransportRoute[]
+  transportVehicles  TransportVehicle[]
+  transportRoutes    TransportRoute[]
+  transportIncidents TransportIncident[]
 
   // Hostel Management relations
   hostelBlocks HostelBlock[]
@@ -3960,6 +3961,9 @@ model Consumer {
   fitnessEntitlements  FitnessEntitlement[]
   gymCheckIns          GymCheckIn[]
   fitnessTrainingPlans FitnessTrainingPlan[]
+
+  // Delivery relations
+  deliveries           Delivery[]
 
   @@unique([userId, companyId])
   @@index([companyId])
@@ -8587,6 +8591,16 @@ model Delivery {
   hubId String? @db.ObjectId
   hub   Hub?    @relation(fields: [hubId], references: [id])
 
+  // Fleet & Customer relations
+  vehicleId       String?           @db.ObjectId
+  vehicle         TransportVehicle? @relation(fields: [vehicleId], references: [id])
+  routeId         String?           @db.ObjectId
+  route           TransportRoute?   @relation(fields: [routeId], references: [id])
+  driverProfileId String?           @db.ObjectId
+  driverProfile   TransportDriver?  @relation(fields: [driverProfileId], references: [id])
+  consumerId      String?           @db.ObjectId
+  consumer        Consumer?         @relation(fields: [consumerId], references: [id])
+
   pickupAddress   String?
   deliveryAddress String?
   latlngPickup    String? // e.g., "37.7749,-122.4194"
@@ -8617,11 +8631,16 @@ model Delivery {
 
   CustomerOrders CustomerOrder[] @relation("DeliveryToOrders")
 
-  stops    DeliveryStop[]
-  tracking DeliveryTracking[]
+  stops     DeliveryStop[]
+  tracking  DeliveryTracking[]
+  proofs    DeliveryProof[]
+  incidents TransportIncident[]
 
   @@index([companyId])
   @@index([riderId])
+  @@index([vehicleId])
+  @@index([driverProfileId])
+  @@index([consumerId])
   @@index([status])
 }
 
@@ -8632,11 +8651,29 @@ model Delivery {
 enum DeliveryStatus {
   DRAFT
   PENDING
+  REQUESTED
+  QUOTED
+  PENDING_PAYMENT
+  CONFIRMED
+  SCHEDULED
+  DRIVER_ASSIGNED
   ASSIGNED
+  DRIVER_EN_ROUTE_TO_PICKUP
+  ARRIVED_AT_PICKUP
+  PICKED_UP
+  IN_TRANSIT
   INPROGRESS
+  ARRIVED_AT_DESTINATION
+  OUT_FOR_DELIVERY
+  DELIVERED
   COMPLETED
-  FAILED
   CANCELLED
+  FAILED
+  FAILED_PICKUP
+  FAILED_DELIVERY
+  RESCHEDULED
+  RETURNED
+  ON_HOLD
 }
 
 enum StopStatus {
@@ -8716,6 +8753,10 @@ model DeliveryTracking {
 
   batteryLevel Int?
 
+  status       String?
+  locationName String?
+  note         String?
+
   recordedAt DateTime @default(now())
 
   @@index([deliveryId])
@@ -8729,21 +8770,28 @@ model DeliveryTracking {
 model DeliveryProof {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  stopId String
-  stop   DeliveryStop @relation(fields: [stopId], references: [id])
+  stopId String?
+  stop   DeliveryStop? @relation(fields: [stopId], references: [id])
+
+  deliveryId String?   @db.ObjectId
+  delivery   Delivery? @relation(fields: [deliveryId], references: [id])
 
   type ProofType
 
-  imageUrl      String?
-  signatureUrl  String?
-  otpCode       String?
-  recipientName String?
+  imageUrl       String?
+  signatureUrl   String?
+  otpCode        String?
+  recipientName  String?
+  recipientPhone String?
+  lat            Float?
+  lng            Float?
 
   notes String?
 
   createdAt DateTime @default(now())
 
   @@index([stopId])
+  @@index([deliveryId])
 }
 
 // ======================================================
@@ -8763,6 +8811,34 @@ model DeliveryException {
   createdAt DateTime @default(now())
 
   @@index([deliveryId])
+}
+
+model TransportIncident {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId  String   @db.ObjectId
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicleId  String?  @db.ObjectId
+  vehicle    TransportVehicle? @relation(fields: [vehicleId], references: [id])
+  driverId   String?  @db.ObjectId
+  driver     TransportDriver?  @relation(fields: [driverId], references: [id])
+  deliveryId String?  @db.ObjectId
+  delivery   Delivery? @relation(fields: [deliveryId], references: [id])
+  type       String
+  severity   String   @default("Medium")
+  status     String   @default("Under Investigation")
+  date       DateTime @default(now())
+  location   String?
+  notes      String?
+  hasVideo   Boolean  @default(false)
+  hasPhotos  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([vehicleId])
+  @@index([driverId])
+  @@index([deliveryId])
+  @@index([status])
 }
 
 model Idempotency {
@@ -9167,6 +9243,8 @@ model TransportVehicle {
   maintenances    TransportMaintenance[]
   fuelLogs        TransportFuelLog[]
   transportShifts TransportShift[]
+  deliveries      Delivery[]
+  incidents       TransportIncident[]
 
   @@index([companyId])
   @@index([status])
@@ -9187,6 +9265,7 @@ model TransportRoute {
   updatedAt       DateTime              @updatedAt
   assignments     TransportAssignment[]
   transportShifts TransportShift[]
+  deliveries      Delivery[]
 
   @@index([companyId])
   @@index([vehicleId])
@@ -9287,6 +9366,8 @@ model TransportDriver {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   transportShifts TransportShift[]
+  deliveries      Delivery[]
+  incidents       TransportIncident[]
 
   @@index([companyId])
   @@index([status])

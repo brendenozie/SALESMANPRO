@@ -1,98 +1,109 @@
-'use client';
-import React from "react";
+"use client";
 
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { BookOpenIcon, EnvelopeIcon } from "@heroicons/react/24/outline"; // Added icons
+import { TruckIcon, MapPinIcon, ScaleIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 interface BookingFormProps {
-  service: any; // Using 'service' to maintain consistency, but it represents the E-book listing
-  slug: string; // Added slug prop to identify the store
+  service: any;
+  slug: string;
 }
 
 export default function BookingForm({ service, slug }: BookingFormProps) {
-  // E-books require user contact info (e.g., email) for delivery/purchase.
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
-
-  const isFree = (service.finalPrice === 0 || service.finalPrice === null || service.finalPrice === undefined);
-  const actionText = isFree ? "Get Free E-book" : "Purchase E-book";
-  const buttonStyle = isFree ? "bg-green-600 hover:bg-green-700" : "bg-orange-600 hover:bg-orange-700";
+  const [pickup, setPickup] = useState("");
+  const [dropoff, setDropoff] = useState("");
+  const [weightKg, setWeightKg] = useState("5");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email) {
-      setError("Please enter your email address for delivery.");
+    if (!pickup.trim() || !dropoff.trim()) {
+      alert("Please provide both pickup and dropoff addresses");
       return;
     }
-    
-    setLoading(true);
 
-    // Build the query string with product details and user email
     const params = new URLSearchParams({
-      listingId: service.id,
-      name: service.name ?? "E-book",
-      // Ensure price is a string for the URL
-      price: service.finalPrice !== undefined ? service.finalPrice.toString() : "0.00",
-      productType: "ebook", // Important for the checkout page logic
-      email, // Add the user's email
+      pickup,
+      dropoff,
+      weight: weightKg,
+      service: service?.name?.toUpperCase()?.includes("EXPRESS")
+        ? "EXPRESS"
+        : service?.name?.toUpperCase()?.includes("SAME")
+        ? "SAME_DAY"
+        : "STANDARD",
     });
-    
-    // In a real application, you might first call an API here to create a checkout session.
-    // For this example, we navigate directly to the checkout page.
 
-    // Navigate to your checkout page
-    router.push(`/bookings/checkout?${params.toString()}`);
+    router.push(`/site/${slug}/logistics/book?${params.toString()}`);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 p-4 border border-gray-200 rounded-xl shadow-inner bg-gray-50 dark:bg-gray-800">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 border-b pb-3 mb-4">
-        <BookOpenIcon className="w-6 h-6 text-orange-600" />
-        {isFree ? "Secure Your Copy" : "Ready to Purchase"}
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 p-6 border border-white/10 rounded-2xl shadow-2xl bg-slate-900/80 backdrop-blur-md text-white"
+    >
+      <h3 className="text-lg font-black flex items-center gap-2 border-b border-white/10 pb-3 mb-2">
+        <TruckIcon className="w-5 h-5 text-cyan-400" />
+        Schedule {service?.name || "Delivery Service"}
       </h3>
-      
-      {error && <p className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</p>}
-      
-      <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Delivery Email Address
+
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+          Pickup Address
         </label>
         <div className="relative">
-          <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
+            type="text"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="pl-10 mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+            value={pickup}
+            onChange={(e) => setPickup(e.target.value)}
+            placeholder="e.g. Warehouse A, Industrial Area"
+            className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500"
           />
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 pt-1">
-          The e-book will be sent to this email immediately after checkout.
-        </p>
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+          Destination Address
+        </label>
+        <div className="relative">
+          <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            required
+            value={dropoff}
+            onChange={(e) => setDropoff(e.target.value)}
+            placeholder="e.g. 42 Commercial Avenue"
+            className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+          Approx Cargo Weight (KG)
+        </label>
+        <div className="relative">
+          <ScaleIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="number"
+            min="0.5"
+            step="0.5"
+            required
+            value={weightKg}
+            onChange={(e) => setWeightKg(e.target.value)}
+            className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+          />
+        </div>
       </div>
 
       <button
         type="submit"
-        disabled={loading}
-        className={`w-full ${buttonStyle} text-white py-3 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl disabled:bg-gray-400 disabled:cursor-not-allowed`}
+        className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 mt-4 shadow-xl"
       >
-        {loading ? "Processing…" : actionText}
+        Calculate Quote & Book <ArrowRightIcon className="w-4 h-4" />
       </button>
-      
-      {/* Display price prominently */}
-      <p className="text-center text-sm text-gray-700 dark:text-gray-300 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        Total Due: 
-        <span className="text-2xl font-extrabold text-orange-600 dark:text-orange-400 ml-2">
-            KES {service.finalPrice !== undefined ? service.finalPrice.toFixed(2) : "0.00"}
-        </span>
-      </p>
     </form>
   );
 }

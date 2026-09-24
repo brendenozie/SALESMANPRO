@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import IncidentPageClient from "./IncidentPageClient";
+import TransportDashboard from "../store-transport-reports/TransportDashboard";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
 
@@ -9,7 +9,7 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function StoreTransportIncidentsPage({ params }: PageProps) {
+export default async function LogisticsReportsPage({ params }: PageProps) {
   const { slug } = await params;
   const cookieHeader = (await cookies()).toString();
   const session = await getAuthSession();
@@ -22,28 +22,28 @@ export default async function StoreTransportIncidentsPage({ params }: PageProps)
   }
 
   const companyId = company.id;
-  let initialIncidents = [];
+  let initialData = null;
 
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/transport/incidents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/transport/dashboard?companyId=${encodeURIComponent(companyId)}`,
       {
         headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
+        next: { revalidate: 300 },
       }
     );
 
     if (res.ok) {
-      initialIncidents = (await res.json()).data || [];
+      initialData = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[StoreTransportIncidentsPage] Failed to load incidents", err);
+    console.error("[LogisticsReportsPage] Failed to load dashboard data", err);
   }
 
   return (
-    <IncidentPageClient
-      initialIncidents={initialIncidents}
-      companyId={companyId}
+    <TransportDashboard
+      initialData={initialData}
+      schoolId={companyId}
     />
   );
 }

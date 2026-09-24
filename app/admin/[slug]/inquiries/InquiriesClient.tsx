@@ -12,8 +12,10 @@ import {
   XMarkIcon,
   EyeIcon,
   SparklesIcon,
+  TruckIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -42,6 +44,51 @@ export default function InquiriesClient({ companyId }: InquiriesClientProps) {
   const [filterStatus, setFilterStatus] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Conversion state
+  const [convertingInquiry, setConvertingInquiry] = useState<Inquiry | null>(null);
+  const [converting, setConverting] = useState(false);
+  const [deliveryForm, setDeliveryForm] = useState({
+    pickupAddress: '',
+    deliveryAddress: '',
+    packageDescription: '',
+    weightKg: '5',
+    serviceType: 'STANDARD',
+  });
+
+  const handleConvertToDelivery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!convertingInquiry) return;
+    setConverting(true);
+    try {
+      const res = await fetch('/api/admin/deliveries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId,
+          customerName: convertingInquiry.clientName,
+          customerEmail: convertingInquiry.clientEmail,
+          customerContact: convertingInquiry.clientPhone,
+          pickupAddress: deliveryForm.pickupAddress,
+          deliveryAddress: deliveryForm.deliveryAddress,
+          packageDescription: deliveryForm.packageDescription,
+          weightKg: Number(deliveryForm.weightKg) || 1,
+          serviceType: deliveryForm.serviceType,
+          notes: `Converted from Inquiry #${convertingInquiry.id}: ${convertingInquiry.message}`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to create delivery');
+
+      await updateInquiryStatus(convertingInquiry.id, 'Responded');
+      toast.success(`Delivery created! Tracking: ${data.data?.trackingNumber}`);
+      setConvertingInquiry(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Conversion failed');
+    } finally {
+      setConverting(false);
+    }
+  };
 
   const fetchInquiries = useCallback(async () => {
     setIsLoading(true);
@@ -284,6 +331,22 @@ export default function InquiriesClient({ companyId }: InquiriesClientProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => {
+                              setConvertingInquiry(inquiry);
+                              setDeliveryForm({
+                                pickupAddress: '',
+                                deliveryAddress: '',
+                                packageDescription: inquiry.message || 'Logistics Consignment',
+                                weightKg: '5',
+                                serviceType: 'STANDARD',
+                              });
+                            }}
+                            className="text-cyan-600 hover:text-cyan-800 p-2.5 rounded-full hover:bg-cyan-50 transition-all duration-200 transform hover:scale-110"
+                            title="Convert to Delivery Dispatch"
+                          >
+                            <TruckIcon className="h-5 w-5" />
+                          </button>
                           <Link
                             href={`/admin/${companyId}/inquiries/${inquiry.id}`}
                             className="text-indigo-600 hover:text-indigo-800 p-2.5 rounded-full hover:bg-indigo-50 transition-all duration-200 transform hover:scale-110"
@@ -318,6 +381,101 @@ export default function InquiriesClient({ companyId }: InquiriesClientProps) {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Convert to Delivery Modal */}
+      {convertingInquiry && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
+            <div className="flex justify-between items-center border-b pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase">Convert Inquiry to Delivery</h3>
+                <p className="text-xs text-slate-500">Dispatch order for {convertingInquiry.clientName}</p>
+              </div>
+              <button onClick={() => setConvertingInquiry(null)} className="p-2 text-slate-400 hover:text-slate-600">
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConvertToDelivery} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Pickup Address *</label>
+                <input
+                  type="text"
+                  required
+                  value={deliveryForm.pickupAddress}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, pickupAddress: e.target.value })}
+                  className="w-full border rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="e.g. Warehouse 1, CBD"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Destination Address *</label>
+                <input
+                  type="text"
+                  required
+                  value={deliveryForm.deliveryAddress}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryAddress: e.target.value })}
+                  className="w-full border rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="e.g. Client Office / Residence"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Weight (KG)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={deliveryForm.weightKg}
+                    onChange={(e) => setDeliveryForm({ ...deliveryForm, weightKg: e.target.value })}
+                    className="w-full border rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Service Tier</label>
+                  <select
+                    value={deliveryForm.serviceType}
+                    onChange={(e) => setDeliveryForm({ ...deliveryForm, serviceType: e.target.value })}
+                    className="w-full border rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                  >
+                    <option value="STANDARD">Standard</option>
+                    <option value="EXPRESS">Express</option>
+                    <option value="SAME_DAY">Same Day</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Notes / Description</label>
+                <textarea
+                  rows={2}
+                  value={deliveryForm.packageDescription}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, packageDescription: e.target.value })}
+                  className="w-full border rounded-xl p-3 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setConvertingInquiry(null)}
+                  className="w-1/3 py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={converting}
+                  className="w-2/3 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs shadow-lg shadow-cyan-100 disabled:opacity-50"
+                >
+                  {converting ? 'Creating Delivery...' : 'Create Delivery Order'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

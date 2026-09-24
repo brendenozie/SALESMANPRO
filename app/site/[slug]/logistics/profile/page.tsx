@@ -1,342 +1,314 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { 
-  LockClosedIcon, 
-  MapPinIcon, 
-  UserGroupIcon, 
-  VideoCameraIcon, 
-  BellAlertIcon,
+import React, { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  TruckIcon,
+  MapPinIcon,
   ClockIcon,
-  CalendarDaysIcon,
-  DocumentTextIcon,
-  ChevronRightIcon,
+  CheckCircleIcon,
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
-} from '@heroicons/react/24/solid';
+  PlusIcon,
+  DocumentTextIcon,
+  ArrowPathIcon,
+  ShieldCheckIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 
-interface UserProfile {
-  id: string;
-  name: string | null;
-  email: string;
-  avatar: string | null;
-  tier?: string;
-}
-
-interface SecurityService {
-  id: string;
-  startDate: string;
-  endDate: string | null;
-  status: string;
-  totalPrice: number | null;
-}
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-const SecurityDashboard = () => {
+export default function CustomerLogisticsProfilePage() {
   const { data: session, status } = useSession();
-  const { slug } = useParams() as { slug: string };
-  
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [services, setServices] = useState<SecurityService[]>([]);
+  const params = useParams();
+  const router = useRouter();
+  const slug = (params?.slug as string) || "";
+
+  const [activeTab, setActiveTab] = useState<"active" | "history" | "profile">("active");
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any | null>(null);
 
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
-      fetchUserData();
-    } else if (status === 'unauthenticated') {
-      setLoading(false);
-    }
-  }, [status, session, slug]);
-
-  const fetchUserData = async () => {
+  const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const [profileRes, securityRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
-        fetch(`${apiBaseUrl}/site/${slug}/me/security`),
-      ]);
-
-      if (profileRes.ok) {
-        const profileData = await profileRes.json();
-        setUser(profileData);
+      const res = await fetch(`/api/site/${slug}/me/logistics`);
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
       }
-
-      if (securityRes.ok) {
-        const data = await securityRes.json();
-        setServices(data.items || []);
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+    } catch (err) {
+      console.error("Failed to load customer profile:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Show sign-in prompt if not authenticated
-  if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="animate-pulse text-xl text-gray-400">Loading...</div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchProfileData();
+    } else if (status === "unauthenticated") {
+      setLoading(false);
+    }
+  }, [status, slug]);
 
-  if (status === 'unauthenticated') {
+  if (status === "unauthenticated") {
     return (
-      <section className="flex items-center justify-center min-h-screen bg-gray-950">
-        <div className="text-center">
-          <UserCircleIcon className="w-20 h-20 mx-auto text-gray-400 mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Please sign in to access your dashboard.
-          </h2>
-          <Link href={`/auth/signin`}>
-            <button className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg">
-              Sign In
-            </button>
+      <div className="min-h-screen bg-[#07090E] flex items-center justify-center p-6 text-white text-center">
+        <div className="max-w-md w-full bg-slate-900 border border-white/10 rounded-3xl p-8 space-y-6">
+          <TruckIcon className="w-16 h-16 text-cyan-400 mx-auto" />
+          <h2 className="text-2xl font-black">Customer Logistics Portal</h2>
+          <p className="text-xs text-slate-400">
+            Please sign in to monitor your active consignments, request pickups, and view proof of delivery.
+          </p>
+          <Link
+            href={`/auth/signin?callbackUrl=/site/${slug}/logistics/profile`}
+            className="block w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all"
+          >
+            Sign In to Continue
           </Link>
         </div>
-      </section>
+      </div>
     );
   }
 
-  // Display values with defaults
-  const displayUser = {
-    name: user?.name || session?.user?.name || 'Client',
-    avatar: user?.avatar || session?.user?.image,
-    activeServices: services.filter(s => s.status === 'CONFIRMED' || s.status === 'ACTIVE').length,
-  };
-
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-300 font-sans selection:bg-cyan-700 selection:text-white">
-      
-      {/* --- HEADER (The Control Panel) --- */}
-      <header className="bg-gray-900 border-b border-gray-800 p-6 lg:p-8 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <LockClosedIcon className="w-8 h-8 text-cyan-500" />
+    <div className="min-h-screen bg-[#07090E] text-slate-200 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-5xl mx-auto space-y-10">
+        {/* Top Profile Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-slate-900/60 border border-white/10 p-8 rounded-3xl backdrop-blur-xl">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-black text-2xl">
+              {session?.user?.name?.[0]?.toUpperCase() || "C"}
+            </div>
             <div>
-              <p className="text-sm font-mono text-gray-500 uppercase tracking-widest">Client Portal V4.1</p>
-              <h1 className="text-2xl font-bold text-white">CENTRAL MONITORING OVERVIEW</h1>
+              <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400">
+                Logistics Client
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
+                {session?.user?.name || "Customer Account"}
+              </h1>
+              <p className="text-xs text-slate-400 mt-0.5">{session?.user?.email}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-mono text-gray-500">Welcome</p>
-              <p className="text-white font-bold">{displayUser.name}</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-cyan-700 overflow-hidden">
-              {displayUser.avatar && (
-                <img src={displayUser.avatar} alt="User" className="w-full h-full object-cover" />
-              )}
-            </div>
-            <button 
-              onClick={()=> {
-                const returnTo = window.location.origin;
 
-                signOut({
-                  redirect: true,
-                  callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
-                });
-              }}
-              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/site/${slug}/logistics/book`}
+              className="px-5 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all shadow-lg"
             >
-              <ArrowRightOnRectangleIcon className="w-6 h-6" />
+              <PlusIcon className="w-4 h-4" /> Book Delivery
+            </Link>
+            <button
+              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
+              title="Sign Out"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto p-6 lg:p-8 space-y-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <StatCard
+            label="Active Consignments"
+            value={data?.stats?.activeCount ?? 0}
+            icon={<TruckIcon className="text-cyan-400" />}
+          />
+          <StatCard
+            label="Delivered"
+            value={data?.stats?.completedCount ?? 0}
+            icon={<CheckCircleIcon className="text-emerald-400" />}
+          />
+          <StatCard
+            label="Total Shipments"
+            value={data?.stats?.totalDeliveries ?? 0}
+            icon={<ClockIcon className="text-blue-400" />}
+          />
+          <StatCard
+            label="Freight Billed"
+            value={`$${(data?.stats?.totalSpent ?? 0).toFixed(2)}`}
+            icon={<DocumentTextIcon className="text-purple-400" />}
+          />
+        </div>
 
-        {/* --- STATUS PANEL (Top Metrics) --- */}
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          
-          <StatCard title="Overall Status" value="ACTIVE" accent="green" />
-          <StatCard title="Active Services" value={String(displayUser.activeServices)} accent="cyan" />
-          <StatCard title="Open Incidents" value="0" accent="amber" />
-          <StatCard title="CCTV Feeds" value="12/12 ONLINE" accent="green" />
+        {/* Tabs */}
+        <div className="flex border-b border-white/10 space-x-8">
+          {[
+            { id: "active", label: `Active Consignments (${data?.activeDeliveries?.length ?? 0})` },
+            { id: "history", label: `Delivery History (${data?.completedDeliveries?.length ?? 0})` },
+            { id: "profile", label: "Saved Addresses & Details" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`pb-4 text-xs font-black uppercase tracking-wider relative transition-colors ${
+                activeTab === tab.id ? "text-cyan-400" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400" />
+              )}
+            </button>
+          ))}
+        </div>
 
-        </section>
-
-        {/* --- MAIN GRID: DEPLOYMENT & LOGS --- */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* LEFT COLUMN: Map & Active Deployment */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            <h2 className="text-xl font-bold text-white uppercase tracking-wide border-l-4 border-cyan-500 pl-3">Active Deployments</h2>
-            
-            {/* Simulated Live Map */}
-            <div className="relative h-96 bg-gray-900 rounded-xl overflow-hidden border border-gray-800 shadow-xl shadow-black/50">
-              <img 
-                 src="http://googleusercontent.com/image_collection/image_retrieval/some_id_string" 
-                 alt="Simulated Deployment Map" 
-                 className="w-full h-full object-cover opacity-30 blur-[2px]"
-              />
-              <div className="absolute inset-0 bg-gray-950/70 p-6">
-                <div className="flex justify-between items-start">
-                   <p className="text-xl font-mono text-cyan-400">ZONE ALPHA: HQ PERIMETER</p>
-                   <div className="text-right">
-                      <p className="text-xs font-mono text-gray-500">LAST CHECK</p>
-                      <p className="text-sm font-bold text-green-500">05:48:32 ZULU</p>
-                   </div>
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {/* ACTIVE DELIVERIES TAB */}
+          {activeTab === "active" && (
+            <motion.div
+              key="active"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {loading ? (
+                <div className="py-16 text-center text-slate-500">
+                  <ArrowPathIcon className="w-8 h-8 animate-spin mx-auto mb-2 text-cyan-400" />
+                  Loading active consignments...
                 </div>
-                
-                {/* Deployment Pin 1 */}
-                <DeploymentPin top="30%" left="20%" type="Guard Patrol" status="OK" color="green" animate={false} />
-                {/* Deployment Pin 2 - Incident */}
-                <DeploymentPin top="55%" left="70%" type="CCTV Alert" status="ALERT" color="amber" animate={true} />
-                {/* Deployment Pin 3 */}
-                <DeploymentPin top="80%" left="45%" type="Dog Unit" status="OK" color="green" animate={false} />
-                <div className="absolute bottom-4 left-4 text-xs font-mono bg-black/70 p-2 rounded-lg border border-gray-700">
-                   <p>LAT: 34.0522° LON: 118.2437°</p>
+              ) : data?.activeDeliveries?.length === 0 ? (
+                <div className="py-16 text-center border border-white/5 bg-slate-900/40 rounded-3xl space-y-4">
+                  <TruckIcon className="w-12 h-12 text-slate-600 mx-auto" />
+                  <h3 className="text-lg font-bold text-white">No Active Shipments</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    You currently have no active deliveries en route. Schedule a new pickup anytime.
+                  </p>
+                  <Link
+                    href={`/site/${slug}/logistics/book`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 text-black font-black text-xs uppercase tracking-wider rounded-xl hover:bg-cyan-400 transition-colors"
+                  >
+                    Schedule Dispatch Now
+                  </Link>
+                </div>
+              ) : (
+                data?.activeDeliveries?.map((d: any) => (
+                  <div
+                    key={d.id}
+                    className="bg-slate-900/60 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-cyan-500/40 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-base font-black text-cyan-400">
+                          {d.trackingNumber}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+                          {d.status.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-white">{d.packageDescription}</p>
+                      <div className="flex items-center gap-4 text-[11px] text-slate-400 pt-1">
+                        <span className="flex items-center gap-1">
+                          <MapPinIcon className="w-3.5 h-3.5 text-slate-500" /> {d.deliveryAddress}
+                        </span>
+                        {d.driver && <span>Courier: {d.driver}</span>}
+                      </div>
+                    </div>
+
+                    <Link
+                      href={`/site/${slug}/logistics/trackorder?tracking=${d.trackingNumber}`}
+                      className="px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-cyan-400 flex items-center gap-2 shrink-0 transition-all"
+                    >
+                      Track Live <ChevronRightIcon className="w-4 h-4" />
+                    </Link>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          )}
+
+          {/* HISTORY TAB */}
+          {activeTab === "history" && (
+            <motion.div
+              key="history"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {data?.completedDeliveries?.length === 0 ? (
+                <div className="py-16 text-center border border-white/5 bg-slate-900/40 rounded-3xl text-slate-500 text-xs">
+                  No completed delivery history on file yet.
+                </div>
+              ) : (
+                data?.completedDeliveries?.map((d: any) => (
+                  <div
+                    key={d.id}
+                    className="bg-slate-900/60 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-sm font-bold text-white">
+                          {d.trackingNumber}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                          {d.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300">{d.packageDescription}</p>
+                      <p className="text-[11px] text-slate-500">
+                        Delivered on: {new Date(d.deliveredAt).toLocaleDateString()} to {d.deliveryAddress}
+                      </p>
+                      {d.hasProof && (
+                        <p className="text-[10px] text-emerald-400 flex items-center gap-1 mt-1">
+                          <ShieldCheckIcon className="w-3.5 h-3.5" /> Handover confirmed by{" "}
+                          {d.proofRecipient || "Recipient"}
+                        </p>
+                      )}
+                    </div>
+
+                    <Link
+                      href={`/site/${slug}/logistics/trackorder?tracking=${d.trackingNumber}`}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-slate-300 shrink-0"
+                    >
+                      View Receipt & Proof
+                    </Link>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          )}
+
+          {/* PROFILE & SAVED ADDRESSES TAB */}
+          {activeTab === "profile" && (
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-8 space-y-6">
+                <h3 className="text-lg font-black text-white">Account Information</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-white/5">
+                    <span className="text-[10px] font-black uppercase text-slate-500 block">Name</span>
+                    <p className="text-sm font-bold text-white mt-1">{session?.user?.name || "N/A"}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-white/5">
+                    <span className="text-[10px] font-black uppercase text-slate-500 block">Email</span>
+                    <p className="text-sm font-bold text-white mt-1">{session?.user?.email || "N/A"}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Recent Incident Log */}
-            <div>
-              <h3 className="text-xl font-bold text-white uppercase tracking-wide border-l-4 border-amber-500 pl-3 mb-4">Incident Log</h3>
-              <div className="bg-gray-900 rounded-xl border border-gray-800 divide-y divide-gray-800 font-mono">
-                <LogEntry time="05:45:12" code="CCTV-2" description="Movement detected in Zone Gamma. HIGH PRIORITY." severity="CRITICAL" />
-                <LogEntry time="04:12:55" code="PAT-HQ-03" description="Routine perimeter check completed. Status OK." severity="INFO" />
-                <LogEntry time="02:30:00" code="SYSTEM" description="Daily system check and data backup initiated." severity="SYSTEM" />
-              </div>
-            </div>
-
-          </div>
-
-          {/* RIGHT COLUMN: Management & Documents */}
-          <div className="lg:col-span-1 space-y-8">
-
-            {/* Account Manager Card */}
-            <div className="bg-gray-900 p-6 rounded-xl border border-cyan-700 shadow-lg shadow-cyan-900/20">
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                 <UserGroupIcon className="w-5 h-5 text-cyan-500" /> Account Manager
-              </h3>
-              <div className="flex items-center gap-4 border-b border-gray-800 pb-4 mb-4">
-                 <img src="https://images.unsplash.com/photo-1570295999919-56ceb8e255f4?q=80&w=1000&auto=format&fit=crop" alt="Manager" className="w-12 h-12 rounded-full object-cover border-2 border-cyan-500"/>
-                 <div>
-                    <p className="text-white font-semibold">Agent Jaxon Ryle</p>
-                    <p className="text-xs text-gray-500">Director of Operations</p>
-                 </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <p>Phone: <span className="text-cyan-400 font-mono">+1 (555) 555-4040</span></p>
-                <p>Email: <span className="text-cyan-400 font-mono">jaxon.ryle@secureco.com</span></p>
-              </div>
-              <button className="w-full mt-4 py-2 bg-cyan-700 hover:bg-cyan-600 rounded-lg text-white font-medium text-sm transition-colors">
-                Initiate Secure Call
-              </button>
-            </div>
-
-            {/* Upcoming Schedule */}
-            <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
-               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                 <CalendarDaysIcon className="w-5 h-5 text-gray-500" /> Upcoming Schedule
-               </h3>
-               <ScheduleItem date="NOV 28" event="Private Event Security (Gala)" guards="10 Personnel" />
-               <ScheduleItem date="DEC 05" event="Executive Bodyguard Detail" guards="2 Personnel" />
-            </div>
-
-            {/* Document Status */}
-            <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
-               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                 <DocumentTextIcon className="w-5 h-5 text-gray-500" /> Pending Documents
-               </h3>
-               <DocumentItem name="Q4 Service Report 2023" status="Pending Review" color="amber" />
-               <DocumentItem name="Contract Renewal v2.1" status="Ready for Signature" color="green" />
-            </div>
-
-          </div>
-        </section>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
-};
+}
 
-// --- SUB COMPONENTS ---
-
-const StatCard = ({ title, value, accent }:{title: string; value: string; accent: 'green' | 'cyan' | 'amber'}) => {
-  const accentClasses = {
-    green: "bg-green-700/20 text-green-400 border-green-500",
-    cyan: "bg-cyan-700/20 text-cyan-400 border-cyan-500",
-    amber: "bg-amber-700/20 text-amber-400 border-amber-500",
-  };
-  
-  // Custom ring animation for "ACTIVE" status
-  const activeRing = accent === 'green' && value === 'ACTIVE' 
-    ? "relative before:content-[''] before:absolute before:inset-0 before:ring-2 before:ring-green-500 before:animate-ping before:rounded-lg before:opacity-50" 
-    : "";
-
+function StatCard({ label, value, icon }: { label: string; value: any; icon: React.ReactNode }) {
   return (
-    <div className={`p-4 rounded-lg border-l-4 ${accentClasses[accent]} ${activeRing}`}>
-      <p className="text-xs font-mono uppercase tracking-widest text-gray-500">{title}</p>
-      <div className="flex items-center gap-2 mt-1">
-        {accent === 'green' && <div className={`w-3 h-3 rounded-full ${value === 'ACTIVE' ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-green-500'}`} />}
-        {accent === 'amber' && value !== '0' && <BellAlertIcon className="w-4 h-4 animate-pulse" />}
-        <p className="text-xl font-bold text-white">{value}</p>
-      </div>
+    <div className="bg-slate-900/60 border border-white/10 p-5 rounded-2xl">
+      <div className="w-5 h-5 mb-3 opacity-90">{icon}</div>
+      <p className="text-xl font-black text-white font-mono">{value}</p>
+      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mt-1">{label}</p>
     </div>
   );
-};
-
-const LogEntry = ({ time, code, description, severity }:{time: string; code: string; description: string; severity: string}) => {
-  const color = severity === 'CRITICAL' ? 'text-red-500' : severity === 'INFO' ? 'text-gray-500' : 'text-cyan-500';
-  const dotColor = severity === 'CRITICAL' ? 'bg-red-500' : severity === 'INFO' ? 'bg-gray-500' : 'bg-cyan-500';
-  
-  return (
-    <div className="flex items-start p-3 hover:bg-gray-800 transition-colors">
-      <div className={`w-1/6 font-bold ${color} flex items-center gap-2`}>
-        <div className={`w-2 h-2 rounded-full ${dotColor}`} />
-        {time}
-      </div>
-      <div className="w-1/6 text-gray-600 uppercase text-xs">{code}</div>
-      <div className="w-4/6 text-sm text-gray-300">{description}</div>
-    </div>
-  );
-};
-
-const DeploymentPin = ({ top, left, type, status, color, animate }:{top: string; left: string; type: string; status: string; color: string; animate: boolean}) => (
-  <div className="absolute flex flex-col items-center group cursor-pointer" style={{ top, left }}>
-    <div className={`w-3 h-3 rounded-full ${color === 'green' ? 'bg-green-500' : 'bg-amber-500'} ${animate ? 'animate-pulse' : ''} shadow-xl shadow-black`}></div>
-    <MapPinIcon className={`w-6 h-6 ${color === 'green' ? 'text-green-500' : 'text-amber-500'} -mt-2 group-hover:scale-110 transition-transform`} />
-    <span className={`absolute top-0 mt-8 whitespace-nowrap bg-black/80 backdrop-blur-sm p-1 px-2 rounded text-xs font-mono text-white border border-gray-700 ${color === 'green' ? 'border-green-500/50' : 'border-amber-500/50'}`}>
-      {type}: {status}
-    </span>
-  </div>
-);
-
-const ScheduleItem = ({ date, event, guards }:{date: string; event: string; guards: string}) => (
-  <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0 group cursor-pointer">
-    <div className="flex items-center gap-4">
-      <div className="text-center bg-gray-800 p-2 rounded w-12 flex-shrink-0">
-        <p className="text-xs font-mono text-gray-500 leading-none">{date.split(' ')[0]}</p>
-        <p className="text-lg font-bold text-white leading-none">{date.split(' ')[1] || '00'}</p>
-      </div>
-      <div>
-        <p className="font-semibold text-white group-hover:text-cyan-500 transition-colors">{event}</p>
-        <p className="text-xs text-gray-500">{guards}</p>
-      </div>
-    </div>
-    <ChevronRightIcon className="w-4 h-4 text-gray-600 group-hover:text-cyan-500 transition-colors" />
-  </div>
-);
-
-const DocumentItem = ({ name, status, color }:{name: string; status: string; color: string}) => (
-  <div className="flex justify-between items-center py-2 group cursor-pointer border-b border-gray-800 last:border-b-0">
-    <div className="flex items-center gap-2">
-      <DocumentTextIcon className="w-4 h-4 text-gray-500" />
-      <p className="text-sm text-white group-hover:text-cyan-500">{name}</p>
-    </div>
-    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${color === 'amber' ? 'bg-amber-800/50 text-amber-300' : 'bg-green-800/50 text-green-300'}`}>
-      {status}
-    </span>
-  </div>
-);
-
-export default SecurityDashboard;
+}
