@@ -5,12 +5,12 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // ✅ GET all Exam Categories
 const getExamCategories = async (_request: Request, _context: { user?: any }) => {
-  const  searchParams = new URL(_request.url).searchParams;
-  const schoolId = searchParams.get("schoolId");
+  const searchParams = new URL(_request.url).searchParams;
+  const schoolId = searchParams.get("schoolId") || searchParams.get("companyId");
 
   if (!schoolId) {
     return NextResponse.json(
-      { message: "Missing required query parameter: schoolId" },
+      { message: "Missing required query parameter: schoolId or companyId" },
       { status: 400 }
     );
   }
@@ -49,7 +49,8 @@ const getExamCategories = async (_request: Request, _context: { user?: any }) =>
 // ✅ POST a new Exam Category
 const createExamCategory = async (request: Request, _context: { user?: any }) => {
   const body = await request.json();
-  const { name, description, companyId } = body;
+  const { name, description, companyId: cId, schoolId } = body;
+  const companyId = cId || schoolId;
 
   // Basic validation
   if (!name || !companyId) {

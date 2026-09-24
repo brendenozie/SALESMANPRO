@@ -57,7 +57,7 @@ export default function StoryTimePage() {
               imageUrl: act.mediaAsset?.url || `https://placehold.co/400x300/A78BFA/ffffff?text=${encodeURIComponent(act.title)}`,
               audioUrl: null,
             }));
-            setStories([...mapped, ...sampleStories]);
+            setStories(mapped);
           } else {
             setStories(sampleStories);
           }

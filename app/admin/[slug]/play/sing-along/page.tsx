@@ -39,7 +39,7 @@ export default function SingAlongPage() {
               icon: course.activityType?.icon || '🎵',
               audio: course.mediaAsset?.url || null,
             }));
-            setSongs([...mapped, ...sampleSongs]);
+            setSongs(mapped);
           } else {
             setSongs(sampleSongs);
           }

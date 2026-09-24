@@ -1,169 +1,248 @@
-// app/admin/[slug]/reports/page.tsx
+// app/admin/[slug]/school-reports/page.tsx
 import React from "react";
-// import { Props } from "react-apexcharts";
-import AdminReportsPageClient,{ OverallStats, StudentPerformanceData, StaffReportsData, AcademicReportsData, UpcomingEventsSummaryItem }  from "./AdminReportsPageClient";
-
+import AdminReportsPageClient, {
+  OverallStats,
+  StudentPerformanceData,
+  StaffReportsData,
+  AcademicReportsData,
+  UpcomingEventsSummaryItem
+} from "./AdminReportsPageClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-import { serverFetchJson } from '@/lib/api/serverFetch';
+import prisma from "@/server/db/prismadb";
+import { scoreToLetterGrade, getAttendanceSummary } from "@/lib/school/schoolService";
 
 interface PageProps {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
-// --- Helper function to generate sample data (for fallback) ---
-const generateSampleReportData = (): {
-  sampleOverallStats: OverallStats;
-  sampleStudentPerformanceData: StudentPerformanceData;
-  sampleStaffReportsData: StaffReportsData;
-  sampleAcademicReportsData: AcademicReportsData;
-  sampleUpcomingEventsSummary: UpcomingEventsSummaryItem[];
-} => {
-  const sampleOverallStats: OverallStats = {
-    totalStudents: '1,245',
-    totalTeachers: '86',
-    totalClasses: '55',
-    averageAttendance: '92.5%',
-  };
-
-  const sampleStudentPerformanceData: StudentPerformanceData = {
-    gradeDistribution: [
-      { label: 'A', value: 300 },
-      { label: 'B', value: 500 },
-      { label: 'C', value: 350 },
-      { label: 'D', value: 70 },
-      { label: 'F', value: 25 },
-    ],
-    attendanceTrend: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-      data: [90, 91, 92, 93, 92, 94, 93],
-    },
-    topPerformingGrades: [
-      { grade: 'Grade 8', avgGPA: 3.9 },
-      { grade: 'Grade 10', avgGPA: 3.7 },
-      { grade: 'Grade 7', avgGPA: 3.6 },
-    ],
-    lowPerformingStudents: [
-      { name: 'Student A', grade: '9', gpa: 1.8 },
-      { name: 'Student B', grade: '7', gpa: 2.1 },
-    ]
-  };
-
-  const sampleStaffReportsData: StaffReportsData = {
-    teachersByDepartment: [
-      { department: 'Math', count: 15 },
-      { department: 'English', count: 12 },
-      { department: 'Science', count: 18 },
-      { department: 'Social Studies', count: 10 },
-      { department: 'Arts', count: 8 },
-    ],
-    teacherActivity: {
-      labels: ['Reports', 'Meetings', 'Grading', 'Planning'],
-      data: [30, 20, 45, 35]
-    }
-  };
-
-  const sampleAcademicReportsData: AcademicReportsData = {
-    classEnrollmentDistribution: [
-      { size: '1-15', count: 10 },
-      { size: '16-25', count: 30 },
-      { size: '26-35', count: 15 },
-    ],
-    coursePopularity: [
-      { course: 'Algebra I', enrollments: 120 },
-      { course: 'Literary Analysis', enrollments: 105 },
-      { course: 'Biology', enrollments: 130 },
-      { course: 'Introduction to Programming', enrollments: 80 },
-    ]
-  };
-
-  const sampleUpcomingEventsSummary: UpcomingEventsSummaryItem[] = [
-    { type: 'ACADEMIC', count: 3, nextDate: 'July 15' },
-    { type: 'HOLIDAY', count: 1, nextDate: 'Aug 1' },
-    { type: 'MEETING', count: 5, nextDate: 'July 28' },
-  ];
-
-  return {
-    sampleOverallStats,
-    sampleStudentPerformanceData,
-    sampleStaffReportsData,
-    sampleAcademicReportsData,
-    sampleUpcomingEventsSummary,
-  };
-};
-
-
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
 export default async function AdminReportsPage({ params }: PageProps) {
-  const { slug }  = await params;
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-  let overallStats: OverallStats | null = null;
-  let studentPerformanceData: StudentPerformanceData | null = null;
-  let staffReportsData: StaffReportsData | null = null;
-  let academicReportsData: AcademicReportsData | null = null;
-  let upcomingEventsSummary: UpcomingEventsSummaryItem[] = [];
-  let fetchError: boolean = false;
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
+  // Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
+
+  // Retrieve the memoized company data
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
+
+  // 1. Overall Metrics
+  const [totalStudents, totalTeachers, totalClasses, attendanceSummary] = await Promise.all([
+    prisma.student.count({ where: { companyId } }).catch(() => 0),
+    prisma.educator.count({ where: { companyId } }).catch(() => 0),
+    prisma.course.count({ where: { companyId } }).catch(() => 0),
+    getAttendanceSummary(companyId).catch(() => ({ rate: 100 })),
+  ]);
+
+  const avgAttendanceNum = attendanceSummary?.rate ?? 100;
+
+  const overallStats: OverallStats = {
+    totalStudents: totalStudents.toLocaleString(),
+    totalTeachers: totalTeachers.toLocaleString(),
+    totalClasses: totalClasses.toLocaleString(),
+    averageAttendance: `${avgAttendanceNum.toFixed(1)}%`,
+  };
+
+  // 2. Student Performance
+  const allGrades = await prisma.grade.findMany({
+    where: { companyId },
+    select: {
+      score: true,
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          currentClass: true,
+          user: { select: { name: true } },
+        },
+      },
+    },
+  }).catch(() => []);
+
+  const distMap: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+  const studentScores: Record<string, { name: string; grade: string; scores: number[] }> = {};
+  const levelScores: Record<string, number[]> = {};
+
+  for (const g of allGrades) {
+    const letter = scoreToLetterGrade(g.score);
+    distMap[letter] = (distMap[letter] ?? 0) + 1;
+
+    if (g.student) {
+      const sId = g.student.id;
+      const sName = g.student.user?.name || `${g.student.firstName} ${g.student.lastName}`.trim() || "Student";
+      const cName = g.student.currentClass || "General";
+      if (!studentScores[sId]) {
+        studentScores[sId] = { name: sName, grade: cName, scores: [] };
+      }
+      studentScores[sId].scores.push(g.score);
+
+      const lvlName = g.student.currentClass || "Grade Level";
+      if (!levelScores[lvlName]) levelScores[lvlName] = [];
+      levelScores[lvlName].push(g.score);
     }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  }
+
+  const gradeDistribution = Object.entries(distMap).map(([label, value]) => ({
+    label,
+    value,
+  }));
+
+  const topPerformingGrades = Object.entries(levelScores)
+    .map(([grade, scores]) => ({
+      grade,
+      avgGPA: Number(((scores.reduce((a, b) => a + b, 0) / scores.length / 100) * 4).toFixed(1)),
+    }))
+    .sort((a, b) => b.avgGPA - a.avgGPA)
+    .slice(0, 3);
+
+  const lowPerformingStudents = Object.values(studentScores)
+    .map((s) => {
+      const avg = s.scores.reduce((a, b) => a + b, 0) / s.scores.length;
+      return {
+        name: s.name,
+        grade: s.grade,
+        gpa: Number(((avg / 100) * 4).toFixed(1)),
+        avg,
+      };
+    })
+    .filter((s) => s.avg < 60)
+    .slice(0, 5)
+    .map(({ name, grade, gpa }) => ({ name, grade, gpa }));
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const now = new Date();
+  const trendLabels: string[] = [];
+  const trendData: number[] = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    trendLabels.push(monthNames[d.getMonth()]);
+    trendData.push(Math.round(avgAttendanceNum));
+  }
+
+  const studentPerformanceData: StudentPerformanceData = {
+    gradeDistribution,
+    attendanceTrend: {
+      labels: trendLabels,
+      data: trendData,
+    },
+    topPerformingGrades,
+    lowPerformingStudents,
+  };
+
+  // 3. Staff Reports
+  const educators = await prisma.educator.findMany({
+    where: { companyId },
+    select: { specialty: true },
+  }).catch(() => []);
+
+  const deptMap: Record<string, number> = {};
+  for (const edu of educators) {
+    const dept = edu.specialty?.trim() || "General Academics";
+    deptMap[dept] = (deptMap[dept] ?? 0) + 1;
+  }
+
+  const teachersByDepartment = Object.entries(deptMap).map(([department, count]) => ({
+    department,
+    count,
+  }));
+
+  const [assignmentsCreated, attendanceMarked] = await Promise.all([
+    prisma.courseAssignment.count({ where: { course: { companyId } } }).catch(() => 0),
+    prisma.attendanceRecord.count({ where: { companyId } }).catch(() => 0),
+  ]);
+
+  const staffReportsData: StaffReportsData = {
+    teachersByDepartment,
+    teacherActivity: {
+      labels: ["Assignments", "Attendance Logs", "Grading Logs", "Classes Active"],
+      data: [assignmentsCreated, attendanceMarked, allGrades.length, totalClasses],
+    },
+  };
+
+  // 4. Academic Reports
+  const courses = await prisma.course.findMany({
+    where: { companyId },
+    select: {
+      title: true,
+      _count: { select: { enrollments: true } },
+    },
+    take: 10,
+    orderBy: { createdAt: "desc" },
+  }).catch(() => []);
+
+  const coursePopularity = courses
+    .map((c) => ({ course: c.title, enrollments: c._count?.enrollments ?? 0 }))
+    .sort((a, b) => b.enrollments - a.enrollments)
+    .slice(0, 5);
+
+  const sizeBuckets = { "1-15": 0, "16-25": 0, "26-35": 0, "36+": 0 };
+  for (const c of courses) {
+    const count = c._count?.enrollments ?? 0;
+    if (count <= 15) sizeBuckets["1-15"]++;
+    else if (count <= 25) sizeBuckets["16-25"]++;
+    else if (count <= 35) sizeBuckets["26-35"]++;
+    else sizeBuckets["36+"]++;
+  }
+
+  const classEnrollmentDistribution = Object.entries(sizeBuckets).map(([size, count]) => ({
+    size,
+    count,
+  }));
+
+  const academicReportsData: AcademicReportsData = {
+    classEnrollmentDistribution,
+    coursePopularity,
+  };
+
+  // 5. Upcoming Events Summary
+  const upcomingEventsSummary: UpcomingEventsSummaryItem[] = [];
 
   try {
-    const reportsRes = await serverFetchJson<any>(
-      `/api/admin/school-reports?companyId=${encodeURIComponent(companyId)}`
-    );
+    const events = await prisma.event.findMany({
+      where: {
+        companyId,
+        eventStatus: "SCHEDULED",
+        startDateTime: { gte: now },
+      },
+      orderBy: { startDateTime: "asc" },
+      select: { eventType: true, startDateTime: true },
+      take: 10,
+    });
 
-    if (reportsRes.success && reportsRes.data) {
-      const data = reportsRes.data;
-      overallStats = data.overallStats;
-      studentPerformanceData = data.studentPerformanceData;
-      staffReportsData = data.staffReportsData;
-      academicReportsData = data.academicReportsData;
-      upcomingEventsSummary = data.upcomingEventsSummary;
-    } else {
-      console.error(`[AdminReportsPage] Failed to fetch reports: ${reportsRes.error || reportsRes.status}`);
-      fetchError = true;
+    const eventTypeCounts: Record<string, { count: number; nextDate: Date | null }> = {};
+
+    events.forEach((event) => {
+      if (!eventTypeCounts[event.eventType]) eventTypeCounts[event.eventType] = { count: 0, nextDate: null };
+      eventTypeCounts[event.eventType].count++;
+      if (!eventTypeCounts[event.eventType].nextDate || event.startDateTime < eventTypeCounts[event.eventType].nextDate!) {
+        eventTypeCounts[event.eventType].nextDate = event.startDateTime;
+      }
+    });
+
+    for (const type in eventTypeCounts) {
+      upcomingEventsSummary.push({
+        type,
+        count: eventTypeCounts[type].count,
+        nextDate: eventTypeCounts[type].nextDate ? new Date(eventTypeCounts[type].nextDate!).toLocaleDateString() : "Scheduled",
+      });
     }
-
-  } catch (err: any) {
-    console.error("AdminReportsPage-fetch error:", err?.message || err);
-    fetchError = true;
-  }
-
-  // If any fetch failed or data is missing, use sample data as fallback
-  if (fetchError || !overallStats || !studentPerformanceData || !staffReportsData || !academicReportsData || !upcomingEventsSummary) {
-    // console.log("[AdminReportsPage] Using sample data as fallback for reports.");
-    const sampleData = generateSampleReportData();
-    overallStats = sampleData.sampleOverallStats;
-    studentPerformanceData = sampleData.sampleStudentPerformanceData;
-    staffReportsData = sampleData.sampleStaffReportsData;
-    academicReportsData = sampleData.sampleAcademicReportsData;
-    upcomingEventsSummary = sampleData.sampleUpcomingEventsSummary;
-  }
-
+  } catch {}
 
   return (
     <AdminReportsPageClient
-      overallStats={overallStats}
-      studentPerformanceData={studentPerformanceData}
-      staffReportsData={staffReportsData}
-      academicReportsData={academicReportsData}
-      upcomingEventsSummary={upcomingEventsSummary}
+      overallStats={JSON.parse(JSON.stringify(overallStats))}
+      studentPerformanceData={JSON.parse(JSON.stringify(studentPerformanceData))}
+      staffReportsData={JSON.parse(JSON.stringify(staffReportsData))}
+      academicReportsData={JSON.parse(JSON.stringify(academicReportsData))}
+      upcomingEventsSummary={JSON.parse(JSON.stringify(upcomingEventsSummary))}
     />
   );
 }

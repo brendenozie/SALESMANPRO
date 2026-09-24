@@ -38,7 +38,7 @@ export default function PlayHomePage() {
               type: course.title,
               icon: course.activityType?.icon || '🧩',
             }));
-            setPuzzles([...mapped, ...samplePuzzles]);
+            setPuzzles(mapped);
           } else {
             setPuzzles(samplePuzzles);
           }

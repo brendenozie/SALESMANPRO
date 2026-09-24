@@ -1,56 +1,48 @@
-import { cookies } from "next/headers";
-import AssetTrackingClient from "./AssetTrackingClient";
+import AssetTrackingClient, { AssetRecord } from "./AssetTrackingClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function InventoryDashboardPage({ params }: PageProps) {
+export default async function InventoryAssetsPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-  const { slug }  = await params;
+  // Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
 
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  // Retrieve the memoized company data
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialAssets = [];  
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/inventory-dashboard/data?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialAssets = (await res.json()).data;
-    }
-  } catch (err) {
-    // console.error("[LibraryMembersPage] Failed to load members", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
+
+  const companyId = company.id;
+
+  const assets = await prisma.asset.findMany({
+    where: { companyId },
+    orderBy: { createdAt: "desc" },
+  }).catch(() => []);
+
+  const mappedAssets: AssetRecord[] = assets.map((a) => ({
+    id: a.id,
+    name: a.name,
+    serial: a.serialNumber || `SN-${a.id.slice(-6).toUpperCase()}`,
+    purchased: a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "N/A",
+    cost: a.purchaseValue || 0,
+    currentValue: a.currentValue || a.purchaseValue || 0,
+    condition: a.status === "ACTIVE" ? "Excellent" : a.status === "MAINTENANCE" ? "Servicing Required" : "Good",
+    location: a.location || "School Compound",
+  }));
 
   return (
     <AssetTrackingClient
-      // initialMembers={initialMembers}
-      // schoolId={companyId}
+      initialAssets={JSON.parse(JSON.stringify(mappedAssets))}
+      schoolId={companyId}
     />
   );
 }

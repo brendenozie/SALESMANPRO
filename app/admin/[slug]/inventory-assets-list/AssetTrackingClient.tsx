@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   CpuChipIcon, 
   ArrowTrendingDownIcon, 
@@ -12,39 +12,28 @@ import {
   ArrowsRightLeftIcon
 } from "@heroicons/react/24/outline";
 
-const AssetTrackingClient = () => {
-  const assets = [
-    { 
-      id: 'AST-SERVER-01', 
-      name: 'Dell PowerEdge R750', 
-      serial: 'XYZ-9920-BA', 
-      purchased: 'Jan 2024', 
-      cost: 8500, 
-      currentValue: 6200, 
-      condition: 'Excellent',
-      location: 'IT Server Room'
-    },
-    { 
-      id: 'AST-BUS-004', 
-      name: 'Mercedes Sprinter (60-Seater)', 
-      serial: 'VIN-7729-11', 
-      purchased: 'June 2022', 
-      cost: 45000, 
-      currentValue: 28500, 
-      condition: 'Servicing Required',
-      location: 'Main Garage'
-    },
-    { 
-      id: 'AST-LAB-102', 
-      name: 'Zeiss Digital Microscope', 
-      serial: 'ZSS-440-OP', 
-      purchased: 'Sept 2025', 
-      cost: 3200, 
-      currentValue: 3100, 
-      condition: 'Good',
-      location: 'Bio-Lab 2'
-    }
-  ];
+export interface AssetRecord {
+  id: string;
+  name: string;
+  serial: string;
+  purchased: string;
+  cost: number;
+  currentValue: number;
+  condition: string;
+  location: string;
+}
+
+interface AssetTrackingClientProps {
+  initialAssets?: AssetRecord[];
+  schoolId?: string;
+}
+
+const AssetTrackingClient = ({ initialAssets = [], schoolId }: AssetTrackingClientProps) => {
+  const [assets, setAssets] = useState<AssetRecord[]>(initialAssets);
+
+  const totalValue = assets.reduce((sum, a) => sum + (a.currentValue || 0), 0);
+  const totalCost = assets.reduce((sum, a) => sum + (a.cost || 0), 0);
+  const totalDepreciation = Math.max(0, totalCost - totalValue);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -75,18 +64,18 @@ const AssetTrackingClient = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] relative overflow-hidden">
              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Asset Book Value</p>
-             <h3 className="text-3xl font-black text-white mt-1">$412,850</h3>
+             <h3 className="text-3xl font-black text-white mt-1">${totalValue.toLocaleString()}</h3>
              <p className="mt-4 text-[10px] text-emerald-400 font-bold uppercase tracking-tighter">Current Academic Year</p>
           </div>
           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem]">
-             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Annual Depreciation</p>
-             <h3 className="text-3xl font-black text-rose-500 mt-1">-$24,100</h3>
-             <p className="mt-4 text-[10px] text-slate-500 font-medium italic italic">Straight-line Method Applied</p>
+             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Calculated Depreciation</p>
+             <h3 className="text-3xl font-black text-rose-500 mt-1">-${totalDepreciation.toLocaleString()}</h3>
+             <p className="mt-4 text-[10px] text-slate-500 font-medium italic">Active Ledger Assessment</p>
           </div>
           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] border-b-4 border-b-slate-500">
-             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Insurance Coverage</p>
-             <h3 className="text-3xl font-black text-white mt-1">98.2%</h3>
-             <p className="mt-4 text-[10px] text-slate-500 font-bold uppercase">4 Assets Uninsured</p>
+             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Managed Assets</p>
+             <h3 className="text-3xl font-black text-white mt-1">{assets.length}</h3>
+             <p className="mt-4 text-[10px] text-slate-500 font-bold uppercase">All Units Monitored</p>
           </div>
         </div>
 
@@ -95,71 +84,79 @@ const AssetTrackingClient = () => {
           <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
             <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
               <HashtagIcon className="h-5 w-5 text-slate-500" />
-              Serial Registry & Valuation
+              Serial Registry & Valuation ({assets.length} Units)
             </h3>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-800/50">
-                  <th className="p-6">Asset & Serial</th>
-                  <th className="p-6">Purchased</th>
-                  <th className="p-6">Valuation (Book)</th>
-                  <th className="p-6">Condition</th>
-                  <th className="p-6 text-right">Lifecycle</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/30">
-                {assets.map((asset) => (
-                  <tr key={asset.id} className="group hover:bg-slate-500/[0.03] transition-colors">
-                    <td className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-slate-700 transition-colors">
-                          <CpuChipIcon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-white leading-tight">{asset.name}</p>
-                          <p className="text-[10px] font-mono text-slate-600 mt-1">{asset.serial}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-300">{asset.purchased}</span>
-                        <span className="text-[9px] text-slate-500 font-medium uppercase">{asset.location}</span>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <p className="text-sm font-black text-white">${asset.currentValue.toLocaleString()}</p>
-                      <p className="text-[9px] text-slate-600 line-through">${asset.cost.toLocaleString()}</p>
-                    </td>
-                    <td className="p-6">
-                      <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border ${
-                        asset.condition === 'Excellent' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        asset.condition === 'Good' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                        'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                      }`}>
-                        {asset.condition}
-                      </span>
-                    </td>
-                    <td className="p-6 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400" title="Maintenance Log">
-                          <WrenchScrewdriverIcon className="h-4 w-4" />
-                        </button>
-                        <button className="p-2 bg-slate-800 hover:bg-blue-600 rounded-lg text-slate-400 hover:text-white" title="Transfer Asset">
-                          <ArrowsRightLeftIcon className="h-4 w-4" />
-                        </button>
-                        <button className="p-2 bg-slate-800 hover:bg-rose-600 rounded-lg text-slate-400 hover:text-white" title="Dispose/Write-off">
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+            {assets.length === 0 ? (
+              <div className="text-center py-16 text-slate-500">
+                <CpuChipIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                <p className="text-sm font-bold">No registered assets yet</p>
+                <p className="text-xs mt-1">Register school computers, vehicles, or laboratory equipment above</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-800/50">
+                    <th className="p-6">Asset & Serial</th>
+                    <th className="p-6">Purchased</th>
+                    <th className="p-6">Valuation (Book)</th>
+                    <th className="p-6">Condition</th>
+                    <th className="p-6 text-right">Lifecycle</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800/30">
+                  {assets.map((asset) => (
+                    <tr key={asset.id} className="group hover:bg-slate-500/[0.03] transition-colors">
+                      <td className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-slate-700 transition-colors">
+                            <CpuChipIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-white leading-tight">{asset.name}</p>
+                            <p className="text-[10px] font-mono text-slate-600 mt-1">{asset.serial}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-6">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-slate-300">{asset.purchased}</span>
+                          <span className="text-[9px] text-slate-500 font-medium uppercase">{asset.location}</span>
+                        </div>
+                      </td>
+                      <td className="p-6">
+                        <p className="text-sm font-black text-white">${asset.currentValue.toLocaleString()}</p>
+                        <p className="text-[9px] text-slate-600 line-through">${asset.cost.toLocaleString()}</p>
+                      </td>
+                      <td className="p-6">
+                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border ${
+                          asset.condition === 'Excellent' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                          asset.condition === 'Good' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                          'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                        }`}>
+                          {asset.condition}
+                        </span>
+                      </td>
+                      <td className="p-6 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400" title="Maintenance Log">
+                            <WrenchScrewdriverIcon className="h-4 w-4" />
+                          </button>
+                          <button className="p-2 bg-slate-800 hover:bg-blue-600 rounded-lg text-slate-400 hover:text-white" title="Transfer Asset">
+                            <ArrowsRightLeftIcon className="h-4 w-4" />
+                          </button>
+                          <button className="p-2 bg-slate-800 hover:bg-rose-600 rounded-lg text-slate-400 hover:text-white" title="Dispose/Write-off">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

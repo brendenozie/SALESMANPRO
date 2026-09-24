@@ -1,92 +1,70 @@
-import { cookies } from "next/headers";
 import TransportScheduleClient from "./TransportScheduleClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 export default async function TransportSchedulePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
-
+  const { slug } = await params;
   const session = await getAuthSession();
 
-  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+  // Safely resolve the exact same identifier used in AdminStoreLayout
   const identifier = slug || session?.user?.id || '';
 
-  // 2. Retrieve the memoized company data (no extra DB cost)
+  // Retrieve the memoized company data
   const company = await findCompanyCached(identifier, "page");
 
   if (!company) {
     return <div>Company not found</div>;
   }
 
-  // Use the actual database ID for your API calls, ensuring consistency
   const companyId = company.id;
-  let initialShifts = [];  
-  let initialDrivers = [];
-  let initialRoutes = [];
-  let initialVehicles = [];
 
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/transport/shifts?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 0 }, // Schedules change often, so no cache
-      }
-    );
+  const [shifts, drivers, routes, vehicles] = await Promise.all([
+    prisma.transportShift.findMany({
+      where: { companyId },
+      include: {
+        vehicle: true,
+        driver: { include: { user: true } },
+        route: true,
+      },
+      orderBy: { startTime: 'asc' },
+    }),
+    prisma.transportDriver.findMany({
+      where: { companyId },
+      include: { user: true },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.transportRoute.findMany({
+      where: { companyId },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.transportVehicle.findMany({
+      where: { companyId },
+      orderBy: { registration: 'asc' },
+    }),
+  ]);
 
-    if (res.ok) {
-      initialShifts = (await res.json()).data;
-    }
+  const formattedShifts = shifts.map(s => ({
+    id: s.id,
+    startTime: s.startTime ? new Date(s.startTime).toISOString() : "",
+    endTime: s.endTime ? new Date(s.endTime).toISOString() : "",
+    status: s.status as any,
+    route: { name: s.route?.name || "Route" },
+    driver: { name: s.driver?.user?.name || "Driver" },
+    vehicle: { registration: s.vehicle?.registration || "Vehicle" },
+  }));
 
-    const resDrivers = await fetch(
-      `${apiBaseUrl}/admin/transport/drivers?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (resDrivers.ok) {
-      initialDrivers = (await resDrivers.json()).data;
-    }
-
-    const resRoutes = await fetch(
-      `${apiBaseUrl}/admin/transport/routes?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (resRoutes.ok) {
-      initialRoutes = (await resRoutes.json()).data;
-    }
-
-    const resVehicles = await fetch(
-      `${apiBaseUrl}/admin/transport/vehicles?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (resVehicles.ok) {
-      initialVehicles = (await resVehicles.json()).data;
-    }
-
-  } catch (err) {
-    console.error("[SchedulePage] Failed to load shifts", err);
-  }
+  const formattedDrivers = drivers.map(d => ({
+    id: d.id,
+    name: d.user?.name || "Driver",
+  }));
 
   return (
     <TransportScheduleClient
-      initialShifts={initialShifts}
-      initialDrivers={initialDrivers}
-      initialRoutes={initialRoutes}
-      initialVehicles={initialVehicles}
+      initialShifts={JSON.parse(JSON.stringify(formattedShifts))}
+      initialDrivers={JSON.parse(JSON.stringify(formattedDrivers))}
+      initialRoutes={JSON.parse(JSON.stringify(routes))}
+      initialVehicles={JSON.parse(JSON.stringify(vehicles))}
       schoolId={companyId}
     />
   );

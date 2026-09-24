@@ -7517,6 +7517,8 @@ export const getCategoryMenus = (
         icon: ClipboardDocumentListIcon,
         subItems: [
           { label: "Exams", href: `/admin/${adminSlug}/exams` },
+          { label: "Exam Categories", href: `/admin/${adminSlug}/exam-categories` },
+          { label: "Review Grades & Results", href: `/admin/${adminSlug}/results` },
           {
             label: "Report Cards & Transcripts",
             href: `/admin/${adminSlug}/grading-report-card`,

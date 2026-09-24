@@ -74,23 +74,23 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     fetchData<EducatorOption>('/admin/educators', (raw) =>
       raw.map((e) => ({
         id: e.id,
-        name: e.user?.name || 'Unnamed Teacher',
-        email: e.user?.email || 'No email attached',
+        name: e.name || e.user?.name || 'Teacher',
+        email: e.email || e.user?.email || 'No email attached',
       }))
     ),
     fetchData<StudentOption>('/admin/students', (raw) =>
       raw.map((s) => ({
         id: s.id,
-        name: s.user?.name || 'Student Member',
-        email: s.user?.email || 'No email profile',
+        name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.user?.name || 'Student',
+        email: s.email || s.user?.email || (s.admissionNumber ? `Adm: ${s.admissionNumber}` : 'Student Member'),
       }))
     ),
     fetchData<DepartmentOption>('/admin/departments'),
     fetchData<ParentOption>('/admin/parents', (raw) =>
       raw.map((p) => ({
         id: p.id,
-        name: p.user?.name || 'Family Guardian',
-        email: p.user?.email || 'No email recorded',
+        name: p.name || p.user?.name || 'Parent/Guardian',
+        email: p.email || p.user?.email || p.phone || 'No contact recorded',
       }))
     ),
     fetchData<AuthorOption>('/admin/users', (raw) =>
@@ -102,6 +102,21 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     ),
   ]);
 
+  const sessionUserAuthor: AuthorOption[] = session?.user?.id
+    ? [
+        {
+          id: session.user.id,
+          name: session.user.name ? `${session.user.name} (You)` : 'You (Current User)',
+          email: session.user.email || 'Current Session',
+        },
+      ]
+    : [];
+
+  const combinedAuthors: AuthorOption[] = [
+    ...sessionUserAuthor,
+    ...allAuthors.filter((a) => a.id !== session?.user?.id),
+  ];
+
   return (
     <AdminAnnouncementsPage
       initialAnnouncements={initialAnnouncements}
@@ -111,7 +126,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
       allStudents={allStudents}
       allDepartments={allDepartments}
       allParents={allParents}
-      allAuthors={allAuthors}
+      allAuthors={combinedAuthors}
       companyId={companyId}
       currentUserId={session?.user?.id}
     />

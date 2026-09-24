@@ -1,53 +1,41 @@
-import { cookies } from "next/headers";
 import TransportFleetClient from "./TransportFleetClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export default async function TransportVehiclesPage({ params }: PageProps) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
-
+  const { slug } = await params;
   const session = await getAuthSession();
 
-  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+  // Safely resolve the exact same identifier used in AdminStoreLayout
   const identifier = slug || session?.user?.id || '';
 
-  // 2. Retrieve the memoized company data (no extra DB cost)
+  // Retrieve the memoized company data
   const company = await findCompanyCached(identifier, "page");
 
   if (!company) {
     return <div>Company not found</div>;
   }
 
-  // Use the actual database ID for your API calls, ensuring consistency
   const companyId = company.id;
-  let initialVehicles = [];  
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/transport/vehicles?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
 
-    if (res.ok) {
-      initialVehicles = (await res.json()).data;
-      // console.log("[TransportVehiclesPage] Loaded vehicles:", initialVehicles);
-    }
-  } catch (err) {
-    console.error("[TransportVehiclesPage] Failed to load vehicles", err);
-  }
+  const vehicles = await prisma.transportVehicle.findMany({
+    where: { companyId },
+    include: {
+      _count: {
+        select: { routes: true, maintenances: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <TransportFleetClient
-      initialVehicles={initialVehicles}
+      initialVehicles={JSON.parse(JSON.stringify(vehicles))}
       schoolId={companyId}
     />
   );

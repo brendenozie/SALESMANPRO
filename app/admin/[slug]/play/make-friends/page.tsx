@@ -40,7 +40,7 @@ export default function MakeFriendsPage() {
               introAudio: course.mediaAsset?.url || null,
               description: course.description,
             }));
-            setFriendActivities([...mapped, ...sampleFriendActivities]);
+            setFriendActivities(mapped);
           } else {
             setFriendActivities(sampleFriendActivities);
           }

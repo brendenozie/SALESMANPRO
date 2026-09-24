@@ -63,16 +63,16 @@ export default async function EventsManagerPage({ params }: PageProps) {
       const educatorsRaw = Array.isArray(educatorsRes.data) ? educatorsRes.data : educatorsRes.data.data || [];
       allEducators = educatorsRaw.map((e: any) => ({
         id: e.id,
-        name: e.user?.name || "N/A",
-        email: e.user?.email || "N/A",
+        name: e.name || e.user?.name || "Teacher",
+        email: e.email || e.user?.email || "N/A",
       }));
     }
     if (studentsRes.ok && studentsRes.data) {
       const studentsRaw = Array.isArray(studentsRes.data) ? studentsRes.data : studentsRes.data.data || [];
       allStudents = studentsRaw.map((s: any) => ({
         id: s.id,
-        name: s.user?.name || "N/A",
-        email: s.user?.email || "N/A",
+        name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.user?.name || "Student",
+        email: s.email || s.user?.email || "N/A",
       }));
     }
     if (deptsRes.ok && deptsRes.data) {
@@ -83,8 +83,8 @@ export default async function EventsManagerPage({ params }: PageProps) {
       const parentsRaw = Array.isArray(parentsRes.data) ? parentsRes.data : parentsRes.data.data || [];
       allParents = parentsRaw.map((p: any) => ({
         id: p.id,
-        name: p.user?.name || "N/A",
-        email: p.user?.email || "N/A",
+        name: p.name || p.user?.name || "Parent",
+        email: p.email || p.user?.email || "N/A",
       }));
     }
     if (staffRes.ok && staffRes.data) {

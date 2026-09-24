@@ -80,149 +80,84 @@ const generateSampleAdminResultsData = (companyId: string): {
 };
 
 
+import { serverFetchJson } from "@/lib/api/serverFetch";
+
 export default async function AdminResultsOverviewPageWrapper({ params }: PageProps) {
   const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
 
   let initialSubmissions: ExamSubmissionDataForAdmin[] = [];
   let allExams: ExamOption[] = [];
   let allStudents: StudentOption[] = [];
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
-  let fetchError: boolean = false;
   
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const session = await getAuthSession();
+
+  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
+
+  // 2. Retrieve the memoized company data (no extra DB cost)
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  // Use the actual database ID for your API calls, ensuring consistency
+  const companyId = company.id;
 
   try {
-    // Fetch all submissions for the company
-    const submissionsRes = await fetch(`${apiBaseUrl}/admin/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
-      next: { revalidate: 60 },
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-    });
-    if (submissionsRes.ok) {
-      const data = (await submissionsRes.json()).data.data;
-      // console.log("[AdminResultsOverviewPageWrapper] Fetched submissions data:", data);
-      initialSubmissions = data as ExamSubmissionDataForAdmin[];
-      // initialSubmissions = (await submissionsRes.json()) as ExamSubmissionDataForAdmin[];
-    } else {
-      // console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch submissions: ${submissionsRes.status} ${submissionsRes.statusText}`);
-      fetchError = true;
+    const [submissionsRes, examsRes, studentsRes, coursesRes, educatorsRes] = await Promise.all([
+      serverFetchJson<any[]>(`/api/admin/exam-submissions?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any[]>(`/api/admin/exams?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any[]>(`/api/admin/students?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any[]>(`/api/admin/courses?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any[]>(`/api/admin/educators?companyId=${encodeURIComponent(companyId)}`),
+    ]);
+
+    if (submissionsRes.ok && Array.isArray(submissionsRes.data)) {
+      initialSubmissions = submissionsRes.data as ExamSubmissionDataForAdmin[];
     }
 
-    // Fetch all exams (for filter dropdown)
-    const examsRes = await fetch(`${apiBaseUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
-      next: { revalidate: 60 },
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-    });
-    if (examsRes.ok) {
-      const data = (await examsRes.json()).data.data;
-      // console.log("[AdminResultsOverviewPageWrapper] Fetched exams data:", data);
-      const fetchedExams = data as any[];
-      allExams = fetchedExams.map(e => ({
+    if (examsRes.ok && Array.isArray(examsRes.data)) {
+      allExams = examsRes.data.map((e: any) => ({
         id: e.id,
         title: e.title,
         courseId: e.courseId,
         createdByEducatorId: e.createdByEducatorId,
         type: e.type,
       }));
-    } else {
-      console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
-      fetchError = true;
     }
 
-    // Fetch all students (for filter dropdown)
-    const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
-      next: { revalidate: 60 },
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-    });
-    if (studentsRes.ok) {
-      const data = (await studentsRes.json()).data;
-      // console.log("[AdminResultsOverviewPageWrapper] Fetched students data:", data);
-      const fetchedStudents = data as any[];
-      allStudents = fetchedStudents.map(s => ({
+    if (studentsRes.ok && Array.isArray(studentsRes.data)) {
+      allStudents = studentsRes.data.map((s: any) => ({
         id: s.id,
-        name: s.name,
-        email: s.email,
+        name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.user?.name || 'Student',
+        email: s.email || s.user?.email || '',
         academicLevel: s.academicLevel,
       }));
-    } else {
-      console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`);
-      fetchError = true;
     }
 
-    // Fetch all courses (for filter dropdown)
-    const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
-      next: { revalidate: 60 },
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-    });
-    if (coursesRes.ok) {
-      const data = (await coursesRes.json()).data;
-      // console.log("[AdminResultsOverviewPageWrapper] Fetched courses data:", data);
-      const fetchedCourses = data as any[];
-      allCourses = fetchedCourses.map(c => ({
+    if (coursesRes.ok && Array.isArray(coursesRes.data)) {
+      allCourses = coursesRes.data.map((c: any) => ({
         id: c.id,
         title: c.title,
       }));
-    } else {
-      console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
-      fetchError = true;
     }
 
-    // Fetch all educators (for filter dropdown)
-    const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
-      next: { revalidate: 60 },
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-    });
-    if (educatorsRes.ok) {
-      const data = (await educatorsRes.json()).data.data;
-      // console.log("[AdminResultsOverviewPageWrapper] Fetched educators data:", data);
-      const fetchedEducators = data as any[];
-      allEducators = fetchedEducators.map(e => ({
+    if (educatorsRes.ok && Array.isArray(educatorsRes.data)) {
+      allEducators = educatorsRes.data.map((e: any) => ({
         id: e.id,
-        name: e.name,
-        email: e.email,
+        name: e.name || e.user?.name || 'Instructor',
+        email: e.email || e.user?.email || '',
       }));
-    } else {
-      console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
-      fetchError = true;
     }
-
   } catch (err: any) {
     console.error("[AdminResultsOverviewPageWrapper] Error fetching initial data →", err.message);
-    fetchError = true;
   }
 
-  // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || initialSubmissions.length === 0 && allExams.length === 0  && allStudents.length === 0  && allCourses.length === 0  && allEducators.length === 0) {
-    // console.log("[AdminResultsOverviewPageWrapper] Using sample data as fallback for admin results.");
+  // If no live database records exist anywhere in the school, provide graceful sample controls
+  if (initialSubmissions.length === 0 && allExams.length === 0 && allStudents.length === 0 && allCourses.length === 0 && allEducators.length === 0) {
     const { sampleSubmissions, sampleExams, sampleStudents, sampleCourses, sampleEducators } = generateSampleAdminResultsData(companyId);
     initialSubmissions = sampleSubmissions;
     allExams = sampleExams;

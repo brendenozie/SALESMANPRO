@@ -1,57 +1,54 @@
-import { cookies } from "next/headers";
 import DriversPageClient, { Driver } from "./DriversPageClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
+import prisma from "@/server/db/prismadb";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-interface pageProps {
+interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function DriversPage({ params }: pageProps) {
-  
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
+export default async function DriversPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  // Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
 
-  let initialDrivers : Driver[] = [];  
-  
-  try {
-    // We assume an endpoint that filters staff by role 'DRIVER'
-    const res = await fetch(
-      `${apiBaseUrl}/admin/transport/drivers?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
+  // Retrieve the memoized company data
+  const company = await findCompanyCached(identifier, "page");
 
-    if (res.ok) {
-      initialDrivers = (await res.json()).data;
-    }
-  } catch (err) {
-    console.error("[DriversPage] Failed to load drivers", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
 
+  const companyId = company.id;
+
+  const drivers = await prisma.transportDriver.findMany({
+    where: { companyId },
+    include: {
+      user: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const formattedDrivers: Driver[] = drivers.map(d => ({
+    id: d.id,
+    name: d.user?.name || "Driver",
+    email: d.user?.email || "",
+    phoneNumber: d.user?.phone || "",
+    licenseNumber: d.licenseNo || "",
+    licenseClass: "Class A",
+    rating: 5,
+    loginCode: d.loginCode || "",
+    licenseExpiry: d.licenseExpiry ? d.licenseExpiry.toISOString().split('T')[0] : "",
+    experienceYears: d.experienceYears || 0,
+    status: (d.status === 'ACTIVE' ? 'AVAILABLE' : (d.status as any)) || 'AVAILABLE',
+  }));
+
   return (
-      <DriversPageClient
-        initialDrivers={initialDrivers}
-        schoolId={companyId}
-      />
+    <DriversPageClient
+      initialDrivers={JSON.parse(JSON.stringify(formattedDrivers))}
+      schoolId={companyId}
+    />
   );
 }

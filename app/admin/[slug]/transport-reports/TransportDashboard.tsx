@@ -38,11 +38,7 @@ const TransportDashboard = ({ initialData, schoolId }: DashboardProps) => {
 
   // Core Data State (with defensive fallbacks)
   const [alerts, setAlerts] = useState<Array<{ bus: string; issue: string }>>(
-    initialData?.alerts || [
-      { bus: "BUS-202", issue: "Engine Temp Warning" },
-      { bus: "BUS-105", issue: "Off-Route 1.5km" },
-      { bus: "VAN-08", issue: "Low Tire Pressure" }
-    ]
+    Array.isArray(initialData?.alerts) ? initialData.alerts : []
   );
 
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);

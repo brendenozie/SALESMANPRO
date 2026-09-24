@@ -35,7 +35,7 @@ export default async function AssignmentsPage({ params }: PageProps) {
   try {
     const [sessionRes, examsRes, coursesRes, educatorsRes, levelsRes, classroomsRes] = await Promise.all([
       serverFetchJson<any>(`/api/admin/academic-years/session?companyId=${encodeURIComponent(companyId)}`),
-      serverFetchJson<any>(`/api/admin/course-assignments?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any>(`/api/admin/course-assignments?companyId=${encodeURIComponent(companyId)}&limit=200`),
       serverFetchJson<CourseOption[]>(`/api/admin/courses?companyId=${encodeURIComponent(companyId)}`),
       serverFetchJson<EducatorOption[]>(`/api/admin/educators?companyId=${encodeURIComponent(companyId)}`),
       serverFetchJson<AcademicLevelOption[]>(`/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`),

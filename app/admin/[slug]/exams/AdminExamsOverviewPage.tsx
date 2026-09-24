@@ -396,8 +396,8 @@ export default function AdminExamsOverviewPage({
   const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedYear, setSelectedYear] = useState(activeAcademicYearId);
-  const [selectedTerm, setSelectedTerm] = useState(activeTermId);
+  const [selectedYear, setSelectedYear] = useState<string | null>('All');
+  const [selectedTerm, setSelectedTerm] = useState<string | null>('All');
   const [academicYearOptions] = useState(academicYears);
 
   const today = new Date().toLocaleDateString('en-US', {
@@ -455,8 +455,8 @@ export default function AdminExamsOverviewPage({
       const matchesEducator = filterEducator === 'All' || exam.createdByEducatorId === filterEducator;
       const matchesType = filterType === 'All' || exam.type === filterType;
       const matchesCategory = filterExamCategory === 'All' || exam.examCategoryId === filterExamCategory;
-      const matchesYear = !selectedYear || selectedYear === 'All' || exam.academicYearId === selectedYear;
-      const matchesTerm = !selectedTerm || selectedTerm === 'All' || exam.termId === selectedTerm;
+      const matchesYear = !selectedYear || selectedYear === 'All' || !exam.academicYearId || exam.academicYearId === selectedYear;
+      const matchesTerm = !selectedTerm || selectedTerm === 'All' || !exam.termId || exam.termId === selectedTerm;
 
       const examDate = new Date(exam.date);
       const now = new Date();

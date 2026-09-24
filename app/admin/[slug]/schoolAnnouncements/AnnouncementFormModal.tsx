@@ -197,8 +197,13 @@ export const AnnouncementFormModal: React.FC<AnnouncementFormModalProps> = ({
   useEffect(() => {
     if (announcementData) {
       setFormData(announcementData);
+    } else if (currentUserId || allAuthors.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        authorId: prev.authorId || currentUserId || allAuthors[0]?.id || '',
+      }));
     }
-  }, [announcementData]);
+  }, [announcementData, currentUserId, allAuthors]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

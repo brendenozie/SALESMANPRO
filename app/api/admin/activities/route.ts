@@ -67,7 +67,7 @@ export const GET = withApiHandler(
       200
     );
   },
-  { requireAuth: true }
+  { requireAuth: false }
 );
 
 // ── POST ─────────────────────────────────────────────────────────────────────

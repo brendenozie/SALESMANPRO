@@ -206,7 +206,7 @@ async function getEvents(request: Request) {
   // if (isPaid !== undefined) {
   //   whereClause.isPaid = isPaid === "true";
   // }
-  const cacheKey = buildTenantCacheKey(companyId, "events", { date });
+  const cacheKey = buildTenantCacheKey(companyId, "events", { eventType, eventStatus, audience, organizerId });
 
   try {
     const cached = await cacheGet(cacheKey);

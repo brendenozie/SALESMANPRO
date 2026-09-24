@@ -1,57 +1,70 @@
 import React from "react";
-import { cookies } from "next/headers";
 import FeesClient from "./FeesClient";
-import { Student, FeeItem } from "@/lib/data";
-import { AcademicLevelOption, ClassRoomOption } from "../students/StudentsClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 export default async function FeesPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug }  = await params;
-  const cookHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-  // Parallel data fetching for performance
-  const fetchData = async (endpoint: string) => {
-    const res = await fetch(`${apiBaseUrl}${endpoint}`, {
-      next: { revalidate: 60 },
-      headers: { cookie: cookHeader },
-    });
-    return res.ok ? (await res.json()).data : [];
-  };
+  // Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
+
+  // Retrieve the memoized company data
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
 
   const [initialFeeRecords, initialStudents, initialFeeItems, allAcademicLevels, allClassrooms] = 
     await Promise.all([
-      fetchData(`/admin/student-fee-records?companyId=${companyId}`),
-      fetchData(`/admin/students?companyId=${companyId}`),
-      fetchData(`/admin/fee-items?companyId=${companyId}`),
-      fetchData(`/admin/academic-levels?companyId=${companyId}`),
-      fetchData(`/admin/classrooms?companyId=${companyId}`),
+      prisma.studentFeeRecord.findMany({
+        where: { student: { companyId } },
+        include: {
+          student: {
+            include: {
+              academicLevel: true,
+              classroom: true,
+            },
+          },
+          academicYear: true,
+          academicTerm: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }).catch(() => []),
+      prisma.student.findMany({
+        where: { companyId },
+        include: {
+          academicLevel: true,
+          classroom: true,
+        },
+        orderBy: { firstName: "asc" },
+      }).catch(() => []),
+      prisma.feeItem.findMany({
+        where: { companyId },
+        orderBy: { name: "asc" },
+      }).catch(() => []),
+      prisma.academicLevel.findMany({
+        where: { companyId },
+        orderBy: { order: "asc" },
+      }).catch(() => []),
+      prisma.classroom.findMany({
+        where: { companyId },
+        orderBy: { name: "asc" },
+      }).catch(() => []),
     ]);
-  
+
   return (
     <FeesClient
-      initialFeeRecordsData={initialFeeRecords}
-      initialStudentsData={initialStudents}
-      initialFeeItemsData={initialFeeItems}
-      allAcademicLevels={allAcademicLevels}
-      allClassrooms={allClassrooms}
+      initialFeeRecordsData={JSON.parse(JSON.stringify(initialFeeRecords))}
+      initialStudentsData={JSON.parse(JSON.stringify(initialStudents))}
+      initialFeeItemsData={JSON.parse(JSON.stringify(initialFeeItems))}
+      allAcademicLevels={JSON.parse(JSON.stringify(allAcademicLevels))}
+      allClassrooms={JSON.parse(JSON.stringify(allClassrooms))}
       schoolId={companyId}
     />
   );

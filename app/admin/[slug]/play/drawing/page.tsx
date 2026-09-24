@@ -3,107 +3,68 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-// import { getAuthSession } from '@/lib/auth';
-// import { findCompanyCached } from '@/lib/company-fetcher';
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;//process.env.NEXT_PUBLIC_API_URL || "/api";
-
+import { useParams, useRouter } from 'next/navigation';
 
 // --- Sample Data (Used if API fails or returns no data) ---
 const sampleDrawingPrompts = [
-  { id: 'sample-1', slug: 'happy-sun', title: 'Draw a Happy Sun! (Sample)', icon: '☀️', introAudio: '/audio/sun-drawing-intro.mp3', description: "Start with a big circle and a smile!" },
-  { id: 'sample-2', slug: 'favorite-animal', title: 'Draw Your Favorite Animal! (Sample)', icon: '🦁', introAudio: '/audio/animal-drawing-intro.mp3', description: "What animal do you love the most?" },
-  { id: 'sample-3', slug: 'rainbow', title: 'Draw a Rainbow! (Sample)', icon: '🌈', introAudio: '/audio/rainbow-drawing-intro.mp3', description: "Red, orange, yellow, green, blue, indigo, violet!" },
-  { id: 'sample-4', slug: 'free-draw', title: 'Free Draw! (Sample)', icon: '🖍️', introAudio: '/audio/free-draw-intro.mp3', description: "Draw anything your imagination can dream up!" },
+  { id: 'sample-1', slug: 'happy-sun', title: 'Draw a Happy Sun!', icon: '☀️', introAudio: '/audio/sun-drawing-intro.mp3', description: "Start with a big circle and a smile!" },
+  { id: 'sample-2', slug: 'favorite-animal', title: 'Draw Your Favorite Animal!', icon: '🦁', introAudio: '/audio/animal-drawing-intro.mp3', description: "What animal do you love the most?" },
+  { id: 'sample-3', slug: 'rainbow', title: 'Draw a Rainbow!', icon: '🌈', introAudio: '/audio/rainbow-drawing-intro.mp3', description: "Red, orange, yellow, green, blue, indigo, violet!" },
+  { id: 'sample-4', slug: 'free-draw', title: 'Free Draw!', icon: '🖍️', introAudio: '/audio/free-draw-intro.mp3', description: "Draw anything your imagination can dream up!" },
 ];
-
-// --- IMPORTANT: Replace this with the actual ID of your "Playgroup" AcademicLevel from your database ---
-// Or create a specific "Drawing" AcademicLevel if you want to categorize them separately.
-const PLAYGROUP_ACADEMIC_LEVEL_ID = 'YOUR_PLAYGROUP_ACADEMIC_LEVEL_ID'; // e.g., '65e7b2f3a4c5d6e7f8a9b0c1'
 
 export default function DrawingPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string) || '';
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [drawingPrompts, setDrawingPrompts] = useState<typeof sampleDrawingPrompts>([]);
+  const [drawingPrompts, setDrawingPrompts] = useState<any[]>(sampleDrawingPrompts);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-
-    // const { slug } = await params;
-  
-    // const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    // const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    // const company = await findCompanyCached(identifier, "page");
-  
-    // if (!company) {
-    //   return <div>Company not found</div>;
-    // }
-  
-    // // Use the actual database ID for your API calls, ensuring consistency
-    // const companyId = company.id;
 
   useEffect(() => {
     const fetchDrawingPrompts = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`${apiBaseUrl}/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+        const response = await fetch(`/api/admin/activities?companySlug=${encodeURIComponent(slug)}&type=drawing`);
 
-        if (!response.ok) {
-          
-          const data = await response.json();
+        if (response.ok) {
+          const resData = await response.json();
+          const liveActivities = resData?.data?.activities || [];
 
-          if (data && data.length > 0) {
-            // Filter for courses that are likely drawing prompts (e.g., based on audioUrl or description content)
-            // You might want to add a 'type' field (e.g., 'STORY', 'SONG', 'PUZZLE', 'DRAWING') to your Course model
-            // to make this filtering more robust. For now, we'll assume any course with an audioUrl and description
-            // could be a drawing prompt.
-            const mappedPrompts = data
-              .filter((course: any) => course.audioUrl && course.description) // Ensure it has audio and description for guidance
-              .map((course: any) => ({
-                id: course.id,
-                slug: course.code, // Assuming 'code' can be used as a unique slug for prompts
-                title: course.title,
-                icon: course.imageUrl || '🎨', // Use imageUrl for icon, fallback to palette emoji
-                introAudio: course.audioUrl,
-                description: course.description, // Map Course.description to prompt.description
-              }));
+          if (Array.isArray(liveActivities) && liveActivities.length > 0) {
+            const mappedPrompts = liveActivities.map((act: any) => ({
+              id: act.id,
+              slug: act.id,
+              title: act.title,
+              icon: act.activityType?.icon || '🎨',
+              introAudio: act.mediaAsset?.url || null,
+              description: act.description || act.instructions || 'Express your imagination with colors!',
+            }));
             setDrawingPrompts(mappedPrompts);
           } else {
-            // console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
             setDrawingPrompts(sampleDrawingPrompts);
           }
         } else {
-          // console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
           setDrawingPrompts(sampleDrawingPrompts);
         }
       } catch (e: any) {
-        // console.error("Failed to fetch drawing prompts:", e);
-        setError("Failed to load drawing prompts. Displaying sample data.");
-        setDrawingPrompts(sampleDrawingPrompts); // Fallback to sample data on error
+        setDrawingPrompts(sampleDrawingPrompts);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDrawingPrompts();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [slug]);
 
   const handleStartDrawing = (prompt: any) => {
-    // Play a sound effect before navigating
     if (audioRef.current) {
-      audioRef.current.src = prompt.introAudio || '/audio/drawing-click.mp3'; // Fallback to generic click
-      audioRef.current.play().catch(e => console.error("Error playing drawing sound:", e));
+      audioRef.current.src = prompt.introAudio || '/audio/drawing-click.mp3';
+      audioRef.current.play().catch((e) => console.error("Error playing drawing sound:", e));
     }
-    // Navigate to the dynamic drawing canvas page
     router.push(`drawing/${prompt.slug}`);
   };
 
@@ -114,7 +75,7 @@ export default function DrawingPage() {
       <div className="absolute bottom-10 right-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob-slow animation-delay-1000"></div>
 
       {/* Back to Home Button */}
-      <Link href="/play" className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
+      <Link href={slug ? `/admin/${slug}/play` : '/play'} className="absolute top-6 left-6 text-6xl animate-bounce z-20" aria-label="Go back home">
         🏡
       </Link>
 

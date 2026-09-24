@@ -1,48 +1,36 @@
-import { cookies } from "next/headers";
 import TransportRoutesClient from "./TransportRoutesClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 export default async function TransportRoutesPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
-
+  const { slug } = await params;
   const session = await getAuthSession();
 
-  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-  const identifier = slug || (session?.user as any)?.id || '';
+  // Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
 
-  // 2. Retrieve the memoized company data (no extra DB cost)
+  // Retrieve the memoized company data
   const company = await findCompanyCached(identifier, "page");
 
   if (!company) {
     return <div>Company not found</div>;
   }
 
-  // Use the actual database ID for your API calls, ensuring consistency
   const companyId = company.id;
-  let initialRoutes = [];
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/transport/routes?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
 
-    if (res.ok) {
-      initialRoutes = (await res.json()).data;
-    }
-  } catch (err) {
-    console.error("[TransportRoutesPage] Failed to load routes", err);
-  }
+  const routes = await prisma.transportRoute.findMany({
+    where: { companyId },
+    include: {
+      vehicle: { select: { registration: true } },
+      _count: { select: { assignments: true } }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <TransportRoutesClient
-      initialRoutes={initialRoutes}
+      initialRoutes={JSON.parse(JSON.stringify(routes))}
       schoolId={companyId}
     />
   );

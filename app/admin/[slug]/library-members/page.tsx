@@ -1,55 +1,45 @@
-import { cookies } from "next/headers";
 import LibraryMembersClient from "./LibraryMembersClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export default async function LibraryMembersPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-  const { slug }  = await params;
+  // Safely resolve the exact same identifier used in AdminStoreLayout
+  const identifier = slug || session?.user?.id || '';
 
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  // Retrieve the memoized company data
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialMembers = [];  
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialMembers = (await res.json()).data;
-    }
-  } catch (err) {
-    // console.error("[LibraryMembersPage] Failed to load members", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
+
+  const companyId = company.id;
+
+  const members = await prisma.libraryMember.findMany({
+    where: { companyId },
+    include: {
+      student: true,
+      educator: { include: { user: true } },
+      issuances: {
+        include: {
+          fines: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <LibraryMembersClient
-      initialMembers={initialMembers}
+      initialMembers={JSON.parse(JSON.stringify(members))}
       schoolId={companyId}
     />
   );

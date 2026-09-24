@@ -9,10 +9,48 @@ import {
   ArrowPathIcon,
   CircleStackIcon,
   DocumentTextIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
 
-const InventoryDashboardClient = () => {
+export interface InventoryDashboardProps {
+  stats?: {
+    totalSkus: number;
+    outOfStock: number;
+    ordersInTransit: number;
+    inventoryValue: string;
+  };
+  alerts?: Array<{
+    item: string;
+    cat: string;
+    stock: string;
+    min: string;
+    urgency: string;
+  }>;
+  categories?: Array<{
+    label: string;
+    val: number;
+    color: string;
+  }>;
+  schoolId?: string;
+}
+
+const InventoryDashboardClient = ({
+  stats = {
+    totalSkus: 0,
+    outOfStock: 0,
+    ordersInTransit: 0,
+    inventoryValue: "$0",
+  },
+  alerts = [],
+  categories = [
+    { label: 'IT Infrastructure', val: 40, color: 'bg-blue-500' },
+    { label: 'Lab Equipment', val: 30, color: 'bg-orange-500' },
+    { label: 'Furniture', val: 20, color: 'bg-emerald-500' },
+    { label: 'Other', val: 10, color: 'bg-slate-700' },
+  ],
+  schoolId,
+}: InventoryDashboardProps) => {
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -41,10 +79,10 @@ const InventoryDashboardClient = () => {
         {/* Inventory Vital Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {[
-            { label: 'Total SKUs', value: '1,240', icon: CircleStackIcon, color: 'text-blue-400' },
-            { label: 'Out of Stock', value: '14', icon: ExclamationTriangleIcon, color: 'text-rose-500' },
-            { label: 'Orders in Transit', value: '08', icon: TruckIcon, color: 'text-orange-400' },
-            { label: 'Inventory Value', value: '$284k', icon: CurrencyDollarIcon, color: 'text-emerald-400' },
+            { label: 'Total SKUs', value: stats.totalSkus.toLocaleString(), icon: CircleStackIcon, color: 'text-blue-400' },
+            { label: 'Out of Stock', value: stats.outOfStock.toLocaleString(), icon: ExclamationTriangleIcon, color: 'text-rose-500' },
+            { label: 'Orders in Transit', value: stats.ordersInTransit.toLocaleString(), icon: TruckIcon, color: 'text-orange-400' },
+            { label: 'Inventory Value', value: stats.inventoryValue, icon: CurrencyDollarIcon, color: 'text-emerald-400' },
           ].map((stat, i) => (
             <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-[2rem] group hover:border-orange-500/30 transition-all">
               <stat.icon className={`h-6 w-6 ${stat.color} mb-4`} />
@@ -62,31 +100,39 @@ const InventoryDashboardClient = () => {
                   <ArrowPathIcon className="h-4 w-4 text-orange-500" />
                   Critical Restock Alerts
                </h3>
-               <span className="text-[10px] text-rose-500 font-black uppercase bg-rose-500/10 px-2 py-1 rounded">Action Required</span>
+               {alerts.length > 0 ? (
+                 <span className="text-[10px] text-rose-500 font-black uppercase bg-rose-500/10 px-2 py-1 rounded">Action Required ({alerts.length})</span>
+               ) : (
+                 <span className="text-[10px] text-emerald-400 font-black uppercase bg-emerald-500/10 px-2 py-1 rounded">Healthy</span>
+               )}
             </div>
             
             <div className="space-y-4">
-               {[
-                 { item: 'A4 Printing Paper', cat: 'Stationery', stock: '2 Reams', min: '50 Reams', urgency: 'High' },
-                 { item: 'Sodium Hydroxide', cat: 'Science Lab', stock: '0.5kg', min: '5kg', urgency: 'Medium' },
-                 { item: 'Basketballs (Spalding)', cat: 'Sports', stock: '2 Units', min: '10 Units', urgency: 'Low' },
-               ].map((alert, i) => (
-                 <div key={i} className="flex items-center justify-between p-5 bg-black/40 border border-slate-800 rounded-2xl group hover:bg-slate-800/50 transition-all">
-                    <div className="flex items-center gap-4">
-                       <div className="h-10 w-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500">
-                          <ArchiveBoxIcon className="h-5 w-5" />
-                       </div>
-                       <div>
-                          <p className="text-sm font-bold text-white">{alert.item}</p>
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{alert.cat}</p>
-                       </div>
-                    </div>
-                    <div className="text-right">
-                       <p className="text-xs font-black text-rose-400">{alert.stock} left</p>
-                       <p className="text-[9px] text-slate-600 font-bold italic underline">Min: {alert.min}</p>
-                    </div>
+               {alerts.length === 0 ? (
+                 <div className="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
+                   <CheckCircleIcon className="h-8 w-8 text-emerald-500 opacity-60" />
+                   <p className="text-sm font-bold">All stock levels are optimal</p>
+                   <p className="text-xs">No items currently below minimum threshold</p>
                  </div>
-               ))}
+               ) : (
+                 alerts.map((alert, i) => (
+                   <div key={i} className="flex items-center justify-between p-5 bg-black/40 border border-slate-800 rounded-2xl group hover:bg-slate-800/50 transition-all">
+                      <div className="flex items-center gap-4">
+                         <div className="h-10 w-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500">
+                            <ArchiveBoxIcon className="h-5 w-5" />
+                         </div>
+                         <div>
+                            <p className="text-sm font-bold text-white">{alert.item}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{alert.cat}</p>
+                         </div>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-xs font-black text-rose-400">{alert.stock} left</p>
+                         <p className="text-[9px] text-slate-600 font-bold italic underline">Min: {alert.min}</p>
+                      </div>
+                   </div>
+                 ))
+               )}
             </div>
           </div>
 
@@ -94,12 +140,7 @@ const InventoryDashboardClient = () => {
           <div className="bg-slate-900/20 border border-slate-800 rounded-[3rem] p-8">
             <h3 className="text-sm font-black uppercase text-white tracking-widest mb-8">Asset Categories</h3>
             <div className="space-y-6">
-               {[
-                 { label: 'IT Infrastructure', val: 45, color: 'bg-blue-500' },
-                 { label: 'Lab Equipment', val: 25, color: 'bg-orange-500' },
-                 { label: 'Furniture', val: 20, color: 'bg-emerald-500' },
-                 { label: 'Other', val: 10, color: 'bg-slate-700' },
-               ].map((cat, i) => (
+               {categories.map((cat, i) => (
                  <div key={i}>
                     <div className="flex justify-between text-[10px] font-bold mb-2">
                        <span className="text-slate-400 uppercase tracking-tighter">{cat.label}</span>

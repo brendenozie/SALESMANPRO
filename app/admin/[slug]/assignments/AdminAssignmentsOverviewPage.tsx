@@ -141,8 +141,8 @@ export default function AssignmentsPageClient({
   const [filterType, setFilterType] = useState('All');
   const [filterEducator, setFilterEducator] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [selectedYear, setSelectedYear] = useState(activeAcademicYearId);
-  const [selectedTerm, setSelectedTerm] = useState(activeTermId);
+  const [selectedYear, setSelectedYear] = useState<string | null>('All');
+  const [selectedTerm, setSelectedTerm] = useState<string | null>('All');
   
   const [academicYearOptions, setAcademicYearOptions] = useState(academicYears);
 
@@ -164,8 +164,8 @@ export default function AssignmentsPageClient({
         const matchesClass = filterClass === 'All' || assignment.classroomId === filterClass;
         const matchesEducator = filterEducator === 'All' || assignment.createdById === filterEducator;
         const matchesType = filterType === 'All' || assignment.type === filterType;
-        const matchesYear = selectedYear === 'All' || !selectedYear || assignment.academicYearId === selectedYear;
-        const matchesTerm = selectedTerm === 'All' || !selectedTerm || assignment.termId === selectedTerm;
+        const matchesYear = selectedYear === 'All' || !selectedYear || !assignment.academicYearId || assignment.academicYearId === selectedYear;
+        const matchesTerm = selectedTerm === 'All' || !selectedTerm || !assignment.termId || assignment.termId === selectedTerm;
 
         const assignmentDate = new Date(assignment.dueDate);
         const now = new Date();
