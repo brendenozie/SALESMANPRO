@@ -293,9 +293,6 @@ export default function AdminEventsPage({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),
       });
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventStatus: newStatus }),
-      });
 
       if (res.ok) {
         await fetchEvents();
