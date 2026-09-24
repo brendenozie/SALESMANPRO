@@ -59,15 +59,20 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       setIsLoadingEvents(true);
       setError(null);
       try {
-        const response = await fetch(
-          `${apiBaseUrl}/admin/${companyId}/events?status=SCHEDULED&fields=id,title,startDateTime`
-        );
+        const response = await fetch('/api/admin/events?limit=100');
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setEvents(data.events || []);
+        const eventItems = Array.isArray(data) ? data : data.data || data.events || [];
+        setEvents(
+          eventItems.map((e: any) => ({
+            id: e.id,
+            title: e.title || e.name || 'Untitled Event',
+            startDateTime: e.date || e.startDateTime || e.createdAt || new Date().toISOString(),
+          }))
+        );
       } catch (err: any) {
         setError(err.message || 'Failed to fetch events.');
       } finally {
@@ -75,9 +80,7 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       }
     };
 
-    if (companyId) {
-      fetchEvents();
-    }
+    fetchEvents();
   }, [companyId]);
 
   // Fetch tickets for selected event
@@ -90,13 +93,21 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       setIsLoadingTickets(true);
       setError(null);
       try {
-        const response = await fetch(`${apiBaseUrl}/admin/${companyId}/tickets?eventId=${selectedEventId}`);
+        const response = await fetch(`/api/admin/events/${selectedEventId}/tickets`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setAvailableTickets(data.tickets || []);
+        const ticketsList = Array.isArray(data) ? data : data.data || data.tickets || [];
+        setAvailableTickets(
+          ticketsList.map((t: any) => ({
+            id: t.id,
+            type: t.name || t.ticketType || 'Standard',
+            price: Number(t.price || 0),
+            remaining: Math.max(0, (t.quantityTotal ?? t.quantityAvailable ?? 0) - (t.quantitySold || 0)),
+          }))
+        );
       } catch (err: any) {
         setError(err.message || 'Failed to fetch tickets for event.');
       } finally {
@@ -104,7 +115,7 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       }
     };
 
-    if (selectedEventId && companyId) {
+    if (selectedEventId) {
       fetchTickets();
     }
   }, [selectedEventId, companyId]);
@@ -164,16 +175,27 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/${companyId}/pos/sale`, {
+      const pMethod = paymentMethod.toLowerCase().includes('cash')
+        ? 'cash'
+        : paymentMethod.toLowerCase().includes('card')
+        ? 'card'
+        : 'pos';
+
+      const response = await fetch('/api/events/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventId: selectedEventId,
-          customerName,
-          customerEmail,
-          paymentMethod,
-          items: cart,
-          notes: 'POS Sale',
+          companyId,
+          buyer: {
+            name: customerName,
+            email: customerEmail,
+          },
+          tickets: cart.map((item) => ({
+            ticketId: item.ticketProductId,
+            quantity: item.quantity,
+          })),
+          paymentMethod: pMethod,
         }),
       });
 
@@ -183,8 +205,9 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       }
 
       const result = await response.json();
+      const totalAmt = result.data?.totalAmount ?? result.totalAmount ?? calculateTotal();
       setTransactionStatus('success');
-      setMessage(result.message || `Sale of $${result.totalAmount.toFixed(2)} processed successfully!`);
+      setMessage(result.message || `Sale of $${Number(totalAmt).toFixed(2)} processed successfully! Tickets issued.`);
 
       // Reset form
       setSelectedEventId('');
@@ -194,14 +217,17 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       setPaymentMethod('');
 
       // Refresh events list
-      if (companyId) {
-        const eventsResponse = await fetch(
-          `${apiBaseUrl}/admin/${companyId}/events?status=SCHEDULED&fields=id,title,startDateTime`
+      const eventsResponse = await fetch('/api/admin/events?limit=100');
+      if (eventsResponse.ok) {
+        const eventsData = await eventsResponse.json();
+        const eventItems = Array.isArray(eventsData) ? eventsData : eventsData.data || eventsData.events || [];
+        setEvents(
+          eventItems.map((e: any) => ({
+            id: e.id,
+            title: e.title || e.name || 'Untitled Event',
+            startDateTime: e.date || e.startDateTime || e.createdAt || new Date().toISOString(),
+          }))
         );
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
-          setEvents(eventsData.events || []);
-        }
       }
     } catch (err: any) {
       setTransactionStatus('error');

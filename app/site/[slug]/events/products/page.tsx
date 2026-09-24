@@ -6,33 +6,7 @@ import EventListWrapper from "./components/EventListWrapper/EventListWrapper";
 import { findCompanyCached } from "@/lib/company-fetcher";
 import { fetchWithCache, buildTenantCacheKey } from "@/lib/cache";
 
-// --- Mock sample events (used when DB has no items yet) ---
-const mockEvents = [
-  {
-    id: "mock-1",
-    name: "Agrotech Innovations Summit 2026",
-    images: ["https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&q=80"],
-    date: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days from now
-    timeString: "09:00 AM - 05:00 PM",
-    location: "Main Auditorium & Virtual",
-    category: "Workshop",
-    finalPrice: 1500,
-    ticketsAvailable: 50,
-    isSoldOut: false,
-  },
-  {
-    id: "mock-2",
-    name: "Sustainable Organic Farming Masterclass",
-    images: ["https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&q=80"],
-    date: new Date(Date.now() + 86400000 * 7).toISOString(), // 1 week from now
-    timeString: "11:00 AM - 02:00 PM",
-    location: "Online (Zoom Meeting)",
-    category: "Academic",
-    finalPrice: 0, // Free event
-    ticketsAvailable: 200,
-    isSoldOut: false,
-  },
-];
+
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -118,9 +92,12 @@ export default async function EventListPage({ params, searchParams }: PageProps)
         prisma.event.findMany({
           where,
           orderBy,
-          take: 30,
+          take: 50,
           include: {
             productCategory: true,
+            tickets: {
+              where: { isActive: true },
+            },
           },
         }),
         prisma.storeCategory.findMany({
@@ -135,13 +112,27 @@ export default async function EventListPage({ params, searchParams }: PageProps)
   );
 
   // Transform Prisma output safely to fit the unified frontend UI state contracts
-  const normalizedEvents = eventRecords.map((evt) => {
-    // Determine dynamic timeline access strings stringify windows cleanly
+  const normalizedEvents = eventRecords.map((evt: any) => {
     const timeOptions: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
     const startTimeStr = new Date(evt.startDateTime).toLocaleTimeString("en-US", timeOptions);
     const endTimeStr = evt.endDateTime 
       ? ` - ${new Date(evt.endDateTime).toLocaleTimeString("en-US", timeOptions)}`
       : "";
+
+    // Compute ticket pricing and real inventory
+    const activeTickets = evt.tickets || [];
+    let calculatedRemaining = evt.maxCapacity !== null ? evt.maxCapacity : 100;
+    let lowestPrice = evt.price || 0;
+
+    if (activeTickets.length > 0) {
+      calculatedRemaining = activeTickets.reduce(
+        (sum: number, t: any) => sum + Math.max(0, t.quantityTotal - t.quantitySold),
+        0
+      );
+      lowestPrice = Math.min(...activeTickets.map((t: any) => t.price));
+    }
+
+    const isSoldOut = evt.eventStatus === "CANCELLED" || (activeTickets.length > 0 && calculatedRemaining <= 0);
 
     return {
       id: evt.id,
@@ -153,29 +144,22 @@ export default async function EventListPage({ params, searchParams }: PageProps)
       timeString: `${startTimeStr}${endTimeStr}`,
       location: evt.location || "Online / Virtual Venue",
       category: evt.category || evt.productCategory?.name || "General",
-      finalPrice: evt.price || 0,
-      isPaid: evt.isPaid,
-      ticketsAvailable: evt.maxCapacity !== null ? evt.maxCapacity : 100, // Safe default boundary limit
-      isSoldOut: evt.eventStatus === "CANCELLED",
+      finalPrice: lowestPrice,
+      isPaid: lowestPrice > 0,
+      ticketsAvailable: calculatedRemaining,
+      isSoldOut,
+      tickets: activeTickets,
     };
   });
 
-  // Assign mapped data variables cleanly or drop back onto fallbacks
-  const events = normalizedEvents.length > 0 ? normalizedEvents : mockEvents;
+  const events = normalizedEvents;
 
-  // Process operational dynamic dropdown labels matching requirements
-  const cats = categories.length
-    ? categories.map((c) => ({
-        id: c.id,
-        displayName: c.displayName,
-        categoryId: c.categoryId,
-        category: c.category,
-      }))
-    : [
-        { id: "cat_1", displayName: "Workshops", categoryId: "cat_1", category: "Education" },
-        { id: "cat_2", displayName: "Conferences", categoryId: "cat_2", category: "Networking" },
-        { id: "cat_3", displayName: "Academic Meetings", categoryId: "cat_3", category: "Institutional" },
-      ];
+  const cats = categories.map((c) => ({
+    id: c.id,
+    displayName: c.displayName,
+    categoryId: c.categoryId,
+    category: c.category,
+  }));
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 p-4 sm:p-8 pt-24">

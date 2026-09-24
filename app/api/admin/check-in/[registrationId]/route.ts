@@ -28,48 +28,29 @@ export const PUT = withApiHandler(
     const body = await req.json().catch(() => null);
     const { status } = body || {}; // Expected: "REGISTERED" or "ATTENDED"
 
-    if (!status || !["REGISTERED", "ATTENDED"].includes(status)) {
+    const isCheckedIn = status === "ATTENDED" || status === "CHECKED_IN";
+
+    if (attendee.checkInStatus === "CANCELLED") {
       return formatResponse(
         false,
         null,
-        "Invalid clearance verification state provided. Must be REGISTERED or ATTENDED.",
-        400,
+        "This ticket has been cancelled or refunded and cannot be checked in.",
+        400
       );
     }
-
-    // Tenant Isolation: Verify attendee exists and belongs to the company's event
-    const attendee = await prisma.eventTicketAttendee.findUnique({
-      where: { id: registrationId },
-      include: {
-        event: {
-          select: { companyId: true },
-        },
-      },
-    });
-
-    if (!attendee || attendee.event?.companyId !== companyId) {
-      return formatResponse(
-        false,
-        null,
-        "Attendee registration not found in this company",
-        404,
-      );
-    }
-
-    const isCheckedIn = status === "ATTENDED";
 
     // Update attendee check-in state
     const updatedRecord = await prisma.eventTicketAttendee.update({
       where: { id: registrationId },
       data: {
-        checkInStatus: isCheckedIn ? "ATTENDED" : "PENDING",
+        checkInStatus: isCheckedIn ? "CHECKED_IN" : "PENDING",
         checkedInAt: isCheckedIn ? new Date() : null,
       },
     });
 
     const message = isCheckedIn
       ? `Successfully checked in ${updatedRecord.fullName}. Welcome!`
-      : `Reverted access tracking for ${updatedRecord.fullName}.`;
+      : `Reverted check-in tracking for ${updatedRecord.fullName}.`;
 
     return NextResponse.json({
       success: true,
@@ -79,8 +60,12 @@ export const PUT = withApiHandler(
         fullName: updatedRecord.fullName,
         checkedIn: isCheckedIn,
         checkInStatus: updatedRecord.checkInStatus,
+        checkedInAt: updatedRecord.checkedInAt,
+        checkedInBy: updatedRecord.checkedInBy,
       },
     });
   },
   { requireAuth: true, requireTenant: true },
 );
+
+export const PATCH = PUT;

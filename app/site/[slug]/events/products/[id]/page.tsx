@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     cacheKey,
     () => prisma.event.findFirst({
       where: { id: targetId, companyId: company.id },
-      select: { id: true, title: true, description: true, bannerImage: true },
+      select: { id: true, title: true, description: true, imageUrl: true },
     }),
     300
   );
@@ -56,7 +56,13 @@ export default async function EventDetailPage({ params }: PageProps) {
     eventCacheKey,
     () => prisma.event.findFirst({
       where: { id: targetId, companyId: company.id },
-      include: { productCategory: true },
+      include: {
+        productCategory: true,
+        tickets: {
+          where: { isActive: true },
+          orderBy: { price: 'asc' },
+        },
+      },
     }),
     300
   );

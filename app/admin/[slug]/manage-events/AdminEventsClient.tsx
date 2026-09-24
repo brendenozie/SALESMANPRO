@@ -66,8 +66,7 @@ const modalVariants = {
 // --- Main AdminEvents Component ---
 export default function AdminEventsClient({ slug, allOrganizers, allEvents }: AdminEventsProps) {
 
-  // const [events, setEvents] = useState<Event[]>([]);
-
+  const [events, setEvents] = useState<IEvent[]>(allEvents || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<IEvent | null>(null); // For edit/add
@@ -80,7 +79,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
   const debouncedSearchTerm = useCallback(
     debounce((nextValue: string) => {
       setSearchTerm(nextValue);
-    }, 500),
+    }, 400),
     []
   );
 
@@ -96,38 +95,45 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
     }
 
     setIsLoading(true);
-    setError(null); // Clear errors before fetching
-    setSuccessMessage(null); // Clear success messages before fetching
+    setError(null);
     try {
-      const query = new URLSearchParams({
-        // search: searchTerm,
+      const params = new URLSearchParams({
         companyId: slug,
-      }).toString();
+      });
+      if (searchTerm.trim()) {
+        params.append("search", searchTerm.trim());
+      }
 
-      const response = await fetch(`${apiBaseUrl}/admin/events?${query}`);
+      const response = await fetch(`${apiBaseUrl}/admin/events?${params.toString()}`);
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const data = (await response.json()).data;
-
-      // console.log(data);
-
-      // setEvents(data);
-
+      const resData = await response.json();
+      const eventList = Array.isArray(resData.data) ? resData.data : (resData.data?.events || []);
+      setEvents(eventList);
     } catch (err: any) {
       setError(err.message || "Failed to fetch events.");
-      // console.error("Events fetch error:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [slug, searchTerm]); // Dependencies for useCallback
+  }, [slug, searchTerm]);
 
-  // useEffect(() => {
-  //   fetchEvents();
-  // }, [fetchEvents]); // Re-fetch when fetchEvents changes (due to slug/searchTerm)
+  // Synchronize initial prop
+  useEffect(() => {
+    if (allEvents && allEvents.length > 0 && events.length === 0 && !searchTerm) {
+      setEvents(allEvents);
+    }
+  }, [allEvents]);
+
+  // Re-fetch when search term changes
+  useEffect(() => {
+    if (searchTerm) {
+      fetchEvents();
+    }
+  }, [searchTerm, fetchEvents]);
 
   // Clear messages after a few seconds
   useEffect(() => {
@@ -317,7 +323,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
                   </tr>
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {!allEvents || allEvents.length === 0 ? (
+                  {!events || events.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 whitespace-nowrap text-center text-gray-400 italic">
                         <div className="flex flex-col items-center justify-center">
@@ -327,8 +333,8 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
                         </div>
                       </td>
                     </tr>
-                  ) : (allEvents.length > 0 &&
-                    allEvents.map((event, index) => (
+                  ) : (
+                    events.map((event, index) => (
                       <motion.tr
                         key={event.id}
                         variants={itemVariants}

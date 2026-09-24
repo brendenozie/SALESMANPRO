@@ -144,7 +144,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
     contactEmail: '',
     contactPhone: '',
     companyId: companyId, // Initialize with passed companyId
-    organizerId: "organizerId", // Initialize with passed organizerId
+    organizerId: allOrganizers?.[0]?.id || "", // Initialize with resolved organizerId
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -157,6 +157,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
         // endDateTime: formatDateForInput(event.endDateTime),
         startDateTime: event.startDateTime ? new Date(event.startDateTime) : undefined,
         endDateTime: event.endDateTime ? new Date(event.endDateTime) : null,
+        organizerId: event.organizerId || allOrganizers?.[0]?.id || "",
       });
     } else {
       // Reset form if no event is passed (e.g., for creating a new event)
@@ -189,11 +190,11 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
         contactEmail: '',
         contactPhone: '',
         companyId: companyId,
-        organizerId: "organizerId",
+        organizerId: allOrganizers?.[0]?.id || "",
       });
     }
     setValidationErrors({}); // Clear errors on event change
-  }, [event, companyId, ]);
+  }, [event, companyId, allOrganizers]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;

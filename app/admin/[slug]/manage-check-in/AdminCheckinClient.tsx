@@ -150,6 +150,53 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
     }
   };
 
+  const [scanCode, setScanCode] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleScanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scanCode.trim()) return;
+
+    setIsScanning(true);
+    try {
+      const res = await fetch("/api/admin/check-in/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: scanCode.trim(),
+          eventId: selectedEventId || undefined,
+          companyId: adminSlug,
+          autoCheckIn: true,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        setMessage({
+          type: "error",
+          text: result.message || "Invalid ticket code or check-in error.",
+        });
+      } else {
+        setMessage({
+          type: "success",
+          text: result.message || "Ticket checked in successfully!",
+        });
+        setScanCode("");
+        if (result.data?.attendee?.id) {
+          setAttendees((prev) =>
+            prev.map((a) =>
+              a.id === result.data.attendee.id ? { ...a, checkedIn: true } : a
+            )
+          );
+        }
+        fetchAttendeesForEvent();
+      }
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message || "Scan verification error." });
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-12 font-sans relative overflow-hidden">
       {/* Dynamic Aesthetic Blur Backdrops */}
@@ -170,6 +217,40 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
           <p className="mt-2 text-slate-400 text-sm sm:text-base">
             Live pass matching, digital badge scanning reconciliation, and entry log operations workspace.
           </p>
+        </div>
+
+        {/* Instant QR / Ticket Barcode Scanner */}
+        <div className="bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/50 backdrop-blur-xl border border-indigo-500/30 p-5 rounded-2xl shadow-xl">
+          <form onSubmit={handleScanSubmit} className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="relative flex-grow w-full">
+              <input
+                type="text"
+                value={scanCode}
+                onChange={(e) => setScanCode(e.target.value)}
+                placeholder="Scan QR Code or Type Ticket Pass Code (e.g. 8f24a1...)..."
+                className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-950 border border-indigo-500/40 text-white font-mono text-sm focus:outline-none focus:border-indigo-400 placeholder:text-slate-500 transition"
+                autoFocus
+              />
+              <QrCodeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400 animate-pulse" />
+            </div>
+            <button
+              type="submit"
+              disabled={isScanning || !scanCode.trim()}
+              className="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              {isScanning ? (
+                <>
+                  <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <CheckCircleIcon className="w-5 h-5" />
+                  Scan & Check In
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
         {/* Global Dynamic Message/Alert Bar */}
@@ -223,7 +304,7 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
           <div className="relative">
             <input
               type="text"
-              placeholder="Query ticket holder name or verified profile email email..."
+              placeholder="Query ticket holder name or verified profile email..."
               className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:outline-none focus:border-indigo-500 text-sm transition disabled:opacity-40 disabled:cursor-not-allowed"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

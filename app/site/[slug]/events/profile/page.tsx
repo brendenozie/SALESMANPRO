@@ -161,15 +161,22 @@ export default function UserDashboard() {
         
         (eventsData.items || []).forEach((event: any) => {
           const eventDate = new Date(event.startDate);
-          const formattedEvent: EventItem = {
+          const formattedEvent: any = {
             id: event.id,
+            eventId: event.eventId,
             title: event.title,
             date: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             time: eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
             location: event.location,
             image: event.imageUrl || 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-            category: event.type,
+            category: event.ticketName || event.category || 'General Admission',
             rating: 5,
+            ticketCode: event.ticketCode,
+            ticketName: event.ticketName,
+            attendeeName: event.attendeeName,
+            checkInStatus: event.checkInStatus,
+            qrCodeUrl: event.qrCodeUrl,
+            paymentStatus: event.paymentStatus,
           };
           
           if (eventDate >= now) {

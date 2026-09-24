@@ -4,11 +4,11 @@ import EventCheckoutClient from './EventCheckoutClient';
 import prisma from '@/server/db/prismadb';
 
 interface PageProps {
-  params: { slug: string; eventId: string };
+  params: Promise<{ slug: string; eventId: string }>;
 }
 
 export default async function EventCheckoutPage({ params }: PageProps) {
-  const { slug, eventId } = params;
+  const { slug, eventId } = await params;
 
   const { raw } = await loadStore(slug);
   const paymentMethods = getEnabledPaymentMethods(raw.PaymentSettings);
@@ -36,6 +36,7 @@ export default async function EventCheckoutPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-gray-50">
       <EventCheckoutClient
+        slug={slug}
         event={event as any}
         tickets={event.tickets as any}
         paymentMethods={paymentMethods}

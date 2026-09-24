@@ -102,10 +102,15 @@ async function getTickets(request: Request, { params }: Params) {
 
   const { searchParams } = new URL(request.url);
 
-  const companyId = searchParams.get("companyId");
-
-  if (!companyId) {
-    return formatResponse(false, null, "companyId is required", 400);
+  let resolvedCompanyId = companyId;
+  if (!resolvedCompanyId) {
+    const parentEvent = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { companyId: true },
+    });
+    if (parentEvent?.companyId) {
+      resolvedCompanyId = parentEvent.companyId;
+    }
   }
 
   const cacheKey = `admin:event:tickets:${eventId}`;
@@ -118,11 +123,13 @@ async function getTickets(request: Request, { params }: Params) {
     }
   } catch (e) {}
 
+  const whereClause: any = { eventId };
+  if (resolvedCompanyId) {
+    whereClause.companyId = resolvedCompanyId;
+  }
+
   const tickets = await prisma.eventTicket.findMany({
-    where: {
-      companyId,
-      eventId,
-    },
+    where: whereClause,
 
     include: {
       event: {
@@ -192,12 +199,27 @@ async function createTicket(request: Request, { params }: Params) {
   } = body;
 
   // =========================================================
-  // VALIDATION
+  // VALIDATE EVENT
   // =========================================================
 
-  if (!companyId) {
+  const existingEvent = await prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+  });
+
+  if (!existingEvent) {
+    return formatResponse(false, null, "Event not found", 404);
+  }
+
+  const effectiveCompanyId = companyId || existingEvent.companyId;
+  if (!effectiveCompanyId) {
     return formatResponse(false, null, "companyId is required", 400);
   }
+
+  // =========================================================
+  // VALIDATION
+  // =========================================================
 
   if (!name) {
     return formatResponse(false, null, "Ticket name is required", 400);
@@ -227,20 +249,6 @@ async function createTicket(request: Request, { params }: Params) {
 
   if (ticketType !== "FREE" && (typeof price !== "number" || price < 0)) {
     return formatResponse(false, null, "Valid ticket price is required", 400);
-  }
-
-  // =========================================================
-  // VALIDATE EVENT
-  // =========================================================
-
-  const existingEvent = await prisma.event.findUnique({
-    where: {
-      id: eventId,
-    },
-  });
-
-  if (!existingEvent) {
-    return formatResponse(false, null, "Event not found", 404);
   }
 
   // =========================================================
@@ -285,7 +293,7 @@ async function createTicket(request: Request, { params }: Params) {
 
   const newTicket = await prisma.eventTicket.create({
     data: {
-      companyId,
+      companyId: effectiveCompanyId,
 
       eventId,
 

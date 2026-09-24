@@ -56,9 +56,8 @@ export default async function AdminCheckinPage({ params }: Props) {
 
     const data = await response.json();
 
-    console.log("Fetched events for check-in management:", data);
-
-    initialEvents = (data.data?.events || []) as Event[];
+    const rawList = Array.isArray(data.data) ? data.data : (data.data?.events || data.events || []);
+    initialEvents = rawList as Event[];
   } catch (err: any) {
     error = "Failed to synchronize upcoming scheduled records with the entrance workspace.";
   }

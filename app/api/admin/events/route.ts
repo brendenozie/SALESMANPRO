@@ -1,9 +1,7 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 // Define valid Enum values (must match your Prisma enums)
 const VALID_EVENT_TYPES = [
@@ -37,12 +35,22 @@ const VALID_EVENT_AUDIENCES = [
 
 // Helper to transform the Prisma event object into the desired API structure
 function transformEventResponse(event: any) {
+  const ticketsCount = event.tickets?.length || 0;
+  const ticketsSold = event.tickets?.reduce(
+    (acc: number, t: any) => acc + (t.quantitySold || 0),
+    0,
+  ) || 0;
+  const totalCapacity = event.tickets?.reduce(
+    (acc: number, t: any) => acc + (t.quantityTotal || 0),
+    0,
+  ) || event.maxCapacity || 0;
+
   return {
     id: event.id,
     title: event.title,
     summary: event.summary,
     description: event.description,
-    startDateTime: event.startDateTime.toISOString(),
+    startDateTime: event.startDateTime ? event.startDateTime.toISOString() : null,
     endDateTime: event.endDateTime?.toISOString() || null,
     location: event.location,
     onlineMeetingLink: event.onlineMeetingLink,
@@ -56,12 +64,12 @@ function transformEventResponse(event: any) {
     companyId: event.companyId,
     companyName: event.company?.name || "N/A",
     audience: event.audience,
-    targetAcademicLevelIds: event.targetAcademicLevelIds,
-    targetCourseIds: event.targetCourseIds,
-    targetEducatorIds: event.targetEducatorIds,
-    targetStudentIds: event.targetStudentIds,
-    targetDepartmentIds: event.targetDepartmentIds,
-    targetParentIds: event.targetParentIds,
+    targetAcademicLevelIds: event.targetAcademicLevelIds || [],
+    targetCourseIds: event.targetCourseIds || [],
+    targetEducatorIds: event.targetEducatorIds || [],
+    targetStudentIds: event.targetStudentIds || [],
+    targetDepartmentIds: event.targetDepartmentIds || [],
+    targetParentIds: event.targetParentIds || [],
     isRegistrationRequired: event.isRegistrationRequired,
     maxCapacity: event.maxCapacity,
     isPaid: event.isPaid,
@@ -69,30 +77,27 @@ function transformEventResponse(event: any) {
     contactPerson: event.contactPerson,
     contactEmail: event.contactEmail,
     contactPhone: event.contactPhone,
+    tickets: event.tickets || [],
+    ticketsCount,
+    ticketsSold,
+    totalCapacity,
+    createdAt: event.createdAt?.toISOString() || null,
+    updatedAt: event.updatedAt?.toISOString() || null,
   };
 }
 
 // =======================================================================
-// GET /api/events
+// GET /api/admin/events
 // Fetches events with optional filters.
 // =======================================================================
-async function getEvents(request: Request) {
-  // Authentication check
-
+async function getEvents(request: Request, context: any) {
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+  const companyId = searchParams.get("companyId") || context.companyId;
   const eventType = searchParams.get("eventType");
   const eventStatus = searchParams.get("eventStatus");
   const audience = searchParams.get("audience");
   const organizerId = searchParams.get("organizerId");
-  const startAfter = searchParams.get("startAfter");
-  const startBefore = searchParams.get("startBefore");
-  const endAfter = searchParams.get("endAfter");
-  const endBefore = searchParams.get("endBefore");
-  const isRegistrationRequired = searchParams.get("isRegistrationRequired");
-  const isPaid = searchParams.get("isPaid");
-
-  const whereClause: any = {};
+  const search = searchParams.get("search")?.trim();
 
   if (!companyId) {
     return formatResponse(
@@ -103,110 +108,39 @@ async function getEvents(request: Request) {
     );
   }
 
-  whereClause.companyId = companyId;
+  const whereClause: any = { companyId };
 
-  // if (eventType) {
-  //   const upperEventType = eventType.toUpperCase();
-  //   if (!VALID_EVENT_TYPES.includes(upperEventType)) {
-  //     return formatResponse(
-  //       false,
-  //       null,
-  //       `Invalid event type: ${eventType}. Must be one of ${VALID_EVENT_TYPES.join(", ")}.`,
-  //       400,
-  //     );
-  //   }
-  //   whereClause.eventType = upperEventType;
-  // }
+  if (eventType && VALID_EVENT_TYPES.includes(eventType.toUpperCase())) {
+    whereClause.eventType = eventType.toUpperCase();
+  }
 
-  // if (eventStatus) {
-  //   const upperEventStatus = eventStatus.toUpperCase();
-  //   if (!VALID_EVENT_STATUSES.includes(upperEventStatus)) {
-  //     return formatResponse(
-  //       false,
-  //       null,
-  //       `Invalid event status: ${eventStatus}. Must be one of ${VALID_EVENT_STATUSES.join(", ")}.`,
-  //       400,
-  //     );
-  //   }
-  //   whereClause.eventStatus = upperEventStatus;
-  // }
-  // if (audience) {
-  //   const upperAudience = audience.toUpperCase();
-  //   if (!VALID_EVENT_AUDIENCES.includes(upperAudience)) {
-  //     return formatResponse(
-  //       false,
-  //       null,
-  //       `Invalid event audience: ${audience}. Must be one of ${VALID_EVENT_AUDIENCES.join(", ")}.`,
-  //       400,
-  //     );
-  //   }
-  //   whereClause.audience = upperAudience;
-  // }
+  if (eventStatus && VALID_EVENT_STATUSES.includes(eventStatus.toUpperCase())) {
+    whereClause.eventStatus = eventStatus.toUpperCase();
+  }
 
-  // if (organizerId) {
-  //   whereClause.organizerId = organizerId;
-  // }
+  if (audience && VALID_EVENT_AUDIENCES.includes(audience.toUpperCase())) {
+    whereClause.audience = audience.toUpperCase();
+  }
 
-  // if (startAfter || startBefore) {
-  //   whereClause.startDateTime = {};
-  //   if (startAfter) {
-  //     const date = new Date(startAfter);
-  //     if (isNaN(date.getTime()))
-  //       return formatResponse(
-  //         false,
-  //         null,
-  //         "Invalid startAfter date format.",
-  //         400,
-  //       );
-  //     whereClause.startDateTime.gte = date;
-  //   }
-  //   if (startBefore) {
-  //     const date = new Date(startBefore);
-  //     if (isNaN(date.getTime()))
-  //       return formatResponse(
-  //         false,
-  //         null,
-  //         "Invalid startBefore date format.",
-  //         400,
-  //       );
-  //     whereClause.startDateTime.lte = date;
-  //   }
-  // }
+  if (organizerId) {
+    whereClause.organizerId = organizerId;
+  }
 
-  // if (endAfter || endBefore) {
-  //   whereClause.endDateTime = {};
-  //   if (endAfter) {
-  //     const date = new Date(endAfter);
-  //     if (isNaN(date.getTime()))
-  //       return formatResponse(
-  //         false,
-  //         null,
-  //         "Invalid endAfter date format.",
-  //         400,
-  //       );
-  //     whereClause.endDateTime.gte = date;
-  //   }
-  //   if (endBefore) {
-  //     const date = new Date(endBefore);
-  //     if (isNaN(date.getTime()))
-  //       return formatResponse(
-  //         false,
-  //         null,
-  //         "Invalid endBefore date format.",
-  //         400,
-  //       );
-  //     whereClause.endDateTime.lte = date;
-  //   }
-  // }
+  if (search) {
+    whereClause.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { summary: { contains: search, mode: "insensitive" } },
+      { location: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
-  // if (isRegistrationRequired !== undefined) {
-  //   whereClause.isRegistrationRequired = isRegistrationRequired === "true";
-  // }
-
-  // if (isPaid !== undefined) {
-  //   whereClause.isPaid = isPaid === "true";
-  // }
-  const cacheKey = buildTenantCacheKey(companyId, "events", { eventType, eventStatus, audience, organizerId });
+  const cacheKey = buildTenantCacheKey(companyId, "events", {
+    eventType,
+    eventStatus,
+    audience,
+    organizerId,
+    search,
+  });
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -222,6 +156,7 @@ async function getEvents(request: Request) {
       company: {
         select: { id: true, name: true },
       },
+      tickets: true,
     },
     orderBy: {
       startDateTime: "asc",
@@ -240,29 +175,22 @@ async function getEvents(request: Request) {
 }
 
 // =======================================================================
-// POST /api/events
+// POST /api/admin/events
 // Creates a new Event.
 // =======================================================================
-async function createEvent(request: Request) {
-  // Authentication check
-  // const authResult = await verifyAuth(request);
-  // if (!authResult.success) {
-  //   return formatResponse(false, null, authResult.message, 401);
-  // }
-
-  const body = await request.json();
+async function createEvent(request: Request, context: any) {
+  const body = await request.json().catch(() => ({}));
   const {
-    companyId,
+    companyId: rawCompanyId,
     title,
     startDateTime,
     endDateTime,
-    eventType,
-    eventStatus,
-    organizerId,
-    audience,
-    isPaid,
+    eventType = "GENERAL",
+    eventStatus = "SCHEDULED",
+    organizerId: rawOrganizerId,
+    audience = "ALL",
+    isPaid = false,
     price,
-    // Optional fields
     summary,
     description,
     location,
@@ -275,89 +203,21 @@ async function createEvent(request: Request) {
     targetStudentIds = [],
     targetDepartmentIds = [],
     targetParentIds = [],
-    isRegistrationRequired,
+    isRegistrationRequired = false,
     maxCapacity,
     contactPerson,
     contactEmail,
     contactPhone,
   } = body;
 
+  const companyId = rawCompanyId || context.companyId;
+
   // Basic validation
-  if (
-    !companyId ||
-    !title ||
-    !startDateTime ||
-    !eventType ||
-    !eventStatus ||
-    !organizerId ||
-    !audience
-  ) {
+  if (!companyId || !title || !startDateTime) {
     return formatResponse(
       false,
       null,
-      "Company ID, Title, Start Date/Time, Event Type, Event Status, Organizer ID, and Audience are required to create an event.",
-      400,
-    );
-  }
-
-  // Validate Enums
-  if (!VALID_EVENT_TYPES.includes(eventType)) {
-    return formatResponse(
-      false,
-      null,
-      `Invalid event type: ${eventType}. Must be one of ${VALID_EVENT_TYPES.join(", ")}.`,
-      400,
-    );
-  }
-  if (!VALID_EVENT_STATUSES.includes(eventStatus)) {
-    return formatResponse(
-      false,
-      null,
-      `Invalid event status: ${eventStatus}. Must be one of ${VALID_EVENT_STATUSES.join(", ")}.`,
-      400,
-    );
-  }
-  if (!VALID_EVENT_AUDIENCES.includes(audience)) {
-    return formatResponse(
-      false,
-      null,
-      `Invalid audience: ${audience}. Must be one of ${VALID_EVENT_AUDIENCES.join(", ")}.`,
-      400,
-    );
-  }
-
-  // Validate organizerId exists (Can be User, SalesAgent, or Staff)
-  let finalOrganizerUserId: string | undefined;
-
-  const directUser = await prisma.user.findUnique({
-    where: { id: organizerId },
-    select: { id: true },
-  });
-  if (directUser) {
-    finalOrganizerUserId = directUser.id;
-  } else {
-    const existingOrganizer = await prisma.salesAgent.findUnique({
-      where: { id: organizerId },
-      include: { user: { select: { id: true } } },
-    });
-    if (existingOrganizer?.user?.id) {
-      finalOrganizerUserId = existingOrganizer.user.id;
-    } else {
-      const staffMember = await prisma.staff.findUnique({
-        where: { id: organizerId },
-        select: { userId: true },
-      });
-      if (staffMember?.userId) {
-        finalOrganizerUserId = staffMember.userId;
-      }
-    }
-  }
-
-  if (!finalOrganizerUserId) {
-    return formatResponse(
-      false,
-      null,
-      "Provided organizerId does not match a valid User, Staff, or Sales Agent.",
+      "Company ID, Title, and Start Date/Time are required to create an event.",
       400,
     );
   }
@@ -365,12 +225,81 @@ async function createEvent(request: Request) {
   // Validate companyId exists
   const existingCompany = await prisma.company.findUnique({
     where: { id: companyId },
+    select: { id: true, userId: true },
   });
   if (!existingCompany) {
     return formatResponse(
       false,
       null,
       "Provided companyId does not exist.",
+      400,
+    );
+  }
+
+  // Validate Enums safely with fallbacks
+  const finalEventType = VALID_EVENT_TYPES.includes(eventType)
+    ? eventType
+    : "GENERAL";
+  const finalEventStatus = VALID_EVENT_STATUSES.includes(eventStatus)
+    ? eventStatus
+    : "SCHEDULED";
+  const finalAudience = VALID_EVENT_AUDIENCES.includes(audience)
+    ? audience
+    : "ALL";
+
+  // Validate organizerId exists with robust fallback
+  let finalOrganizerUserId: string | undefined;
+
+  if (rawOrganizerId && rawOrganizerId !== "organizerId") {
+    const directUser = await prisma.user.findUnique({
+      where: { id: rawOrganizerId },
+      select: { id: true },
+    });
+    if (directUser) {
+      finalOrganizerUserId = directUser.id;
+    } else {
+      const existingOrganizer = await prisma.salesAgent.findUnique({
+        where: { id: rawOrganizerId },
+        include: { user: { select: { id: true } } },
+      });
+      if (existingOrganizer?.user?.id) {
+        finalOrganizerUserId = existingOrganizer.user.id;
+      } else {
+        const staffMember = await prisma.staff.findUnique({
+          where: { id: rawOrganizerId },
+          select: { userId: true },
+        });
+        if (staffMember?.userId) {
+          finalOrganizerUserId = staffMember.userId;
+        }
+      }
+    }
+  }
+
+  // Fallback 1: Authenticated session user
+  if (!finalOrganizerUserId && context.user?.id) {
+    finalOrganizerUserId = context.user.id;
+  }
+
+  // Fallback 2: Company owner userId
+  if (!finalOrganizerUserId && existingCompany.userId) {
+    finalOrganizerUserId = existingCompany.userId;
+  }
+
+  // Fallback 3: First admin user of company
+  if (!finalOrganizerUserId) {
+    const fallbackUser = await prisma.user.findFirst({
+      where: { companyId },
+      select: { id: true },
+    });
+    finalOrganizerUserId = fallbackUser?.id;
+  }
+
+  if (!finalOrganizerUserId) {
+    return formatResponse(
+      false,
+      null,
+      "Unable to identify a valid Organizer/User for this event.",
       400,
     );
   }
@@ -400,7 +329,7 @@ async function createEvent(request: Request) {
 
   // Handle price if it's a paid event
   let finalPrice: number | null = null;
-  const isEventPaid = isPaid === true;
+  const isEventPaid = Boolean(isPaid);
   if (isEventPaid) {
     if (typeof price !== "number" || price < 0) {
       return formatResponse(
@@ -424,10 +353,10 @@ async function createEvent(request: Request) {
     onlineMeetingLink,
     imageUrl,
     videoUrl,
-    eventType,
-    eventStatus,
+    eventType: finalEventType,
+    eventStatus: finalEventStatus,
     organizerId: finalOrganizerUserId,
-    audience,
+    audience: finalAudience,
     targetAcademicLevelIds: Array.isArray(targetAcademicLevelIds)
       ? targetAcademicLevelIds
       : [],
@@ -440,7 +369,7 @@ async function createEvent(request: Request) {
       ? targetDepartmentIds
       : [],
     targetParentIds: Array.isArray(targetParentIds) ? targetParentIds : [],
-    isRegistrationRequired: isRegistrationRequired === true,
+    isRegistrationRequired: Boolean(isRegistrationRequired),
     maxCapacity:
       typeof maxCapacity === "number" && maxCapacity > 0 ? maxCapacity : null,
     isPaid: isEventPaid,
@@ -455,6 +384,7 @@ async function createEvent(request: Request) {
     include: {
       organizer: { select: { id: true, name: true, email: true } },
       company: { select: { id: true, name: true } },
+      tickets: true,
     },
   });
 
@@ -464,9 +394,9 @@ async function createEvent(request: Request) {
     await cacheDel(`tenant:${companyId}:events:*`);
     await cacheDel(`admin:events:*`);
   } catch (e) {}
+
   return formatResponse(true, responseData, "Event created successfully", 201);
 }
 
-// Export the handlers wrapped in the `withApiHandler` utility.
 export const GET = withApiHandler(getEvents);
 export const POST = withApiHandler(createEvent);

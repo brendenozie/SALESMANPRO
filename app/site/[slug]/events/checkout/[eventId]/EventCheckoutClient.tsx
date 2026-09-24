@@ -51,6 +51,7 @@ interface PublicPaymentMethod {
 }
 
 interface EventCheckoutClientProps {
+  slug?: string;
   event: Event;
   tickets: EventTicket[];
   paymentMethods: PublicPaymentMethod[];
@@ -80,6 +81,7 @@ const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: stri
 };
 
 export default function EventCheckoutClient({
+  slug,
   event,
   tickets: availableTickets,
   paymentMethods,
@@ -274,7 +276,9 @@ export default function EventCheckoutClient({
         return;
       }
 
-      router.push(`/`);
+      const purchaseId = data.purchases?.[0]?.id || data.data?.purchases?.[0]?.id || '';
+      const targetSlug = slug || 'event-ticketing';
+      router.push(`/site/${targetSlug}/events/profile?success=1${purchaseId ? `&orderId=${purchaseId}` : ''}`);
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {

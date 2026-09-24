@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
 interface RouteParams {
-  params: Promise<{ slug: string; eventId: string }>;
+  params: Promise<{ id?: string; eventId?: string }>;
 }
 
 export async function GET(req: Request, { params }: RouteParams) {
   try {
-    const { eventId } = await params;
+    const resolvedParams = await params;
+    const eventId = resolvedParams.id || resolvedParams.eventId;
+
+    if (!eventId) {
+      return NextResponse.json({ message: "Event ID is required" }, { status: 400 });
+    }
 
     // Parse runtime query strings
     const { searchParams } = new URL(req.url);
@@ -22,6 +27,7 @@ export async function GET(req: Request, { params }: RouteParams) {
       whereClause.OR = [
         { fullName: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
+        { ticketCode: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -43,8 +49,11 @@ export async function GET(req: Request, { params }: RouteParams) {
       id: reg.id, // registrationId mapping
       name: reg.fullName,
       email: reg.email,
+      ticketCode: reg.ticketCode,
       ticketType: reg.ticket?.name || "General Admission",
-      // checkedIn: reg.checkInStatus === "ATTENDED", // Truthy check matching 'ATTENDED' status
+      checkedIn: reg.checkInStatus === "CHECKED_IN",
+      checkedInAt: reg.checkedInAt?.toISOString() || null,
+      checkedInBy: reg.checkedInBy || null,
     }));
 
     return NextResponse.json(formattedAttendees, { status: 200 });

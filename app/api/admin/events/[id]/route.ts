@@ -1,19 +1,40 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-
-
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// Define valid Enum values (must match your Prisma enums)
-const VALID_EVENT_TYPES = ["GENERAL", "ACADEMIC", "SPORTS", "CULTURAL", "MEETING", "WORKSHOP", "ORIENTATION", "FUNDRAISER", "OTHER"];
-const VALID_EVENT_STATUSES = ["SCHEDULED", "POSTPONED", "CANCELLED", "COMPLETED"];
-const VALID_EVENT_AUDIENCES = ["ALL", "ACADEMIC_LEVEL", "COURSE", "EDUCATOR", "STUDENT", "DEPARTMENT", "STAFF", "PARENT"];
+// Define valid Enum values (must match Prisma enums)
+const VALID_EVENT_TYPES = [
+  "GENERAL",
+  "ACADEMIC",
+  "SPORTS",
+  "CULTURAL",
+  "MEETING",
+  "WORKSHOP",
+  "ORIENTATION",
+  "FUNDRAISER",
+  "OTHER",
+];
+const VALID_EVENT_STATUSES = [
+  "DRAFT",
+  "SCHEDULED",
+  "POSTPONED",
+  "CANCELLED",
+  "COMPLETED",
+];
+const VALID_EVENT_AUDIENCES = [
+  "ALL",
+  "ACADEMIC_LEVEL",
+  "COURSE",
+  "EDUCATOR",
+  "STUDENT",
+  "DEPARTMENT",
+  "STAFF",
+  "PARENT",
+];
 
-// Define the type for the dynamic segment 'id' from the URL
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }> | { id: string };
 }
 
 // Helper to transform the Prisma event object into the desired API structure
@@ -23,7 +44,7 @@ function transformEventResponse(event: any) {
     title: event.title,
     summary: event.summary,
     description: event.description,
-    startDateTime: event.startDateTime.toISOString(),
+    startDateTime: event.startDateTime?.toISOString() || null,
     endDateTime: event.endDateTime?.toISOString() || null,
     location: event.location,
     onlineMeetingLink: event.onlineMeetingLink,
@@ -32,17 +53,17 @@ function transformEventResponse(event: any) {
     eventType: event.eventType,
     eventStatus: event.eventStatus,
     organizerId: event.organizerId,
-    organizerName: event.organizer?.name || 'N/A',
-    organizerEmail: event.organizer?.email || 'N/A',
+    organizerName: event.organizer?.name || "N/A",
+    organizerEmail: event.organizer?.email || "N/A",
     companyId: event.companyId,
-    companyName: event.company?.name || 'N/A',
+    companyName: event.company?.name || "N/A",
     audience: event.audience,
-    targetAcademicLevelIds: event.targetAcademicLevelIds,
-    targetCourseIds: event.targetCourseIds,
-    targetEducatorIds: event.targetEducatorIds,
-    targetStudentIds: event.targetStudentIds,
-    targetDepartmentIds: event.targetDepartmentIds,
-    targetParentIds: event.targetParentIds,
+    targetAcademicLevelIds: event.targetAcademicLevelIds || [],
+    targetCourseIds: event.targetCourseIds || [],
+    targetEducatorIds: event.targetEducatorIds || [],
+    targetStudentIds: event.targetStudentIds || [],
+    targetDepartmentIds: event.targetDepartmentIds || [],
+    targetParentIds: event.targetParentIds || [],
     isRegistrationRequired: event.isRegistrationRequired,
     maxCapacity: event.maxCapacity,
     isPaid: event.isPaid,
@@ -50,18 +71,23 @@ function transformEventResponse(event: any) {
     contactPerson: event.contactPerson,
     contactEmail: event.contactEmail,
     contactPhone: event.contactPhone,
-    createdAt: event.createdAt.toISOString(),
-    updatedAt: event.updatedAt.toISOString(),
+    tickets: event.tickets || [],
+    createdAt: event.createdAt?.toISOString() || null,
+    updatedAt: event.updatedAt?.toISOString() || null,
   };
 }
 
 // =======================================================================
-// GET /api/events/[id]
+// GET /api/admin/events/[id]
 // Fetches a single Event by its ID.
 // =======================================================================
-async function getEvent(request: Request, { params }: Params) {
-  
-  const { id } = params;
+async function getEvent(request: Request, context: Params) {
+  const resolvedParams = await (context.params as any);
+  const id = resolvedParams?.id;
+
+  if (!id) {
+    return formatResponse(false, null, "Event ID parameter missing", 400);
+  }
 
   const cacheKey = buildTenantCacheKey(id, "events", {});
 
@@ -69,11 +95,13 @@ async function getEvent(request: Request, { params }: Params) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const event = await prisma.event.findUnique({
     where: { id },
     include: {
       organizer: { select: { id: true, name: true, email: true } },
       company: { select: { id: true, name: true } },
+      tickets: true,
     },
   });
 
@@ -88,30 +116,52 @@ async function getEvent(request: Request, { params }: Params) {
       await cacheSet(cacheKey, { data: responseData }, 60);
     }
   } catch (e) {}
-  
+
   return formatResponse(true, { data: responseData }, null, 200);
 }
 
 // =======================================================================
-// PATCH /api/events/[id]
+// PATCH / PUT /api/admin/events/[id]
 // Updates an existing Event by ID.
 // =======================================================================
-async function updateEvent(request: Request, { params }: Params) {
-  
-  const { id } = params;
-  const body = await request.json();
-  const {
-    title, summary, description, startDateTime, endDateTime, location, onlineMeetingLink, imageUrl,
-    videoUrl, eventType, eventStatus, organizerId, audience, targetAcademicLevelIds,
-    targetCourseIds, targetEducatorIds, targetStudentIds, targetDepartmentIds, targetParentIds,
-    isRegistrationRequired, maxCapacity, isPaid, price, contactPerson, contactEmail, contactPhone,
-    companyId, // Ignored, cannot be changed
-    ...rest
-  } = body;
+async function updateEvent(request: Request, context: Params) {
+  const resolvedParams = await (context.params as any);
+  const id = resolvedParams?.id;
 
-  if (Object.keys(rest).length > 0) {
-    console.warn("Unexpected fields in PATCH request for event:", rest);
+  if (!id) {
+    return formatResponse(false, null, "Event ID parameter missing", 400);
   }
+
+  const body = await request.json().catch(() => ({}));
+  const {
+    title,
+    summary,
+    description,
+    startDateTime,
+    endDateTime,
+    location,
+    onlineMeetingLink,
+    imageUrl,
+    videoUrl,
+    eventType,
+    eventStatus,
+    organizerId,
+    audience,
+    targetAcademicLevelIds,
+    targetCourseIds,
+    targetEducatorIds,
+    targetStudentIds,
+    targetDepartmentIds,
+    targetParentIds,
+    isRegistrationRequired,
+    maxCapacity,
+    isPaid,
+    price,
+    contactPerson,
+    contactEmail,
+    contactPhone,
+    companyId, // Read-only / company guard
+  } = body;
 
   const existingEvent = await prisma.event.findUnique({
     where: { id },
@@ -127,26 +177,42 @@ async function updateEvent(request: Request, { params }: Params) {
   if (summary !== undefined) updateData.summary = summary;
   if (description !== undefined) updateData.description = description;
   if (location !== undefined) updateData.location = location;
-  if (onlineMeetingLink !== undefined) updateData.onlineMeetingLink = onlineMeetingLink;
+  if (onlineMeetingLink !== undefined)
+    updateData.onlineMeetingLink = onlineMeetingLink;
   if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
   if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
 
   // Validate and update enums
   if (eventType !== undefined) {
     if (!VALID_EVENT_TYPES.includes(eventType)) {
-      return formatResponse(false, null, `Invalid event type: ${eventType}. Must be one of ${VALID_EVENT_TYPES.join(', ')}.`, 400);
+      return formatResponse(
+        false,
+        null,
+        `Invalid event type: ${eventType}. Must be one of ${VALID_EVENT_TYPES.join(", ")}.`,
+        400,
+      );
     }
     updateData.eventType = eventType;
   }
   if (eventStatus !== undefined) {
     if (!VALID_EVENT_STATUSES.includes(eventStatus)) {
-      return formatResponse(false, null, `Invalid event status: ${eventStatus}. Must be one of ${VALID_EVENT_STATUSES.join(', ')}.`, 400);
+      return formatResponse(
+        false,
+        null,
+        `Invalid event status: ${eventStatus}. Must be one of ${VALID_EVENT_STATUSES.join(", ")}.`,
+        400,
+      );
     }
     updateData.eventStatus = eventStatus;
   }
   if (audience !== undefined) {
     if (!VALID_EVENT_AUDIENCES.includes(audience)) {
-      return formatResponse(false, null, `Invalid audience: ${audience}. Must be one of ${VALID_EVENT_AUDIENCES.join(', ')}.`, 400);
+      return formatResponse(
+        false,
+        null,
+        `Invalid audience: ${audience}. Must be one of ${VALID_EVENT_AUDIENCES.join(", ")}.`,
+        400,
+      );
     }
     updateData.audience = audience;
   }
@@ -161,7 +227,7 @@ async function updateEvent(request: Request, { params }: Params) {
   }
 
   if (endDateTime !== undefined) {
-    if (endDateTime === null) {
+    if (endDateTime === null || endDateTime === "") {
       updateData.endDateTime = null;
     } else {
       const parsedEndDateTime = new Date(endDateTime);
@@ -173,30 +239,69 @@ async function updateEvent(request: Request, { params }: Params) {
   }
 
   // Re-validate start/end date/time relationship
-  const finalStartDateTime = updateData.startDateTime || existingEvent.startDateTime;
-  const finalEndDateTime = updateData.endDateTime === null ? null : (updateData.endDateTime || existingEvent.endDateTime);
+  const finalStartDateTime =
+    updateData.startDateTime || existingEvent.startDateTime;
+  const finalEndDateTime =
+    updateData.endDateTime === null
+      ? null
+      : updateData.endDateTime || existingEvent.endDateTime;
 
-  if (finalStartDateTime && finalEndDateTime && finalEndDateTime <= finalStartDateTime) {
-    return formatResponse(false, null, "End date/time must be after start date/time.", 400);
+  if (
+    finalStartDateTime &&
+    finalEndDateTime &&
+    finalEndDateTime <= finalStartDateTime
+  ) {
+    return formatResponse(
+      false,
+      null,
+      "End date/time must be after start date/time.",
+      400,
+    );
   }
 
-  // Update audience IDs (ensure they are arrays)
-  if (targetAcademicLevelIds !== undefined) updateData.targetAcademicLevelIds = Array.isArray(targetAcademicLevelIds) ? targetAcademicLevelIds : [];
-  if (targetCourseIds !== undefined) updateData.targetCourseIds = Array.isArray(targetCourseIds) ? targetCourseIds : [];
-  if (targetEducatorIds !== undefined) updateData.targetEducatorIds = Array.isArray(targetEducatorIds) ? targetEducatorIds : [];
-  if (targetStudentIds !== undefined) updateData.targetStudentIds = Array.isArray(targetStudentIds) ? targetStudentIds : [];
-  if (targetDepartmentIds !== undefined) updateData.targetDepartmentIds = Array.isArray(targetDepartmentIds) ? targetDepartmentIds : [];
-  if (targetParentIds !== undefined) updateData.targetParentIds = Array.isArray(targetParentIds) ? targetParentIds : [];
+  // Update audience IDs
+  if (targetAcademicLevelIds !== undefined)
+    updateData.targetAcademicLevelIds = Array.isArray(targetAcademicLevelIds)
+      ? targetAcademicLevelIds
+      : [];
+  if (targetCourseIds !== undefined)
+    updateData.targetCourseIds = Array.isArray(targetCourseIds)
+      ? targetCourseIds
+      : [];
+  if (targetEducatorIds !== undefined)
+    updateData.targetEducatorIds = Array.isArray(targetEducatorIds)
+      ? targetEducatorIds
+      : [];
+  if (targetStudentIds !== undefined)
+    updateData.targetStudentIds = Array.isArray(targetStudentIds)
+      ? targetStudentIds
+      : [];
+  if (targetDepartmentIds !== undefined)
+    updateData.targetDepartmentIds = Array.isArray(targetDepartmentIds)
+      ? targetDepartmentIds
+      : [];
+  if (targetParentIds !== undefined)
+    updateData.targetParentIds = Array.isArray(targetParentIds)
+      ? targetParentIds
+      : [];
 
   // Update registration and payment fields
-  if (isRegistrationRequired !== undefined) updateData.isRegistrationRequired = isRegistrationRequired;
-  if (maxCapacity !== undefined) updateData.maxCapacity = typeof maxCapacity === 'number' && maxCapacity > 0 ? maxCapacity : null;
-  
+  if (isRegistrationRequired !== undefined)
+    updateData.isRegistrationRequired = Boolean(isRegistrationRequired);
+  if (maxCapacity !== undefined)
+    updateData.maxCapacity =
+      typeof maxCapacity === "number" && maxCapacity > 0 ? maxCapacity : null;
+
   if (isPaid !== undefined) {
-    updateData.isPaid = isPaid;
+    updateData.isPaid = Boolean(isPaid);
     if (isPaid === true) {
-      if (typeof price !== 'number' || price < 0) {
-        return formatResponse(false, null, "Price must be a non-negative number for paid events.", 400);
+      if (typeof price !== "number" || price < 0) {
+        return formatResponse(
+          false,
+          null,
+          "Price must be a non-negative number for paid events.",
+          400,
+        );
       }
       updateData.price = price;
     } else {
@@ -204,10 +309,20 @@ async function updateEvent(request: Request, { params }: Params) {
     }
   } else if (price !== undefined) {
     if (existingEvent.isPaid !== true) {
-      return formatResponse(false, null, "Cannot set price if event is not marked as paid.", 400);
+      return formatResponse(
+        false,
+        null,
+        "Cannot set price if event is not marked as paid.",
+        400,
+      );
     }
-    if (typeof price !== 'number' || price < 0) {
-      return formatResponse(false, null, "Price must be a non-negative number.", 400);
+    if (typeof price !== "number" || price < 0) {
+      return formatResponse(
+        false,
+        null,
+        "Price must be a non-negative number.",
+        400,
+      );
     }
     updateData.price = price;
   }
@@ -216,9 +331,24 @@ async function updateEvent(request: Request, { params }: Params) {
   if (contactEmail !== undefined) updateData.contactEmail = contactEmail;
   if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
 
-  // Final check before update
+  // Validate organizer if updated
+  if (organizerId && organizerId !== existingEvent.organizerId) {
+    const user = await prisma.user.findUnique({
+      where: { id: organizerId },
+      select: { id: true },
+    });
+    if (user) {
+      updateData.organizerId = user.id;
+    }
+  }
+
   if (Object.keys(updateData).length === 0) {
-    return formatResponse(false, null, "No valid fields provided for update.", 400);
+    return formatResponse(
+      false,
+      null,
+      "No valid fields provided for update.",
+      400,
+    );
   }
 
   try {
@@ -228,33 +358,44 @@ async function updateEvent(request: Request, { params }: Params) {
       include: {
         organizer: { select: { id: true, name: true, email: true } },
         company: { select: { id: true, name: true } },
+        tickets: true,
       },
     });
 
     const responseData = transformEventResponse(updatedEvent);
-    
+
     try {
-      await cacheDel(`tenant:${companyId}:events:*`);
+      if (existingEvent.companyId) {
+        await cacheDel(`tenant:${existingEvent.companyId}:events:*`);
+      }
       await cacheDel(`admin:events:*`);
     } catch (e) {}
 
-    return formatResponse(true, { data: responseData }, null, 200);
+    return formatResponse(
+      true,
+      { data: responseData },
+      "Event updated successfully",
+      200,
+    );
   } catch (error: any) {
-    if (error.code === 'P2025') { // Record not found
+    if (error.code === "P2025") {
       return formatResponse(false, null, "Event not found.", 404);
     }
-    // Let withApiHandler handle other errors (500)
     throw error;
   }
 }
 
 // =======================================================================
-// DELETE /api/events/[id]
-// Deletes an Event by ID.
+// DELETE /api/admin/events/[id]
+// Safely deletes or archives an Event by ID.
 // =======================================================================
-async function deleteEvent(request: Request, { params }: Params) {
-  
-  const { id } = params;
+async function deleteEvent(request: Request, context: Params) {
+  const resolvedParams = await (context.params as any);
+  const id = resolvedParams?.id;
+
+  if (!id) {
+    return formatResponse(false, null, "Event ID parameter missing", 400);
+  }
 
   const existingEvent = await prisma.event.findUnique({
     where: { id },
@@ -264,26 +405,67 @@ async function deleteEvent(request: Request, { params }: Params) {
     return formatResponse(false, null, "Event not found", 404);
   }
 
+  // Safety lifecycle rule: Do not hard delete if paid orders or checked-in attendees exist
+  const paidPurchases = await prisma.eventTicketPurchase.count({
+    where: { eventId: id, paymentStatus: "PAID" },
+  });
+
+  if (paidPurchases > 0) {
+    await prisma.event.update({
+      where: { id },
+      data: { eventStatus: "CANCELLED" },
+    });
+
+    try {
+      if (existingEvent.companyId) {
+        await cacheDel(`tenant:${existingEvent.companyId}:events:*`);
+      }
+      await cacheDel(`admin:events:*`);
+    } catch (e) {}
+
+    return formatResponse(
+      true,
+      {
+        message:
+          "Event has paid orders; safely archived and transitioned status to CANCELLED.",
+        id,
+      },
+      null,
+      200,
+    );
+  }
+
   try {
     const deletedEvent = await prisma.event.delete({
       where: { id },
     });
-    
+
     try {
-      await cacheDel(`tenant:${id}:events:*`);
+      if (existingEvent.companyId) {
+        await cacheDel(`tenant:${existingEvent.companyId}:events:*`);
+      }
       await cacheDel(`admin:events:*`);
     } catch (e) {}
-    return formatResponse(true, { message: "Event deleted successfully", deletedId: deletedEvent.id }, null, 200);
+    return formatResponse(
+      true,
+      { message: "Event deleted successfully", deletedId: deletedEvent.id },
+      null,
+      200,
+    );
   } catch (error: any) {
-    if (error.code === 'P2003') { // Foreign key constraint failed (e.g., if EventRegistration exists)
-      return formatResponse(false, null, "Cannot delete event: It has associated registrations or records that prevent deletion.", 409);
+    if (error.code === "P2003") {
+      return formatResponse(
+        false,
+        null,
+        "Cannot delete event: It has associated registrations or records preventing deletion.",
+        409,
+      );
     }
-    // Let withApiHandler handle other errors (500)
     throw error;
   }
 }
 
-// Export the handlers wrapped in the `withApiHandler` utility.
 export const GET = withApiHandler(getEvent);
 export const PATCH = withApiHandler(updateEvent);
+export const PUT = withApiHandler(updateEvent);
 export const DELETE = withApiHandler(deleteEvent);

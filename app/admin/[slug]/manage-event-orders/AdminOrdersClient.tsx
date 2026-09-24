@@ -110,7 +110,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
     setError(null);
     try {
       // Endpoint used by the client for a full refresh
-      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders`);
+      const response = await fetch(`${apiBaseUrl}/admin/event-orders?companyId=${adminSlug}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -118,7 +118,8 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
       const data = await response.json();
 
       // Update the master data list, which triggers the filterAndSearchOrders effect
-      setAllData(data.orders);
+      const orderList = data.data?.orders || data.orders || [];
+      setAllData(orderList);
 
     } catch (err: any) {
       setError(err.message || "Failed to refresh all orders.");
@@ -154,7 +155,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders/${orderId}/status`, {
+      const response = await fetch(`${apiBaseUrl}/admin/event-orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

@@ -795,10 +795,21 @@ graph TD
 - **Invariant 5:** Dynamic routes utilizing request headers (e.g. `/api/ghuba/recommendations`) must declare `export const dynamic = "force-dynamic"`.
 - **Invariant 6:** Dashboard Revenue Invariant: All revenue aggregates and order sales metrics across admin dashboards and reporting services MUST filter out cancelled and failed orders (`status: { notIn: ["CANCELLED", "FAILED"] }`).
 - **Invariant 7:** Order Cancellation Inventory Rollback: Changing a customer order status to `CANCELLED` via admin actions MUST atomically increment `InventoryItem.quantity` for each product item and record a `RETURN` audit log in `InventoryLog`.
+- **Invariant 8:** Ticket Allocation Concurrency Guard: `EventTicket.quantitySold` must never exceed `quantityTotal`. Ticket purchase mutations must enforce atomic increments guarded by `withDistributedLock` and `lte: dbTicket.quantityTotal - requestedTicket.quantity`.
+- **Invariant 9:** Gate Check-In Idempotency & Duplicate Prevention: A ticket pass can only be checked in once (`checkInStatus: "CHECKED_IN"`). Subsequent scans must be rejected server-side with `ALREADY_CHECKED_IN` returning previous timestamp and operator. Cancelled or refunded tickets (`checkInStatus: "CANCELLED"`) must be unconditionally rejected.
+- **Invariant 10:** Event Order Refund Reinstatement: Changing an `EventTicketPurchase` to `REFUNDED` or `CANCELLED` must atomically decrement `EventTicket.quantitySold` by the purchase quantity and mark all child `EventTicketAttendee` records as `CANCELLED`.
 
 ---
 
 ## 22. "If You Change This..." Impact Warnings
+
+### If You Change `app/api/events/checkout/route.ts` or `app/api/admin/events/[id]/tickets/route.ts`:
+- **You Risk Breaking:** Event ticket inventory allocations, ticket generation, free registration bypass, scannable QR generation, and customer ticket access.
+- **Mandatory Verification:** Test purchasing tickets with both KES > 0 and free tickets; verify `EventTicketPurchase` and `EventTicketAttendee` records are persisted with valid `ticketCode` and `qrCodeUrl`.
+
+### If You Change `app/api/admin/check-in/scan/route.ts` or `app/api/admin/check-in/route.ts`:
+- **You Risk Breaking:** Gate entrance scanning, QR barcode validation, duplicate scan prevention, and entrance attendance logs.
+- **Mandatory Verification:** Test scanning a valid ticket code (verify `CHECKED_IN`), rescan immediately (verify `ALREADY_CHECKED_IN`), scan a code belonging to another event (verify `WRONG_EVENT`), and scan a refunded ticket (verify rejection).
 
 ### If You Change `middleware.ts` or `lib/company-fetcher.ts`:
 - **You Risk Breaking:** All 56 storefront layouts, custom domain SSL resolution, subdomain routing, and NextAuth cross-domain handover.

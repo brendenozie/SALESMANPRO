@@ -78,20 +78,18 @@ export default async function AdminOrdersPage({ params }: Props) {
       //  console.warn(`AdminOrdersPage: Failed to fetch organizers (Status: ${organizersRes.status})`);
     }
 
-    // --- 3. Fetch ALL Orders (The complete, unfiltered dataset) ---
-    // The client component will handle the filtering/searching.
+    // --- 3. Fetch Event Ticket Purchases ---
     const ordersRes = await fetch(
-      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/event-orders?companyId=${encodeURIComponent(companyId)}`,
       { 
-        next: { revalidate: 60 }, 
+        next: { revalidate: 0 }, 
         headers: { cookie: cookiesHeader },
       }
     );
     
     if (ordersRes.ok) {
       const ordersJson = await ordersRes.json();
-      // Assuming the API returns the order list in a 'data' or 'orders' field || ordersJson.orders
-      allOrders = (ordersJson.data.orderItems ) as Order[]; 
+      allOrders = (ordersJson.data?.orders || ordersJson.orders || []) as Order[]; 
     } else {
       const errorData = await ordersRes.json();
       throw new Error(errorData.message || `HTTP error! status: ${ordersRes.status}`);

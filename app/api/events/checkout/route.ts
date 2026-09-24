@@ -4,6 +4,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withDistributedLock } from "@/lib/idempotency";
 import { z } from "zod";
 import crypto from "crypto";
+import QRCode from "qrcode";
 
 import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
 import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
@@ -144,27 +145,31 @@ async function handlePost(req: Request) {
                 },
               });
 
-              // Map attendees
-              const rawAttendees =
-                requestedTicket.attendees &&
-                Array.isArray(requestedTicket.attendees) &&
-                requestedTicket.attendees.length > 0
-                  ? requestedTicket.attendees
-                  : Array.from({ length: requestedTicket.quantity }).map(() => ({
-                      fullName: buyer.name,
-                      email: buyer.email,
-                      phone: buyer.phone || null,
-                    }));
+              // Map attendees with unique ticket codes and generated scannable QR data URLs
+              const attendeesData = await Promise.all(
+                rawAttendees.map(async (attendee) => {
+                  const code = crypto.randomUUID();
+                  let qrUrl = null;
+                  try {
+                    qrUrl = await QRCode.toDataURL(code, {
+                      width: 250,
+                      margin: 1,
+                      color: { dark: "#0f172a", light: "#ffffff" },
+                    });
+                  } catch (e) {}
 
-              const attendeesData = rawAttendees.map((attendee) => ({
-                purchaseId: purchase.id,
-                ticketId: dbTicket.id,
-                eventId,
-                fullName: attendee.fullName || buyer.name,
-                email: attendee.email || buyer.email,
-                phone: attendee.phone || buyer.phone || null,
-                ticketCode: crypto.randomUUID(),
-              }));
+                  return {
+                    purchaseId: purchase.id,
+                    ticketId: dbTicket.id,
+                    eventId,
+                    fullName: attendee.fullName || buyer.name,
+                    email: attendee.email || buyer.email,
+                    phone: attendee.phone || buyer.phone || null,
+                    ticketCode: code,
+                    qrCodeUrl: qrUrl,
+                  };
+                })
+              );
 
               await tx.eventTicketAttendee.createMany({
                 data: attendeesData,
@@ -232,6 +237,18 @@ async function handlePost(req: Request) {
             cfg?.credentials,
           );
           break;
+        case "cash":
+        case "card":
+        case "pos":
+        case "in_person":
+          paymentResponse = {
+            message: "In-person POS payment collected successfully.",
+          };
+          await prisma.eventTicketPurchase.updateMany({
+            where: { id: { in: purchases.map((p) => p.id) } },
+            data: { paymentStatus: "PAID" },
+          });
+          break;
         case "cod":
         case "pickupatshop":
           paymentResponse = {
@@ -252,6 +269,10 @@ async function handlePost(req: Request) {
       paymentResponse = {
         message: "Free admission voucher access bypass processed.",
       };
+      await prisma.eventTicketPurchase.updateMany({
+        where: { id: { in: purchases.map((p) => p.id) } },
+        data: { paymentStatus: "PAID" },
+      });
     }
 
     return formatResponse(

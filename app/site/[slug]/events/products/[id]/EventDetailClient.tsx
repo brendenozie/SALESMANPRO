@@ -63,44 +63,10 @@ export default function EventDetailClient({
   /**
    * MAIN CTA HANDLER
    */
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (isExpired || loading) return;
-
-    // Force login
-    if (!session?.user) {
-      router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // FREE EVENT → AUTO REGISTER
-      if (!event.isPaid) {
-        const res = await fetch('/api/events/register-free', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventId: event.id,
-          }),
-        });
-
-        if (!res.ok) throw new Error('Registration failed');
-
-        router.push(`/events/${event.id}/confirmation`);
-        return;
-      }
-
-      // PAID EVENT → GO TO CHECKOUT
-      router.push(
-        `/${storeData.slug}/events/${event.id}/checkout`
-      );
-    } catch (err) {
-      console.error(err);
-      alert('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    const targetSlug = storeData?.slug || 'event-ticketing';
+    router.push(`/site/${targetSlug}/events/checkout/${event.id}`);
   };
 
   return (
@@ -175,6 +141,30 @@ export default function EventDetailClient({
               </div>
               <TicketIcon className="w-8 h-8 text-zinc-400" />
             </div>
+
+            {event.tickets && (event.tickets as any[]).length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs uppercase font-black tracking-widest text-zinc-400">
+                  Ticket Options
+                </p>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {(event.tickets as any[]).map((t: any) => {
+                    const remaining = Math.max(0, t.quantityTotal - t.quantitySold);
+                    return (
+                      <div key={t.id} className="p-3 bg-white rounded-xl border border-zinc-200 flex justify-between items-center text-xs">
+                        <div>
+                          <p className="font-bold text-zinc-900">{t.name}</p>
+                          <p className="text-[11px] text-zinc-500">{remaining > 0 ? `${remaining} remaining` : 'Sold out'}</p>
+                        </div>
+                        <span className="font-black text-indigo-600 font-mono">
+                          {t.price > 0 ? `KES ${t.price.toLocaleString()}` : 'FREE'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3 text-xs font-bold">
               <div className="flex justify-between bg-white p-3 rounded-xl border">
