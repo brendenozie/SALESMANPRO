@@ -143,7 +143,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
       const res = await fetch(`${apiBaseUrl}/admin/reorder-store-categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        include: 'credentials',
+        credentials: 'include',
         body: JSON.stringify({ companyId, categories: updatedCategories.map(c => ({ id: c.id, sortOrder: c.sortOrder })) })
       });
       if (!res.ok) {
@@ -171,7 +171,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
       const res = await fetch(url, {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        include: 'credentials',
+        credentials: 'include',
         body: JSON.stringify({ companyId, ...cat })
       });
 
@@ -195,7 +195,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/store-categories?id=${id}`, { method: 'DELETE', include: 'credentials' });
+      const res = await fetch(`${apiBaseUrl}/admin/store-categories?id=${id}&companyId=${encodeURIComponent(companyId)}`, { method: 'DELETE', credentials: 'include' });
       if (res.ok) {
         await fetchCategories();
       } else {
@@ -207,7 +207,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, fetchCategories]);
+  }, [apiBaseUrl, companyId, fetchCategories]);
 
   const saveSubcategory = useCallback(async (parentId: string, sub: ISubcategory) => {
     setIsLoading(true);
@@ -221,8 +221,8 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
       const res = await fetch(url, {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        include: 'credentials',
-        body: JSON.stringify(sub)
+        credentials: 'include',
+        body: JSON.stringify({ companyId, ...sub })
       });
 
       if (res.ok) {
@@ -238,14 +238,14 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, fetchCategories]);
+  }, [apiBaseUrl, companyId, fetchCategories]);
 
   const deleteSubcategory = useCallback(async (parentId: string, subId: string) => {
     if (!confirm('Are you sure you want to delete this subcategory?')) return;
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/store-categories/${parentId}/subcategories/${subId}`, { method: 'DELETE', include: 'credentials' });
+      const res = await fetch(`${apiBaseUrl}/admin/store-categories/${parentId}/subcategories/${subId}?companyId=${encodeURIComponent(companyId)}`, { method: 'DELETE', credentials: 'include' });
       if (res.ok) {
         await fetchCategories();
       } else {

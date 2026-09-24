@@ -1,31 +1,61 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-// app/api/users/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
-import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// PATCH: Update role name or permissions matrix
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const body = await req.json();
-  const { name, permissions } = body;
-
-  const updatedRole = await prisma.role.update({
-    where: { id: params.id },
-    data: { name, permissions },
-  });
-  
-  try {
-    await cacheDel(`admin:roles:${params.id}`);
-  } catch (e) {}
-  return NextResponse.json(updatedRole);
+interface RouteParams {
+  params: Promise<{ id: string }>;
 }
 
-// DELETE: Remove a role
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  await prisma.role.delete({ where: { id: params.id } });
+export async function PATCH(req: Request, { params }: RouteParams) {
   try {
-    await cacheDel(`admin:roles:${params.id}`);
-  } catch (e) {}
-  return NextResponse.json({ message: "Role deleted" });
+    const { id } = await params;
+    const body = await req.json();
+    const { name, permissions } = body;
+
+    const existing = await prisma.role.findUnique({ where: { id } });
+    if (!existing) {
+      return formatResponse(false, null, "Role not found", 404);
+    }
+
+    const updatedRole = await prisma.role.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(permissions && { permissions })
+      },
+    });
+    
+    try {
+      await cacheDel(`tenant:${existing.companyId}:roles:*`);
+      await cacheDel(`admin:roles:*`);
+    } catch (e) {}
+
+    return formatResponse(true, updatedRole, "Role updated successfully", 200);
+  } catch (error: any) {
+    console.error("[ROLE_PATCH_ERROR]", error);
+    return formatResponse(false, null, error.message || "Failed to update role", 500);
+  }
+}
+
+export async function DELETE(req: Request, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+
+    const existing = await prisma.role.findUnique({ where: { id } });
+    if (!existing) {
+      return formatResponse(false, null, "Role not found", 404);
+    }
+
+    await prisma.role.delete({ where: { id } });
+
+    try {
+      await cacheDel(`tenant:${existing.companyId}:roles:*`);
+      await cacheDel(`admin:roles:*`);
+    } catch (e) {}
+
+    return formatResponse(true, null, "Role deleted successfully", 200);
+  } catch (error: any) {
+    console.error("[ROLE_DELETE_ERROR]", error);
+    return formatResponse(false, null, error.message || "Failed to delete role", 500);
+  }
 }

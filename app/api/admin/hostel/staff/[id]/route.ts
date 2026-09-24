@@ -1,51 +1,64 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-import { NextResponse } from "next/server";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+
+export async function PATCH(req: Request, { params }: RouteParams) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await req.json();
     
-    // We exclude sensitive fields from the spread to prevent accidental overwrites
     const { userId, companyId, ...updateData } = body;
+
+    const existing = await prisma.hostelStaff.findUnique({ where: { id } });
+    if (!existing) {
+      return formatResponse(false, null, "Staff member not found", 404);
+    }
 
     const updatedStaff = await prisma.hostelStaff.update({
       where: { id },
       data: {
         ...updateData,
-        // Optional: Allow changing the linked user
         ...(userId && { user: { connect: { id: userId } } })
       }
     });
-    try {      const cacheKey = `admin:hostelStaff:${companyId || 'global'}:*`;
-      await cacheDel(cacheKey);
-    } catch (e) {
-      console.error("Error invalidating cache:", e);
-    }
+
+    try {
+      await cacheDel(`admin:hostelStaff:*`);
+      await cacheDel(`tenant:*:staff:*`);
+    } catch (e) {}
+
     return formatResponse(true, updatedStaff, "Staff updated successfully", 200);
-  } catch (error) {
-    return formatResponse(false, null, "Update failed", 500);
+  } catch (error: any) {
+    console.error("[HOSTEL_STAFF_PATCH_ERROR]", error);
+    return formatResponse(false, null, error.message || "Update failed", 500);
   }
 }
 
-export async function DELETE( req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: RouteParams) {
   try {
-    const id = params.id;
+    const { id } = await params;
+
+    const existing = await prisma.hostelStaff.findUnique({ where: { id } });
+    if (!existing) {
+      return formatResponse(false, null, "Staff member not found", 404);
+    }
 
     await prisma.hostelStaff.delete({
       where: { id }
     });
 
     try {
-      const cacheKey = `admin:hostelStaff:${id || 'global'}:*`;
-      await cacheDel(cacheKey);
-    } catch (e) {
-      console.error("Error invalidating cache:", e);
-    }
+      await cacheDel(`admin:hostelStaff:*`);
+      await cacheDel(`tenant:*:staff:*`);
+    } catch (e) {}
+
     return formatResponse(true, null, "Staff deleted successfully", 200);
-  } catch (error) {
-    return formatResponse(false, null, "Delete failed", 500);
+  } catch (error: any) {
+    console.error("[HOSTEL_STAFF_DELETE_ERROR]", error);
+    return formatResponse(false, null, error.message || "Delete failed", 500);
   }
 }

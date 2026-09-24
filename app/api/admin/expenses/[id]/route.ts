@@ -2,6 +2,29 @@ import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const expense = await prisma.expense.findUnique({ where: { id } });
+    if (!expense) {
+      return formatResponse(false, null, "Expense not found", 404);
+    }
+    return formatResponse(true, expense, "Expense retrieved successfully", 200);
+  } catch (error: any) {
+    return formatResponse(false, null, error?.message || "Failed to fetch expense", 500);
+  }
+}
+
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PATCH(req, { params });
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

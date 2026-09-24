@@ -97,7 +97,7 @@ const ExamCategoriesClient = ({ initialData, schoolId }: Props) => {
     if (!confirm("Are you sure? This cannot be undone.")) return;
 
     try {
-      const res = await fetch(`/api/admin/exam-categories/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/exam-categories/${id}?companyId=${encodeURIComponent(schoolId)}`, { method: "DELETE" });
       if (res.ok) {
         setCategories(prev => prev.filter(c => c.id !== id));
       } else {

@@ -26,19 +26,27 @@ export default async function FeeStructurePage({ params }: PageProps) {
   const initialStructures = await prisma.feeStructure.findMany({
     where: { companyId },
     include: {
-      items: {
-        include: { feeItem: true }
-      },
-      academicLevel: true,
-      academicYear: true,
-      academicTerm: true,
+      items: true,
     },
     orderBy: { createdAt: 'desc' }
   }).catch(() => []);
 
+  const formattedStructures = initialStructures.map((fee: any) => ({
+    id: fee.id,
+    grade: fee.name,
+    status: "Active",
+    total: fee.amount || 0,
+    components: fee.items?.length
+      ? fee.items.map((i: any) => `${i.name}: $${i.amount}`)
+      : ["General Tuition & Operational Services"],
+    items: fee.items || [],
+    year: fee.year,
+    term: fee.term,
+  }));
+
   return (
     <FeeStructureClient
-      initialStructures={JSON.parse(JSON.stringify(initialStructures))}
+      initialStructures={JSON.parse(JSON.stringify(formattedStructures))}
       schoolId={companyId}
     />
   );

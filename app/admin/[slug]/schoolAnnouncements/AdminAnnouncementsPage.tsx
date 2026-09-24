@@ -233,7 +233,7 @@ export default function AdminAnnouncementsPage({
     setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
 
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/announcements/${announcementId}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBaseUrl}/admin/announcements/${announcementId}?companyId=${encodeURIComponent(companyId)}`, { method: 'DELETE' });
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
         throw new Error(errorData?.message || 'Failed to delete announcement.');
@@ -254,7 +254,7 @@ export default function AdminAnnouncementsPage({
     );
 
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/announcements/${announcementId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/announcements/${announcementId}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -280,7 +280,7 @@ export default function AdminAnnouncementsPage({
     const isEdit = Boolean(announcementData.id);
     const method = isEdit ? 'PATCH' : 'POST';
     const url = isEdit
-      ? `${apiBaseUrl}/admin/announcements/${announcementData.id}`
+      ? `${apiBaseUrl}/admin/announcements/${announcementData.id}?companyId=${encodeURIComponent(companyId)}`
       : `${apiBaseUrl}/admin/announcements`;
 
     try {

@@ -1,50 +1,51 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
-// PATCH: Update reservation status (CANCELLED / FULFILLED)
-export const PATCH = withApiHandler(async (request: Request, { params }: any) => {
-  const { id } = params;
-  const { status } = await request.json();
+// PUT /api/admin/library/reservations/[id]
+const updateResLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
+  const body = await request.json();
 
-  const reservation = await prisma.libraryReservation.findUnique({
+  const existing = await prisma.libraryReservation.findUnique({
     where: { id },
-    include: { book: true }
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Reservation not found.", 404);
+  }
+
+  const updated = await prisma.libraryReservation.update({
+    where: { id },
+    data: {
+      status: body.status || existing.status,
+    },
   });
 
-  if (!reservation) return formatResponse(false, null, "Reservation not found", 404);
+  return formatResponse(true, updated, "Reservation updated", 200);
+};
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const res = await tx.libraryReservation.update({
-      where: { id },
-      data: { status }
-    });
+export const PUT = withApiHandler(updateResLogic, { requireAuth: true });
 
-    // If cancelled, and no other pending reservations, make book available
-    if (status === "CANCELLED" || status === "EXPIRED") {
-      const otherHold = await tx.libraryReservation.findFirst({
-        where: { bookId: reservation.bookId, status: "PENDING", NOT: { id } }
-      });
+// DELETE /api/admin/library/reservations/[id]
+const deleteResLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
 
-      if (!otherHold) {
-        await tx.libraryBook.update({
-          where: { id: reservation.bookId },
-          data: { status: "AVAILABLE" }
-        });
-      }
-    }
+  const existing = await prisma.libraryReservation.findUnique({
+    where: { id },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Reservation not found.", 404);
+  }
 
-    return res;
+  await prisma.libraryReservation.delete({
+    where: { id },
   });
 
-  // Invalidate cache for reservations list
-  try {
-    await cacheDel(`tenant:${reservation.companyId}:libraryReservations:*`);
-    await cacheDel(`admin:libraryReservations:*`);
-  } catch (e) {}
+  return formatResponse(true, null, "Reservation removed", 200);
+};
 
-  return formatResponse(true, updated, `Reservation marked as ${status}`, 200);
-}, { requireAuth: true });
+export const DELETE = withApiHandler(deleteResLogic, { requireAuth: true });

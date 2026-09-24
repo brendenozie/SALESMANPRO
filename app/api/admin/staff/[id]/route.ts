@@ -1,11 +1,8 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
-
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// Helper to format staff data
 async function formatStaffData(staffMember: any) {
   const userName = staffMember.user?.name || "N/A";
   const userEmail = staffMember.user?.email || "N/A";
@@ -29,24 +26,22 @@ async function formatStaffData(staffMember: any) {
   };
 }
 
-// GET staff by ID
-async function getStaff(req: Request, { params }: { params: { id: string } }) {
-  
-  const { id } = params;
+async function getStaff(req: Request, context: any) {
+  const id = context?.params?.id || (context?.params && (await context.params)?.id);
+  if (!id) return formatResponse(false, null, "Staff ID required", 400);
+
   try {
-    
     const cacheKey = buildTenantCacheKey(id, "staff", {});
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
 
-  const staffMember = await prisma.staffProfile.findUnique({
+    const staffMember = await prisma.staffProfile.findUnique({
       where: { id },
       include: { user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } } },
     });
-
 
     if (!staffMember) return formatResponse(false, null, "Staff member not found", 404);
 
@@ -63,36 +58,45 @@ async function getStaff(req: Request, { params }: { params: { id: string } }) {
   }
 }
 
-// PUT staff by ID
-async function updateStaff(req: Request, { params }: { params: { id: string } }) {
- 
-  const { id } = params;
+async function updateStaff(req: Request, context: any) {
+  const id = context?.params?.id || (context?.params && (await context.params)?.id);
+  if (!id) return formatResponse(false, null, "Staff ID required", 400);
+
   const body = await req.json();
-  const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate } = body;
+  const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, salary } = body;
 
   try {
-    const existingStaff = await prisma.staffProfile.findUnique({ where: { id }, select: { userId: true } });
+    const existingStaff = await prisma.staffProfile.findUnique({ where: { id }, select: { userId: true, companyId: true } });
     if (!existingStaff) return formatResponse(false, null, "Staff member not found", 404);
 
-    // Update associated user
     if (existingStaff.userId) {
       await prisma.user.update({
         where: { id: existingStaff.userId },
-        data: { name, email, phone, profilePicture },
+        data: {
+          ...(name && { name }),
+          ...(email && { email }),
+          ...(phone && { phone }),
+          ...(profilePicture && { profilePicture })
+        },
       });
     }
 
-    // Update staff profile
     const updatedStaff = await prisma.staffProfile.update({
       where: { id },
-      data: { jobTitle, department, employmentStatus, startDate: startDate ? new Date(startDate) : undefined },
+      data: {
+        ...(jobTitle && { jobTitle }),
+        ...(department && { department }),
+        ...(employmentStatus && { employmentStatus }),
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(salary !== undefined && { salary: parseFloat(salary) })
+      },
       include: { user: { select: { name: true, email: true, phone: true, profilePicture: true } } },
     });
 
     const formattedUpdatedStaff = await formatStaffData(updatedStaff);
     
     try {
-      await cacheDel(`tenant:${id}:staff:*`);
+      await cacheDel(`tenant:${existingStaff.companyId}:staff:*`);
       await cacheDel(`admin:staff:*`);
     } catch (e) {}
     return formatResponse(true, formattedUpdatedStaff, "Staff updated successfully", 200);
@@ -102,18 +106,23 @@ async function updateStaff(req: Request, { params }: { params: { id: string } })
   }
 }
 
-// DELETE staff by ID
-async function deleteStaff(req: Request, { params }: { params: { id: string } }) {
-  
-  const { id } = params;
+async function deleteStaff(req: Request, context: any) {
+  const id = context?.params?.id || (context?.params && (await context.params)?.id);
+  if (!id) return formatResponse(false, null, "Staff ID required", 400);
+
   try {
-    const existingStaff = await prisma.staffProfile.findUnique({ where: { id }, select: { userId: true } });
+    const existingStaff = await prisma.staffProfile.findUnique({ where: { id }, select: { userId: true, companyId: true } });
     if (!existingStaff) return formatResponse(false, null, "Staff member not found", 404);
+
+    await prisma.staffPerformanceReview.deleteMany({ where: { staffId: id } });
+    await prisma.staffLeave.deleteMany({ where: { staffId: id } });
+    await prisma.staffAttendanceRecord.deleteMany({ where: { staffId: id } });
+    await prisma.staffPayroll.deleteMany({ where: { staffId: id } });
 
     await prisma.staffProfile.delete({ where: { id } });
     
     try {
-      await cacheDel(`tenant:${id}:staff:*`);
+      await cacheDel(`tenant:${existingStaff.companyId}:staff:*`);
       await cacheDel(`admin:staff:*`);
     } catch (e) {}
     
@@ -124,7 +133,6 @@ async function deleteStaff(req: Request, { params }: { params: { id: string } })
   }
 }
 
-// Export wrapped handlers
 export const GET = withApiHandler(getStaff);
 export const PUT = withApiHandler(updateStaff);
 export const DELETE = withApiHandler(deleteStaff);

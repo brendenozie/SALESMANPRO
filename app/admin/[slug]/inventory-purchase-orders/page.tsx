@@ -30,23 +30,6 @@ export default async function InventoryDashboardPage({ params }: PageProps) {
     // Use the actual database ID for your API calls, ensuring consistency
     const companyId = company.id;
 
-  let initialMembers = [];  
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/inventory-dashboard/data?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialMembers = (await res.json()).data;
-    }
-  } catch (err) {
-    // console.error("[LibraryMembersPage] Failed to load members", err);
-  }
-
   return (
     <PurchaseOrdersClient
       companyId={companyId}

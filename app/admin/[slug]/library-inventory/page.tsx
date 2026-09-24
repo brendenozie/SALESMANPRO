@@ -1,41 +1,38 @@
-import { cookies } from "next/headers";
 import LibraryInventoryClient from "./LibraryInventoryClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
+import prisma from "@/server/db/prismadb";
 
 export default async function LibraryInventoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  
-  const { slug }  = await params;
-  
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialItems = [];
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/admin/library/inventory?companyId=${companyId}`,
-      { headers: { cookie: cookieHeader }, cache: 'no-store' }
-    );
-    if (res.ok) {
-      initialItems = (await res.json()).data;
-    }
-  } catch (err) {
-    // console.error("Inventory load failed", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
 
-  return <LibraryInventoryClient initialItems={initialItems} schoolId={companyId} />;
+  const companyId = company.id;
+
+  const raw = await prisma.libraryBook.findMany({
+    where: { companyId },
+    include: { category: true },
+    orderBy: { title: "asc" },
+  });
+
+  const initialItems = raw.map((b) => ({
+    id: b.id,
+    title: b.title,
+    author: b.author,
+    isbn: b.isbn || "N/A",
+    category: b.category?.name || "Uncategorized",
+    shelfLocation: b.shelfLocation || b.location || "Unassigned",
+    status: b.status,
+    integrity: b.integrity ?? 100,
+    condition: b.condition || "Good",
+    lastAudit: b.lastAudit ? new Date(b.lastAudit).toLocaleDateString() : new Date().toLocaleDateString(),
+  }));
+
+  return <LibraryInventoryClient initialItems={JSON.parse(JSON.stringify(initialItems))} schoolId={companyId} />;
 }

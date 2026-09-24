@@ -1,70 +1,81 @@
-import { cookies } from "next/headers";
 import StaffAttendanceClient from "./StaffAttendanceClient";
-
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function StaffAttendancePage({ params }: PageProps) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+export default async function StaffAttendanceSSRPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialData = [];  
-  let initialStaff = [];
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
+
+  let logs: any[] = [];
+  let stats = { present: 0, late: 0, absent: 0, total: 0 };
+  let staffList: any[] = [];
+
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/attendance?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    if (res.ok) {
-      initialData = (await res.json());
-      // console.log("Fetched initial attendance data:", initialData);
-    }
+    const [rawLogs, totalStaff, rawStaff] = await Promise.all([
+      prisma.staffAttendanceRecord.findMany({
+        where: { date: today, companyId },
+        include: {
+          user: { select: { name: true, image: true, email: true } },
+        },
+        orderBy: { checkInTime: "desc" },
+      }),
+      prisma.user.count({ where: { companyId, role: "STAFF" } }),
+      prisma.staffProfile.findMany({
+        where: { companyId },
+        include: { user: { select: { id: true, name: true } } },
+      })
+    ]);
 
-    const resStaff = await fetch(
-      `${apiBaseUrl}/admin/staff?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
+    let presentCount = 0;
+    let lateCount = 0;
+    logs = rawLogs.map(l => {
+      if (l.checkInTime) presentCount++;
+      if (l.status === "LATE") lateCount++;
+      return {
+        id: l.id,
+        user: l.user,
+        method: l.method,
+        checkInTime: l.checkInTime ? l.checkInTime.toISOString() : undefined,
+        checkOutTime: l.checkOutTime ? l.checkOutTime.toISOString() : undefined,
+        status: l.status,
+      };
+    });
 
-    if (resStaff.ok) {
-      const json = await resStaff.json();
-      initialStaff = json.data;
-    }
+    stats = {
+      total: totalStaff,
+      present: presentCount,
+      late: lateCount,
+      absent: Math.max(0, totalStaff - presentCount),
+    };
 
+    staffList = rawStaff.map(s => ({
+      id: s.userId || s.id,
+      name: s.user?.name || "Staff Member"
+    }));
   } catch (err) {
-    console.error("[StaffAttendancePage] Failed to load attendance data", err);
+    console.error("[StaffAttendanceSSRPage] Failed to query staff attendance", err);
   }
 
   return (
     <StaffAttendanceClient
-      initialData={initialData}
-      initialStaff={initialStaff}
+      initialData={{ logs, stats }}
+      initialStaff={staffList}
       schoolId={companyId}
     />
   );

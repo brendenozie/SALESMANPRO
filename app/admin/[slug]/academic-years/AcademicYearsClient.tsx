@@ -44,7 +44,7 @@ export default function AcademicYearsClient({ years, companyId }: AcademicYearsC
       return;
     }
 
-    const res = await fetch(`/api/admin/academic-years/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/academic-years/${id}?companyId=${encodeURIComponent(companyId)}`, { method: "DELETE" });
     const result = await res.json();
     if (result.success) {
       startTransition(() => {
@@ -64,7 +64,7 @@ export default function AcademicYearsClient({ years, companyId }: AcademicYearsC
       return;
     }
 
-    const res = await fetch(`/api/admin/academic-terms/${termId}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/academic-terms/${termId}?companyId=${encodeURIComponent(companyId)}`, { method: "DELETE" });
     const result = await res.json();
     if (result.success) {
       startTransition(() => {
@@ -78,6 +78,7 @@ export default function AcademicYearsClient({ years, companyId }: AcademicYearsC
       });
       toast.success("Term deleted successfully");
     } else {
+      toast.error(result.message || "Could not delete term");
       setConfirmDeleteId(null);
     }
   };

@@ -246,7 +246,7 @@ async function updateExam(request: Request, { params }: Params) {
       await cacheDel(`tenant:${companyId}:exams:*`);
       await cacheDel(`admin:exams:*`);
     } catch (e) {}
-    return formatResponse(true, { data: responseData }, null, 200);
+    return formatResponse(true, responseData, "Exam updated successfully", 200);
 
   } catch (error: any) {
     if (error.code === 'P2002') {

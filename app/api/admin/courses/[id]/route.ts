@@ -80,10 +80,11 @@ export const GET = withApiHandler(async (_req, { params }) => {
 });
 
 
-export const PATCH = withApiHandler(async (req, { params }) => {
-  const { id: oldId } = params;
+export const PATCH = withApiHandler(async (req, context: any) => {
+  const oldId = context.params?.id;
   const body = await req.json();
   const { academicLevelIds, educatorIds, id: updatedId, ...data } = body;
+  const targetCourseId = updatedId || oldId;
 
   try {
     const updatedCourse = await prisma.$transaction(async (tx) => {
@@ -91,20 +92,20 @@ export const PATCH = withApiHandler(async (req, { params }) => {
       if (academicLevelIds) {
         await tx.courseAcademicLevel.deleteMany({ where: { courseId: oldId } });
         await tx.courseAcademicLevel.createMany({
-          data: academicLevelIds.map((levelId: string) => ({ courseId: updatedId, academicLevelId: levelId })),
+          data: academicLevelIds.map((levelId: string) => ({ courseId: targetCourseId, academicLevelId: levelId })),
         });
       }
 
       if (educatorIds) {
         await tx.courseEducatorAssignment.deleteMany({ where: { courseId: oldId } });
         await tx.courseEducatorAssignment.createMany({
-          data: educatorIds.map((educatorId: string) => ({ courseId: updatedId, educatorId })),
+          data: educatorIds.map((educatorId: string) => ({ courseId: targetCourseId, educatorId })),
         });
       }
 
       // 2. Update Main Course Data & Return Final Shape in one go
       return await tx.course.update({
-        where: { id: updatedId },
+        where: { id: targetCourseId },
         data:{
           ...data,
         },
@@ -128,9 +129,14 @@ export const PATCH = withApiHandler(async (req, { params }) => {
 });
 
 
-export const DELETE = withApiHandler(async (_, { params }) => {
+export const DELETE = withApiHandler(async (_req, context: any) => {
   try {
-    await prisma.course.delete({ where: { id: params.id } });
+    const courseId = context.params?.id;
+    await prisma.$transaction(async (tx) => {
+      await tx.courseAcademicLevel.deleteMany({ where: { courseId } });
+      await tx.courseEducatorAssignment.deleteMany({ where: { courseId } });
+      await tx.course.delete({ where: { id: courseId } });
+    });
     
     try {
       await cacheDel(`tenant:${params.id}:courses:*`);

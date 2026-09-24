@@ -7,60 +7,59 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// PUT /api/admin/library/books/[id]
-const updateBookLogic = async (request: Request, { params }: RouteParams) => {
+// PUT /api/admin/library/fines/[id]
+const updateFineLogic = async (request: Request, { params }: RouteParams) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const body = await request.json();
 
-  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
-
-  const updatedBook = await prisma.libraryBook.update({
-    where: { id, companyId },
-    data: {
-      title: body.title,
-      author: body.author,
-      isbn: body.isbn,
-      publisher: body.publisher,
-      status: body.status,
-      location: body.location,
-      // Re-connect to a different category if changed
-      categoryId: body.categoryId 
+  const existing = await prisma.libraryFine.findFirst({
+    where: {
+      id,
+      ...(companyId ? { issuance: { companyId } } : {}),
     },
-    include: { category: true }
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Fine record not found.", 404);
+  }
+
+  const updatedFine = await prisma.libraryFine.update({
+    where: { id },
+    data: {
+      amount: body.amount !== undefined ? Number(body.amount) : existing.amount,
+      status: body.status || existing.status,
+      paidDate: body.status === 'PAID' ? new Date() : (body.paidDate ? new Date(body.paidDate) : null),
+      reason: body.reason !== undefined ? body.reason : existing.reason,
+    },
   });
 
-    // Invalidate relevant caches
-    try {
-      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
-      await cacheDel(`admin:libraryBooks:*`);
-    } catch (e) {}
-
-  return formatResponse(true, updatedBook, "Archive record updated", 200);
+  return formatResponse(true, updatedFine, "Fine record updated", 200);
 };
 
-export const PUT = withApiHandler(updateBookLogic, { requireAuth: true });
+export const PUT = withApiHandler(updateFineLogic, { requireAuth: true });
 
-// DELETE /api/admin/library/books/[id]
-const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
+// DELETE /api/admin/library/fines/[id]
+const deleteFineLogic = async (request: Request, { params }: RouteParams) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
+  const existing = await prisma.libraryFine.findFirst({
+    where: {
+      id,
+      ...(companyId ? { issuance: { companyId } } : {}),
+    },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Fine record not found.", 404);
+  }
 
-  await prisma.libraryBook.delete({
-    where: { id, companyId },
+  await prisma.libraryFine.delete({
+    where: { id },
   });
 
-    // Invalidate relevant caches
-    try {
-      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
-      await cacheDel(`admin:libraryBooks:*`);
-    } catch (e) {}
-
-  return formatResponse(true, null, "Volume removed from archive", 200);
+  return formatResponse(true, null, "Fine record removed", 200);
 };
 
-export const DELETE = withApiHandler(deleteBookLogic, { requireAuth: true });
+export const DELETE = withApiHandler(deleteFineLogic, { requireAuth: true });

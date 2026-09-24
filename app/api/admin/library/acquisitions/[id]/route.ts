@@ -1,44 +1,64 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
-// PATCH: Update reservation status (CANCELLED / FULFILLED)
-export const PATCH = withApiHandler(async (request: Request, { params }: any) => {
-  const { id } = params;
-  const { status } = await request.json();
+// PUT /api/admin/library/acquisitions/[id]
+const updateAcqLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+  const body = await request.json();
 
-  const reservation = await prisma.libraryReservation.findUnique({
+  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
+
+  const existing = await prisma.libraryAcquisition.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Acquisition not found in this company.", 404);
+  }
+
+  const updated = await prisma.libraryAcquisition.update({
     where: { id },
-    include: { book: true }
+    data: {
+      title: body.title !== undefined ? body.title : existing.title,
+      qty: body.qty !== undefined ? Number(body.qty) : existing.qty,
+      cost: body.cost !== undefined ? Number(body.cost) : existing.cost,
+      vendor: body.vendor !== undefined ? body.vendor : existing.vendor,
+      status: body.status !== undefined ? body.status : existing.status,
+      category: body.category !== undefined ? body.category : existing.category,
+    },
   });
 
-  if (!reservation) return formatResponse(false, null, "Reservation not found", 404);
+  return formatResponse(true, updated, "Acquisition updated successfully", 200);
+};
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const res = await tx.libraryReservation.update({
-      where: { id },
-      data: { status }
-    });
+export const PUT = withApiHandler(updateAcqLogic, { requireAuth: true });
 
-    // If cancelled, and no other pending reservations, make book available
-    if (status === "CANCELLED" || status === "EXPIRED") {
-      const otherHold = await tx.libraryReservation.findFirst({
-        where: { bookId: reservation.bookId, status: "PENDING", NOT: { id } }
-      });
+// DELETE /api/admin/library/acquisitions/[id]
+const deleteAcqLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-      if (!otherHold) {
-        await tx.libraryBook.update({
-          where: { id: reservation.bookId },
-          data: { status: "AVAILABLE" }
-        });
-      }
-    }
+  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-    return res;
+  const existing = await prisma.libraryAcquisition.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Acquisition not found in this company.", 404);
+  }
+
+  await prisma.libraryAcquisition.delete({
+    where: { id },
   });
 
-  return formatResponse(true, updated, `Reservation marked as ${status}`, 200);
-}, { requireAuth: true });
+  return formatResponse(true, null, "Acquisition deleted successfully", 200);
+};
+
+export const DELETE = withApiHandler(deleteAcqLogic, { requireAuth: true });

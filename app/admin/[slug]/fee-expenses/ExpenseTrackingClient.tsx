@@ -31,8 +31,15 @@ const ExpenseTrackingClient = ({ companyId, initialExpenses = [] }: ExpenseTrack
     try {
       setIsLoading(true);
       const res = await fetch(`/api/admin/expenses?companyId=${encodeURIComponent(companyId)}`);
-      const data = await res.json();
-      setExpenses(data);
+      const json = await res.json();
+      const list = Array.isArray(json)
+        ? json
+        : Array.isArray(json?.data?.expenses)
+        ? json.data.expenses
+        : Array.isArray(json?.data)
+        ? json.data
+        : [];
+      setExpenses(list);
     } catch (err) {
       console.error("Fetch error", err);
     } finally {
@@ -49,7 +56,7 @@ const ExpenseTrackingClient = ({ companyId, initialExpenses = [] }: ExpenseTrack
       });
 
       if (res.ok) {
-        setExpenses((prev) => prev.filter((item) => item.id !== id));
+        setExpenses((prev) => (Array.isArray(prev) ? prev.filter((item) => item.id !== id) : []));
       } else {
         alert("Failed to delete the record. Please try again.");
       }
@@ -71,8 +78,7 @@ const ExpenseTrackingClient = ({ companyId, initialExpenses = [] }: ExpenseTrack
       });
 
       if (response.ok) {
-        const updatedExpenses = await fetch(`/api/admin/expenses?companyId=${encodeURIComponent(companyId)}`).then(res => res.json());
-        setExpenses(updatedExpenses);
+        await fetchExpenses();
         setIsModalOpen(false);
       }
     } catch (error) {

@@ -1,48 +1,63 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-import { NextResponse } from "next/server";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// ✅ PUT handler (update campaign)
-const updateCampaign = async (request: Request, context: { params: { id: string }; user?: any }) => {
-  const { id } = context.params;
+const updateLeaveRequest = async (request: Request, context: any) => {
+  const id = context?.params?.id || (context?.params && (await context.params)?.id);
   const body = await request.json();
-  const { name, description, startDate, endDate, goalAmount, status } = body;
+  const { status, adminNote, type, reason, startDate, endDate } = body;
 
-  // Construct update data, handle dates correctly
-  const updateData: any = { name, description, goalAmount, status };
-  if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
-  if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
+  const existing = await prisma.leaveRequest.findUnique({ where: { id } });
+  if (!existing) {
+    return formatResponse(false, null, "Leave request not found", 404);
+  }
 
-  const updatedCampaign = await prisma.campaign.update({
+  const updateData: any = {};
+  if (status !== undefined) updateData.status = status;
+  if (adminNote !== undefined) updateData.adminNote = adminNote;
+  if (type !== undefined) updateData.type = type;
+  if (reason !== undefined) updateData.reason = reason;
+  if (startDate !== undefined) updateData.startDate = new Date(startDate);
+  if (endDate !== undefined) updateData.endDate = new Date(endDate);
+
+  const updatedLeave = await prisma.leaveRequest.update({
     where: { id },
     data: updateData,
+    include: {
+      user: { select: { name: true, email: true } },
+      backupStaff: { select: { user: { select: { name: true } } } }
+    }
   });
 
   try {
-    await cacheDel(`tenant:${id}:campaigns:*`);
-    await cacheDel(`admin:campaigns:*`);
+    await cacheDel(`tenant:${existing.companyId}:leave:*`);
+    await cacheDel(`admin:leave:*`);
   } catch (e) {}
-  return formatResponse(true, updatedCampaign, "Campaign updated", 200);
+
+  return formatResponse(true, updatedLeave, "Leave request updated", 200);
 };
 
-// ✅ DELETE handler (delete campaign)
-const deleteCampaign = async (_request: Request, context: { params: { id: string }; user?: any }) => {
-  const { id } = context.params;
+const deleteLeaveRequest = async (_request: Request, context: any) => {
+  const id = context?.params?.id || (context?.params && (await context.params)?.id);
 
-  // Consider cascade delete or validations here
-  await prisma.campaign.delete({
+  const existing = await prisma.leaveRequest.findUnique({ where: { id } });
+  if (!existing) {
+    return formatResponse(false, null, "Leave request not found", 404);
+  }
+
+  await prisma.leaveRequest.delete({
     where: { id },
   });
 
   try {
-    await cacheDel(`tenant:${id}:campaigns:*`);
-    await cacheDel(`admin:campaigns:*`);
+    await cacheDel(`tenant:${existing.companyId}:leave:*`);
+    await cacheDel(`admin:leave:*`);
   } catch (e) {}
-  return formatResponse(true, null, "Campaign deleted", 200);
+
+  return formatResponse(true, null, "Leave request deleted", 200);
 };
 
-// ✅ Wrap both handlers with API handler
-export const PUT = withApiHandler(updateCampaign, { requireAuth: true, requireRateLimit: true });
-export const DELETE = withApiHandler(deleteCampaign, { requireAuth: true, requireRateLimit: true });
+export const PUT = withApiHandler(updateLeaveRequest, { requireAuth: true });
+export const PATCH = withApiHandler(updateLeaveRequest, { requireAuth: true });
+export const DELETE = withApiHandler(deleteLeaveRequest, { requireAuth: true });

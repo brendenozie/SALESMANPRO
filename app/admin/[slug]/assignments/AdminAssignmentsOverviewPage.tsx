@@ -221,10 +221,11 @@ export default function AssignmentsPageClient({
     const method = isEdit ? 'PATCH' : 'POST';
     const payload = {
       ...formDataPayload,
+      companyId,
       course: undefined,
       classroom: undefined,
-      academicYearId: selectedYear || activeAcademicYearId,
-      termId: selectedTerm || activeTermId,
+      academicYearId: selectedYear !== 'All' ? selectedYear : activeAcademicYearId,
+      termId: selectedTerm !== 'All' ? selectedTerm : activeTermId,
     };
 
     try {
@@ -253,7 +254,7 @@ export default function AssignmentsPageClient({
   const handleDeleteAssignment = async (id: string) => {
     if (!confirm('Are you sure you want to delete this assignment? This action cannot be undone.')) return;
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/course-assignments/${id}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/course-assignments/${id}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
         credentials: 'include',
       });

@@ -416,7 +416,8 @@ export default function AdminExamsOverviewPage({
         credentials: 'include', 
       });
       if (res.ok) {
-        const data: ExamData[] = await res.json();
+        const json = await res.json();
+        const data: ExamData[] = Array.isArray(json) ? json : json.data || [];
         setExams(data);
       } else {
         const errorData = await res.json();
@@ -507,7 +508,7 @@ export default function AdminExamsOverviewPage({
         method: method,
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(examData),
+        body: JSON.stringify({ ...examData, companyId }),
       });
 
       if (res.ok) {
@@ -532,7 +533,7 @@ export default function AdminExamsOverviewPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exams/${examId}?companyId=${encodeURIComponent(companyId)}`, {
         credentials: 'include',
         method: 'DELETE',
       });
@@ -557,7 +558,7 @@ export default function AdminExamsOverviewPage({
         method: 'PATCH',
         credentials: 'include', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublished: !currentStatus }),
+        body: JSON.stringify({ isPublished: !currentStatus, companyId }),
       });
       if (res.ok) {
         await fetchExams();

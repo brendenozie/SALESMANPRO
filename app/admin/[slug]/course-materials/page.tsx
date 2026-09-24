@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
+import { serverFetchJson } from "@/lib/api/serverFetch";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface PageProps {
@@ -36,65 +37,36 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
   let fetchError: boolean = false;
 
   try {
-    // Fetch all materials for this company
-    const materialsRes = await fetch(
-      `${apiBaseUrl}/admin/course-materials?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
-    );
-    if (materialsRes.ok) {
-      const data = (await materialsRes.json()).data;
-      initialMaterials = data as CourseMaterialType[];
-    } else {
-      fetchError = true;
-    }
+    const [materialsRes, coursesRes, educatorsRes, levelsRes] = await Promise.all([
+      serverFetchJson<CourseMaterialType[]>(`/api/admin/course-materials?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any[]>(`/api/admin/courses?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<any[]>(`/api/admin/educators?companyId=${encodeURIComponent(companyId)}`),
+      serverFetchJson<AcademicLevelOption[]>(`/api/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`)
+    ]);
 
-    // Fetch all courses for this company
-    const coursesRes = await fetch(
-      `${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
-    );
-    if (coursesRes.ok) {
-      const fetchedCourses = (await coursesRes.json()).data as any[];
-      allCourses = fetchedCourses.map(c => ({
+    if (materialsRes.success && Array.isArray(materialsRes.data)) {
+      initialMaterials = materialsRes.data;
+    }
+    if (coursesRes.success && Array.isArray(coursesRes.data)) {
+      allCourses = coursesRes.data.map((c: any) => ({
         id: c.id,
         title: c.title,
         instructorName: c.instructorName,
         academicLevels: c.academicLevels,
       }));
-    } else {
-      fetchError = true;
     }
-
-    // Fetch all educators
-    const educatorsRes = await fetch(
-      `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
-    );
-    if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()).data as any[];
-      allEducators = fetchedEducators.map(e => ({
+    if (educatorsRes.success && Array.isArray(educatorsRes.data)) {
+      allEducators = educatorsRes.data.map((e: any) => ({
         id: e.id,
         name: e.name,
         email: e.email,
       }));
-    } else {
-      fetchError = true;
     }
-
-    // Fetch all academic levels
-    const academicLevelsRes = await fetch(
-      `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
-    );
-    if (academicLevelsRes.ok) {
-      const data = (await academicLevelsRes.json()).data;
-      allAcademicLevels = data as AcademicLevelOption[];
-    } else {
-      fetchError = true;
+    if (levelsRes.success && Array.isArray(levelsRes.data)) {
+      allAcademicLevels = levelsRes.data;
     }
-
   } catch (err: any) {
-    fetchError = true;
+    console.error("[CourseMaterialsPage] SSR fetch error:", err);
   }
 
   return (

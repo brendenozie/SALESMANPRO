@@ -7,49 +7,69 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// PUT /api/admin/library/categories/[id]
-const updateCategoryLogic = async (request: Request, { params }: RouteParams) => {
+// PUT /api/admin/library/issuance/[id]
+const updateIssuanceLogic = async (request: Request, { params }: RouteParams) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const body = await request.json();
-  const { name } = body;
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  const updatedCategory = await prisma.libraryCategory.update({
-    where: { id, companyId }, // Security: ensure it belongs to the company
-    data: { name },
+  const existing = await prisma.libraryIssuance.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Issuance not found in this company.", 404);
+  }
+
+  const updated = await prisma.libraryIssuance.update({
+    where: { id },
+    data: {
+      status: body.status || existing.status,
+      dueDate: body.dueDate ? new Date(body.dueDate) : existing.dueDate,
+      returnDate: body.returnDate ? new Date(body.returnDate) : existing.returnDate,
+      isDamaged: body.isDamaged !== undefined ? Boolean(body.isDamaged) : existing.isDamaged,
+    },
+    include: {
+      book: true,
+      libraryMember: {
+        include: {
+          student: true,
+          educator: { include: { user: true } },
+        },
+      },
+    },
   });
 
-  // Invalidate relevant caches
-  try {
-    await cacheDel(`tenant:${companyId}:libraryCategories:*`);
-    await cacheDel(`admin:libraryCategories:*`);
-  } catch (e) {}
-  return formatResponse(true, updatedCategory, "Category updated successfully", 200);
+  return formatResponse(true, updated, "Issuance record updated", 200);
 };
 
-export const PUT = withApiHandler(updateCategoryLogic, { requireAuth: true });
+export const PUT = withApiHandler(updateIssuanceLogic, { requireAuth: true });
 
-// DELETE /api/admin/library/categories/[id]
-const deleteCategoryLogic = async (request: Request, { params }: RouteParams) => {
+// DELETE /api/admin/library/issuance/[id]
+const deleteIssuanceLogic = async (request: Request, { params }: RouteParams) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  await prisma.libraryCategory.delete({
+  const existing = await prisma.libraryIssuance.findFirst({
     where: { id, companyId },
   });
+  if (!existing) {
+    return formatResponse(false, null, "Issuance not found in this company.", 404);
+  }
 
-  // Invalidate relevant caches
-  try {
-    await cacheDel(`tenant:${companyId}:libraryCategories:*`);
-    await cacheDel(`admin:libraryCategories:*`);
-  } catch (e) {}
-  return formatResponse(true, null, "Category removed from archive", 200);
+  // Delete fines attached to this issuance first
+  await prisma.libraryFine.deleteMany({ where: { issuanceId: id } });
+
+  await prisma.libraryIssuance.delete({
+    where: { id },
+  });
+
+  return formatResponse(true, null, "Issuance record deleted", 200);
 };
 
-export const DELETE = withApiHandler(deleteCategoryLogic, { requireAuth: true });
+export const DELETE = withApiHandler(deleteIssuanceLogic, { requireAuth: true });

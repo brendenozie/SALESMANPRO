@@ -17,12 +17,18 @@ const updateCategoryLogic = async (request: Request, { params }: RouteParams) =>
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
+  const existing = await prisma.libraryCategory.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Category not found in this company.", 404);
+  }
+
   const updatedCategory = await prisma.libraryCategory.update({
-    where: { id, companyId }, // Security: ensure it belongs to the company
+    where: { id },
     data: { name },
   });
 
-  // Invalidate relevant caches
   try {
     await cacheDel(`tenant:${companyId}:libraryCategories:*`);
     await cacheDel(`admin:libraryCategories:*`);
@@ -41,11 +47,17 @@ const deleteCategoryLogic = async (request: Request, { params }: RouteParams) =>
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  await prisma.libraryCategory.delete({
+  const existing = await prisma.libraryCategory.findFirst({
     where: { id, companyId },
   });
+  if (!existing) {
+    return formatResponse(false, null, "Category not found in this company.", 404);
+  }
 
-  // Invalidate relevant caches
+  await prisma.libraryCategory.delete({
+    where: { id },
+  });
+
   try {
     await cacheDel(`tenant:${companyId}:libraryCategories:*`);
     await cacheDel(`admin:libraryCategories:*`);

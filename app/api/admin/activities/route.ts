@@ -118,7 +118,7 @@ export const POST = withApiHandler(
         instructions,
         ageMin: ageMin ? Number(ageMin) : null,
         ageMax: ageMax ? Number(ageMax) : null,
-        durationMins: durationMins ? Number(durationMins) : null,
+        durationMins: durationMins ? Number(durationMins) : (body.durationMin ? Number(body.durationMin) : null),
         content: content ?? undefined,
         mediaAssetId: mediaAssetId ?? null,
         createdById: userId,

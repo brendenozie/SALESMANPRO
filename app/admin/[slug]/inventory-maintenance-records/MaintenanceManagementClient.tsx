@@ -13,12 +13,13 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
-const MaintenanceManagementClient = () => {
-  const maintenanceTasks = [
-    { id: 'MNT-402', asset: 'School Bus #04', category: 'Transport', task: 'Brake Pad Replacement', dueDate: 'Jan 20', priority: 'Critical', status: 'Scheduled' },
-    { id: 'MNT-415', asset: 'Main Server Rack', category: 'IT', task: 'Cooling System Flush', dueDate: 'Jan 16', priority: 'High', status: 'In Progress' },
-    { id: 'MNT-390', asset: 'Precision Scales', category: 'Science Lab', task: 'Annual Calibration', dueDate: 'Feb 05', priority: 'Medium', status: 'Pending' },
-  ];
+interface Props {
+  initialTasks?: any[];
+  schoolId?: string;
+}
+
+const MaintenanceManagementClient = ({ initialTasks = [], schoolId }: Props) => {
+  const [maintenanceTasks, setMaintenanceTasks] = useState<any[]>(initialTasks);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">

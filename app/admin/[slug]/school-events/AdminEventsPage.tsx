@@ -231,14 +231,16 @@ export default function AdminEventsPage({
     setIsLoading(true);
     setError(null);
     const method = eventData.id ? 'PATCH' : 'POST';
-    const url = eventData.id ? `${apiBaseUrl}/admin/events/${eventData.id}` : `${apiBaseUrl}/admin/events`;
+    const url = eventData.id
+      ? `${apiBaseUrl}/admin/events/${eventData.id}?companyId=${encodeURIComponent(companyId)}`
+      : `${apiBaseUrl}/admin/events`;
 
     try {
       const res = await fetch(url, {
         method,
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventData),
+        body: JSON.stringify({ ...eventData, companyId }),
       });
 
       if (res.ok) {
@@ -262,7 +264,7 @@ export default function AdminEventsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/events/${eventId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/events/${eventId}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -285,9 +287,12 @@ export default function AdminEventsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/events/${eventId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/events/${eventId}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'PATCH',
         credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventStatus: newStatus }),
+      });
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),
       });

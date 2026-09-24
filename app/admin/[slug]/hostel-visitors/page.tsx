@@ -1,45 +1,45 @@
-import { cookies } from "next/headers";
 import VisitorsPageClient from "./VisitorsPageClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function VisitorsPage({ params }: PageProps) {
+export default async function VisitorsSSRPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  const { slug }  = await params;
+  if (!company) {
+    return <div>Company not found</div>;
+  }
 
-  const cookieHeader = (await cookies()).toString();  
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const companyId = company.id;
 
-  let initialLogs = [];  
+  let initialLogs: any[] = [];  
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/hostel/visitors?companyId=${companyId}`,
-      { headers: { cookie: cookieHeader }, cache: 'no-store' }
-    );
-    if (res.ok) initialLogs = (await res.json()).data;
+    const rawVisitors = await prisma.hostelVisitor.findMany({
+      where: { companyId },
+      include: { 
+        student: { select: { firstName: true, lastName: true } },  
+        educator: { include: { user: { select: { name: true } } } } 
+      },
+      orderBy: { checkIn: 'desc' }
+    });
+
+    initialLogs = rawVisitors.map(v => ({
+      ...v,
+      checkIn: v.checkIn.toISOString(),
+      checkOut: v.checkOut ? v.checkOut.toISOString() : null,
+      createdAt: v.createdAt.toISOString(),
+      updatedAt: v.updatedAt.toISOString(),
+    }));
   } catch (err) { 
-    // console.error(err); 
-    }
+    console.error("[VisitorsSSRPage] Failed to query visitors", err);
+  }
 
   return (
     <VisitorsPageClient 

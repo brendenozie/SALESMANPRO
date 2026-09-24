@@ -16,8 +16,15 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  const updatedBook = await prisma.libraryBook.update({
+  const existing = await prisma.libraryBook.findFirst({
     where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Book not found in this company.", 404);
+  }
+
+  const updatedBook = await prisma.libraryBook.update({
+    where: { id },
     data: {
       title: body.title,
       author: body.author,
@@ -25,17 +32,18 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
       publisher: body.publisher,
       status: body.status,
       location: body.location,
-      // Re-connect to a different category if changed
-      categoryId: body.categoryId 
+      ...(body.categoryId ? { categoryId: body.categoryId } : {}),
+      ...(body.shelfLocation ? { shelfLocation: body.shelfLocation } : {}),
+      ...(body.condition ? { condition: body.condition } : {}),
+      ...(body.integrity !== undefined ? { integrity: Number(body.integrity) } : {}),
     },
-    include: { category: true }
+    include: { category: true },
   });
 
-    // Invalidate relevant caches
-    try {
-      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
-      await cacheDel(`admin:libraryBooks:*`);
-    } catch (e) {}
+  try {
+    await cacheDel(`tenant:${companyId}:libraryBooks:*`);
+    await cacheDel(`admin:libraryBooks:*`);
+  } catch (e) {}
 
   return formatResponse(true, updatedBook, "Archive record updated", 200);
 };
@@ -50,16 +58,26 @@ const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  await prisma.libraryBook.delete({
+  const existing = await prisma.libraryBook.findFirst({
     where: { id, companyId },
   });
+  if (!existing) {
+    return formatResponse(false, null, "Book not found in this company.", 404);
+  }
 
-    // Invalidate relevant caches
-    try {
-      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
-      await cacheDel(`admin:libraryBooks:*`);
-    } catch (e) {}
-    
+  // Clean dependent reservations and issuances safely
+  await prisma.libraryReservation.deleteMany({ where: { bookId: id } });
+  await prisma.libraryIssuance.deleteMany({ where: { bookId: id } });
+
+  await prisma.libraryBook.delete({
+    where: { id },
+  });
+
+  try {
+    await cacheDel(`tenant:${companyId}:libraryBooks:*`);
+    await cacheDel(`admin:libraryBooks:*`);
+  } catch (e) {}
+
   return formatResponse(true, null, "Volume removed from archive", 200);
 };
 

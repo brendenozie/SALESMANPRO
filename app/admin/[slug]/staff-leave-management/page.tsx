@@ -1,63 +1,59 @@
-import { cookies } from "next/headers";
 import LeaveManagementClient from "./LeaveManagementClient";
-
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LeaveManagementPage({ params }: PageProps) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+export default async function LeaveManagementSSRPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialRequests = [];  
-  let initialStaff = [];
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/leave?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialRequests = (await res.json()).data;
-    }
-  } catch (err) {
-    console.error("[LeaveManagementPage] Failed to load leave requests", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
 
-  const resStaff = await fetch(
-      `${apiBaseUrl}/admin/staff?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
+  const companyId = company.id;
 
-    if (resStaff.ok) {
-      const json = await resStaff.json();
-      initialStaff = json.data;
-    }
+  let initialRequests: any[] = [];  
+  let initialStaff: any[] = [];
+
+  try {
+    const [rawRequests, rawStaff] = await Promise.all([
+      prisma.leaveRequest.findMany({
+        where: { companyId },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          backupStaff: { select: { user: { select: { id: true, name: true } } } }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.staffProfile.findMany({
+        where: { companyId },
+        include: { user: { select: { id: true, name: true } } }
+      })
+    ]);
+
+    initialRequests = rawRequests.map(r => ({
+      ...r,
+      startDate: r.startDate.toISOString(),
+      endDate: r.endDate.toISOString(),
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+    }));
+
+    initialStaff = rawStaff.map(s => ({
+      id: s.id,
+      userId: s.userId,
+      name: s.user?.name || "Staff Member"
+    }));
+  } catch (err) {
+    console.error("[LeaveManagementSSRPage] Failed to query leave requests", err);
+  }
 
   return (
     <LeaveManagementClient

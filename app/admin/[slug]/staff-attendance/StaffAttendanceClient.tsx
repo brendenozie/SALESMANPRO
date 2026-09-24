@@ -68,7 +68,7 @@ const StaffAttendanceClient = ({ initialData, initialStaff, schoolId }: StaffAtt
   const refreshData = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch(`/api/admin/attendance?companyId=${schoolId}`);
+      const res = await fetch(`/api/admin/attendance?companyId=${schoolId}&type=staff`);
       if (!res.ok) throw new Error("Connection error");
       const data = await res.json();
       if (data.logs) {

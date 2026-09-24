@@ -12,7 +12,19 @@ import {
   ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 
-const InventoryReportsClient = () => {
+interface Props {
+  initialKpis?: any[];
+  schoolId?: string;
+}
+
+const InventoryReportsClient = ({ initialKpis, schoolId }: Props) => {
+  const kpis = initialKpis || [
+    { label: 'Total Asset Value', value: '$0', delta: 'Nominal', icon: ScaleIcon, color: 'text-amber-400' },
+    { label: 'Stock Items Managed', value: '0', delta: 'Current', icon: ArrowTrendingUpIcon, color: 'text-emerald-400' },
+    { label: 'Maintenance Ratio', value: '0%', delta: 'Optimal', icon: TrashIcon, color: 'text-rose-400' },
+    { label: 'Audit Verification', value: '100%', delta: 'Verified', icon: CircleStackIcon, color: 'text-blue-400' },
+  ];
+
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -32,7 +44,7 @@ const InventoryReportsClient = () => {
              <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all text-xs font-bold">
                 <CalendarIcon className="h-4 w-4" /> Fiscal Year 2026
              </button>
-             <button className="flex items-center gap-2 px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-xs transition-all shadow-lg shadow-amber-900/40">
+             <button className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-xs transition-all shadow-lg shadow-amber-900/40">
                 <ArrowDownTrayIcon className="h-4 w-4" /> Download Audit PDF
              </button>
           </div>
@@ -40,21 +52,19 @@ const InventoryReportsClient = () => {
 
         {/* Global Asset KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {[
-            { label: 'Total Asset Value', value: '$1.42M', delta: '+4.2%', icon: ScaleIcon, color: 'text-amber-400' },
-            { label: 'Stock Turnover', value: '3.2x', delta: 'Healthy', icon: ArrowTrendingUpIcon, color: 'text-emerald-400' },
-            { label: 'Wastage Rate', value: '1.2%', delta: '-0.4%', icon: TrashIcon, color: 'text-rose-400' },
-            { label: 'Audit Compliance', value: '100%', delta: 'Verified', icon: CircleStackIcon, color: 'text-blue-400' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-[2rem] hover:border-amber-500/30 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                <span className={`text-[10px] font-black ${stat.delta.startsWith('+') ? 'text-emerald-400' : 'text-slate-500'}`}>{stat.delta}</span>
+          {kpis.map((stat: any, i: number) => {
+            const Icon = stat.icon || ScaleIcon;
+            return (
+              <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-[2rem] hover:border-amber-500/30 transition-all">
+                <div className="flex justify-between items-start mb-4">
+                  <Icon className={`h-6 w-6 ${stat.color || "text-amber-400"}`} />
+                  <span className={`text-[10px] font-black ${stat.delta?.startsWith?.('+') ? 'text-emerald-400' : 'text-slate-500'}`}>{stat.delta}</span>
+                </div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
+                <h3 className="text-2xl font-black text-white mt-1">{stat.value}</h3>
               </div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
-              <h3 className="text-2xl font-black text-white mt-1">{stat.value}</h3>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Analytical Visuals */}

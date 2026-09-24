@@ -1,96 +1,101 @@
 import prisma from "@/server/db/prismadb";
-import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
+import { cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 
 /**
- * PATCH: Update existing term details
+ * GET: Fetch single gallery with items
+ */
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const gallery = await prisma.gallery.findUnique({
+      where: { id },
+      include: { items: { orderBy: { order: "asc" } } },
+    });
+
+    if (!gallery) {
+      return formatResponse(false, null, "Gallery not found", 404);
+    }
+
+    return formatResponse(true, gallery, "Gallery fetched successfully", 200);
+  } catch (error: any) {
+    return formatResponse(false, null, error.message || "Failed to fetch gallery", 500);
+  }
+}
+
+/**
+ * PATCH / PUT: Update existing gallery details
  */
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
 
-    const updatedTerm = await prisma.term.update({
-      where: { id: params.id },
+    const existing = await prisma.gallery.findUnique({ where: { id } });
+    if (!existing) {
+      return formatResponse(false, null, "Gallery not found", 404);
+    }
+
+    const updatedGallery = await prisma.gallery.update({
+      where: { id },
       data: {
-        name: body.name,
-        startDate: body.startDate ? new Date(body.startDate) : undefined,
-        endDate: body.endDate ? new Date(body.endDate) : undefined,
-        termNumber: body.termNumber ? parseInt(body.termNumber) : undefined,
+        ...(body.title && { title: body.title }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.type !== undefined && { type: body.type }),
+        ...(body.isFeatured !== undefined && { isFeatured: Boolean(body.isFeatured) }),
       },
+      include: { items: true },
     });
 
-    // Invalidate terms cache for this company
-    await cacheDel(`tenant:${updatedTerm.companyId}:terms:*`);
-    await cacheDel(`admin:terms:*`);
+    await cacheDel(`admin:galleries:${existing.companyId}`);
 
-    return formatResponse(true, updatedTerm, "Term updated successfully", 200);
+    return formatResponse(true, updatedGallery, "Gallery updated successfully", 200);
   } catch (error: any) {
-    // console.error("[TERM_PATCH_ERROR]:", error);
     return formatResponse(false, null, error.message || "Update failed", 500);
   }
 }
 
-/**
- * PUT/PATCH: Specific handler for Activating a Term
- * This ensures only one term is active per Academic Year
- */
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { companyId, academicYearId } = await req.json();
-
-    const activatedTerm = await prisma.$transaction(async (tx) => {
-      // 1. Deactivate all other terms in this specific academic year
-      await tx.term.updateMany({
-        where: { academicYearId, companyId, isActive: true },
-        data: { isActive: false },
-      });
-
-      // 2. Activate the target term
-      return await tx.term.update({
-        where: { id: params.id },
-        data: { isActive: true },
-      });
-    });
-
-    await cacheDel(`tenant:${companyId}:terms:*`);
-    await cacheDel(`admin:terms:*`);
-
-    return formatResponse(
-      true,
-      activatedTerm,
-      "Term activated successfully",
-      200,
-    );
-  } catch (error: any) {
-    return formatResponse(false, null, "Activation failed", 500);
-  }
+  return PATCH(req, context);
 }
 
 /**
- * DELETE: Remove a term
+ * DELETE: Remove a gallery and its items
  */
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const term = await prisma.term.delete({
-      where: { id: params.id },
+    const { id } = await params;
+    const existing = await prisma.gallery.findUnique({ where: { id } });
+
+    if (!existing) {
+      return formatResponse(false, null, "Gallery not found", 404);
+    }
+
+    // Delete gallery items first
+    await prisma.galleryItem.deleteMany({
+      where: { galleryId: id },
     });
 
-    // Clean up cache
-    await cacheDel(`tenant:${term.companyId}:terms:*`);
-    await cacheDel(`admin:terms:*`);
+    await prisma.gallery.delete({
+      where: { id },
+    });
 
-    return formatResponse(true, term, "Term deleted successfully", 200);
+    await cacheDel(`admin:galleries:${existing.companyId}`);
+
+    return formatResponse(true, null, "Gallery deleted successfully", 200);
   } catch (error: any) {
-    // console.error("[TERM_DELETE_ERROR]:", error);
     return formatResponse(false, null, error.message || "Delete failed", 500);
   }
 }

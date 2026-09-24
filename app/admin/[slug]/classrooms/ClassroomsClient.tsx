@@ -146,7 +146,7 @@ export default function ClassroomsClient({ initialClassrooms, academicLevels, co
     if (!confirm("Confirm complete decommissioning of selected room module?")) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/classrooms/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBaseUrl}/admin/classrooms/${id}?companyId=${encodeURIComponent(companyId)}`, { method: 'DELETE' });
       if (res.ok) await fetchClassrooms();
     } finally {
       setIsLoading(false);

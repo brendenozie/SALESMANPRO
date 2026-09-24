@@ -7,8 +7,8 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// PUT /api/admin/library/books/[id]
-const updateBookLogic = async (request: Request, { params }: RouteParams) => {
+// PUT /api/admin/library/members/[id]
+const updateMemberLogic = async (request: Request, { params }: RouteParams) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -16,51 +16,49 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  const updatedBook = await prisma.libraryBook.update({
+  const existing = await prisma.libraryMember.findFirst({
     where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Member not found in this company.", 404);
+  }
+
+  const updatedMember = await prisma.libraryMember.update({
+    where: { id },
     data: {
-      title: body.title,
-      author: body.author,
-      isbn: body.isbn,
-      publisher: body.publisher,
-      status: body.status,
-      location: body.location,
-      // Re-connect to a different category if changed
-      categoryId: body.categoryId 
+      status: body.status || existing.status,
     },
-    include: { category: true }
+    include: {
+      student: true,
+      educator: { include: { user: true } },
+    },
   });
 
-    // Invalidate relevant caches
-    try {
-      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
-      await cacheDel(`admin:libraryBooks:*`);
-    } catch (e) {}
-
-  return formatResponse(true, updatedBook, "Archive record updated", 200);
+  return formatResponse(true, updatedMember, "Member updated successfully", 200);
 };
 
-export const PUT = withApiHandler(updateBookLogic, { requireAuth: true });
+export const PUT = withApiHandler(updateMemberLogic, { requireAuth: true });
 
-// DELETE /api/admin/library/books/[id]
-const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
+// DELETE /api/admin/library/members/[id]
+const deleteMemberLogic = async (request: Request, { params }: RouteParams) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
   if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  await prisma.libraryBook.delete({
+  const existing = await prisma.libraryMember.findFirst({
     where: { id, companyId },
   });
+  if (!existing) {
+    return formatResponse(false, null, "Member not found in this company.", 404);
+  }
 
-    // Invalidate relevant caches
-    try {
-      await cacheDel(`tenant:${companyId}:libraryBooks:*`);
-      await cacheDel(`admin:libraryBooks:*`);
-    } catch (e) {}
-    
-  return formatResponse(true, null, "Volume removed from archive", 200);
+  await prisma.libraryMember.delete({
+    where: { id },
+  });
+
+  return formatResponse(true, null, "Member removed successfully", 200);
 };
 
-export const DELETE = withApiHandler(deleteBookLogic, { requireAuth: true });
+export const DELETE = withApiHandler(deleteMemberLogic, { requireAuth: true });

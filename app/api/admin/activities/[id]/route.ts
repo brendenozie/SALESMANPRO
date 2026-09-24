@@ -84,7 +84,9 @@ export const PATCH = withApiHandler(
         instructions: instructions !== undefined ? instructions : undefined,
         ageMin: ageMin !== undefined ? (ageMin ? Number(ageMin) : null) : undefined,
         ageMax: ageMax !== undefined ? (ageMax ? Number(ageMax) : null) : undefined,
-        durationMins: durationMins !== undefined ? (durationMins ? Number(durationMins) : null) : undefined,
+        durationMins: durationMins !== undefined
+          ? (durationMins ? Number(durationMins) : null)
+          : (body.durationMin !== undefined ? (body.durationMin ? Number(body.durationMin) : null) : undefined),
         content: content !== undefined ? content : undefined,
         mediaAssetId: mediaAssetId !== undefined ? mediaAssetId : undefined,
         isPublished: isPublished !== undefined ? Boolean(isPublished) : undefined,

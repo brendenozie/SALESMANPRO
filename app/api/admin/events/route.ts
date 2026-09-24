@@ -326,20 +326,41 @@ async function createEvent(request: Request) {
     );
   }
 
-  // Validate organizerId exists (Assuming organizerId is a SalesAgent ID that links to a User)
-  const existingOrganizer = await prisma.salesAgent.findUnique({
+  // Validate organizerId exists (Can be User, SalesAgent, or Staff)
+  let finalOrganizerUserId: string | undefined;
+
+  const directUser = await prisma.user.findUnique({
     where: { id: organizerId },
-    include: { user: { select: { id: true, name: true, email: true } } },
+    select: { id: true },
   });
-  if (!existingOrganizer) {
+  if (directUser) {
+    finalOrganizerUserId = directUser.id;
+  } else {
+    const existingOrganizer = await prisma.salesAgent.findUnique({
+      where: { id: organizerId },
+      include: { user: { select: { id: true } } },
+    });
+    if (existingOrganizer?.user?.id) {
+      finalOrganizerUserId = existingOrganizer.user.id;
+    } else {
+      const staffMember = await prisma.staff.findUnique({
+        where: { id: organizerId },
+        select: { userId: true },
+      });
+      if (staffMember?.userId) {
+        finalOrganizerUserId = staffMember.userId;
+      }
+    }
+  }
+
+  if (!finalOrganizerUserId) {
     return formatResponse(
       false,
       null,
-      "Provided organizerId (Sales Agent) does not exist.",
+      "Provided organizerId does not match a valid User, Staff, or Sales Agent.",
       400,
     );
   }
-  const finalOrganizerUserId = existingOrganizer.user?.id; // Use the User ID linked to the Sales Agent
 
   // Validate companyId exists
   const existingCompany = await prisma.company.findUnique({
@@ -443,7 +464,7 @@ async function createEvent(request: Request) {
     await cacheDel(`tenant:${companyId}:events:*`);
     await cacheDel(`admin:events:*`);
   } catch (e) {}
-  return formatResponse(true, { data: responseData }, null, 201);
+  return formatResponse(true, responseData, "Event created successfully", 201);
 }
 
 // Export the handlers wrapped in the `withApiHandler` utility.

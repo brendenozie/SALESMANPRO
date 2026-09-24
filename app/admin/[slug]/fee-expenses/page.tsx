@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -12,8 +12,6 @@ interface Props {
 
 export default async function AdminFeeExpensesPage({ params }: Props) {
   const { slug } = await params;
-  const cookieHeaders = (await cookies()).toString();
-
   const session = await getAuthSession();
   const identifier = slug || session?.user?.id || "";
   const company = await findCompanyCached(identifier, "page");
@@ -27,24 +25,16 @@ export default async function AdminFeeExpensesPage({ params }: Props) {
   }
 
   const companyId = company.id;
-  let initialExpenses: any[] = [];
 
-  try {
-    const expensesRes = await fetch(
-      `${apiBaseUrl}/admin/expenses?companyId=${encodeURIComponent(companyId)}`,
-      {
-        next: { revalidate: 60 },
-        headers: { cookie: cookieHeaders },
-      }
-    );
-    if (expensesRes.ok) {
-      initialExpenses = (await expensesRes.json()) || [];
-    }
-  } catch (err: any) {
-    // Proceed with empty expenses on failure
-  }
+  const initialExpenses = await prisma.expense.findMany({
+    where: { companyId },
+    orderBy: { date: "desc" },
+  }).catch(() => []);
 
   return (
-    <ExpenseTrackingClient companyId={companyId} initialExpenses={initialExpenses} />
+    <ExpenseTrackingClient
+      companyId={companyId}
+      initialExpenses={JSON.parse(JSON.stringify(initialExpenses))}
+    />
   );
 }

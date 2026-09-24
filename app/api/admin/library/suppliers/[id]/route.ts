@@ -1,58 +1,66 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-const getSupplierById = async (
-  request: Request,
-  { params }: { params: { id: string } }
-) => {
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+
+// PUT /api/admin/library/suppliers/[id]
+const updateSupLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
-  const { id } = params;
+  const body = await request.json();
 
-  if (!companyId || !id) {
-    return NextResponse.json(
-      { success: false, message: "Missing parameters" },
-      { status: 400 }
-    );
-  }
+  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-  // Optional: Check cache first
-  const cacheKey = `admin:librarySupplier:${companyId}:${id}`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return NextResponse.json({ success: true, data: cached, message: "Fetched (Cached)" });
-  } catch (e) {}
-
-  const supplier = await prisma.librarySupplier.findFirst({
-    where: {
-      id,
-      companyId,
-    },
-    // include: {
-    //   suppliedBooks: true, // optional if relation exists
-    //   _count: {
-    //     select: { suppliedBooks: true },
-    //   },
-    // },
+  const existing = await prisma.librarySupplier.findFirst({
+    where: { id, companyId },
   });
-  
-
-  if (!supplier) {
-    return NextResponse.json(
-      { success: false, message: "Supplier not found" },
-      { status: 404 }
-    );
+  if (!existing) {
+    return formatResponse(false, null, "Supplier not found in this company.", 404);
   }
 
-  // Cache the supplier data
-  try {
-    await cacheSet(cacheKey, {data: supplier}, 60); // Cache for 60 seconds
-  } catch (e) {}
+  const updated = await prisma.librarySupplier.update({
+    where: { id },
+    data: {
+      name: body.name !== undefined ? body.name : existing.name,
+      contactEmail: body.contactEmail !== undefined ? body.contactEmail : existing.contactEmail,
+      phone: body.phone !== undefined ? body.phone : existing.phone,
+      address: body.address !== undefined ? body.address : existing.address,
+      categoryId: body.categoryId !== undefined ? body.categoryId : existing.categoryId,
+      leadTime: body.leadTime !== undefined ? body.leadTime : existing.leadTime,
+      reliability: body.reliability !== undefined ? Number(body.reliability) : existing.reliability,
+      status: body.status !== undefined ? body.status : existing.status,
+    },
+  });
 
-  return NextResponse.json({ success: true, data: supplier });
+  return formatResponse(true, updated, "Supplier updated successfully", 200);
 };
 
-export const GET = withApiHandler(getSupplierById, { requireAuth: true });
+export const PUT = withApiHandler(updateSupLogic, { requireAuth: true });
+
+// DELETE /api/admin/library/suppliers/[id]
+const deleteSupLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+
+  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
+
+  const existing = await prisma.librarySupplier.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Supplier not found in this company.", 404);
+  }
+
+  await prisma.librarySupplier.delete({
+    where: { id },
+  });
+
+  return formatResponse(true, null, "Supplier removed successfully", 200);
+};
+
+export const DELETE = withApiHandler(deleteSupLogic, { requireAuth: true });

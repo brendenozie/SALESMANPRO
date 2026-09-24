@@ -1,52 +1,43 @@
-// app/admin/roles/[slug]/page.tsx
-import { cookies } from "next/headers";
 import RolesManagementClient from "./RolesManagementClient";
-
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
-export default async function RolesPage({ params }: { params: Promise<{ slug: string }> }) {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function RolesSSRPage({ params }: PageProps) {
   const { slug } = await params;
-  const cookieHeader = (await cookies()).toString();
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialData = { roleCounts: [], profiles: [] };
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  if (!company) {
+    return <div>Company not found</div>;
+  }
 
+  const companyId = company.id;
+
+  let initialRoles: any[] = [];
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/roles?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
+    const rawRoles = await prisma.role.findMany({
+      where: { companyId },
+      orderBy: { createdAt: 'desc' }
+    });
 
-    if (res.ok) {
-      initialData = (await res.json()).data;
-      // console.log("Fetched roles data:", initialData);
-    }
+    initialRoles = rawRoles.map(r => ({
+      ...r,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+    }));
   } catch (err) {
-    console.error("Failed to load roles", err);
+    console.error("[RolesSSRPage] Failed to query roles", err);
   }
 
   return (
     <RolesManagementClient
-      initialData={initialData}
+      initialRoles={initialRoles}
       companyId={companyId}
     />
   );

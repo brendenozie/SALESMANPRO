@@ -144,7 +144,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
     setIsLoading(true);
     setError(null);
     try {
-      const res = await clientFetchJson(`/api/admin/parents/${parentId}`, {
+      const res = await clientFetchJson(`/api/admin/parents/${parentId}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
       });
 

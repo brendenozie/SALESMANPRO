@@ -12,36 +12,26 @@ import {
   EllipsisVerticalIcon
 } from "@heroicons/react/24/outline";
 
-const InventoryCategoriesClient = () => {
-  const categories = [
-    { 
-      id: 'CAT-01', 
-      name: 'IT Infrastructure', 
-      sub: ['Laptops', 'Servers', 'Projectors'], 
-      items: 412, 
-      value: '$120,400',
-      icon: ComputerDesktopIcon,
-      color: 'text-blue-400' 
-    },
-    { 
-      id: 'CAT-02', 
-      name: 'Science Laboratory', 
-      sub: ['Chemicals', 'Glassware', 'Models'], 
-      items: 850, 
-      value: '$45,200',
-      icon: BeakerIcon,
-      color: 'text-orange-400' 
-    },
-    { 
-      id: 'CAT-03', 
-      name: 'Furniture & Decor', 
-      sub: ['Desks', 'Chairs', 'Cabinets'], 
-      items: 1200, 
-      value: '$88,000',
-      icon: HomeModernIcon,
-      color: 'text-emerald-400' 
-    },
-  ];
+interface Props {
+  initialCategories?: any[];
+  companyId?: string;
+}
+
+const InventoryCategoriesClient = ({ initialCategories = [], companyId }: Props) => {
+  const [categories, setCategories] = useState<any[]>(
+    initialCategories.length > 0
+      ? initialCategories
+      : [
+          {
+            id: 'CAT-GEN',
+            name: 'General School Supplies',
+            sub: ['Stationery', 'Textbooks', 'Laboratory Materials'],
+            items: 0,
+            value: '$0',
+            color: 'text-orange-400',
+          },
+        ]
+  );
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -68,8 +58,8 @@ const InventoryCategoriesClient = () => {
           {categories.map((cat) => (
             <div key={cat.id} className="group bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-8 hover:bg-slate-900/60 transition-all relative overflow-hidden">
               <div className="flex justify-between items-start mb-8">
-                <div className={`p-4 bg-slate-800 rounded-2xl ${cat.color}`}>
-                  <cat.icon className="h-8 w-8" />
+                <div className={`p-4 bg-slate-800 rounded-2xl ${cat.color || "text-orange-400"}`}>
+                  {cat.icon ? <cat.icon className="h-8 w-8" /> : <FolderPlusIcon className="h-8 w-8 text-orange-400" />}
                 </div>
                 <button className="text-slate-600 hover:text-white transition-colors">
                   <EllipsisVerticalIcon className="h-6 w-6" />

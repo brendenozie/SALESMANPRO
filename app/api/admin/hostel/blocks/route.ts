@@ -23,13 +23,12 @@ export async function GET(req: Request) {
       rooms: {
         select: {
           capacity: true,
-          allocations: { where: { status: "ACTIVE" } } // Adjust status based on your schema
+          allocations: { where: { status: "ACTIVE" } }
         }
       }
     }
   });
 
-  // Transform data to include aggregated stats the UI expects
   const formattedBlocks = blocks.map(block => ({
     ...block,
     roomCount: block._count.rooms,
@@ -49,14 +48,65 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { name, type, companyId } = body;
+  try {
+    const body = await req.json();
+    const { name, type, companyId } = body;
 
-  const block = await prisma.hostelBlock.create({
-    data: { name, type, companyId }
-  });
+    if (!name || !type || !companyId) {
+      return formatResponse(false, null, "Missing required fields (name, type, companyId)", 400);
+    }
 
-  return formatResponse(true, block, "Block created successfully", 201);
+    const block = await prisma.hostelBlock.create({
+      data: { name, type, companyId }
+    });
+
+    try {
+      await cacheDel(`tenant:${companyId}:blocks:*`);
+      await cacheDel(`admin:blocks:*`);
+    } catch (e) {}
+
+    return formatResponse(true, block, "Block created successfully", 201);
+  } catch (error: any) {
+    console.error("[BLOCK_CREATE_ERROR]", error);
+    return formatResponse(false, null, error.message || "Failed to create block", 500);
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, name, type, companyId } = body;
+
+    if (!id) {
+      return formatResponse(false, null, "Block ID is required", 400);
+    }
+
+    const existing = await prisma.hostelBlock.findUnique({
+      where: { id }
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Block not found", 404);
+    }
+
+    const updated = await prisma.hostelBlock.update({
+      where: { id },
+      data: {
+        name: name || existing.name,
+        type: type || existing.type,
+      }
+    });
+
+    try {
+      await cacheDel(`tenant:${existing.companyId}:blocks:*`);
+      await cacheDel(`admin:blocks:*`);
+    } catch (e) {}
+
+    return formatResponse(true, updated, "Block updated successfully", 200);
+  } catch (error: any) {
+    console.error("[BLOCK_UPDATE_ERROR]", error);
+    return formatResponse(false, null, error.message || "Failed to update block", 500);
+  }
 }
 
 export async function DELETE(req: Request) {
@@ -66,15 +116,43 @@ export async function DELETE(req: Request) {
   if (!id) return formatResponse(false, null, "ID required", 400);
 
   try {
+    const block = await prisma.hostelBlock.findUnique({
+      where: { id },
+      include: {
+        rooms: {
+          include: {
+            allocations: { where: { status: "ACTIVE" } }
+          }
+        }
+      }
+    });
+
+    if (!block) {
+      return formatResponse(false, null, "Block not found", 404);
+    }
+
+    const hasActiveResidents = block.rooms.some(r => r.allocations.length > 0);
+    if (hasActiveResidents) {
+      return formatResponse(false, null, "Cannot delete block with active residents", 400);
+    }
+
+    // Cascade delete rooms, maintenance requests, and past allocations of this block
+    for (const r of block.rooms) {
+      await prisma.hostelMaintenanceRequest.deleteMany({ where: { roomId: r.id } });
+      await prisma.hostelAllocation.deleteMany({ where: { roomId: r.id } });
+    }
+    await prisma.hostelRoom.deleteMany({ where: { blockId: id } });
+
     await prisma.hostelBlock.delete({ where: { id } });
     
     try {
-      await cacheDel(`tenant:${id}:blocks:*`);
+      await cacheDel(`tenant:${block.companyId}:blocks:*`);
       await cacheDel(`admin:blocks:*`);
     } catch (e) {}
 
     return formatResponse(true, null, "Block deleted successfully", 200);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("[BLOCK_DELETE_ERROR]", error);
     return formatResponse(false, null, "Cannot delete block with active rooms", 400);
   }
 }

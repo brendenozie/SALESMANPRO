@@ -12,14 +12,14 @@ import {
   ExclamationCircleIcon
 } from "@heroicons/react/24/outline";
 
-const IssuanceManagementClient = () => {
-  const [filter, setFilter] = useState("All");
+interface Props {
+  initialRecords?: any[];
+  schoolId?: string;
+}
 
-  const issuanceRecords = [
-    { id: 'ISS-881', item: 'MacBook Air M2 (IT-LAP-042)', staff: 'Sarah Jenkins', dept: 'Mathematics', date: 'Jan 10', type: 'Fixed Asset', status: 'In Use' },
-    { id: 'ISS-885', item: 'Hydrochloric Acid (2L)', staff: 'Dr. Alistair Cook', dept: 'Science', date: 'Jan 14', type: 'Consumable', status: 'Consumed' },
-    { id: 'ISS-889', item: 'Basketball Set (x12)', staff: 'Marcus V.', dept: 'Sports', date: 'Jan 12', type: 'Returnable', status: 'Overdue' },
-  ];
+const IssuanceManagementClient = ({ initialRecords = [], schoolId }: Props) => {
+  const [filter, setFilter] = useState("All");
+  const [issuanceRecords, setIssuanceRecords] = useState<any[]>(initialRecords);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">

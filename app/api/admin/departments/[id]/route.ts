@@ -1,32 +1,35 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/departments/[id]/route.ts
 import { z } from "zod";
 import prisma from "@/server/db/prismadb";
-import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { withApiHandler, HandlerContext } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
 // --- Validation Schemas ---
 const updateDepartmentSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
-  description: z.string().optional(),
-  headId: z.string().uuid().optional(),
+  description: z.string().optional().nullable(),
+  headId: z.string().optional().nullable(),
 });
 
 // --- GET /api/departments/[id] ---
-// Fetch a single department
-async function getDepartment(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+async function getDepartment(request: Request, context: HandlerContext) {
+  const id = context.params?.id;
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+  const companyId = searchParams.get("companyId") || context.companyId || context.user?.companyId;
 
-  const cacheKey = buildTenantCacheKey(companyId, "departments", {});
+  if (!id) {
+    return formatResponse(false, null, "Department ID is required", 400);
+  }
+
+  const cacheKey = buildTenantCacheKey(companyId, "departments", { id });
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
-  const department = await prisma.department.findUnique({
-    where: { id, companyId: companyId || undefined },
+
+  const department = await prisma.department.findFirst({
+    where: { id, ...(companyId ? { companyId } : {}) },
     include: {
       _count: {
         select: { educators: true, courses: true },
@@ -46,67 +49,64 @@ async function getDepartment(request: Request, { params }: { params: { id: strin
     return formatResponse(false, null, "Department not found", 404);
   }
 
-  try { await cacheSet(cacheKey, {data: {
-        id: department.id,
-        name: department.name,
-        description: department.description,
-        head: department.head,
-        educatorCount: department._count.educators,
-        courseCount: department._count.courses,
-        createdAt: department.createdAt,
-        updatedAt: department.updatedAt,
-      }
-    }, 300); } catch (e) {}
+  const formattedDepartment = {
+    id: department.id,
+    name: department.name,
+    description: department.description,
+    head: department.head,
+    educatorCount: department._count.educators,
+    courseCount: department._count.courses,
+    createdAt: department.createdAt,
+    updatedAt: department.updatedAt,
+  };
 
-  // --- Final Response ---
-    return formatResponse(true, 
-      {data: {
-        id: department.id,
-        name: department.name,
-        description: department.description,
-        head: department.head,
-        educatorCount: department._count.educators,
-        courseCount: department._count.courses,
-        createdAt: department.createdAt,
-        updatedAt: department.updatedAt,
-      }
-    },null,200
-    );
- 
+  try {
+    await cacheSet(cacheKey, formattedDepartment, 300);
+  } catch (e) {}
+
+  return formatResponse(true, formattedDepartment, "Department fetched successfully", 200);
 }
 
 // --- PUT /api/departments/[id] ---
-// Update department
-async function updateDepartment(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+async function updateDepartment(request: Request, context: HandlerContext) {
+  const id = context.params?.id;
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+  const companyId = searchParams.get("companyId") || context.companyId || context.user?.companyId;
+
+  if (!id) {
+    return formatResponse(false, null, "Department ID is required", 400);
+  }
 
   const body = await request.json();
-
   const parsed = updateDepartmentSchema.safeParse(body);
   if (!parsed.success) {
     return formatResponse(false, null, parsed.error.format(), 400);
   }
 
-  // Ensure department exists
-  const existing = await prisma.department.findUnique({ where: { id, companyId: companyId || undefined   } });
+  // Ensure department exists and belongs to the company
+  const existing = await prisma.department.findFirst({
+    where: { id, ...(companyId ? { companyId } : {}) },
+  });
   if (!existing) {
-    return formatResponse(false, null, "Department not found", 404);
+    return formatResponse(false, null, "Department not found in this company", 404);
   }
 
   try {
     const updatedDepartment = await prisma.department.update({
-      where: { id, companyId: companyId || undefined },
-      data: parsed.data,
+      where: { id: existing.id },
+      data: {
+        ...(parsed.data.name !== undefined && { name: parsed.data.name }),
+        ...(parsed.data.description !== undefined && { description: parsed.data.description }),
+        ...(parsed.data.headId !== undefined && { headId: parsed.data.headId }),
+      },
     });
 
     try {
       await cacheDel(`tenant:${companyId}:departments:*`);
       await cacheDel(`admin:departments:*`);
     } catch (e) {}
-    return formatResponse(true, {data: updatedDepartment  },null,200 );
-    
+
+    return formatResponse(true, updatedDepartment, "Department updated successfully", 200);
   } catch (error: any) {
     if (error.code === "P2002" && error.meta?.target?.includes("name")) {
       return formatResponse(false, null, "A department with this name already exists.", 400);
@@ -116,22 +116,34 @@ async function updateDepartment(request: Request, { params }: { params: { id: st
 }
 
 // --- DELETE /api/departments/[id] ---
-// Delete department
-async function deleteDepartment(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+async function deleteDepartment(request: Request, context: HandlerContext) {
+  const id = context.params?.id;
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+  const companyId = searchParams.get("companyId") || context.companyId || context.user?.companyId;
+
+  if (!id) {
+    return formatResponse(false, null, "Department ID is required", 400);
+  }
+
+  const existing = await prisma.department.findFirst({
+    where: { id, ...(companyId ? { companyId } : {}) },
+  });
+
+  if (!existing) {
+    return formatResponse(false, null, "Department not found in this company", 404);
+  }
 
   try {
-    const deleted = await prisma.department.delete({ where: { id, companyId: companyId || undefined } });
-    
+    const deleted = await prisma.department.delete({
+      where: { id: existing.id },
+    });
+
     try {
       await cacheDel(`tenant:${companyId}:departments:*`);
       await cacheDel(`admin:departments:*`);
     } catch (e) {}
-    return formatResponse(true, {data: { deletedDepartmentId: deleted.id, message: "Department deleted successfully" }  },null,200 );
-    
-    
+
+    return formatResponse(true, { deletedDepartmentId: deleted.id }, "Department deleted successfully", 200);
   } catch (error: any) {
     if (error.code === "P2003") {
       return formatResponse(false, null, "Cannot delete department: It is linked to existing educators or courses. Please reassign them first.", 400);

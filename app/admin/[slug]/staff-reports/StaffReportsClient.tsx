@@ -59,7 +59,7 @@ const StaffReportsClient = ({ companyId }: StaffReportsClientProps) => {
     try {
       const res = await fetch(`/api/admin/reports?companyId=${companyId}`);
       const json = await res.json();
-      setData(json);
+      setData(json.data || json);
     } catch (err) {
       console.error("Failed to fetch workforce analytics", err);
       toast.error("Failed to load HR reports");

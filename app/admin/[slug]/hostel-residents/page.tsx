@@ -1,58 +1,72 @@
-// app/admin/[slug]/residents/page.tsx
-import { cookies } from "next/headers";
-import ResidentsPageClient from './ResidentsPageClient'
+import ResidentsPageClient from './ResidentsPageClient';
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export default async function ResidentsPage({ params }: PageProps) {
+export default async function HostelResidentsSSRPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  const { slug }  = await params;
+  if (!company) {
+    return <div>Company not found</div>;
+  }
 
-  const cookieHeader = (await cookies()).toString();
+  const companyId = company.id;
 
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
-
-  let initialResidents = [];  
+  let residents: any[] = [];
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/hostel/residents?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
+    const rawAllocations = await prisma.hostelAllocation.findMany({
+      where: {
+        status: "ACTIVE",
+        room: { block: { companyId } }
+      },
+      include: {
+        hostelMember: {
+          include: {
+            student: {
+              include: { user: { select: { name: true } } }
+            },
+            educator: {
+              include: { user: { select: { name: true } } }
+            },
+          }
+        },
+        room: true,
+      },
+      orderBy: { createdAt: "desc" }
+    });
 
-    if (res.ok) {
-      initialResidents = (await res.json()).data;
-      // console.log("[ResidentsPage] Fetched residents:", initialResidents);
-    }
+    residents = rawAllocations.map((res) => {
+      const member = res.hostelMember;
+      if (!member) return null;
+
+      return {
+        id: member.id,
+        allocationId: res.id,
+        displayId: member.memberId || member.id.slice(-7).toUpperCase(),
+        studentId: member.student?.admissionNumber || member.memberId || member.id.slice(-7).toUpperCase(),
+        name: member.student
+          ? `${member.student.firstName} ${member.student.lastName}`
+          : member.educator?.user?.name || "Resident",
+        room: res.room?.roomNumber || "Unassigned",
+        phone: member.student?.phone || member.educator?.phone || "No Contact",
+        status: "In-House"
+      };
+    }).filter(Boolean);
   } catch (err) {
-    // console.error("[ResidentsPage] Error:", err);
+    console.error("[HostelResidentsSSRPage] Failed to query residents", err);
   }
 
   return (
-    <ResidentsPageClient
-      initialResidents={initialResidents}
-      schoolId={companyId}
+    <ResidentsPageClient 
+      initialResidents={residents}
+      schoolId={companyId} 
     />
   );
 }

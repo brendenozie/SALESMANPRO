@@ -1,90 +1,58 @@
-import { cookies } from "next/headers";
 import LibrarySuppliersClient from "./LibrarySuppliersClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 export default async function LibrarySuppliersPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug }  = await params;
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  const cookieHeader = (await cookies()).toString();
-
-  let initialSuppliers = [];
-  let initialCategories = [];
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
-
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/library/suppliers?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
-
-    if (res.ok) {
-      const result = await res.json();
-      // Map database fields to client interface fields
-      initialSuppliers = result.data.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        phone: s.phone || "N/A",
-        category: s.category,
-        contact: s.contactEmail,
-        leadTime: s.leadTime || "7 Days",
-        status: s.status || "Active",
-        reliability: s.reliability ?? 100,
-      }));
-
-    }
-
-    const resCategories = await fetch(
-      `${apiBaseUrl}/admin/library/suppliers-categories?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
-
-    if (resCategories.ok) {
-      const result = await resCategories.json();
-      // Map database fields to client interface fields
-      initialCategories = result.data.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        phone: s.phone || "N/A",
-        category: s.category,
-        contact: s.contactEmail,
-        leadTime: s.leadTime || "7 Days",
-        status: s.status || "Active",
-        reliability: s.reliability ?? 100,
-      }));
-
-    }
-
-  } catch (err) {
-    // console.error("[LibrarySuppliersPage] Error:", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
+
+  const companyId = company.id;
+
+  const [suppliersRaw, categoriesRaw] = await Promise.all([
+    prisma.librarySupplier.findMany({
+      where: { companyId },
+      include: { category: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.librarySupplierCategory.findMany({
+      where: { companyId },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const initialSuppliers = suppliersRaw.map((s) => ({
+    id: s.id,
+    name: s.name,
+    phone: s.phone || "N/A",
+    category: s.category?.name || "General",
+    contact: s.contactEmail,
+    leadTime: s.leadTime || "7 Days",
+    status: s.status || "Active",
+    reliability: s.reliability ?? 100,
+  }));
+
+  const initialCategories = categoriesRaw.map((c) => ({
+    id: c.id,
+    name: c.name,
+    phone: "N/A",
+    category: c.name,
+    contact: "",
+    leadTime: "7 Days",
+    status: "Active",
+    reliability: 100,
+  }));
 
   return (
     <LibrarySuppliersClient 
-      initialSuppliers={initialSuppliers} 
-      initialCategories={initialCategories}
+      initialSuppliers={JSON.parse(JSON.stringify(initialSuppliers))} 
+      initialCategories={JSON.parse(JSON.stringify(initialCategories))}
       schoolId={companyId} 
     />
   );

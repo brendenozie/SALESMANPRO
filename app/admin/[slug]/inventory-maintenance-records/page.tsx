@@ -1,56 +1,73 @@
-import { cookies } from "next/headers";
 import MaintenanceManagementClient from "./MaintenanceManagementClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function InventoryDashboardPage({ params }: PageProps) {
+export default async function InventoryMaintenanceRecordsPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
 
-  const { slug }  = await params;
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  const cookieHeader = (await cookies()).toString();
-
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
-
-  let initialMembers = [];  
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/inventory-dashboard/data?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialMembers = (await res.json()).data;
-    }
-  } catch (err) {
-    // console.error("[LibraryMembersPage] Failed to load members", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
+
+  const companyId = company.id;
+
+  const [assetsNeedingMaintenance, trackingMaintenance] = await Promise.all([
+    prisma.asset.findMany({
+      where: {
+        companyId,
+        status: { in: ["MAINTENANCE", "DISPOSED"] },
+      },
+      orderBy: { updatedAt: "desc" },
+    }).catch(() => []),
+    prisma.assetTracking.findMany({
+      where: {
+        asset: { companyId },
+        action: "MAINTENANCE",
+      },
+      include: { asset: true },
+      orderBy: { date: "desc" },
+    }).catch(() => []),
+  ]);
+
+  const tasks: any[] = [];
+
+  assetsNeedingMaintenance.forEach((asset) => {
+    tasks.push({
+      id: `MNT-${asset.id.slice(-6).toUpperCase()}`,
+      asset: asset.name,
+      category: asset.category,
+      task: "Scheduled Servicing & Inspection",
+      dueDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      priority: asset.status === "MAINTENANCE" ? "Critical" : "Medium",
+      status: "In Progress",
+    });
+  });
+
+  trackingMaintenance.forEach((track) => {
+    tasks.push({
+      id: `LOG-${track.id.slice(-6).toUpperCase()}`,
+      asset: track.asset?.name || "Equipment Unit",
+      category: track.asset?.category || "General",
+      task: track.notes || "Routine Preventative Maintenance",
+      dueDate: new Date(track.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      priority: "Routine",
+      status: "Completed",
+    });
+  });
 
   return (
     <MaintenanceManagementClient
-      // initialMembers={initialMembers}
-      // schoolId={companyId}
+      initialTasks={JSON.parse(JSON.stringify(tasks))}
+      schoolId={companyId}
     />
   );
 }

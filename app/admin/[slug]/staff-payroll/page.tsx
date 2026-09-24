@@ -1,63 +1,63 @@
-import { cookies } from "next/headers";
 import PayrollManagementClient from "./PayrollManagementClient";
-
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function PayrollManagementPage({ params }: PageProps) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+export default async function PayrollManagementSSRPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialData = []; 
-  let initialStaff = []; 
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/payroll?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialData = (await res.json()).data;
-    }
-  } catch (err) {
-    console.error("[PayrollManagementPage] Failed to load payroll data", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
 
-  const resStaff = await fetch(
-      `${apiBaseUrl}/admin/staff?companyId=${encodeURIComponent(companyId)}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
+  const companyId = company.id;
+  const month = new Date().getMonth() + 1;
 
-    if (resStaff.ok) {
-      const json = (await resStaff.json()).data;
-      initialStaff = json.data;
-    }
+  let initialData: any[] = []; 
+  let initialStaff: any[] = []; 
+
+  try {
+    const staffMembers = await prisma.staffProfile.findMany({
+      where: { companyId },
+      include: { user: { select: { id: true, name: true, email: true, phone: true } } }
+    });
+
+    initialData = staffMembers.map(staff => {
+      const baseSalary = staff.salary || 0;
+      const tax = baseSalary * 0.15;
+      const net = baseSalary - tax;
+
+      return {
+        id: `PAY-${staff.id.slice(-6)}-${month}`,
+        staff: staff.user?.name || "Staff Member",
+        base: baseSalary,
+        tax: tax,
+        net: net,
+        status: "CALCULATED",
+        bankAccount: staff.bankAccount || "N/A",
+        bankCode: staff.bankCode || "N/A"
+      };
+    });
+
+    initialStaff = staffMembers.map(s => ({
+      id: s.id,
+      name: s.user?.name || "Staff Member",
+      email: s.user?.email || "N/A",
+      department: s.department || "General",
+      salary: s.salary || 0,
+      bankAccount: s.bankAccount,
+      bankCode: s.bankCode,
+    }));
+  } catch (err) {
+    console.error("[PayrollManagementSSRPage] Failed to query payroll", err);
+  }
 
   return (
     <PayrollManagementClient

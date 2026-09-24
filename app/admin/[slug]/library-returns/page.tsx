@@ -1,43 +1,49 @@
-// app/admin/library/returns/page.tsx
-import { cookies } from "next/headers";
 import LibraryReturnsPageClient from "./LibraryReturnsPageClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 export default async function LibraryReturnsPage({ params }: { params: Promise<{ slug: string }> }) {
-  
-  const { slug }  = await params;
-  
-  const cookieHeader = (await cookies()).toString();
-    
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialHistory = [];
-  try {
-    // Fetch returns from the last 24 hours
-    const res = await fetch(
-      `${apiBaseUrl}/admin/library/issuance/return-scan?companyId=${companyId}&history=true`,
-      { headers: { cookie: cookieHeader }, cache: 'no-store' }
-    );
-    if (res.ok) initialHistory = (await res.json()).data;
-  } catch (err) {
-    // console.error("Failed to load return history", err);
+  if (!company) {
+    return <div>Company not found</div>;
   }
 
-  return <LibraryReturnsPageClient schoolId={companyId} initialHistory={initialHistory} />;
+  const companyId = company.id;
+
+  const raw = await prisma.libraryIssuance.findMany({
+    where: { companyId, status: "RETURNED" },
+    include: {
+      book: true,
+      libraryMember: {
+        include: {
+          student: true,
+          educator: { include: { user: true } },
+        },
+      },
+    },
+    orderBy: { returnDate: "desc" },
+    take: 50,
+  });
+
+  const initialHistory = raw.map((iss) => {
+    const member = iss.libraryMember;
+    const memberName = member?.student
+      ? `${member.student.firstName} ${member.student.lastName}`
+      : member?.educator?.user?.name || "Library Member";
+
+    return {
+      id: iss.id,
+      bookTitle: iss.book?.title || "Unknown Book",
+      member: memberName,
+      returnDate: iss.returnDate ? iss.returnDate.toISOString() : new Date().toISOString(),
+      condition: iss.isDamaged ? "Damaged" : "Good",
+    };
+  });
+
+  return <LibraryReturnsPageClient schoolId={companyId} initialHistory={JSON.parse(JSON.stringify(initialHistory))} />;
 }

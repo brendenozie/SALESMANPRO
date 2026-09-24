@@ -1,49 +1,43 @@
-import { cookies } from "next/headers";
 import HostelRoomsClient from "./HostelRoomsClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function HostelRoomsPage({ params }: PageProps) {
-  
-  const { slug }  = await params;
+export default async function HostelRoomsSSRPage({ params }: PageProps) {
+  const { slug } = await params;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || (session?.user as any)?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  if (!company) {
+    return <div>Company not found</div>;
+  }
 
-  let rooms = [];  
-  let blocks = [];
+  const companyId = company.id;
 
+  let blocks: any[] = [];
   try {
-    
-    // Fetching both blocks and rooms to feed the client
-    const [blocksRes] = await Promise.all([
-      fetch(`${apiBaseUrl}/admin/hostel/blocks?companyId=${companyId}`, { headers: { cookie: cookieHeader } })
-    ]);
+    const rawBlocks = await prisma.hostelBlock.findMany({
+      where: { companyId },
+      include: {
+        rooms: {
+          select: { id: true, roomNumber: true, capacity: true }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
 
-    blocks = (await blocksRes.json()).data || [];
-
+    blocks = rawBlocks.map(block => ({
+      ...block,
+      createdAt: block.createdAt.toISOString(),
+      updatedAt: block.updatedAt.toISOString(),
+    }));
   } catch (err) {
-    // console.error("[HostelRoomsPage] Failed to load rooms", err);
+    console.error("[HostelRoomsSSRPage] Failed to query blocks", err);
   }
 
   return (

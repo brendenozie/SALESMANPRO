@@ -18,7 +18,7 @@ const CLASSROOM_SELECT = {
 export const GET = withApiHandler(async (req, context: { params: { id: string }, user?: any }) => {
   const { id } = context.params;
   const searchParams = new URL(req.url).searchParams;
-  const companyId = searchParams.get("companyId") || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
+  const companyId = searchParams.get("companyId") || (context as any)?.companyId || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
   
   const cacheKey = buildTenantCacheKey(companyId, "classrooms", {});
 
@@ -49,7 +49,7 @@ export const GET = withApiHandler(async (req, context: { params: { id: string },
 export const PATCH = withApiHandler(async (request, context: { params: { id: string }, user?: any }) => {
   const { id } = context.params;
    const searchParams = new URL(request.url).searchParams;
-  const companyId = searchParams.get("companyId") || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
+  const companyId = searchParams.get("companyId") || (context as any)?.companyId || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
   
   const body = await request.json();
   const { name, description, academicLevelId, capacity } = body;
@@ -84,7 +84,7 @@ export const PATCH = withApiHandler(async (request, context: { params: { id: str
 export const DELETE = withApiHandler(async (request, context: { params: { id: string }, user?: any }) => {
   const { id } = context.params;
   const searchParams = new URL(request.url).searchParams;
-  const companyId = searchParams.get("companyId") || context.user?.companyId;
+  const companyId = searchParams.get("companyId") || (context as any)?.companyId || context.user?.companyId;
 
   try {
     const deleted = await prisma.classroom.delete({ 

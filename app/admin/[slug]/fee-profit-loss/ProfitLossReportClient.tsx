@@ -20,7 +20,9 @@ interface Props {
 
 const ProfitLossReportClient = ({ companyId, initialData }: Props) => {
   const [data, setData] = useState<any>(initialData || {});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    !(initialData && (initialData.netSurplus !== undefined || initialData.data?.netSurplus !== undefined))
+  );
   const [trend, setTrend] = useState<any[]>([]);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ const ProfitLossReportClient = ({ companyId, initialData }: Props) => {
       try {
         const res = await fetch("/api/admin/reports/profit-loss/trend?companyId=" + encodeURIComponent(companyId));
         const result = await res.json();
-        setTrend(result);
+        setTrend(result?.data || result || []);
       } catch (err) {
         console.error("Trend load failed", err);
       }
@@ -41,7 +43,7 @@ const ProfitLossReportClient = ({ companyId, initialData }: Props) => {
       try {
         const res = await fetch("/api/admin/reports/profit-loss?companyId=" + encodeURIComponent(companyId));
         const result = await res.json();
-        setData(result);
+        setData(result?.data || result || {});
       } catch (err) {
         console.error("Report load failed", err);
       } finally {

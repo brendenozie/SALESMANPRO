@@ -166,6 +166,7 @@ export default function AdminActivitiesClient({
         description: formDescription.trim() || null,
         instructions: formInstructions.trim() || null,
         activityTypeId: formTypeId,
+        durationMins: parseInt(formDuration, 10) || 15,
         durationMin: parseInt(formDuration, 10) || 15,
         points: parseInt(formPoints, 10) || 10,
         ageGroup: formAgeGroup,
@@ -174,7 +175,7 @@ export default function AdminActivitiesClient({
       };
 
       const url = editingActivity
-        ? `/api/admin/activities/${editingActivity.id}`
+        ? `/api/admin/activities/${editingActivity.id}?companyId=${encodeURIComponent(companyId)}`
         : '/api/admin/activities';
 
       const method = editingActivity ? 'PATCH' : 'POST';
@@ -206,7 +207,7 @@ export default function AdminActivitiesClient({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await clientFetchJson(`/api/admin/activities/${id}`, {
+      const res = await clientFetchJson(`/api/admin/activities/${id}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
       });
       if (res.success) {
@@ -223,7 +224,7 @@ export default function AdminActivitiesClient({
 
   const handleTogglePublish = async (activity: ActivityItem) => {
     try {
-      const res = await clientFetchJson(`/api/admin/activities/${activity.id}`, {
+      const res = await clientFetchJson(`/api/admin/activities/${activity.id}?companyId=${encodeURIComponent(companyId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !activity.isPublished }),

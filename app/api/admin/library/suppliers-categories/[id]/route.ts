@@ -1,116 +1,57 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-const prisma = new PrismaClient();
-
-// GET: Fetch all categories for a specific company
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get("companyId");
-
-    if (!companyId) {
-      return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
-    }
-
-  const cacheKey = buildTenantCacheKey(companyId, "suppliers-categories", {});
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-
-  const categories = await prisma.librarySupplierCategory.findMany({
-      where: { companyId },
-      orderBy: { name: "asc" },
-    });
-
-  try {
-    if (categories) {
-      await cacheSet(cacheKey, categories, 60);
-    }
-  } catch (e) {}
-
-    return formatResponse(true, categories, "Categories fetched", 200);
-  } catch (error) {
-    return formatResponse(false, null, "Failed to fetch categories", 500);
-  }
+interface RouteParams {
+  params: Promise<{ id: string }>;
 }
 
-// POST: Create a new category
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { name, companyId } = body;
+// PUT /api/admin/library/suppliers-categories/[id]
+const updateSupCatLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+  const body = await request.json();
 
-    if (!name || !companyId) {
-      return formatResponse(false, null, "Missing required fields", 400);
-    }
+  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
 
-    const category = await prisma.librarySupplierCategory.create({
-      data: { name, companyId },
-    });
-
-    
-    try {
-      await cacheDel(`tenant:${companyId}:suppliers-categories:*`);
-      await cacheDel(`admin:suppliers-categories:*`);
-    } catch (e) {}
-    return formatResponse(true, category, "Category created", 201);
-  } catch (error: any) {
-    if (error.code === 'P2002') {
-      return formatResponse(false, null, "Category name already exists", 409);
-    }
-    return formatResponse(false, null, "Failed to create category", 500);
+  const existing = await prisma.librarySupplierCategory.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Supplier category not found.", 404);
   }
-}
 
-// PATCH: Update an existing category
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string[] } }
-) {
-  try {
-    const categoryId = params.id?.[0];
-    const body = await req.json();
-    const { name } = body;
+  const updated = await prisma.librarySupplierCategory.update({
+    where: { id },
+    data: { name: body.name || existing.name },
+  });
 
-    if (!categoryId) return formatResponse(false, null, "ID required", 400);
+  return formatResponse(true, updated, "Supplier category updated", 200);
+};
 
-    const updated = await prisma.librarySupplierCategory.update({
-      where: { id: categoryId },
-      data: { name },
-    });
+export const PUT = withApiHandler(updateSupCatLogic, { requireAuth: true });
 
-    try {
-      await cacheDel(`tenant:${updated.companyId}:suppliers-categories:*`);
-      await cacheDel(`admin:suppliers-categories:*`);
-    } catch (e) {}
-    return formatResponse(true, updated, "Category updated", 200);
-  } catch (error) {
-    return formatResponse(false, null, "Update failed", 500);
+// DELETE /api/admin/library/suppliers-categories/[id]
+const deleteSupCatLogic = async (request: Request, { params }: RouteParams) => {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+
+  if (!companyId) return formatResponse(false, null, "Company ID required.", 400);
+
+  const existing = await prisma.librarySupplierCategory.findFirst({
+    where: { id, companyId },
+  });
+  if (!existing) {
+    return formatResponse(false, null, "Supplier category not found.", 404);
   }
-}
 
-// DELETE: Remove a category
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string[] } }
-) {
-  try {
-    const categoryId = params.id?.[0];
+  await prisma.librarySupplierCategory.delete({
+    where: { id },
+  });
 
-    if (!categoryId) return formatResponse(false, null, "ID required", 400);
+  return formatResponse(true, null, "Supplier category deleted", 200);
+};
 
-    await prisma.librarySupplierCategory.delete({
-      where: { id: categoryId },
-    });
-
-    try { await cacheDel(`admin:suppliers-categories:${categoryId}`); } catch (e) {}
-    return formatResponse(true, null, "Category deleted", 200);
-  } catch (error) {
-    return formatResponse(false, null, "Delete failed", 500);
-  }
-}
+export const DELETE = withApiHandler(deleteSupCatLogic, { requireAuth: true });

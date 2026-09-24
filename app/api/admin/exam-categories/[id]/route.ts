@@ -1,22 +1,27 @@
 import { cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { withApiHandler, HandlerContext } from "@/lib/hooks/withApiHandler";
 
 // ✅ PUT: Update an Exam Category
-const updateExamCategory = async (request: Request, { params }: { params: { id: string } }) => {
-  const { id } = params;
+const updateExamCategory = async (request: Request, context: HandlerContext) => {
+  const id = context.params?.id;
   const body = await request.json();
-  const { name, description, companyId } = body;
+  const { name, description, companyId: bodyCompanyId } = body;
+  const companyId = bodyCompanyId || context.companyId || context.user?.companyId;
+
+  if (!id) {
+    return NextResponse.json({ message: "Exam Category ID is required." }, { status: 400 });
+  }
 
   try {
-    // 1. Check if the category exists
-    const existingCategory = await prisma.examCategory.findUnique({
-      where: { id },
+    // 1. Check if the category exists and belongs to the company
+    const existingCategory = await prisma.examCategory.findFirst({
+      where: { id, ...(companyId ? { companyId } : {}) },
     });
 
     if (!existingCategory) {
-      return NextResponse.json({ message: "Exam Category not found." }, { status: 404 });
+      return NextResponse.json({ message: "Exam Category not found in this company." }, { status: 404 });
     }
 
     // 2. If name or companyId is changing, check for uniqueness conflict
@@ -25,7 +30,7 @@ const updateExamCategory = async (request: Request, { params }: { params: { id: 
         where: {
           companyId: companyId || existingCategory.companyId,
           name: name || existingCategory.name,
-          NOT: { id }, // Ensure we aren't flagging the current record
+          NOT: { id },
         },
       });
 
@@ -39,7 +44,7 @@ const updateExamCategory = async (request: Request, { params }: { params: { id: 
 
     // 3. Perform the update
     const updatedCategory = await prisma.examCategory.update({
-      where: { id },
+      where: { id: existingCategory.id },
       data: {
         name: name ?? undefined,
         description: description ?? undefined,
@@ -57,18 +62,24 @@ const updateExamCategory = async (request: Request, { params }: { params: { id: 
 };
 
 // ✅ DELETE: Remove an Exam Category
-const deleteExamCategory = async (_request: Request, { params }: { params: { id: string } }) => {
-  const { id } = params;
+const deleteExamCategory = async (request: Request, context: HandlerContext) => {
+  const id = context.params?.id;
+  const searchParams = new URL(request.url).searchParams;
+  const companyId = searchParams.get("companyId") || context.companyId || context.user?.companyId;
+
+  if (!id) {
+    return NextResponse.json({ message: "Exam Category ID is required." }, { status: 400 });
+  }
 
   try {
     // 1. Check if the category has related exams (Prevent accidental orphaned data)
-    const categoryWithExams = await prisma.examCategory.findUnique({
-      where: { id },
+    const categoryWithExams = await prisma.examCategory.findFirst({
+      where: { id, ...(companyId ? { companyId } : {}) },
       include: { _count: { select: { exams: true } } },
     });
 
     if (!categoryWithExams) {
-      return NextResponse.json({ message: "Exam Category not found." }, { status: 404 });
+      return NextResponse.json({ message: "Exam Category not found in this company." }, { status: 404 });
     }
 
     if (categoryWithExams._count.exams > 0) {
@@ -80,7 +91,7 @@ const deleteExamCategory = async (_request: Request, { params }: { params: { id:
 
     // 2. Delete the record
     await prisma.examCategory.delete({
-      where: { id },
+      where: { id: categoryWithExams.id },
     });
 
     // Invalidate caches

@@ -1,55 +1,54 @@
-import { cookies } from "next/headers";
 import StaffMembersClient from "./StaffMembersClient";
-
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function StaffDirectoryPage({ params }: PageProps) {
+export default async function StaffMembersSSRPage({ params }: PageProps) {
   const { slug } = await params;
-  const cookieHeader = (await cookies()).toString();
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const session = await getAuthSession();
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
 
-  let initialStaff = [];
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
+  const companyId = company.id;
+
+  let initialStaff: any[] = [];
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/staff?companyId=${companyId}`,
-      {
-        headers: { cookie: cookieHeader },
-        cache: 'no-store'
-      }
-    );
+    const rawStaff = await prisma.staffProfile.findMany({
+      where: { companyId },
+      include: {
+        user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true, image: true } }
+      },
+      orderBy: { createdAt: "asc" }
+    });
 
-    if (res.ok) {
-      const json = await res.json();
-      initialStaff = json.data;
-    }
+    initialStaff = rawStaff.map((staff) => ({
+      id: staff.id,
+      userId: staff.userId,
+      name: staff.user?.name || "Staff Member",
+      email: staff.user?.email || "N/A",
+      image: staff.user?.image || staff.user?.profilePicture || null,
+      isActive: staff.employmentStatus !== "TERMINATED",
+      staffProfile: {
+        jobTitle: staff.jobTitle || "Staff",
+        department: staff.department || "General",
+      }
+    }));
   } catch (err) {
-    console.error("Failed to load staff", err);
+    console.error("[StaffMembersSSRPage] Failed to query staff members", err);
   }
 
   return (
-    <StaffMembersClient 
-      initialStaff={initialStaff} 
-      companyId={companyId} 
+    <StaffMembersClient
+      initialStaff={initialStaff}
+      companyId={companyId}
     />
   );
 }
