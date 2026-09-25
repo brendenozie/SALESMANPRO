@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import prisma from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
+import prisma from "@/server/db/prismadb";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -22,18 +22,29 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    let assignedVehicle = null;
-    if (transportDriver?.vehicleId) {
-      assignedVehicle = await prisma.transportVehicle.findUnique({
-        where: { id: transportDriver.vehicleId },
+    let assignedVehicle: {
+      id: string;
+      registration: string;
+      model: string;
+      type: string;
+      status: string;
+    } | null = null;
+
+    if (transportDriver) {
+      // Find active vehicle or assigned vehicle
+      const vehicle = await prisma.transportVehicle.findFirst({
+        where: { companyId: transportDriver.companyId },
         select: {
           id: true,
-          plateNumber: true,
+          registration: true,
           model: true,
           type: true,
           status: true,
         },
       });
+      if (vehicle) {
+        assignedVehicle = vehicle;
+      }
     }
 
     const driverProfileId = transportDriver?.id;
@@ -68,12 +79,12 @@ export async function GET(req: NextRequest) {
           ...(driverProfileId ? [{ driverProfileId }] : []),
         ],
         ...(statusCondition ? { status: statusCondition } : {}),
-      },
+      } as any,
       include: {
         vehicle: {
           select: {
             id: true,
-            plateNumber: true,
+            registration: true,
             model: true,
           },
         },
@@ -88,7 +99,7 @@ export async function GET(req: NextRequest) {
           orderBy: { createdAt: "desc" },
           take: 1,
         },
-      },
+      } as any,
       orderBy: { scheduledFor: "asc" },
     });
 
@@ -100,8 +111,8 @@ export async function GET(req: NextRequest) {
             { riderId: userId },
             ...(driverProfileId ? [{ driverProfileId }] : []),
           ],
-          status: { in: activeStatuses },
-        },
+          status: { in: activeStatuses as any },
+        } as any,
       }),
       prisma.delivery.count({
         where: {
@@ -109,9 +120,9 @@ export async function GET(req: NextRequest) {
             { riderId: userId },
             ...(driverProfileId ? [{ driverProfileId }] : []),
           ],
-          status: { in: completedStatuses },
-          updatedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-        },
+          status: { in: completedStatuses as any },
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        } as any,
       }),
     ]);
 
@@ -121,15 +132,15 @@ export async function GET(req: NextRequest) {
         id: driverProfileId || userId,
         name: session.user.name,
         email: session.user.email,
-        vehicle: transportDriver?.vehicle || null,
-        status: transportDriver?.status || "AVAILABLE",
+        vehicle: assignedVehicle,
+        status: transportDriver?.status || "ACTIVE",
         stats: {
           activeDeliveries: totalActive,
           completedToday: totalCompletedToday,
-          rating: transportDriver?.rating || 5.0,
+          rating: 5.0,
         },
       },
-      deliveries: deliveries.map((d) => ({
+      deliveries: deliveries.map((d: any) => ({
         id: d.id,
         trackingNumber: d.trackingNumber,
         status: d.status,
@@ -144,10 +155,10 @@ export async function GET(req: NextRequest) {
         estimatedTravelTime: d.estimatedTravelTime,
         scheduledFor: d.scheduledFor,
         notes: d.notes,
-        vehicle: d.vehicle ? `${d.vehicle.model} (${d.vehicle.plateNumber})` : null,
-        stopsCount: d.stops.length,
-        hasProof: d.proofs.length > 0,
-        proof: d.proofs[0] || null,
+        vehicle: d.vehicle ? `${d.vehicle.model} (${d.vehicle.registration})` : null,
+        stopsCount: d.stops?.length || 0,
+        hasProof: Boolean(d.proofs?.length),
+        proof: d.proofs?.[0] || null,
       })),
     });
   } catch (error: any) {

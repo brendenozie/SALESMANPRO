@@ -876,3 +876,6 @@ export async function getUserResources(
 
   return resources;
 }
+
+export { prisma };
+export default prisma;

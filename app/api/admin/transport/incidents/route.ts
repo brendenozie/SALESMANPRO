@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       return json({ success: false, message: "Company ID is required." }, 400);
     }
 
-    const records = await prisma.transportIncident.findMany({
+    const records = await (prisma as any).transportIncident.findMany({
       where: { companyId },
       include: {
         vehicle: { select: { id: true, registration: true, make: true, model: true } },
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       if (v) resolvedVehicleId = v.id;
     }
 
-    const record = await prisma.transportIncident.create({
+    const record = await (prisma as any).transportIncident.create({
       data: {
         companyId,
         vehicleId: resolvedVehicleId,

@@ -31,9 +31,11 @@ export const VALID_DELIVERY_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]
 
 export interface StatusTransitionPayload {
   deliveryId: string;
-  nextStatus: DeliveryStatus;
+  nextStatus?: DeliveryStatus;
+  targetStatus?: DeliveryStatus;
   actorId?: string;
   actorName?: string;
+  actorRole?: string;
   note?: string;
   lat?: number;
   lng?: number;
@@ -43,6 +45,14 @@ export interface StatusTransitionPayload {
   imageUrl?: string;
   recipientName?: string;
   recipientPhone?: string;
+  proof?: {
+    type?: string;
+    signatureUrl?: string;
+    imageUrl?: string;
+    recipientName?: string;
+    recipientPhone?: string;
+    notes?: string;
+  };
 }
 
 export function isValidTransition(currentStatus: DeliveryStatus, nextStatus: DeliveryStatus): boolean {
@@ -60,9 +70,13 @@ export function isValidTransition(currentStatus: DeliveryStatus, nextStatus: Del
  * 5. If proof provided and transitioning to DELIVERED/COMPLETED, records DeliveryProof
  */
 export async function transitionDeliveryStatus(payload: StatusTransitionPayload) {
+  const nextStatus = (payload.nextStatus || payload.targetStatus) as DeliveryStatus;
+  if (!nextStatus) {
+    throw new Error("Target status is required for transition");
+  }
+
   const {
     deliveryId,
-    nextStatus,
     actorId,
     actorName,
     note,
@@ -70,11 +84,12 @@ export async function transitionDeliveryStatus(payload: StatusTransitionPayload)
     lng,
     locationName,
     failureReason,
-    signatureUrl,
-    imageUrl,
-    recipientName,
-    recipientPhone,
   } = payload;
+
+  const signatureUrl = payload.signatureUrl || payload.proof?.signatureUrl;
+  const imageUrl = payload.imageUrl || payload.proof?.imageUrl;
+  const recipientName = payload.recipientName || payload.proof?.recipientName;
+  const recipientPhone = payload.recipientPhone || payload.proof?.recipientPhone;
 
   const currentDelivery = await prisma.delivery.findUnique({
     where: { id: deliveryId },

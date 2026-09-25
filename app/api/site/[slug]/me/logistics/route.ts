@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import prisma from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
+import prisma from "@/server/db/prismadb";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -15,7 +15,7 @@ export async function GET(
     const { slug } = await params;
     const company = await prisma.company.findFirst({
       where: {
-        OR: [{ slug }, { customDomain: slug }],
+        OR: [{ slug }, { domain: slug }],
       },
       select: { id: true, name: true, currency: true },
     });
@@ -65,7 +65,6 @@ export async function GET(
         CustomerOrders: {
           select: {
             id: true,
-            orderNumber: true,
             totalPrice: true,
             status: true,
             paymentOption: true,
@@ -80,7 +79,7 @@ export async function GET(
         vehicle: {
           select: {
             model: true,
-            plateNumber: true,
+            registration: true,
           },
         },
         tracking: {
@@ -142,9 +141,9 @@ export async function GET(
         scheduledFor: d.scheduledFor,
         createdAt: d.createdAt,
         driver: d.rider?.name || null,
-        vehicle: d.vehicle?.plateNumber || null,
+        vehicle: d.vehicle?.registration || null,
         latestTracking: d.tracking?.[0] || null,
-        orderNumber: d.CustomerOrders?.[0]?.orderNumber || null,
+        orderNumber: d.CustomerOrders?.[0]?.id || null,
       })),
       completedDeliveries: completedDeliveries.map((d) => ({
         id: d.id,
@@ -154,7 +153,7 @@ export async function GET(
         deliveryAddress: d.deliveryAddress,
         packageDescription: d.packageDescription,
         fee: d.totalAmount || d.deliveryFee,
-        deliveredAt: d.deliveredAt || d.updatedAt,
+        deliveredAt: d.scheduledFor || d.createdAt,
         hasProof: d.proofs.length > 0,
         proofRecipient: d.proofs[0]?.recipientName || null,
         proofSignatureUrl: d.proofs[0]?.signatureUrl || null,

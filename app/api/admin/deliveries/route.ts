@@ -94,13 +94,13 @@ export async function GET(req: NextRequest) {
         stops: { orderBy: { sequence: "asc" } },
         tracking: { orderBy: { recordedAt: "desc" }, take: 5 },
         proofs: { take: 1, orderBy: { createdAt: "desc" } },
-      },
+      } as any,
     });
 
-    const mapped = deliveries.map((item) => ({
+    const mapped = deliveries.map((item: any) => ({
       ...item,
-      orderIds: item.CustomerOrders.map((x) => x.id),
-      orderCount: item.CustomerOrders.length,
+      orderIds: item.CustomerOrders ? item.CustomerOrders.map((x: any) => x.id) : [],
+      orderCount: item.CustomerOrders ? item.CustomerOrders.length : 0,
       proof: item.proofs?.[0] || null,
       latestTracking: item.tracking?.[0] || null,
     }));

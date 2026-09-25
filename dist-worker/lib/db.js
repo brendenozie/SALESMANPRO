@@ -9,8 +9,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserResources = exports.getUserEngagements = exports.getUserAddresses = exports.getUserWishlist = exports.getUserOrders = exports.getUserStats = exports.getUserServices = exports.getUserNonprofit = exports.getUserRealEstate = exports.getUserSecurity = exports.getUserHealth = exports.getUserFitness = exports.getUserTravel = exports.getUserAutomotive = exports.getUserFinance = exports.getUserMedia = exports.getUserEvents = exports.getUserBlogs = exports.getUserProfileForVertical = void 0;
+exports.prisma = exports.getUserResources = exports.getUserEngagements = exports.getUserAddresses = exports.getUserWishlist = exports.getUserOrders = exports.getUserStats = exports.getUserServices = exports.getUserNonprofit = exports.getUserRealEstate = exports.getUserSecurity = exports.getUserHealth = exports.getUserFitness = exports.getUserTravel = exports.getUserAutomotive = exports.getUserFinance = exports.getUserMedia = exports.getUserEvents = exports.getUserBlogs = exports.getUserProfileForVertical = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+exports.prisma = prismadb_1.default;
 // ============================================================================
 // User Profile Helpers
 // ============================================================================
@@ -584,3 +585,4 @@ async function getUserResources(userId, slug, filters = {}) {
     return resources;
 }
 exports.getUserResources = getUserResources;
+exports.default = prismadb_1.default;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import prisma from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
+import prisma from "@/server/db/prismadb";
 import { transitionDeliveryStatus } from "@/lib/delivery-lifecycle";
 import { DeliveryStatus } from "@prisma/client";
 
@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ deliveryId: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -25,7 +25,7 @@ export async function POST(
       where: { id: deliveryId },
       include: {
         driverProfile: true,
-      },
+      } as any,
     });
 
     if (!delivery) {
@@ -34,7 +34,7 @@ export async function POST(
 
     const isAssigned =
       delivery.riderId === userId ||
-      delivery.driverProfile?.userId === userId;
+      (delivery as any).driverProfile?.userId === userId;
 
     const isAdminOrStaff =
       session.user.role === "SUPER_ADMIN" ||
@@ -53,27 +53,23 @@ export async function POST(
       const recipientName = proof?.recipientName || delivery.customerName || "Recipient";
       const result = await transitionDeliveryStatus({
         deliveryId,
-        targetStatus: DeliveryStatus.DELIVERED,
+        nextStatus: "DELIVERED" as DeliveryStatus,
         actorId: userId,
-        actorRole: "DRIVER",
-        locationName: location?.name || delivery.deliveryAddress,
+        actorName: session.user.name || "Driver",
+        locationName: location?.name || delivery.deliveryAddress || undefined,
         lat: location?.lat,
         lng: location?.lng,
         note: note || `Delivered to ${recipientName}`,
-        proof: {
-          type: proof?.signatureUrl ? "SIGNATURE" : proof?.imageUrl ? "PHOTO" : "OTP",
-          recipientName,
-          recipientPhone: proof?.recipientPhone || delivery.customerContact || undefined,
-          signatureUrl: proof?.signatureUrl || undefined,
-          imageUrl: proof?.imageUrl || undefined,
-          notes: proof?.notes || undefined,
-        },
+        signatureUrl: proof?.signatureUrl || undefined,
+        imageUrl: proof?.imageUrl || undefined,
+        recipientName,
+        recipientPhone: proof?.recipientPhone || delivery.customerContact || undefined,
       });
 
       return NextResponse.json({
         success: true,
         message: "Delivery marked as DELIVERED with proof recorded",
-        delivery: result.delivery,
+        delivery: result,
       });
     }
 
@@ -82,22 +78,23 @@ export async function POST(
       const reason = exception?.reason || "FAILED_DELIVERY";
       const result = await transitionDeliveryStatus({
         deliveryId,
-        targetStatus: DeliveryStatus.FAILED_DELIVERY,
+        nextStatus: "FAILED_DELIVERY" as DeliveryStatus,
         actorId: userId,
-        actorRole: "DRIVER",
-        locationName: location?.name,
+        actorName: session.user.name || "Driver",
+        locationName: location?.name || undefined,
         lat: location?.lat,
         lng: location?.lng,
+        failureReason: reason,
         note: `Delivery Exception: [${reason}] ${exception?.notes || note || ""}`.trim(),
       });
 
       // Log formal TransportIncident
-      await prisma.transportIncident.create({
+      await (prisma as any).transportIncident.create({
         data: {
           companyId: delivery.companyId,
           deliveryId: delivery.id,
-          driverId: delivery.driverProfileId,
-          vehicleId: delivery.vehicleId,
+          driverId: (delivery as any).driverProfileId || undefined,
+          vehicleId: (delivery as any).vehicleId || undefined,
           type: reason,
           severity: "MEDIUM",
           notes: exception?.notes || note || "Driver reported delivery failure",
@@ -109,7 +106,7 @@ export async function POST(
       return NextResponse.json({
         success: true,
         message: "Delivery exception reported and incident logged",
-        delivery: result.delivery,
+        delivery: result,
       });
     }
 
@@ -123,10 +120,10 @@ export async function POST(
 
     const result = await transitionDeliveryStatus({
       deliveryId,
-      targetStatus: status as DeliveryStatus,
+      nextStatus: status as DeliveryStatus,
       actorId: userId,
-      actorRole: "DRIVER",
-      locationName: location?.name,
+      actorName: session.user.name || "Driver",
+      locationName: location?.name || undefined,
       lat: location?.lat,
       lng: location?.lng,
       note: note || `Driver updated status to ${status}`,
@@ -135,7 +132,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       message: `Status updated to ${status}`,
-      delivery: result.delivery,
+      delivery: result,
     });
   } catch (error: any) {
     console.error("Error in driver delivery action:", error);

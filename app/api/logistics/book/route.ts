@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import prisma from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
+import prisma from "@/server/db/prismadb";
 import { calculateDeliveryQuote, estimateDistanceKm } from "@/lib/logistics-pricing";
 
 function createTrackingNumber(): string {
@@ -15,7 +15,7 @@ function createOrderNumber(): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getAuthSession();
     const body = await req.json();
 
     const {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (!targetCompanyId && companySlug) {
       const company = await prisma.company.findFirst({
         where: {
-          OR: [{ slug: companySlug }, { customDomain: companySlug }],
+          OR: [{ slug: companySlug }, { domain: companySlug }],
         },
         select: { id: true, currency: true, slug: true },
       });
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
         data: {
           companyId: targetCompanyId,
           trackingNumber,
-          status: isCOD ? "CONFIRMED" : "PENDING_PAYMENT",
+          status: (isCOD ? "CONFIRMED" : "PENDING_PAYMENT") as any,
           consumerId,
           customerName,
           customerContact: customerPhone,

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import prisma from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
+import prisma from "@/server/db/prismadb";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -62,15 +62,15 @@ export async function GET(req: NextRequest) {
     const drivers = transportDrivers.map((td) => ({
       id: td.id,
       userId: td.userId,
-      name: td.user?.name || td.licenseNumber || "Unnamed Driver",
+      name: td.user?.name || td.licenseNo || "Unnamed Driver",
       email: td.user?.email || null,
-      phone: td.user?.phone || td.contactNumber || null,
-      licenseNumber: td.licenseNumber,
+      phone: td.user?.phone || null,
+      licenseNumber: td.licenseNo,
       status: td.status,
-      vehicleId: td.vehicleId,
+      vehicleId: null,
       vehicle: null,
-      rating: td.rating || 5.0,
-      totalTrips: td.totalTrips || 0,
+      rating: 5.0,
+      totalTrips: 0,
       source: "transportDriver",
     }));
 

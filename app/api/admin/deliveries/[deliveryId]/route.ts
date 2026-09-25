@@ -38,7 +38,7 @@ export async function GET(
         tracking: { orderBy: { recordedAt: "desc" } },
         proofs: { orderBy: { createdAt: "desc" } },
         incidents: { orderBy: { createdAt: "desc" } },
-      },
+      } as any,
     });
 
     if (!delivery) {
