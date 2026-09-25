@@ -212,15 +212,14 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   };
 
   useEffect(() => {
-    // Warm up the auth endpoint and prefetch CSRF cookie in the background
-    fetch("/api/auth/csrf", { credentials: "include" }).catch(() => null);
-
-    // Auto-initiate Google sign-in if navigated with ?auto=google or ?provider=google
     const auto = params.get("auto") || params.get("provider");
-    if (auto === "google" && !isSubmittingRef.current) {
+    const error = params.get("error");
+
+    // Do NOT auto-initiate if there is an error in URL to prevent infinite redirect loops
+    if (auto === "google" && !error && !isSubmittingRef.current) {
       handleSocialSignIn("google");
     }
-  }, []);
+  }, [params]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 overflow-auto py-12 px-4 sm:px-6 lg:px-8 relative">

@@ -51,14 +51,12 @@ export default function SignInPage() {
   };
 
   useEffect(() => {
-    // Warm up the auth endpoint and prefetch CSRF cookie in the background
-    fetch("/api/auth/csrf", { credentials: "include" }).catch(() => null);
-
     const auto = params.get("auto") || params.get("provider");
-    if (auto === "google") {
+    const error = params.get("error");
+    if (auto === "google" && !error && !loading) {
       handleGoogleSignIn();
     }
-  }, []);
+  }, [params]);
 
   return (
     // 1. **Background**: Richer, more professional gradient. Added background patterns for visual interest.
