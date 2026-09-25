@@ -224,48 +224,85 @@ const cardVariants = {
     }),
 };
 
-const DashboardCard = ({ href, title, icon: Icon, value, formatValue, progress, footerText, color, border, iconBg, bar }: DashboardCardProps) => {
+const DashboardCard = ({ 
+    href, 
+    title, 
+    icon: Icon, 
+    value, 
+    formatValue, 
+    progress, 
+    footerText, 
+    color, 
+    border, 
+    iconBg, 
+    bar 
+}: DashboardCardProps) => {
     const isDanger = title === 'Low Stock Items' || title === 'Overdue Tasks';
     const progressPercent = Math.min(Math.max(progress || 0, 0), 100);
     const hasProgress = progress !== undefined;
 
     return (
-        <a href={href} className={`flex flex-col justify-between p-5 sm:p-6 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden bg-white dark:bg-slate-800 border ${border} shadow-sm dark:shadow-none hover:shadow-lg dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-gray-50 dark:hover:bg-slate-700/80 ${isDanger ? 'ring-2 ring-red-500/40 dark:ring-red-500/50' : ''} min-h-[14rem]`}>
-            <div className={`absolute top-0 left-0 right-0 h-1 ${bar} opacity-80 group-hover:opacity-100 transition-opacity duration-300`}></div>
-            <div className='flex flex-col gap-4'>
-                <div className="flex items-center justify-between">
-                    <div className={`p-3 rounded-xl shadow-sm dark:shadow-md ${iconBg} ${color} transition-all duration-300`}>
-                        <Icon className={`w-6 h-6`} />
+        <a 
+            href={href} 
+            className={`
+                group relative flex flex-col justify-between h-64 w-full p-4 xs:p-5 sm:p-6 rounded-2xl
+                bg-white/80 dark:bg-slate-900/80 backdrop-blur-md
+                border ${border || 'border-slate-200/80 dark:border-slate-800'}
+                shadow-sm hover:shadow-xl dark:shadow-slate-950/40 dark:hover:shadow-indigo-500/10
+                transition-all duration-300 ease-out hover:-translate-y-1.5 overflow-hidden
+                ${isDanger ? 'ring-2 ring-red-500/50 dark:ring-red-500/60 animate-pulse' : ''}
+            `}
+        >
+            {/* Top accent glow line */}
+            <div className={`absolute top-0 left-0 right-0 h-1.5 ${bar} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
+
+            {/* Top & Middle Content Section */}
+            <div className="flex flex-col gap-3 sm:gap-4">
+                {/* Header: Icon & Title */}
+                <div className="flex items-start justify-between gap-2">
+                    <div className={`p-2.5 sm:p-3 rounded-xl shadow-inner ${iconBg} ${color} group-hover:scale-105 transition-transform duration-300 shrink-0`}>
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
-                    <h3 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 text-right">{title}</h3>
+                    <h3 className="text-[10px] xs:text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right line-clamp-2 leading-tight mt-1">
+                        {title}
+                    </h3>
                 </div>
-                <div>
-                    <div className={`text-3xl sm:text-4xl font-black ${color} whitespace-nowrap overflow-hidden text-ellipsis`}>
+
+                {/* Main Metric Value */}
+                <div className="mt-1">
+                    <div className={`text-2xl xs:text-3xl sm:text-4xl font-extrabold tracking-tight ${color} whitespace-nowrap overflow-hidden text-ellipsis drop-shadow-sm`}>
                         <CountUp to={value} format={formatValue} />
                     </div>
                 </div>
             </div>
-            <div className="w-full relative z-10 mt-4">
-                {hasProgress && (
-                    <div className="mb-3">
-                        <div className="flex justify-between items-center text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5">
-                            <span>Target Progress</span>
-                            <span>{Math.round(progressPercent)}%</span>
+
+            {/* Bottom Content Section pinned to base */}
+            <div className="w-full relative z-10 mt-auto pt-2">
+                {/* Progress Bar (reserves height to keep layout constant even if progress is absent) */}
+                <div className="h-8 flex flex-col justify-end mb-2">
+                    {hasProgress ? (
+                        <div>
+                            <div className="flex justify-between items-center text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">
+                                <span>Target Progress</span>
+                                <span>{Math.round(progressPercent)}%</span>
+                            </div>
+                            <div className="relative w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-inner">
+                                <motion.div
+                                    className={`${bar} absolute top-0 left-0 h-full rounded-full`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progressPercent}%` }}
+                                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                                />
+                            </div>
                         </div>
-                        <div className="relative w-full h-1.5 rounded-full bg-gray-100 dark:bg-slate-700 overflow-hidden">
-                            <motion.div
-                                className={`${bar} absolute top-0 left-0 h-full rounded-full`}
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progressPercent}%` }}
-                                transition={{ duration: 0.7, ease: 'easeOut' }}
-                            />
-                        </div>
-                    </div>
-                )}
-                <div className="flex justify-between items-center text-xs font-medium text-gray-500 dark:text-slate-400 relative z-10 pt-3 border-t border-gray-100 dark:border-slate-700/60 mt-auto">
-                    <span className="truncate pr-2">{footerText}</span>
-                    <span className="flex items-center text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300 flex-shrink-0">
-                        View <ArrowRightIcon className="ml-1 w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                    ) : null}
+                </div>
+
+                {/* Footer Link */}
+                <div className="flex justify-between items-center text-xs font-semibold text-slate-500 dark:text-slate-400 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                    <span className="truncate pr-2 text-slate-600 dark:text-slate-400">{footerText}</span>
+                    <span className="flex items-center text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-300 transition-colors duration-300 shrink-0 font-bold">
+                        View <ArrowRightIcon className="ml-1 w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                 </div>
             </div>

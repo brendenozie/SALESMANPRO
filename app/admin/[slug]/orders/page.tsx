@@ -32,7 +32,7 @@ export type CustomerOrder = {
   items: OrderItem[];
   totalPrice: number;
   orderSource: 'WEBSITE' | 'IN_PERSON' | 'MOBILE';
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'RECURRING';
+  status: 'PENDING' | 'COMPLETED' | 'PAID' | 'CANCELLED' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'RECURRING' | (string & {});
   delivery: boolean | null;
   shippingAddress: {
     street: string;

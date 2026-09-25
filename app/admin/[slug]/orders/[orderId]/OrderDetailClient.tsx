@@ -36,13 +36,13 @@ export interface OrderItemDetail {
     id?: string;
     name?: string;
     images?: { url: string }[] | string[] | any;
-    finalPrice?: number;
+    finalPrice?: number | null;
   } | null;
 }
 
 export interface CustomerOrderDetail {
   id: string;
-  companyId: string;
+  companyId?: string | null;
   consumerId?: string | null;
   name: string | null;
   email: string | null;
@@ -73,6 +73,13 @@ export interface CustomerOrderDetail {
   items: OrderItemDetail[];
 }
 
+export interface DriverStaff {
+  id: string;
+  name: string;
+  phone?: string;
+  role?: string;
+}
+
 interface OrderDetailClientProps {
   order: CustomerOrderDetail;
   slug: string;
@@ -80,6 +87,7 @@ interface OrderDetailClientProps {
   companyName?: string;
   companyPhone?: string;
   companyAddress?: string;
+  drivers?: DriverStaff[];
 }
 
 const STATUS_CONFIG: Record<
@@ -151,6 +159,7 @@ export default function OrderDetailClient({
   companyName = "Store HQ",
   companyPhone = "+254 700 000 000",
   companyAddress = "Nairobi, Kenya",
+  drivers = [],
 }: OrderDetailClientProps) {
   const router = useRouter();
   const [order, setOrder] = useState<CustomerOrderDetail>(initialOrder);
@@ -161,6 +170,35 @@ export default function OrderDetailClient({
   const [trackingNumber, setTrackingNumber] = useState<string>(initialOrder.trackingNumber || "");
   const [deliveryPersonName, setDeliveryPersonName] = useState<string>(initialOrder.deliveryPersonName || "");
   const [deliveryPersonContact, setDeliveryPersonContact] = useState<string>(initialOrder.deliveryPersonContact || "");
+
+  // Match initial driver with provided company driver staff
+  const initialDriverMatch = drivers.find(
+    (d) =>
+      d.name.toLowerCase() === (initialOrder.deliveryPersonName || "").toLowerCase() ||
+      (d.phone && d.phone === initialOrder.deliveryPersonContact)
+  );
+  const [selectedDriverId, setSelectedDriverId] = useState<string>(
+    initialDriverMatch ? initialDriverMatch.id : (initialOrder.deliveryPersonName ? "custom" : "")
+  );
+
+  const handleDriverChange = (driverId: string) => {
+    setSelectedDriverId(driverId);
+    if (!driverId) {
+      setDeliveryPersonName("");
+      setDeliveryPersonContact("");
+      return;
+    }
+    if (driverId === "custom") {
+      return;
+    }
+    const driver = drivers.find((d) => d.id === driverId);
+    if (driver) {
+      setDeliveryPersonName(driver.name);
+      if (driver.phone) {
+        setDeliveryPersonContact(driver.phone);
+      }
+    }
+  };
 
   const formatCurrency = (val: number | null | undefined) => {
     const num = val || 0;
@@ -503,29 +541,56 @@ export default function OrderDetailClient({
 
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    Select Driver from Staff ({drivers.length} available)
+                  </label>
+                  <select
+                    value={selectedDriverId}
+                    onChange={(e) => handleDriverChange(e.target.value)}
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value="">-- Choose Company Driver Staff --</option>
+                    {drivers.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} {d.phone ? `(${d.phone})` : ""} {d.role ? `• ${d.role}` : ""}
+                      </option>
+                    ))}
+                    <option value="custom">-- Custom / External Driver --</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                     Assigned Driver / Rider Name
                   </label>
                   <input
                     type="text"
                     value={deliveryPersonName}
-                    onChange={(e) => setDeliveryPersonName(e.target.value)}
+                    onChange={(e) => {
+                      setDeliveryPersonName(e.target.value);
+                      setSelectedDriverId("custom");
+                    }}
                     placeholder="e.g. Samuel Kiprop"
                     className="w-full p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  Driver Contact / Phone
-                </label>
-                <input
-                  type="text"
-                  value={deliveryPersonContact}
-                  onChange={(e) => setDeliveryPersonContact(e.target.value)}
-                  placeholder="e.g. +254 712 345 678"
-                  className="w-full p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    Driver Contact / Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryPersonContact}
+                    onChange={(e) => {
+                      setDeliveryPersonContact(e.target.value);
+                      setSelectedDriverId("custom");
+                    }}
+                    placeholder="e.g. +254 712 345 678"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
               </div>
 
               <div>
@@ -602,7 +667,7 @@ export default function OrderDetailClient({
                 <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-400">Payment Status</span>
                   <span className="font-bold uppercase text-emerald-500">
-                    {order.paymentStatus || (order.status === "COMPLETED" || order.status === "PAID" ? "PAID" : "PENDING")}
+                    {order.paymentStatus || ((order.status as string) === "COMPLETED" || (order.status as string) === "PAID" ? "PAID" : "PENDING")}
                   </span>
                 </div>
 

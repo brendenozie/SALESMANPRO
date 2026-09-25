@@ -382,7 +382,13 @@ export const PATCH = withApiHandler(
 
     // Verify order exists and belongs to this tenant
     const existingOrder = await prisma.customerOrder.findFirst({
-      where: { id: orderId, companyId },
+      where: {
+        id: orderId,
+        OR: [
+          { companyId },
+          { items: { some: { marketplaceListing: { companyId } } } },
+        ],
+      },
       include: { items: true },
     });
 

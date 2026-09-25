@@ -250,19 +250,34 @@ async function fetchServerInternal(path: string, cookiesHeader?: string) {
   try {
     const headersList = await headers();
     const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000";
-    const headerProto = headersList.get("x-forwarded-proto");
-    let protocol = "http";
-    if (headerProto) {
-      protocol = headerProto;
-    } else if (host && (host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":3000") || host.includes(":3001"))) {
-      protocol = "http";
-    } else if (process.env.NODE_ENV === "production" && !host?.includes("localhost")) {
-      protocol = "https";
+    const port = process.env.PORT || 3000;
+    
+    // In server environment, calling http://127.0.0.1:${port} directly avoids hairpinning through Nginx SSL
+    // which consumes duplicate worker sockets and causes deadlocks / 502 bad gateway spikes
+    let targetUrl: string;
+    const requestHeaders: Record<string, string> = {
+      host: host,
+    };
+    if (cookiesHeader) {
+      requestHeaders["cookie"] = cookiesHeader;
     }
-    const cleanPath = path.startsWith("http") ? path : `${protocol}://${host}${path.startsWith('/') ? path : `/${path}`}`;
-    return await fetch(cleanPath, {
+
+    if (path.startsWith("http")) {
+      try {
+        const parsed = new URL(path);
+        targetUrl = `http://127.0.0.1:${port}${parsed.pathname}${parsed.search}`;
+        requestHeaders["host"] = parsed.host || host;
+      } catch {
+        targetUrl = path;
+      }
+    } else {
+      targetUrl = `http://127.0.0.1:${port}${path.startsWith('/') ? path : `/${path}`}`;
+    }
+
+    return await fetch(targetUrl, {
       cache: "no-store",
-      headers: cookiesHeader ? { cookie: cookiesHeader } : undefined,
+      headers: requestHeaders,
+      signal: AbortSignal.timeout(5000), // Enforce 5s hard timeout to eliminate server hanging/CPU lockup
     });
   } catch (err) {
     console.error("[fetchServerInternal error]", err);

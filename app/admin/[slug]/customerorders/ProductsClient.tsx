@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { 
   MagnifyingGlassIcon, 
   ChevronLeftIcon, 
@@ -200,28 +201,42 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
             <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               {/* Order Header */}
               <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center border border-gray-200 font-bold text-gray-700">
+                <Link
+                  href={`/admin/${companyId}/orders/${order.id}`}
+                  className="flex items-center gap-4 group"
+                  title="Open Order Details"
+                >
+                  <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center border border-gray-200 font-bold text-gray-700 group-hover:border-indigo-500 group-hover:text-indigo-600 transition-colors">
                     #{order.id.slice(-4).toUpperCase()}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <UserIcon className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-gray-900">{order.name || "Customer"}</span>
+                      <UserIcon className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
+                      <span className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">{order.name || "Customer"}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                       <CalendarIcon className="w-3.5 h-3.5" />
                       {new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 <div className="flex items-center gap-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusBadge(order.status)}`}>
                     {order.status}
                   </span>
-                  <button onClick={() => setSelectedOrder(order)} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 px-4 py-2 bg-indigo-50 rounded-lg transition-colors">
-                    Manage Order
+                  <Link
+                    href={`/admin/${companyId}/orders/${order.id}`}
+                    className="text-sm font-bold text-indigo-600 hover:text-white px-4 py-2 bg-indigo-50 hover:bg-indigo-600 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>Open Order</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </Link>
+                  <button
+                    onClick={() => setSelectedOrder(order)}
+                    className="text-xs font-medium text-gray-500 hover:text-gray-800 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Quick Status
                   </button>
                 </div>
               </div>

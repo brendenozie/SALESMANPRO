@@ -24,6 +24,15 @@ const nextConfig = {
   reactStrictMode: false,
   poweredByHeader: false,
 
+  transpilePackages: [
+    "@fullcalendar/core",
+    "@fullcalendar/react",
+    "@fullcalendar/daygrid",
+    "@fullcalendar/timegrid",
+    "@fullcalendar/list",
+    "@fullcalendar/interaction",
+  ],
+
   // Externalize heavy backend packages so Webpack avoids parsing/bundling them
   serverExternalPackages: [
     '@prisma/client',

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -85,7 +87,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     total: ordersData.length,
     revenue: ordersData.reduce((sum, o) => sum + (o.totalPrice || 0), 0),
     pending: ordersData.filter(o => o.status === 'PENDING').length,
-    completed: ordersData.filter(o => o.status === 'COMPLETED' || o.status === 'PAID').length,
+    completed: ordersData.filter(o => o.status === 'COMPLETED' || (o.status as string) === 'PAID').length,
   }), [ordersData]);
 
   const paginatedOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -157,7 +159,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
             <OrderTile 
               key={order.id} 
               order={order} 
-              onClick={() => { setSelectedOrder(order); setIsOrderDetailsModalOpen(true); }}
+              companyId={companyId}
             />
           ))}
         </div>
@@ -211,7 +213,7 @@ const StatBox = ({ title, value, icon: Icon, color, glow }: any) => (
   </div>
 );
 
-const OrderTile = ({ order, onClick }: any) => {
+const OrderTile = ({ order, companyId }: { order: CustomerOrder; companyId: string }) => {
   const statusConfig: any = {
     PENDING: { color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-400/10', border: 'border-amber-200 dark:border-amber-400/20', icon: ClockIcon },
     PROCESSING: { color: 'text-sky-600 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-400/10', border: 'border-sky-200 dark:border-sky-400/20', icon: ClockIcon },
@@ -224,9 +226,9 @@ const OrderTile = ({ order, onClick }: any) => {
   const config = statusConfig[order.status] || statusConfig.PENDING;
 
   return (
-    <div 
-      onClick={onClick}
-      className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2.5rem] shadow-lg hover:shadow-xl hover:border-emerald-500/50 transition-all cursor-pointer relative overflow-hidden"
+    <Link 
+      href={`/admin/${companyId}/orders/${order.id}`}
+      className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2.5rem] shadow-lg hover:shadow-xl hover:border-emerald-500/50 transition-all cursor-pointer relative overflow-hidden block"
     >
       <div className="flex justify-between items-start mb-6">
         <div className={`px-4 py-2 rounded-2xl border ${config.bg} ${config.border} flex items-center gap-2`}>
@@ -248,11 +250,14 @@ const OrderTile = ({ order, onClick }: any) => {
             <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Total Amount</p>
             <p className="text-2xl font-black text-slate-900 dark:text-white">${order.totalPrice.toFixed(2)}</p>
         </div>
-        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-400 group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:text-white transition-all">
-          <EyeIcon className="h-6 w-6" />
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover:underline">Open Order &rarr;</span>
+          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-400 group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:text-white transition-all">
+            <EyeIcon className="h-6 w-6" />
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
