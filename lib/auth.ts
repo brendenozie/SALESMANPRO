@@ -393,8 +393,26 @@ export const createAuthOptions = (
               clientId: googleClientId,
               clientSecret: googleClientSecret,
               allowDangerousEmailAccountLinking: true,
+              wellKnown: undefined,
+              issuer: "https://accounts.google.com",
+              authorization: {
+                url: "https://accounts.google.com/o/oauth2/v2/auth",
+                params: {
+                  response_type: "code",
+                  scope: "openid email profile",
+                  prompt: "select_account",
+                  access_type: "offline",
+                },
+              },
+              token: {
+                url: "https://oauth2.googleapis.com/token",
+              },
+              userinfo: {
+                url: "https://openidconnect.googleapis.com/v1/userinfo",
+              },
+              jwks_endpoint: "https://www.googleapis.com/oauth2/v3/certs",
               httpOptions: {
-                timeout: 40000,
+                timeout: 10000,
               },
             }),
           ]

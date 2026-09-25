@@ -38,15 +38,10 @@ export default function SignInPage() {
     try {
       setLoading(true);
       setError(null);
-      // Save callbackUrl locally so we can access it later
-    localStorage.setItem("callbackUrl", callbackUrl);
-      // We set redirect: false to handle the redirect manually after the promise resolves
-      // or to display a custom loading state while next-auth is processing.
-      // However, for a simple sign-in flow, keeping redirect: true is often simpler.
-      // Let's stick with the original simplified flow for now.
+      localStorage.setItem("callbackUrl", callbackUrl);
       await signIn("google", {
         redirect: true,
-        callbackUrl: encodeURIComponent(callbackUrl),
+        callbackUrl: callbackUrl,
       });
     } catch (err) {
       console.error(err);
@@ -54,6 +49,16 @@ export default function SignInPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Warm up the auth endpoint and prefetch CSRF cookie in the background
+    fetch("/api/auth/csrf", { credentials: "include" }).catch(() => null);
+
+    const auto = params.get("auto") || params.get("provider");
+    if (auto === "google") {
+      handleGoogleSignIn();
+    }
+  }, []);
 
   return (
     // 1. **Background**: Richer, more professional gradient. Added background patterns for visual interest.

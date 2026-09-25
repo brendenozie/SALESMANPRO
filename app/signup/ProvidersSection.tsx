@@ -210,6 +210,17 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     setShowTimeoutWarning(false);
   };
 
+  useEffect(() => {
+    // Warm up the auth endpoint and prefetch CSRF cookie in the background
+    fetch("/api/auth/csrf", { credentials: "include" }).catch(() => null);
+
+    // Auto-initiate Google sign-up if navigated with ?auto=google or ?provider=google
+    const auto = params.get("auto") || params.get("provider");
+    if (auto === "google" && !isSubmittingRef.current) {
+      handleSocialSignIn("google");
+    }
+  }, []);
+
   const updateData = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setData((d) => ({ ...d, [field]: e.target.value }));
   };
