@@ -160,7 +160,7 @@ flowchart TD
 | **WhatsApp Commerce** | Two-way automated conversational commerce & AI bot | `app/api/whatsapp/webhook/route.ts`, `workers/whatsapp-worker.ts` | `WhatsAppChatWidget`, `WebhookValidator` | `/api/whatsapp/webhook`, `/api/whatsapp/send` | `WhatsAppConversation`, `WhatsAppMessage`, `CustomerOrder` | Meta Graph API, BullMQ, HMAC SHA256 |
 | **Real Estate & Property Management** | Property listing, short-term booking, long-term leasing, maintenance, showings, offers, unit/room management & tenant operations | `app/admin/[slug]/properties`, `app/site/[slug]/realestate`, `app/site/[slug]/propertymanagement`, `docs/properties/*` | `PropertyClientPage`, `PropertyDetailsClient`, `UnifiedPropertyDashboard`, `HostelBlockManager` | `/api/admin/my-market-place`, `/api/properties/*`, `/api/admin/property/*`, `/api/admin/inquiries`, `/api/admin/showings`, `/api/admin/offers`, `/api/site/[slug]/me/properties-dashboard` | `marketplaceListings`, `Booking`, `HostelBlock`, `HostelRoom`, `HostelAllocation`, `HostelMaintenanceRequest`, `HostelVisitor`, `HostelFee`, `Showing`, `Inquiry`, `OfferContract`, `Consumer` | MongoDB/Prisma, Redis, Canonical Payments |
 | **Media Pipeline** | Multi-tenant media library, Cloudinary/S3 upload, AI tags | `lib/media/queues.ts`, `workers/MediaJob.ts`, `app/admin/media/*` | `MediaPickerModal`, `MediaUploader`, `ImageOptimizer` | `/api/media/upload`, `/api/media/assets` | `MediaItem`, `MediaAlbum`, `MediaAsset` | Cloudinary SDK, AWS S3, BullMQ |
-| **POS System** | Fast physical store checkout, receipt printing, cash drawer | `app/pos/page.tsx`, `lib/pos/posService.ts` | `POSRegister`, `BarcodeScanner`, `ReceiptPrinter` | `/api/pos/orders`, `/api/pos/shift` | `CustomerOrder`, `InventoryItem`, `User` | WebUSB, Canvas, WebSocket |
+| **POS System & Offline Engine** | Fast physical store checkout, offline-capable operational edge, receipt printing, cash drawer, sync engine | `app/admin/[slug]/storepos`, `app/admin/[slug]/service-pos`, `app/admin/[slug]/fitness-pos`, `lib/pos/offline/*`, `docs/offline/*` | `StorePOSPageClient`, `AdminPOSClient`, `PosClient`, `POSSessionHeader`, `POSCustomerSelector`, `POSOfflineContext` | `/api/shop/orders`, `/api/shop/serviceOrders`, `/api/pos/sync`, `/api/pos/health`, `/api/pos/session` | `CustomerOrder`, `PosSession`, `StaffProfile`, `InventoryItem`, `User` | IndexedDB (idb), WebUSB, ESC/POS, WebView2 IPC |
 | **School Management** | Student grading, fee collection, classroom attendance | `app/school/*`, `lib/school/schoolService.ts` | `GradeBook`, `FeeCollector`, `AttendanceRoster` | `/api/school/*` | `Student`, `Classroom`, `FeeRecord`, `Attendance` | Prisma relational domains |
 | **Super Admin Console** | Global operations, multi-tenant telemetry, and subsystem command portals | `app/super-admin/page.tsx`, `app/super-admin/layout.tsx` | `SuperAdminLayout`, `SuperAdminPaymentsClient` | `/super-admin/*`, `/api/admin/payments/*` | `Company`, `User`, `CustomerOrder` | Server Components, NextAuth |
 | **Admin Orders HQ** | Real-time order monitoring, line item audit, and fulfillment status transitions | `app/admin/[slug]/orders/page.tsx`, `app/admin/[slug]/orders/OrdersClient.tsx` | `OrdersClient`, `OrderInspector`, `OrderTile` | `/api/admin/customer-orders` (GET, POST, PATCH) | `CustomerOrder`, `OrderItem`, `InventoryItem` | Atomic transactions, cacheDel |
@@ -775,6 +775,8 @@ graph TD
 | **Vertical Dashboards** | **CANONICAL** | `app/api/admin/dashboard/[vertical]/[slug]/route.ts` | Real-time vertical metric aggregators (SaaS, Coach, Logistics, E-commerce). |
 | **POS Operator Sessions** | **CANONICAL** | `lib/pos/posSessionService.ts` | **Mandatory:** POS shifts, terminal PIN authentication, shift handoffs, and sales aggregations. |
 | **POS Customer CRM Sync** | **CANONICAL** | `lib/pos/posCustomerService.ts` | **Mandatory:** In-POS customer search, creation, and deduplication synced to canonical `User` + `Client` + `Consumer`. |
+| **Shared POS Offline Engine** | **CANONICAL** | `lib/pos/offline/*`, `contexts/POSOfflineContext.tsx` | **Mandatory:** Universal offline operational edge, transaction journal, sync client, and connectivity manager for StorePOS, ServicePOS, and FitnessPOS. |
+| **POS Offline Sync Endpoints** | **CANONICAL** | `app/api/pos/sync/route.ts`, `app/api/pos/health/route.ts` | **Mandatory:** Reconciles offline mutation batches, idempotency checking, and incremental delta pulls without duplicate orders. |
 | **Fitness Domain Service** | **CANONICAL** | `server/services/fitnessService.ts` | **Mandatory:** Equipment maintenance, membership plans, authoritative gym check-in, and course entitlement verification. |
 | **Fitness Check-In & Gate** | **CANONICAL** | `app/api/fitness/check-in/route.ts` | Authoritative physical gym check-in verifying active membership and location scope. |
 | **Fitness Entitlements** | **CANONICAL** | `app/api/fitness/entitlements/verify/route.ts` | Server-side digital access verification for courses, videos, and lesson attachments. |
@@ -804,10 +806,24 @@ graph TD
 - **Invariant 11:** Fitness Digital Entitlement Security: Private and paid digital training courses, curriculum lessons, and video materials must be gated server-side via `verifyEntitlement` (`server/services/fitnessService.ts`). Gated content is never served to unauthenticated or unentitled users.
 - **Invariant 12:** Gym Check-In Validity & Multi-Location Isolation: A gym check-in (`GymCheckIn`) requires an active membership (`FitnessMembershipStatus === "ACTIVE"`) within its valid date range and matching the customer's permitted location scope (`ALL_LOCATIONS` or matching `locationId`).
 - **Invariant 13:** Trainer & Class Scheduling Conflict Guard: A trainer cannot be assigned overlapping sessions with active status (`CONFIRMED` or `PENDING`), and client double-bookings within the same time slot must be rejected with HTTP 409.
+- **Invariant 14:** POS Offline Authority & Zero-Duplicate Rule: Offline POS mutations must use deterministic idempotency keys (`${deviceId}:${operationId}`) and route through `centralizedCreateOrder.ts`. Replayed requests MUST return cached results without creating duplicate orders or double-decrementing stock.
+- **Invariant 15:** Offline Payment Safety Invariant: Online-dependent payment gateways (M-Pesa STK push, Stripe, Paystack) can NEVER be marked completed offline without authoritative provider confirmation. Offline POS transactions only permit cash and verified manual tenders with audit flags.
 
 ---
 
 ## 22. "If You Change This..." Impact Warnings
+
+### If You Change `lib/orders/centralizedCreateOrder.ts` or `app/api/pos/sync/route.ts`:
+- **You Risk Breaking:** Offline POS synchronization, cash sale reconciliation, idempotency replay, negative stock handling under concurrency, and receipt tracking.
+- **Mandatory Verification:** Test syncing offline order batches with simulated network retries using identical idempotency keys; verify no duplicate orders are created and stock reconciles accurately.
+
+### If You Change `lib/pos/posSessionService.ts` or `app/api/pos/session/route.ts`:
+- **You Risk Breaking:** Offline terminal shifts, PIN authentication hashes, shift handoffs, drawer cash count variance, and cashier attribution.
+- **Mandatory Verification:** Test offline operator PIN verification against cached hashes and verify offline session closure with cash variance calculation.
+
+### If You Change `lib/pos/posCustomerService.ts`:
+- **You Risk Breaking:** In-POS customer search, offline walk-in customer creation, and cloud phone/email deduplication and ID remapping.
+- **Mandatory Verification:** Test creating a customer offline on two separate terminals with the same phone number; verify clean deduplication and merging on server sync.
 
 ### If You Change `server/services/fitnessService.ts` or `app/api/fitness/check-in/route.ts`:
 - **You Risk Breaking:** Physical gym attendance check-ins, member admission verification, multi-location restrictions, digital course access gating, and equipment maintenance tracking.
