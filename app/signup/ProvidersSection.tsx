@@ -217,7 +217,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     // Auto-initiate Google sign-up if navigated with ?auto=google or ?provider=google
     const auto = params.get("auto") || params.get("provider");
     if (auto === "google" && !isSubmittingRef.current) {
-      handleSocialSignIn("google");
+      handleSocialSignUp("google");
     }
   }, []);
 

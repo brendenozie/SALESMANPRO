@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Placeholder for an actual Google Icon component
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
