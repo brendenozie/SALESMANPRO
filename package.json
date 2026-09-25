@@ -60,6 +60,7 @@
     "gapi-script": "^1.2.0",
     "geolib": "^3.3.3",
     "groq-sdk": "^1.5.0",
+    "hls.js": "^1.7.3",
     "ioredis": "^5.9.2",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
