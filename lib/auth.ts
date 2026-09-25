@@ -24,6 +24,25 @@ import {
   sendVerificationEmail,
 } from "@/lib/auth/verification";
 import { authLog, generateCorrelationId } from "@/lib/auth/telemetry";
+import { Issuer } from "openid-client";
+
+// Cache discovered OpenID issuers in memory to prevent slow, redundant outbound HTTP discovery calls to Google on every request
+const globalForAuth = globalThis as unknown as { _openidIssuerCache?: Map<string, any> };
+const issuerCache = globalForAuth._openidIssuerCache || new Map<string, any>();
+globalForAuth._openidIssuerCache = issuerCache;
+
+if (!(Issuer as any)._isCached) {
+  const originalDiscover = Issuer.discover;
+  Issuer.discover = async function (uri: string) {
+    if (issuerCache.has(uri)) {
+      return issuerCache.get(uri);
+    }
+    const issuer = await originalDiscover.call(this, uri);
+    issuerCache.set(uri, issuer);
+    return issuer;
+  };
+  (Issuer as any)._isCached = true;
+}
 
 function getSharedSecret(): string {
   return (
@@ -393,26 +412,15 @@ export const createAuthOptions = (
               clientId: googleClientId,
               clientSecret: googleClientSecret,
               allowDangerousEmailAccountLinking: true,
-              wellKnown: undefined,
-              issuer: "https://accounts.google.com",
               authorization: {
-                url: "https://accounts.google.com/o/oauth2/v2/auth",
                 params: {
-                  response_type: "code",
-                  scope: "openid email profile",
                   prompt: "select_account",
                   access_type: "offline",
+                  response_type: "code",
                 },
               },
-              token: {
-                url: "https://oauth2.googleapis.com/token",
-              },
-              userinfo: {
-                url: "https://openidconnect.googleapis.com/v1/userinfo",
-              },
-              jwks_endpoint: "https://www.googleapis.com/oauth2/v3/certs",
               httpOptions: {
-                timeout: 10000,
+                timeout: 15000,
               },
             }),
           ]
