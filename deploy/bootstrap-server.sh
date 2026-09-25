@@ -21,8 +21,8 @@ echo "📦 Updating APT package indices..."
 sudo apt-get update -y && sudo apt-get upgrade -y
 
 # 2. Install base system utilities
-echo "📦 Installing prerequisites (curl, git, build-essential, ufw, nginx)..."
-sudo apt-get install -y curl git ufw nginx certbot python3-certbot-nginx
+echo "📦 Installing prerequisites (curl, git, build-essential, ufw, nginx, ffmpeg)..."
+sudo apt-get install -y curl git ufw nginx certbot python3-certbot-nginx ffmpeg
 
 # 3. Install Node.js 20.x LTS
 if ! command -v node &> /dev/null; then

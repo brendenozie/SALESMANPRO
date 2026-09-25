@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  salesmanpro-video-transcoder:
+    build:
+      context: .
+      dockerfile: docker/video-worker.Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=${REDIS_HOST:-host.docker.internal}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - DATABASE_URL=${DATABASE_URL}
+      - AWS_REGION=${AREGION:-eu-north-1}
+      - AWS_ACCESS_KEY_ID=${AACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${ASECRET_ACCESS_KEY}
+      - AWS_BUCKET_NAME=${ABUCKET_NAME:-salesmanpro}
+      - MEDIA_TRANSCODE_CONCURRENCY=1
+    deploy:
+      resources:
+        limits:
+          cpus: '2.00'
+          memory: 2048M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"

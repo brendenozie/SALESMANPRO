@@ -3,6 +3,7 @@ import prisma from "@/server/db/prismadb";
 import { VideoStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { dispatchVideoTranscode } from "@/lib/media/transcoding/dispatcher";
 
 // GET /api/admin/videos - Fetch all videos
 async function handleGET(request: Request, context: any) {
@@ -124,6 +125,15 @@ async function handlePOST(request: Request, context: any) {
         mediaAsset: true,
       },
     });
+
+    // Enqueue background multi-bitrate HLS transcoding without blocking HTTP response
+    if (url && (url.includes(".mp4") || url.includes(".webm") || url.includes(".mov"))) {
+      dispatchVideoTranscode({
+        mediaAssetId: mediaAsset.id,
+        companyId: companyId || "default",
+        sourceUrl: url,
+      }).catch((e: any) => console.warn("[VIDEO TRANSCODE DISPATCH WARNING]", e.message));
+    }
 
     const formatted = {
       id: newVideo.id,

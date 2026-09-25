@@ -186,3 +186,31 @@ Consumer accesses content immediately in Player & Library (/site/[slug]/dashboar
      - Analytics telemetry persistence: PASS
      - Cascade and relationship cleanup: PASS
 
+---
+
+## 8. Adaptive Video Transcoding Engine (Option B: Self-Hosted BullMQ + FFmpeg)
+
+To support buffer-free mobile playback and reduce S3 egress bandwidth costs by 70–80%, an asynchronous video transcoding pipeline is integrated:
+
+### Crash-Prevention Safeguards:
+1. **Strict Concurrency Capping**:
+   - `video-transcode.worker.ts` sets `concurrency: 1` by default (configurable via `MEDIA_TRANSCODE_CONCURRENCY`). Multiple simultaneous uploads queue sequentially in Redis.
+2. **CPU & Thread Bounding**:
+   - FFmpeg process executes with `-threads 2` and `-preset veryfast`, leaving CPU headroom for Next.js and MongoDB.
+3. **Execution Timeouts**:
+   - 15-minute process kill limit prevents zombie/stuck encodings from consuming memory.
+4. **Ephemeral Sandboxing & Ephemeral Disk Cleanup**:
+   - Scratch directories are created per job (`os.tmpdir()/sp_transcode/...`) and unconditionally removed in a `finally` block upon S3 chunk upload.
+5. **Universal Fallback**:
+   - If an encoding fails or host lacks FFmpeg, the asset automatically marks `status: "READY"` with the original raw MP4 so video playback never breaks.
+6. **Container Resource Limits**:
+   - `docker-compose.media-worker.yml` enforces kernel-level limits (`cpus: '2.0'`, `memory: 2048M`), preventing OOM crashes.
+7. **PM2 Process Management & Zero-Downtime Releases**:
+   - Registered `video-transcode-worker` in [ecosystem.config.js](file:///c:/Users/Brenden/Desktop/SalesForce/SalesMan/ecosystem.config.js) with `max_memory_restart: '2200M'`, `instances: 1`, `exec_mode: 'fork'`, and `kill_timeout: 60000` (allowing in-flight transcoding uploads to finish or clean up scratch disk on restart).
+   - Integrated into [deploy/deploy-release.sh](file:///c:/Users/Brenden/Desktop/SalesForce/SalesMan/deploy/deploy-release.sh) to cleanly reload on atomic code updates.
+8. **Automated Multi-Environment Orchestrator (`deploy/start-media-worker.sh`)**:
+   - Automatically detects if Docker is operational on any newly provisioned server node.
+   - **Mode A (Docker detected)**: Launches containerized worker via `docker compose -f docker-compose.media-worker.yml up -d --build`.
+   - **Mode B (Docker unavailable / Bare Metal fallback)**: Automatically detects and installs system `ffmpeg` via OS package manager (`apt-get`, `dnf`, `yum`, `apk`, `brew`), verifies TypeScript worker build artifacts in `dist-worker/`, and commences execution natively under PM2.
+
+

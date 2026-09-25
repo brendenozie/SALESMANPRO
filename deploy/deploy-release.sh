@@ -92,7 +92,7 @@ if pm2 describe salesmanpro 2>/dev/null | grep -qi "fork_mode"; then
 fi
 
 # Clean up duplicate PM2 instances for single-instance background worker processes
-for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker; do
+for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker observability-worker video-transcode-worker; do
   COUNT=$(pm2 jlist 2>/dev/null | grep -o "\"name\":\"${app_name}\"" | wc -l || echo "0")
   if [ "${COUNT}" -gt 1 ]; then
     echo "⚠️ Detected ${COUNT} duplicate instances for ${app_name}, resetting..."
@@ -128,7 +128,7 @@ fi
 
 # Reload background workers one by one to avoid CPU and memory spikes during release switch
 echo "🔄 Reloading background worker processes..."
-for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker; do
+for app_name in ssl-worker whatsapp-worker ai-job-worker backup-worker ai-workforce-worker observability-worker video-transcode-worker; do
   pm2 startOrReload "${CURRENT_LINK}/ecosystem.config.js" --only "${app_name}" --update-env 2>/dev/null || true
 done
 

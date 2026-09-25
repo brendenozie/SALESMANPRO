@@ -19,6 +19,7 @@ import {
   XMarkIcon,
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/solid';
+import AdaptiveVideoPlayer from '@/components/media/AdaptiveVideoPlayer';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -291,15 +292,12 @@ export default function MediaEntertainmentView({ media, related, storeFormData }
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <video
+              <AdaptiveVideoPlayer
                 src={streamUrl}
-                controls
-                autoPlay
                 poster={heroImage}
                 className="w-full aspect-video rounded-2xl bg-black"
-              >
-                Your browser does not support the video tag.
-              </video>
+                autoPlay={true}
+              />
             </div>
           </motion.section>
         )}
