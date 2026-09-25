@@ -1,31 +1,14 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// // app/api/content/[id]/route.ts
-import prisma from '@/server/db/prismadb';
-import { withApiHandler } from '@/lib/hooks/withApiHandler';
-import { formatResponse } from '@/lib/formatResponse';
-import { Prisma } from '@prisma/client';
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { ContentStatus, ContentType } from "@prisma/client";
 
-// Define a reusable selection object to avoid over-fetching nested media
-const CONTENT_SELECT = {
-  id: true,
-  title: true,
-  type: true,
-  status: true,
-  publishDate: true,
-  photoAlbumId: true,
-  videoAlbumId: true,
-  photoAlbum: {
-    select: { id: true, title: true } // Don't fetch all photos here
-  },
-  videoAlbum: {
-    select: { id: true, title: true } // Don't fetch all videos here
-  },
-  updatedAt: true,
-};
+export const GET = withApiHandler(async (_req, context: any) => {
+  const resolvedParams = await (context.params instanceof Promise ? context.params : Promise.resolve(context.params));
+  const id = resolvedParams?.id;
 
-
-export const GET = withApiHandler(async (_req, { params }) => {
-  const { id } = params;
+  if (!id) return formatResponse(false, null, "Content ID is required", 400);
 
   const cacheKey = buildTenantCacheKey(id, "content", {});
 
@@ -33,122 +16,175 @@ export const GET = withApiHandler(async (_req, { params }) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const content = await prisma.content.findUnique({
     where: { id },
-    select: CONTENT_SELECT,
+    include: {
+      photoAlbum: {
+        include: {
+          photos: {
+            include: { mediaAsset: true },
+          },
+        },
+      },
+      videoAlbum: {
+        include: {
+          videos: {
+            include: { mediaAsset: true },
+          },
+        },
+      },
+      author: {
+        select: { id: true, name: true, image: true },
+      },
+    },
   });
 
   if (!content) {
-    return formatResponse(false, null, 'Content not found', 404);
+    return formatResponse(false, null, "Content not found", 404);
   }
 
+  const formatted = {
+    id: content.id,
+    title: content.title,
+    description: content.description,
+    excerpt: content.excerpt,
+    type: content.type,
+    contentType: content.contentType,
+    status: content.status,
+    publishDate: content.publishDate,
+    published: content.published,
+    contentUrl: content.contentUrl,
+    thumbnailUrl: content.thumbnailUrl,
+    category: content.category,
+    duration: content.duration,
+    tags: content.tags,
+    companyId: content.companyId,
+    photoAlbum: content.photoAlbum
+      ? {
+          id: content.photoAlbum.id,
+          title: content.photoAlbum.title,
+          photos: content.photoAlbum.photos.map((p) => ({
+            id: p.id,
+            imageUrl: p.mediaAsset?.url || "",
+            title: p.title,
+          })),
+        }
+      : null,
+    videoAlbum: content.videoAlbum
+      ? {
+          id: content.videoAlbum.id,
+          title: content.videoAlbum.title,
+          videos: content.videoAlbum.videos.map((v) => ({
+            id: v.id,
+            title: v.title,
+            url: v.mediaAsset?.url || "",
+            thumbnailUrl: v.mediaAsset?.thumbnailUrl || "",
+          })),
+        }
+      : null,
+    author: content.author,
+    createdAt: content.createdAt,
+    updatedAt: content.updatedAt,
+  };
+
   try {
-    if (content) {
-      await cacheSet(cacheKey, content, 60);
-    }
+    await cacheSet(cacheKey, formatted, 60);
   } catch (e) {}
 
-  return formatResponse(true, content);
+  return formatResponse(true, formatted, "Content fetched successfully", 200);
 });
 
+export const PUT = withApiHandler(async (request, context: any) => {
+  const resolvedParams = await (context.params instanceof Promise ? context.params : Promise.resolve(context.params));
+  const id = resolvedParams?.id;
 
-export const PUT = withApiHandler(async (request, { params }) => {
-  const { id } = params;
+  if (!id) return formatResponse(false, null, "Content ID is required", 400);
+
   const body = await request.json();
-  const cacheKey = buildTenantCacheKey(id, "content", {});
+  const {
+    title,
+    description,
+    excerpt,
+    type,
+    contentType,
+    status,
+    publishDate,
+    published,
+    category,
+    duration,
+    tags,
+    contentUrl,
+    thumbnailUrl,
+    photoAlbumId,
+    videoAlbumId,
+  } = body;
+
   try {
     const updatedContent = await prisma.content.update({
       where: { id },
       data: {
-        title: body.title,
-        type: body.type,
-        status: body.status,
-        photoAlbumId: body.photoAlbumId,
-        videoAlbumId: body.videoAlbumId,
-        // Ensure publishDate is a valid Date object if provided
-        publishDate: body.publishDate ? new Date(body.publishDate) : undefined,
+        ...(title !== undefined ? { title } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(excerpt !== undefined ? { excerpt } : {}),
+        ...(type !== undefined ? { type } : {}),
+        ...(contentType !== undefined ? { contentType: contentType as ContentType } : {}),
+        ...(status !== undefined ? { status: status as ContentStatus } : {}),
+        ...(publishDate !== undefined ? { publishDate: publishDate ? new Date(publishDate) : null } : {}),
+        ...(published !== undefined ? { published: Boolean(published) } : {}),
+        ...(category !== undefined ? { category } : {}),
+        ...(duration !== undefined ? { duration: duration ? parseFloat(duration) : null } : {}),
+        ...(tags !== undefined ? { tags: Array.isArray(tags) ? tags : [] } : {}),
+        ...(contentUrl !== undefined ? { contentUrl } : {}),
+        ...(thumbnailUrl !== undefined ? { thumbnailUrl } : {}),
+        ...(photoAlbumId !== undefined ? { photoAlbumId } : {}),
+        ...(videoAlbumId !== undefined ? { videoAlbumId } : {}),
+        updatedAt: new Date(),
       },
-      select: CONTENT_SELECT,
     });
 
-    // Clear cache for this specific content item
-    try { await cacheDel(cacheKey); } catch (e) {}
-    return formatResponse(true, updatedContent, 'Content updated successfully');
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return formatResponse(false, null, 'Content not found', 404);
-    }
-    throw error;
+    try {
+      if (updatedContent.companyId) {
+        await cacheDel(`tenant:${updatedContent.companyId}:content:*`);
+      }
+      await cacheDel(`admin:content:*`);
+      await cacheDel(`tenant:${id}:content:*`);
+    } catch (e) {}
+
+    return formatResponse(true, updatedContent, "Content updated successfully", 200);
+  } catch (error: any) {
+    console.error(`[content/PUT] Error updating content ${id}:`, error);
+    return formatResponse(false, null, error.message || "Failed to update content", 500);
   }
 });
 
+export const DELETE = withApiHandler(async (_request, context: any) => {
+  const resolvedParams = await (context.params instanceof Promise ? context.params : Promise.resolve(context.params));
+  const id = resolvedParams?.id;
 
-export const DELETE = withApiHandler(async (_req, { params }) => {
-  const { id } = params;
+  if (!id) return formatResponse(false, null, "Content ID is required", 400);
 
   try {
-    await prisma.content.delete({ where: { id } });
-    
+    const existing = await prisma.content.findUnique({
+      where: { id },
+      select: { companyId: true },
+    });
+
+    await prisma.content.delete({
+      where: { id },
+    });
+
     try {
-      await cacheDel(`tenant:${id}:content:*`);
+      if (existing?.companyId) {
+        await cacheDel(`tenant:${existing.companyId}:content:*`);
+      }
       await cacheDel(`admin:content:*`);
+      await cacheDel(`tenant:${id}:content:*`);
     } catch (e) {}
-    return formatResponse(true, null, 'Content deleted', 200); // 204 doesn't usually return a body
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return formatResponse(false, null, 'Content not found', 404);
-    }
-    throw error;
+
+    return formatResponse(true, null, "Content deleted successfully", 200);
+  } catch (error: any) {
+    console.error(`[content/DELETE] Error deleting content ${id}:`, error);
+    return formatResponse(false, null, error.message || "Failed to delete content", 500);
   }
 });
-//  => {
-//   const { id } = params;
-
-//   const content = await prisma.content.findUnique({
-//     where: { id },
-//     include: {
-//       photoAlbum: { include: { photos: true } },
-//       videoAlbum: { include: { videos: true } },
-//     },
-//   });
-
-//   if (!content) {
-//     return formatResponse(false, null, 'Content not found', 404);
-//   }
-
-//   return formatResponse(true, content, null, 200);
-// });
-
-// 
-// export const PUT = withApiHandler(async (request, { params }) => {
-//   const { id } = params;
-//   const body = await request.json();
-//   const { title, type, publishDate, status, photoAlbumId, videoAlbumId } = body;
-
-//   const updatedContent = await prisma.content.update({
-//     where: { id },
-//     data: {
-//       title,
-//       type,
-//       status,
-//       publishDate,
-//       photoAlbumId,
-//       videoAlbumId,
-//       updatedAt: new Date(),
-//     },
-//     include: {
-//       photoAlbum: { include: { photos: true } },
-//       videoAlbum: { include: { videos: true } },
-//     },
-//   });
-
-//   return formatResponse(true, updatedContent, null, 200);
-// });
-
-// 
-// export const DELETE = withApiHandler(async (request, { params }) => {
-//   const { id } = params;
-
-//   await prisma.content.delete({ where: { id } });
-//   return formatResponse(true, null, null, 204);
-// });

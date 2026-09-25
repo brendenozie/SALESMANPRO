@@ -5,16 +5,13 @@ import { useSession, signOut } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
-  MapPinIcon, 
-  LinkIcon, 
-  CalendarDaysIcon, 
-  PencilSquareIcon,
-  PlayCircleIcon,
-  HeartIcon,
-  StarIcon,
-  Cog6ToothIcon,
-  FireIcon,
-  UserCircleIcon,
+  PlayCircleIcon, 
+  BookmarkIcon, 
+  UserCircleIcon, 
+  SparklesIcon,
+  FilmIcon,
+  ArrowTopRightOnSquareIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/solid';
 import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 
@@ -24,26 +21,28 @@ interface UserProfile {
   email: string;
   avatar: string | null;
   bio: string | null;
-  tier?: string;
   createdAt: string;
 }
 
-interface MediaItem {
+interface ContentItem {
   id: string;
-  name: string;
-  description: string | null;
-  images: string[];
-  videos: string[] | null;
+  type: string;
+  title: string;
+  excerpt?: string;
+  coverImage?: string;
+  category?: string;
+  url: string;
 }
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
-const UserProfile = () => {
+export default function UserProfilePage() {
   const { data: session, status } = useSession();
   const { slug } = useParams() as { slug: string };
   
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [unlockedItems, setUnlockedItems] = useState<ContentItem[]>([]);
+  const [bookmarks, setBookmarks] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,9 +56,9 @@ const UserProfile = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const [profileRes, mediaRes] = await Promise.all([
+      const [profileRes, contentRes] = await Promise.all([
         fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
-        fetch(`${apiBaseUrl}/site/${slug}/me/media`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/content`),
       ]);
 
       if (profileRes.ok) {
@@ -67,36 +66,42 @@ const UserProfile = () => {
         setUser(profileData);
       }
 
-      if (mediaRes.ok) {
-        const mediaData = await mediaRes.json();
-        setMedia(mediaData.items || []);
+      if (contentRes.ok) {
+        const contentData = await contentRes.json();
+        setUnlockedItems(contentData.subscribed || []);
+        setBookmarks(contentData.bookmarked || []);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Error fetching user profile data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Show sign-in prompt if not authenticated
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f111a]">
-        <div className="animate-pulse text-xl text-slate-400">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-slate-400 text-sm">Loading profile...</span>
+        </div>
       </div>
     );
   }
 
   if (status === 'unauthenticated') {
     return (
-      <section className="flex items-center justify-center min-h-screen bg-[#0f111a]">
-        <div className="text-center">
-          <UserCircleIcon className="w-20 h-20 mx-auto text-slate-400 mb-4" />
+      <section className="flex items-center justify-center min-h-screen bg-[#0f111a] px-4">
+        <div className="text-center bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl">
+          <UserCircleIcon className="w-16 h-16 mx-auto text-slate-500 mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">
             Please sign in to access your profile.
           </h2>
-          <Link href={`/auth/signin`}>
-            <button className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg">
+          <p className="text-slate-400 text-sm mb-6">
+            Sign in with your customer account to view your purchased videos, saved items, and settings.
+          </p>
+          <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(window?.location?.href || `/site/${slug}/media/profile`)}`}>
+            <button className="w-full px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-violet-600/30">
               Sign In
             </button>
           </Link>
@@ -105,276 +110,146 @@ const UserProfile = () => {
     );
   }
 
-  // Display values with defaults
-  const displayUser = {
-    name: user?.name || session?.user?.name || 'Creator',
-    handle: `@${(user?.email || session?.user?.email || 'user').split('@')[0]}`,
-    avatar: user?.avatar || session?.user?.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop',
-    bio: user?.bio || 'Visual storyteller & film enthusiast. Creating digital dreams one pixel at a time. 🎥 ✨',
-    joinedYear: user?.createdAt ? new Date(user.createdAt).getFullYear() : 2024,
-  };
+  const displayName = user?.name || session?.user?.name || 'Member';
+  const displayEmail = user?.email || session?.user?.email || '';
 
   return (
     <div className="min-h-screen bg-[#0f111a] text-slate-300 font-sans selection:bg-violet-500 selection:text-white">
-      
-      {/* --- BACKGROUND ACCENTS --- */}
-      {/* These provide the subtle glowing background atmosphere */}
       <div className="fixed top-0 left-0 w-full h-96 bg-gradient-to-b from-violet-900/20 to-[#0f111a] -z-10" />
       <div className="fixed top-20 right-20 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl -z-10" />
       
-      {/* --- MAIN CONTAINER --- */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* --- HEADER / COVER IMAGE --- */}
-        <div className="relative w-full h-64 md:h-80 rounded-3xl overflow-hidden shadow-2xl shadow-black/50 group">
-          <img 
-            src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop" 
-            alt="Cover" 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0f111a] via-transparent to-transparent opacity-90" />
-          
+        {/* Cover Section */}
+        <div className="relative w-full h-48 md:h-64 rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-r from-violet-900/40 to-slate-900 border border-slate-800 flex items-end p-6">
           <div className="absolute top-4 right-4 flex gap-2">
-            <button className="bg-black/30 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/10 transition-all text-sm font-medium">
-              <PencilSquareIcon className="w-4 h-4" /> Edit Cover
-            </button>
+            <Link
+              href={`/site/${slug}/media/dashboard`}
+              className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-1.5 hover:bg-white/10 transition-all text-xs font-medium"
+            >
+              <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-violet-400" /> Member Dashboard
+            </Link>
             <button 
-              onClick={()=> {
+              onClick={() => {
                 const returnTo = window.location.origin;
-
                 signOut({
                   redirect: true,
                   callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
                 });
               }}
-              className="bg-black/30 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-red-500/20 transition-all text-sm font-medium"
+              className="bg-black/40 backdrop-blur-md border border-white/10 text-rose-300 px-4 py-2 rounded-full flex items-center gap-1.5 hover:bg-rose-950/40 transition-all text-xs font-medium"
             >
-              <ArrowRightOnRectangleIcon className="w-4 h-4" /> Sign Out
+              <ArrowRightOnRectangleIcon className="w-3.5 h-3.5" /> Sign Out
             </button>
           </div>
         </div>
 
-        {/* --- PROFILE DATA SECTION --- */}
-        <div className="relative -mt-20 px-4 md:px-8 pb-12">
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            
-            {/* LEFT COLUMN: Avatar & Bio */}
-            <div className="w-full lg:w-1/4 flex flex-col items-center lg:items-start z-10">
-              {/* Avatar */}
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-violet-600 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-1000"></div>
-                <div className="relative w-36 h-36 rounded-full border-4 border-[#0f111a] overflow-hidden">
-                  <img 
-                    src={displayUser.avatar} 
-                    alt="User Avatar" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-[#0f111a] rounded-full"></div>
-              </div>
+        {/* Profile Card Header */}
+        <div className="relative -mt-16 px-4 md:px-8 pb-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 pb-6 border-b border-slate-800">
+            <div className="w-28 h-28 rounded-full border-4 border-[#0f111a] bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center text-white text-3xl font-extrabold shadow-xl">
+              {displayName[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="text-center sm:text-left flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center justify-center sm:justify-start gap-2">
+                {displayName}
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                  Consumer
+                </span>
+              </h1>
+              <p className="text-violet-400 text-sm font-medium">{displayEmail}</p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href={`/site/${slug}/media/dashboard?tab=library`}
+                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs transition-colors shadow-lg shadow-violet-600/20"
+              >
+                Open My Library
+              </Link>
+            </div>
+          </div>
 
-              {/* User Details */}
-              <div className="mt-4 text-center lg:text-left space-y-2">
-                <h1 className="text-3xl font-bold text-white tracking-tight">
-                  {displayUser.name}
-                </h1>
-                <p className="text-violet-400 font-medium">{displayUser.handle}</p>
-                
-                <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-                  {displayUser.bio}
-                </p>
+          {/* Quick Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+              <div className="text-2xl font-bold text-white">{unlockedItems.length}</div>
+              <div className="text-xs text-slate-400 mt-0.5">Purchased Content</div>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+              <div className="text-2xl font-bold text-white">{bookmarks.length}</div>
+              <div className="text-xs text-slate-400 mt-0.5">Saved Bookmarks</div>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+              <div className="text-2xl font-bold text-emerald-400">Active</div>
+              <div className="text-xs text-slate-400 mt-0.5">Membership Status</div>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center">
+              <div className="text-2xl font-bold text-violet-400">Verified</div>
+              <div className="text-xs text-slate-400 mt-0.5">Account Security</div>
+            </div>
+          </div>
 
-                <div className="flex flex-wrap justify-center lg:justify-start gap-3 mt-4 text-xs font-medium text-slate-400">
-                  <span className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer">
-                    <MapPinIcon className="w-4 h-4 text-slate-500" /> Tokyo, JP
-                  </span>
-                  <span className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer">
-                    <LinkIcon className="w-4 h-4 text-slate-500" /> elena.io
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <CalendarDaysIcon className="w-4 h-4 text-slate-500" /> Joined {displayUser.joinedYear}
-                  </span>
-                </div>
-
-                <div className="flex gap-3 mt-6 w-full">
-                  <button className="flex-1 bg-white text-black font-bold py-2.5 rounded-xl hover:bg-slate-200 transition-colors shadow-lg shadow-white/5">
-                    Follow
-                  </button>
-                  <button className="p-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-white hover:bg-slate-800 transition-colors">
-                    <Cog6ToothIcon className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-              
-              {/* Mini Stats Grid */}
-              <div className="grid grid-cols-3 gap-2 w-full mt-8 p-4 bg-slate-900/50 rounded-2xl border border-white/5 backdrop-blur-sm">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-white">2.4k</div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500">Followers</div>
-                </div>
-                <div className="text-center border-l border-white/5">
-                  <div className="text-lg font-bold text-white">142</div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500">Reviews</div>
-                </div>
-                <div className="text-center border-l border-white/5">
-                  <div className="text-lg font-bold text-white">89</div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-500">Lists</div>
-                </div>
-              </div>
+          {/* Unlocked Media Preview */}
+          <div className="mt-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <PlayCircleIcon className="w-6 h-6 text-violet-500" />
+                Purchased & Unlocked Media ({unlockedItems.length})
+              </h2>
+              <Link
+                href={`/site/${slug}/media/dashboard?tab=library`}
+                className="text-xs text-violet-400 hover:text-violet-300 font-semibold"
+              >
+                View Full Library →
+              </Link>
             </div>
 
-            {/* RIGHT COLUMN: Dashboard Content */}
-            <div className="w-full lg:w-3/4 pt-4 lg:pt-12">
-              
-              {/* Tabs */}
-              <div className="flex items-center gap-8 border-b border-white/5 pb-4 mb-8 overflow-x-auto">
-                <button className="text-white font-medium border-b-2 border-violet-500 pb-4 -mb-4.5 whitespace-nowrap">Overview</button>
-                <button className="text-slate-500 hover:text-white transition-colors whitespace-nowrap font-medium">Watchlist</button>
-                <button className="text-slate-500 hover:text-white transition-colors whitespace-nowrap font-medium">Reviews</button>
-                <button className="text-slate-500 hover:text-white transition-colors whitespace-nowrap font-medium">Likes</button>
+            {unlockedItems.length === 0 ? (
+              <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800">
+                <FilmIcon className="w-12 h-12 text-slate-700 mx-auto mb-2" />
+                <p className="text-slate-400 text-sm">No purchased media in your library yet.</p>
+                <Link
+                  href={`/site/${slug}/media`}
+                  className="mt-3 inline-block px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-medium"
+                >
+                  Explore Media Storefront
+                </Link>
               </div>
-
-              {/* Continue Watching Section */}
-              <div className="mb-10">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <PlayCircleIcon className="w-6 h-6 text-violet-500" /> Continue Watching
-                  </h2>
-                  <a href="#" className="text-sm text-violet-400 hover:text-violet-300">View All</a>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                   {/* Card 1 */}
-                   <MediaCard 
-                      image="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop" 
-                      title="Cyberpunk: Neon City" 
-                      subtitle="S1:E4 • 24m remaining"
-                      progress={60}
-                   />
-                   {/* Card 2 */}
-                   <MediaCard 
-                      image="https://images.unsplash.com/photo-1478720568477-152d9b164e63?q=80&w=2000&auto=format&fit=crop" 
-                      title="The Deep Blue" 
-                      subtitle="2h 14m remaining"
-                      progress={15}
-                   />
-                   {/* Card 3 */}
-                   <MediaCard 
-                      image="https://images.unsplash.com/photo-1512070679635-db48bd796be3?q=80&w=2070&auto=format&fit=crop" 
-                      title="Abstract Art" 
-                      subtitle="Docuseries • Ep 2"
-                      progress={85}
-                   />
-                </div>
-              </div>
-
-              {/* Favorites / Activity Split */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Favorites Section (2/3 width) */}
-                <div className="lg:col-span-2">
-                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <HeartIcon className="w-6 h-6 text-rose-500" /> Favorites
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                     {[1,2,3].map((i) => (
-                       <div key={i} className="group relative aspect-[2/3] rounded-xl overflow-hidden cursor-pointer bg-slate-800">
-                         <img 
-                           src={`https://source.unsplash.com/random/400x600?movie&sig=${i}`} 
-                           // Note: Unsplash random might be deprecated, using static placeholders in real prod
-                           srcSet={`https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000&auto=format&fit=crop`}
-                           alt="Movie Poster"
-                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                         />
-                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                            <span className="text-white font-bold text-sm">Interstellar</span>
-                            <span className="text-slate-300 text-xs">2014 • Sci-Fi</span>
-                         </div>
-                       </div>
-                     ))}
-                  </div>
-                </div>
-
-                {/* Recent Activity (1/3 width) */}
-                <div className="lg:col-span-1">
-                   <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <FireIcon className="w-6 h-6 text-orange-500" /> Activity
-                  </h2>
-                  <div className="space-y-4">
-                    <ActivityItem 
-                      icon={<StarIcon className="w-4 h-4 text-yellow-500" />}
-                      text={<span>Rated <strong className="text-white">Dune Part Two</strong></span>}
-                      time="2h ago"
-                    />
-                    <ActivityItem 
-                      icon={<HeartIcon className="w-4 h-4 text-rose-500" />}
-                      text={<span>Liked <strong className="text-white">Oppenheimer</strong> review</span>}
-                      time="5h ago"
-                    />
-                    <ActivityItem 
-                      icon={<PlayCircleIcon className="w-4 h-4 text-violet-500" />}
-                      text={<span>Watched <strong className="text-white">The Bear S2</strong></span>}
-                      time="1d ago"
-                    />
-                    
-                    {/* Glass box promo */}
-                    <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border border-indigo-500/20 text-center relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500/30 blur-2xl rounded-full -mr-10 -mt-10"></div>
-                      <h3 className="text-white font-bold relative z-10">Go Premium</h3>
-                      <p className="text-xs text-indigo-200 mt-1 mb-3 relative z-10">Unlock 4K streaming and exclusive badges.</p>
-                      <button className="text-xs bg-white text-indigo-900 font-bold px-4 py-2 rounded-lg relative z-10 hover:bg-indigo-50 transition-colors">Upgrade</button>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {unlockedItems.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between"
+                  >
+                    <div className="aspect-video relative bg-slate-950 overflow-hidden">
+                      {item.coverImage ? (
+                        <img src={item.coverImage} alt={item.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-700">
+                          <FilmIcon className="w-10 h-10" />
+                        </div>
+                      )}
+                      <span className="absolute top-2 left-2 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/70 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                        <CheckCircleIcon className="w-3 h-3" /> Unlocked
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <span className="text-[10px] text-violet-400 font-medium block">{item.category || item.type}</span>
+                      <h3 className="text-sm font-bold text-white line-clamp-1 mt-0.5">{item.title}</h3>
+                      <Link
+                        href={item.url}
+                        className="mt-3 w-full py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <PlayCircleIcon className="w-4 h-4" /> Watch / Access
+                      </Link>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-
-            </div>
+            )}
           </div>
         </div>
       </main>
     </div>
   );
-};
-
-// --- Sub Components ---
-
-const MediaCard = ({ image, title, subtitle, progress } : { image: string; title: string; subtitle: string; progress: number }) => (
-  <div className="group relative w-full h-48 rounded-2xl overflow-hidden cursor-pointer shadow-lg shadow-black/40">
-    <img 
-      src={image} 
-      alt={title} 
-      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-    />
-    {/* Overlay */}
-    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-300" />
-    
-    {/* Play Button */}
-    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-75 group-hover:scale-100">
-      <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-        <PlayCircleIcon className="w-8 h-8 text-white" />
-      </div>
-    </div>
-
-    {/* Content */}
-    <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black via-black/80 to-transparent">
-      <h3 className="text-white font-bold text-sm truncate">{title}</h3>
-      <p className="text-slate-400 text-xs mb-2">{subtitle}</p>
-      {/* Progress Bar */}
-      <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
-        <div className="h-full bg-violet-500" style={{ width: `${progress}%` }}></div>
-      </div>
-    </div>
-  </div>
-);
-
-const ActivityItem = ({ icon, text, time }:{ icon: React.ReactNode; text: React.ReactNode; time: string }) => (
-  <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5">
-    <div className="mt-0.5 min-w-[1rem]">{icon}</div>
-    <div className="flex-1">
-      <p className="text-sm text-slate-300 leading-tight">{text}</p>
-      <p className="text-xs text-slate-500 mt-1">{time}</p>
-    </div>
-  </div>
-);
-
-export default UserProfile;
+}

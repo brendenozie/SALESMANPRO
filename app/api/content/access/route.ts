@@ -6,57 +6,127 @@ import { authOptions } from "@/lib/auth";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const contentType = searchParams.get("contentType"); // "BLOG" | "PODCAST"
+    const contentType = (searchParams.get("contentType") || "BLOG").toUpperCase();
     const contentId = searchParams.get("contentId");
     const customerId = searchParams.get("customerId");
 
-    if (!contentType || !contentId) {
-      return NextResponse.json({ error: "Missing contentType or contentId" }, { status: 400 });
+    if (!contentId) {
+      return NextResponse.json({ error: "Missing contentId" }, { status: 400 });
     }
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
+    const userRole = session?.user?.role;
+    const userCompanyId = (session?.user as any)?.companyId;
 
-    // 1. Check if the content item is actually premium
+    // 1. Resolve content details & price
     let isPremium = false;
     let price = 0;
     let currency = "KES";
+    let companyId: string | null = null;
+    let title = "";
 
-    if (contentType === "BLOG") {
+    if (contentType === "BLOG" || contentType === "ARTICLE") {
       const blog = await prisma.blog.findUnique({
         where: { id: contentId },
-        select: { isPremium: true, price: true, currency: true },
+        select: { title: true, isPremium: true, price: true, currency: true, companyId: true },
       });
-      if (!blog) {
-        return NextResponse.json({ error: "Article not found" }, { status: 404 });
+      if (blog) {
+        title = blog.title;
+        isPremium = Boolean(blog.isPremium);
+        price = blog.price || 0;
+        currency = blog.currency || "KES";
+        companyId = blog.companyId;
       }
-      isPremium = Boolean(blog.isPremium);
-      price = blog.price || 0;
-      currency = blog.currency || "KES";
-    } else if (contentType === "PODCAST") {
-      const podcast = await prisma.podcast.findUnique({
+    } else if (contentType === "VIDEO") {
+      const video = await prisma.video.findUnique({
         where: { id: contentId },
-        select: { isPremium: true, price: true, currency: true },
+        include: { mediaAsset: true, album: true },
       });
-      if (!podcast) {
-        return NextResponse.json({ error: "Episode not found" }, { status: 404 });
+      if (video) {
+        title = video.title || "Video";
+        companyId = video.companyId;
+        // Check if attached to a premium blog or album
+        const parentBlog = await prisma.blog.findFirst({
+          where: { videoAlbumId: video.albumId },
+          select: { isPremium: true, price: true, currency: true },
+        });
+        if (parentBlog) {
+          isPremium = Boolean(parentBlog.isPremium);
+          price = parentBlog.price || 0;
+          currency = parentBlog.currency || "KES";
+        }
       }
-      isPremium = Boolean(podcast.isPremium);
-      price = podcast.price || 0;
-      currency = podcast.currency || "KES";
+    } else if (contentType === "ALBUM" || contentType === "VIDEO_ALBUM") {
+      const album = await prisma.videoAlbum.findUnique({
+        where: { id: contentId },
+      });
+      if (album) {
+        title = album.title;
+        companyId = album.companyId;
+        const parentBlog = await prisma.blog.findFirst({
+          where: { videoAlbumId: album.id },
+          select: { isPremium: true, price: true, currency: true },
+        });
+        if (parentBlog) {
+          isPremium = Boolean(parentBlog.isPremium);
+          price = parentBlog.price || 0;
+          currency = parentBlog.currency || "KES";
+        }
+      }
+    } else if (contentType === "PHOTO_ALBUM" || contentType === "GALLERY") {
+      const photoAlbum = await prisma.photoAlbum.findUnique({
+        where: { id: contentId },
+      });
+      if (photoAlbum) {
+        title = photoAlbum.title;
+        companyId = photoAlbum.companyId;
+        const parentBlog = await prisma.blog.findFirst({
+          where: { photoAlbumId: photoAlbum.id },
+          select: { isPremium: true, price: true, currency: true },
+        });
+        if (parentBlog) {
+          isPremium = Boolean(parentBlog.isPremium);
+          price = parentBlog.price || 0;
+          currency = parentBlog.currency || "KES";
+        }
+      }
+    } else if (contentType === "CONTENT") {
+      const content = await prisma.content.findUnique({
+        where: { id: contentId },
+      });
+      if (content) {
+        title = content.title;
+        companyId = content.companyId;
+      }
     }
 
-    // If free, access is automatically granted
+    // 2. Admin & Staff Bypass for their own company's content
+    if (userId && companyId && userCompanyId === companyId) {
+      if (userRole === "ADMIN" || userRole === "SUPER_ADMIN" || userRole === "STAFF" || userRole === "WRITER") {
+        return NextResponse.json({
+          hasAccess: true,
+          isPremium,
+          price,
+          currency,
+          isAdminBypass: true,
+          title,
+        });
+      }
+    }
+
+    // 3. If content is free, access is automatically granted
     if (!isPremium || price <= 0) {
       return NextResponse.json({
         hasAccess: true,
         isPremium: false,
         price: 0,
         currency,
+        title,
       });
     }
 
-    // 2. Check ContentAccess records
+    // 4. Check ContentAccess records
     const orConditions: any[] = [];
     if (userId) orConditions.push({ userId });
     if (customerId) orConditions.push({ customerId });
@@ -67,12 +137,14 @@ export async function GET(req: NextRequest) {
         isPremium: true,
         price,
         currency,
+        title,
+        requiresLogin: true,
       });
     }
 
+    // Look for exact match or generic contentType match for this content
     const accessRecord = await prisma.contentAccess.findFirst({
       where: {
-        contentType,
         contentId,
         paymentStatus: "COMPLETED",
         OR: orConditions,
@@ -84,7 +156,9 @@ export async function GET(req: NextRequest) {
       isPremium: true,
       price,
       currency,
+      title,
       purchasedAt: accessRecord?.createdAt || null,
+      accessId: accessRecord?.id || null,
     });
   } catch (error: any) {
     console.error("[ContentAccess] Error verifying access:", error);

@@ -12,6 +12,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import Image, { ImageLoaderProps } from "next/image";
+import { uploadMediaFile } from "@/lib/media/uploadClient";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -350,7 +351,15 @@ export default function GalleryClient({ companyId }: GalleryClientProps) {
   const handleAddAlbum: PhotoAlbumFormCreateSubmit = async (albumData, files) => {
     setSubmitting(true);
     try {
-      const photoUrls = files.map((f, i) => `https://placehold.co/800x600/1e293b/d1d5db?text=${encodeURIComponent(albumData.title)}+${i + 1}`);
+      const photoUrls: string[] = [];
+      for (const file of files) {
+        try {
+          const uploaded = await uploadMediaFile(file, "image", companyId);
+          photoUrls.push(uploaded);
+        } catch {
+          photoUrls.push(URL.createObjectURL(file));
+        }
+      }
       const res = await fetch(`${apiBaseUrl}/admin/photo-albums`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -362,7 +371,7 @@ export default function GalleryClient({ companyId }: GalleryClientProps) {
       setAlbums(prev => [...prev, added]);
       setIsUploadOpen(false);
     } catch (err) {
-      // Handle error
+      console.error("[GalleryClient] Error adding album:", err);
     } finally {
       setSubmitting(false);
     }

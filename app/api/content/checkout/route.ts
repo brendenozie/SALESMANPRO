@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      contentType, // "BLOG" | "PODCAST"
+      contentType = "BLOG",
       contentId,
       companyId,
       phoneNumber,
@@ -18,9 +18,9 @@ export async function POST(req: NextRequest) {
       paymentMethod = "MPESA",
     } = body;
 
-    if (!contentType || !contentId || !companyId) {
+    if (!contentId || !companyId) {
       return NextResponse.json(
-        { error: "Missing required fields: contentType, contentId, companyId" },
+        { error: "Missing required fields: contentId, companyId" },
         { status: 400 }
       );
     }
@@ -28,12 +28,14 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
-    // 1. Resolve content details
-    let title = "";
+    // 1. Resolve content details & price
+    let title = "Media Content";
     let price = 0;
     let currency = "KES";
 
-    if (contentType === "BLOG") {
+    const typeNormalized = contentType.toUpperCase();
+
+    if (typeNormalized === "BLOG" || typeNormalized === "ARTICLE") {
       const blog = await prisma.blog.findUnique({
         where: { id: contentId },
         select: { title: true, price: true, currency: true, isPremium: true },
@@ -44,32 +46,83 @@ export async function POST(req: NextRequest) {
       title = blog.title;
       price = blog.price || 0;
       currency = blog.currency || "KES";
-    } else if (contentType === "PODCAST") {
-      const podcast = await prisma.podcast.findUnique({
+    } else if (typeNormalized === "VIDEO") {
+      const video = await prisma.video.findUnique({
         where: { id: contentId },
-        select: { title: true, price: true, currency: true, isPremium: true },
+        include: { album: true },
       });
-      if (!podcast) {
-        return NextResponse.json({ error: "Podcast not found" }, { status: 404 });
+      if (!video) {
+        return NextResponse.json({ error: "Video not found" }, { status: 404 });
       }
-      title = podcast.title;
-      price = podcast.price || 0;
-      currency = podcast.currency || "KES";
+      title = video.title || "Video";
+      const parentBlog = await prisma.blog.findFirst({
+        where: { videoAlbumId: video.albumId },
+        select: { price: true, currency: true },
+      });
+      price = parentBlog?.price || 0;
+      currency = parentBlog?.currency || "KES";
+    } else if (typeNormalized === "ALBUM" || typeNormalized === "VIDEO_ALBUM") {
+      const album = await prisma.videoAlbum.findUnique({
+        where: { id: contentId },
+      });
+      if (!album) {
+        return NextResponse.json({ error: "Video album not found" }, { status: 404 });
+      }
+      title = album.title;
+      const parentBlog = await prisma.blog.findFirst({
+        where: { videoAlbumId: album.id },
+        select: { price: true, currency: true },
+      });
+      price = parentBlog?.price || 0;
+      currency = parentBlog?.currency || "KES";
+    } else if (typeNormalized === "PHOTO_ALBUM" || typeNormalized === "GALLERY") {
+      const album = await prisma.photoAlbum.findUnique({
+        where: { id: contentId },
+      });
+      if (!album) {
+        return NextResponse.json({ error: "Photo album not found" }, { status: 404 });
+      }
+      title = album.title;
+      const parentBlog = await prisma.blog.findFirst({
+        where: { photoAlbumId: album.id },
+        select: { price: true, currency: true },
+      });
+      price = parentBlog?.price || 0;
+      currency = parentBlog?.currency || "KES";
+    } else if (typeNormalized === "CONTENT") {
+      const content = await prisma.content.findUnique({
+        where: { id: contentId },
+      });
+      if (!content) {
+        return NextResponse.json({ error: "Content not found" }, { status: 404 });
+      }
+      title = content.title;
     }
 
-    // 2. Handle Payment Processing
+    // 2. Link or create consumer record if possible
+    let linkedConsumerId = null;
+    if (userId || customerId) {
+      const consumer = await prisma.consumer.findFirst({
+        where: {
+          companyId,
+          ...(userId ? { assignedAgent: userId } : {}),
+        },
+      });
+      linkedConsumerId = consumer?.id || null;
+    }
+
+    // 3. Handle Payment Processing (M-Pesa / Card)
     let mpesaResult: any = null;
     let paymentStatus = "COMPLETED";
 
     if (paymentMethod === "MPESA" && phoneNumber && price > 0) {
       try {
         const paymentConfig = await getCompanyPaymentConfig(companyId);
-        if (paymentConfig.credentials && (paymentConfig.provider === "mpesa" || paymentConfig.provider === "ghuba")) {
-          // Attempt STK push
+        if (paymentConfig?.credentials && (paymentConfig.provider === "mpesa" || paymentConfig.provider === "ghuba")) {
           mpesaResult = await initiateMpesaPayment(
             {
               id: contentId,
-              trackingNumber: `CNT-${Date.now().toString().slice(-6)}`,
+              trackingNumber: `MEDIA-${Date.now().toString().slice(-6)}`,
               totalFinalPrice: price,
             },
             phoneNumber,
@@ -77,35 +130,36 @@ export async function POST(req: NextRequest) {
           );
         }
       } catch (mpesaErr: any) {
-        console.warn("[ContentCheckout] M-Pesa STK push notice:", mpesaErr.message);
-        // If credentials are in sandbox/demo mode, complete access for testing
+        console.warn("[ContentCheckout] M-Pesa push notice:", mpesaErr.message);
       }
     }
 
-    // 3. Create ContentAccess Record
+    // 4. Create ContentAccess Record
     const accessRecord = await prisma.contentAccess.create({
       data: {
         companyId,
         userId: userId || undefined,
+        consumerId: linkedConsumerId || undefined,
         customerId: customerId || undefined,
-        contentType,
+        contentType: typeNormalized,
         contentId,
         amount: price,
         currency,
         paymentMethod,
         paymentStatus,
+        orderId: `ORD-${Date.now()}`,
       },
     });
 
-    // 4. Fire Telemetry Event
+    // 5. Fire Telemetry Event
     tracker.track({
-      eventType: contentType === "BLOG" ? "BLOG_PURCHASE" : "PODCAST_PURCHASE",
-      blogId: contentType === "BLOG" ? contentId : undefined,
-      podcastId: contentType === "PODCAST" ? contentId : undefined,
+      eventType: "MEDIA_PURCHASE" as any,
       companyId,
       userId,
       customerId,
       metadata: {
+        contentType: typeNormalized,
+        contentId,
         amount: price,
         currency,
         paymentMethod,
@@ -124,6 +178,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("[ContentCheckout] Error processing payment:", error);
-    return NextResponse.json({ error: error.message || "Failed to process checkout" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to process checkout" },
+      { status: 500 }
+    );
   }
 }

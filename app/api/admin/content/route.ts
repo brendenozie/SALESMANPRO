@@ -1,184 +1,200 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// // app/api/content/route.ts
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { ContentType, ContentStatus } from "@prisma/client";
 
-
-export const GET = withApiHandler(async (request: Request) => {
+export const GET = withApiHandler(async (request: Request, context: any) => {
   const { searchParams } = new URL(request.url);
-  
-  // 1. Pagination & Filtering
+
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-  const limit = Math.min(50, parseInt(searchParams.get("limit") || "10"));
+  const limit = Math.min(100, parseInt(searchParams.get("limit") || "20"));
   const skip = (page - 1) * limit;
   const type = searchParams.get("type");
-  const companyID = searchParams.get("companyID");
+  const search = searchParams.get("search");
+  const status = searchParams.get("status");
 
-  const where = {
-    ...(type && { type }),
-    ...(companyID && { companyId: companyID }),
+  // Accept companyId or companyID or context.companyId
+  const companyId =
+    searchParams.get("companyId") ||
+    searchParams.get("companyID") ||
+    context.companyId;
+
+  const where: any = {
+    ...(companyId ? { companyId } : {}),
+    ...(type ? { type } : {}),
+    ...(status ? { status: status as ContentStatus } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {}),
   };
 
-  // 2. Fetch data and count in parallel
-  
-  const cacheKey = buildTenantCacheKey(companyID, "content", { limit, page, type });
+  const cacheKey = buildTenantCacheKey(companyId, "content", { limit, page, type, search, status });
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
-  const [content, totalItems] = await Promise.all([
+
+  const [contentList, totalItems] = await Promise.all([
     prisma.content.findMany({
       where,
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        status: true,
-        publishDate: true,
-        // OPTIMIZATION: Get counts or summaries rather than deep lists
+      include: {
         photoAlbum: {
-          select: { 
-            id: true, 
-            title: true, 
-            _count: { select: { photos: true } } 
-          }
+          include: {
+            photos: {
+              include: { mediaAsset: true },
+            },
+          },
         },
         videoAlbum: {
-          select: { 
-            id: true, 
-            title: true, 
-            _count: { select: { videos: true } } 
-          }
+          include: {
+            videos: {
+              include: { mediaAsset: true },
+            },
+          },
+        },
+        author: {
+          select: { id: true, name: true, image: true },
         },
       },
     }),
     prisma.content.count({ where }),
   ]);
 
-  try {
-    if (content) {
-      await cacheSet(cacheKey, {
-        content,
-        pagination: {
-          totalItems,
-          totalPages: Math.ceil(totalItems / limit),
-          currentPage: page,
+  const formatted = contentList.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    excerpt: item.excerpt,
+    type: item.type,
+    contentType: item.contentType,
+    status: item.status,
+    publishDate: item.publishDate,
+    published: item.published,
+    contentUrl: item.contentUrl,
+    thumbnailUrl:
+      item.thumbnailUrl ||
+      item.videoAlbum?.videos?.[0]?.mediaAsset?.thumbnailUrl ||
+      item.photoAlbum?.photos?.[0]?.mediaAsset?.url ||
+      "",
+    category: item.category,
+    duration: item.duration,
+    tags: item.tags,
+    companyId: item.companyId,
+    photoAlbumId: item.photoAlbumId,
+    photoAlbum: item.photoAlbum
+      ? {
+          id: item.photoAlbum.id,
+          title: item.photoAlbum.title,
+          photos: item.photoAlbum.photos.map((p) => ({
+            id: p.id,
+            imageUrl: p.mediaAsset?.url || "",
+            title: p.title,
+          })),
         }
-      }, 60);
-    }
+      : null,
+    videoAlbumId: item.videoAlbumId,
+    videoAlbum: item.videoAlbum
+      ? {
+          id: item.videoAlbum.id,
+          title: item.videoAlbum.title,
+          videos: item.videoAlbum.videos.map((v) => ({
+            id: v.id,
+            title: v.title,
+            url: v.mediaAsset?.url || "",
+            thumbnailUrl: v.mediaAsset?.thumbnailUrl || "",
+          })),
+        }
+      : null,
+    author: item.author,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  }));
+
+  const payload = {
+    items: formatted,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit),
+    page,
+    limit,
+  };
+
+  try {
+    await cacheSet(cacheKey, payload, 60);
   } catch (e) {}
 
-  return formatResponse(true, {
-    content,
-    pagination: {
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    }
-  });
+  return formatResponse(true, payload, "Content fetched successfully", 200);
 });
-
 
 export const POST = withApiHandler(async (request: Request, context: any) => {
   const body = await request.json();
-  const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
-  const { adminSlug } = context.params;
-  const cacheKey = buildTenantCacheKey(adminSlug, "content", { status, type });
+  const {
+    title,
+    description,
+    excerpt,
+    type,
+    contentType = "VIDEO",
+    status = "Draft",
+    publishDate,
+    photoAlbumId,
+    videoAlbumId,
+    category,
+    duration,
+    tags = [],
+    contentUrl,
+    thumbnailUrl,
+    published = false,
+  } = body;
 
-  // Validation
-  // 1. Fast Validation
-  if (!title || !type) {
-    return formatResponse(false, null, "Title and type are required", 400);
+  const companyId = body.companyId || context.companyId;
+
+  if (!title) {
+    return formatResponse(false, null, "Title is required", 400);
   }
+
+  if (!companyId) {
+    return formatResponse(false, null, "Company ID is required", 400);
+  }
+
+  const newContent = await prisma.content.create({
+    data: {
+      title,
+      description: description || null,
+      excerpt: excerpt || null,
+      type: type || (videoAlbumId ? "VideoAlbum" : photoAlbumId ? "PhotoAlbum" : "Article"),
+      contentType: contentType as ContentType,
+      status: (status as ContentStatus) || "Draft",
+      publishDate: publishDate ? new Date(publishDate) : null,
+      published: Boolean(published),
+      category: category || null,
+      duration: duration ? parseFloat(duration) : null,
+      tags: Array.isArray(tags) ? tags : [],
+      contentUrl: contentUrl || null,
+      thumbnailUrl: thumbnailUrl || null,
+      companyId,
+      authorId: context.user?.id || null,
+      photoAlbumId: photoAlbumId || null,
+      videoAlbumId: videoAlbumId || null,
+    },
+    include: {
+      photoAlbum: true,
+      videoAlbum: true,
+    },
+  });
 
   try {
-    // 2. ATOMIC CREATE: Connect company by slug and check user in one go
-    const newContent = await prisma.content.create({
-      data: {
-        title,
-        type,
-        status,
-        publishDate: publishDate ? new Date(publishDate) : null,
-        author: { connect: { id: authorId ?? context.user?.id } },
-        company: { connect: { slug: adminSlug } },
-        // Conditional connects
-        ...(photoAlbumId && { photoAlbum: { connect: { id: photoAlbumId } } }),
-        ...(videoAlbumId && { videoAlbum: { connect: { id: videoAlbumId } } }),
-      },
-      include: {
-        photoAlbum: { select: { id: true, title: true } },
-        videoAlbum: { select: { id: true, title: true } },
-      },
-    });
+    await cacheDel(`tenant:${companyId}:content:*`);
+    await cacheDel(`admin:content:*`);
+  } catch (e) {}
 
-    // Clear cache for all content of this type
-    try { await cacheDel(cacheKey); } catch (e) {}
-    return formatResponse(true, newContent, "Content created successfully", 201);
-  } catch (error: any) {
-    // P2025: Record to connect not found (Slug or Author)
-    if (error.code === 'P2025') {
-      return formatResponse(false, null, "Invalid Company or Author reference", 404);
-    }
-    throw error;
-  }
+  return formatResponse(true, newContent, "Content created successfully", 201);
 });
-
-
-//   return formatResponse(true, content, null, 200);
-// });
-
-// 
-// export const POST = withApiHandler(async (request: Request, context: HandlerContext) => {
-
-//   const company = await prisma.company.findUnique({
-//     where: { slug: context.params.adminSlug },
-//     select: { id: true },
-//   });
-
-//   const companyId = company?.id;
-
-//   if (!companyId) {
-//     return NextResponse.json({ message: "Company not found" }, { status: 404 });
-//   }
-
-//   const body = await request.json();
-//   const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
-
-//   // Validation
-//   if (!title || !type) {
-//     return formatResponse(false, null, "Title and type are required", 400);
-//   }
-//   if (type === "PhotoAlbum" && !photoAlbumId) {
-//     return formatResponse(false, null, 'photoAlbumId is required for type "PhotoAlbum"', 400);
-//   }
-//   if (type === "VideoAlbum" && !videoAlbumId) {
-//     return formatResponse(false, null, 'videoAlbumId is required for type "VideoAlbum"', 400);
-//   }
-
-//   const newContent = await prisma.content.create({
-//     data: {
-//       title,
-//       type,
-//       status,
-//       publishDate,
-//       authorId: authorId ?? context.user?.id, // fallback to auth user if available
-//       photoAlbumId,
-//       videoAlbumId,
-//       companyId,
-//       createdAt: new Date(),
-//       updatedAt: new Date(),
-//     },
-//     include: {
-//       photoAlbum: true,
-//       videoAlbum: true,
-//     },
-//   });
-
-//   return formatResponse(true, newContent, null, 201);
-// });

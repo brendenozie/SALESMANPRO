@@ -1,6 +1,6 @@
 "use client";
 
-import React, { SVGProps, ComponentType, ForwardRefExoticComponent, RefAttributes, useState, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
@@ -11,6 +11,9 @@ import {
   FilmIcon,
   SparklesIcon,
   CalendarDaysIcon,
+  ArrowPathIcon,
+  CurrencyDollarIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/solid";
 
 // Dynamically import ApexCharts for client-side rendering
@@ -20,9 +23,6 @@ export interface DashboardCardProps {
   delay: number;
   title: string;
   value: string;
-  icon:
-    | ComponentType<SVGProps<SVGSVGElement>>
-    | ForwardRefExoticComponent<SVGProps<SVGSVGElement> & RefAttributes<SVGSVGElement>>;
   gradient: string;
 }
 
@@ -30,68 +30,45 @@ interface AnalyticsClientProps {
   companyId: string;
 }
 
-// --- Mock Data ---
-const dailyViewsData: { date: string; value: number }[] = [
-  { date: "2025-08-25", value: 2000 },
-  { date: "2025-09-01", value: 4000 },
-  { date: "2025-09-05", value: 3000 },
-  { date: "2025-09-10", value: 2000 },
-  { date: "2025-09-15", value: 2780 },
-  { date: "2025-09-20", value: 2390 },
-  { date: "2025-09-22", value: 3490 },
-];
-
-const topContentData: number[] = [250000, 180000, 150000, 120000, 90000];
-const topContentCategories: string[] = [
-  "Episode 1",
-  "Documentary",
-  "Q&A Session",
-  "Highlight Reel",
-  "Trailer",
-];
-
-const deviceData: number[] = [400, 300, 300, 200];
-const deviceLabels: string[] = ["Desktop", "Mobile", "Tablet", "Other"];
-
-const analyticsOverview = [
-  { title: "Total Views", value: "2.8M", icon: EyeIcon, gradient: "from-blue-600 to-indigo-700" },
-  { title: "New Users", value: "1,500", icon: UsersIcon, gradient: "from-green-600 to-teal-700" },
-  { title: "Avg. Watch Time", value: "7:45 min", icon: ClockIcon, gradient: "from-yellow-600 to-orange-700" },
-  { title: "Top Content", value: "Cosmic Echo", icon: SparklesIcon, gradient: "from-purple-600 to-pink-700" },
-];
-
-// --- Sub-Components ---
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen bg-gray-950 text-gray-100 p-8 font-['Inter']">
+  <div className="min-h-screen bg-gray-950 text-gray-100 p-6 lg:p-8 font-['Inter']">
     <div className="max-w-7xl mx-auto">{children}</div>
   </div>
 );
 
+const getCardIcon = (title: string) => {
+  if (title.includes("View")) return EyeIcon;
+  if (title.includes("Content")) return FilmIcon;
+  if (title.includes("Subscriber") || title.includes("User")) return UsersIcon;
+  if (title.includes("Revenue")) return CurrencyDollarIcon;
+  return SparklesIcon;
+};
+
 const DashboardCard: React.FC<DashboardCardProps> = ({
   title,
   value,
-  icon: Icon,
   gradient,
   delay,
 }) => {
+  const Icon = getCardIcon(title);
   return (
     <motion.div
       className={`relative p-6 rounded-3xl shadow-xl overflow-hidden backdrop-blur-sm bg-gradient-to-br ${gradient}`}
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.5, ease: "easeOut" }}
+      transition={{ delay, duration: 0.4, ease: "easeOut" }}
     >
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-white mb-1">{title}</h3>
-          <p className="text-4xl font-extrabold text-white">{value}</p>
+          <h3 className="text-sm font-semibold text-white/80 mb-1">{title}</h3>
+          <p className="text-3xl font-extrabold text-white">{value}</p>
         </div>
         <div className="bg-white/10 p-3 rounded-full">
-          <Icon className="h-10 w-10 text-white" />
+          <Icon className="h-8 w-8 text-white" />
         </div>
       </div>
-      <div className="absolute inset-0 z-0 opacity-20">
-        <Icon className="absolute -bottom-10 -right-10 h-32 w-32" />
+      <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
+        <Icon className="absolute -bottom-8 -right-8 h-28 w-28" />
       </div>
     </motion.div>
   );
@@ -99,51 +76,80 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
 
 export default function AnalyticsClient({ companyId }: AnalyticsClientProps) {
   const [selectedRange, setSelectedRange] = useState<number>(30);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
 
-  // Filter daily views based on selected range
-  const filteredViews = useMemo(() => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - selectedRange);
-    return dailyViewsData.filter((d) => new Date(d.date) >= cutoff);
-  }, [selectedRange]);
+  const fetchAnalytics = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/media-analytics?companyId=${companyId}`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setData(json.data);
+        }
+      }
+    } catch (err) {
+      console.error("[AnalyticsClient] Failed to fetch analytics:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [companyId]);
 
-  // Chart configs
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  const dailyViews = data?.dailyViewsData || [];
+  const topContentCategories = data?.topContent?.categories || ["No data"];
+  const topContentData = data?.topContent?.data || [0];
+  const deviceLabels = data?.deviceBreakdown?.labels || ["Mobile", "Desktop", "Tablet"];
+  const deviceData = data?.deviceBreakdown?.data || [70, 25, 5];
+  const overview = data?.overview || [
+    { title: "Total Views", value: "0", gradient: "from-blue-600 to-indigo-700" },
+    { title: "Total Content", value: "0", gradient: "from-green-600 to-teal-700" },
+    { title: "Subscribers & Consumers", value: "0", gradient: "from-purple-600 to-pink-700" },
+    { title: "Content Revenue", value: "KES 0", gradient: "from-amber-600 to-orange-700" },
+  ];
+
   const areaChartOptions: ApexCharts.ApexOptions = {
     chart: { id: "daily-views-chart", toolbar: { show: false }, background: "transparent" },
     theme: { mode: "dark" },
     dataLabels: { enabled: false },
-    stroke: { curve: "smooth" },
+    stroke: { curve: "smooth", width: 2 },
     xaxis: {
-      categories: filteredViews.map((d) => d.date),
-      labels: { style: { colors: "#9ca3af" } },
+      categories: dailyViews.map((d: any) => d.date),
+      labels: { style: { colors: "#9ca3af", fontSize: "11px" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { labels: { style: { colors: "#9ca3af" } } },
+    yaxis: { labels: { style: { colors: "#9ca3af", fontSize: "11px" } } },
     tooltip: { theme: "dark" },
-    grid: { borderColor: "#374151" },
+    grid: { borderColor: "#1e293b" },
     fill: {
       type: "gradient",
-      gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.9, stops: [0, 100] },
+      gradient: { shadeIntensity: 1, opacityFrom: 0.6, opacityTo: 0.1, stops: [0, 100] },
     },
-    colors: ["#8884d8"],
+    colors: ["#ec4899"],
   };
 
   const barChartOptions: ApexCharts.ApexOptions = {
     chart: { id: "top-content-chart", toolbar: { show: false }, background: "transparent" },
     theme: { mode: "dark" },
-    plotOptions: { bar: { horizontal: true, borderRadius: 10 } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 6 } },
     dataLabels: { enabled: false },
     xaxis: {
       categories: topContentCategories,
-      labels: { style: { colors: "#9ca3af" } },
+      labels: { style: { colors: "#9ca3af", fontSize: "11px" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: { labels: { style: { colors: "#9ca3af" } } },
+    yaxis: { labels: { style: { colors: "#9ca3af", fontSize: "11px" } } },
     tooltip: { theme: "dark" },
-    grid: { borderColor: "#374151" },
-    colors: ["#82ca9d"],
+    grid: { borderColor: "#1e293b" },
+    colors: ["#3b82f6"],
   };
 
   const pieChartOptions: ApexCharts.ApexOptions = {
@@ -153,7 +159,7 @@ export default function AnalyticsClient({ companyId }: AnalyticsClientProps) {
     legend: { position: "bottom", labels: { colors: "#9ca3af" } },
     tooltip: { theme: "dark" },
     responsive: [{ breakpoint: 480, options: { legend: { position: "bottom" } } }],
-    colors: ["#8884d8", "#82ca9d", "#ffc658", "#FF7F50"],
+    colors: ["#ec4899", "#3b82f6", "#10b981", "#f59e0b"],
   };
 
   return (
@@ -163,34 +169,47 @@ export default function AnalyticsClient({ companyId }: AnalyticsClientProps) {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10"
       >
-        <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4 sm:mb-0">
-          Content{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-600">
-            Analytics
-          </span>
-        </h1>
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">
+            Media & Audience{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-rose-500 to-indigo-500">
+              Analytics
+            </span>
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Real-time analytics for video streams, articles, purchases, and device impressions.
+          </p>
+        </div>
 
-        {/* Date Range Selector */}
-        <div className="flex items-center space-x-2 text-gray-400">
-          <CalendarDaysIcon className="h-5 w-5" />
-          <select
-            value={selectedRange}
-            onChange={(e) => setSelectedRange(Number(e.target.value))}
-            className="bg-gray-800 border border-gray-700 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+        <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+          <button
+            onClick={() => fetchAnalytics()}
+            className="p-2.5 bg-gray-900 border border-gray-800 rounded-xl hover:bg-gray-800 text-gray-300 transition"
+            title="Refresh"
           >
-            <option value={7}>Last 7 Days</option>
-            <option value={30}>Last 30 Days</option>
-            <option value={90}>Last 90 Days</option>
-          </select>
+            <ArrowPathIcon className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+          </button>
+          <div className="flex items-center space-x-2 text-gray-400 bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 text-xs font-semibold">
+            <CalendarDaysIcon className="h-4 w-4" />
+            <select
+              value={selectedRange}
+              onChange={(e) => setSelectedRange(Number(e.target.value))}
+              className="bg-transparent text-white focus:outline-none cursor-pointer"
+            >
+              <option value={7} className="bg-gray-900">Last 7 Days</option>
+              <option value={30} className="bg-gray-900">Last 30 Days</option>
+              <option value={90} className="bg-gray-900">Last 90 Days</option>
+            </select>
+          </div>
         </div>
       </motion.div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {analyticsOverview.map((stat, index) => (
-          <DashboardCard key={stat.title} {...stat} delay={index * 0.1 + 0.3} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        {overview.map((stat: any, index: number) => (
+          <DashboardCard key={stat.title} {...stat} delay={index * 0.1} />
         ))}
       </div>
 
@@ -198,56 +217,56 @@ export default function AnalyticsClient({ companyId }: AnalyticsClientProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         {/* Daily Views */}
         <motion.div
-          className="bg-gray-900 rounded-3xl shadow-2xl p-6"
+          className="bg-gray-900/80 border border-gray-800/80 rounded-3xl shadow-2xl p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-            <EyeIcon className="h-6 w-6 mr-3 text-purple-400" />
-            Daily Content Views
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+            <EyeIcon className="h-5 w-5 mr-3 text-rose-500" />
+            Daily Content Views & Impressions
           </h2>
           <ApexCharts
             options={areaChartOptions}
-            series={[{ name: "Views", data: filteredViews.map((d) => d.value) }]}
+            series={[{ name: "Views", data: dailyViews.map((d: any) => d.value) }]}
             type="area"
-            height={300}
+            height={280}
           />
         </motion.div>
 
         {/* Top Content */}
         <motion.div
-          className="bg-gray-900 rounded-3xl shadow-2xl p-6"
+          className="bg-gray-900/80 border border-gray-800/80 rounded-3xl shadow-2xl p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.5 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-            <FilmIcon className="h-6 w-6 mr-3 text-red-400" />
-            Top Content by Views
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+            <FilmIcon className="h-5 w-5 mr-3 text-blue-500" />
+            Top Performing Content
           </h2>
           <ApexCharts
             options={barChartOptions}
             series={[{ name: "Views", data: topContentData }]}
             type="bar"
-            height={300}
+            height={280}
           />
         </motion.div>
       </div>
 
       {/* Audience by Device */}
       <motion.div
-        className="bg-gray-900 rounded-3xl shadow-2xl p-6"
+        className="bg-gray-900/80 border border-gray-800/80 rounded-3xl shadow-2xl p-6 max-w-2xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1, duration: 0.5 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
       >
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-          <DeviceTabletIcon className="h-6 w-6 mr-3 text-teal-400" />
-          Audience by Device Type
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+          <DeviceTabletIcon className="h-5 w-5 mr-3 text-emerald-400" />
+          Audience by Device
         </h2>
         <div className="flex justify-center items-center w-full">
-          <ApexCharts options={pieChartOptions} series={deviceData} type="pie" height={300} />
+          <ApexCharts options={pieChartOptions} series={deviceData} type="pie" height={280} />
         </div>
       </motion.div>
     </AdminLayout>

@@ -60,6 +60,18 @@ export async function GET(
     const podcastAccessIds = accessRecords
       .filter((a) => a.contentType === "PODCAST")
       .map((a) => a.contentId);
+    const videoAccessIds = accessRecords
+      .filter((a) => a.contentType === "VIDEO")
+      .map((a) => a.contentId);
+    const albumAccessIds = accessRecords
+      .filter((a) => a.contentType === "ALBUM")
+      .map((a) => a.contentId);
+    const photoAlbumAccessIds = accessRecords
+      .filter((a) => a.contentType === "PHOTO_ALBUM")
+      .map((a) => a.contentId);
+    const contentAccessIds = accessRecords
+      .filter((a) => a.contentType === "CONTENT")
+      .map((a) => a.contentId);
 
     // 2. Fetch Interaction Events (Liked, Shared, Bookmarked, Read)
     const userEvents = await prisma.productInteractionEvent.findMany({
@@ -176,6 +188,42 @@ export async function GET(
 
     const podcastsMap = new Map(podcasts.map((p) => [p.id, p]));
 
+    // Query Videos
+    const videos = videoAccessIds.length > 0
+      ? await prisma.video.findMany({
+          where: { id: { in: videoAccessIds } },
+          include: { mediaAsset: true, album: true },
+        })
+      : [];
+    const videosMap = new Map(videos.map((v) => [v.id, v]));
+
+    // Query Video Albums
+    const videoAlbums = albumAccessIds.length > 0
+      ? await prisma.videoAlbum.findMany({
+          where: { id: { in: albumAccessIds } },
+          include: { videos: { include: { mediaAsset: true } } },
+        })
+      : [];
+    const videoAlbumsMap = new Map(videoAlbums.map((a) => [a.id, a]));
+
+    // Query Photo Albums
+    const photoAlbums = photoAlbumAccessIds.length > 0
+      ? await prisma.photoAlbum.findMany({
+          where: { id: { in: photoAlbumAccessIds } },
+          include: { photos: { include: { mediaAsset: true } } },
+        })
+      : [];
+    const photoAlbumsMap = new Map(photoAlbums.map((a) => [a.id, a]));
+
+    // Query Content
+    const contents = contentAccessIds.length > 0
+      ? await prisma.content.findMany({
+          where: { id: { in: contentAccessIds } },
+          include: { mediaAsset: true },
+        })
+      : [];
+    const contentsMap = new Map(contents.map((c) => [c.id, c]));
+
     // Format Subscribed Items
     const subscribed = accessRecords
       .map((access) => {
@@ -198,7 +246,7 @@ export async function GET(
             url: `/site/${slug}/blog/listings/${blog.id}`,
             isPremium: true,
           };
-        } else {
+        } else if (access.contentType === "PODCAST") {
           const podcast = podcastsMap.get(access.contentId);
           if (!podcast) return null;
           const media = resolvePodcastMedia(podcast);
@@ -218,7 +266,83 @@ export async function GET(
             url: `/site/${slug}/blog/podcasts/${podcast.id}`,
             isPremium: true,
           };
+        } else if (access.contentType === "VIDEO") {
+          const video = videosMap.get(access.contentId);
+          if (!video) return null;
+          return {
+            id: video.id,
+            type: "VIDEO" as const,
+            title: video.title || video.album?.title || "Video Feature",
+            slug: video.id,
+            excerpt: video.description || "",
+            coverImage: video.mediaAsset?.thumbnailUrl || video.mediaAsset?.url || "",
+            category: "Video",
+            author: "Media Producer",
+            duration: video.duration || "",
+            price: access.amount || 0,
+            currency: access.currency || "USD",
+            unlockedAt: access.createdAt,
+            url: `/site/${slug}/media/products/${video.id}`,
+            isPremium: true,
+          };
+        } else if (access.contentType === "ALBUM") {
+          const album = videoAlbumsMap.get(access.contentId);
+          if (!album) return null;
+          return {
+            id: album.id,
+            type: "ALBUM" as const,
+            title: album.title,
+            slug: album.id,
+            excerpt: album.description || "",
+            coverImage: album.videos?.[0]?.mediaAsset?.thumbnailUrl || album.videos?.[0]?.mediaAsset?.url || "",
+            category: "Video Album",
+            author: "Media Producer",
+            itemCount: album.videos?.length || 0,
+            price: access.amount || 0,
+            currency: access.currency || "USD",
+            unlockedAt: access.createdAt,
+            url: `/site/${slug}/media/products/${album.id}`,
+            isPremium: true,
+          };
+        } else if (access.contentType === "PHOTO_ALBUM") {
+          const pAlbum = photoAlbumsMap.get(access.contentId);
+          if (!pAlbum) return null;
+          return {
+            id: pAlbum.id,
+            type: "PHOTO_ALBUM" as const,
+            title: pAlbum.title,
+            slug: pAlbum.id,
+            excerpt: pAlbum.description || "",
+            coverImage: pAlbum.photos?.[0]?.mediaAsset?.url || "",
+            category: "Photo Gallery",
+            author: "Staff Photographer",
+            itemCount: pAlbum.photos?.length || 0,
+            price: access.amount || 0,
+            currency: access.currency || "USD",
+            unlockedAt: access.createdAt,
+            url: `/site/${slug}/media/gallery`,
+            isPremium: true,
+          };
+        } else if (access.contentType === "CONTENT") {
+          const item = contentsMap.get(access.contentId);
+          if (!item) return null;
+          return {
+            id: item.id,
+            type: "CONTENT" as const,
+            title: item.title,
+            slug: item.id,
+            excerpt: item.description || "",
+            coverImage: item.mediaAsset?.thumbnailUrl || item.mediaAsset?.url || "",
+            category: item.type || "Exclusive Media",
+            author: "Content Creator",
+            price: access.amount || 0,
+            currency: access.currency || "USD",
+            unlockedAt: access.createdAt,
+            url: `/site/${slug}/media/products/${item.id}`,
+            isPremium: true,
+          };
         }
+        return null;
       })
       .filter(Boolean);
 

@@ -1,87 +1,143 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/photos/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// GET /api/photos/:id - Fetch a single photo by ID
-export const GET = withApiHandler(
-  async (request: Request, { params }: { params: { id: string } }) => {
-    const { id } = params;
+// GET /api/admin/photos/:id
+export const GET = withApiHandler(async (request: Request, context: any) => {
+  const resolvedParams = await (context.params instanceof Promise ? context.params : Promise.resolve(context.params));
+  const id = resolvedParams?.id;
 
-    const cacheKey = buildTenantCacheKey(id, "photos", {});
+  if (!id) return formatResponse(false, null, "Photo ID is required", 400);
+
+  const cacheKey = buildTenantCacheKey(id, "photos", {});
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
-  const photo = await prisma.photo.findUnique({ where: { id } });
+  const photo = await prisma.photo.findUnique({
+    where: { id },
+    include: { mediaAsset: true },
+  });
+
+  if (!photo) {
+    return formatResponse(false, null, "Photo not found", 404);
+  }
+
+  const formatted = {
+    id: photo.id,
+    title: photo.title,
+    description: photo.description,
+    imageUrl: photo.mediaAsset?.url || "",
+    tags: photo.tags,
+    albumId: photo.albumId,
+    companyId: photo.companyId,
+  };
 
   try {
-    if (photo) {
-      await cacheSet(cacheKey, photo, 60);
-    }
+    await cacheSet(cacheKey, formatted, 60);
   } catch (e) {}
-    if (!photo) {
+
+  return formatResponse(true, formatted, null, 200);
+});
+
+// PUT /api/admin/photos/:id
+export const PUT = withApiHandler(async (request: Request, context: any) => {
+  const resolvedParams = await (context.params instanceof Promise ? context.params : Promise.resolve(context.params));
+  const id = resolvedParams?.id;
+
+  if (!id) return formatResponse(false, null, "Photo ID is required", 400);
+
+  const body = await request.json();
+  const { title, description, imageUrl, tags } = body;
+
+  try {
+    const existing = await prisma.photo.findUnique({
+      where: { id },
+      include: { mediaAsset: true },
+    });
+
+    if (!existing) {
       return formatResponse(false, null, "Photo not found", 404);
     }
 
-    return formatResponse(true, photo, null, 200);
-  }
-);
-
-// PUT /api/photos/:id - Update an existing photo by ID
-export const PUT = withApiHandler(
-  async (request: Request, { params }: { params: { id: string } }) => {
-    const { id } = params;
-    const body = await request.json();
-    const { title, description, imageUrl, tags } = body;
-
-    try {
-      const updatedPhoto = await prisma.photo.update({
-        where: { id },
-        data: {
-          title,
-          description,
-          imageUrl,
-          tags,
-          updatedAt: new Date(),
-        },
+    if (imageUrl && existing.mediaAssetId) {
+      await prisma.mediaAsset.update({
+        where: { id: existing.mediaAssetId },
+        data: { url: imageUrl, updatedAt: new Date() },
       });
+    }
+
+    const updatedPhoto = await prisma.photo.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        tags: tags || existing.tags,
+        updatedAt: new Date(),
+      },
+      include: { mediaAsset: true },
+    });
+
+    const formatted = {
+      id: updatedPhoto.id,
+      title: updatedPhoto.title,
+      description: updatedPhoto.description,
+      imageUrl: updatedPhoto.mediaAsset?.url || imageUrl || "",
+      tags: updatedPhoto.tags,
+      albumId: updatedPhoto.albumId,
+    };
 
     try {
       await cacheDel(`tenant:${id}:photos:*`);
       await cacheDel(`admin:photos:*`);
     } catch (e) {}
-    return formatResponse(true, updatedPhoto, null, 200);
-    } catch (err: any) {
-      if (err.code === "P2025") {
-        return formatResponse(false, null, "Photo not found", 404);
-      }
-      throw err; // will be caught by withApiHandler
+
+    return formatResponse(true, formatted, null, 200);
+  } catch (err: any) {
+    if (err.code === "P2025") {
+      return formatResponse(false, null, "Photo not found", 404);
     }
+    return formatResponse(false, null, err.message || "Failed to update photo", 500);
   }
-);
+});
 
-// DELETE /api/photos/:id - Delete a photo by ID
-export const DELETE = withApiHandler(
-  async (request: Request, { params }: { params: { id: string } }) => {
-    const { id } = params;
+// DELETE /api/admin/photos/:id
+export const DELETE = withApiHandler(async (request: Request, context: any) => {
+  const resolvedParams = await (context.params instanceof Promise ? context.params : Promise.resolve(context.params));
+  const id = resolvedParams?.id;
 
-    try {
-      await prisma.photo.delete({ where: { id } });
-      
+  if (!id) return formatResponse(false, null, "Photo ID is required", 400);
+
+  try {
+    const existing = await prisma.photo.findUnique({
+      where: { id },
+      select: { id: true, mediaAssetId: true },
+    });
+
+    if (!existing) {
+      return formatResponse(false, null, "Photo not found", 404);
+    }
+
+    await prisma.$transaction([
+      prisma.photo.delete({ where: { id } }),
+      ...(existing.mediaAssetId
+        ? [prisma.mediaAsset.delete({ where: { id: existing.mediaAssetId } })]
+        : []),
+    ]);
+
     try {
       await cacheDel(`tenant:${id}:photos:*`);
       await cacheDel(`admin:photos:*`);
     } catch (e) {}
-    return formatResponse(true, null, null, 204);
-    } catch (err: any) {
-      if (err.code === "P2025") {
-        return formatResponse(false, null, "Photo not found", 404);
-      }
-      throw err;
+
+    return formatResponse(true, null, "Photo deleted successfully", 200);
+  } catch (err: any) {
+    if (err.code === "P2025") {
+      return formatResponse(false, null, "Photo not found", 404);
     }
+    return formatResponse(false, null, err.message || "Failed to delete photo", 500);
   }
-);
+});

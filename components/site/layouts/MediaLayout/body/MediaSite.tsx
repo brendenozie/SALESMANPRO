@@ -20,81 +20,78 @@ import NewsletterSignup from "./components/NewsletterSignupSection";
 import FAQsSection from "./components/FAQsSection";
 import TopPicksCarousel from "./components/TopPicksCarouselSection"; // Assuming this is also enhanced
 
-// --- Mock Data for Demonstration (mimicking storeFormData structure) ---
-const mockStoreData : any= {
-  name: "Pulse Media",
-  slug: "pulse-media",
-  description: "Your hub for inspiring stories, videos, and insights.",
-  heroSlides: [
-    { id: "h1", imageUrl: "/images/media-hero.jpg", headline: "Unleash Your Story", subline: "Discover captivating content, tailored just for you.", slug: "intro-video" },
-    { id: "h2", imageUrl: "/images/media-hero-2.jpg", headline: "Beyond the Headlines", subline: "Dive deep into exclusive features and interviews.", slug: "behind-scenes" },
-    { id: "h3", imageUrl: "/images/media-hero-3.jpg", headline: "Future of Entertainment", subline: "Explore cutting-edge tech and emerging trends.", slug: "tech-future" },
-  ],
-  StoreCategory: [ // Renamed to match the context variable name
-    { id: "cat1", name: "News & Current Events", slug: "news", icon: "AcademicCapIcon" },
-    { id: "cat2", name: "Entertainment & Culture", slug: "entertainment", icon: "PlayCircleIcon" },
-    { id: "cat3", name: "Technology & Innovation", slug: "tech", icon: "BanknotesIcon" },
-    { id: "cat4", name: "Lifestyle & Wellness", slug: "lifestyle", icon: "HeartIcon" },
-    { id: "cat5", name: "Sports & Gaming", slug: "sports", icon: "ClipboardDocumentListIcon" },
-  ],
-  latestReleases: [
-    { id: "lr1", title: "The Silent Echo: A Sci-Fi Thriller", imageUrl: "/images/releases/release1.jpg", releaseDate: "July 1, 2025", slug: "silent-echo", videoSlug: "silent-echo-trailer", genre: "Sci-Fi Thriller" },
-    { id: "lr2", title: "Code Breakers: Season 2 Premiere", imageUrl: "/images/releases/release2.jpg", releaseDate: "June 25, 2025", slug: "code-breakers-s2", videoSlug: "code-breakers-s2-ep1", genre: "Tech Drama" },
-    { id: "lr3", title: "Eco Warriors: Documentary Series", imageUrl: "/images/releases/release3.jpg", releaseDate: "June 18, 2025", slug: "eco-warriors", videoSlug: "eco-warriors-ep3", genre: "Documentary" },
-    { id: "lr4", title: "Galactic Frontier: Game Review", imageUrl: "/images/releases/release4.jpg", releaseDate: "June 10, 2025", slug: "galactic-frontier", videoSlug: "galactic-frontier-gameplay", genre: "Gaming" },
-  ],
-  testimonials: [
-    { id: "t1", quote: "Pulse Media delivers unparalleled insights. A truly essential platform!", author: "Dr. Evelyn Reed", source: "Tech Insights Weekly", avatarUrl: "/images/avatars/critic1.jpg", rating: 5, mediaTitle: "Future of AI", mediaSlug: "future-of-ai" },
-    { id: "t2", quote: "The video quality and depth of content are simply phenomenal.", author: "Marcus 'GameOn' Vance", source: "Gamer's Edge", avatarUrl: "/images/avatars/critic2.jpg", rating: 4, mediaTitle: "Gaming Marathon Highlights", mediaSlug: "gaming-highlights" },
-    { id: "t3", quote: "Finally, a media hub that truly understands its audience.", author: "Sarah Jenkins", source: "Lifestyle Living Blog", avatarUrl: "/images/avatars/critic3.jpg", rating: 5, mediaTitle: "Travel Trends 2025", mediaSlug: "travel-trends-2025" },
-  ],
-  featuredArticles: [
-    { id: "a1", name: "The AI Revolution: What's Next?", subtitle: "Explore the cutting-edge advancements in artificial intelligence.", imageUrl: "/images/articles/ai.jpg", slug: "future-of-ai", publishDate: "July 10, 2025", category: "Technology", author: "Dr. Anya Sharma" },
-    { id: "a2", name: "2025 Travel Hotspots: Your Next Adventure Awaits", subtitle: "Discover the top destinations and unique experiences for your travels.", imageUrl: "/images/articles/travel.jpg", slug: "travel-trends-2025", publishDate: "July 5, 2025", category: "Lifestyle", author: "Mark Davison" },
-    { id: "a3", name: "From Pixels to Profits: The Evolving World of Esports", subtitle: "A deep dive into the business and culture of competitive gaming.", imageUrl: "/images/articles/gaming.jpg", slug: "esports-evolution", publishDate: "June 28, 2025", category: "Gaming", author: "Chloe Park" },
-  ],
-  latestVideos: [
-    { id: "v1", title: "Exclusive Interview: Director James Cameron on Avatar 3", imageUrl: "/images/videos/video1.jpg", ctaLink: "/video/director-interview", duration: "18:30", views: "1.5M", category: "Interview" },
-    { id: "v2", title: "Behind the Scenes: Crafting the 'Cosmic Echo' Visuals", imageUrl: "/images/videos/video2.jpg", ctaLink: "/video/cosmic-echo-bts", duration: "10:15", views: "800K", category: "Behind the Scenes" },
-    { id: "v3", title: "Top 5 Tech Innovations of the Decade", imageUrl: "/images/videos/video3.jpg", ctaLink: "/video/tech-innovations", duration: "07:45", views: "2.1M", category: "Technology" },
-    { id: "v4", title: "Fitness Unlocked: The Home Workout Revolution", imageUrl: "/images/videos/video4.jpg", ctaLink: "/video/home-workout", duration: "05:20", views: "450K", category: "Lifestyle" },
-  ],
-  faqs: [
-    { id: "faq1", question: "How do I submit content to Pulse Media?", answer: "We're always looking for fresh perspectives! Please visit our 'Contribute' page where you'll find detailed guidelines and a submission portal for articles, videos, and story pitches." },
-    { id: "faq2", question: "Is a subscription required to access content on Pulse Media?", answer: "No, the majority of our content is free to access without any subscription. We aim to make quality media accessible to everyone. Premium tiers or exclusive content series may be introduced in the future." },
-    { id: "faq3", question: "How often is new content released?", answer: "We strive to update our platform daily with new articles and release fresh video content several times a week. For real-time updates, we highly recommend subscribing to our newsletter!" },
-    { id: "faq4", question: "Can I download videos for offline viewing?", answer: "Currently, our platform supports streaming only, and offline downloads are not available. However, we are actively exploring this feature and hope to offer it in a future update." },
-    { id: "faq5", question: "How can I contact Pulse Media for partnerships or press inquiries?", answer: "For partnerships, advertising, or press-related inquiries, please use the contact form on our 'About Us' page, or email us directly at partnerships@pulsemedia.com." },
-  ],
-  topPicks: [
-    { id: "tp1", title: "The Quantum Enigma", description: "Our most anticipated sci-fi series with mind-bending plots.", imageUrl: "/images/toppicks/pick1.jpg", ctaLink: "/series/quantum-enigma", type: "Series" },
-    { id: "tp2", title: "The Art of Storytelling with Director Lena Khan", description: "An exclusive masterclass interview on cinematic narrative.", imageUrl: "/images/toppicks/pick2.jpg", ctaLink: "/interview/lena-khan", type: "Interview" },
-    { id: "tp3", title: "Beyond the Algorithm: Human Creativity in the AI Age", description: "A thought-provoking article on the future of creative industries.", imageUrl: "/images/toppicks/pick3.jpg", ctaLink: "/article/human-creativity-ai", type: "Article" },
-  ]
+// Default empty data structure matching storeFormData
+const defaultStoreData: any = {
+  name: "Media & Entertainment",
+  slug: "",
+  description: "Explore our latest video releases, photo galleries, and editorial features.",
+  heroSlides: [],
+  StoreCategory: [],
+  latestReleases: [],
+  testimonials: [],
+  featuredArticles: [],
+  latestVideos: [],
+  faqs: [],
+  topPicks: []
 };
-// --- End Mock Data ---
-
 
 export default function MediaSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const router = useRouter();
-  const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  const { storeFormData } = useStoreContext();
 
-  // State to hold data, using pageData with fallback to mockData
-  const initialData = (pageData && Object.keys(pageData).length > 0) ? (pageData as unknown as typeof mockStoreData) : mockStoreData;
-  const [dataReady, setDataReady] = useState(true);
-  const [displayData, setDisplayData] = useState<typeof mockStoreData>(initialData);
+  const [displayData, setDisplayData] = useState<any>(() => {
+    return (pageData && Object.keys(pageData).length > 0) ? pageData : defaultStoreData;
+  });
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   useEffect(() => {
-    // Use pageData for all content
     if (pageData && Object.keys(pageData).length > 0) {
-      setDisplayData(pageData as unknown as typeof mockStoreData); // Cast if context type is less specific
-    } else {
-      // Use mock data if pageData isn't ready or empty, for consistent display
-      setDisplayData(mockStoreData);
+      setDisplayData((prev: any) => ({
+        ...prev,
+        ...pageData,
+      }));
     }
-    setDataReady(true);
-  }, [pageData]); // Dependency array ensures effect runs when pageData changes
+
+    // Fetch live media content for this tenant if not already present
+    const cid = companyId || pageData?.id || (pageData as any)?.companyId;
+    if (cid) {
+      fetch(`/api/admin/content?companyId=${cid}&limit=12`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+            const liveContent = data.data;
+            setDisplayData((prev: any) => ({
+              ...prev,
+              latestVideos: prev.latestVideos?.length > 0 ? prev.latestVideos : liveContent.filter((c: any) => c.type === 'VIDEO').map((v: any) => ({
+                id: v.id,
+                title: v.title,
+                imageUrl: v.mediaAsset?.thumbnailUrl || v.mediaAsset?.url || '/images/default-video.jpg',
+                ctaLink: `/site/${pageData?.slug || ''}/media/products/${v.id}`,
+                duration: v.duration || 'Feature',
+                category: v.type || 'Video'
+              })),
+              latestReleases: prev.latestReleases?.length > 0 ? prev.latestReleases : liveContent.map((c: any) => ({
+                id: c.id,
+                title: c.title,
+                imageUrl: c.mediaAsset?.thumbnailUrl || c.mediaAsset?.url || '/images/default-media.jpg',
+                releaseDate: new Date(c.createdAt).toLocaleDateString(),
+                slug: `products/${c.id}`,
+                genre: c.type || 'Media'
+              })),
+              topPicks: prev.topPicks?.length > 0 ? prev.topPicks : liveContent.filter((c: any) => c.isFeature).map((f: any) => ({
+                id: f.id,
+                title: f.title,
+                description: f.description || '',
+                imageUrl: f.mediaAsset?.thumbnailUrl || f.mediaAsset?.url || '/images/default-media.jpg',
+                ctaLink: `/site/${pageData?.slug || ''}/media/products/${f.id}`,
+                type: f.type || 'Featured'
+              }))
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [pageData, companyId]);
 
   // Scroll-to-top button logic
   useEffect(() => {
@@ -117,7 +114,7 @@ export default function MediaSite({ pageData, companyId }: { pageData: StoreForm
     });
   };
 
-  const activeData = displayData || initialData;
+  const activeData = displayData || defaultStoreData;
 
   const sectionMap: Record<string, React.ReactNode> = {
     'media-hero': (

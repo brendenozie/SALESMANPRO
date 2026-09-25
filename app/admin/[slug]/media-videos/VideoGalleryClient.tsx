@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon, FilmIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image, { ImageLoaderProps } from 'next/image';
+import { uploadMediaFile } from '@/lib/media/uploadClient';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -353,12 +354,16 @@ export default function VideoGalleryClient({ companyId }: VideoGalleryClientProp
     if (!files || files.length === 0) return;
     setIsSubmitting(true);
     try {
-      const videoDetails = files.map(() => ({
-        url: 'https://placehold.co/800x450/1e293b/d1d5db?text=Video',
-        thumbnailUrl: 'https://placehold.co/800x450/1e293b/d1d5db?text=Video+Thumbnail',
-        duration: '60',
-        status: 'PROCESSING' as const,
-      }));
+      const videoDetails = [];
+      for (const file of files) {
+        const uploadRes = await uploadMediaFile(file, companyId, "videos");
+        videoDetails.push({
+          url: uploadRes.url,
+          thumbnailUrl: uploadRes.url, // Default poster is the video URL or frame
+          duration: '60',
+          status: 'READY' as const,
+        });
+      }
       
       const response = await fetch(`${apiBaseUrl}/admin/video-albums`, {
         method: 'POST',
@@ -368,13 +373,16 @@ export default function VideoGalleryClient({ companyId }: VideoGalleryClientProp
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add video album');
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to add video album');
       }
-      const addedAlbum: VideoAlbum = (await response.json()).data || await response.json();
+      const resJson = await response.json();
+      const addedAlbum: VideoAlbum = resJson.data || resJson;
       setVideoAlbums(prev => [...prev, addedAlbum]);
       setIsUploadModalOpen(false);
-    } catch {
-      // Handle error
+    } catch (err: any) {
+      console.error("Error creating video album:", err);
+      alert(err.message || 'Error uploading videos to album');
     } finally {
       setIsSubmitting(false);
     }
