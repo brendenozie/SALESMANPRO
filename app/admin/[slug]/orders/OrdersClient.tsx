@@ -83,9 +83,9 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
 
   const stats = useMemo(() => ({
     total: ordersData.length,
-    revenue: ordersData.reduce((sum, o) => sum + o.totalPrice, 0),
+    revenue: ordersData.reduce((sum, o) => sum + (o.totalPrice || 0), 0),
     pending: ordersData.filter(o => o.status === 'PENDING').length,
-    completed: ordersData.filter(o => o.status === 'COMPLETED').length,
+    completed: ordersData.filter(o => o.status === 'COMPLETED' || o.status === 'PAID').length,
   }), [ordersData]);
 
   const paginatedOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -135,7 +135,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
             />
           </div>
           <div className="flex overflow-x-auto gap-1 p-1 no-scrollbar">
-            {['All', 'PENDING', 'COMPLETED', 'SHIPPED', 'CANCELLED'].map((s) => (
+            {['All', 'PENDING', 'PAID', 'COMPLETED', 'SHIPPED', 'CANCELLED'].map((s) => (
               <button
                 key={s}
                 onClick={() => setActiveStatusFilter(s)}

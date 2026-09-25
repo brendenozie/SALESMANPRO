@@ -82,11 +82,12 @@ export default function CompanyPaymentsDashboardClient({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const res = await fetch(`/api/admin/payments?companyId=${companyId}`);
+      const res = await fetch(`/api/admin/checkout-store-payments?companyId=${companyId}`);
       if (res.ok) {
         const json = await res.json();
-        if (Array.isArray(json.data)) {
-          setPayments(json.data);
+        const list = Array.isArray(json.data) ? json.data : (json.data?.transactions || []);
+        if (Array.isArray(list)) {
+          setPayments(list);
         }
       }
     } catch (err) {

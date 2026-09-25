@@ -6,6 +6,8 @@ import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
 
 
+import prisma from "@/server/db/prismadb";
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Define types based on your Prisma schema
@@ -76,22 +78,65 @@ export default async function OrdersPage({ params }: PageProps) {
     const companyId = company.id;
 
   try {
-    const ordersRes = await fetch(`${apiBaseUrl}/admin/customer-orders?companyId=${companyId}`, 
-      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
-    if (ordersRes.ok) {
-      let data = await ordersRes.json();
-      ordersData = data?.data?.data || data?.data?.orders || data?.data || [];
-      if (!Array.isArray(ordersData)) {
-        ordersData = [];
-      }
-      
-    } else {
-      error = `Failed to fetch orders: ${ordersRes.status} ${ordersRes.statusText}`;
-      // console.error("[OrdersPage] Failed to fetch orders →", ordersRes.status, ordersRes.statusText);
-    }
+    const rawOrders = await prisma.customerOrder.findMany({
+      where: {
+        OR: [
+          { companyId },
+          { items: { some: { marketplaceListing: { companyId } } } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: {
+        items: {
+          include: {
+            marketplaceListing: {
+              select: {
+                id: true,
+                name: true,
+                images: true,
+                finalPrice: true,
+                sellingPrice: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    ordersData = rawOrders.map((order: any) => ({
+      id: order.id,
+      consumerId: order.consumerId || "",
+      name: order.name || "Customer",
+      email: order.email || "",
+      phone: order.phone || "",
+      totalPrice: order.totalFinalPrice ?? order.totalPrice ?? 0,
+      orderSource: order.orderSource || "WEBSITE",
+      status: order.status || "PENDING",
+      delivery: order.delivery || false,
+      shippingAddress: order.shippingAddress || null,
+      deliveryStatus: order.deliveryStatus || null,
+      estimatedArrival: order.estimatedArrival ? new Date(order.estimatedArrival).toISOString() : null,
+      deliveryPersonName: order.deliveryPersonName || null,
+      deliveryPersonContact: order.deliveryPersonContact || null,
+      trackingNumber: order.trackingNumber || `TRK-${order.id.slice(-6).toUpperCase()}`,
+      createdAt: order.createdAt ? new Date(order.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: order.updatedAt ? new Date(order.updatedAt).toISOString() : new Date().toISOString(),
+      items: (order.items || []).map((item: any) => ({
+        id: item.id,
+        marketplaceListingId: item.marketplaceListingId || item.id,
+        quantity: item.quantity || 1,
+        price: item.price || 0,
+        marketplaceListing: {
+          name: item.marketplaceListing?.name || item.name || "Item",
+          images: Array.isArray(item.marketplaceListing?.images) ? item.marketplaceListing.images : [],
+          finalPrice: item.marketplaceListing?.finalPrice ?? item.price ?? 0,
+        },
+      })),
+    }));
   } catch (err: any) {
     error = `Error fetching orders data: ${err.message}`;
-    // console.error("[OrdersPage] Error fetching orders data →", err.message);
+    console.error("[OrdersPage] Error fetching orders data →", err.message);
   }
 
   return <OrdersClient ordersData={ordersData} companyId={companyId} initialError={error} />;

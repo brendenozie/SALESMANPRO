@@ -45,7 +45,8 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const companyId = searchParams.get("companyId");
   const search = searchParams.get("search")?.trim() || "";
-  const status = searchParams.get("status") || "PENDING";
+  const statusParam = searchParams.get("status");
+  const status = statusParam && statusParam.toUpperCase() !== "ALL" ? statusParam.toUpperCase() : null;
   const skip = (page - 1) * limit;
 
   if (!companyId) return formatResponse(false, null, "companyId required", 400);
@@ -55,38 +56,70 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
     page,
     limit,
     search,
-    status,
+    status: status || "ALL",
   });
 
   try {
     const responseData = await fetchWithCache(
       cacheKey,
       async () => {
-        // 3. Define the Order Filter
-        const orderWhereFilter: Prisma.CustomerOrderWhereInput = {
-          status: status as OrderStatus,
-          items: {
-            some: {
-              marketplaceListing: {
-                companyId: companyId,
-                ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
+        // 3. Define the Order Filter: match direct store orders or marketplace item orders
+        const companyScope: Prisma.CustomerOrderWhereInput = {
+          OR: [
+            { companyId: companyId },
+            {
+              items: {
+                some: {
+                  marketplaceListing: { companyId: companyId },
+                },
               },
             },
-          },
+          ],
+        };
+
+        const orderWhereFilter: Prisma.CustomerOrderWhereInput = {
+          ...companyScope,
+          ...(status ? { status: status as OrderStatus } : {}),
+          ...(search
+            ? {
+                OR: [
+                  { name: { contains: search, mode: "insensitive" } },
+                  { email: { contains: search, mode: "insensitive" } },
+                  { phone: { contains: search, mode: "insensitive" } },
+                  { trackingNumber: { contains: search, mode: "insensitive" } },
+                  {
+                    items: {
+                      some: {
+                        marketplaceListing: {
+                          name: { contains: search, mode: "insensitive" },
+                        },
+                      },
+                    },
+                  },
+                ],
+              }
+            : {}),
         };
 
         // 4. Parallelized Independent Queries
         const currentYear = new Date().getFullYear();
 
-        const [orders, totalOrders, totalRev, pendingRev, monthlyRevenue] = await Promise.all([
+        const [orders, totalOrders, compRev, pendRev, itemRev, monthlyRevenue] = await Promise.all([
           prisma.customerOrder.findMany({
             where: orderWhereFilter,
             include: {
               items: {
-                where: {
-                  marketplaceListing: { companyId: companyId },
+                include: {
+                  marketplaceListing: {
+                    select: {
+                      id: true,
+                      name: true,
+                      images: true,
+                      finalPrice: true,
+                      sellingPrice: true,
+                    },
+                  },
                 },
-                include: { marketplaceListing: true },
               },
             },
             skip,
@@ -94,19 +127,29 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
             orderBy: { createdAt: "desc" },
           }),
           prisma.customerOrder.count({ where: orderWhereFilter }),
+          prisma.customerOrder.aggregate({
+            _sum: { totalFinalPrice: true },
+            where: {
+              ...companyScope,
+              status: { in: ["COMPLETED", "PAID", "SHIPPED", "OUT_FOR_DELIVERY"] as OrderStatus[] },
+            },
+          }),
+          prisma.customerOrder.aggregate({
+            _sum: { totalFinalPrice: true },
+            where: {
+              ...companyScope,
+              status: "PENDING" as OrderStatus,
+            },
+          }),
           prisma.orderItem.aggregate({
             _sum: { price: true },
             where: { marketplaceListing: { companyId } },
           }),
-          prisma.orderItem.aggregate({
-            _sum: { price: true },
-            where: {
-              marketplaceListing: { companyId },
-              order: { status: "PENDING" },
-            },
-          }),
           getCachedMonthlyRevenue(companyId, currentYear),
         ]);
+
+        const totalRevenue = compRev._sum.totalFinalPrice || itemRev._sum.price || 0;
+        const pendingRevenue = pendRev._sum.totalFinalPrice || 0;
 
         return {
           orders,
@@ -116,13 +159,13 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
             currentPage: page,
           },
           revenue: {
-            total: totalRev._sum.price || 0,
-            pending: pendingRev._sum.price || 0,
+            total: totalRevenue,
+            pending: pendingRevenue,
             monthly: monthlyRevenue,
           },
         };
       },
-      { ttlSeconds: 60, swrSeconds: 60 },
+      { ttlSeconds: 30, swrSeconds: 30 },
     );
 
     return formatResponse(true, responseData, "Orders fetched successfully", 200);

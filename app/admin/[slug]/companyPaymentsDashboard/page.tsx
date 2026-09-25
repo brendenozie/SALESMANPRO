@@ -1,8 +1,8 @@
 import React from "react";
 import { cookies } from "next/headers";
 import CompanyPaymentsDashboardClient from "./CompanyPaymentsDashboardClient";
-import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from "@/lib/company-fetcher";
+import { getStorePaymentTransactions } from "@/lib/payments/reportingService";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -56,24 +56,23 @@ export default async function CompanyPaymentsPage({ params }: PageProps) {
     const companyId = company.id;
 
   try {
-    const res = await fetch(`${apiBaseUrl}/admin/checkout-store-payments?companyId=${companyId}`, {
-      next: { revalidate: 30 },
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
+    const result = await getStorePaymentTransactions({
+      companyId: companyId,
+      page: 1,
+      pageSize: 100,
+      period: "all",
     });
 
-    if (res.ok) {
-      const rawData = await res.json();
-      paymentsData = Array.isArray(rawData.data) ? rawData.data : [];
-    } else {
-      console.error(
-        "[CompanyPaymentsPage] Failed to fetch payments →",
-        res.status,
-        res.statusText
-      );
-    }
+    paymentsData = (result.transactions || []).map((t: any) => ({
+      id: t.id,
+      trackingNumber: t.trackingNumber || `TRK-${t.id.slice(-6).toUpperCase()}`,
+      customerName: t.customerName || "Customer",
+      companyId: t.companyId || companyId,
+      totalFinalPrice: t.grossAmount ?? t.netAmount ?? 0,
+      paymentOption: (t.provider?.toLowerCase() as PaymentOption) || "pending",
+      paymentStatus: (t.status?.toUpperCase() as PaymentStatus) || "PENDING",
+      date: t.date || new Date().toISOString(),
+    }));
   } catch (err: any) {
     console.error("[CompanyPaymentsPage] Error fetching payments →", err.message);
   }

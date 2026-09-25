@@ -143,8 +143,6 @@ export default async function PosPage({ params, searchParams }: PageProps) {
           quantity: true,
           isAvailable: true,
           images: true,
-          barcode: true,
-          sku: true,
           productCategory: {
             select: {
               id: true,
@@ -153,14 +151,18 @@ export default async function PosPage({ params, searchParams }: PageProps) {
           },
           option: true,
           category: true,
-          categoryId: true,
           productCategoryId: true,
           description: true,
         },
       }),
     ]);
 
-    initialProducts = listings as any;
+    initialProducts = listings.map((item: any) => ({
+      ...item,
+      barcode: item.id,
+      sku: `SKU-${item.id.slice(-6).toUpperCase()}`,
+      categoryId: item.productCategoryId || item.category || "",
+    })) as any;
     totalPages = Math.ceil(total / limitNum) || 1;
   } catch (error) {
     console.error("[SERVICE_POS_PRODUCTS_FETCH_ERROR]", error);

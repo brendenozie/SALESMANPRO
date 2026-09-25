@@ -93,6 +93,35 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
     }
   };
 
+  const currentStatus = searchParams.get("status") || "ALL";
+
+  const handleStatusFilter = (status: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (status === "ALL") {
+      params.delete("status");
+    } else {
+      params.set("status", status);
+    }
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "COMPLETED":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "PAID":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "CANCELLED":
+        return "bg-rose-100 text-rose-700 border-rose-200";
+      case "SHIPPED":
+      case "OUT_FOR_DELIVERY":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      default:
+        return "bg-amber-100 text-amber-700 border-amber-200";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans">
       {/* 1. TOP STATS SECTION */}
@@ -129,20 +158,37 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
       </div>
 
       {/* 2. SEARCH & CONTROLS */}
-      <div className="max-w-7xl mx-auto mb-8">
-        <form onSubmit={handleSearch} className="relative max-w-md">
+      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Status Filter Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {["ALL", "PENDING", "PAID", "COMPLETED", "CANCELLED"].map((s) => (
+            <button
+              key={s}
+              onClick={() => handleStatusFilter(s)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                currentStatus.toUpperCase() === s
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
+                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleSearch} className="relative max-w-md w-full">
           <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search orders or products..."
-            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
+            placeholder="Search orders, customers, tracking..."
+            className="w-full pl-12 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </form>
       </div>
 
-      {/* 3. ORDER LIST (THE INTUITIVE MAPPING) */}
+      {/* 3. ORDER LIST */}
       <div className="max-w-7xl mx-auto space-y-6">
         {orders.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
@@ -161,7 +207,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                   <div>
                     <div className="flex items-center gap-2">
                       <UserIcon className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-gray-900">{order.name}</span>
+                      <span className="font-semibold text-gray-900">{order.name || "Customer"}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                       <CalendarIcon className="w-3.5 h-3.5" />
@@ -171,9 +217,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    order.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusBadge(order.status)}`}>
                     {order.status}
                   </span>
                   <button onClick={() => setSelectedOrder(order)} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 px-4 py-2 bg-indigo-50 rounded-lg transition-colors">
@@ -194,17 +238,16 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {order.items.map((item: any) => (
+                    {(order.items || []).map((item: any) => (
                       <tr key={item.id} className="group hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                               {/* Image Placeholder */}
                                <div className="w-full h-full bg-indigo-100 flex items-center justify-center text-indigo-400">
                                   <ShoppingBagIcon className="w-6 h-6" />
                                </div>
                             </div>
-                            <span className="font-medium text-gray-800">{item.marketplaceListing.name}</span>
+                            <span className="font-medium text-gray-800">{item.marketplaceListing?.name || item.name || "Item"}</span>
                             <span className="text-xs text-gray-400">
                               {item.selectedOptions && item.selectedOptions.length > 0 ? (
                                 <span>
@@ -308,7 +351,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                     2. Set Order & Items Status
                   </label>
                   <div className="flex flex-wrap gap-3">
-                    {['PENDING', 'COMPLETED', 'CANCELLED'].map((s) => (
+                    {['PENDING', 'PAID', 'COMPLETED', 'CANCELLED'].map((s) => (
                       <button
                         key={s}
                         disabled={isUpdating}
@@ -329,14 +372,14 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
               {/* Individual Item List */}
               <div className="space-y-4">
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Individual Items</h3>
-                {selectedOrder.items.map((item: any) => (
+                {(selectedOrder.items || []).map((item: any) => (
                   <div key={item.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
                         <ShoppingBagIcon className="w-6 h-6 text-indigo-500" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">{item.marketplaceListing.name}</p>
+                        <p className="font-bold text-gray-800">{item.marketplaceListing?.name || item.name || "Item"}</p>
                         <p className="text-xs text-gray-500">Price: ${item.price}</p>
                       </div>
                     </div>
@@ -356,7 +399,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
 
                       {/* Status Update Buttons */}
                       <div className="flex bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-                        {['PENDING', 'COMPLETED', 'CANCELLED'].map((s) => (
+                        {['PENDING', 'PAID', 'COMPLETED', 'CANCELLED'].map((s) => (
                           <button
                             key={s}
                             disabled={isUpdating}

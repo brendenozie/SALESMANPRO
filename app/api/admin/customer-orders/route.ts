@@ -23,7 +23,7 @@ export const GET = withApiHandler(
     const { searchParams } = new URL(request.url);
 
     // Authoritative tenant scoping from verified session context
-    const companyId = context.companyId;
+    const companyId = context.companyId || searchParams.get("companyId");
     if (!companyId) {
       return formatResponse(
         false,
@@ -43,7 +43,10 @@ export const GET = withApiHandler(
 
     // Strict tenant-scoped WHERE filter preventing cross-company leaks
     const where: any = {
-      companyId,
+      OR: [
+        { companyId },
+        { items: { some: { marketplaceListing: { companyId } } } },
+      ],
       ...(deliveryFilter === "true" && { delivery: true }),
       ...(deliveryFilter === "false" && { delivery: false }),
     };

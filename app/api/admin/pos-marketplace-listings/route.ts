@@ -50,8 +50,7 @@ const getMarketplaceListings = async (req: Request, context: any) => {
               quantity: true,
               isAvailable: true,
               images: true,
-              barcode: true,
-              sku: true,
+              description: true,
               productCategory: {
                 select: {
                   id: true,
@@ -61,6 +60,12 @@ const getMarketplaceListings = async (req: Request, context: any) => {
             },
           }),
         ]);
+
+        const formattedListings = listings.map((item: any) => ({
+          ...item,
+          barcode: item.id,
+          sku: `SKU-${item.id.slice(-6).toUpperCase()}`,
+        }));
 
         const totalPages = Math.ceil(total / limit);
 
@@ -72,7 +77,7 @@ const getMarketplaceListings = async (req: Request, context: any) => {
             currentPage: page,
             perPage: limit,
           },
-          results: listings,
+          results: formattedListings,
         };
       },
       { ttlSeconds: 60, swrSeconds: 30 },
