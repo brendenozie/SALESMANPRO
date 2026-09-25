@@ -20,6 +20,9 @@ const posSaleSchema = z.object({
   items: z.array(posSaleItemSchema).min(1, "items array must contain at least 1 item"),
   notes: z.string().optional(),
   companyId: z.string().optional(),
+  posSessionId: z.string().optional(),
+  operatorId: z.string().optional(),
+  cashierName: z.string().optional(),
 });
 
 async function handlePost(req: Request, context: any) {
@@ -33,7 +36,7 @@ async function handlePost(req: Request, context: any) {
     return formatResponse(false, null, parsed.error.errors, 400);
   }
 
-  const { eventId, customerName, customerEmail, paymentMethod, items, notes } =
+  const { eventId, customerName, customerEmail, paymentMethod, items, notes, posSessionId, operatorId, cashierName } =
     parsed.data;
 
   // Authoritative tenant scoping from context
@@ -182,6 +185,9 @@ async function handlePost(req: Request, context: any) {
               paymentOption: paymentMethod,
               orderSource: "IN_PERSON",
               notes,
+              posSessionId,
+              operatorId,
+              cashierName,
               items: {
                 create: orderItems.map((oi) => ({
                   marketplaceListingId: oi.marketplaceListingId,
@@ -196,6 +202,17 @@ async function handlePost(req: Request, context: any) {
               status: true,
             },
           });
+
+          // 4b. Increment POS Session metrics if active session exists
+          if (posSessionId) {
+            await tx.posSession.update({
+              where: { id: posSessionId },
+              data: {
+                totalSales: { increment: totalPrice },
+                totalTransactions: { increment: 1 },
+              },
+            }).catch(() => null);
+          }
 
           // 5. Create payment record
           await tx.payment.create({

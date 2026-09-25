@@ -13,6 +13,10 @@ import {
   ExclamationCircleIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+import POSOperatorModal from '@/components/pos/POSOperatorModal';
+import POSSessionHeader from '@/components/pos/POSSessionHeader';
+import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
+import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -52,6 +56,53 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
   const [isLoadingTickets, setIsLoadingTickets] = useState(false);
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // POS Session & Operator State
+  const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
+  const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(true);
+
+  // POS Customer State
+  const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
+        const data = await res.json();
+        const sessionData = data.data || data.session;
+        if (res.ok && sessionData) {
+          if (sessionData.operator) {
+            setOperator(sessionData.operator);
+          }
+          setPosSession({
+            id: sessionData.id,
+            terminalId: sessionData.terminalId,
+            status: sessionData.status,
+            openedAt: sessionData.openedAt,
+          });
+          setShowAuthModal(false);
+        }
+      } catch (err) {
+        console.error("Failed to check active POS session", err);
+      }
+    }
+    checkSession();
+  }, [companyId]);
+
+  const handleOperatorAuthenticated = (data: { operator: POSOperatorInfo; posSession: POSSessionInfo }) => {
+    setOperator(data.operator);
+    setPosSession(data.posSession);
+    setShowAuthModal(false);
+  };
+
+  const handleSessionEnded = () => {
+    setOperator(null);
+    setPosSession(null);
+    setCurrentCustomer(null);
+    setCart([]);
+    setShowAuthModal(true);
+  };
 
   // Fetch events on component mount
   useEffect(() => {
@@ -163,9 +214,11 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
   };
 
   const handleProcessSale = async () => {
-    if (!selectedEventId || cart.length === 0 || !customerName || !customerEmail || !paymentMethod) {
+    const activeName = currentCustomer?.name || customerName;
+    const activeEmail = currentCustomer?.email || customerEmail;
+    if (!selectedEventId || cart.length === 0 || !activeName || !activeEmail || !paymentMethod) {
       setTransactionStatus('error');
-      setMessage('Please fill all required fields and add items to cart.');
+      setMessage('Please select customer, tickets, and payment method.');
       return;
     }
 
@@ -188,14 +241,19 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
           eventId: selectedEventId,
           companyId,
           buyer: {
-            name: customerName,
-            email: customerEmail,
+            id: currentCustomer?.id || undefined,
+            name: activeName,
+            email: activeEmail,
+            phone: currentCustomer?.phone || undefined,
           },
           tickets: cart.map((item) => ({
             ticketId: item.ticketProductId,
             quantity: item.quantity,
           })),
           paymentMethod: pMethod,
+          posSessionId: posSession?.id || undefined,
+          operatorId: operator?.id || undefined,
+          cashierName: operator?.name || "Cashier",
         }),
       });
 
@@ -209,11 +267,9 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
       setTransactionStatus('success');
       setMessage(result.message || `Sale of $${Number(totalAmt).toFixed(2)} processed successfully! Tickets issued.`);
 
-      // Reset form
+      // Reset cart and selection, preserve currentCustomer for reuse across session
       setSelectedEventId('');
       setCart([]);
-      setCustomerName('');
-      setCustomerEmail('');
       setPaymentMethod('');
 
       // Refresh events list
@@ -239,7 +295,17 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-200 p-8 sm:p-12 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-gray-950 text-gray-200 font-sans relative overflow-hidden flex flex-col">
+      {/* POS SESSION OPERATOR HEADER */}
+      <POSSessionHeader
+        operator={operator}
+        posSession={posSession}
+        companyName="Event POS"
+        onLockTerminal={() => setShowAuthModal(true)}
+        onEndSession={handleSessionEnded}
+      />
+
+      <div className="p-8 sm:p-12 relative overflow-hidden flex-1">
       {/* Decorative Background Elements */}
       <div className="absolute top-1/4 right-0 w-96 h-96 bg-purple-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-1000"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-3000"></div>
@@ -368,37 +434,25 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
               <h3 className="text-xl font-bold text-white mb-4 flex items-center">
                 <UsersIcon className="w-6 h-6 text-pink-400 mr-2" /> Customer Details
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label htmlFor="customer-name" className="block text-gray-300 text-sm font-bold mb-2">
-                    Customer Name
-                  </label>
-                  <input
-                    type="text"
-                    id="customer-name"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="block w-full bg-gray-900 border border-gray-700 text-white py-3 px-4 rounded-lg leading-tight focus:outline-none focus:bg-gray-700 focus:border-indigo-500"
-                    placeholder="John Doe"
-                    disabled={!selectedEvent || cart.length === 0 || isProcessingSale}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="customer-email" className="block text-gray-300 text-sm font-bold mb-2">
-                    Customer Email
-                  </label>
-                  <input
-                    type="email"
-                    id="customer-email"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    className="block w-full bg-gray-900 border border-gray-700 text-white py-3 px-4 rounded-lg leading-tight focus:outline-none focus:bg-gray-700 focus:border-indigo-500"
-                    placeholder="john.doe@example.com"
-                    disabled={!selectedEvent || cart.length === 0 || isProcessingSale}
-                  />
-                </div>
+              <div className="mb-6">
+                <POSCustomerSelector
+                  companyId={companyId}
+                  selectedCustomer={currentCustomer}
+                  onSelectCustomer={(cust) => {
+                    setCurrentCustomer(cust);
+                    if (cust) {
+                      setCustomerName(cust.name);
+                      setCustomerEmail(cust.email || '');
+                    } else {
+                      setCustomerName('');
+                      setCustomerEmail('');
+                    }
+                  }}
+                  required={true}
+                />
               </div>
             </motion.div>
+
           </div>
 
           {/* Cart & Payment Summary */}
@@ -519,6 +573,16 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
           </div>
         </div>
       </div>
+      </div>
+
+      {/* POS OPERATOR AUTH MODAL */}
+      <POSOperatorModal
+        isOpen={showAuthModal}
+        companyId={companyId}
+        terminalId={posSession?.terminalId || "T01"}
+        storeName="Event POS"
+        onSuccess={handleOperatorAuthenticated}
+      />
     </div>
   );
 }

@@ -12,6 +12,9 @@ import {
   ExclamationCircleIcon,
   ArrowPathIcon
 } from "@heroicons/react/24/outline";
+import POSOperatorModal from "@/components/pos/POSOperatorModal";
+import POSSessionHeader from "@/components/pos/POSSessionHeader";
+import type { POSOperatorInfo, POSSessionInfo } from "@/types/pos";
 
 type Event = {
   id: string;
@@ -46,6 +49,33 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // POS Session & Operator Attribution
+  const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
+  const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(adminSlug)}&terminalId=GATE01`);
+        const data = await res.json();
+        const sessionData = data.data || data.session;
+        if (res.ok && sessionData) {
+          if (sessionData.operator) {
+            setOperator(sessionData.operator);
+          }
+          setPosSession({
+            id: sessionData.id,
+            terminalId: sessionData.terminalId,
+            status: sessionData.status,
+            openedAt: sessionData.openedAt,
+          });
+        }
+      } catch (err) {}
+    }
+    checkSession();
+  }, [adminSlug]);
 
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -167,6 +197,7 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
           eventId: selectedEventId || undefined,
           companyId: adminSlug,
           autoCheckIn: true,
+          operatorName: operator?.name || undefined,
         }),
       });
       const result = await res.json();
@@ -198,7 +229,20 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-12 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-hidden flex flex-col">
+      {/* POS SESSION OPERATOR HEADER */}
+      <POSSessionHeader
+        operator={operator}
+        posSession={posSession}
+        companyName="Gate Check-In"
+        onLockTerminal={() => setShowAuthModal(true)}
+        onEndSession={() => {
+          setOperator(null);
+          setPosSession(null);
+        }}
+      />
+
+      <div className="p-6 sm:p-12 relative overflow-hidden flex-1">
       {/* Dynamic Aesthetic Blur Backdrops */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none animate-pulse"></div>
       <div className="absolute bottom-[-15%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -441,6 +485,20 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
         </div>
         
       </div>
+      </div>
+
+      {/* POS OPERATOR AUTH MODAL */}
+      <POSOperatorModal
+        isOpen={showAuthModal}
+        companyId={adminSlug}
+        terminalId={posSession?.terminalId || "GATE01"}
+        storeName="Gate Check-In"
+        onSuccess={(data) => {
+          setOperator(data.operator);
+          setPosSession(data.posSession);
+          setShowAuthModal(false);
+        }}
+      />
     </div>
   );
 }

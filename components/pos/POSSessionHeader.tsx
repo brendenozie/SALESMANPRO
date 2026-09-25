@@ -11,18 +11,22 @@ import type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession } from '@
 
 export type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession };
 
-interface POSSessionHeaderProps {
-  companyId: string;
+export interface POSSessionHeaderProps {
+  companyId?: string;
+  companyName?: string;
   operator: POSOperatorInfo | null;
   posSession: POSSessionInfo | null;
   onEndSession: () => void;
+  onLockTerminal?: () => void;
 }
 
 export default function POSSessionHeader({
   companyId,
+  companyName,
   operator,
   posSession,
   onEndSession,
+  onLockTerminal,
 }: POSSessionHeaderProps) {
   const [closing, setClosing] = useState(false);
 
@@ -58,6 +62,14 @@ export default function POSSessionHeader({
   return (
     <div className="w-full bg-slate-900 text-white px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-800 shadow-inner">
       <div className="flex items-center gap-3">
+        {/* Store / Module Name */}
+        {companyName && (
+          <div className="hidden sm:flex items-center gap-1.5 font-bold text-slate-200">
+            <span className="text-indigo-400">●</span>
+            <span>{companyName}</span>
+          </div>
+        )}
+
         {/* Operator Badge */}
         <div className="flex items-center gap-2 bg-slate-800/90 py-1 px-3 rounded-full border border-slate-700">
           <UserCircleIcon className="w-4 h-4 text-emerald-400" />
@@ -84,16 +96,30 @@ export default function POSSessionHeader({
         )}
       </div>
 
-      {/* End Session Button */}
-      <button
-        type="button"
-        onClick={handleEndSession}
-        disabled={closing}
-        className="flex items-center gap-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white px-3 py-1.5 rounded-lg border border-rose-500/40 transition-all active:scale-95 font-semibold text-xs"
-      >
-        <ArrowRightOnRectangleIcon className="w-4 h-4" />
-        <span>{closing ? 'Ending Shift...' : 'End Session / Lock'}</span>
-      </button>
+      <div className="flex items-center gap-2">
+        {/* Lock Terminal Button */}
+        {onLockTerminal && (
+          <button
+            type="button"
+            onClick={onLockTerminal}
+            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700 transition-all font-medium text-xs"
+            title="Lock POS terminal"
+          >
+            <span>Lock</span>
+          </button>
+        )}
+
+        {/* End Session Button */}
+        <button
+          type="button"
+          onClick={handleEndSession}
+          disabled={closing}
+          className="flex items-center gap-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white px-3 py-1.5 rounded-lg border border-rose-500/40 transition-all active:scale-95 font-semibold text-xs"
+        >
+          <ArrowRightOnRectangleIcon className="w-4 h-4" />
+          <span>{closing ? 'Ending Shift...' : 'End Session'}</span>
+        </button>
+      </div>
     </div>
   );
 }

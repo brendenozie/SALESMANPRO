@@ -808,10 +808,38 @@ graph TD
 - **Invariant 13:** Trainer & Class Scheduling Conflict Guard: A trainer cannot be assigned overlapping sessions with active status (`CONFIRMED` or `PENDING`), and client double-bookings within the same time slot must be rejected with HTTP 409.
 - **Invariant 14:** POS Offline Authority & Zero-Duplicate Rule: Offline POS mutations must use deterministic idempotency keys (`${deviceId}:${operationId}`) and route through `centralizedCreateOrder.ts`. Replayed requests MUST return cached results without creating duplicate orders or double-decrementing stock.
 - **Invariant 15:** Offline Payment Safety Invariant: Online-dependent payment gateways (M-Pesa STK push, Stripe, Paystack) can NEVER be marked completed offline without authoritative provider confirmation. Offline POS transactions only permit cash and verified manual tenders with audit flags.
+- **Invariant 16:** POS Operator Attribution & Customer Context Boundary: Every POS sale across StorePOS, ServicePOS, FitnessPOS, EventPOS, and CheckINPOS must record the active `posSessionId`, `operatorId`, and `cashierName`. Customer context selected during a POS session is automatically reused across consecutive transactions until explicitly cleared or when the shift ends. Ending a session immediately purges active customer state and locks the terminal to prevent cross-operator or cross-customer leakage. Transactions already completed are strictly immutable.
+
+### Unified POS Customer & Operator Session Flow
+
+```mermaid
+flowchart TD
+    Operator["POS Operator"] -->|Enters 4-Digit PIN| AuthRoute["/api/pos/auth/login-code"]
+    AuthRoute -->|Verify StaffProfile/SalesAgent| SessionService["posSessionService.ts::authenticatePOSOperator()"]
+    SessionService -->|Creates or Resumes| PosSession["PosSession Record (status: OPEN)"]
+    PosSession --> POSTerminal["Active POS Terminal (Store / Service / Fitness / Event / CheckIn)"]
+
+    POSTerminal --> CustomerSearch["POSCustomerSelector"]
+    CustomerSearch -->|Search Name/Phone/Email| CustomerService["posCustomerService.ts::searchPOSCustomers()"]
+    CustomerSearch -->|Inline Create New| CreateCust["posCustomerService.ts::createPOSCustomer()"]
+    CreateCust -->|Atomic Triple-Link Upsert| CanonicalCRM["User + Client + Consumer"]
+    
+    CanonicalCRM --> ActiveCustomerContext["Session Customer Context (currentCustomer)"]
+    CustomerSearch --> ActiveCustomerContext
+
+    ActiveCustomerContext --> ConsecutiveSales["Consecutive POS Transactions"]
+    ConsecutiveSales -->|Cart 1| Order1["Order 1 (Attributed to Operator + Customer)"]
+    ConsecutiveSales -->|Cart 2 (No re-entry)| Order2["Order 2 (Attributed to Operator + Customer)"]
+
+    POSTerminal --> EndShift["End Session / Shift Lock"]
+    EndShift --> SessionServiceEnd["posSessionService.ts::endPOSSession()"]
+    SessionServiceEnd --> ClearContext["Purge currentCustomer & Lock Terminal"]
+```
 
 ---
 
 ## 22. "If You Change This..." Impact Warnings
+
 
 ### If You Change `lib/orders/centralizedCreateOrder.ts` or `app/api/pos/sync/route.ts`:
 - **You Risk Breaking:** Offline POS synchronization, cash sale reconciliation, idempotency replay, negative stock handling under concurrency, and receipt tracking.

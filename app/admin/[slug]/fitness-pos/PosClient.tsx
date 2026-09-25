@@ -19,6 +19,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IStoreCategory, MarketListingForm } from '@/types/typings';
+import POSOperatorModal from '@/components/pos/POSOperatorModal';
+import POSSessionHeader from '@/components/pos/POSSessionHeader';
+import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
+import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 
 // --- Persistent State Hook ---
 function usePersistentState<T>(key: string, initial: T) {
@@ -76,6 +80,53 @@ const PosClient: React.FC<{
     const [clientDetails, setClientDetails] = useState({ name: '', email: '', phone: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [discountPercent, setDiscountPercent] = useState(0);
+
+    // POS Session & Operator State
+    const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
+    const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(true);
+
+    // POS Customer State
+    const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
+
+    useEffect(() => {
+        async function checkSession() {
+            try {
+                const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
+                const data = await res.json();
+                const sessionData = data.data || data.session;
+                if (res.ok && sessionData) {
+                    if (sessionData.operator) {
+                        setOperator(sessionData.operator);
+                    }
+                    setPosSession({
+                        id: sessionData.id,
+                        terminalId: sessionData.terminalId,
+                        status: sessionData.status,
+                        openedAt: sessionData.openedAt,
+                    });
+                    setShowAuthModal(false);
+                }
+            } catch (err) {
+                console.error("Failed to check active POS session", err);
+            }
+        }
+        checkSession();
+    }, [companyId]);
+
+    const handleOperatorAuthenticated = (data: { operator: POSOperatorInfo; posSession: POSSessionInfo }) => {
+        setOperator(data.operator);
+        setPosSession(data.posSession);
+        setShowAuthModal(false);
+    };
+
+    const handleSessionEnded = () => {
+        setOperator(null);
+        setPosSession(null);
+        setCurrentCustomer(null);
+        setCart([]);
+        setShowAuthModal(true);
+    };
 
     // --- Helpers ---
     const currency = storeFormData?.currency || 'USD';
@@ -269,7 +320,10 @@ const printReceipt = (htmlContent: string) => {
     };
 
     const finalizeSale = async () => {
-        if (cart.length === 0 || !clientDetails.name) return alert("Required: Cart items and Client Name");
+        const customerName = currentCustomer?.name || clientDetails.name;
+        if (cart.length === 0 || !customerName) {
+            return alert("Required: Cart items and Customer/Client selection");
+        }
         
         setIsLoading(true);
         try {
@@ -278,11 +332,15 @@ const printReceipt = (htmlContent: string) => {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     billing: { // Added billing wrapper
-                                        name: clientDetails.name,
-                                        email: clientDetails.email || 'walk-in@store.com',
-                                        phone: clientDetails.phone,
+                                        name: customerName,
+                                        email: currentCustomer?.email || clientDetails.email || 'customer@store.com',
+                                        phone: currentCustomer?.phone || clientDetails.phone || '0000000000',
                                     },
-                                    consumerId: userId || 'pos-agent',
+                                    consumerId: currentCustomer?.id || userId || undefined,
+                                    companyId: companyId,
+                                    posSessionId: posSession?.id || undefined,
+                                    operatorId: operator?.id || userId || undefined,
+                                    cashierName: operator?.name || userName || "Cashier",
                                     paymentOption: 'cod', 
                                     listingId: cart[0]?.id,    // API expects top-level listingId
                                     price: cart[0]?.sellingPrice, // API expects top-level price
@@ -301,16 +359,15 @@ const printReceipt = (htmlContent: string) => {
             // Trigger Printing
             const receiptHtml = generateReceiptHtml({
                 cart, subtotal, totalTax: taxAmount, totalDiscount: discountAmount,
-                finalTotal: total, agentName: userName, currency,
+                finalTotal: total, agentName: operator?.name || userName, currency,
                 transactionId: result.data?.trackingNumber || 'N/A',
                 date: new Date().toLocaleString(),
                 storeName: storeFormData?.name || 'My Service Store'
             });
             printReceipt(receiptHtml);
 
-            // Reset
+            // Reset cart, keep currentCustomer for reuse across session
             setCart([]);
-            setClientDetails({ name: '', email: '', phone: '' });
             alert("Transaction Complete!");
         } catch (error: any) {
             alert(error.message);
@@ -328,7 +385,17 @@ const printReceipt = (htmlContent: string) => {
     }, [initialProducts, selectedCategory, searchTerm]);
 
     return (
-        <div className="flex flex-col lg:flex-row h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden font-sans">
+        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden font-sans">
+            {/* POS SESSION OPERATOR HEADER */}
+            <POSSessionHeader
+                operator={operator}
+                posSession={posSession}
+                companyName={storeFormData?.name || "Fitness POS"}
+                onLockTerminal={() => setShowAuthModal(true)}
+                onEndSession={handleSessionEnded}
+            />
+
+            <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
             <style>{`
                 .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
                 .custom-scroll::-webkit-scrollbar { width: 6px; }
@@ -406,25 +473,24 @@ const printReceipt = (htmlContent: string) => {
                     </div>
                 </div>
 
-                <div className="space-y-3 mb-6">
-                    <input 
-                        placeholder="Client Name *" 
-                        className="w-full p-3 rounded-xl border-gray-200 dark:bg-gray-900 dark:border-gray-700" 
-                        value={clientDetails.name}
-                        onChange={e => setClientDetails({...clientDetails, name: e.target.value})}
+                <div className="mb-4">
+                    <POSCustomerSelector
+                        companyId={companyId}
+                        selectedCustomer={currentCustomer}
+                        onSelectCustomer={(cust) => {
+                            setCurrentCustomer(cust);
+                            if (cust) {
+                                setClientDetails({
+                                    name: cust.name,
+                                    email: cust.email || '',
+                                    phone: cust.phone || '',
+                                });
+                            } else {
+                                setClientDetails({ name: '', email: '', phone: '' });
+                            }
+                        }}
+                        required={true}
                     />
-                    <div className="grid grid-cols-2 gap-2">
-                        <input 
-                            placeholder="Phone" 
-                            className="p-3 rounded-xl border-gray-200 dark:bg-gray-900 dark:border-gray-700"
-                            onChange={e => setClientDetails({...clientDetails, phone: e.target.value})}
-                        />
-                        <input 
-                            placeholder="Email" 
-                            className="p-3 rounded-xl border-gray-200 dark:bg-gray-900 dark:border-gray-700"
-                            onChange={e => setClientDetails({...clientDetails, email: e.target.value})}
-                        />
-                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scroll mb-4 pr-2">
@@ -462,8 +528,18 @@ const printReceipt = (htmlContent: string) => {
                     </button>
                 </div>
             </div>
+            </div>
+
+            {/* POS OPERATOR AUTH MODAL */}
+            <POSOperatorModal
+                isOpen={showAuthModal}
+                companyId={companyId}
+                terminalId={posSession?.terminalId || "T01"}
+                storeName={storeFormData?.name || "Fitness POS"}
+                onSuccess={handleOperatorAuthenticated}
+            />
         </div>
     );
 };
 
-export default PosClient;
+export default PosClient;

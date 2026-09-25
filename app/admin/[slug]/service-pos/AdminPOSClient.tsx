@@ -194,9 +194,9 @@ const AdminServicePOSClient: React.FC<{
         return () => { isMounted = false; };
     }, [companyId]);
 
-    const handleOperatorAuthenticated = (newOperator: POSOperator, newSession: POSSession) => {
-        setOperator(newOperator);
-        setPosSession(newSession);
+    const handleOperatorAuthenticated = (data: { operator: POSOperator; posSession: POSSession }) => {
+        setOperator(data.operator);
+        setPosSession(data.posSession);
         setShowAuthModal(false);
     };
 
@@ -673,6 +673,8 @@ const AdminServicePOSClient: React.FC<{
             {/* POS SESSION OPERATOR HEADER */}
             <POSSessionHeader
                 companyId={companyId}
+                companyName={companyInfo?.name || "Service POS"}
+                onLockTerminal={() => setShowAuthModal(true)}
                 operator={operator}
                 posSession={posSession}
                 onEndSession={handleSessionEnded}
@@ -1330,7 +1332,7 @@ export default AdminServicePOSClient;
 
 // --- Service Card Card Layout Subcomponent ---
 const ServiceCard = ({ service, handleAddToCart, currencySymbol, primaryColor }: { service: MarketListingForm; handleAddToCart: (product: MarketListingForm) => void; currencySymbol: string; primaryColor: string }) => {
-    const price = service.finalPrice || service.sellingPrice || service.price || 0;
+    const price = service.finalPrice || service.sellingPrice || (service as any).price || 0;
     const hasVariants = service.option && (service.option as any[]).length > 0;
     
     return (

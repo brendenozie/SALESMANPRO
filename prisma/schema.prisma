@@ -5691,6 +5691,11 @@ model EventTicketPurchase {
 
   purchaseDate DateTime @default(now())
 
+  // POS Attribution
+  posSessionId String? @db.ObjectId
+  operatorId   String? @db.ObjectId
+  cashierName  String?
+
   attendees EventTicketAttendee[]
 
   createdAt DateTime @default(now())
@@ -5732,6 +5737,7 @@ model EventTicketAttendee {
   // Validation
   checkInStatus TicketCheckInStatus @default(PENDING)
   checkedInAt   DateTime?
+  checkedInBy   String?
 
   seatNumber String?
 

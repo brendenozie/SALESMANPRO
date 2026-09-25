@@ -41,6 +41,9 @@ const eventCheckoutSchema = z.object({
     .min(1, "At least one ticket must be selected"),
   paymentMethod: z.string().min(1, "paymentMethod is required"),
   paymentData: z.record(z.any()).optional(),
+  posSessionId: z.string().optional().nullable(),
+  operatorId: z.string().optional().nullable(),
+  cashierName: z.string().optional().nullable(),
 });
 
 async function handlePost(req: Request) {
@@ -54,7 +57,7 @@ async function handlePost(req: Request) {
     return formatResponse(false, null, parsed.error.errors, 400);
   }
 
-  const { eventId, buyer, tickets, paymentMethod, companyId, paymentData } =
+  const { eventId, buyer, tickets, paymentMethod, companyId, paymentData, posSessionId, operatorId, cashierName } =
     parsed.data;
 
   // 1. Fetch all requested tickets in a single batch query
@@ -142,6 +145,9 @@ async function handlePost(req: Request) {
                   unitPrice: dbTicket.price,
                   totalAmount: lineItemTotal,
                   paymentMethod,
+                  posSessionId: posSessionId || null,
+                  operatorId: operatorId || null,
+                  cashierName: cashierName || null,
                 },
               });
 
@@ -176,6 +182,16 @@ async function handlePost(req: Request) {
               });
 
               createdPurchases.push(purchase);
+            }
+
+            if (posSessionId) {
+              await tx.posSession.update({
+                where: { id: posSessionId },
+                data: {
+                  totalSales: { increment: calculatedTotalAmount },
+                  totalTransactions: { increment: 1 },
+                },
+              }).catch(() => null);
             }
 
             return createdPurchases;

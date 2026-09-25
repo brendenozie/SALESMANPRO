@@ -107,7 +107,7 @@ export const POST = withApiHandler(
     }
 
     // Check cancellation
-    if (attendee.checkInStatus === "CANCELLED" || attendee.purchase?.paymentStatus === "CANCELLED" || attendee.purchase?.paymentStatus === "REFUNDED") {
+    if ((attendee.checkInStatus as string) === "CANCELLED" || attendee.purchase?.paymentStatus === "CANCELLED" || attendee.purchase?.paymentStatus === "REFUNDED") {
       return formatResponse(
         false,
         {
@@ -126,14 +126,14 @@ export const POST = withApiHandler(
     }
 
     // Check if already checked in
-    if (attendee.checkInStatus === "CHECKED_IN") {
+    if ((attendee.checkInStatus as string) === "CHECKED_IN") {
       return formatResponse(
         false,
         {
           code: parsedTicketCode,
           status: "ALREADY_CHECKED_IN",
           checkedInAt: attendee.checkedInAt?.toISOString() || null,
-          checkedInBy: attendee.checkedInBy || "Staff",
+          checkedInBy: (attendee as any).checkedInBy || "Staff",
           attendee: {
             id: attendee.id,
             name: attendee.fullName,
@@ -142,15 +142,15 @@ export const POST = withApiHandler(
             eventTitle: attendee.event?.title,
           },
         },
-        `ALREADY CHECKED IN at ${attendee.checkedInAt ? new Date(attendee.checkedInAt).toLocaleTimeString() : "earlier"} by ${attendee.checkedInBy || "Staff"}`,
+        `ALREADY CHECKED IN at ${attendee.checkedInAt ? new Date(attendee.checkedInAt).toLocaleTimeString() : "earlier"} by ${(attendee as any).checkedInBy || "Staff"}`,
         409
       );
     }
 
     // Valid ticket! If autoCheckIn is true, perform atomic check-in
-    let finalStatus = attendee.checkInStatus;
+    let finalStatus: string = attendee.checkInStatus;
     let checkedInAt = attendee.checkedInAt;
-    const operator = context.session?.user?.name || context.session?.user?.email || "Check-in Scanner";
+    const operator = body.operatorName || context.user?.name || context.user?.email || "Check-in Scanner";
 
     if (autoCheckIn) {
       const updated = await prisma.eventTicketAttendee.update({
@@ -158,7 +158,8 @@ export const POST = withApiHandler(
         data: {
           checkInStatus: "CHECKED_IN",
           checkedInAt: new Date(),
-        },
+          checkedInBy: operator,
+        } as any,
       });
       finalStatus = updated.checkInStatus;
       checkedInAt = updated.checkedInAt;
