@@ -10,12 +10,11 @@ import {
 import {
   BanknotesIcon,
   ChatBubbleBottomCenterTextIcon,
-  BuildingStorefrontIcon,
   DevicePhoneMobileIcon,
-  ShieldCheckIcon,
   ChartBarIcon,
-  SparklesIcon,
   ArrowUpRightIcon,
+  CpuChipIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 
 // --- SalesmanPro Feature Pillars Data ---
@@ -32,41 +31,41 @@ const features = [
     icon: ChatBubbleBottomCenterTextIcon,
     title: "WhatsApp AI Sales Agent",
     description:
-      "Turn inquiries into orders 24/7. Your AI agent answers customer questions and sends direct payment links inside chat.",
-    badge: "Automation",
+      "Turn inquiries into orders 24/7. Your AI agent shares product catalogs, answers questions, and sends direct payment links inside the chat window.",
+    badge: "WhatsApp AI",
     gradient: "from-orange-600 to-amber-500",
   },
   {
     icon: DevicePhoneMobileIcon,
-    title: "Fast Counter POS",
+    title: "Multi-Counter POS",
     description:
-      "Process in-store sales in seconds on any smartphone, tablet, or desktop with instant digital receipts and invoice printing.",
-    badge: "Checkout",
+      "Run simultaneous cashier stations with barcode scanning, thermal receipt printing, and instant digital invoices from any device.",
+    badge: "POS Checkout",
     gradient: "from-amber-500 to-yellow-500",
   },
   {
-    icon: BuildingStorefrontIcon,
-    title: "Real-Time Stock Control",
+    icon: CpuChipIcon,
+    title: "AI Studio — Images & Video",
     description:
-      "Track inventory across physical counters and online stores simultaneously with automatic low-stock notifications.",
-    badge: "Inventory",
-    gradient: "from-orange-500 to-red-500",
+      "Generate product photography, promotional banners, reels, and marketing copy using built-in AI generation credits tied to your subscription.",
+    badge: "AI Studio",
+    gradient: "from-violet-600 to-purple-500",
   },
   {
     icon: ChartBarIcon,
-    title: "Profit & Growth Insights",
+    title: "Real-Time Profit Intelligence",
     description:
-      "Understand your margins, best-selling items, and top staff performers with clear, real-time analytics reports.",
+      "Understand true margins after discounts, commissions, and delivery fees. Monitor top-selling items and staff performance in real-time.",
     badge: "Analytics",
     gradient: "from-blue-500 to-indigo-500",
   },
   {
-    icon: ShieldCheckIcon,
-    title: "Multi-Role Staff Access",
+    icon: Squares2X2Icon,
+    title: "8+ Industry Solutions",
     description:
-      "Delegate tasks safely. Assign custom permission levels for cashiers, store managers, and accounting staff with full audit trails.",
-    badge: "Security",
-    gradient: "from-purple-500 to-pink-500",
+      "One platform for Retail, Schools, Real Estate, Events & Ticketing, Travel & Tours, Fitness, Logistics & Fleet, and Media & Publishing.",
+    badge: "Multi-Industry",
+    gradient: "from-rose-500 to-orange-500",
   },
 ];
 

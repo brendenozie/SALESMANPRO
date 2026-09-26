@@ -4,33 +4,59 @@ import { Prisma } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { VerifiedUser } from "@/lib/verifyAuth";
-import { revalidateCompanyCache, revalidateStore } from "@/lib/company-fetcher"; // 👈 Imported revalidateStore
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 import { encrypt } from "@/lib/crypto/aes";
 import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { creditLedger } from "@/lib/ai/creditLedger";
+import { AUTHORITATIVE_PLANS } from "@/lib/subscriptions/subscription-plans";
 
 export const dynamic = "force-dynamic";
 
 // Define a consistent type for the context that our handlers will receive.
 type HandlerContext = {
   params: any;
-  user?: VerifiedUser; // Use the imported type here
+  user?: VerifiedUser;
+};
+
+const storeSubscriptionInclude = {
+  where: {
+    status: {
+      in: ["ACTIVE", "AWAITING_CONFIRMATION", "TRIALING", "PAST_DUE"],
+    },
+  },
+  select: {
+    id: true,
+    status: true,
+    renewalDate: true,
+    trialEndsAt: true,
+    billingCycle: true,
+    amountPaid: true,
+    meta: true,
+    plan: {
+      select: {
+        id: true,
+        name: true,
+        priceMonthly: true,
+        currency: true,
+      },
+    },
+  },
+  orderBy: { createdAt: "desc" as const },
+  take: 1,
 };
 
 // =======================
 // GET all companies for the authenticated user
 // =======================
-
 async function getCompanies(req: Request, context: HandlerContext) {
   try {
-    const url = new URL(req.url);
     const { user } = context;
 
     if (!user) {
       return formatResponse(false, null, "Unauthorized", 401);
     }
 
-    const cacheKey = `user:${user.id}:companies`;
+    const cacheKey = `user:${user.id}:companies:v2`;
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -52,19 +78,7 @@ async function getCompanies(req: Request, context: HandlerContext) {
           where: { userId: user.id },
           orderBy: { createdAt: "asc" },
           include: {
-            subscriptionCompanies: {
-              where: {
-                status: {
-                  in: ["ACTIVE", "AWAITING_CONFIRMATION"],
-                },
-              },
-              select: {
-                status: true,
-                renewalDate: true,
-              },
-              orderBy: { createdAt: "desc" },
-              take: 1,
-            },
+            subscriptionCompanies: storeSubscriptionInclude,
           },
         }),
         prisma.educator.findMany({
@@ -72,19 +86,7 @@ async function getCompanies(req: Request, context: HandlerContext) {
           include: {
             Company: {
               include: {
-                subscriptionCompanies: {
-                  where: {
-                    status: {
-                      in: ["ACTIVE", "AWAITING_CONFIRMATION"],
-                    },
-                  },
-                  select: {
-                    status: true,
-                    renewalDate: true,
-                  },
-                  orderBy: { createdAt: "desc" },
-                  take: 1,
-                },
+                subscriptionCompanies: storeSubscriptionInclude,
               },
             },
           },
@@ -94,19 +96,7 @@ async function getCompanies(req: Request, context: HandlerContext) {
           include: {
             company: {
               include: {
-                subscriptionCompanies: {
-                  where: {
-                    status: {
-                      in: ["ACTIVE", "AWAITING_CONFIRMATION"],
-                    },
-                  },
-                  select: {
-                    status: true,
-                    renewalDate: true,
-                  },
-                  orderBy: { createdAt: "desc" },
-                  take: 1,
-                },
+                subscriptionCompanies: storeSubscriptionInclude,
               },
             },
           },
@@ -116,19 +106,7 @@ async function getCompanies(req: Request, context: HandlerContext) {
           include: {
             Company: {
               include: {
-                subscriptionCompanies: {
-                  where: {
-                    status: {
-                      in: ["ACTIVE", "AWAITING_CONFIRMATION"],
-                    },
-                  },
-                  select: {
-                    status: true,
-                    renewalDate: true,
-                  },
-                  orderBy: { createdAt: "desc" },
-                  take: 1,
-                },
+                subscriptionCompanies: storeSubscriptionInclude,
               },
             },
           },
@@ -153,31 +131,51 @@ async function getCompanies(req: Request, context: HandlerContext) {
     }
     const companies = Array.from(companyMap.values());
 
-    // Format into the structure your frontend expects
-    const formattedStores = companies.map((c) => ({
-      id: c.id,
-      name: c.name,
-      companyId: c.id,
-      slug: c.slug,
-      domain: c.domain,
-      category: c.category,
-      bannerUrl: c.bannerUrl,
-      logoUrl: c.logoUrl,
-      description: c.description,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
+    const now = new Date();
 
-      // If array contains at least 1 ACTIVE subscription → mark store as ACTIVE
-      subscriptionStatus:
-        c.subscriptionCompanies.length > 0 &&
-        c.subscriptionCompanies[0]?.renewalDate &&
-        c.subscriptionCompanies[0].renewalDate > new Date()
-          ? "ACTIVE"
-          : "INACTIVE",
-    }));
+    // Format into the structure frontend expects with robust subscription state
+    const formattedStores = companies.map((c) => {
+      const sub = c.subscriptionCompanies?.[0];
+
+      // Determine active status: active status flag, or future renewal, or active trial period
+      const isSubActive = Boolean(
+        sub &&
+          (sub.status === "ACTIVE" ||
+            sub.status === "TRIALING" ||
+            (sub.renewalDate && new Date(sub.renewalDate) > now) ||
+            (sub.trialEndsAt && new Date(sub.trialEndsAt) > now) ||
+            (sub.meta?.isTrial && (!sub.meta?.trialEndsAt || new Date(sub.meta.trialEndsAt) > now)))
+      );
+
+      const isTrial = Boolean(
+        sub?.meta?.isTrial ||
+          sub?.billingCycle === "TRIAL" ||
+          sub?.status === "TRIALING"
+      );
+
+      return {
+        id: c.id,
+        name: c.name,
+        companyId: c.id,
+        slug: c.slug,
+        domain: c.domain,
+        category: c.category,
+        bannerUrl: c.bannerUrl,
+        logoUrl: c.logoUrl,
+        description: c.description,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        subscriptionStatus: isSubActive ? "ACTIVE" : (sub?.status || "INACTIVE"),
+        currentTier: sub?.plan?.name || (isTrial ? "SalesmanPro Starter (Trial)" : "INACTIVE"),
+        planId: sub?.plan?.id || null,
+        renewalDate: sub?.renewalDate || null,
+        trialEndsAt: sub?.trialEndsAt || sub?.meta?.trialEndsAt || null,
+        isTrial,
+      };
+    });
 
     try {
-      await cacheSet(cacheKey, formattedStores, 300); // Cache for 5 minutes
+      await cacheSet(cacheKey, formattedStores, 120); // Cache for 2 minutes
     } catch (e) {
       console.error("Failed to cache companies data:", e);
     }
@@ -197,7 +195,6 @@ async function getCompanies(req: Request, context: HandlerContext) {
 // POST a new company
 // =======================
 async function createCompany(req: Request, context: HandlerContext) {
-  // The user is guaranteed to be here as well.
   const { user } = context;
 
   const body = await req.json();
@@ -276,25 +273,29 @@ async function createCompany(req: Request, context: HandlerContext) {
   }
 
   try {
-    // 1. Fetch the default Trial Plan (adjust query if your plan identifier differs)
-    const trialPlan = await prisma.plan.findFirst({
+    // 1. Fetch Plan for Trial Subscription (Prioritize Starter tier for full trial experience)
+    let trialPlan = await prisma.plan.findFirst({
       where: {
         OR: [
           { name: { contains: "Trial", mode: "insensitive" } },
           { name: { contains: "Free", mode: "insensitive" } },
+          { name: "Ghuba Starter" },
+          { name: "Ghuba Basic" },
         ],
+        status: "ACTIVE",
       },
+      orderBy: { priceMonthly: "desc" },
     });
 
-    
+    // If still null, fallback to the first authoritative plan ID
+    const planIdToUse = trialPlan?.id || AUTHORITATIVE_PLANS[1].id;
+
     const now = new Date();
-    // const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
-    //two days from now
-    const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+    // 14 Days Free Trial
+    const fourteenDaysFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
     const newCompany = await prisma.company.create({
       data: {
-        // Direct fields
         name: data.name,
         slug: data.slug,
         domain: data.domain,
@@ -319,35 +320,35 @@ async function createCompany(req: Request, context: HandlerContext) {
         stats: data.stats,
         pricingTiers: data.pricingTiers,
 
-        // User link - using the user ID from the handler's context
+        // User link
         user: { connect: { id: user.id } },
 
-        // Automatically create 10-Day Trial Subscription if trialPlan exists
-        subscriptionCompanies: trialPlan
-          ? {
-              create: {
-                userId: user.id,
-                planId: trialPlan.id,
-                status: "ACTIVE",
-                billingCycle: "TRIAL",
-                amountPaid: 0,
-                currency: data.currency || "KES",
-                startedAt: now,
-                renewalDate: twoDaysFromNow, // Set renewal date to 2 days from now tenDaysFromNow
-                meta: {
-                  isTrial: true,
-                  trialEndsAt: twoDaysFromNow.toISOString(), //tenDaysFromNow.toISOString()
-                },
-              },
-            }
-          : undefined,
+        // Automatically create 14-Day Full-Featured Trial Subscription
+        subscriptionCompanies: {
+          create: {
+            userId: user.id,
+            planId: planIdToUse,
+            status: "ACTIVE",
+            billingCycle: "TRIAL",
+            amountPaid: 0,
+            currency: data.currency || "KES",
+            startedAt: now,
+            renewalDate: fourteenDaysFromNow,
+            trialEndsAt: fourteenDaysFromNow,
+            meta: {
+              isTrial: true,
+              trialDays: 14,
+              trialEndsAt: fourteenDaysFromNow.toISOString(),
+              planName: trialPlan?.name || "Ghuba Starter",
+            },
+          },
+        },
 
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,
         AnalyticsConfig: data.analyticsConfig
           ? { create: data.analyticsConfig }
           : undefined,
-        // PaymentSettings: paymentSettingsData ? { create: paymentSettingsData } : undefined,
         PaymentSettings: encryptedPaymentSettings
           ? { create: encryptedPaymentSettings }
           : undefined,
@@ -377,7 +378,7 @@ async function createCompany(req: Request, context: HandlerContext) {
           ? {
               create: data.promotions.map((p) => ({
                 ...p,
-                title: p.title || "Untitled Promotion", // Ensure title is always defined
+                title: p.title || "Untitled Promotion",
                 startsAt: p.startsAt ? new Date(p.startsAt) : undefined,
                 endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
               })),
@@ -427,7 +428,7 @@ async function createCompany(req: Request, context: HandlerContext) {
       },
     });
 
-    // ⚡ Promote creator to ADMIN for their newly created store and associate companyId
+    // Promote creator to ADMIN for their newly created store and associate companyId
     try {
       await prisma.user.update({
         where: { id: user.id },
@@ -440,7 +441,7 @@ async function createCompany(req: Request, context: HandlerContext) {
       console.error("⚠️ Failed to update user role to ADMIN upon store creation:", roleErr);
     }
 
-    // ⚡ Automatic introductory AI credit grant for new store onboarding
+    // Automatic introductory AI credit grant for new store onboarding
     let welcomeCreditsInfo: { granted: boolean; amount: number; balance: number } = {
       granted: false,
       amount: 0,
@@ -461,9 +462,8 @@ async function createCompany(req: Request, context: HandlerContext) {
       console.error("⚠️ Failed to grant welcome AI credits:", creditErr);
     }
 
-    await cacheDel(`user:${user.id}:companies`);
+    await cacheDel(`user:${user.id}:companies*`);
 
-    // ⚡ Also purge Next.js tag cache for this new slug if anyone pre-emptively attempts to load it
     if (newCompany.slug) {
       await revalidateCompanyCache(newCompany.slug);
     }
@@ -482,8 +482,8 @@ async function createCompany(req: Request, context: HandlerContext) {
       true,
       responsePayload,
       welcomeCreditsInfo.granted
-        ? `Company created successfully! Introductory allowance of ${welcomeCreditsInfo.amount} AI credits has been granted.`
-        : "Company created successfully",
+        ? `Company created successfully! 14-day full trial activated with ${welcomeCreditsInfo.amount} introductory AI credits.`
+        : "Company created successfully! 14-day trial activated.",
       201,
     );
   } catch (error) {

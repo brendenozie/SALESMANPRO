@@ -157,6 +157,7 @@ export default function Pic() {
                 badge={card.badge}
                 icon={card.icon}
                 gradientClass={card.gradientClass}
+                features={card.features}
                 index={idx}
               />
             </div>

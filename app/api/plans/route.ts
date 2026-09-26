@@ -4,16 +4,22 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { PlanStatus } from "@prisma/client";
-
+import {
+  AUTHORITATIVE_PLANS,
+  getAuthoritativePlanByName,
+} from "@/lib/subscriptions/subscription-plans";
 
 // =================================================================================================
 // PLANS API ROUTES
-// These routes handle fetching, creating, updating, and deleting plans.
+// Handles fetching, creating, updating plans with single source of truth fallback
 // =================================================================================================
+
+const DEFAULT_PLATFORM_COMPANY_ID =
+  process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "68a4420ea20efd318d51db70";
 
 /**
  * GET /api/plans
- * Fetch all paid plans (excluding Free and Trial) with support for pagination and filtering by companyId.
+ * Fetch subscription plans with support for pagination, category tailoring, and platform fallback.
  */
 const getHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
@@ -25,36 +31,9 @@ const getHandler = async (request: Request) => {
 
   // Filters
   const companyId = searchParams.get("companyId");
+  const category = searchParams.get("category");
 
-  // Base query filter
-  const where: any = {};
-  if (companyId) where.companyId = companyId;
-
-  // 🚫 Filter out Free and Trial plans
-  where.AND = [
-    {
-      NOT: {
-        name: {
-          contains: "Trial",
-          mode: "insensitive",
-        },
-      },
-    },
-    {
-      NOT: {
-        name: {
-          contains: "Free",
-          mode: "insensitive",
-        },
-      },
-    },
-    // Optional check: ensure price is greater than 0 if free plans have 0 price
-    {
-      OR: [{ priceMonthly: { gt: 0 } }, { price: { gt: 0 } }],
-    },
-  ];
-
-  const cacheKey = `plans:paid:company:${companyId || "all"}:page:${page}:perPage:${perPage}`;
+  const cacheKey = `plans:v2:${companyId || "all"}:${category || "default"}:p${page}:pp${perPage}`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -63,15 +42,140 @@ const getHandler = async (request: Request) => {
     // Silently ignore cache retrieval errors
   }
 
-  const totalItems = await prisma.plan.count({ where });
-  const plans = await prisma.plan.findMany({
-    skip,
-    take: perPage,
-    where,
-    orderBy: { priceMonthly: "asc" }, // Usually better to sort plans by price ascending for display
-  });
+  // Base query filter: exclude Free/Trial from primary paid display if any
+  const baseFilter: any = {
+    status: PlanStatus.ACTIVE,
+    AND: [
+      {
+        NOT: {
+          name: {
+            contains: "Trial",
+            mode: "insensitive",
+          },
+        },
+      },
+      {
+        NOT: {
+          name: {
+            contains: "Free",
+            mode: "insensitive",
+          },
+        },
+      },
+    ],
+  };
 
-  const totalPages = Math.ceil(totalItems / perPage);
+  let plans: any[] = [];
+  let totalItems = 0;
+
+  try {
+    // 1. If specific companyId passed, check if custom plans exist for that company
+    if (companyId && companyId !== DEFAULT_PLATFORM_COMPANY_ID && companyId !== "undefined") {
+      const companyCustomPlans = await prisma.plan.findMany({
+        skip,
+        take: perPage,
+        where: {
+          ...baseFilter,
+          companyId,
+        },
+        orderBy: { priceMonthly: "asc" },
+      });
+
+      if (companyCustomPlans && companyCustomPlans.length > 0) {
+        plans = companyCustomPlans;
+        totalItems = await prisma.plan.count({
+          where: { ...baseFilter, companyId },
+        });
+      }
+    }
+
+    // 2. If no custom plans found, query platform-level subscription plans
+    if (plans.length === 0) {
+      plans = await prisma.plan.findMany({
+        skip,
+        take: perPage,
+        where: {
+          ...baseFilter,
+          OR: [
+            { companyId: DEFAULT_PLATFORM_COMPANY_ID },
+            { name: { in: ["Ghuba Basic", "Ghuba Starter", "Ghuba Pro", "Ghuba Growth"] } },
+          ],
+        },
+        orderBy: { priceMonthly: "asc" },
+      });
+
+      totalItems = await prisma.plan.count({
+        where: {
+          ...baseFilter,
+          OR: [
+            { companyId: DEFAULT_PLATFORM_COMPANY_ID },
+            { name: { in: ["Ghuba Basic", "Ghuba Starter", "Ghuba Pro", "Ghuba Growth"] } },
+          ],
+        },
+      });
+    }
+  } catch (dbErr) {
+    console.error("Database query failed in /api/plans, utilizing authoritative fallback:", dbErr);
+  }
+
+  // 3. Fallback to Authoritative Plans if DB returned 0 plans
+  if (!plans || plans.length === 0) {
+    plans = AUTHORITATIVE_PLANS.map((ap) => ({
+      id: ap.id,
+      name: ap.name,
+      displayName: ap.displayName,
+      tagline: ap.tagline,
+      description: ap.description,
+      priceMonthly: ap.priceMonthly,
+      priceAnnually: ap.priceAnnually,
+      price: ap.priceMonthly,
+      currency: ap.currency,
+      isPopular: ap.isPopular,
+      status: "ACTIVE",
+      features: ap.featureGroups.reduce((acc, g) => {
+        acc[g.category.toLowerCase().replace(/[^a-z0-9]/g, "_")] = g.items;
+        return acc;
+      }, {} as Record<string, string[]>),
+      limits: ap.limits,
+      highlightFeatures: ap.highlightFeatures,
+      featureGroups: ap.featureGroups,
+    }));
+    totalItems = plans.length;
+  } else {
+    // 4. Enrich DB plans with authoritative metadata (taglines, displayNames, limits, feature groups)
+    plans = plans.map((p) => {
+      const authPlan = getAuthoritativePlanByName(p.name);
+      let effectiveMonthlyPrice = p.priceMonthly ?? p.price ?? 0;
+      let effectiveAnnualPrice = p.priceAnnually ?? (effectiveMonthlyPrice * 10);
+
+      // Check category-specific override in siteTypePrices if requested
+      if (category && p.siteTypePrices && typeof p.siteTypePrices === "object") {
+        const catPrices = (p.siteTypePrices as any)[category];
+        if (catPrices && typeof catPrices.monthly === "number") {
+          effectiveMonthlyPrice = catPrices.monthly;
+          effectiveAnnualPrice = catPrices.yearly || effectiveMonthlyPrice * 10;
+        }
+      }
+
+      return {
+        ...p,
+        displayName: authPlan?.displayName || p.name,
+        tagline: authPlan?.tagline || p.description || "",
+        tierWeight: authPlan?.tierWeight || 1,
+        priceMonthly: effectiveMonthlyPrice,
+        priceAnnually: effectiveAnnualPrice,
+        price: effectiveMonthlyPrice,
+        limits: authPlan?.limits || null,
+        highlightFeatures: authPlan?.highlightFeatures || [],
+        featureGroups: authPlan?.featureGroups || [],
+      };
+    });
+  }
+
+  // Ensure consistent sorting by priceMonthly ascending
+  plans.sort((a, b) => (a.priceMonthly || 0) - (b.priceMonthly || 0));
+
+  const totalPages = Math.ceil(totalItems / perPage) || 1;
 
   const responseData = {
     plans,
@@ -82,7 +186,7 @@ const getHandler = async (request: Request) => {
   };
 
   try {
-    await cacheSet(cacheKey, responseData, 60); // Cache for 1 minute
+    await cacheSet(cacheKey, responseData, 60); // 1 minute cache
   } catch (e) {
     console.error("Failed to cache plans data:", e);
   }
@@ -107,7 +211,7 @@ const postHandler = async (request: Request) => {
     features,
     isPopular,
     status,
-    siteTypePrices, // NEW FIELD
+    siteTypePrices,
   } = data;
 
   if (!companyId || !name || !description || !features) {
@@ -127,14 +231,17 @@ const postHandler = async (request: Request) => {
       isPopular,
       status: status ?? PlanStatus.ACTIVE,
       currency: "KES",
-      siteTypePrices: siteTypePrices ?? {}, // NEW
+      siteTypePrices: siteTypePrices ?? {},
       company: { connect: { id: companyId } },
     },
   });
 
-  
-    try { await cacheDel(`admin:plan:${companyId || 'global'}:*`); } catch (e) {}
-    return NextResponse.json(newPlan, { status: 201 });
+  try {
+    await cacheDel(`plans:*`);
+    await cacheDel(`admin:plan:${companyId || "global"}:*`);
+  } catch (e) {}
+
+  return NextResponse.json(newPlan, { status: 201 });
 };
 
 export const POST = withApiHandler(postHandler);

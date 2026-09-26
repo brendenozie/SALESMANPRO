@@ -13,6 +13,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { convertKEStoUSD } from "@/lib/hooks/useUserCountry";
 
+import { AUTHORITATIVE_PLANS } from "@/lib/subscriptions/subscription-plans";
+
 // --- Types & Interfaces ---
 interface SiteTypePricing {
   monthly: number;
@@ -23,13 +25,30 @@ interface Plan {
   id?: string;
   _id?: { $oid: string };
   name: string;
+  displayName?: string;
   tagline: string;
+  description?: string;
   price?: number;
   priceMonthly?: number;
   priceAnnually?: number;
+  currency?: string;
   isPopular?: boolean;
+  tierWeight?: number;
+  limits?: {
+    staffUsers: number;
+    salesAgents: number;
+    products: number;
+    customers: number;
+    monthlyAiCredits: number;
+    locations: number;
+    customDomain: boolean;
+    multiCounterPos: boolean;
+    whatsAppAi: boolean;
+    industryModules: string[];
+  };
   siteTypePrices?: Record<string, SiteTypePricing>;
   features: Record<string, string[]>;
+  highlightFeatures?: string[];
 }
 
 interface PricingSectionProps {
@@ -43,8 +62,24 @@ interface PricingSectionProps {
   isSubscriptionActive: boolean;
 }
 
-const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67";
+const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "68a4420ea20efd318d51db70";
 const MPESA_TILL = "537214";
+
+const initialAuthoritativePlans: Plan[] = AUTHORITATIVE_PLANS.map((p) => ({
+  id: p.id,
+  name: p.name,
+  displayName: p.displayName,
+  tagline: p.tagline,
+  description: p.description,
+  priceMonthly: p.priceMonthly,
+  priceAnnually: p.priceAnnually,
+  currency: p.currency,
+  isPopular: p.isPopular,
+  tierWeight: p.tierWeight,
+  limits: p.limits,
+  highlightFeatures: p.highlightFeatures,
+  features: Object.fromEntries(p.featureGroups.map((fg) => [fg.category, fg.items])),
+}));
 
 export default function PricingSection({
   companyId,
@@ -59,7 +94,7 @@ export default function PricingSection({
   const paystackPublicKey =
     process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
 
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const [plans, setPlans] = useState<Plan[]>(initialAuthoritativePlans);
   const [loading, setLoading] = useState(false);
   const [mpesaPaymentLoading, setMpesaPaymentLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"MONTHLY" | "ANNUALLY">("MONTHLY");
@@ -107,11 +142,11 @@ export default function PricingSection({
         const res = await fetch(`/api/plans?companyId=${defaultCompanyId}&category=${category}`, { credentials: "include" });
         if (!res.ok) throw new Error();
         const data = await res.json();
-        const structuredPlans: Plan[] = data.plans?.length ? data.plans : [];
-        setPlans(structuredPlans);
+        if (data.plans?.length) {
+          setPlans(data.plans);
+        }
       } catch (err) {
-        console.warn("Using mock plans due to fetch error");
-        setPlans([]);
+        console.warn("Using authoritative default plans due to fetch issue:", err);
       } finally {
         setLoading(false);
       }
@@ -121,36 +156,15 @@ export default function PricingSection({
 
   // --- Tier Filtering & Sorting Logic ---
   const displayedPlans = useMemo(() => {
-    if (!plans || plans.length === 0) return [];
+    if (!plans || plans.length === 0) return initialAuthoritativePlans;
 
-    // Sort plans sequentially by monthly price
+    // Sort plans sequentially by monthly price (Basic -> Starter -> Pro -> Growth)
     const sortedByPrice = [...plans].sort(
       (a, b) => getPlanPrice(a, "MONTHLY") - getPlanPrice(b, "MONTHLY")
     );
 
-    // Identify current plan object
-    const currentPlanIndex = sortedByPrice.findIndex(
-      (p) =>
-        p.name.toLowerCase() === currentTier?.toLowerCase() ||
-        p.id === currentTier ||
-        p._id?.$oid === currentTier
-    );
-
-    // If current plan found, filter out all tiers strictly below it
-    const filteredPlans =
-      currentPlanIndex !== -1 ? sortedByPrice.slice(currentPlanIndex) : sortedByPrice;
-
-    // Prioritize required/popular tier to front if present
-    const popularIndex = filteredPlans.findIndex(
-      (p) => p.isPopular || p.name.toLowerCase() === requiredTier.toLowerCase()
-    );
-
-    if (popularIndex <= 0) return filteredPlans;
-
-    const workingCopy = [...filteredPlans];
-    const [priorityPlan] = workingCopy.splice(popularIndex, 1);
-    return [priorityPlan, ...workingCopy];
-  }, [plans, currentTier, requiredTier, category]);
+    return sortedByPrice;
+  }, [plans, category]);
 
   useEffect(() => {
     const calcUsd = async () => {
@@ -405,8 +419,8 @@ export default function PricingSection({
           </button>
         </div>
 
-        {/* Dynamic Card Architecture */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+        {/* Dynamic Card Architecture - 4 Tier Authoritative Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {displayedPlans.map((plan, index) => {
             const planId = plan.id || plan._id?.$oid || `plan-${index}`;
             const isRequiredTarget = plan.name.toLowerCase() === requiredTier.toLowerCase();
@@ -417,7 +431,7 @@ export default function PricingSection({
               plan.id === currentTier ||
               plan._id?.$oid === currentTier;
             
-            // --- UPDATED LOGIC HERE ---
+            // --- Subscription status calculations ---
             const isActiveTier = isCurrentTier && isSubscriptionActive;
             const isExpiredTier = isCurrentTier && !isSubscriptionActive;
 
@@ -431,11 +445,13 @@ export default function PricingSection({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className={`relative flex flex-col p-6 md:p-8 rounded-3xl transition-all duration-300 ${
+                className={`relative flex flex-col p-6 rounded-3xl transition-all duration-300 ${
                   isActiveTier
-                    ? "bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-300 dark:border-slate-700 z-0 opacity-75"
+                    ? "bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-300 dark:border-slate-700 z-0 opacity-80"
                     : isRequiredTarget
-                    ? "bg-white dark:bg-slate-900 shadow-2xl ring-2 ring-orange-500 md:scale-[1.03] z-10"
+                    ? "bg-white dark:bg-slate-900 shadow-2xl ring-2 ring-orange-500 xl:scale-[1.02] z-10"
+                    : plan.isPopular
+                    ? "bg-white dark:bg-slate-900 shadow-xl ring-2 ring-amber-500/80 dark:ring-amber-500/50 z-10"
                     : "bg-white dark:bg-slate-900 shadow-md border border-slate-100 dark:border-slate-800/60 hover:shadow-lg"
                 }`}
               >
@@ -457,16 +473,58 @@ export default function PricingSection({
                   </div>
                 )}
 
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
-                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 min-h-[32px]">{plan.tagline}</p>
+                {!isRequiredTarget && plan.isPopular && !isActiveTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1 whitespace-nowrap">
+                    <SparklesIcon className="w-3.5 h-3.5" /> Most Popular
+                  </div>
+                )}
+
+                <div className="mb-3">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{plan.name}</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-xs mt-1 min-h-[36px]">{plan.tagline}</p>
                 </div>
 
-                <div className="mb-6 flex items-baseline">
-                  <span className="text-4xl font-extrabold tracking-tight">{renderPrice(plan)}</span>
-                  <span className="text-slate-400 font-medium text-sm ml-2">/{billingPeriod === "MONTHLY" ? "mo" : "yr"}</span>
+                <div className="mb-4 flex items-baseline">
+                  <span className="text-3xl font-extrabold tracking-tight">{renderPrice(plan)}</span>
+                  <span className="text-slate-400 font-medium text-xs ml-1.5">/{billingPeriod === "MONTHLY" ? "mo" : "yr"}</span>
                   {billingPeriod === "ANNUALLY" && renderSavingsBadge(plan)}
                 </div>
+
+                {/* Resource Limits Breakdown */}
+                {plan.limits && (
+                  <div className="mb-5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/70 dark:border-slate-800/70 space-y-1.5 text-[11px]">
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>Staff Users</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {plan.limits.staffUsers === -1 ? "Unlimited" : `${plan.limits.staffUsers} Staff`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>Sales Agents</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {plan.limits.salesAgents === -1 ? "Unlimited" : plan.limits.salesAgents === 0 ? "—" : `${plan.limits.salesAgents} Agents`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>AI Studio</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {plan.limits.monthlyAiCredits > 0 ? `${plan.limits.monthlyAiCredits} cr/mo` : "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>POS Counter</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {plan.limits.multiCounterPos ? "Multi-Counter" : "Single Counter"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>WhatsApp AI</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {plan.limits.whatsAppAi ? "Enabled" : "—"}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Selection Checkout Interface */}
                 <AnimatePresence mode="wait">

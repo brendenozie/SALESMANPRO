@@ -4,11 +4,14 @@ import React, { ElementType } from "react";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
 import {
   BuildingStorefrontIcon,
-  DevicePhoneMobileIcon,
-  ChatBubbleBottomCenterTextIcon,
-  BanknotesIcon,
-  ChartBarIcon,
-  ShieldCheckIcon,
+  AcademicCapIcon,
+  HomeModernIcon,
+  TicketIcon,
+  GlobeAmericasIcon,
+  HeartIcon,
+  TruckIcon,
+  FilmIcon,
+  SparklesIcon,
   ArrowUpRightIcon
 } from "@heroicons/react/24/outline";
 
@@ -17,58 +20,92 @@ export interface PicardCardData {
   title: string;
   desc: string;
   badge: string;
+  categoryKey: string;
   icon: ElementType;
   gradientClass: string;
+  features: string[];
 }
 
 export const picardData: PicardCardData[] = [
   {
-    id: "inventory",
-    title: "Real-Time Inventory",
-    desc: "Sync physical stock across all retail outlets and online storefronts automatically with instant low-stock alerts.",
-    badge: "Operations",
+    id: "retail",
+    title: "Retail & Multi-Counter POS",
+    desc: "Multi-branch counter checkout, barcode scanner integration, thermal receipts, low-stock warnings, and automated M-PESA STK pushes.",
+    badge: "Commerce & Retail",
+    categoryKey: "retail",
     icon: BuildingStorefrontIcon,
     gradientClass: "from-orange-500 to-amber-500",
+    features: ["Multi-Counter POS", "Thermal Receipt Printing", "Live Stock Sync", "Instant STK Push"],
   },
   {
-    id: "pos",
-    title: "Omnichannel POS",
-    desc: "Process fast counter sales, print thermal receipts, and issue instant digital invoices directly from any mobile device.",
-    badge: "Checkout",
-    icon: DevicePhoneMobileIcon,
-    gradientClass: "from-amber-500 to-yellow-500",
+    id: "schools",
+    title: "Schools & Education",
+    desc: "Complete academic management: student admissions, grade books, report cards, fee invoice collection, school bus routes, and digital library loans.",
+    badge: "Education",
+    categoryKey: "school",
+    icon: AcademicCapIcon,
+    gradientClass: "from-blue-600 to-indigo-600",
+    features: ["Fee Collection Invoices", "Exam Report Cards", "Transport Route Dispatch", "Library Catalog"],
   },
   {
-    id: "mpesa",
-    title: "Automated M-PESA Push",
-    desc: "Eliminate manual payment checking with automated STK pushes and instant ledger reconciliation.",
-    badge: "Payments",
-    icon: BanknotesIcon,
-    gradientClass: "from-emerald-500 to-teal-500",
+    id: "realestate",
+    title: "Real Estate & Property",
+    desc: "Manage properties, showings, buyer inquiries, sales agent commission splits, tenant lease contracts, room assignments, and maintenance logs.",
+    badge: "Real Estate",
+    categoryKey: "realestate",
+    icon: HomeModernIcon,
+    gradientClass: "from-amber-600 to-yellow-500",
+    features: ["Property Listings", "Tenant Lease Tracking", "Agent Commissions", "Showing Inquiries"],
   },
   {
-    id: "whatsapp-ai",
-    title: "WhatsApp AI Sales Agent",
-    desc: "Engage customers 24/7 on WhatsApp. Convert customer inquiries into paid orders directly inside the chat window.",
-    badge: "AI Automation",
-    icon: ChatBubbleBottomCenterTextIcon,
-    gradientClass: "from-orange-600 to-red-500",
+    id: "events",
+    title: "Events & Ticketing",
+    desc: "Sell VIP and regular tickets online, issue digital passes, check in attendees with instant QR code scanning, and monitor real-time gate sales.",
+    badge: "Ticketing & Events",
+    categoryKey: "events",
+    icon: TicketIcon,
+    gradientClass: "from-purple-600 to-pink-600",
+    features: ["Tiered Ticket Sales", "QR Code Gate Check-In", "Attendee Manifest", "Instant STK Checkout"],
   },
   {
-    id: "analytics",
-    title: "Profit Intelligence",
-    desc: "Track real-time gross margins, top-performing items, and projected revenue growth with clear visual reports.",
-    badge: "Analytics",
-    icon: ChartBarIcon,
-    gradientClass: "from-blue-500 to-indigo-500",
+    id: "travel",
+    title: "Travel & Tour Operators",
+    desc: "Showcase tour packages, manage destination booking calendars, assign travel guides, handle customer inquiries, and accept online deposits.",
+    badge: "Travel & Safaris",
+    categoryKey: "travel",
+    icon: GlobeAmericasIcon,
+    gradientClass: "from-emerald-500 to-teal-600",
+    features: ["Tour Package Builder", "Departure Calendars", "Travel Expert Booking", "Online Reservations"],
   },
   {
-    id: "security",
-    title: "Multi-Role Staff Access",
-    desc: "Granular access control for cashiers, store managers, and accountants with complete, unalterable audit logs.",
-    badge: "Security",
-    icon: ShieldCheckIcon,
-    gradientClass: "from-purple-500 to-pink-500",
+    id: "fitness",
+    title: "Fitness & Wellness",
+    desc: "Run gym memberships, manage personal trainer appointments, publish class schedules, monitor attendance, and sell gear via counter POS.",
+    badge: "Fitness & Gyms",
+    categoryKey: "fitness",
+    icon: HeartIcon,
+    gradientClass: "from-rose-500 to-orange-500",
+    features: ["Membership Subscriptions", "Class Schedules", "Trainer Bookings", "Counter POS"],
+  },
+  {
+    id: "logistics",
+    title: "Logistics & Fleet Dispatch",
+    desc: "Track shipments, assign drivers to vehicles, log fuel expenditures, schedule delivery routes, and generate client dispatch manifests.",
+    badge: "Delivery & Fleet",
+    categoryKey: "delivery",
+    icon: TruckIcon,
+    gradientClass: "from-cyan-600 to-blue-600",
+    features: ["Shipment Manifests", "Driver Route Dispatch", "Vehicle Fuel Logs", "Real-Time Tracking"],
+  },
+  {
+    id: "media",
+    title: "Media & Content Publishing",
+    desc: "Publish videos, articles, and podcast episodes. Offer subscriber-only content, manage featured sponsors, and monetize your digital audience.",
+    badge: "Media & Studios",
+    categoryKey: "media",
+    icon: FilmIcon,
+    gradientClass: "from-violet-600 to-purple-600",
+    features: ["Video & Audio Library", "Subscriber Paywall", "Editorial Articles", "Sponsor Ad Slots"],
   },
 ];
 
@@ -78,6 +115,7 @@ interface PicardProps {
   badge: string;
   icon: ElementType;
   gradientClass: string;
+  features?: string[];
   index?: number;
 }
 
@@ -87,6 +125,7 @@ export default function Picard({
   badge,
   icon: Icon,
   gradientClass,
+  features = [],
   index = 0,
 }: PicardProps) {
   const mouseX = useMotionValue(0);
@@ -133,7 +172,7 @@ export default function Picard({
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="group relative w-[320px] sm:w-[360px] h-[400px] rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-7 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-xl"
+      className="group relative w-[320px] sm:w-[360px] h-[440px] rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-7 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden backdrop-blur-xl"
     >
       {/* Dynamic Cursor Light Spotlight */}
       <motion.div
@@ -163,14 +202,25 @@ export default function Picard({
           </span>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
             {title}
           </h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
             {desc}
           </p>
         </div>
+
+        {/* Feature Chips */}
+        {features.length > 0 && (
+          <div className="grid grid-cols-2 gap-1.5 pt-2">
+            {features.map((feat, i) => (
+              <span key={i} className="text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-700/60 truncate">
+                {feat}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Footer Interactive Bar */}

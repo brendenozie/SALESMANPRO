@@ -1,18 +1,20 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/plans/route.ts
+// app/api/admin/plan/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { PlanStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { AUTHORITATIVE_PLANS } from "@/lib/subscriptions/subscription-plans";
 
 // =================================================================================================
 // PLANS API ROUTES
 // These routes handle fetching, creating, updating, and deleting plans.
 // =================================================================================================
 
+const DEFAULT_PLATFORM_COMPANY_ID =
+  process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "68a4420ea20efd318d51db70";
 
 const getHandler = async (request: Request) => {
-  
   const { searchParams } = new URL(request.url);
 
   // Pagination params
@@ -33,22 +35,55 @@ const getHandler = async (request: Request) => {
     if (cached) return NextResponse.json(cached, { status: 200 });
   } catch (e) {}
 
-  const totalItems = await prisma.plan.count({ where });
-  const plans = await prisma.plan.findMany({
+  let totalItems = await prisma.plan.count({ where });
+  let plans = await prisma.plan.findMany({
     skip,
     take: perPage,
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: { priceMonthly: "asc" },
   });
 
-  const totalPages = Math.ceil(totalItems / perPage);
+  // If filtered by tenant companyId and no custom plans found, return platform plans
+  if (plans.length === 0) {
+    plans = await prisma.plan.findMany({
+      skip,
+      take: perPage,
+      where: {
+        OR: [
+          { companyId: DEFAULT_PLATFORM_COMPANY_ID },
+          { name: { in: ["Ghuba Basic", "Ghuba Starter", "Ghuba Pro", "Ghuba Growth"] } },
+        ],
+      },
+      orderBy: { priceMonthly: "asc" },
+    });
+    totalItems = plans.length;
+  }
+
+  // Authoritative fallback if still empty
+  if (plans.length === 0) {
+    plans = AUTHORITATIVE_PLANS.map((ap) => ({
+      id: ap.id,
+      name: ap.name,
+      description: ap.tagline,
+      priceMonthly: ap.priceMonthly,
+      priceAnnually: ap.priceAnnually,
+      features: ap.featureGroups.map((g) => g.items).flat(),
+      isPopular: ap.isPopular,
+      status: PlanStatus.ACTIVE,
+      currency: "KES",
+      companyId: DEFAULT_PLATFORM_COMPANY_ID,
+    })) as any;
+    totalItems = plans.length;
+  }
+
+  const totalPages = Math.ceil(totalItems / perPage) || 1;
 
   try {
-    if (plans) {
+    if (plans && plans.length > 0) {
       await cacheSet(cacheKey, { plans, totalItems, totalPages, currentPage: page, perPage }, 60);
     }
   } catch (e) {}
-  
+
   return NextResponse.json(
     {
       plans,
@@ -59,51 +94,6 @@ const getHandler = async (request: Request) => {
     },
     { status: 200 }
   );
-};
-
-
-const postHandlerV1 = async (request: Request) => {
-  
-  const {
-    companyId,
-    name,
-    description,
-    priceMonthly,
-    priceAnnually,
-    features,
-    isPopular,
-    status,
-  } = await request.json();
-
-  if (
-    !companyId ||
-    !name ||
-    !description ||
-    priceMonthly === undefined ||
-    priceAnnually === undefined ||
-    !features
-  ) {
-    return NextResponse.json(
-      { message: "Missing required fields for plan creation." },
-      { status: 400 }
-    );
-  }
-
-  const newPlan = await prisma.plan.create({
-    data: {
-      name,
-      description,
-      priceMonthly,
-      priceAnnually,
-      features,
-      isPopular,
-      status: status as PlanStatus,
-      currency: "USD", // Provide a default or dynamic value for currency
-      company: { connect: { id: companyId } }, // Ensure company relation is properly connected
-    },
-  });
-
-  return NextResponse.json(newPlan, { status: 201 });
 };
 
 const postHandler = async (request: Request) => {
@@ -118,7 +108,7 @@ const postHandler = async (request: Request) => {
     features,
     isPopular,
     status,
-    siteTypePrices, // NEW FIELD
+    siteTypePrices,
   } = data;
 
   if (!companyId || !name || !description || !features) {
@@ -138,19 +128,17 @@ const postHandler = async (request: Request) => {
       isPopular,
       status: status ?? PlanStatus.ACTIVE,
       currency: "KES",
-      siteTypePrices: siteTypePrices ?? {}, // NEW
+      siteTypePrices: siteTypePrices ?? {},
       company: { connect: { id: companyId } },
     },
   });
 
-  
-    try {
-      await cacheDel(`tenant:${companyId}:plan:*`);
-      await cacheDel(`admin:plan:*`);
-    } catch (e) {}
-    return NextResponse.json(newPlan, { status: 201 });
+  try {
+    await cacheDel(`tenant:${companyId}:plan:*`);
+    await cacheDel(`admin:plan:*`);
+  } catch (e) {}
+  return NextResponse.json(newPlan, { status: 201 });
 };
 
-
-export const GET = withApiHandler(getHandler, {requireAuth: false, requireRateLimit: false });
+export const GET = withApiHandler(getHandler, { requireAuth: false, requireRateLimit: false });
 export const POST = withApiHandler(postHandler);
