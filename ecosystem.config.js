@@ -63,7 +63,7 @@ module.exports = {
       cwd: APP_DIR,
       script: isStandalone ? path.join(APP_DIR, 'server.js') : 'node_modules/.bin/next',
       args: isStandalone ? '' : 'start -p 3000',
-      node_args: '--max-old-space-size=2048',
+      node_args: '--max-old-space-size=2560',
       instances: isStandalone ? 2 : 1,
       exec_mode: isStandalone ? 'cluster' : 'fork',
       env: {
@@ -71,7 +71,7 @@ module.exports = {
         PORT: 3000,
       },
       min_uptime: '10s',
-      max_memory_restart: '2200M',
+      max_memory_restart: '2800M',
       restart_delay: 2000,
       exp_backoff_restart_delay: 500,
       max_restarts: 20,

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scratch & credential scripts
+scripts/askpass.bat
+scripts/update-server-env.js
+scripts/test-*.js
+scripts/*.conf
