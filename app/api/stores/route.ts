@@ -153,6 +153,14 @@ async function getCompanies(req: Request, context: HandlerContext) {
           sub?.status === "TRIALING"
       );
 
+      // Determine expired state: trial ended and no paid renewal after it
+      const isTrialExpired = Boolean(
+        isTrial &&
+          sub?.trialEndsAt &&
+          new Date(sub.trialEndsAt) <= now &&
+          (!sub?.renewalDate || new Date(sub.renewalDate) <= now)
+      );
+
       return {
         id: c.id,
         name: c.name,
@@ -165,12 +173,17 @@ async function getCompanies(req: Request, context: HandlerContext) {
         description: c.description,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
-        subscriptionStatus: isSubActive ? "ACTIVE" : (sub?.status || "INACTIVE"),
+        subscriptionStatus: isTrialExpired
+          ? "TRIAL_EXPIRED"
+          : isSubActive
+          ? "ACTIVE"
+          : (sub?.status || "INACTIVE"),
         currentTier: sub?.plan?.name || (isTrial ? "SalesmanPro Starter (Trial)" : "INACTIVE"),
         planId: sub?.plan?.id || null,
         renewalDate: sub?.renewalDate || null,
         trialEndsAt: sub?.trialEndsAt || sub?.meta?.trialEndsAt || null,
         isTrial,
+        isTrialExpired,
       };
     });
 
@@ -290,6 +303,14 @@ async function createCompany(req: Request, context: HandlerContext) {
     // If still null, fallback to the first authoritative plan ID
     const planIdToUse = trialPlan?.id || AUTHORITATIVE_PLANS[1].id;
 
+    // Validate the resolved plan actually exists in DB to prevent FK error on company create
+    if (!trialPlan) {
+      const planExists = await prisma.plan.findUnique({ where: { id: planIdToUse }, select: { id: true } });
+      if (!planExists) {
+        console.error(`⚠️ Trial plan not found in DB. planIdToUse=${planIdToUse}. Store creation will proceed without a subscription.`);
+      }
+    }
+
     const now = new Date();
     // 14 Days Free Trial
     const fourteenDaysFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
@@ -328,7 +349,7 @@ async function createCompany(req: Request, context: HandlerContext) {
           create: {
             userId: user.id,
             planId: planIdToUse,
-            status: "ACTIVE",
+            status: "TRIALING",
             billingCycle: "TRIAL",
             amountPaid: 0,
             currency: data.currency || "KES",

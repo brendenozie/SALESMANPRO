@@ -42,14 +42,18 @@ async function main() {
       name: true,
       slug: true,
       category: true,
-      currentTier: true,
-      subscriptionPlan: true,
-      subscriptionStatus: true,
-      trialEndsAt: true,
+      subscriptionCompanies: {
+        take: 1,
+        orderBy: { createdAt: "desc" },
+        select: {
+          status: true,
+          trialEndsAt: true,
+          plan: { select: { name: true, priceMonthly: true } }
+        }
+      },
       _count: {
         select: {
           subscriptionCompanies: true,
-          plans: true
         }
       }
     }
