@@ -15,6 +15,7 @@ import {
   ArrowUpRightIcon,
   CpuChipIcon,
   Squares2X2Icon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 // --- SalesmanPro Feature Pillars Data ---
