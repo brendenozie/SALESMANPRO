@@ -147,7 +147,7 @@ export default function Join() {
             <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center justify-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
                 <CheckCircleIcon className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                Free 14-day trial
+                Launch Your Workspace in Minutes
               </span>
               <span className="flex items-center gap-1.5">
                 <BoltIcon className="w-4 h-4 text-orange-500 flex-shrink-0" />

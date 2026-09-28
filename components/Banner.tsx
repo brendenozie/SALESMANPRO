@@ -243,7 +243,7 @@ export default function HeroSection() {
                 onClick={handleSignIn}
                 className="w-full sm:w-auto px-8 py-4 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-orange-600/25 hover:shadow-orange-600/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <span>Start Free Trial</span>
+                <span>Launch Your Workspace</span>
                 <ArrowRightIcon className="w-4 h-4 stroke-[2.5]" />
               </button>
             ) : (
@@ -257,7 +257,7 @@ export default function HeroSection() {
             )}
 
             <a
-              href="#interactive-demo"
+              href="#platform"
               className="w-full sm:w-auto px-8 py-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm text-slate-900 dark:text-white font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2.5 shadow-sm"
             >
               <PlayIcon className="w-4 h-4 fill-orange-500 text-orange-500" />
