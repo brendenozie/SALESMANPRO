@@ -5,8 +5,9 @@ import { cookies } from "next/headers";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
 
-
+// lib/services/orders.ts
 import prisma from "@/server/db/prismadb";
+import { buildTenantCacheKey, cacheGet, cacheSet } from "@/lib/cache";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -25,13 +26,13 @@ export type OrderItem = {
 
 export type CustomerOrder = {
   id: string;
-  consumerId: string;
+  consumerId: string | null;
   name: string | null; // Customer name
   email: string | null;
   phone: string | null;
   items: OrderItem[];
   totalPrice: number;
-  orderSource: 'WEBSITE' | 'IN_PERSON' | 'MOBILE';
+  orderSource: 'WEBSITE' | 'IN_PERSON' | 'MOBILE' | 'WHATSAPP' | 'API' | (string & {});
   status: 'PENDING' | 'COMPLETED' | 'PAID' | 'CANCELLED' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'RECURRING' | (string & {});
   delivery: boolean | null;
   shippingAddress: {
@@ -53,91 +54,152 @@ interface PageProps {
   params:Promise<{ slug: string }>
 }
 
-/**
- * Server Component: Fetches customer orders for a specific restaurant.
- */
+
 export default async function OrdersPage({ params }: PageProps) {
-  const { slug }  = await params;
-  const cookieHeader = (await cookies()).toString();
+  const { slug } = await params;
+  const session = await getAuthSession();
+
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return <div>Company not found</div>;
+  }
+
   let ordersData: CustomerOrder[] = [];
   let error: string | null = null;
-  
-    const session = await getAuthSession();
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
 
   try {
-    const rawOrders = await prisma.customerOrder.findMany({
-      where: {
-        OR: [
-          { companyId },
-          { items: { some: { marketplaceListing: { companyId } } } },
-        ],
-      },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-      include: {
-        items: {
-          include: {
-            marketplaceListing: {
-              select: {
-                id: true,
-                name: true,
-                images: true,
-                finalPrice: true,
-                sellingPrice: true,
-              },
+    ordersData = await getCompanyOrders(company.id);
+  } catch (err: any) {
+    error = `Error fetching orders data: ${err.message}`;
+  }
+
+  return <OrdersClient ordersData={ordersData} companyId={company.id} initialError={error} />;
+}
+
+
+export async function getCompanyOrders(
+  companyId: string,
+  page = 1,
+  limit = 100,
+): Promise<CustomerOrder[]> {
+  const cacheKey = buildTenantCacheKey(companyId, "customer-orders", {
+    delivery: "all",
+    page,
+    limit,
+  });
+
+  // 1. Try cache first (Matches API behavior)
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (Array.isArray(cached)) return cached as CustomerOrder[];
+    if (cached && typeof cached === "object") {
+      const cachedData = cached as { data?: unknown; orders?: unknown };
+      if (Array.isArray(cachedData.data)) return cachedData.data as CustomerOrder[];
+      if (Array.isArray(cachedData.orders)) return cachedData.orders as CustomerOrder[];
+    }
+  } catch (e) {}
+
+  // 2. Exact match on Prisma query from API endpoint
+  const where = {
+    OR: [
+      { companyId },
+      { items: { some: { marketplaceListing: { companyId } } } },
+    ],
+  };
+
+  const rawOrders = await prisma.customerOrder.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      companyId: true,
+      consumerId: true,
+      name: true,
+      email: true,
+      phone: true,
+      status: true,
+      paymentStatus: true,
+      orderSource: true,
+      delivery: true,
+      shippingAddress: true,
+      totalPrice: true,
+      totalFinalPrice: true,
+      deliveryStatus: true,
+      estimatedArrival: true,
+      deliveryPersonName: true,
+      deliveryPersonContact: true,
+      trackingNumber: true,
+      createdAt: true,
+      updatedAt: true,
+      items: {
+        select: {
+          id: true,
+          quantity: true,
+          price: true,
+          totalPrice: true,
+          marketplaceListing: {
+            select: {
+              name: true,
+              images: true,
+              finalPrice: true,
             },
           },
         },
       },
-    });
+    },
+  });
 
-    ordersData = rawOrders.map((order: any) => ({
-      id: order.id,
-      consumerId: order.consumerId || "",
-      name: order.name || "Customer",
-      email: order.email || "",
-      phone: order.phone || "",
-      totalPrice: order.totalFinalPrice ?? order.totalPrice ?? 0,
-      orderSource: order.orderSource || "WEBSITE",
-      status: order.status || "PENDING",
-      delivery: order.delivery || false,
-      shippingAddress: order.shippingAddress || null,
-      deliveryStatus: order.deliveryStatus || null,
-      estimatedArrival: order.estimatedArrival ? new Date(order.estimatedArrival).toISOString() : null,
-      deliveryPersonName: order.deliveryPersonName || null,
-      deliveryPersonContact: order.deliveryPersonContact || null,
-      trackingNumber: order.trackingNumber || `TRK-${order.id.slice(-6).toUpperCase()}`,
-      createdAt: order.createdAt ? new Date(order.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: order.updatedAt ? new Date(order.updatedAt).toISOString() : new Date().toISOString(),
-      items: (order.items || []).map((item: any) => ({
-        id: item.id,
-        marketplaceListingId: item.marketplaceListingId || item.id,
-        quantity: item.quantity || 1,
-        price: item.price || 0,
-        marketplaceListing: {
-          name: item.marketplaceListing?.name || item.name || "Item",
-          images: Array.isArray(item.marketplaceListing?.images) ? item.marketplaceListing.images : [],
-          finalPrice: item.marketplaceListing?.finalPrice ?? item.price ?? 0,
-        },
-      })),
-    }));
-  } catch (err: any) {
-    error = `Error fetching orders data: ${err.message}`;
-    console.error("[OrdersPage] Error fetching orders data →", err.message);
-  }
+  const formatted: CustomerOrder[] = rawOrders.map((order) => ({
+    ...order,
+    totalPrice: order.totalFinalPrice ?? order.totalPrice ?? 0,
+    shippingAddress:
+      typeof order.shippingAddress === "object" &&
+      order.shippingAddress !== null &&
+      !Array.isArray(order.shippingAddress) &&
+      typeof order.shippingAddress.street === "string" &&
+      typeof order.shippingAddress.city === "string" &&
+      typeof order.shippingAddress.zip === "string" &&
+      typeof order.shippingAddress.country === "string"
+        ? {
+            street: order.shippingAddress.street,
+            city: order.shippingAddress.city,
+            zip: order.shippingAddress.zip,
+            country: order.shippingAddress.country,
+          }
+        : null,
+      estimatedArrival: order.estimatedArrival?.toISOString() ?? null,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    items: order.items.map((item) => ({
+      id: item.id,
+      marketplaceListingId: item.id,
+      quantity: item.quantity,
+      price: item.price,
+      marketplaceListing: {
+        name: item.marketplaceListing?.name ?? "",
+        images: Array.isArray(item.marketplaceListing?.images)
+          ? item.marketplaceListing.images
+              .filter(
+                (image): image is { url: string } =>
+                  typeof image === "object" &&
+                  image !== null &&
+                  "url" in image &&
+                  typeof image.url === "string",
+              )
+              .map(({ url }) => ({ url }))
+          : [],
+        finalPrice: item.marketplaceListing?.finalPrice ?? item.price ?? 0,
+      },
+    })),
+  }));
 
-  return <OrdersClient ordersData={ordersData} companyId={companyId} initialError={error} />;
+  // 3. Populate Cache
+  try {
+    await cacheSet(cacheKey, { data: formatted, orders: formatted }, 60);
+  } catch (e) {}
+
+  return formatted;
 }

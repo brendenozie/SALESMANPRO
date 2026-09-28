@@ -147,4 +147,4 @@ export default async function StorePage({ params }: StorePageProps) {
     </main>
   );
 }
-
+
