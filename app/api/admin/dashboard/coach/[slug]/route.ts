@@ -56,7 +56,7 @@ export const GET = withApiHandler(
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
-          name: true,
+          taskName: true,
           status: true,
           priority: true,
           createdAt: true,
@@ -69,9 +69,9 @@ export const GET = withApiHandler(
 
     const formattedTasks = tasks.map((t) => ({
       id: t.id,
-      name: t.name,
-      dueDate: t.createdAt.toISOString().split("T")[0],
-      dueTime: t.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      name: t.taskName,
+      dueDate: (t.createdAt || now).toISOString().split("T")[0],
+      dueTime: (t.createdAt || now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       priority: (t.priority === "HIGH" ? "High" : t.priority === "LOW" ? "Low" : "Medium") as "High" | "Medium" | "Low",
     }));
 

@@ -4011,7 +4011,9 @@ enum PaymentMethodType {
   COD
   PICKUP
   MPESA
+  M_PESA @map("M-Pesa")
   PAYSTACK
+  PAYSTACK_LEGACY @map("Paystack")
   GHUBA
   STRIPE
   PAYPAL
@@ -5460,8 +5462,8 @@ model Event {
   eventStatus EventStatus @default(SCHEDULED) // Current status of the event
 
   // Organizer/Author of the event (can be a User like Admin or Educator)
-  organizerId String @db.ObjectId
-  organizer   User   @relation("OrganizedEvents", fields: [organizerId], references: [id])
+  organizerId String? @db.ObjectId
+  organizer   User?   @relation("OrganizedEvents", fields: [organizerId], references: [id])
 
   // Multi-tenancy
   companyId String?  @db.ObjectId

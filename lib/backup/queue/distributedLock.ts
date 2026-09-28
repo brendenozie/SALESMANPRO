@@ -6,7 +6,7 @@
  */
 
 import crypto from "crypto";
-import { redisConnection, isRedisAvailable } from "../../redis";
+import { redisConnection, isRedisAvailable, markRedisQuotaExceeded } from "../../redis";
 
 export interface DistributedLock {
   key: string;
@@ -58,8 +58,11 @@ export async function acquireDistributedLock(
       ttlSeconds,
     };
   } catch (err: any) {
-    console.error(`[DistributedLock] Error acquiring lock for ${lockKey}:`, err.message);
-    return { key: fullKey, token, acquired: false, ttlSeconds };
+    if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
+      markRedisQuotaExceeded();
+    }
+    console.warn(`[DistributedLock] Redis lock error for ${lockKey}, granting fallback lock:`, err.message);
+    return { key: fullKey, token, acquired: true, ttlSeconds };
   }
 }
 

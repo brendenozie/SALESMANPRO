@@ -38,8 +38,7 @@ async function handleGetInquiries(request: Request) {
       companyId: companyId,
     },
     include: {
-      consumer: true,
-      assignedToAgent: true,
+      company: true,
     },
     orderBy: {
       receivedAt: "desc",

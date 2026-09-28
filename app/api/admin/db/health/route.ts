@@ -13,6 +13,11 @@ export const runtime = "nodejs";
 export const GET = withApiHandler(
   async (req, context) => {
     try {
+      // Opportunistically run overdue automated backups in the background
+      backupService.runScheduledAutomatedBackupIfNeeded().catch((err) => {
+        console.warn("[HealthAPI] Automatic backup check notice:", err.message);
+      });
+
       const summary = await backupService.getHealthSummary();
       return formatResponse(true, summary, "Backup health status retrieved", 200);
     } catch (err: any) {

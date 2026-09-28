@@ -17,6 +17,7 @@ import { getBackupStorageProvider } from "./storage/storageProvider";
 import { decryptAndDecompressBackup } from "./crypto/cryptoPipeline";
 import { acquireDistributedLock, releaseDistributedLock } from "./queue/distributedLock";
 import { backupEngine } from "./engine/backupEngine";
+import { isRedisAvailable } from "@/lib/redis";
 
 export class BackupService {
   /**
@@ -135,7 +136,56 @@ export class BackupService {
   }
 
   /**
-   * Triggers an on-demand manual or pre-deployment backup.
+   * Executes a database backup directly and updates records.
+   */
+  async executeBackupDirectly(backupId: string, type: BackupType): Promise<any> {
+    try {
+      await prisma.databaseBackup.update({
+        where: { id: backupId },
+        data: { status: "RUNNING" },
+      });
+
+      const result = await backupEngine.executeBackup(backupId, type);
+
+      await prisma.databaseBackup.update({
+        where: { id: backupId },
+        data: {
+          status: "COMPLETED",
+          completedAt: new Date(),
+          sizeBytes: BigInt(result.sizeBytes),
+          checksum: result.checksum,
+          storageKey: result.storageKey,
+          storageBucket: result.storageBucket,
+          collectionCount: result.collectionCount,
+          recordCount: result.recordCount,
+          durationMs: result.durationMs,
+          verificationStatus: "VERIFIED",
+          verifiedAt: new Date(),
+        },
+      });
+
+      console.log(`[BackupService] Direct backup ${backupId} completed successfully.`);
+      return result;
+    } catch (err: any) {
+      console.error(`[BackupService] Direct backup ${backupId} failed:`, err.message);
+      await prisma.databaseBackup.update({
+        where: { id: backupId },
+        data: {
+          status: "FAILED",
+          errorMessage: err.message,
+        },
+      });
+      await this.sendAlert(
+        `Database Backup Failed (${type})`,
+        `Direct backup job ${backupId} failed with error: ${err.message}`
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Triggers an on-demand manual or scheduled backup.
+   * Enqueues to BullMQ if Redis is active, with seamless direct fallback if unavailable.
    */
   async triggerBackup(type: BackupType = "MANUAL", triggeredBy: string = "ADMIN"): Promise<any> {
     const storage = getBackupStorageProvider();
@@ -150,14 +200,64 @@ export class BackupService {
       },
     });
 
-    await enqueueBackupJob({
-      backupId: record.id,
-      backupType: type,
-      triggeredBy,
-      forceManual: true,
-    });
+    let enqueued = false;
+    if (isRedisAvailable()) {
+      try {
+        await Promise.race([
+          enqueueBackupJob({
+            backupId: record.id,
+            backupType: type,
+            triggeredBy,
+            forceManual: true,
+          }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("ENQUEUE_TIMEOUT")), 3000)
+          ),
+        ]);
+        enqueued = true;
+      } catch (queueErr: any) {
+        console.warn("[BackupService] Queue enqueue unavailable, falling back to direct background execution:", queueErr.message);
+      }
+    }
+
+    if (!enqueued) {
+      // Execute asynchronously in background so callers receive an immediate 202 response
+      setImmediate(() => {
+        this.executeBackupDirectly(record.id, type).catch((err) => {
+          console.error(`[BackupService] Asynchronous direct backup failed:`, err);
+        });
+      });
+    }
 
     return record;
+  }
+
+  /**
+   * Verifies if an automated backup is due according to SLA and triggers one if needed.
+   */
+  async runScheduledAutomatedBackupIfNeeded(): Promise<any> {
+    const config = await prisma.backupSystemConfig.findFirst();
+    if (config && config.enabled === false) {
+      return null;
+    }
+
+    const now = Date.now();
+    const intervalHours = config?.hourlyEnabled ? 1 : 24;
+    const cutoffDate = new Date(now - intervalHours * 60 * 60 * 1000);
+
+    const recentBackup = await prisma.databaseBackup.findFirst({
+      where: {
+        status: { in: ["VERIFIED", "COMPLETED", "RUNNING", "QUEUED"] },
+        createdAt: { gte: cutoffDate },
+      },
+    });
+
+    if (!recentBackup) {
+      console.log(`[BackupService] Automated backup is due (no completed backup in last ${intervalHours}h). Triggering automated backup...`);
+      return this.triggerBackup(config?.hourlyEnabled ? "HOURLY" : "DAILY", "SYSTEM_AUTOMATED_SCHEDULER");
+    }
+
+    return null;
   }
 
   /**

@@ -144,7 +144,7 @@ export async function GET(req: Request) {
             where: { id: order.id },
             data: {
               paymentStatus: "COMPLETED",
-              paymentMethod: "Paystack",
+              paymentMethod: "PAYSTACK",
               transactionId: transactionId.toString(),
               transactionReference: reference,
               status: "PAID",

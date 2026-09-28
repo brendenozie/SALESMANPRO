@@ -90,7 +90,12 @@ function createRedisClient(customOptions?: Partial<RedisOptions>): Redis {
 
   client.on("error", (err) => {
     if (!isBuildPhase) {
-      console.warn("[Redis] Connection error:", err.message);
+      if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
+        markRedisQuotaExceeded();
+        console.warn("[Redis] Upstash quota limit exceeded. Disabling Redis operations for 5 minutes and falling back to in-memory.");
+      } else {
+        console.warn("[Redis] Connection error:", err.message);
+      }
     }
   });
 
@@ -104,6 +109,16 @@ function createRedisClient(customOptions?: Partial<RedisOptions>): Redis {
   return client;
 }
 
+let redisQuotaExceededUntil = 0;
+
+export function markRedisQuotaExceeded(durationMs = 5 * 60 * 1000): void {
+  redisQuotaExceededUntil = Date.now() + durationMs;
+}
+
+export function isRedisQuotaExceeded(): boolean {
+  return Date.now() < redisQuotaExceededUntil;
+}
+
 export const redisConnection: Redis = isBuildPhase
   ? createBuildMockRedis()
   : globalThis.__redisClient || createRedisClient();
@@ -114,6 +129,7 @@ if (!isBuildPhase) {
 
 export function isRedisAvailable(): boolean {
   if (isBuildPhase) return false;
+  if (isRedisQuotaExceeded()) return false;
   const status = redisConnection.status;
   if (status === "wait") {
     redisConnection.connect().catch(() => {});

@@ -19,8 +19,7 @@ async function handleGetInquiry(req: Request, context: HandlerContext) {
   const inquiry = await prisma.inquiry.findUnique({
     where: { id: inquiryId },
     include: {
-      consumer: true,
-      assignedToAgent: true,
+      company: true,
     },
   });
 

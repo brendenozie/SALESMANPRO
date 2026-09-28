@@ -105,7 +105,7 @@ export async function POST(req: Request) {
         data: {
           trackingNumber: result.CheckoutRequestID, // ✅ store this for callback matching
           transactionReference: result.MerchantRequestID,
-          paymentMethod: "M-Pesa",
+          paymentMethod: "MPESA",
           paymentStatus: "PENDING",
           status: "PENDING",
         },
