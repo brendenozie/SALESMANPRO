@@ -7,15 +7,18 @@
 
 import prisma from "../../server/db/prismadb";
 import { EmailService } from "@/lib/email/emailService";
+import { BackupType, RestoreMode, BackupHealthSummary } from "./types";
 import {
-  BackupType,
-  RestoreMode,
-  BackupHealthSummary,
-} from "./types";
-import { enqueueBackupJob, enqueueRestoreJob, enqueueMaintenanceJob } from "./queue/backupQueue";
+  enqueueBackupJob,
+  enqueueRestoreJob,
+  enqueueMaintenanceJob,
+} from "./queue/backupQueue";
 import { getBackupStorageProvider } from "./storage/storageProvider";
 import { decryptAndDecompressBackup } from "./crypto/cryptoPipeline";
-import { acquireDistributedLock, releaseDistributedLock } from "./queue/distributedLock";
+import {
+  acquireDistributedLock,
+  releaseDistributedLock,
+} from "./queue/distributedLock";
 import { backupEngine } from "./engine/backupEngine";
 import { isRedisAvailable } from "@/lib/redis";
 
@@ -84,12 +87,17 @@ export class BackupService {
     const rtoTargetMinutes = 120; // 2 hours restoration target
 
     let healthStatus: "HEALTHY" | "WARNING" | "CRITICAL" = "HEALTHY";
-    let message = "All systems healthy. Automated backups and cloud archives are up to date.";
+    let message =
+      "All systems healthy. Automated backups and cloud archives are up to date.";
 
     if (!lastBackup || lastBackupAgeMinutes > 24 * 60) {
       healthStatus = "CRITICAL";
-      message = "CRITICAL: No successful backup within the last 24 hours! RPO target breached.";
-    } else if (lastBackupAgeMinutes > 3 * rpoTargetMinutes || recentFailuresCount > 2) {
+      message =
+        "CRITICAL: No successful backup within the last 24 hours! RPO target breached.";
+    } else if (
+      lastBackupAgeMinutes > 3 * rpoTargetMinutes ||
+      recentFailuresCount > 2
+    ) {
       healthStatus = "WARNING";
       message = `WARNING: Last successful backup was ${lastBackupAgeMinutes} minutes ago. Recent failures: ${recentFailuresCount}.`;
     }
@@ -109,21 +117,28 @@ export class BackupService {
         ? {
             id: lastVerified.id,
             type: lastVerified.backupType,
-            verifiedAt: lastVerified.verifiedAt?.toISOString() || lastVerified.createdAt.toISOString(),
+            verifiedAt:
+              lastVerified.verifiedAt?.toISOString() ||
+              lastVerified.createdAt.toISOString(),
             checksum: lastVerified.checksum || "",
-            ageMinutes: Math.round((now - new Date(lastVerified.createdAt).getTime()) / 60000),
+            ageMinutes: Math.round(
+              (now - new Date(lastVerified.createdAt).getTime()) / 60000,
+            ),
           }
         : null,
       lastRestoreTest: lastRestoreTestBackup
         ? {
             backupId: lastRestoreTestBackup.id,
             testedAt: lastRestoreTestBackup.restoreTestAt?.toISOString() || "",
-            status: (lastRestoreTestBackup.restoreTestStatus as any) || "UNTESTED",
+            status:
+              (lastRestoreTestBackup.restoreTestStatus as any) || "UNTESTED",
           }
         : null,
       nextScheduledBackup: {
         type: "HOURLY / DAILY",
-        scheduledTime: new Date(Math.ceil(now / 3600000) * 3600000).toISOString(),
+        scheduledTime: new Date(
+          Math.ceil(now / 3600000) * 3600000,
+        ).toISOString(),
       },
       rpoTargetMinutes,
       rtoTargetMinutes,
@@ -138,7 +153,10 @@ export class BackupService {
   /**
    * Executes a database backup directly and updates records.
    */
-  async executeBackupDirectly(backupId: string, type: BackupType): Promise<any> {
+  async executeBackupDirectly(
+    backupId: string,
+    type: BackupType,
+  ): Promise<any> {
     try {
       await prisma.databaseBackup.update({
         where: { id: backupId },
@@ -164,20 +182,25 @@ export class BackupService {
         },
       });
 
-      console.log(`[BackupService] Direct backup ${backupId} completed successfully.`);
+      console.log(
+        `[BackupService] Direct backup ${backupId} completed successfully.`,
+      );
       return result;
     } catch (err: any) {
-      console.error(`[BackupService] Direct backup ${backupId} failed:`, err.message);
+      console.error(
+        `[BackupService] Direct backup ${backupId} failed:`,
+        err.message,
+      );
       await prisma.databaseBackup.update({
         where: { id: backupId },
         data: {
           status: "FAILED",
-          errorMessage: err.message,
+          failureReason: err.message,
         },
       });
       await this.sendAlert(
         `Database Backup Failed (${type})`,
-        `Direct backup job ${backupId} failed with error: ${err.message}`
+        `Direct backup job ${backupId} failed with error: ${err.message}`,
       );
       throw err;
     }
@@ -187,7 +210,10 @@ export class BackupService {
    * Triggers an on-demand manual or scheduled backup.
    * Enqueues to BullMQ if Redis is active, with seamless direct fallback if unavailable.
    */
-  async triggerBackup(type: BackupType = "MANUAL", triggeredBy: string = "ADMIN"): Promise<any> {
+  async triggerBackup(
+    type: BackupType = "MANUAL",
+    triggeredBy: string = "ADMIN",
+  ): Promise<any> {
     const storage = getBackupStorageProvider();
 
     const record = await prisma.databaseBackup.create({
@@ -211,12 +237,15 @@ export class BackupService {
             forceManual: true,
           }),
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("ENQUEUE_TIMEOUT")), 3000)
+            setTimeout(() => reject(new Error("ENQUEUE_TIMEOUT")), 3000),
           ),
         ]);
         enqueued = true;
       } catch (queueErr: any) {
-        console.warn("[BackupService] Queue enqueue unavailable, falling back to direct background execution:", queueErr.message);
+        console.warn(
+          "[BackupService] Queue enqueue unavailable, falling back to direct background execution:",
+          queueErr.message,
+        );
       }
     }
 
@@ -224,7 +253,10 @@ export class BackupService {
       // Execute asynchronously in background so callers receive an immediate 202 response
       setImmediate(() => {
         this.executeBackupDirectly(record.id, type).catch((err) => {
-          console.error(`[BackupService] Asynchronous direct backup failed:`, err);
+          console.error(
+            `[BackupService] Asynchronous direct backup failed:`,
+            err,
+          );
         });
       });
     }
@@ -253,8 +285,13 @@ export class BackupService {
     });
 
     if (!recentBackup) {
-      console.log(`[BackupService] Automated backup is due (no completed backup in last ${intervalHours}h). Triggering automated backup...`);
-      return this.triggerBackup(config?.hourlyEnabled ? "HOURLY" : "DAILY", "SYSTEM_AUTOMATED_SCHEDULER");
+      console.log(
+        `[BackupService] Automated backup is due (no completed backup in last ${intervalHours}h). Triggering automated backup...`,
+      );
+      return this.triggerBackup(
+        config?.hourlyEnabled ? "HOURLY" : "DAILY",
+        "SYSTEM_AUTOMATED_SCHEDULER",
+      );
     }
 
     return null;
@@ -263,7 +300,11 @@ export class BackupService {
   /**
    * Triggers a durable restore job.
    */
-  async triggerRestore(backupId: string, mode: RestoreMode, requestedBy: string): Promise<any> {
+  async triggerRestore(
+    backupId: string,
+    mode: RestoreMode,
+    requestedBy: string,
+  ): Promise<any> {
     const backup = await prisma.databaseBackup.findUnique({
       where: { id: backupId },
     });
@@ -300,7 +341,9 @@ export class BackupService {
   /**
    * Verifies an existing backup artifact from cloud storage.
    */
-  async verifyBackup(backupId: string): Promise<{ valid: boolean; checksum: string; manifest?: any }> {
+  async verifyBackup(
+    backupId: string,
+  ): Promise<{ valid: boolean; checksum: string; manifest?: any }> {
     const backup = await prisma.databaseBackup.findUnique({
       where: { id: backupId },
     });
@@ -323,7 +366,7 @@ export class BackupService {
 
       const { plainBuffer } = await decryptAndDecompressBackup(
         buffer,
-        backup.checksum || undefined
+        backup.checksum || undefined,
       );
 
       dump = JSON.parse(plainBuffer.toString("utf-8"));
@@ -334,9 +377,13 @@ export class BackupService {
         err.message?.includes("Access Denied") ||
         err.message?.includes("Forbidden");
 
-      if (isAccessDenied && backup.checksum && (backup.status === "COMPLETED" || backup.status === "VERIFIED")) {
+      if (
+        isAccessDenied &&
+        backup.checksum &&
+        (backup.status === "COMPLETED" || backup.status === "VERIFIED")
+      ) {
         console.warn(
-          `[BackupService] S3 GetObject returned 403 AccessDenied for ${backup.storageKey}. S3 IAM credentials are write-only. Verifying against stored cryptographic SHA256 receipt.`
+          `[BackupService] S3 GetObject returned 403 AccessDenied for ${backup.storageKey}. S3 IAM credentials are write-only. Verifying against stored cryptographic SHA256 receipt.`,
         );
         dump = { manifest: (backup as any).manifest };
       } else {
@@ -363,7 +410,13 @@ export class BackupService {
    * Automated isolated restore test.
    * Simulates restoration validation and marks backup RESTORE_TESTED.
    */
-  async testRestore(backupId: string): Promise<{ success: boolean; durationMs: number; collectionsTested: number }> {
+  async testRestore(
+    backupId: string,
+  ): Promise<{
+    success: boolean;
+    durationMs: number;
+    collectionsTested: number;
+  }> {
     const startTime = Date.now();
     const verification = await this.verifyBackup(backupId);
 
@@ -375,7 +428,9 @@ export class BackupService {
           restoreTestAt: new Date(),
         },
       });
-      throw new Error("Restore test failed: Artifact corrupted or failed checksum.");
+      throw new Error(
+        "Restore test failed: Artifact corrupted or failed checksum.",
+      );
     }
 
     const collectionsTested = verification.manifest?.collections?.length || 0;
@@ -402,16 +457,28 @@ export class BackupService {
    * creates an emergency verified pre-wipe backup first,
    * acquires exclusive distributed lock, and clears collections safely.
    */
-  async wipeDatabase(confirmationPhrase: string, requestedBy: string): Promise<any> {
+  async wipeDatabase(
+    confirmationPhrase: string,
+    requestedBy: string,
+  ): Promise<any> {
     if (confirmationPhrase !== "DELETE PRODUCTION DATABASE") {
-      throw new Error("Invalid confirmation phrase. Type 'DELETE PRODUCTION DATABASE' exactly.");
+      throw new Error(
+        "Invalid confirmation phrase. Type 'DELETE PRODUCTION DATABASE' exactly.",
+      );
     }
 
-    console.log(`🚨 [BackupService] Database wipe initiated by ${requestedBy}. Acquiring exclusive lock...`);
+    console.log(
+      `🚨 [BackupService] Database wipe initiated by ${requestedBy}. Acquiring exclusive lock...`,
+    );
 
-    const wipeLock = await acquireDistributedLock("database:wipe:exclusive", 1800);
+    const wipeLock = await acquireDistributedLock(
+      "database:wipe:exclusive",
+      1800,
+    );
     if (!wipeLock.acquired) {
-      throw new Error("Another critical database operation is in progress. Please wait.");
+      throw new Error(
+        "Another critical database operation is in progress. Please wait.",
+      );
     }
 
     try {
@@ -428,7 +495,10 @@ export class BackupService {
         },
       });
 
-      const backupResult = await backupEngine.executeBackup(preWipeBackup.id, "PRE_DEPLOYMENT");
+      const backupResult = await backupEngine.executeBackup(
+        preWipeBackup.id,
+        "PRE_DEPLOYMENT",
+      );
 
       await prisma.databaseBackup.update({
         where: { id: preWipeBackup.id },
@@ -447,7 +517,9 @@ export class BackupService {
         },
       });
 
-      console.log(`✅ [Wipe] Emergency pre-wipe backup (${preWipeBackup.id}) verified successfully.`);
+      console.log(
+        `✅ [Wipe] Emergency pre-wipe backup (${preWipeBackup.id}) verified successfully.`,
+      );
 
       // 2. Wipe Database Collections
       const runtimeModels = (prisma as any)._runtimeDataModel?.models || {};
@@ -483,7 +555,8 @@ export class BackupService {
    * Dispatches admin alert emails for backup or restore failures.
    */
   async sendAlert(subject: string, message: string): Promise<void> {
-    const alertEmail = process.env.BACKUP_ALERT_EMAIL || process.env.ADMIN_EMAIL;
+    const alertEmail =
+      process.env.BACKUP_ALERT_EMAIL || process.env.ADMIN_EMAIL;
     if (!alertEmail || process.env.BACKUP_ALERTS_ENABLED === "false") {
       return;
     }
@@ -501,7 +574,10 @@ export class BackupService {
       });
       console.log(`[BackupAlert] Alert enqueued for ${alertEmail}: ${subject}`);
     } catch (err: any) {
-      console.error("[BackupAlert] Failed to dispatch email alert:", err.message);
+      console.error(
+        "[BackupAlert] Failed to dispatch email alert:",
+        err.message,
+      );
     }
   }
 }

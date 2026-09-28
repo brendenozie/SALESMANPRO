@@ -48,8 +48,11 @@ async function acquireDistributedLock(lockKey, ttlSeconds = 600) {
         };
     }
     catch (err) {
-        console.error(`[DistributedLock] Error acquiring lock for ${lockKey}:`, err.message);
-        return { key: fullKey, token, acquired: false, ttlSeconds };
+        if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
+            (0, redis_1.markRedisQuotaExceeded)();
+        }
+        console.warn(`[DistributedLock] Redis lock error for ${lockKey}, granting fallback lock:`, err.message);
+        return { key: fullKey, token, acquired: true, ttlSeconds };
     }
 }
 exports.acquireDistributedLock = acquireDistributedLock;

@@ -41,6 +41,23 @@ const domain_1 = require("@/lib/auth/domain");
 const provision_1 = require("@/lib/auth/provision");
 const verification_1 = require("@/lib/auth/verification");
 const telemetry_1 = require("@/lib/auth/telemetry");
+const openid_client_1 = require("openid-client");
+// Cache discovered OpenID issuers in memory to prevent slow, redundant outbound HTTP discovery calls to Google on every request
+const globalForAuth = globalThis;
+const issuerCache = globalForAuth._openidIssuerCache || new Map();
+globalForAuth._openidIssuerCache = issuerCache;
+if (!openid_client_1.Issuer._isCached) {
+    const originalDiscover = openid_client_1.Issuer.discover;
+    openid_client_1.Issuer.discover = async function (uri) {
+        if (issuerCache.has(uri)) {
+            return issuerCache.get(uri);
+        }
+        const issuer = await originalDiscover.call(this, uri);
+        issuerCache.set(uri, issuer);
+        return issuer;
+    };
+    openid_client_1.Issuer._isCached = true;
+}
 function getSharedSecret() {
     return (process.env.NEXTAUTH_SECRET ||
         process.env.AUTH_SECRET ||
@@ -330,8 +347,15 @@ const createAuthOptions = (ctx = {}) => {
                         clientId: googleClientId,
                         clientSecret: googleClientSecret,
                         allowDangerousEmailAccountLinking: true,
+                        authorization: {
+                            params: {
+                                prompt: "select_account",
+                                access_type: "offline",
+                                response_type: "code",
+                            },
+                        },
                         httpOptions: {
-                            timeout: 40000,
+                            timeout: 15000,
                         },
                     }),
                 ]

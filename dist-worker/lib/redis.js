@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = void 0;
+exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = exports.isRedisQuotaExceeded = exports.markRedisQuotaExceeded = void 0;
 // lib/redis.ts
 const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
@@ -88,7 +88,13 @@ function createRedisClient(customOptions) {
     });
     client.on("error", (err) => {
         if (!isBuildPhase) {
-            console.warn("[Redis] Connection error:", err.message);
+            if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
+                markRedisQuotaExceeded();
+                console.warn("[Redis] Upstash quota limit exceeded. Disabling Redis operations for 5 minutes and falling back to in-memory.");
+            }
+            else {
+                console.warn("[Redis] Connection error:", err.message);
+            }
         }
     });
     if (!isBuildPhase) {
@@ -99,6 +105,15 @@ function createRedisClient(customOptions) {
     }
     return client;
 }
+let redisQuotaExceededUntil = 0;
+function markRedisQuotaExceeded(durationMs = 5 * 60 * 1000) {
+    redisQuotaExceededUntil = Date.now() + durationMs;
+}
+exports.markRedisQuotaExceeded = markRedisQuotaExceeded;
+function isRedisQuotaExceeded() {
+    return Date.now() < redisQuotaExceededUntil;
+}
+exports.isRedisQuotaExceeded = isRedisQuotaExceeded;
 exports.redisConnection = isBuildPhase
     ? createBuildMockRedis()
     : globalThis.__redisClient || createRedisClient();
@@ -107,6 +122,8 @@ if (!isBuildPhase) {
 }
 function isRedisAvailable() {
     if (isBuildPhase)
+        return false;
+    if (isRedisQuotaExceeded())
         return false;
     const status = exports.redisConnection.status;
     if (status === "wait") {
