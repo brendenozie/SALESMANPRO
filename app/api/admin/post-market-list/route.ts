@@ -6,6 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
 import { sanitizePublicListingData } from "@/lib/marketplace/productListingPolicy";
+import { enforceMarketplaceAccess, enforceMarketplaceItemLimit } from "@/lib/subscriptions/enforce-limits";
 
 // ----------------- Utils -----------------
 const parseJsonSafely = (data: any, fallback: any = null) => {
@@ -182,6 +183,21 @@ async function handlePost(req: Request, context: any) {
       400,
     );
   }
+
+  // --- Subscription Plan Enforcement: Marketplace Access & Item Limit ---
+  const marketAccessCheck = await enforceMarketplaceAccess(companyId);
+  if (!marketAccessCheck.allowed) {
+    return formatResponse(false, { upgradeRequired: marketAccessCheck.upgradeRequired }, marketAccessCheck.message, 403);
+  }
+
+  // Only enforce item limit on new creations (not updates)
+  if (!id) {
+    const itemLimitCheck = await enforceMarketplaceItemLimit(companyId);
+    if (!itemLimitCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: itemLimitCheck.upgradeRequired, currentCount: itemLimitCheck.currentCount, limit: itemLimitCheck.limit }, itemLimitCheck.message, 403);
+    }
+  }
+
 
   // Normalize arrays
   const safeTags = normalizeArray(tags).filter((v) => typeof v === "string");

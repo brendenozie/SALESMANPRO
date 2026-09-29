@@ -14,6 +14,7 @@ import {
   searchLinkCandidates,
   compareProductAndListing,
 } from "@/lib/marketplace/linkingService";
+import { enforceMarketplaceAccess } from "@/lib/subscriptions/enforce-limits";
 
 async function handleGet(req: Request, context: any) {
   const companyId = context.companyId;
@@ -53,6 +54,11 @@ async function handlePost(req: Request, context: any) {
   const companyId = context.companyId;
   if (!companyId) {
     return formatResponse(false, null, "Authorized company context required", 403);
+  }
+
+  const marketplaceCheck = await enforceMarketplaceAccess(companyId);
+  if (!marketplaceCheck.allowed) {
+    return formatResponse(false, null, marketplaceCheck.message, 403);
   }
 
   const body = await req.json().catch(() => ({}));

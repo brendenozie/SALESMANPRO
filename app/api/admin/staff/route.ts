@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb";
 
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { enforceStaffLimit } from "@/lib/subscriptions/enforce-limits";
 
 // Helper to format staff data
 async function formatStaffData(staffMember: any) {
@@ -92,6 +93,12 @@ async function createStaff(req: Request) {
 
   if (!name || !email || !jobTitle || !department || !companyId) {
     return formatResponse(false, null, "Missing required fields: name, email, jobTitle, department, companyId", 400);
+  }
+
+  // --- Subscription Plan Enforcement: Staff User Limit ---
+  const staffCheck = await enforceStaffLimit(companyId);
+  if (!staffCheck.allowed) {
+    return formatResponse(false, { upgradeRequired: staffCheck.upgradeRequired, currentCount: staffCheck.currentCount, limit: staffCheck.limit }, staffCheck.message, 403);
   }
 
   try {

@@ -7,6 +7,7 @@ import prisma from "@/server/db/prismadb";
 import { resolveCname, resolveTxt } from "dns/promises";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
+import { enforceCustomDomain } from "@/lib/subscriptions/enforce-limits";
 import { z } from "zod";
 
 const EXPECTED_TARGET = "app.your-production-domain.com";
@@ -63,6 +64,21 @@ export async function POST(req: NextRequest) {
       "Domain is already connected to another company.",
       409
     );
+  }
+
+  const userCompany = await prisma.company.findFirst({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+
+  if (!userCompany) {
+    return formatResponse(false, null, "Company not found", 404);
+  }
+
+  // --- Subscription Plan Enforcement: Custom Domain Gate ---
+  const domainCheck = await enforceCustomDomain(userCompany.id);
+  if (!domainCheck.allowed) {
+    return formatResponse(false, { upgradeRequired: domainCheck.upgradeRequired }, domainCheck.message, 403);
   }
 
   let cnameRecords: string[] = [];

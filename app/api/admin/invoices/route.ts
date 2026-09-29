@@ -2,6 +2,7 @@ import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { InvoiceStatus } from "@prisma/client";
+import { enforceInvoiceLimit } from "@/lib/subscriptions/enforce-limits";
 
 export async function GET(req: Request) {
   try {
@@ -176,6 +177,12 @@ export async function POST(req: Request) {
     }
     if (!dueDate) {
       return formatResponse(false, null, "dueDate is required", 400);
+    }
+
+    // --- Subscription Plan Enforcement: Monthly Invoice Limit ---
+    const invoiceCheck = await enforceInvoiceLimit(targetCompanyId);
+    if (!invoiceCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: invoiceCheck.upgradeRequired, currentCount: invoiceCheck.currentCount, limit: invoiceCheck.limit }, invoiceCheck.message, 403);
     }
     if (!Array.isArray(items) || items.length === 0) {
       return formatResponse(false, null, "Invoice must contain at least one line item", 400);

@@ -3,6 +3,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/adminAuth";
 import { mapSender } from "@/lib/whatsapp/adminDto";
 import { sendAdminWhatsAppReply } from "@/lib/whatsapp/outbound";
+import { enforceWhatsAppAi } from "@/lib/subscriptions/enforce-limits";
 
 export async function GET(req: Request) {
   try {
@@ -47,6 +48,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const auth = await requireWhatsAppAdmin(req);
+
+    // --- Subscription Plan Enforcement: WhatsApp AI Feature Gate ---
+    const waCheck = await enforceWhatsAppAi(auth.companyId);
+    if (!waCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: waCheck.upgradeRequired }, waCheck.message, 403);
+    }
+
     const body = await req.json();
     const conversationId = body.conversationId;
     const text = body.text || body.message;

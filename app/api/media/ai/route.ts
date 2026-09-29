@@ -9,10 +9,25 @@ import { NextResponse } from "next/server";
 import { resolveAIAuth } from "@/lib/ai/authHelper";
 import { aiService } from "@/lib/ai/aiService";
 import prisma from "@/server/db/prismadb";
+import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
 
 export async function POST(req: Request) {
   try {
     const auth = await resolveAIAuth(req);
+
+    // --- Subscription Plan Enforcement: AI Studio Feature Gate ---
+    const aiCheck = await enforceAiStudioAccess(auth.companyId);
+    if (!aiCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: aiCheck.message,
+          upgradeRequired: aiCheck.upgradeRequired,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
 
     const { mediaId, action = "GENERATE_IMAGE", config = {} } = body;

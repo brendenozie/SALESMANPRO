@@ -6,6 +6,7 @@ import { productAI } from "@/lib/ai/productAI";
 import { evaluateTenantStoreSEO } from "@/lib/seo/seo-validation";
 import { buildCanonicalUrl } from "@/lib/seo/canonical-builder";
 import { notifySearchEnginesOfUpdate } from "@/lib/seo/update-notifier";
+import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,18 @@ export async function POST(req: Request) {
 
     if (!companyId) {
       return NextResponse.json({ error: "companyId is required" }, { status: 400 });
+    }
+
+    // --- Subscription Plan Enforcement: AI Studio Feature Gate ---
+    const aiCheck = await enforceAiStudioAccess(companyId);
+    if (!aiCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: aiCheck.message,
+          upgradeRequired: aiCheck.upgradeRequired,
+        },
+        { status: 403 }
+      );
     }
 
     const company = await prisma.company.findUnique({

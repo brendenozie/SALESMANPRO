@@ -17,6 +17,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { schoolAIService, GradingFeedbackInput } from "@/lib/school/schoolAIService";
 import { v4 as uuidv4 } from "uuid";
+import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
 
 export const POST = withApiHandler(
   async (request: NextRequest, context) => {
@@ -42,6 +43,11 @@ export const POST = withApiHandler(
 
     const userId = context.user?.id;
     if (!userId) return formatResponse(false, null, "Authentication required", 401);
+
+    const aiCheck = await enforceAiStudioAccess(companyId);
+    if (!aiCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: aiCheck.upgradeRequired }, aiCheck.message, 403);
+    }
 
     const input: GradingFeedbackInput = {
       submissionText,

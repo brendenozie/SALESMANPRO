@@ -9,10 +9,25 @@ import { NextResponse } from "next/server";
 import { resolveAIAuth } from "@/lib/ai/authHelper";
 import { aiService } from "@/lib/ai/aiService";
 import { aiJobQueue } from "@/lib/ai/queue/aiQueue";
+import { enforceVideoGenerationAccess } from "@/lib/subscriptions/enforce-limits";
 
 export async function POST(req: Request) {
   try {
     const auth = await resolveAIAuth(req);
+
+    // --- Subscription Plan Enforcement: AI Video Generation Gate ---
+    const videoCheck = await enforceVideoGenerationAccess(auth.companyId);
+    if (!videoCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: videoCheck.message,
+          upgradeRequired: videoCheck.upgradeRequired,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
 
     const {

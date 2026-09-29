@@ -6,6 +6,7 @@
  */
 
 import { formatResponse } from "@/lib/formatResponse";
+import { enforceBulkProductEdit } from "@/lib/subscriptions/enforce-limits";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import {
   previewBulkImport,
@@ -59,6 +60,12 @@ async function handlePost(req: Request, context: any) {
   const companyId = context.companyId;
   if (!companyId) {
     return formatResponse(false, null, "Authorized company context required", 403);
+  }
+
+  // --- Subscription Plan Enforcement: Bulk Product Edit Gate ---
+  const bulkCheck = await enforceBulkProductEdit(companyId);
+  if (!bulkCheck.allowed) {
+    return formatResponse(false, { upgradeRequired: bulkCheck.upgradeRequired }, bulkCheck.message, 403);
   }
 
   const body = await req.json().catch(() => ({}));

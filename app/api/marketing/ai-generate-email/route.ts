@@ -5,6 +5,7 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import Groq from "groq-sdk";
 import { superAdminAIService } from "@/lib/ai/superAdminService";
+import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,6 +43,13 @@ export async function POST(req: NextRequest) {
     // Tenant check
     let resolvedBrandName = "SalesmanPro";
     let targetCompanyId = companyId || user.companyId;
+
+    if (targetCompanyId) {
+      const aiCheck = await enforceAiStudioAccess(targetCompanyId);
+      if (!aiCheck.allowed) {
+        return formatResponse(false, { upgradeRequired: aiCheck.upgradeRequired }, aiCheck.message, 403);
+      }
+    }
 
     if (scope === "STORE" && targetCompanyId) {
       const company = await prisma.company.findUnique({

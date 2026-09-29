@@ -6,6 +6,7 @@ import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/admin
 import { encrypt } from "@/lib/crypto";
 import { looksLikePlaceholderSecret } from "@/lib/whatsapp/credentials";
 import { getWhatsAppWorkerHealth } from "@/lib/whatsapp/workerHealth";
+import { enforceWhatsAppAi } from "@/lib/subscriptions/enforce-limits";
 
 function publicAccount(account: {
   environment: string;
@@ -118,6 +119,12 @@ export async function POST(req: NextRequest) {
     const auth = await requireWhatsAppAdmin(req);
     const body = await req.json();
     const companyId = auth.companyId;
+
+    // --- Subscription Plan Enforcement: WhatsApp AI Feature Gate ---
+    const whatsAppCheck = await enforceWhatsAppAi(companyId);
+    if (!whatsAppCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: whatsAppCheck.upgradeRequired }, whatsAppCheck.message, 403);
+    }
 
     const accountInput = body.account ?? body;
     const aiConfigInput = body.aiConfig ?? body;

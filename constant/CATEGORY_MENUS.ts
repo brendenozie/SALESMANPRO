@@ -200,7 +200,7 @@ const commonEcommerce = (
         {
           label: "Market List",
           href: `/admin/${adminSlug}/mymarketplace`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "Product Analytics",
@@ -256,7 +256,7 @@ const commonEcommerce = (
         {
           label: "Marketplace",
           href: `/admin/${adminSlug}/customerorders`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "Delivery",
@@ -414,59 +414,59 @@ const commonEcommerce = (
     {
       label: "AI Studio & Media",
       icon: SparklesIcon,
-      minTier: "Ghuba Basic",
+      minTier: "Ghuba Starter", // AI credits start at Starter (100 cr/mo)
       subItems: [
         {
           label: "AI Workforce (28 Agents)",
           href: `/admin/${adminSlug}/ai-workforce`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "AI Studio (Full Suite)",
           href: `/admin/${adminSlug}/ai-studio`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "Image Generation",
           href: `/admin/${adminSlug}/ai-images`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "Video Generation",
           href: `/admin/${adminSlug}/ai-videos`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Pro", // Video generation requires Pro (500 cr/mo)
         },
         {
           label: "Generated Library",
           href: `/admin/${adminSlug}/ai-media-library`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "AI Wallet & Settings",
           href: `/admin/${adminSlug}/ai-settings`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
       ],
     },
     {
       label: "Social Media AI",
       icon: ShareIcon,
-      minTier: "Ghuba Basic",
+      minTier: "Ghuba Starter", // Social AI requires AI credits (Starter+)
       subItems: [
         {
           label: "Marketing Command Center",
           href: `/admin/${adminSlug}/social`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "Content Calendar",
           href: `/admin/${adminSlug}/social/calendar`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
         {
           label: "Social Analytics",
           href: `/admin/${adminSlug}/social/analytics`,
-          minTier: "Ghuba Basic",
+          minTier: "Ghuba Starter",
         },
       ],
     },
@@ -917,7 +917,7 @@ export const getCategoryMenus = (
         label: "Marketplace Listings",
         href: `/admin/${adminSlug}/marketplace-gh`,
         icon: ClipboardDocumentListIcon,
-        minTier: "Ghuba Basic",
+        minTier: "Ghuba Starter",
       },
       {
         label: "Subscription Payments",
@@ -7435,17 +7435,20 @@ export const getCategoryMenus = (
         label: "School AI Studio",
         href: `/admin/${adminSlug}/ai-studio`,
         icon: SparklesIcon,
+        minTier: "Ghuba Starter",
       },
       {
         label: "WhatsApp Engine",
         icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
         subItems: [
-          { label: "WhatsApp Dashboard", href: `/admin/${adminSlug}/whatsapp` },
+          { label: "WhatsApp Dashboard", href: `/admin/${adminSlug}/whatsapp`, minTier: "Ghuba Pro" },
           {
             label: "School Notice Broadcasts",
             href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
           },
-          { label: "Live Inbox", href: `/admin/${adminSlug}/whatsapp-inbox` },
+          { label: "Live Inbox", href: `/admin/${adminSlug}/whatsapp-inbox`, minTier: "Ghuba Pro" },
         ],
       },
       {
@@ -7682,17 +7685,20 @@ export const getCategoryMenus = (
         label: "School AI Studio",
         href: `/admin/${adminSlug}/ai-studio`,
         icon: SparklesIcon,
+        minTier: "Ghuba Starter",
       },
       {
         label: "WhatsApp Engine",
         icon: ChatBubbleLeftRightIcon,
+        minTier: "Ghuba Pro",
         subItems: [
-          { label: "WhatsApp Dashboard", href: `/admin/${adminSlug}/whatsapp` },
+          { label: "WhatsApp Dashboard", href: `/admin/${adminSlug}/whatsapp`, minTier: "Ghuba Pro" },
           {
             label: "School Notice Broadcasts",
             href: `/admin/${adminSlug}/whatsapp-templates`,
+            minTier: "Ghuba Pro",
           },
-          { label: "Live Inbox", href: `/admin/${adminSlug}/whatsapp-inbox` },
+          { label: "Live Inbox", href: `/admin/${adminSlug}/whatsapp-inbox`, minTier: "Ghuba Pro" },
         ],
       },
       {

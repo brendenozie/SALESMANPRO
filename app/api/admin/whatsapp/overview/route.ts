@@ -3,6 +3,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { requireWhatsAppAdmin, unauthorizedResponse } from "@/lib/whatsapp/adminAuth";
 import { creditLedger } from "@/lib/ai/creditLedger";
 import { getWhatsAppWorkerHealth } from "@/lib/whatsapp/workerHealth";
+import { enforceWhatsAppAi } from "@/lib/subscriptions/enforce-limits";
 
 function startOfRange(range: string) {
   const now = new Date();
@@ -20,6 +21,12 @@ export async function GET(req: Request) {
   try {
     const auth = await requireWhatsAppAdmin(req);
     const companyId = auth.companyId;
+
+    // --- Subscription Plan Enforcement: WhatsApp AI Feature Gate ---
+    const waCheck = await enforceWhatsAppAi(companyId);
+    if (!waCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: waCheck.upgradeRequired }, waCheck.message, 403);
+    }
     const { searchParams } = new URL(req.url);
     const range = searchParams.get("range") || "30d";
     const from = startOfRange(range);

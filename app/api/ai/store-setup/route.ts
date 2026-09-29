@@ -5,6 +5,7 @@ import { aiService } from "@/lib/ai/aiService";
 import { creditLedger } from "@/lib/ai/creditLedger";
 import prisma from "@/server/db/prismadb";
 import { AIPlatformError } from "@/lib/ai/types";
+import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,20 @@ const storeSetupSchema = z.object({
 export async function POST(req: Request) {
   try {
     const auth = await resolveAIAuth(req);
+
+    // --- Subscription Plan Enforcement: AI Studio Feature Gate ---
+    const aiCheck = await enforceAiStudioAccess(auth.companyId);
+    if (!aiCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: aiCheck.message,
+          upgradeRequired: aiCheck.upgradeRequired,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const validated = storeSetupSchema.parse(body);
 

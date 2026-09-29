@@ -21,7 +21,12 @@ export interface PlanLimits {
   customers: number; // -1 = unlimited
   monthlyAiCredits: number;
   locations: number; // -1 = unlimited
+  invoicesReceipts: number; // -1 = unlimited, otherwise the monthly cap
+  marketplaceListings: number; // -1 = unlimited, 0 = feature not available
+  services: number; // -1 = unlimited
   customDomain: boolean;
+  sslCertificate: boolean;
+  bulkProductEdit: boolean;
   multiCounterPos: boolean;
   whatsAppAi: boolean;
   industryModules: string[]; // List of enabled industry keys
@@ -60,30 +65,36 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
     limits: {
       staffUsers: 1,
       salesAgents: 0,
-      products: 100,
-      customers: 250,
+      products: -1, // Unlimited
+      customers: -1, // Unlimited
       monthlyAiCredits: 0,
       locations: 1,
+      invoicesReceipts: 20,
+      marketplaceListings: 0, // No marketplace access on Basic
+      services: 5,
       customDomain: false,
+      sslCertificate: true,
+      bulkProductEdit: false,
       multiCounterPos: false,
       whatsAppAi: false,
       industryModules: ["ecommerce", "retail"],
     },
     highlightFeatures: [
-      "Subdomain Web Storefront",
-      "Up to 100 Products & Basic Stock Tracking",
-      "Manual Sales & Digital Receipts",
-      "M-PESA Manual Payment Reconciliation",
+      "Standard Ghuba Subdomain",
+      "SSL Certificate",
+      "Unlimited Products",
+      "Unlimited Sales Records",
+      "20 Invoices & Receipts",
       "1 Staff User Account",
-      "Standard Web & Mobile Dashboard",
     ],
     featureGroups: [
       {
         category: "Commerce & POS",
         items: [
-          "Subdomain Storefront (e.g. yourshop.salesmanpro.site)",
+          "Standard Ghuba Subdomain (e.g. yourshop.ghuba.site)",
+          "SSL Certificate",
           "Single-Counter Basic POS",
-          "Catalog & Product Management (up to 100 items)",
+          "Unlimited Products & Basic Stock Tracking",
           "Manual Order & Sale Logging",
           "Digital Receipt Generation",
         ],
@@ -92,6 +103,8 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
         category: "Operations & Admin",
         items: [
           "1 Staff Account",
+          "Unlimited Sales Records",
+          "20 Invoices & Receipts",
           "Basic Inventory Levels",
           "Standard Daily Sales Summary",
           "Mobile-friendly Responsive Dashboard",
@@ -129,7 +142,12 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
       customers: -1, // Unlimited
       monthlyAiCredits: 100,
       locations: 1,
+      invoicesReceipts: 50,
+      marketplaceListings: 25,
+      services: 25,
       customDomain: true,
+      sslCertificate: true,
+      bulkProductEdit: true,
       multiCounterPos: false,
       whatsAppAi: false,
       industryModules: [
@@ -141,20 +159,22 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
       ],
     },
     highlightFeatures: [
-      "Custom Domain Support & Free SSL",
-      "Fast Counter POS with Barcode & Thermal Receipt Printing",
-      "Automated M-PESA STK Push Checkout",
-      "Unlimited Products & Real-time Stock Alerts",
-      "100 Monthly AI Studio Credits",
-      "5 Staff User Roles with Permission Controls",
+      "Custom Domain",
+      "SSL Certificate",
+      "Unlimited Products",
+      "Bulk Product Edit",
+      "Unlimited Sales Records",
+      "50 Invoices & Receipts",
     ],
     featureGroups: [
       {
         category: "Commerce & POS",
         items: [
           "Custom Domain Linking (yourstore.com)",
+          "SSL Certificate",
           "Full Counter POS with Barcode Scanning",
           "Unlimited Products, Categories & Variants",
+          "Bulk Product Edit",
           "Thermal & PDF Invoice / Receipt Printing",
           "Real-time Stock Depletion & Low-Stock Alerts",
         ],
@@ -180,6 +200,9 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
         category: "Operations & Staff",
         items: [
           "Up to 5 Staff Users (Cashier, Manager, Inventory Clerk)",
+          "2 Sales Agents",
+          "Unlimited Sales Records",
+          "50 Invoices & Receipts",
           "Customer Order History & Profiles",
           "Real-time Profit & Margin Analytics",
           "Appointment & Booking Management",
@@ -210,7 +233,12 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
       customers: -1,
       monthlyAiCredits: 500,
       locations: 3,
+      invoicesReceipts: 200,
+      marketplaceListings: 200,
+      services: 100,
       customDomain: true,
+      sslCertificate: true,
+      bulkProductEdit: true,
       multiCounterPos: true,
       whatsAppAi: true,
       industryModules: [
@@ -226,12 +254,12 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
       ],
     },
     highlightFeatures: [
-      "WhatsApp Commerce Live Inbox & Automated Broadcasts",
-      "Autonomous WhatsApp AI Sales Agent (Instant Orders in Chat)",
-      "Multi-Counter POS & Multi-Warehouse Inventory",
-      "500 Monthly AI Credits for Image & Video Generation",
-      "15 Staff Accounts & 10 Sales Commission Agents",
-      "Advanced Profit Margins & Accounting Breakdown",
+      "Custom Domain",
+      "SSL Certificate",
+      "Unlimited Products",
+      "Bulk Product Edit",
+      "Unlimited Sales Records",
+      "200 Invoices & Receipts",
     ],
     featureGroups: [
       {
@@ -296,7 +324,12 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
       customers: -1,
       monthlyAiCredits: 2000,
       locations: -1, // Unlimited
+      invoicesReceipts: -1, // Unlimited
+      marketplaceListings: -1, // Unlimited
+      services: -1, // Unlimited
       customDomain: true,
+      sslCertificate: true,
+      bulkProductEdit: true,
       multiCounterPos: true,
       whatsAppAi: true,
       industryModules: [
@@ -313,12 +346,12 @@ export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
       ],
     },
     highlightFeatures: [
-      "All Industry Operating Systems (Schools, Real Estate, Clinics, Logistics, Fitness)",
-      "Unlimited Staff Users, Counters, Branches & Warehouses",
-      "2,000 Monthly AI Credits & Custom Prompt Tuning",
-      "Full School ERP (Students, Exams, Fees, Library, Transport)",
-      "Fleet Dispatch, Driver Live Tracking & Logistics Lifecycle",
-      "Dedicated 24/7 Account Executive & Custom API Integrations",
+      "Custom Domain",
+      "SSL Certificate",
+      "Unlimited Products",
+      "Bulk Product Edit",
+      "Unlimited Sales Records",
+      "Unlimited Invoices & Receipts",
     ],
     featureGroups: [
       {

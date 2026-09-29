@@ -2,6 +2,7 @@ import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler, HandlerContext } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { enforceMarketplaceAccess } from "@/lib/subscriptions/enforce-limits";
 
 // Helper to safely resolve route param in Next.js 15
 async function resolveParamId(context: HandlerContext): Promise<string | null> {
@@ -42,6 +43,14 @@ async function handleUpdateListing(req: Request, context: HandlerContext) {
   const existing = await prisma.marketplaceListings.findUnique({ where: { id } });
   if (!existing) {
     return formatResponse(false, null, "Listing not found", 404);
+  }
+
+  // --- Subscription Plan Enforcement: Marketplace Access Gate ---
+  if (existing.companyId) {
+    const marketCheck = await enforceMarketplaceAccess(existing.companyId);
+    if (!marketCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: marketCheck.upgradeRequired }, marketCheck.message, 403);
+    }
   }
 
   const body = await req.json();
@@ -99,6 +108,14 @@ async function handleDeleteListing(req: Request, context: HandlerContext) {
   const existing = await prisma.marketplaceListings.findUnique({ where: { id } });
   if (!existing) {
     return formatResponse(false, null, "Listing not found", 404);
+  }
+
+  // --- Subscription Plan Enforcement: Marketplace Access Gate ---
+  if (existing.companyId) {
+    const marketCheck = await enforceMarketplaceAccess(existing.companyId);
+    if (!marketCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: marketCheck.upgradeRequired }, marketCheck.message, 403);
+    }
   }
 
   // Invariant Guard: Check if property has active bookings or active resident allocations

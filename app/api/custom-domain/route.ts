@@ -17,6 +17,7 @@ import {
   registerCustomDomain,
   removeCustomDomain,
 } from "@/lib/tenant/domain-service";
+import { enforceCustomDomain } from "@/lib/subscriptions/enforce-limits";
 
 const DomainSchema = z.object({
   domain: z
@@ -44,6 +45,15 @@ export const POST = withApiHandler(async (req: Request) => {
   }
 
   const { domain, companyId } = parsed.data;
+
+  // --- Subscription Plan Enforcement: Custom Domain Gate ---
+  const domainCheck = await enforceCustomDomain(companyId);
+  if (!domainCheck.allowed) {
+    return NextResponse.json(
+      { error: domainCheck.message, upgradeRequired: domainCheck.upgradeRequired },
+      { status: 403 },
+    );
+  }
 
   try {
     const result = await registerCustomDomain({ companyId, domain });

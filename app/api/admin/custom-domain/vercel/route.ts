@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
+import { enforceCustomDomain } from "@/lib/subscriptions/enforce-limits";
 import { z } from "zod";
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
@@ -148,6 +149,21 @@ export async function POST(req: NextRequest) {
   const cleanDomain = parsed.data.domain.trim().toLowerCase();
 
   try {
+    const userCompany = await prisma.company.findFirst({
+      where: { userId: auth.user.id },
+      select: { id: true },
+    });
+
+    if (!userCompany) {
+      return formatResponse(false, null, "Company not found", 404);
+    }
+
+    // --- Subscription Plan Enforcement: Custom Domain Gate ---
+    const domainCheck = await enforceCustomDomain(userCompany.id);
+    if (!domainCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: domainCheck.upgradeRequired }, domainCheck.message, 403);
+    }
+
     // Prevent duplicate domain usage
     const existing = await prisma.company.findFirst({
       where: { domain: cleanDomain },

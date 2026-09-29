@@ -41,7 +41,10 @@ interface Plan {
     customers: number;
     monthlyAiCredits: number;
     locations: number;
+    invoicesReceipts: number;
     customDomain: boolean;
+    sslCertificate: boolean;
+    bulkProductEdit: boolean;
     multiCounterPos: boolean;
     whatsAppAi: boolean;
     industryModules: string[];
@@ -521,6 +524,12 @@ export default function PricingSection({
                       <span>WhatsApp AI</span>
                       <span className="font-bold text-slate-900 dark:text-slate-100">
                         {plan.limits.whatsAppAi ? "Enabled" : "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>Invoices & Receipts</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">
+                        {plan.limits.invoicesReceipts === -1 ? "Unlimited" : plan.limits.invoicesReceipts}
                       </span>
                     </div>
                   </div>

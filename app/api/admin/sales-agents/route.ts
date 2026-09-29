@@ -7,6 +7,7 @@ import { AgentProfile } from "@/app/admin/[slug]/agents/AgentsClient";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { enforceSalesAgentLimit } from "@/lib/subscriptions/enforce-limits";
 
 // Define the ROLE enum
 enum ROLE {
@@ -105,6 +106,12 @@ async function createAgent(req: Request) {
         "Missing required fields: name, email, phone, bio, companyId",
         400
       );
+
+    // --- Subscription Plan Enforcement: Sales Agent Limit ---
+    const agentCheck = await enforceSalesAgentLimit(companyId);
+    if (!agentCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: agentCheck.upgradeRequired, currentCount: agentCheck.currentCount, limit: agentCheck.limit }, agentCheck.message, 403);
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser)

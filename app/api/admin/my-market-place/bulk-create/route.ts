@@ -3,6 +3,8 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
+import { enforceBulkProductEdit, enforceMarketplaceAccess, enforceMarketplaceItemLimit } from "@/lib/subscriptions/enforce-limits";
+
 
 // Define route params (none)
 type RouteParams = { params: {} };
@@ -98,6 +100,18 @@ async function handleBulkCreate(req: Request) {
   const { companyId, listings, isUpdate } = body; // Added isUpdate flag
 
   if (!companyId) return formatResponse(false, null, "companyId is required.", 400);
+
+  // --- Subscription Plan Enforcement: Marketplace Access Gate ---
+  const marketCheck = await enforceMarketplaceAccess(companyId);
+  if (!marketCheck.allowed) {
+    return formatResponse(false, { upgradeRequired: marketCheck.upgradeRequired }, marketCheck.message, 403);
+  }
+
+  // --- Subscription Plan Enforcement: Bulk Product Edit ---
+  const bulkEditCheck = await enforceBulkProductEdit(companyId);
+  if (!bulkEditCheck.allowed) {
+    return formatResponse(false, { upgradeRequired: bulkEditCheck.upgradeRequired }, bulkEditCheck.message, 403);
+  }
   if (!Array.isArray(listings) || listings.length === 0) {
     return formatResponse(false, null, "listings[] is required.", 400);
   }

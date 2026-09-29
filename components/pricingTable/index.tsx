@@ -42,7 +42,10 @@ interface Plan {
     customers: number;
     monthlyAiCredits: number;
     locations: number;
+    invoicesReceipts: number;
     customDomain: boolean;
+    sslCertificate: boolean;
+    bulkProductEdit: boolean;
     multiCounterPos: boolean;
     whatsAppAi: boolean;
     industryModules: string[];
@@ -235,28 +238,37 @@ export default function PricingSectionRedesign() {
                     <div className="mt-5 p-3.5 rounded-2xl bg-slate-50 dark:bg-[#080B12] border border-slate-100 dark:border-slate-800/80 space-y-2 text-xs">
                       <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1.5 text-[11px] font-semibold">
-                          <UserGroupIcon className="w-3.5 h-3.5 text-slate-400" /> Staff Seats
+                          <UserGroupIcon className="w-3.5 h-3.5 text-slate-400" /> Staff Users
                         </span>
                         <span className="font-bold text-slate-900 dark:text-white">
-                          {plan.limits.staffUsers === -1 ? "Unlimited" : `${plan.limits.staffUsers}`}
+                          {plan.limits.staffUsers === -1 ? "Unlimited" : `${plan.limits.staffUsers} Staff`}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1.5 text-[11px] font-semibold">
-                          <CpuChipIcon className="w-3.5 h-3.5 text-slate-400" /> AI Credits
+                          <UserGroupIcon className="w-3.5 h-3.5 text-slate-400" /> Sales Agents
                         </span>
                         <span className="font-bold text-slate-900 dark:text-white">
-                          {plan.limits.monthlyAiCredits > 0 ? `${plan.limits.monthlyAiCredits.toLocaleString()}` : "—"}
+                          {plan.limits.salesAgents === -1 ? "Unlimited" : plan.limits.salesAgents === 0 ? "—" : `${plan.limits.salesAgents} Agents`}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1.5 text-[11px] font-semibold">
-                          <BuildingStorefrontIcon className="w-3.5 h-3.5 text-slate-400" /> POS Setup
+                          <CpuChipIcon className="w-3.5 h-3.5 text-slate-400" /> AI Studio
                         </span>
                         <span className="font-bold text-slate-900 dark:text-white">
-                          {plan.limits.multiCounterPos ? "Multi-Counter" : "Single Store"}
+                          {plan.limits.monthlyAiCredits > 0 ? `${plan.limits.monthlyAiCredits.toLocaleString()} cr/mo` : "—"}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1.5 text-[11px] font-semibold">
+                          <BuildingStorefrontIcon className="w-3.5 h-3.5 text-slate-400" /> POS Counter
+                        </span>
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {plan.limits.multiCounterPos ? "Multi-Counter" : "Single Counter"}
                         </span>
                       </div>
 
@@ -265,7 +277,16 @@ export default function PricingSectionRedesign() {
                           <ChatBubbleLeftRightIcon className="w-3.5 h-3.5 text-slate-400" /> WhatsApp AI
                         </span>
                         <span className={`font-bold ${plan.limits.whatsAppAi ? "text-emerald-500" : "text-slate-400"}`}>
-                          {plan.limits.whatsAppAi ? "Active Agent" : "—"}
+                          {plan.limits.whatsAppAi ? "Enabled" : "—"}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1.5 text-[11px] font-semibold">
+                          <BuildingStorefrontIcon className="w-3.5 h-3.5 text-slate-400" /> Invoices & Receipts
+                        </span>
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {plan.limits.invoicesReceipts === -1 ? "Unlimited" : plan.limits.invoicesReceipts}
                         </span>
                       </div>
                     </div>

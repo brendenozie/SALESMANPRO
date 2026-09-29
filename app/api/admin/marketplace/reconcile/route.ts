@@ -14,12 +14,19 @@ import { NextResponse } from "next/server";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { reconcileProductListing } from "@/lib/marketplace/publicationService";
+import { enforceMarketplaceAccess } from "@/lib/subscriptions/enforce-limits";
 
 export const GET = withApiHandler(
   async (request: Request, context: any) => {
     const companyId = context.companyId;
     if (!companyId) {
       return formatResponse(false, null, "Authorized company context required", 403);
+    }
+
+    // --- Subscription Plan Enforcement: Marketplace Access Gate ---
+    const marketCheck = await enforceMarketplaceAccess(companyId);
+    if (!marketCheck.allowed) {
+      return formatResponse(false, { upgradeRequired: marketCheck.upgradeRequired }, marketCheck.message, 403);
     }
 
     const report = await reconcileProductListing(companyId);
