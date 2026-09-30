@@ -14,15 +14,17 @@ export const unifiedOrderItemSchema = z.object({
   date: z.string().nullable().optional(),
   timeSlot: z.string().nullable().optional(),
   serviceNotes: z.string().nullable().optional(),
+  course: z.string().nullable().optional(),
+  kitchenStatus: z.string().nullable().optional(),
   selectedOptions: z.array(selectedOptionSchema).optional(),
   appointmentId: z.string().optional(),
   productId: z.string().optional(),
 });
 
 export const unifiedOrderSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().min(1),
+  name: z.string().min(1).default("Walk-in Customer"),
+  email: z.string().optional().default("walkin@pos.local"),
+  phone: z.string().optional().default("N/A"),
   mpesaPhone: z.string().optional(),
   consumerId: z.string().optional(),
   companyId: z.string().optional(),
@@ -30,7 +32,7 @@ export const unifiedOrderSchema = z.object({
     .enum(["PRODUCT", "SERVICE", "RENTAL", "BOOKING", "OTHER"])
     .default("PRODUCT"),
   source: z
-    .enum(["WEBSITE", "IN_PERSON", "MOBILE", "WHATSAPP", "AI"])
+    .enum(["WEBSITE", "IN_PERSON", "MOBILE", "WHATSAPP", "AI", "POS"])
     .default("WEBSITE"),
   paymentOption: z
     .enum([
@@ -53,12 +55,24 @@ export const unifiedOrderSchema = z.object({
   promoCode: z.string().optional(),
   notes: z.string().optional(),
   trackingNumber: z.string().optional(),
-  idempotencyKey: z.string().uuid().optional(),
+  idempotencyKey: z.string().optional(),
   customerPin: z.string().optional(),
   terminalId: z.string().optional(),
   cashierName: z.string().optional(),
   posSessionId: z.string().optional(),
   operatorId: z.string().optional(),
+  tableId: z.string().optional(),
+  tableSessionId: z.string().optional(),
+  tableNumber: z.string().optional(),
+  guestCount: z.number().int().optional(),
+  serviceMode: z.string().optional(),
+  kitchenStatus: z.string().optional(),
+  isHeld: z.boolean().optional(),
+  heldNote: z.string().optional(),
+  isWalkIn: z.boolean().optional(),
+  customerType: z.string().optional(),
+  channel: z.enum(["WEBSITE", "MOBILE", "WHATSAPP", "FACEBOOK", "INSTAGRAM", "POS", "API", "AI"]).optional(),
+  actorType: z.enum(["CUSTOMER", "USER", "STAFF", "AI", "SYSTEM"]).optional(),
   paymentData: z.record(z.string(), z.any()).optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });

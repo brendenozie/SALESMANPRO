@@ -41,6 +41,11 @@ export interface UnifiedReceiptData {
   customerEmail?: string;
   customerPin?: string; // Taxpayer / Buyer PIN
 
+  // Restaurant & Dining Context
+  tableNumber?: string;
+  guestCount?: number;
+  serviceMode?: string;
+
   // Financial Totals
   currency: string;
   subtotal: number;

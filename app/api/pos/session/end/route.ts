@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { sessionId, companyId, closingBalance, notes } = body;
+    const { sessionId, companyId, countedCash, closingBalance, notes } = body;
 
     if (!sessionId || !companyId) {
       return formatResponse(
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
     const session = await endPOSSession(
       sessionId,
       companyId,
+      countedCash != null ? Number(countedCash) : (closingBalance != null ? Number(closingBalance) : undefined),
       closingBalance != null ? Number(closingBalance) : undefined,
       notes
     );

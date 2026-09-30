@@ -36,7 +36,8 @@ import type { Company } from '@prisma/client';
 import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
-import type { POSCustomerRecord as POSCustomer, POSOperatorInfo as POSOperator, POSSessionInfo as POSSession } from '@/types/pos';
+import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
+import type { POSCustomerRecord as POSCustomer, POSOperatorInfo as POSOperator, POSSessionInfo as POSSession, POSHeldOrder } from '@/types/pos';
 
 // --- Persistent State Hook ---
 function usePersistentState<T>(key: string, initial: T) {
@@ -208,6 +209,50 @@ const AdminServicePOSClient: React.FC<{
         setCart([]);
         setShowAuthModal(true);
     };
+
+    // Held Orders State & Handlers
+    const [heldOrders, setHeldOrders] = useState<POSHeldOrder[]>([]);
+    const [showHeldOrdersModal, setShowHeldOrdersModal] = useState(false);
+
+    const handleHoldCart = useCallback(() => {
+        if (cart.length === 0) return alert("Cart is empty");
+        const newHeld: POSHeldOrder = {
+            id: `held-${Date.now()}`,
+            sessionId: posSession?.id || "default",
+            heldAt: new Date().toISOString(),
+            note: `Service Ticket - ${cart.length} services`,
+            customer: currentCustomer,
+            items: cart,
+            subtotal,
+            discount: discountPercent,
+            tax: totalTax,
+            total: finalTotal,
+        };
+        setHeldOrders(prev => [newHeld, ...prev]);
+        setCart([]);
+        setServiceNotes('');
+        setCurrentCustomer(null);
+        setClientDetails({ name: '', email: '', phone: '' });
+        alert("Service order placed on hold!");
+    }, [cart, posSession, currentCustomer, subtotal, discountPercent, totalTax, finalTotal]);
+
+    const handleResumeHeldOrder = useCallback((held: POSHeldOrder) => {
+        setCart(held.items);
+        if (held.customer) {
+            setCurrentCustomer(held.customer);
+            setClientDetails({
+                name: held.customer.name,
+                email: held.customer.email,
+                phone: held.customer.phone,
+            });
+        }
+        setDiscountPercent(held.discount || 0);
+        setHeldOrders(prev => prev.filter(o => o.id !== held.id));
+    }, []);
+
+    const handleDeleteHeldOrder = useCallback((id: string) => {
+        setHeldOrders(prev => prev.filter(o => o.id !== id));
+    }, []);
 
     const [isLoading, setIsLoading] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -538,9 +583,6 @@ const AdminServicePOSClient: React.FC<{
 
     const handleProcessPayment = useCallback(() => {
       if (cart.length === 0) return alert('Cart is empty.');
-      if (!currentCustomer && !clientDetails.name) {
-        return alert("Please select or create a customer. ServicePOS requires customer details for services and appointments.");
-      }
       
       setAmountReceived('');
       setTransactionRef('');
@@ -548,7 +590,7 @@ const AdminServicePOSClient: React.FC<{
       setIsSplit(false);
       setIsPending(false);
       setShowPaymentModal(true);
-    }, [cart.length, currentCustomer, clientDetails.name, finalTotal]);
+    }, [cart.length, finalTotal]);
 
     // --- Complete Order & Sync Live Payload ---
     const finalizeSale = useCallback(async () => {
@@ -580,10 +622,14 @@ const AdminServicePOSClient: React.FC<{
                 body: JSON.stringify({
                     companyId: companyId,
                     billing: { 
-                        name: currentCustomer?.name || clientDetails.name,
-                        email: currentCustomer?.email || clientDetails.email || 'customer@store.com',
-                        phone: currentCustomer?.phone || clientDetails.phone || 'N/A',
+                        name: currentCustomer?.name || clientDetails.name || 'Walk-in Guest',
+                        email: currentCustomer?.email || clientDetails.email || 'walkin@pos.local',
+                        phone: currentCustomer?.phone || clientDetails.phone || '0000000000',
                     },
+                    isWalkIn: !currentCustomer,
+                    customerType: currentCustomer ? "IDENTIFIED" : "WALK_IN",
+                    channel: "POS",
+                    actorType: "STAFF",
                     consumerId: currentCustomer?.id || (userId && userId !== 'null' ? userId : undefined),
                     posSessionId: posSession?.id,
                     operatorId: operator?.id || (userId && userId !== 'null' ? userId : undefined),
@@ -678,6 +724,9 @@ const AdminServicePOSClient: React.FC<{
                 operator={operator}
                 posSession={posSession}
                 onEndSession={handleSessionEnded}
+                heldOrdersCount={heldOrders.length}
+                onOpenHeldOrders={() => setShowHeldOrdersModal(true)}
+                currencySymbol={currencySymbol}
             />
 
             <div className="flex flex-1 overflow-hidden w-full relative">
@@ -843,9 +892,20 @@ const AdminServicePOSClient: React.FC<{
                                     <h2 className="font-black text-xl tracking-tight">Current Order</h2>
                                     <p className="text-xs text-gray-500 font-medium">{cart.length} service(s) selected</p>
                                 </div>
-                                <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500">
-                                    <XMarkIcon className="w-5 h-5" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleHoldCart}
+                                        disabled={cart.length === 0}
+                                        className="text-xs font-bold text-amber-500 hover:text-amber-600 disabled:opacity-40 transition-colors uppercase tracking-wider"
+                                        title="Hold current order to serve another customer"
+                                    >
+                                        Hold
+                                    </button>
+                                    <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500">
+                                        <XMarkIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Customer & Booking Settings Form */}
@@ -867,7 +927,7 @@ const AdminServicePOSClient: React.FC<{
                                                 setClientDetails({ name: '', email: '', phone: '' });
                                             }
                                         }}
-                                        required={true}
+                                        required={false}
                                     />
 
                                     <div className="pt-2 border-t border-gray-200/60 dark:border-gray-700/50 space-y-2.5">
@@ -1314,6 +1374,16 @@ const AdminServicePOSClient: React.FC<{
                 terminalId={posSession?.terminalId || "T01"}
                 storeName={companyInfo?.name || "ServicePOS"}
                 onSuccess={handleOperatorAuthenticated}
+            />
+
+            {/* POS HELD ORDERS MODAL */}
+            <POSHeldOrdersModal
+                isOpen={showHeldOrdersModal}
+                onClose={() => setShowHeldOrdersModal(false)}
+                heldOrders={heldOrders}
+                onResumeOrder={handleResumeHeldOrder}
+                onDeleteHeldOrder={handleDeleteHeldOrder}
+                currencySymbol={currencySymbol}
             />
 
             <style>{`

@@ -552,6 +552,14 @@ model Company {
   socialBrandProfile     SocialBrandProfile?
   posSessions            PosSession[]
 
+  // Restaurant & POS Operations
+  restaurantAreas        RestaurantArea[]
+  restaurantTables       RestaurantTable[]
+  tableSessions          TableSession[]
+  tableTransferAudits    TableTransferAudit[]
+  billMergeAudits        BillMergeAudit[]
+  billSplitRecords       BillSplitRecord[]
+
   // Early Learning / Activity System
   activityTypes          ActivityType[]          @relation("ActivityTypes")
   activities             Activity[]              @relation("Activities")
@@ -2991,6 +2999,7 @@ model User {
   aiReviewedOrders              CustomerOrder[]        @relation("AIOrderReviewer")
   operatorSessions              PosSession[]           @relation("OperatorSessions")
   operatedOrders                CustomerOrder[]        @relation("OrderOperator")
+  openedTableSessions           TableSession[]         @relation("TableSessionOpener")
 
   Video Video[]
 
@@ -4235,6 +4244,25 @@ model CustomerOrder {
   operator          User?          @relation("OrderOperator", fields: [operatorId], references: [id])
   cashierName       String?
 
+  // Restaurant, Table & Dining Operations
+  tableId           String?        @db.ObjectId
+  tableSessionId    String?        @db.ObjectId
+  tableNumber       String?
+  guestCount        Int?
+  serviceMode       String?        @default("DINE_IN") // DINE_IN, TAKEAWAY, DELIVERY, COUNTER
+  kitchenStatus     String?        @default("NOT_SENT") // NOT_SENT, SENT, PREPARING, READY, SERVED
+  kitchenSentAt     DateTime?
+  isHeld            Boolean        @default(false)
+  heldAt            DateTime?
+  heldNote          String?
+  heldByStaff       String?
+  mergedIntoId      String?        @db.ObjectId
+  mergedFromIds     String[]
+  splitFromId       String?        @db.ObjectId
+  isWalkIn          Boolean        @default(false)
+  customerType      String?        @default("WALK_IN") // WALK_IN, REGISTERED, VIP
+  orderAudits       Json?
+
   // ============================================================
   // INDEXES
   // ============================================================
@@ -4277,6 +4305,10 @@ model OrderItem {
   discount             Float?
   tax                  Float?
   serviceNotes         String?
+  course               String? // e.g., "Starters", "Mains", "Drinks", "Desserts"
+  kitchenStatus        String?              @default("PENDING")
+  voidReason           String?
+  voidedByStaff        String?
   selectedOptions      Json? // e.g., [{category: "color", name: "Red", extraPrice: 20}, {category: "size", name: "7", extraPrice: 50}]
 
   riderId String?
@@ -6926,6 +6958,13 @@ model StaffProfile {
   employmentStatus EmploymentStatus @default(ACTIVE) // Current employment status
   startDate        DateTime? // Date when employment started
   loginCode        String?          @unique // Optional: Unique code for staff login, if applicable
+  codeHash         String?
+  codeExpiresAt    DateTime?
+  codeLastUsedAt   DateTime?
+  posRole          String?          @default("CASHIER")
+  posPermissions   String[]
+  isPosActive      Boolean          @default(true)
+  tableSessions    TableSession[]
   // Optional fields for Staff
   position         String?
   permissions      Json? // Store staff-specific permissions here
@@ -11873,6 +11912,15 @@ model PosSession {
   totalSales        Float             @default(0)
   totalTransactions Int               @default(0)
   notes             String?
+  shiftStatus       String?           @default("OPEN")
+  expectedCash      Float?            @default(0)
+  countedCash       Float?
+  cashVariance      Float?
+  cashSales         Float?            @default(0)
+  cashRefunds       Float?            @default(0)
+  otherSales        Float?            @default(0)
+  paymentTotals     Json?
+  suspendedAt       DateTime?
   orders            CustomerOrder[]   @relation("SessionOrders")
 
   createdAt         DateTime          @default(now())
@@ -12319,4 +12367,141 @@ model FitnessExercise {
   @@index([category])
   @@index([muscleGroup])
 }
+
+// ─────────────────────────────────────────────────────────
+// RESTAURANT POS & DINING OPERATIONS
+// ─────────────────────────────────────────────────────────
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  ORDERING
+  WAITING_PAYMENT
+  PAID
+  RESERVED
+  OUT_OF_SERVICE
+}
+
+model RestaurantArea {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String            @db.ObjectId
+  company     Company           @relation(fields: [companyId], references: [id])
+  name        String
+  slug        String
+  description String?
+  sortOrder   Int               @default(0)
+  isActive    Boolean           @default(true)
+  tables      RestaurantTable[]
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+  @@index([companyId, isActive])
+}
+
+model RestaurantTable {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String          @db.ObjectId
+  company           Company         @relation(fields: [companyId], references: [id])
+  areaId            String?         @db.ObjectId
+  area              RestaurantArea? @relation(fields: [areaId], references: [id])
+  tableNumber       String
+  name              String?
+  capacity          Int             @default(4)
+  status            TableStatus     @default(AVAILABLE)
+  currentOrderId    String?         @db.ObjectId
+  currentSessionId  String?         @db.ObjectId
+  isActive          Boolean         @default(true)
+  qrCode            String?
+
+  sessions          TableSession[]
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([companyId, tableNumber])
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([areaId])
+}
+
+model TableSession {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String          @db.ObjectId
+  company         Company         @relation(fields: [companyId], references: [id])
+  tableId         String          @db.ObjectId
+  table           RestaurantTable @relation(fields: [tableId], references: [id])
+  openedById      String          @db.ObjectId
+  openedBy        User            @relation("TableSessionOpener", fields: [openedById], references: [id])
+  staffProfileId  String?         @db.ObjectId
+  staffProfile    StaffProfile?   @relation(fields: [staffProfileId], references: [id])
+  guestCount      Int             @default(1)
+  status          String          @default("ACTIVE") // ACTIVE, CLOSED, TRANSFERRED
+  serviceMode     String          @default("DINE_IN") // DINE_IN, TAKEAWAY, DELIVERY, COUNTER
+  openedAt        DateTime        @default(now())
+  closedAt        DateTime?
+  notes           String?
+  orderId         String?         @db.ObjectId
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([companyId, status])
+  @@index([tableId])
+  @@index([openedById])
+}
+
+model TableTransferAudit {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String   @db.ObjectId
+  company         Company  @relation(fields: [companyId], references: [id])
+  fromTableNumber String
+  toTableNumber   String
+  orderId         String   @db.ObjectId
+  staffId         String   @db.ObjectId
+  staffName       String
+  reason          String?
+  timestamp       DateTime @default(now())
+
+  @@index([companyId])
+  @@index([orderId])
+}
+
+model BillMergeAudit {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId     String   @db.ObjectId
+  company       Company  @relation(fields: [companyId], references: [id])
+  sourceOrderId String   @db.ObjectId
+  targetOrderId String   @db.ObjectId
+  staffId       String   @db.ObjectId
+  staffName     String
+  reason        String?
+  timestamp     DateTime @default(now())
+
+  @@index([companyId])
+  @@index([sourceOrderId])
+  @@index([targetOrderId])
+}
+
+model BillSplitRecord {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String   @db.ObjectId
+  company         Company  @relation(fields: [companyId], references: [id])
+  originalOrderId String   @db.ObjectId
+  splitIndex      Int
+  splitType       String   // EQUAL, BY_ITEM, CUSTOM
+  amount          Float
+  items           Json?
+  paymentStatus   String   @default("PENDING")
+  paymentMethod   String?
+  paymentId       String?
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([companyId])
+  @@index([originalOrderId])
+}
+
 

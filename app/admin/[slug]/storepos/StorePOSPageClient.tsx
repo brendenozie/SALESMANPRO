@@ -26,7 +26,8 @@ import { receiptRenderer } from '@/lib/receipts/receiptRenderer';
 import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
-import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo } from '@/types/pos';
+import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
+import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo, POSHeldOrder } from '@/types/pos';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api";
 
@@ -346,6 +347,41 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     setCart([]);
     setShowAuthModal(true);
   };
+
+  // Held Orders State & Handlers
+  const [heldOrders, setHeldOrders] = useState<POSHeldOrder[]>([]);
+  const [showHeldOrdersModal, setShowHeldOrdersModal] = useState(false);
+
+  const handleHoldCart = useCallback(() => {
+    if (cart.length === 0) return alert("Cart is empty");
+    const newHeld: POSHeldOrder = {
+      id: `held-${Date.now()}`,
+      sessionId: posSession?.id || "default",
+      heldAt: new Date().toISOString(),
+      note: `Store Cart - ${cart.length} items`,
+      customer: currentCustomer,
+      items: cart,
+      subtotal,
+      discount: discountPercentage,
+      tax: totalTax,
+      total: finalTotal,
+    };
+    setHeldOrders(prev => [newHeld, ...prev]);
+    setCart([]);
+    setCurrentCustomer(null);
+    alert("Order held successfully!");
+  }, [cart, posSession, currentCustomer, subtotal, discountPercentage, totalTax, finalTotal]);
+
+  const handleResumeHeldOrder = useCallback((held: POSHeldOrder) => {
+    setCart(held.items);
+    if (held.customer) setCurrentCustomer(held.customer);
+    setDiscountPercentage(held.discount || 0);
+    setHeldOrders(prev => prev.filter(o => o.id !== held.id));
+  }, []);
+
+  const handleDeleteHeldOrder = useCallback((id: string) => {
+    setHeldOrders(prev => prev.filter(o => o.id !== id));
+  }, []);
   
   // Variants Modal State
   const [variantModalProduct, setVariantModalProduct] = useState<MarketListingForm | null>(null);
@@ -782,9 +818,14 @@ const handleProcessPayment = useCallback(() => {
       {/* POS SESSION OPERATOR HEADER */}
       <POSSessionHeader
         companyId={companyId}
+        companyName={companyInfo?.name || "Store POS"}
         operator={operator}
         posSession={posSession}
         onEndSession={handleSessionEnded}
+        onLockTerminal={() => setShowAuthModal(true)}
+        heldOrdersCount={heldOrders.length}
+        onOpenHeldOrders={() => setShowHeldOrdersModal(true)}
+        currencySymbol={currencySymbol}
       />
 
       {/* TOP NAVIGATION BAR */}
@@ -888,9 +929,20 @@ const handleProcessPayment = useCallback(() => {
               <h2 className="text-xl font-black flex items-center gap-2">
                 Current Order <span className="bg-indigo-600 text-[10px] text-white px-2 py-0.5 rounded-full">{cart.length}</span>
               </h2>
-              <button onClick={handleClearCart} className="text-xs font-bold text-zinc-400 hover:text-red-500 transition-colors uppercase tracking-widest">
-                Reset
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  onClick={handleHoldCart}
+                  disabled={cart.length === 0}
+                  className="text-xs font-bold text-amber-500 hover:text-amber-600 disabled:opacity-40 transition-colors uppercase tracking-wider"
+                  title="Hold current cart to serve another customer"
+                >
+                  Hold
+                </button>
+                <button onClick={handleClearCart} className="text-xs font-bold text-zinc-400 hover:text-red-500 transition-colors uppercase tracking-widest">
+                  Reset
+                </button>
+              </div>
             </div>
 
             {/* POS CUSTOMER SELECTOR */}
@@ -1453,6 +1505,15 @@ const handleProcessPayment = useCallback(() => {
         terminalId={posSession?.terminalId || "T01"}
         storeName={companyInfo?.name || "StorePOS"}
         onSuccess={handleOperatorAuthenticated}
+      />
+
+      <POSHeldOrdersModal
+        isOpen={showHeldOrdersModal}
+        onClose={() => setShowHeldOrdersModal(false)}
+        heldOrders={heldOrders}
+        onResumeOrder={handleResumeHeldOrder}
+        onDeleteHeldOrder={handleDeleteHeldOrder}
+        currencySymbol={currencySymbol}
       />
     </div>
   );

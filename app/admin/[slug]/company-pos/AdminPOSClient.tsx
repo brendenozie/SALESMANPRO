@@ -214,11 +214,11 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
   };
 
   const handleProcessSale = async () => {
-    const activeName = currentCustomer?.name || customerName;
-    const activeEmail = currentCustomer?.email || customerEmail;
-    if (!selectedEventId || cart.length === 0 || !activeName || !activeEmail || !paymentMethod) {
+    const activeName = currentCustomer?.name || customerName || "Box Office Walk-in";
+    const activeEmail = currentCustomer?.email || customerEmail || "walkin@boxoffice.local";
+    if (!selectedEventId || cart.length === 0 || !paymentMethod) {
       setTransactionStatus('error');
-      setMessage('Please select customer, tickets, and payment method.');
+      setMessage('Please select event, tickets, and payment method.');
       return;
     }
 
@@ -298,6 +298,7 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
     <div className="min-h-screen bg-gray-950 text-gray-200 font-sans relative overflow-hidden flex flex-col">
       {/* POS SESSION OPERATOR HEADER */}
       <POSSessionHeader
+        companyId={companyId}
         operator={operator}
         posSession={posSession}
         companyName="Event POS"
@@ -448,7 +449,7 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
                       setCustomerEmail('');
                     }
                   }}
-                  required={true}
+                  required={false}
                 />
               </div>
             </motion.div>

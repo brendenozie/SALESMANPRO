@@ -3446,7 +3446,7 @@ export const getCategoryMenus = (
         label: "POS",
         href: `/admin/${adminSlug}/pos`,
         icon: ClipboardDocumentListIcon,
-        minTier: "Ghuba Starter",
+        minTier: "Ghuba Basic",
       },
       {
         label: "Products",

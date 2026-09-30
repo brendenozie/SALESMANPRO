@@ -110,8 +110,9 @@ export const POST = withApiHandler(
         },
       };
 
-      // Server-side enforcement: Services require identifiable customer details
-      if (!normalized.name || normalized.name.trim().toLowerCase() === "walk-in customer" && !normalized.phone) {
+      // Enforce identifiable customer details ONLY for public online bookings, NEVER for POS transactions
+      const isPos = normalized.source === "POS" || Boolean(normalized.posSessionId);
+      if (!isPos && (!normalized.name || (normalized.name.trim().toLowerCase() === "walk-in customer" && !normalized.phone))) {
         return response(
           {
             success: false,
@@ -166,12 +167,16 @@ export const POST = withApiHandler(
         posSessionId: data.posSessionId,
         operatorId: data.operatorId,
         cashierName: data.cashierName,
+        isWalkIn: data.isWalkIn,
+        customerType: data.customerType,
+        channel: isPos ? "POS" : "WEBSITE",
+        actorType: isPos ? "STAFF" : "CUSTOMER",
         metadata: {
           ...(data.metadata ?? {}),
           appointment,
           paymentData: data.paymentData,
           serviceName: incoming.serviceName,
-          channel: "SERVICE",
+          channel: isPos ? "POS" : "SERVICE",
         },
       });
 

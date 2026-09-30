@@ -1,5 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { PosSessionStatus } from "@prisma/client";
+import { hashPOSCode } from "./posStaffService";
+import type { AuthenticatedOperatorResult, POSOperatorInfo, POSSessionInfo } from "@/types/pos";
 
 // In-memory rate limiting map for POS login code attempts: key -> { attempts: number, lockUntil: number }
 const loginAttempts = new Map<string, { attempts: number; lockUntil: number }>();
@@ -10,31 +12,13 @@ export interface AuthenticateOperatorInput {
   companyId: string;
   loginCode: string;
   terminalId?: string;
-}
-
-export interface AuthenticatedOperatorResult {
-  success: boolean;
-  operator: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    jobTitle?: string;
-    staffProfileId?: string;
-  };
-  posSession: {
-    id: string;
-    terminalId: string;
-    status: PosSessionStatus;
-    openedAt: Date;
-  };
-  session: any;
+  openingBalance?: number;
 }
 
 export async function authenticatePOSOperator(
   input: AuthenticateOperatorInput
 ): Promise<AuthenticatedOperatorResult> {
-  const { companyId, loginCode, terminalId = "T01" } = input;
+  const { companyId, loginCode, terminalId = "T01", openingBalance = 0 } = input;
 
   if (!companyId) {
     throw new Error("Company context is required for POS operator authentication");
@@ -55,11 +39,16 @@ export async function authenticatePOSOperator(
     throw new Error(`Too many failed login attempts. Terminal locked for ${remainingSec} seconds.`);
   }
 
-  // 1. Look up StaffProfile scoped to companyId
+  const hashedCode = hashPOSCode(cleanCode);
+
+  // 1. Look up StaffProfile scoped to companyId by hashed PIN or plaintext loginCode
   const staff = await prisma.staffProfile.findFirst({
     where: {
-      loginCode: cleanCode,
       companyId,
+      OR: [
+        { codeHash: hashedCode },
+        { loginCode: cleanCode },
+      ],
     },
     include: {
       user: true,
@@ -68,12 +57,28 @@ export async function authenticatePOSOperator(
 
   let user: any = null;
   let jobTitle = "Staff Member";
+  let role = "CASHIER";
+  let permissions: string[] = [
+    "POS_ACCESS",
+    "POS_OPEN_SESSION",
+    "POS_CLOSE_SESSION",
+    "POS_CREATE_ORDER",
+    "POS_DISCOUNT",
+  ];
   let staffProfileId: string | undefined = undefined;
 
   if (staff) {
-    // Check employment status
+    // Check employment and POS activation status
     if (staff.employmentStatus !== "ACTIVE") {
       throw new Error("Access denied: Staff profile is inactive or disabled");
+    }
+
+    if (staff.isPosActive === false) {
+      throw new Error("Access denied: Staff POS access is deactivated");
+    }
+
+    if (staff.codeExpiresAt && staff.codeExpiresAt < new Date()) {
+      throw new Error("Access denied: Staff login code has expired");
     }
 
     if (!staff.user) {
@@ -86,12 +91,33 @@ export async function authenticatePOSOperator(
 
     user = staff.user;
     jobTitle = staff.jobTitle || "Staff Member";
+    role = staff.posRole || staff.jobTitle || "CASHIER";
+    permissions = staff.posPermissions && staff.posPermissions.length > 0
+      ? staff.posPermissions
+      : [
+          "POS_ACCESS",
+          "POS_OPEN_SESSION",
+          "POS_CLOSE_SESSION",
+          "POS_CREATE_ORDER",
+          "POS_DISCOUNT",
+          "POS_SPLIT_BILL",
+          "POS_TRANSFER_TABLE",
+        ];
     staffProfileId = staff.id;
+
+    // Track usage timestamp
+    await prisma.staffProfile.update({
+      where: { id: staff.id },
+      data: { codeLastUsedAt: new Date() },
+    }).catch(() => null);
   } else {
-    // 2. Check if a StaffProfile with this loginCode belongs to ANOTHER company (cross-tenant check)
+    // 2. Check cross-tenant isolation
     const otherStoreStaff = await prisma.staffProfile.findFirst({
       where: {
-        loginCode: cleanCode,
+        OR: [
+          { codeHash: hashedCode },
+          { loginCode: cleanCode },
+        ],
         companyId: { not: companyId },
       },
     });
@@ -100,7 +126,7 @@ export async function authenticatePOSOperator(
       throw new Error("Access denied: This login code is not authorized for this store/company");
     }
 
-    // 3. Fallback: check SalesAgent or User in this company
+    // 3. Fallback: check SalesAgent in this company
     const salesAgent = await prisma.salesAgent.findFirst({
       where: {
         loginCode: cleanCode,
@@ -120,6 +146,7 @@ export async function authenticatePOSOperator(
       }
       user = salesAgent.user;
       jobTitle = "Sales Agent";
+      role = "AGENT";
     }
   }
 
@@ -139,7 +166,6 @@ export async function authenticatePOSOperator(
   loginAttempts.delete(rateLimitKey);
 
   // 4. Manage POS Session for this Terminal
-  // Find if there is an existing open session for this terminal
   const existingSession = await prisma.posSession.findFirst({
     where: {
       companyId,
@@ -155,20 +181,19 @@ export async function authenticatePOSOperator(
 
   if (existingSession) {
     if (existingSession.operatorId === user.id) {
-      // Same operator resuming on this terminal
       activeSession = existingSession;
     } else {
-      // Different operator logging in -> close the previous operator's session cleanly
+      // Clean handoff: close existing operator's session and open for new operator
       await prisma.posSession.update({
         where: { id: existingSession.id },
         data: {
           status: PosSessionStatus.CLOSED,
+          shiftStatus: "CLOSED",
           closedAt: new Date(),
-          notes: `Auto-closed due to operator handoff on terminal ${terminalId}`,
+          notes: `Auto-closed due to operator handoff to ${user.name || user.email} on terminal ${terminalId}`,
         },
       });
 
-      // Create new session for the new operator
       activeSession = await prisma.posSession.create({
         data: {
           companyId,
@@ -176,12 +201,13 @@ export async function authenticatePOSOperator(
           staffProfileId,
           terminalId,
           status: PosSessionStatus.OPEN,
+          shiftStatus: "OPEN",
+          openingBalance: Number(openingBalance) || 0,
           openedAt: new Date(),
         },
       });
     }
   } else {
-    // No open session exists -> create new session
     activeSession = await prisma.posSession.create({
       data: {
         companyId,
@@ -189,27 +215,38 @@ export async function authenticatePOSOperator(
         staffProfileId,
         terminalId,
         status: PosSessionStatus.OPEN,
+        shiftStatus: "OPEN",
+        openingBalance: Number(openingBalance) || 0,
         openedAt: new Date(),
       },
     });
   }
 
+  const operatorInfo: POSOperatorInfo = {
+    id: user.id,
+    name: user.name || "Staff Member",
+    email: user.email,
+    role,
+    jobTitle,
+    staffProfileId,
+    permissions,
+  };
+
+  const sessionInfo: POSSessionInfo = {
+    id: activeSession.id,
+    terminalId: activeSession.terminalId,
+    status: activeSession.status,
+    shiftStatus: activeSession.shiftStatus || "OPEN",
+    openedAt: activeSession.openedAt,
+    openingBalance: activeSession.openingBalance,
+    totalSales: activeSession.totalSales,
+    totalTransactions: activeSession.totalTransactions,
+  };
+
   return {
     success: true,
-    operator: {
-      id: user.id,
-      name: user.name || "Staff Member",
-      email: user.email,
-      role: (jobTitle || user.role || "CASHIER").toString(),
-      jobTitle,
-      staffProfileId,
-    },
-    posSession: {
-      id: activeSession.id,
-      terminalId: activeSession.terminalId,
-      status: activeSession.status,
-      openedAt: activeSession.openedAt,
-    },
+    operator: operatorInfo,
+    posSession: sessionInfo,
     session: activeSession,
   };
 }
@@ -237,6 +274,8 @@ export async function getCurrentPOSSession(companyId: string, terminalId = "T01"
           id: true,
           jobTitle: true,
           department: true,
+          posRole: true,
+          posPermissions: true,
         },
       },
     },
@@ -247,18 +286,36 @@ export async function getCurrentPOSSession(companyId: string, terminalId = "T01"
 
   if (!session) return null;
 
+  // Calculate live shift cash sales
+  const cashOrders = await prisma.customerOrder.aggregate({
+    where: {
+      posSessionId: session.id,
+      paymentOption: "cash",
+      status: { notIn: ["CANCELLED", "FAILED"] },
+    },
+    _sum: { totalFinalPrice: true },
+  });
+
+  const cashSales = cashOrders._sum.totalFinalPrice || 0;
+  const expectedCash = (session.openingBalance || 0) + cashSales;
+
   return {
     id: session.id,
     terminalId: session.terminalId,
     status: session.status,
+    shiftStatus: session.shiftStatus || "OPEN",
     openedAt: session.openedAt,
+    openingBalance: session.openingBalance,
+    cashSales,
+    expectedCash,
     totalSales: session.totalSales,
     totalTransactions: session.totalTransactions,
     operator: {
       id: session.operator.id,
       name: session.operator.name || "Operator",
       email: session.operator.email,
-      role: session.staffProfile?.jobTitle || session.operator.role || "CASHIER",
+      role: session.staffProfile?.posRole || session.staffProfile?.jobTitle || session.operator.role || "CASHIER",
+      permissions: session.staffProfile?.posPermissions || ["POS_ACCESS", "POS_CREATE_ORDER"],
     },
   };
 }
@@ -266,6 +323,7 @@ export async function getCurrentPOSSession(companyId: string, terminalId = "T01"
 export async function endPOSSession(
   sessionId: string,
   companyId: string,
+  countedCash?: number,
   closingBalance?: number,
   notes?: string
 ) {
@@ -302,12 +360,45 @@ export async function endPOSSession(
     },
   });
 
+  // Calculate totals by payment method
+  const orders = await prisma.customerOrder.findMany({
+    where: {
+      posSessionId: sessionId,
+      status: { notIn: ["CANCELLED", "FAILED"] },
+    },
+    select: {
+      paymentOption: true,
+      totalFinalPrice: true,
+    },
+  });
+
+  const paymentTotals: Record<string, number> = {};
+  let cashSales = 0;
+  for (const ord of orders) {
+    const method = (ord.paymentOption || "cash").toUpperCase();
+    const amt = ord.totalFinalPrice || 0;
+    paymentTotals[method] = (paymentTotals[method] || 0) + amt;
+    if (method === "CASH") {
+      cashSales += amt;
+    }
+  }
+
+  const actualCountedCash = countedCash != null ? countedCash : (closingBalance != null ? closingBalance : null);
+  const expectedCash = (session.openingBalance || 0) + cashSales;
+  const cashVariance = actualCountedCash != null ? actualCountedCash - expectedCash : 0;
+
   const updatedSession = await prisma.posSession.update({
     where: { id: sessionId },
     data: {
       status: PosSessionStatus.CLOSED,
+      shiftStatus: "CLOSED",
       closedAt: new Date(),
-      closingBalance: closingBalance ?? null,
+      closingBalance: actualCountedCash,
+      countedCash: actualCountedCash,
+      expectedCash,
+      cashVariance,
+      cashSales,
+      paymentTotals,
       totalSales: stats._sum.totalFinalPrice || 0,
       totalTransactions: stats._count.id || 0,
       notes: notes ?? session.notes,
