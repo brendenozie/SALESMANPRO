@@ -493,7 +493,6 @@ const AdminServicePOSClient: React.FC<{
             (window as any).AndroidBridge.postMessage(JSON.stringify({ type: 'PRINT_ESC_POS', payload: extendedPayload }));
         } else if ((window as any).chrome?.webview) {
             (window as any).chrome.webview.postMessage({ type: 'PRINT_ESC_POS', payload: extendedPayload });
-            (window as any).chrome.webview.postMessage({ type: 'PRINT_HTML_RECEIPT', payload: htmlContent });
             return;
         }
 

@@ -231,7 +231,6 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
         (window as any).AndroidBridge.postMessage(message);
     } else if ((window as any).chrome?.webview) {
         (window as any).chrome.webview.postMessage({ type: 'PRINT_ESC_POS', payload: desktopPayload });
-        (window as any).chrome.webview.postMessage({ type: 'PRINT_HTML_RECEIPT', payload: htmlContent });
         (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
         return;
     }
