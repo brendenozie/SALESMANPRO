@@ -9,6 +9,7 @@ import {
   TrophyIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
 // --- INTERFACES[cite: 2] ---
@@ -337,12 +338,33 @@ export default function GradingReportsClient({
                         {stu.totalAbsences} days
                       </td>
                       <td className="p-4 lg:p-6 text-right">
-                        <button
-                          onClick={() => setSelectedReportCard(stu)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-purple-600 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-xl text-xs font-bold uppercase transition-all shadow-sm focus:ring-2 focus:ring-purple-500"
-                        >
-                          <DocumentCheckIcon className="h-4 w-4" /> <span className="hidden sm:inline">Report</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            onClick={() => setSelectedReportCard(stu)}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-purple-600 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-xl text-xs font-bold uppercase transition-all shadow-sm"
+                            title="Preview transcript modal"
+                          >
+                            <DocumentCheckIcon className="h-4 w-4" /> <span className="hidden sm:inline">View</span>
+                          </button>
+
+                          <a
+                            href={`/api/documents/student-report/${stu.student.id}:${stu.term.id}/pdf`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            title="Generate Official Vector PDF Report Card"
+                          >
+                            <PrinterIcon className="h-4 w-4" />
+                          </a>
+
+                          <a
+                            href={`/api/documents/student-report/${stu.student.id}:${stu.term.id}/pdf?download=true`}
+                            className="p-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            title="Download Report Card PDF"
+                          >
+                            <DocumentArrowDownIcon className="h-4 w-4" />
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -363,13 +385,21 @@ export default function GradingReportsClient({
               <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Official Report Card Transcript
               </span>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  onClick={handlePrint}
-                  className="flex-1 sm:flex-none justify-center px-4 py-3 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-md transition-all"
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <a
+                  href={`/api/documents/student-report/${selectedReportCard.student.id}:${selectedReportCard.term.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 sm:flex-none justify-center px-4 py-3 sm:py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-md transition-all"
                 >
-                  <PrinterIcon className="h-4 w-4" /> Print
-                </button>
+                  <PrinterIcon className="h-4 w-4" /> Print / View PDF
+                </a>
+                <a
+                  href={`/api/documents/student-report/${selectedReportCard.student.id}:${selectedReportCard.term.id}/pdf?download=true`}
+                  className="flex-1 sm:flex-none justify-center px-4 py-3 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-md transition-all"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4" /> Download PDF
+                </a>
                 <button
                   onClick={() => setSelectedReportCard(null)}
                   className="p-3 sm:p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-xl transition-colors"

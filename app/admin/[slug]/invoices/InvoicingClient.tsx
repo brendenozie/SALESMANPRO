@@ -319,6 +319,20 @@ export default function InvoicingClient({
               {isDarkMode ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
             </button>
 
+            {/* Document Template Settings Shortcut */}
+            <a
+              href={`/admin/${companySlug}/document-settings`}
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                isDarkMode
+                  ? "bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800"
+                  : "bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-100 shadow-sm"
+              }`}
+              title="Customize Invoice & Document Templates"
+            >
+              <PrinterIcon className="h-4 w-4 text-emerald-500" />
+              <span>Doc Templates</span>
+            </a>
+
             {/* Refresh Button */}
             <button
               onClick={fetchInvoices}
@@ -510,7 +524,7 @@ export default function InvoicingClient({
                         {currency} {inv.amountDue.toLocaleString()}
                       </td>
                       <td className="py-4 px-5">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => {
                               setSelectedInvoice(inv);
@@ -521,10 +535,36 @@ export default function InvoicingClient({
                                 ? "bg-slate-800/80 hover:bg-slate-700 text-slate-200 border-slate-700"
                                 : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300"
                             }`}
-                            title="View / Print Official Invoice"
+                            title="Quick View Invoice"
+                          >
+                            <ClipboardDocumentListIcon className="h-4 w-4" />
+                          </button>
+
+                          <a
+                            href={`/api/documents/invoice/${inv.id}/pdf`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`p-2 rounded-xl transition-all border ${
+                              isDarkMode
+                                ? "bg-blue-900/40 hover:bg-blue-800/60 text-blue-300 border-blue-800/60"
+                                : "bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                            }`}
+                            title="Generate Official Vector PDF"
                           >
                             <PrinterIcon className="h-4 w-4" />
-                          </button>
+                          </a>
+
+                          <a
+                            href={`/api/documents/invoice/${inv.id}/pdf?download=true`}
+                            className={`p-2 rounded-xl transition-all border ${
+                              isDarkMode
+                                ? "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
+                                : "bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200"
+                            }`}
+                            title="Download PDF"
+                          >
+                            <DocumentArrowDownIcon className="h-4 w-4" />
+                          </a>
 
                           {inv.amountDue > 0 && (
                             <button
@@ -934,20 +974,40 @@ export default function InvoicingClient({
               </div>
             )}
 
-            {/* Action Bar (Hidden on print) */}
-            <div className="flex justify-between items-center border-t border-slate-200 pt-5 print:hidden">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md transition-all"
-              >
-                <PrinterIcon className="h-4 w-4" /> Print / Save PDF
-              </button>
-              <button
-                onClick={() => setIsViewModalOpen(false)}
-                className="px-5 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-300 transition-all"
-              >
-                Close
-              </button>
+            {/* Action Bar */}
+            <div className="flex flex-wrap justify-between items-center gap-3 border-t border-slate-200 pt-5 print:hidden">
+              <div className="flex items-center gap-2">
+                <a
+                  href={`/api/documents/invoice/${selectedInvoice.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md transition-all"
+                >
+                  <PrinterIcon className="h-4 w-4" /> Print / View PDF
+                </a>
+
+                <a
+                  href={`/api/documents/invoice/${selectedInvoice.id}/pdf?download=true`}
+                  className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md transition-all"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4" /> Download PDF
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={`/admin/${companySlug}/document-settings`}
+                  className="px-3 py-2 text-slate-500 hover:text-slate-900 text-xs font-semibold underline"
+                >
+                  Change Template
+                </a>
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="px-5 py-2.5 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-300 transition-all"
+                >
+                  Close
+                </button>
+              </div>
             </div>
 
           </div>

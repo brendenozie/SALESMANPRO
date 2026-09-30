@@ -415,6 +415,9 @@ model Company {
   FinanceAppointment              FinanceAppointment[]
   Invoice                         Invoice[]
   Package                         Package[]
+  Quotation                       Quotation[]
+  documentTemplateSettings        DocumentTemplateSetting[]
+  generatedDocumentLogs           GeneratedDocumentLog[]
 
   // --- FITNESS & WELLNESS DOMAIN ---
   equipment                       Equipment[]
@@ -2684,6 +2687,7 @@ model Client {
   Case               Case[]
   FinanceAppointment FinanceAppointment[]
   Invoice            Invoice[]
+  Quotation          Quotation[]
   Booking            Booking[]
 
   @@index([companyId])
@@ -3945,6 +3949,7 @@ model Consumer {
   Case               Case[]
   FinanceAppointment FinanceAppointment[]
   Invoice            Invoice[]
+  Quotation          Quotation[]
   Booking            Booking[]
 
   // 🕒 Audit
@@ -7999,6 +8004,9 @@ model Invoice {
   orderId String?        @db.ObjectId
   order   CustomerOrder? @relation(fields: [orderId], references: [id])
 
+  quotationId String?    @db.ObjectId
+  quotation   Quotation? @relation(fields: [quotationId], references: [id])
+
   items InvoiceItem[]
 
   createdAt DateTime @default(now())
@@ -8030,6 +8038,134 @@ model InvoiceItem {
   updatedAt DateTime @updatedAt
 
   @@index([invoiceId])
+}
+
+// ============================================================================
+// DOCUMENT ARCHITECTURE & QUOTATIONS
+// ============================================================================
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
+}
+
+enum DocumentType {
+  INVOICE
+  QUOTATION
+  PURCHASE_ORDER
+  SALES_RECEIPT
+  PAYMENT_RECEIPT
+  CREDIT_NOTE
+  DEBIT_NOTE
+  STUDENT_REPORT
+  DELIVERY_NOTE
+  STATEMENT
+  PROFORMA_INVOICE
+  PAYSLIP
+  CERTIFICATE
+}
+
+model Quotation {
+  id                 String          @id @default(auto()) @map("_id") @db.ObjectId
+  quotationNumber    String          @unique
+  companyId          String          @db.ObjectId
+  company            Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  clientId           String?         @db.ObjectId
+  client             Client?         @relation(fields: [clientId], references: [id])
+  consumerId         String?         @db.ObjectId
+  consumer           Consumer?       @relation(fields: [consumerId], references: [id])
+  customerName       String?
+  customerEmail      String?
+  customerPhone      String?
+  subtotal           Float           @default(0)
+  taxAmount          Float           @default(0)
+  discountAmount     Float           @default(0)
+  totalAmount        Float           @default(0)
+  currency           String          @default("KES")
+  issueDate          DateTime        @default(now())
+  expiryDate         DateTime
+  status             QuotationStatus @default(DRAFT)
+  convertedInvoiceId String?         @db.ObjectId
+  notes              String?
+  terms              String?
+
+  items              QuotationItem[]
+  invoices           Invoice[]
+
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+model QuotationItem {
+  id                   String     @id @default(auto()) @map("_id") @db.ObjectId
+  quotationId          String     @db.ObjectId
+  quotation            Quotation  @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  description          String
+  quantity             Int        @default(1)
+  unitPrice            Float      @default(0)
+  taxRate              Float      @default(0)
+  discount             Float      @default(0)
+  totalPrice           Float      @default(0)
+  productId            String?    @db.ObjectId
+  marketplaceListingId String?    @db.ObjectId
+
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  @@index([quotationId])
+}
+
+model DocumentTemplateSetting {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId          String       @db.ObjectId
+  company            Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documentType       DocumentType
+  templateId         String
+  pageSize           String       @default("A4")
+  primaryColor       String?
+  accentColor        String?
+  headerText         String?
+  footerText         String?
+  termsAndConditions String?
+  showLogo           Boolean      @default(true)
+  showTaxNumber      Boolean      @default(true)
+  showWatermark      Boolean      @default(false)
+  prefix             String?
+  nextNumber         Int?         @default(1)
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@unique([companyId, documentType])
+  @@index([companyId])
+}
+
+model GeneratedDocumentLog {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId      String       @db.ObjectId
+  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documentType   DocumentType
+  documentNumber String
+  sourceEntityId String
+  templateId     String
+  action         String       @default("GENERATED")
+  userId         String?      @db.ObjectId
+  recipient      String?
+  metadata       Json?
+
+  createdAt      DateTime     @default(now())
+
+  @@index([companyId, documentType])
+  @@index([sourceEntityId])
+  @@index([documentNumber])
 }
 
 // Supplier & Procurement Architecture

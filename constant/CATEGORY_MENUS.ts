@@ -61,6 +61,7 @@ import {
   SparklesIcon,
   MapIcon,
   ShareIcon,
+  PrinterIcon,
 } from "@heroicons/react/24/outline";
 
 // Define hierarchy of tiers with weights for comparison
@@ -271,10 +272,26 @@ const commonEcommerce = (
       ],
     },
     {
-      label: "Invoices",
-      href: `/admin/${adminSlug}/invoices`,
+      label: "Commercial Docs",
       icon: DocumentTextIcon,
       minTier: "Ghuba Basic",
+      subItems: [
+        {
+          label: "Invoices",
+          href: `/admin/${adminSlug}/invoices`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Quotations",
+          href: `/admin/${adminSlug}/quotations`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Doc Templates & Print",
+          href: `/admin/${adminSlug}/document-settings`,
+          minTier: "Ghuba Basic",
+        },
+      ],
     },
     {
       label: "Finance & Accounts",
@@ -530,9 +547,20 @@ const commonEcommerce = (
     },
     {
       label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
       icon: Cog6ToothIcon,
       minTier: "Ghuba Starter",
+      subItems: [
+        {
+          label: "Store & Profile Settings",
+          href: `/admin/${adminSlug}/settings`,
+          minTier: "Ghuba Starter",
+        },
+        {
+          label: "Documents & Printing",
+          href: `/admin/${adminSlug}/document-settings`,
+          minTier: "Ghuba Basic",
+        },
+      ],
     },
   ];
 
