@@ -19,6 +19,10 @@ import {
   ShareIcon,
   ChatBubbleLeftRightIcon,
   EnvelopeIcon,
+  PencilSquareIcon,
+  UserPlusIcon,
+  UserIcon,
+  PhoneIcon,
 } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -53,6 +57,38 @@ export default function QuotationsClient({
   const [customShareMessage, setCustomShareMessage] = useState("");
   const [isSharing, setIsSharing] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+
+  // Contact autocomplete & registration states
+  const [contactQuery, setContactQuery] = useState("");
+  const [contactResults, setContactResults] = useState<any[]>([]);
+  const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+  const [showContactDropdown, setShowContactDropdown] = useState(false);
+  const [isRegisteringContact, setIsRegisteringContact] = useState(false);
+
+  // AI Auto-Fill states
+  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+
+  // In-place Quotation Editing states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingQuotationId, setEditingQuotationId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    customerName: "",
+    customerEmail: "",
+    customerPhone: "",
+    clientId: "",
+    consumerId: "",
+    expiryDate: "",
+    notes: "",
+    terms: "",
+    status: "PENDING",
+    items: [
+      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+    ],
+  });
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
 
   // New Quote form
   const [form, setForm] = useState({
@@ -131,6 +167,247 @@ export default function QuotationsClient({
       { subtotal: 0, tax: 0, total: 0 }
     );
   }, [form.items]);
+
+  // Search contacts across Clients and Consumers
+  const searchContacts = async (query: string) => {
+    setContactQuery(query);
+    if (!query || query.trim().length < 2) {
+      setContactResults([]);
+      setShowContactDropdown(false);
+      return;
+    }
+    try {
+      setIsSearchingContacts(true);
+      const res = await fetch(
+        `/api/admin/contacts/search?companyId=${companyId}&q=${encodeURIComponent(query)}`
+      );
+      const json = await res.json();
+      if (json.success && json.data) {
+        setContactResults(json.data.contacts || []);
+        setShowContactDropdown(true);
+      }
+    } catch (e) {
+      console.error("Error searching contacts:", e);
+    } finally {
+      setIsSearchingContacts(false);
+    }
+  };
+
+  // Register a new customer directly into the database on the fly
+  const handleRegisterContact = async (name: string, email: string, phone: string, target: "CREATE" | "EDIT" = "CREATE") => {
+    if (!name.trim()) {
+      alert("Contact name is required to register.");
+      return;
+    }
+    try {
+      setIsRegisteringContact(true);
+      const res = await fetch("/api/admin/contacts/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          name: name.trim(),
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+          type: "CLIENT",
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.data?.contact) {
+        const contact = json.data.contact;
+        if (target === "CREATE") {
+          setForm((prev) => ({
+            ...prev,
+            customerName: contact.name,
+            customerEmail: contact.email || "",
+            customerPhone: contact.phone || "",
+            clientId: contact.clientId || "",
+            consumerId: "",
+          }));
+        } else {
+          setEditForm((prev) => ({
+            ...prev,
+            customerName: contact.name,
+            customerEmail: contact.email || "",
+            customerPhone: contact.phone || "",
+            clientId: contact.clientId || "",
+            consumerId: "",
+          }));
+        }
+        setShowContactDropdown(false);
+        alert(`Registered "${contact.name}" into client directory!`);
+      } else {
+        alert(json.error || "Failed to register new client");
+      }
+    } catch (e: any) {
+      alert(e.message || "Failed to register contact");
+    } finally {
+      setIsRegisteringContact(false);
+    }
+  };
+
+  // AI Auto-Populate details from prompt
+  const handleAiAutoFill = async (target: "CREATE" | "EDIT" = "CREATE") => {
+    if (!aiPrompt.trim()) return;
+    try {
+      setIsAiGenerating(true);
+      setAiFeedback(null);
+      const res = await fetch("/api/documents/ai-populate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          documentType: "QUOTATION",
+          currency,
+          companyId,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const data = json.data;
+        if (target === "CREATE") {
+          setForm((prev) => ({
+            ...prev,
+            customerName: data.customerName || prev.customerName,
+            customerEmail: data.customerEmail || prev.customerEmail,
+            customerPhone: data.customerPhone || prev.customerPhone,
+            expiryDate: data.dueDate || prev.expiryDate,
+            terms: data.terms || prev.terms,
+            notes: data.notes || prev.notes,
+            items: data.items && data.items.length > 0 ? data.items : prev.items,
+          }));
+        } else {
+          setEditForm((prev) => ({
+            ...prev,
+            customerName: data.customerName || prev.customerName,
+            customerEmail: data.customerEmail || prev.customerEmail,
+            customerPhone: data.customerPhone || prev.customerPhone,
+            expiryDate: data.dueDate || prev.expiryDate,
+            terms: data.terms || prev.terms,
+            notes: data.notes || prev.notes,
+            items: data.items && data.items.length > 0 ? data.items : prev.items,
+          }));
+        }
+        setAiFeedback(`✨ Populated via ${json.source || "AI Assistant"}! Review and adjust any details.`);
+        setTimeout(() => {
+          setIsAiOpen(false);
+          setAiFeedback(null);
+        }, 2200);
+      } else {
+        setAiFeedback(json.error || "Failed to generate quotation details");
+      }
+    } catch (e: any) {
+      setAiFeedback(e.message || "Failed to call AI assistant");
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
+
+  // Open Edit Quotation modal
+  const handleOpenEditModal = (quote: any) => {
+    setEditingQuotationId(quote.id);
+    setEditForm({
+      customerName: quote.customerName || "",
+      customerEmail: quote.customerEmail || "",
+      customerPhone: quote.customerPhone || "",
+      clientId: quote.clientId || "",
+      consumerId: quote.consumerId || "",
+      expiryDate: quote.expiryDate ? new Date(quote.expiryDate).toISOString().slice(0, 10) : "",
+      notes: quote.notes || "",
+      terms: quote.terms || "",
+      status: quote.status || "PENDING",
+      items:
+        quote.items && quote.items.length > 0
+          ? quote.items.map((it: any) => ({
+              description: it.description,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice,
+              taxRate: it.taxRate || 0,
+              discount: it.discount || 0,
+            }))
+          : [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 }],
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditAddItem = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+      ],
+    }));
+  };
+
+  const handleEditRemoveItem = (index: number) => {
+    if (editForm.items.length <= 1) return;
+    setEditForm((prev) => {
+      const newItems = [...prev.items];
+      newItems.splice(index, 1);
+      return { ...prev, items: newItems };
+    });
+  };
+
+  const handleEditItemChange = (index: number, field: string, value: any) => {
+    setEditForm((prev) => {
+      const newItems = [...prev.items];
+      newItems[index] = { ...newItems[index], [field]: value };
+      return { ...prev, items: newItems };
+    });
+  };
+
+  // Compute live subtotal, tax, and total for Edit modal
+  const computedEditTotals = useMemo(() => {
+    return editForm.items.reduce(
+      (acc, it) => {
+        const gross = (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0);
+        const discount = gross * ((Number(it.discount) || 0) / 100);
+        const net = gross - discount;
+        const tax = net * ((Number(it.taxRate) || 0) / 100);
+        acc.subtotal += net;
+        acc.tax += tax;
+        acc.total += net + tax;
+        return acc;
+      },
+      { subtotal: 0, tax: 0, total: 0 }
+    );
+  }, [editForm.items]);
+
+  // Submit in-place quotation edit
+  const handleSaveEditQuotation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuotationId) return;
+    if (!editForm.customerName.trim()) {
+      alert("Customer name is required.");
+      return;
+    }
+    if (editForm.items.some((it) => !it.description.trim() || Number(it.unitPrice) <= 0)) {
+      alert("Please ensure all items have a description and valid price.");
+      return;
+    }
+
+    try {
+      setIsSubmittingEdit(true);
+      const res = await fetch(`/api/admin/quotations/${editingQuotationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setIsEditModalOpen(false);
+        setEditingQuotationId(null);
+        fetchQuotations();
+      } else {
+        alert(json.error || "Failed to save quotation changes");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to save quotation changes");
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
 
   const handleCreateQuotation = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -421,6 +698,13 @@ export default function QuotationsClient({
                           >
                             View
                           </button>
+                          <button
+                            onClick={() => handleOpenEditModal(q)}
+                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-600 dark:text-amber-400"
+                            title="Edit quotation in-place"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
                           <a
                             href={`/api/documents/quotation/${q.id}/pdf`}
                             target="_blank"
@@ -480,26 +764,191 @@ export default function QuotationsClient({
                   <span className="text-[10px] font-black uppercase text-sky-600 dark:text-sky-400 tracking-wider">Proposal Generation</span>
                   <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Create Commercial Quotation</h3>
                 </div>
-                <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
-                  <XMarkIcon className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAiOpen(!isAiOpen)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-95 shadow-md shadow-indigo-500/20 flex items-center gap-1.5 transition-all"
+                  >
+                    <SparklesIcon className="h-3.5 w-3.5" />
+                    <span>AI Auto-Fill</span>
+                  </button>
+                  <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
+
+              {/* AI Auto-Fill Assistant Drawer */}
+              {isAiOpen && (
+                <div className="p-4 bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-900/50 rounded-2xl border border-indigo-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                      <SparklesIcon className="h-4 w-4" /> AI Proposal Assistant
+                    </span>
+                    <span className="text-[10px] text-slate-400">Natural language to line items & terms</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      "Commercial office network cabling & Wi-Fi setup",
+                      "Solar backup power with 5kVA inverter and lithium battery",
+                      "Annual IT maintenance contract with monthly SLA support",
+                    ].map((sample, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setAiPrompt(sample);
+                        }}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-all text-left truncate max-w-xs"
+                      >
+                        💡 {sample}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      placeholder="e.g., Quotation for 10 executive desks at 25000 and 10 ergonomic chairs at 12000 for Safaricom HQ"
+                      className="flex-1 text-xs rounded-xl px-3 py-2 border border-slate-700 bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !isAiGenerating) {
+                          e.preventDefault();
+                          handleAiAutoFill("CREATE");
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAiAutoFill("CREATE")}
+                      disabled={isAiGenerating}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/20"
+                    >
+                      {isAiGenerating ? (
+                        <>
+                          <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <SparklesIcon className="h-3.5 w-3.5" />
+                          <span>Generate</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {aiFeedback && (
+                    <div className="text-[11px] font-semibold text-indigo-300">
+                      {aiFeedback}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <form onSubmit={handleCreateQuotation} className="space-y-6 text-xs">
                 
-                {/* Customer Details */}
+                {/* Customer Details with Smart Database Combobox */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Customer / Entity Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Acme Corporation"
-                      value={form.customerName}
-                      onChange={(e) => setForm({ ...form, customerName: e.target.value })}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
-                    />
+                  {/* Customer Combobox */}
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-bold text-slate-700 dark:text-slate-300">
+                        Customer / Entity Name *
+                      </label>
+                      {form.customerName.trim() && !form.clientId && (
+                        <button
+                          type="button"
+                          onClick={() => handleRegisterContact(form.customerName, form.customerEmail, form.customerPhone, "CREATE")}
+                          disabled={isRegisteringContact}
+                          className="text-[10px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1"
+                          title="Save this new customer into the company directory"
+                        >
+                          <UserPlusIcon className="h-3 w-3" />
+                          {isRegisteringContact ? "Saving..." : "Save to Database"}
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        placeholder="Search existing client or type new..."
+                        value={form.customerName}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setForm({ ...form, customerName: val, clientId: "" });
+                          searchContacts(val);
+                        }}
+                        onFocus={() => {
+                          if (contactResults.length > 0) setShowContactDropdown(true);
+                        }}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
+                      />
+                      {isSearchingContacts && (
+                        <div className="absolute right-3 top-3">
+                          <span className="h-4 w-4 border-2 border-indigo-400/30 border-t-indigo-500 rounded-full animate-spin block" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Autocomplete Dropdown */}
+                    {showContactDropdown && contactResults.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+                        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex justify-between">
+                          <span>Directory Matches</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowContactDropdown(false)}
+                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                          >
+                            Close ✕
+                          </button>
+                        </div>
+                        {contactResults.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setForm({
+                                ...form,
+                                customerName: c.name,
+                                customerEmail: c.email || form.customerEmail,
+                                customerPhone: c.phone || form.customerPhone,
+                                clientId: c.clientId || "",
+                                consumerId: c.consumerId || "",
+                              });
+                              setShowContactDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-indigo-50/60 dark:hover:bg-indigo-950/40 border-b border-slate-100 dark:border-slate-800/60 transition-colors flex items-center justify-between gap-2"
+                          >
+                            <div className="truncate">
+                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <UserIcon className="h-3.5 w-3.5 text-slate-400" />
+                                {c.name}
+                              </div>
+                              <div className="text-[10px] text-slate-400 truncate">
+                                {c.email || "No email"} • {c.phone || "No phone"}
+                              </div>
+                            </div>
+                            <span
+                              className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase flex-shrink-0 ${
+                                c.type === "CLIENT"
+                                  ? "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                                  : "bg-purple-500/10 text-purple-500 border border-purple-500/20"
+                              }`}
+                            >
+                              {c.type}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
+
                   <div>
                     <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Validity Expiry Date *</label>
                     <input
@@ -757,6 +1206,15 @@ export default function QuotationsClient({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setIsViewModalOpen(false);
+                      handleOpenEditModal(selectedQuotation);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold transition-all"
+                  >
+                    <PencilSquareIcon className="w-4 h-4" /> Edit Details
+                  </button>
                   {selectedQuotation.status !== "CONVERTED" && (
                     <button
                       onClick={() => handleConvertToInvoice(selectedQuotation)}
@@ -992,6 +1450,378 @@ export default function QuotationsClient({
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* EDIT QUOTATION MODAL (IN-PLACE ADMIN UPDATE WITH LIVE TOTALS & AI)       */}
+      {/* ========================================================================= */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+          <div className="w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto transition-all">
+            {/* Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                  <PencilSquareIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    Edit Quotation Details
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Direct in-place update of proposal deliverables, rates, customer, and terms.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAiOpen(!isAiOpen)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-95 shadow-md shadow-indigo-500/20 flex items-center gap-1.5 transition-all"
+                >
+                  <SparklesIcon className="h-3.5 w-3.5" />
+                  <span>AI Auto-Refine</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* AI Assistant Drawer inside Edit Modal */}
+            {isAiOpen && (
+              <div className="p-4 bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-900/50 border-b border-indigo-500/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                    <SparklesIcon className="h-4 w-4" /> AI Document Assistant (Edit Mode)
+                  </span>
+                  <span className="text-[10px] text-slate-400">Gemini 2.0 & heuristic parsing</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g., Update deliverables to include 2 backup batteries, set total discount 5%"
+                    className="flex-1 text-xs rounded-xl px-3 py-2 border border-slate-700 bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !isAiGenerating) {
+                        e.preventDefault();
+                        handleAiAutoFill("EDIT");
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAiAutoFill("EDIT")}
+                    disabled={isAiGenerating}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/20"
+                  >
+                    {isAiGenerating ? (
+                      <>
+                        <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Refining...</span>
+                      </>
+                    ) : (
+                      <>
+                        <SparklesIcon className="h-3.5 w-3.5" />
+                        <span>Refine</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                {aiFeedback && (
+                  <div className="text-[11px] font-semibold text-indigo-300">
+                    {aiFeedback}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleSaveEditQuotation} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+              {/* Customer Information & Status */}
+              <div>
+                <h4 className="text-xs font-extrabold uppercase tracking-wider mb-3 text-slate-400">
+                  1. Recipient & Parameters
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Customer Name */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">
+                      Customer / Client Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.customerName}
+                      onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
+                      className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                      placeholder="e.g. John Doe / Safaricom Ltd"
+                    />
+                  </div>
+
+                  {/* Customer Email */}
+                  <div>
+                    <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Email Address</label>
+                    <input
+                      type="email"
+                      value={editForm.customerEmail}
+                      onChange={(e) => setEditForm({ ...editForm, customerEmail: e.target.value })}
+                      className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                      placeholder="client@example.com"
+                    />
+                  </div>
+
+                  {/* Customer Phone */}
+                  <div>
+                    <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={editForm.customerPhone}
+                      onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
+                      className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                      placeholder="+254 712 345678"
+                    />
+                  </div>
+
+                  {/* Expiry Date */}
+                  <div>
+                    <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Validity Expiry Date</label>
+                    <input
+                      type="date"
+                      value={editForm.expiryDate}
+                      onChange={(e) => setEditForm({ ...editForm, expiryDate: e.target.value })}
+                      className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Status</label>
+                    <select
+                      value={editForm.status}
+                      onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                      className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                    >
+                      <option value="PENDING">PENDING</option>
+                      <option value="ACCEPTED">ACCEPTED</option>
+                      <option value="REJECTED">REJECTED</option>
+                      <option value="EXPIRED">EXPIRED</option>
+                      <option value="CONVERTED">CONVERTED</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Line Items */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                    2. Deliverables & Rates ({editForm.items.length})
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={handleEditAddItem}
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-600/10 text-sky-600 dark:text-sky-400 hover:bg-sky-600/20 border border-sky-500/20 flex items-center gap-1 transition-all"
+                  >
+                    <PlusIcon className="h-3.5 w-3.5" />
+                    <span>Add Item</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {editForm.items.map((item, idx) => {
+                    const gross = (Number(item.quantity) || 1) * (Number(item.unitPrice) || 0);
+                    const disc = gross * ((Number(item.discount) || 0) / 100);
+                    const lineNet = gross - disc;
+                    const lineTax = lineNet * ((Number(item.taxRate) || 0) / 100);
+                    const lineTotal = lineNet + lineTax;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 transition-all"
+                      >
+                        <div className="grid grid-cols-12 gap-2.5 items-center">
+                          {/* Description */}
+                          <div className="col-span-12 sm:col-span-5">
+                            <label className="block text-[10px] font-bold mb-1 text-slate-400">Deliverable / Description</label>
+                            <input
+                              type="text"
+                              required
+                              value={item.description}
+                              onChange={(e) => handleEditItemChange(idx, "description", e.target.value)}
+                              className="w-full text-xs rounded-xl px-3 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                              placeholder="Product or service description"
+                            />
+                          </div>
+
+                          {/* Quantity */}
+                          <div className="col-span-4 sm:col-span-2">
+                            <label className="block text-[10px] font-bold mb-1 text-slate-400">Qty</label>
+                            <input
+                              type="number"
+                              min="1"
+                              step="any"
+                              required
+                              value={item.quantity}
+                              onChange={(e) => handleEditItemChange(idx, "quantity", Number(e.target.value))}
+                              className="w-full text-xs rounded-xl px-3 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          {/* Unit Price */}
+                          <div className="col-span-4 sm:col-span-2">
+                            <label className="block text-[10px] font-bold mb-1 text-slate-400">Unit Price ({currency})</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="any"
+                              required
+                              value={item.unitPrice}
+                              onChange={(e) => handleEditItemChange(idx, "unitPrice", Number(e.target.value))}
+                              className="w-full text-xs rounded-xl px-3 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          {/* Tax % */}
+                          <div className="col-span-4 sm:col-span-1">
+                            <label className="block text-[10px] font-bold mb-1 text-slate-400">Tax%</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="any"
+                              value={item.taxRate}
+                              onChange={(e) => handleEditItemChange(idx, "taxRate", Number(e.target.value))}
+                              className="w-full text-xs rounded-xl px-2 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-center"
+                            />
+                          </div>
+
+                          {/* Discount % */}
+                          <div className="col-span-4 sm:col-span-1">
+                            <label className="block text-[10px] font-bold mb-1 text-slate-400">Disc%</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="any"
+                              value={item.discount}
+                              onChange={(e) => handleEditItemChange(idx, "discount", Number(e.target.value))}
+                              className="w-full text-xs rounded-xl px-2 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-center"
+                            />
+                          </div>
+
+                          {/* Row Total & Delete */}
+                          <div className="col-span-8 sm:col-span-1 flex items-center justify-end gap-1.5 pt-4 sm:pt-0">
+                            <span className="text-xs font-bold truncate text-slate-900 dark:text-white" title={lineTotal.toFixed(2)}>
+                              {currency} {lineTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            </span>
+                            {editForm.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleEditRemoveItem(idx)}
+                                className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Terms & Notes */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Quotation Terms & Conditions</label>
+                  <textarea
+                    rows={2}
+                    value={editForm.terms}
+                    onChange={(e) => setEditForm({ ...editForm, terms: e.target.value })}
+                    className="w-full text-xs rounded-xl p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                    placeholder="Validity period, deposit requirements, delivery schedule..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">Internal Memo / Notes</label>
+                  <textarea
+                    rows={2}
+                    value={editForm.notes}
+                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                    className="w-full text-xs rounded-xl p-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                    placeholder="Staff notes..."
+                  />
+                </div>
+              </div>
+
+              {/* Totals Summary */}
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4">
+                <div className="text-xs text-slate-500">
+                  Total recalculates live as you edit deliverables, quantities, taxes, or discounts.
+                </div>
+                <div className="flex items-center gap-6 text-right">
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400">Subtotal</div>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {currency} {computedEditTotals.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400">Tax</div>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {currency} {computedEditTotals.tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                  <div className="pl-4 border-l border-slate-200 dark:border-slate-800">
+                    <div className="text-[10px] font-extrabold text-sky-600 dark:text-sky-400 uppercase tracking-wider">Total Estimate</div>
+                    <div className="text-lg font-black text-slate-900 dark:text-white">
+                      {currency} {computedEditTotals.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={isSubmittingEdit}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEdit}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmittingEdit ? (
+                    <>
+                      <span className="h-3.5 w-3.5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon className="h-4 w-4" />
+                      <span>Save Quotation Updates</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

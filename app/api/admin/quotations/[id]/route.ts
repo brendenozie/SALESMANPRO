@@ -123,14 +123,74 @@ export async function PATCH(
       );
     }
 
-    // General Quotation Update
+    // General Quotation Update & in-place line-item editing
+    let subtotalUpdate = existing.subtotal;
+    let taxAmountUpdate = existing.taxAmount;
+    let discountAmountUpdate = existing.discountAmount;
+    let totalAmountUpdate = existing.totalAmount;
+
+    if (Array.isArray(body.items) && body.items.length > 0) {
+      let sub = 0;
+      let tax = 0;
+      let disc = 0;
+
+      const normalizedItems = body.items.map((it: any) => {
+        const qty = parseInt(it.quantity || "1", 10);
+        const unitPrice = parseFloat(it.unitPrice || "0");
+        const taxRate = parseFloat(it.taxRate || "0");
+        const discount = parseFloat(it.discount || "0");
+
+        const lineGross = qty * unitPrice;
+        const lineDiscount = lineGross * (discount / 100);
+        const lineNet = lineGross - lineDiscount;
+        const lineTax = lineNet * (taxRate / 100);
+        const lineTotal = lineNet + lineTax;
+
+        sub += lineNet;
+        tax += lineTax;
+        disc += lineDiscount;
+
+        return {
+          quotationId: id,
+          description: it.description || "Line item",
+          quantity: qty,
+          unitPrice,
+          taxRate,
+          discount,
+          totalPrice: Math.round((lineTotal + Number.EPSILON) * 100) / 100,
+          productId: it.productId || null,
+          marketplaceListingId: it.marketplaceListingId || null,
+        };
+      });
+
+      subtotalUpdate = Math.round((sub + Number.EPSILON) * 100) / 100;
+      taxAmountUpdate = Math.round((tax + Number.EPSILON) * 100) / 100;
+      discountAmountUpdate = Math.round((disc + Number.EPSILON) * 100) / 100;
+      totalAmountUpdate = Math.round((sub + tax + Number.EPSILON) * 100) / 100;
+
+      // Re-create items transactionally
+      await prisma.quotationItem.deleteMany({ where: { quotationId: id } });
+      await prisma.quotationItem.createMany({ data: normalizedItems });
+    }
+
     const updated = await prisma.quotation.update({
       where: { id },
       data: {
         ...(body.status && { status: body.status as QuotationStatus }),
+        ...(body.customerName !== undefined && { customerName: body.customerName }),
+        ...(body.customerEmail !== undefined && { customerEmail: body.customerEmail }),
+        ...(body.customerPhone !== undefined && { customerPhone: body.customerPhone }),
+        ...(body.clientId !== undefined && { clientId: body.clientId }),
+        ...(body.consumerId !== undefined && { consumerId: body.consumerId }),
         ...(body.notes !== undefined && { notes: body.notes }),
         ...(body.terms !== undefined && { terms: body.terms }),
         ...(body.expiryDate && { expiryDate: new Date(body.expiryDate) }),
+        ...(Array.isArray(body.items) && body.items.length > 0 && {
+          subtotal: subtotalUpdate,
+          taxAmount: taxAmountUpdate,
+          discountAmount: discountAmountUpdate,
+          totalAmount: totalAmountUpdate,
+        }),
       },
       include: { items: true },
     });
