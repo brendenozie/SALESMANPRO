@@ -16,6 +16,9 @@ import {
   CurrencyDollarIcon,
   SparklesIcon,
   DocumentDuplicateIcon,
+  ShareIcon,
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -41,6 +44,15 @@ export default function QuotationsClient({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+
+  // Sharing states
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareTargetMode, setShareTargetMode] = useState<"ALL" | "PENDING" | "SINGLE">("ALL");
+  const [targetQuotationForShare, setTargetQuotationForShare] = useState<any>(null);
+  const [shareChannel, setShareChannel] = useState<"WHATSAPP" | "EMAIL" | "BOTH">("BOTH");
+  const [customShareMessage, setCustomShareMessage] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
 
   // New Quote form
   const [form, setForm] = useState({
@@ -192,6 +204,61 @@ export default function QuotationsClient({
     }
   };
 
+  const handleExecuteShare = async () => {
+    try {
+      setIsSharing(true);
+      setShareFeedback(null);
+
+      let targetsToShare: any[] = [];
+      if (shareTargetMode === "SINGLE" && targetQuotationForShare) {
+        targetsToShare = [targetQuotationForShare];
+      } else if (shareTargetMode === "PENDING") {
+        targetsToShare = quotations.filter((q) => q.status === "DRAFT" || q.status === "SENT");
+      } else {
+        targetsToShare = quotations;
+      }
+
+      if (targetsToShare.length === 0) {
+        setShareFeedback("No quotations found to share.");
+        return;
+      }
+
+      const recipients = targetsToShare.map((q) => ({
+        name: q.customerName || "Valued Client",
+        email: q.customerEmail || undefined,
+        phone: q.customerPhone || undefined,
+        sourceEntityId: q.id,
+      }));
+
+      const res = await fetch("/api/documents/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          documentType: "QUOTATION",
+          channel: shareChannel,
+          customMessage: customShareMessage.trim() || undefined,
+          recipients,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setShareFeedback(`✅ ${json.message}`);
+        setTimeout(() => {
+          setIsShareModalOpen(false);
+          setShareFeedback(null);
+        }, 2200);
+      } else {
+        setShareFeedback(`❌ Error: ${json.error || "Failed to share documents"}`);
+      }
+    } catch (err: any) {
+      setShareFeedback(`❌ Network error: ${err.message}`);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "ACCEPTED":
@@ -237,6 +304,20 @@ export default function QuotationsClient({
               title="Refresh"
             >
               <ArrowPathIcon className={`w-4 h-4 ${loading ? "animate-spin text-sky-500" : ""}`} />
+            </button>
+            <button
+              onClick={() => {
+                setShareTargetMode("ALL");
+                setTargetQuotationForShare(null);
+                setShareFeedback(null);
+                setIsShareModalOpen(true);
+              }}
+              disabled={quotations.length === 0}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-sky-500/20 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+              title="Share quotes with multiple clients via WhatsApp or Email"
+            >
+              <ShareIcon className="w-4 h-4" />
+              <span>Share with Many</span>
             </button>
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -356,6 +437,19 @@ export default function QuotationsClient({
                           >
                             <ArrowDownTrayIcon className="w-4 h-4" />
                           </a>
+                          <button
+                            onClick={() => {
+                              setSelectedQuotation(q);
+                              setTargetQuotationForShare(q);
+                              setShareTargetMode("SINGLE");
+                              setShareFeedback(null);
+                              setIsShareModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 text-emerald-600 dark:text-emerald-400"
+                            title="Share via WhatsApp or Email"
+                          >
+                            <ShareIcon className="w-4 h-4" />
+                          </button>
                           {q.status !== "CONVERTED" && (
                             <button
                               onClick={() => handleConvertToInvoice(q)}
@@ -647,6 +741,19 @@ export default function QuotationsClient({
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" /> Download PDF
                   </a>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTargetQuotationForShare(selectedQuotation);
+                      setShareTargetMode("SINGLE");
+                      setShareFeedback(null);
+                      setIsShareModalOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md transition-all"
+                  >
+                    <ShareIcon className="w-4 h-4" /> Share via WhatsApp / Email
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -654,7 +761,7 @@ export default function QuotationsClient({
                     <button
                       onClick={() => handleConvertToInvoice(selectedQuotation)}
                       disabled={isConverting}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
                     >
                       <ArrowRightCircleIcon className="w-4 h-4" /> Convert to Invoice
                     </button>
@@ -671,6 +778,223 @@ export default function QuotationsClient({
             </div>
           </div>
         )}
+
+      {/* SHARE QUOTATION(S) VIA WHATSAPP / EMAIL */}
+      {isShareModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-200 dark:border-slate-800 transition-all my-8 text-slate-900 dark:text-slate-100">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-sky-600 dark:text-sky-400">Multi-Channel Distribution</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {shareTargetMode === "SINGLE" && targetQuotationForShare
+                    ? `Share Quote ${targetQuotationForShare.quotationNumber}`
+                    : `Share Quotes with Many Clients`}
+                </h3>
+                <p className="text-xs mt-0.5 text-slate-500 dark:text-slate-400">
+                  Dispatch official PDF quotations directly via WhatsApp and/or Email.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsShareModalOpen(false)}
+                className="p-1.5 rounded-lg hover:opacity-70 transition-opacity text-slate-400"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Scope selector if multiple quotes */}
+            {shareTargetMode !== "SINGLE" && (
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">Target Quotes</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShareTargetMode("PENDING")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      shareTargetMode === "PENDING"
+                        ? "bg-sky-500/10 border-sky-500 text-sky-600 dark:text-sky-400"
+                        : "border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-400"
+                    }`}
+                  >
+                    Pending Only ({quotations.filter((q) => q.status === "DRAFT" || q.status === "SENT").length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShareTargetMode("ALL")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      shareTargetMode === "ALL"
+                        ? "bg-sky-500/10 border-sky-500 text-sky-600 dark:text-sky-400"
+                        : "border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-400"
+                    }`}
+                  >
+                    All Displayed ({quotations.length})
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Channel Selection */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">Delivery Channel</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShareChannel("WHATSAPP")}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all ${
+                    shareChannel === "WHATSAPP"
+                      ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                      : "border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-400"
+                  }`}
+                >
+                  <ChatBubbleLeftRightIcon className="h-4 w-4" /> WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShareChannel("EMAIL")}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all ${
+                    shareChannel === "EMAIL"
+                      ? "bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-400"
+                  }`}
+                >
+                  <EnvelopeIcon className="h-4 w-4" /> Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShareChannel("BOTH")}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all ${
+                    shareChannel === "BOTH"
+                      ? "bg-purple-500/10 border-purple-500 text-purple-600 dark:text-purple-400"
+                      : "border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-400"
+                  }`}
+                >
+                  <ShareIcon className="h-4 w-4" /> Both
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Cover Message */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">
+                Custom Message / Cover Note (Optional)
+              </label>
+              <textarea
+                rows={2}
+                value={customShareMessage}
+                onChange={(e) => setCustomShareMessage(e.target.value)}
+                placeholder="e.g. Please find attached the formal quotation for your requested services."
+                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-xs font-medium resize-none focus:outline-none focus:border-sky-500"
+              />
+            </div>
+
+            {/* Recipients Summary List */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-600 dark:text-slate-300">
+                  Recipients List (
+                  {shareTargetMode === "SINGLE" && targetQuotationForShare
+                    ? 1
+                    : shareTargetMode === "PENDING"
+                    ? quotations.filter((q) => q.status === "DRAFT" || q.status === "SENT").length
+                    : quotations.length}
+                  )
+                </span>
+                <span className="text-[10px] text-slate-400">PDF will be generated individually</span>
+              </div>
+              <div className="max-h-36 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 text-xs">
+                {(shareTargetMode === "SINGLE" && targetQuotationForShare
+                  ? [targetQuotationForShare]
+                  : shareTargetMode === "PENDING"
+                  ? quotations.filter((q) => q.status === "DRAFT" || q.status === "SENT")
+                  : quotations
+                ).map((q: any, idx: number) => (
+                  <div key={idx} className="py-1.5 flex items-center justify-between gap-2">
+                    <div className="truncate">
+                      <div className="font-bold truncate text-slate-800 dark:text-slate-200">{q.customerName}</div>
+                      <div className="text-[10px] text-slate-400">{q.quotationNumber} • {currency} {q.totalAmount.toLocaleString()}</div>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                          q.customerEmail
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                            : "bg-slate-500/10 text-slate-400"
+                        }`}
+                        title={q.customerEmail || "No email"}
+                      >
+                        Email {q.customerEmail ? "✓" : "✗"}
+                      </span>
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                          q.customerPhone
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-slate-500/10 text-slate-400"
+                        }`}
+                        title={q.customerPhone || "No phone"}
+                      >
+                        WA {q.customerPhone ? "✓" : "✗"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Status / Feedback */}
+            {shareFeedback && (
+              <div
+                className={`p-3 rounded-xl text-xs font-semibold ${
+                  shareFeedback.startsWith("✅")
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                }`}
+              >
+                {shareFeedback}
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(false)}
+                disabled={isSharing}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteShare}
+                disabled={isSharing}
+                className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSharing ? (
+                  <>
+                    <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Dispatching...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShareIcon className="h-4 w-4" />
+                    <span>
+                      {shareTargetMode === "SINGLE"
+                        ? `Send via ${shareChannel}`
+                        : `Share with Many (${
+                            shareTargetMode === "PENDING"
+                              ? quotations.filter((q) => q.status === "DRAFT" || q.status === "SENT").length
+                              : quotations.length
+                          })`}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>

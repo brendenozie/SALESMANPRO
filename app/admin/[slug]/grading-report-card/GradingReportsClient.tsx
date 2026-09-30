@@ -10,6 +10,9 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
   DocumentArrowDownIcon,
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 
 // --- INTERFACES[cite: 2] ---
@@ -76,6 +79,15 @@ export default function GradingReportsClient({
   const [reportCards, setReportCards] = useState<ReportCardItem[]>([]);
   const [selectedReportCard, setSelectedReportCard] = useState<ReportCardItem | null>(null);
 
+  // Share modal state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareTargetMode, setShareTargetMode] = useState<"ALL" | "SINGLE">("ALL");
+  const [targetStudentForShare, setTargetStudentForShare] = useState<ReportCardItem | null>(null);
+  const [shareChannel, setShareChannel] = useState<"WHATSAPP" | "EMAIL" | "BOTH">("BOTH");
+  const [customShareMessage, setCustomShareMessage] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+
   const fetchReportCards = useCallback(async () => {
     if (!selectedClassroomId || !selectedTermId) return;
     setLoading(true);
@@ -105,6 +117,57 @@ export default function GradingReportsClient({
   useEffect(() => {
     fetchReportCards();
   }, [fetchReportCards]);
+
+  const handleExecuteShare = async () => {
+    try {
+      setIsSharing(true);
+      setShareFeedback(null);
+
+      const targetsToShare: ReportCardItem[] =
+        shareTargetMode === "SINGLE" && targetStudentForShare
+          ? [targetStudentForShare]
+          : reportCards;
+
+      if (targetsToShare.length === 0) {
+        setShareFeedback("No students to share with.");
+        return;
+      }
+
+      const recipients = targetsToShare.map((rc) => ({
+        name: `${rc.student.firstName} ${rc.student.lastName}`,
+        email: (rc.student as any).email || (rc.student as any).parentEmail,
+        phone: (rc.student as any).phone || (rc.student as any).parentPhone,
+        sourceEntityId: `${rc.student.id}:${rc.term.id}`,
+      }));
+
+      const res = await fetch("/api/documents/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          documentType: "STUDENT_REPORT",
+          channel: shareChannel,
+          customMessage: customShareMessage.trim() || undefined,
+          recipients,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setShareFeedback(`✅ ${json.message}`);
+        setTimeout(() => {
+          setIsShareModalOpen(false);
+          setShareFeedback(null);
+        }, 2500);
+      } else {
+        setShareFeedback(`❌ ${json.error || "Failed to dispatch"}`);
+      }
+    } catch (err: any) {
+      setShareFeedback(`❌ ${err.message || "Network error"}`);
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   const filteredStudents = useMemo(() => {
     if (!searchTerm.trim()) return reportCards;
@@ -173,6 +236,19 @@ export default function GradingReportsClient({
             >
               <PrinterIcon className="h-5 w-5 lg:h-4 lg:w-4" /> <span className="hidden sm:inline">Print Overview</span>
             </button>
+            <button
+              onClick={() => {
+                setShareTargetMode("ALL");
+                setTargetStudentForShare(null);
+                setIsShareModalOpen(true);
+              }}
+              disabled={reportCards.length === 0}
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold text-sm lg:text-xs transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Bulk send report cards to parents via WhatsApp and/or Email"
+            >
+              <ShareIcon className="h-4 w-4" /> <span>Share with Parents ({reportCards.length})</span>
+            </button>
+
             <button
               onClick={() => {
                 if (reportCards.length > 0) setSelectedReportCard(reportCards[0]);
@@ -357,13 +433,17 @@ export default function GradingReportsClient({
                             <PrinterIcon className="h-4 w-4" />
                           </a>
 
-                          <a
-                            href={`/api/documents/student-report/${stu.student.id}:${stu.term.id}/pdf?download=true`}
-                            className="p-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all shadow-sm"
-                            title="Download Report Card PDF"
+                          <button
+                            onClick={() => {
+                              setShareTargetMode("SINGLE");
+                              setTargetStudentForShare(stu);
+                              setIsShareModalOpen(true);
+                            }}
+                            className="p-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            title="Share Report with Parent via WhatsApp / Email"
                           >
-                            <DocumentArrowDownIcon className="h-4 w-4" />
-                          </a>
+                            <ShareIcon className="h-4 w-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -518,6 +598,118 @@ export default function GradingReportsClient({
               </div>
 
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* BULK / SINGLE SHARE MODAL */}
+      {isShareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+            
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600">
+                  <ShareIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    {shareTargetMode === "ALL"
+                      ? `Share with All Parents (${reportCards.length})`
+                      : `Share with ${targetStudentForShare?.student.firstName}'s Parents`}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Automated multi-channel delivery via WhatsApp & Email
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsShareModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {shareFeedback && (
+              <div className={`p-3.5 rounded-xl text-xs font-bold ${
+                shareFeedback.startsWith("✅")
+                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
+                  : "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800"
+              }`}>
+                {shareFeedback}
+              </div>
+            )}
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-2">Delivery Channel</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "BOTH", label: "WhatsApp & Email", icon: ShareIcon },
+                    { id: "WHATSAPP", label: "WhatsApp Only", icon: ChatBubbleLeftRightIcon },
+                    { id: "EMAIL", label: "Email Only", icon: EnvelopeIcon },
+                  ].map((ch) => {
+                    const Icon = ch.icon;
+                    const isSelected = shareChannel === ch.id;
+                    return (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        onClick={() => setShareChannel(ch.id as any)}
+                        className={`p-3 rounded-2xl border text-center font-bold flex flex-col items-center gap-1.5 transition-all ${
+                          isSelected
+                            ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-sm"
+                            : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span className="text-[11px] leading-tight">{ch.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Custom Message / Note (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={customShareMessage}
+                  onChange={(e) => setCustomShareMessage(e.target.value)}
+                  placeholder="e.g. Please find the Term 1 official report card attached. School resumes on Oct 15th."
+                  className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+                <p>• <strong>WhatsApp:</strong> Direct interactive notification with download link sent to registered phone numbers.</p>
+                <p>• <strong>Email:</strong> Official PDF report card attached with school branding.</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(false)}
+                disabled={isSharing}
+                className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteShare}
+                disabled={isSharing}
+                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                <ShareIcon className="h-4 w-4" />
+                {isSharing ? "Dispatching..." : `Send to ${shareTargetMode === "ALL" ? `${reportCards.length} Parents` : "Parent"}`}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
