@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { 
   Bars3Icon, 
-  BellIcon, 
   UserCircleIcon, 
   HomeIcon, 
   UsersIcon, 
@@ -12,6 +11,7 @@ import {
   Cog6ToothIcon, 
   QuestionMarkCircleIcon 
 } from "@heroicons/react/24/outline";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const MenuItem = ({ href, icon: Icon, label } : any) => (
   <li className="relative px-2 py-1">
@@ -56,12 +56,10 @@ const UserNav = () => {
           {/* Action Buttons */}
           <ul className="flex items-center space-x-6">
             <li>
-              <button
-                className="p-2 bg-white text-red-400 rounded-full hover:bg-yellow-400"
-                aria-label="Notifications"
-              >
-                <BellIcon className="w-6 h-6" />
-              </button>
+              <NotificationBell
+                buttonClassName="bg-white text-orange-500 hover:bg-yellow-50 shadow-sm"
+                iconClassName="w-6 h-6 text-orange-600"
+              />
             </li>
             <li>
               <button

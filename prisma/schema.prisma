@@ -96,16 +96,98 @@ model VerificationToken {
 }
 
 model Notification {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  message   String
-  createdAt DateTime? @default(now())
-  read      Boolean   @default(false)
-  Company   Company?  @relation(fields: [companyId], references: [id])
-  companyId String?   @db.ObjectId
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  message        String
+  createdAt      DateTime? @default(now())
+  read           Boolean   @default(false) // Retained for backwards compatibility
+  Company        Company?  @relation(fields: [companyId], references: [id])
+  companyId      String?   @db.ObjectId
 
+  storeId        String?
+  eventType      String?   // e.g., ORDER_CREATED, PAYMENT_FAILED, LOW_STOCK_WARNING, MASCOT_APPROVAL_REQUESTED
+  severity       String    @default("INFO") // INFO, WARNING, CRITICAL
+  actionUrl      String?
+  resourceType   String?   // "order", "mascot_task", "inventory", "alert", "user"
+  resourceId     String?
+  idempotencyKey String?
+  metadata       Json?
+
+  recipients NotificationRecipient[]
+  deliveries NotificationDeliveryAttempt[]
+
+  @@index([companyId, createdAt])
+  @@index([storeId, createdAt])
+  @@index([eventType])
+  @@index([idempotencyKey])
+}
+
+model NotificationRecipient {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  notificationId String       @db.ObjectId
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  userId         String       @db.ObjectId
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  read           Boolean      @default(false)
+  readAt         DateTime?
+  acknowledgedAt DateTime?
+  dismissedAt    DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@unique([notificationId, userId])
+  @@index([userId, read, createdAt])
+}
+
+model NotificationDevice {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId   String?  @db.ObjectId
+  platform    String   // "ANDROID", "WINDOWS_DESKTOP", "WEB"
+  pushToken   String
+  deviceName  String?
+  appVersion  String?
+  isActive    Boolean  @default(true)
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, platform, pushToken])
+  @@index([userId, isActive])
   @@index([companyId])
 }
+
+model NotificationDeliveryAttempt {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  notificationId String       @db.ObjectId
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  channel        String       // "IN_APP", "EMAIL", "PUSH_ANDROID", "PUSH_DESKTOP"
+  recipientId    String?      @db.ObjectId
+  destination    String?
+  status         String       // "QUEUED", "SENT", "DELIVERED", "FAILED"
+  error          String?
+  attempts       Int          @default(1)
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([notificationId, channel])
+  @@index([status, createdAt])
+}
+
+model NotificationPreference {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailEnabled    Boolean  @default(true)
+  pushEnabled     Boolean  @default(true)
+  inAppEnabled    Boolean  @default(true)
+  quietHoursStart String?
+  quietHoursEnd   String?
+  mutedEventTypes String[]
+  updatedAt       DateTime @updatedAt
+}
+
 
 model CompanyCategory {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
@@ -3008,6 +3090,10 @@ model User {
   PhotoAlbum PhotoAlbum[]
   VideoAlbum VideoAlbum[]
   Document   Document[]
+
+  notificationRecipients NotificationRecipient[]
+  notificationDevices    NotificationDevice[]
+  notificationPreference NotificationPreference?
 
   Expert                Expert?
   Testimonial           Testimonial[]

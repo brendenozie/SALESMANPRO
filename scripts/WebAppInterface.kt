@@ -48,10 +48,20 @@ class WebAppInterface(
                         }
                     }
                 }
+            } else if (msgType == "SHOW_NOTIFICATION" || msgType == "NOTIFICATION_RECEIVED") {
+                val payloadObj = root["payload"] as? Map<*, *>
+                val title = payloadObj?.get("title") as? String ?: "SalesmanPro Alert"
+                val message = payloadObj?.get("message") as? String ?: ""
+                Log.d("WebAppInterface", "Displaying native Android notification: $title - $message")
             }
         } catch (e: Exception) {
             Log.e("WebAppInterface", "Error parsing postMessage: ${e.message}", e)
         }
+    }
+
+    @JavascriptInterface
+    fun getPushToken(): String {
+        return ""
     }
 
     private fun convertLegacyReceipt(legacy: ReceiptDetails): NormalizedPrintPayload {

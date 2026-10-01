@@ -11,6 +11,7 @@ import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { MetaWhatsAppClient } from "../metaClient";
 import { whatsappRepository } from "../repository";
 import { decrypt } from "@/lib/crypto";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 export interface MpesaStkCallbackPayload {
   Body?: {
@@ -146,6 +147,27 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
       }
     }
 
+    // Dispatches store-wide notification for payment received
+    try {
+      await NotificationService.publishEvent({
+        title: `💰 Payment Received: ${order.Company?.currency ?? "KES"} ${amount}`,
+        message: `M-Pesa payment of ${order.Company?.currency ?? "KES"} ${amount} received for Order #${order.trackingNumber ?? order.id} (Receipt: ${receipt}).`,
+        eventType: "PAYMENT_COMPLETED",
+        severity: "INFO",
+        companyId: order.companyId,
+        actionUrl: `/admin/orders?orderId=${order.id}`,
+        resourceType: "payment",
+        resourceId: order.id,
+        recipientPolicy: {
+          type: "STORE_ADMINS",
+        },
+        channels: ["IN_APP", "PUSH_DESKTOP"],
+        idempotencyKey: `payment_${order.id}_completed_${receipt}`,
+      });
+    } catch (notifErr) {
+      console.warn("[mpesaCallbackHandler] Notification warning:", notifErr);
+    }
+
     console.log(`[MPESA_PAYMENT_SUCCESS] Order #${order.trackingNumber ?? order.id} marked as PAID. Receipt: ${receipt}`);
     return { success: true, message: "Payment completed successfully", orderId: order.id };
   }
@@ -161,6 +183,27 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
         : `[M-Pesa Failed]: ${ResultDesc}`,
     },
   });
+
+  // Dispatches store-wide notification for failed payment
+  try {
+    await NotificationService.publishEvent({
+      title: `❌ Payment Failed: Order #${order.trackingNumber ?? order.id}`,
+      message: `M-Pesa payment failed for Order #${order.trackingNumber ?? order.id}: ${ResultDesc || "Transaction cancelled"}.`,
+      eventType: "PAYMENT_FAILED",
+      severity: "WARNING",
+      companyId: order.companyId,
+      actionUrl: `/admin/orders?orderId=${order.id}`,
+      resourceType: "payment",
+      resourceId: order.id,
+      recipientPolicy: {
+        type: "STORE_ADMINS",
+      },
+      channels: ["IN_APP"],
+      idempotencyKey: `payment_${order.id}_failed_${ResultDesc || "error"}`,
+    });
+  } catch (notifErr) {
+    console.warn("[mpesaCallbackHandler] Failure notification warning:", notifErr);
+  }
 
   console.warn(`[MPESA_PAYMENT_FAILED] Order #${order.trackingNumber ?? order.id}: ${ResultDesc}`);
   return { success: true, message: `Payment failed: ${ResultDesc}`, orderId: order.id };

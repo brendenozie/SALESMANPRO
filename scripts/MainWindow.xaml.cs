@@ -184,10 +184,36 @@ namespace SalesmanProDesktop.Views
                         }
                     }
                 }
+                else if (msgType == "SHOW_NOTIFICATION" || msgType == "NOTIFICATION_RECEIVED")
+                {
+                    if (root.TryGetProperty("payload", out var notifElem))
+                    {
+                        var title = notifElem.TryGetProperty("title", out var titleProp) ? titleProp.GetString() : "SalesmanPro Alert";
+                        var message = notifElem.TryGetProperty("message", out var msgProp) ? msgProp.GetString() : "";
+                        var severity = notifElem.TryGetProperty("severity", out var sevProp) ? sevProp.GetString() : "INFO";
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            // Play subtle system alert chime
+                            System.Media.SystemSounds.Asterisk.Play();
+                            if (severity == "CRITICAL")
+                            {
+                                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        });
+                    }
+                }
+                else if (msgType == "REGISTER_DEVICE")
+                {
+                    if (_authService.CurrentSession != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Desktop Device Active: {_authService.CurrentSession.Device.DeviceId}");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Error parsing print message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Error parsing web message: {ex.Message}");
             }
         }
 

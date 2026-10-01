@@ -6,6 +6,7 @@
 
 import prisma from "@/server/db/prismadb";
 import { AlertRuleSummary, ServerResourceMetrics, DatabaseHealthSummary, RedisHealthSummary, QueueStatusSummary } from "./types";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 interface DefaultAlertRule {
   name: string;
@@ -182,6 +183,27 @@ export async function evaluateAlertRules(snapshot: MetricSnapshotForAlerts): Pro
         rule.state = "TRIGGERED";
         rule.lastTriggeredAt = now;
         rule.lastValue = metricValue;
+
+        // Dispatch platform alert notification
+        try {
+          const cooldownWindow = Math.floor(now.getTime() / (rule.cooldownMinutes * 60 * 1000));
+          await NotificationService.publishEvent({
+            title: `🚨 [Platform Alert] ${rule.name}`,
+            message: `${rule.description || rule.name}. Current value: ${metricValue} (Threshold: ${rule.threshold}). Immediate inspection advised.`,
+            eventType: "OBSERVABILITY_ALERT",
+            severity: rule.severity === "CRITICAL" ? "CRITICAL" : "WARNING",
+            actionUrl: `/admin/observability/alerts?alertId=${rule.id}`,
+            resourceType: "alert",
+            resourceId: rule.id,
+            recipientPolicy: {
+              type: "SUPER_ADMINS",
+            },
+            channels: ["IN_APP", "EMAIL"],
+            idempotencyKey: `alert_${rule.id}_${cooldownWindow}`,
+          });
+        } catch (notifErr) {
+          console.warn("[alertEngine] Failed to dispatch alert notification:", notifErr);
+        }
       }
     } else {
       // Metric has returned to normal range

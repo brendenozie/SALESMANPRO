@@ -1,13 +1,11 @@
+"use client";
+
 import React, { useState } from "react";
-import { BellIcon, Bars3Icon, UserCircleIcon, DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, UserCircleIcon, DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const UserNavbar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const menuItems = [
-    { label: "Notifications", icon: <BellIcon className="h-6 w-6" />, badge: true },
-    { label: "Profile", icon: <UserCircleIcon className="h-6 w-6" /> },
-  ];
 
   return (
     <header className="z-40 py-4 bg-gray-800">
@@ -33,19 +31,20 @@ const UserNavbar = () => {
 
         {/* Menu Items */}
         <ul className="flex items-center space-x-4">
-          {menuItems.map(({ label, icon, badge }, index) => (
-            <li key={index} className="relative">
-              <button
-                className="p-2 text-white bg-gray-700 rounded-full hover:bg-yellow-500 focus:outline-none"
-                aria-label={label}
-              >
-                {icon}
-                {badge && (
-                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full" />
-                )}
-              </button>
-            </li>
-          ))}
+          <li className="relative">
+            <NotificationBell
+              buttonClassName="bg-gray-700 text-white hover:bg-yellow-500"
+              iconClassName="h-6 w-6"
+            />
+          </li>
+          <li className="relative">
+            <button
+              className="p-2 text-white bg-gray-700 rounded-full hover:bg-yellow-500 focus:outline-none"
+              aria-label="Profile"
+            >
+              <UserCircleIcon className="h-6 w-6" />
+            </button>
+          </li>
         </ul>
       </div>
 

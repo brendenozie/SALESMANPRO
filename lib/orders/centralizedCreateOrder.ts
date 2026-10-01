@@ -8,6 +8,7 @@ import {
   Prisma,
 } from "@prisma/client";
 import crypto from "crypto";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
@@ -267,6 +268,8 @@ export async function createOrder(
   }
 
   // 6. DB Transaction (Order Creation + Inventory Decrement)
+  const lowStockWarnings: Array<{ name: string; id: string; remaining: number }> = [];
+
   const order = await prisma.$transaction(
     async (tx) => {
       const createdOrder = await tx.customerOrder.create({
@@ -395,6 +398,15 @@ export async function createOrder(
             );
           }
 
+          const remainingQty = currentListing.quantity - pItem.quantity;
+          if (remainingQty <= 5) {
+            lowStockWarnings.push({
+              id: currentListing.id,
+              name: currentListing.name,
+              remaining: Math.max(0, remainingQty),
+            });
+          }
+
           // 1. Decrement MarketplaceListing
           await tx.marketplaceListings.update({
             where: { id: pItem.marketplaceListingId },
@@ -402,7 +414,7 @@ export async function createOrder(
               quantity: {
                 decrement: pItem.quantity,
               },
-              ...(currentListing.quantity - pItem.quantity <= 0
+              ...(remainingQty <= 0
                 ? { isAvailable: false }
                 : {}),
             },
@@ -484,6 +496,52 @@ export async function createOrder(
     },
     { maxWait: 10_000, timeout: 20_000 },
   );
+
+  // Asynchronously dispatch notifications without blocking order response
+  (async () => {
+    try {
+      // 1. Order Created Notification
+      await NotificationService.publishEvent({
+        title: `New Order #${trackingNumber || order.id.slice(-6)}`,
+        message: `Order of KES ${pricing.total} received from ${customerName || "Customer"} (${pricing.items.length} items).`,
+        eventType: "ORDER_CREATED",
+        severity: "INFO",
+        companyId: resolvedCompanyId,
+        actionUrl: `/admin/orders?orderId=${order.id}`,
+        resourceType: "order",
+        resourceId: order.id,
+        recipientPolicy: {
+          type: "STORE_STAFF",
+        },
+        channels: ["IN_APP", "PUSH_DESKTOP"],
+        idempotencyKey: `order_${order.id}_created`,
+      });
+
+      // 2. Low Stock Warnings
+      for (const item of lowStockWarnings) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        await NotificationService.publishEvent({
+          title: item.remaining === 0 ? `🚨 Stockout Alert: ${item.name}` : `⚠️ Low Stock Alert: ${item.name}`,
+          message: item.remaining === 0 
+            ? `Item "${item.name}" is completely out of stock.`
+            : `Item "${item.name}" has only ${item.remaining} units remaining. Restock recommended.`,
+          eventType: item.remaining === 0 ? "STOCKOUT_WARNING" : "LOW_STOCK_WARNING",
+          severity: item.remaining === 0 ? "CRITICAL" : "WARNING",
+          companyId: resolvedCompanyId,
+          actionUrl: `/admin/inventory`,
+          resourceType: "inventory",
+          resourceId: item.id,
+          recipientPolicy: {
+            type: "STORE_ADMINS",
+          },
+          channels: ["IN_APP", "EMAIL"],
+          idempotencyKey: `low_stock_${item.id}_${todayStr}`,
+        });
+      }
+    } catch (notifErr: any) {
+      console.warn("[centralizedCreateOrder] Notification dispatch warning:", notifErr?.message || notifErr);
+    }
+  })();
 
   return {
     order,
