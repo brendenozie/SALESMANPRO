@@ -288,7 +288,7 @@ export class MascotActionEngine {
     });
 
     const totalRevenue = orders.reduce((sum, o) => sum + (o.totalFinalPrice || o.totalPrice || 0), 0);
-    const paidOrders = orders.filter((o) => o.paymentStatus === "PAID" || o.paymentStatus === "COMPLETED");
+    const paidOrders = orders.filter((o) => (o.paymentStatus as any) === "COMPLETED" || (o.paymentStatus as any) === "PAID");
     const paidRevenue = paidOrders.reduce((sum, o) => sum + (o.totalFinalPrice || o.totalPrice || 0), 0);
     const avgOrderValue = orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0;
 
@@ -363,22 +363,17 @@ export class MascotActionEngine {
     const name = entities.productName || "New Product";
     const price = Number(entities.price) || 1000;
     const quantity = Number(entities.quantity) || 10;
-    const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now().toString().slice(-4)}`;
 
     const product = await prisma.product.create({
       data: {
         name,
-        slug,
         sellingPrice: price,
         finalPrice: price,
         quantity,
         isAvailable: true,
         companyId,
-        createdBy: userId,
-        updatedBy: userId,
         description: `High quality ${name} available at our store.`,
         category: "General",
-        status: "ACTIVE",
       },
     });
 

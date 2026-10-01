@@ -48,12 +48,13 @@ export interface ResolvedAgentContext {
  */
 export async function resolveAgentContext(slug: string): Promise<ResolvedAgentContext | null> {
   const session = await getAuthSession();
-  if (!session?.user?.id) {
+  const sessionUser = session?.user as any;
+  if (!sessionUser?.id) {
     return null;
   }
 
-  const userId = session.user.id;
-  const user = session.user as any;
+  const userId = sessionUser.id;
+  const user = sessionUser;
 
   if (user.isActive === false) {
     return null;
@@ -199,7 +200,8 @@ export async function assertAgentApiAccess(
   | { success: false; status: number; error: string }
 > {
   const session = await getAuthSession();
-  if (!session?.user?.id) {
+  const sessionUser = session?.user as any;
+  if (!sessionUser?.id) {
     return { success: false, status: 401, error: "Authentication required" };
   }
 
