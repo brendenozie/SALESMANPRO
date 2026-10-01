@@ -34,6 +34,7 @@ export default function AddStaffModal({
   
   // Selection state
   const [selectedUser, setSelectedUser] = useState<UserResult | null>(null);
+  const [loginPin, setLoginPin] = useState("");
 
   // 1. Debounced Search Logic
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function AddStaffModal({
       jobTitle: formData.get("jobTitle"),
       department: formData.get("department"),
       role: formData.get("role"),
+      loginCode: loginPin.trim() || formData.get("loginCode") || undefined,
       companyId,
     };
 
@@ -226,6 +228,38 @@ export default function AddStaffModal({
                 </select>
                 <ChevronDownIcon className="h-4 w-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
+            </div>
+          </div>
+
+          <hr className="border-slate-800" />
+
+          {/* Section: Terminal & App Access */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-blue-400">
+                Step 3: App & POS Login PIN (Optional)
+              </label>
+              <button
+                type="button"
+                onClick={() => setLoginPin(Math.floor(100000 + Math.random() * 900000).toString())}
+                className="text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase tracking-tighter"
+              >
+                🎲 Generate PIN
+              </button>
+            </div>
+            <div className="space-y-2">
+              <input
+                name="loginCode"
+                type="text"
+                maxLength={8}
+                value={loginPin}
+                onChange={(e) => setLoginPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="Auto-generated if left blank"
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 font-mono text-sm text-white focus:border-blue-500 outline-none tracking-widest"
+              />
+              <p className="text-[10px] text-slate-500 ml-1">
+                Leave blank to auto-generate a secure 6-digit login PIN for Mobile & Desktop applications.
+              </p>
             </div>
           </div>
 

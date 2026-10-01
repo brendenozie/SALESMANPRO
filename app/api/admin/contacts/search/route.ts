@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get("companyId");
-    const query = searchParams.get("query")?.trim() || "";
+    const query = (searchParams.get("query") || searchParams.get("q") || "").trim();
 
     if (!companyId) {
       return NextResponse.json({ success: false, error: "Missing companyId" }, { status: 400 });
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
       return true;
     });
 
-    return NextResponse.json({ success: true, data: unique });
+    return NextResponse.json({ success: true, data: unique, contacts: unique });
   } catch (err: any) {
     console.error("Contacts search error:", err);
     return NextResponse.json(
@@ -155,17 +155,24 @@ export async function POST(req: NextRequest) {
       return { user, client };
     });
 
+    const contactPayload = {
+      id: result.client.id,
+      userId: result.user.id,
+      type: "CLIENT" as const,
+      name: result.user.name,
+      email: result.user.email,
+      phone: result.user.phone,
+      clientId: result.client.id,
+    };
+
     return NextResponse.json({
       success: true,
       message: "Customer successfully registered in system",
       data: {
-        id: result.client.id,
-        userId: result.user.id,
-        type: "CLIENT",
-        name: result.user.name,
-        email: result.user.email,
-        phone: result.user.phone,
+        ...contactPayload,
+        contact: contactPayload,
       },
+      contact: contactPayload,
     });
   } catch (err: any) {
     console.error("Create contact error:", err);

@@ -23,6 +23,9 @@ import {
   XMarkIcon,
   ArrowPathIcon,
   IdentificationIcon,
+  ClipboardDocumentIcon,
+  ClipboardDocumentCheckIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
@@ -128,7 +131,9 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   const [isPromoteOpen, setIsPromoteOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentType | null>(null);
   const [isPromoting, setIsPromoting] = useState(false);
-
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -384,6 +389,47 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     }
   };
 
+  const handleCopyCode = (id: string, code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleShareLoginCode = async (student: StudentType) => {
+    setSharingId(student.id);
+    setAlertMsg(null);
+    try {
+      const res = await fetch("/api/admin/share-login-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          targetType: "STUDENT",
+          targetId: student.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || "Failed to send login code");
+      }
+      const code = data.data?.loginCode;
+      setAlertMsg({
+        type: "success",
+        text: `Student login PIN ${code ? `(${code})` : ""} successfully sent to ${data.data?.recipientEmail || student.email || "student"}!`,
+      });
+
+      if (code) {
+        setStudents(prev =>
+          prev.map(s => (s.id === student.id ? { ...s, loginCode: code } : s))
+        );
+      }
+    } catch (err: any) {
+      setAlertMsg({ type: "error", text: err.message || "Failed to email student login code" });
+    } finally {
+      setSharingId(null);
+    }
+  };
+
   // --- Calculated Stats ---
   const totalStudents = students.length;
   const avgCoursesPerStudent = totalStudents > 0 ? (students.reduce((sum, s) => sum + s.totalCourses, 0) / totalStudents).toFixed(1) : '0';
@@ -555,6 +601,32 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
           </div> */}
         </div>
 
+        {/* Status Notification Banner */}
+        {alertMsg && (
+          <div
+            className={`p-4 rounded-2xl flex items-center justify-between text-xs font-bold transition-all mb-4 ${
+              alertMsg.type === "success"
+                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                : "bg-rose-50 text-rose-800 border border-rose-200"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              {alertMsg.type === "success" ? (
+                <CheckCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+              ) : (
+                <ExclamationCircleIcon className="w-5 h-5 text-rose-500 shrink-0" />
+              )}
+              <span>{alertMsg.text}</span>
+            </div>
+            <button
+              onClick={() => setAlertMsg(null)}
+              className="p-1 text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Students Table */}
         <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
@@ -611,10 +683,26 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex items-center gap-1">
-                        <IdentificationIcon className="h-4 w-4 text-gray-500" /> {student.loginCode || 'N/A'}
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-mono font-bold">
+                      {student.loginCode ? (
+                        <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg text-blue-700">
+                          <IdentificationIcon className="h-4 w-4 text-blue-500" />
+                          <span>{student.loginCode}</span>
+                          <button
+                            onClick={() => handleCopyCode(student.id, student.loginCode!)}
+                            className="text-slate-400 hover:text-blue-600 ml-1 p-0.5 rounded transition"
+                            title="Copy login PIN"
+                          >
+                            {copiedId === student.id ? (
+                              <ClipboardDocumentCheckIcon className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : (
+                              <ClipboardDocumentIcon className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">Not set (auto-generates on email)</span>
+                      )}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -710,6 +798,14 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => handleShareLoginCode(student)}
+                          disabled={sharingId === student.id}
+                          className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-full hover:bg-blue-100 transition-colors duration-200 disabled:opacity-50"
+                          title="Email Login PIN to Student and Parent"
+                        >
+                          <EnvelopeIcon className="h-5 w-5" />
+                        </button>
                         <button
                           onClick={() => { setEditingStudent(student); setShowFormModal(true); }}
                           className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-full hover:bg-indigo-100 transition-colors duration-200"

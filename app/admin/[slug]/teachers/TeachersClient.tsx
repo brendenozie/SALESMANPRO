@@ -25,6 +25,8 @@ import {
   ClipboardDocumentListIcon,
   ClipboardDocumentIcon,
   FunnelIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 
 import EducatorFormModal from './EducatorFormModal';
@@ -124,6 +126,9 @@ export default function TeachersClient({
   const [editingEducator, setEditingEducator] = useState<EducatorType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [alertMsg, setAlertMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -226,6 +231,47 @@ export default function TeachersClient({
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopyCode = (id: string, code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleShareLoginCode = async (educator: EducatorType) => {
+    setSharingId(educator.id);
+    setAlertMsg(null);
+    try {
+      const res = await fetch("/api/admin/share-login-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          targetType: "TEACHER",
+          targetId: educator.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || "Failed to send login code");
+      }
+      const code = data.data?.loginCode;
+      setAlertMsg({
+        type: "success",
+        text: `Login code ${code ? `(${code})` : ""} successfully sent to ${data.data?.recipientEmail || educator.email}!`,
+      });
+
+      if (code) {
+        setEducators(prev =>
+          prev.map(e => (e.id === educator.id ? { ...e, loginCode: code } : e))
+        );
+      }
+    } catch (err: any) {
+      setAlertMsg({ type: "error", text: err.message || "Failed to email login code" });
+    } finally {
+      setSharingId(null);
     }
   };
 
@@ -334,6 +380,32 @@ export default function TeachersClient({
           </button>
         </div>
 
+        {/* Status Notification Banner */}
+        {alertMsg && (
+          <div
+            className={`p-4 rounded-2xl flex items-center justify-between text-xs font-bold transition-all mb-4 ${
+              alertMsg.type === "success"
+                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                : "bg-rose-50 text-rose-800 border border-rose-200"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              {alertMsg.type === "success" ? (
+                <CheckCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+              ) : (
+                <ExclamationCircleIcon className="w-5 h-5 text-rose-500 shrink-0" />
+              )}
+              <span>{alertMsg.text}</span>
+            </div>
+            <button
+              onClick={() => setAlertMsg(null)}
+              className="p-1 text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Dynamic Loading Overlay View */}
         <div className="relative">
           {isLoading && (
@@ -387,8 +459,20 @@ export default function TeachersClient({
 
                         {/* Security Code */}
                         <td className="px-6 py-4 whitespace-nowrap font-mono text-xs font-bold text-indigo-600">
-                          <span className="bg-indigo-50/60 px-2 py-1 rounded-md border border-indigo-100/50 flex items-center gap-1 w-fit">
-                            <KeyIcon className="h-3 w-3 text-indigo-400" /> {educator.loginCode}
+                          <span className="bg-indigo-50/60 px-2.5 py-1 rounded-md border border-indigo-100/50 flex items-center gap-1.5 w-fit">
+                            <KeyIcon className="h-3 w-3 text-indigo-400" />
+                            <span>{educator.loginCode}</span>
+                            <button
+                              onClick={() => handleCopyCode(educator.id, educator.loginCode)}
+                              className="text-slate-400 hover:text-indigo-600 ml-1 p-0.5 rounded transition"
+                              title="Copy login PIN"
+                            >
+                              {copiedId === educator.id ? (
+                                <ClipboardDocumentCheckIcon className="h-3.5 w-3.5 text-emerald-500" />
+                              ) : (
+                                <ClipboardDocumentIcon className="h-3.5 w-3.5" />
+                              )}
+                            </button>
                           </span>
                         </td>
 
@@ -443,6 +527,14 @@ export default function TeachersClient({
                         {/* Actions */}
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleShareLoginCode(educator)}
+                              disabled={sharingId === educator.id}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                              title="Email login PIN code to teacher"
+                            >
+                              <EnvelopeIcon className="h-4 w-4" />
+                            </button>
                             <button
                               onClick={() => { setEditingEducator(educator); setShowFormModal(true); }}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
@@ -501,10 +593,29 @@ export default function TeachersClient({
                     </div>
 
                     {/* Meta Row Badges */}
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      <span className="text-[11px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100/40">
-                        Code: {educator.loginCode}
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="text-[11px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100/40 flex items-center gap-1">
+                        <KeyIcon className="h-3 w-3 text-indigo-400" /> {educator.loginCode}
+                        <button
+                          onClick={() => handleCopyCode(educator.id, educator.loginCode)}
+                          className="text-slate-400 hover:text-indigo-600 ml-0.5"
+                          title="Copy login PIN"
+                        >
+                          {copiedId === educator.id ? (
+                            <ClipboardDocumentCheckIcon className="h-3.5 w-3.5 text-emerald-500" />
+                          ) : (
+                            <ClipboardDocumentIcon className="h-3.5 w-3.5" />
+                          )}
+                        </button>
                       </span>
+                      <button
+                        onClick={() => handleShareLoginCode(educator)}
+                        disabled={sharingId === educator.id}
+                        className="text-[11px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-0.5 rounded-md border border-indigo-200/50 flex items-center gap-1 disabled:opacity-50 transition-colors"
+                      >
+                        <EnvelopeIcon className="h-3 w-3" />
+                        <span>{sharingId === educator.id ? 'Sending...' : 'Email PIN'}</span>
+                      </button>
                       {educator.phone && (
                         <span className="text-[11px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/40 flex items-center gap-1">
                           <PhoneIcon className="h-3 w-3" /> {educator.phone}

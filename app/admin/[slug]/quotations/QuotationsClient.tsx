@@ -23,6 +23,9 @@ import {
   UserPlusIcon,
   UserIcon,
   PhoneIcon,
+  BuildingStorefrontIcon,
+  ShoppingBagIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -65,6 +68,25 @@ export default function QuotationsClient({
   const [showContactDropdown, setShowContactDropdown] = useState(false);
   const [isRegisteringContact, setIsRegisteringContact] = useState(false);
 
+  // Edit modal contact autocomplete states
+  const [editContactResults, setEditContactResults] = useState<any[]>([]);
+  const [isSearchingEditContacts, setIsSearchingEditContacts] = useState(false);
+  const [showEditContactDropdown, setShowEditContactDropdown] = useState(false);
+
+  // Quick Customer Registration Modal state
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [newCustomerTarget, setNewCustomerTarget] = useState<"CREATE" | "EDIT">("CREATE");
+  const [newCustomerForm, setNewCustomerForm] = useState({ name: "", email: "", phone: "" });
+  const [isSubmittingNewCustomer, setIsSubmittingNewCustomer] = useState(false);
+
+  // Product Catalog / Marketplace Selector Modal states
+  const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
+  const [productPickerTarget, setProductPickerTarget] = useState<"CREATE" | "EDIT">("CREATE");
+  const [targetItemIndex, setTargetItemIndex] = useState<number | null>(null);
+  const [productSearch, setProductSearch] = useState("");
+  const [productsList, setProductsList] = useState<any[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+
   // AI Auto-Fill states
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
@@ -85,7 +107,7 @@ export default function QuotationsClient({
     terms: "",
     status: "PENDING",
     items: [
-      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
     ],
   });
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
@@ -95,10 +117,12 @@ export default function QuotationsClient({
     customerName: "",
     customerEmail: "",
     customerPhone: "",
+    clientId: "",
+    consumerId: "",
     expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
     notes: "",
     terms: "Quotation valid for 30 calendar days. 50% mobilization deposit upon acceptance.",
-    items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 }],
+    items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" }],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
@@ -129,12 +153,174 @@ export default function QuotationsClient({
     fetchQuotations();
   }, [companyId, filterStatus]);
 
+  // Product Catalog Fetcher & Handlers
+  const fetchProductsCatalog = async (searchQuery: string = "") => {
+    try {
+      setIsLoadingProducts(true);
+      const params = new URLSearchParams({ companyId, limit: "50" });
+      if (searchQuery.trim()) {
+        params.append("search", searchQuery.trim());
+      }
+      const res = await fetch(`/api/admin/products?${params.toString()}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setProductsList(json.data.products || []);
+      }
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  const handleOpenProductPicker = (target: "CREATE" | "EDIT", itemIndex: number | null = null) => {
+    setProductPickerTarget(target);
+    setTargetItemIndex(itemIndex);
+    setIsProductPickerOpen(true);
+    setProductSearch("");
+    fetchProductsCatalog("");
+  };
+
+  const handleSelectProduct = (product: any) => {
+    const defaultDiscount = Number(product.discount) || 0;
+    const defaultPrice = Number(product.sellingPrice) || 0;
+    const desc = product.sku ? `${product.name} [${product.sku}]` : product.name;
+
+    if (productPickerTarget === "CREATE") {
+      setForm((prev) => {
+        const items = [...prev.items];
+        if (targetItemIndex !== null && items[targetItemIndex]) {
+          items[targetItemIndex] = {
+            ...items[targetItemIndex],
+            description: desc,
+            unitPrice: defaultPrice,
+            discount: defaultDiscount,
+            productId: product.id,
+            marketplaceListingId: product.marketplaceListing?.id || null,
+          };
+        } else {
+          if (items.length === 1 && !items[0].description.trim() && Number(items[0].unitPrice) === 0) {
+            items[0] = {
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            };
+          } else {
+            items.push({
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            });
+          }
+        }
+        return { ...prev, items };
+      });
+    } else {
+      setEditForm((prev) => {
+        const items = [...prev.items];
+        if (targetItemIndex !== null && items[targetItemIndex]) {
+          items[targetItemIndex] = {
+            ...items[targetItemIndex],
+            description: desc,
+            unitPrice: defaultPrice,
+            discount: defaultDiscount,
+            productId: product.id,
+            marketplaceListingId: product.marketplaceListing?.id || null,
+          };
+        } else {
+          if (items.length === 1 && !items[0].description.trim() && Number(items[0].unitPrice) === 0) {
+            items[0] = {
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            };
+          } else {
+            items.push({
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            });
+          }
+        }
+        return { ...prev, items };
+      });
+    }
+    setIsProductPickerOpen(false);
+  };
+
+  // Quick Customer Registration handler
+  const handleSaveNewCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustomerForm.name.trim()) return;
+    try {
+      setIsSubmittingNewCustomer(true);
+      const res = await fetch("/api/admin/contacts/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          name: newCustomerForm.name.trim(),
+          email: newCustomerForm.email.trim() || undefined,
+          phone: newCustomerForm.phone.trim() || undefined,
+          type: "CLIENT",
+        }),
+      });
+      const json = await res.json();
+      if (json.success && (json.data || json.contact)) {
+        const contact = json.contact || json.data;
+        if (newCustomerTarget === "CREATE") {
+          setForm((prev) => ({
+            ...prev,
+            customerName: contact.name,
+            customerEmail: contact.email || prev.customerEmail,
+            customerPhone: contact.phone || prev.customerPhone,
+            clientId: contact.clientId || contact.id || "",
+            consumerId: "",
+          }));
+        } else {
+          setEditForm((prev) => ({
+            ...prev,
+            customerName: contact.name,
+            customerEmail: contact.email || prev.customerEmail,
+            customerPhone: contact.phone || prev.customerPhone,
+            clientId: contact.clientId || contact.id || "",
+            consumerId: "",
+          }));
+        }
+        setIsNewCustomerModalOpen(false);
+        setNewCustomerForm({ name: "", email: "", phone: "" });
+      } else {
+        alert(json.error || "Failed to register customer");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to save customer");
+    } finally {
+      setIsSubmittingNewCustomer(false);
+    }
+  };
+
   const handleAddItem = () => {
     setForm({
       ...form,
       items: [
         ...form.items,
-        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
       ],
     });
   };
@@ -159,19 +345,21 @@ export default function QuotationsClient({
         const discount = gross * ((Number(it.discount) || 0) / 100);
         const net = gross - discount;
         const tax = net * ((Number(it.taxRate) || 0) / 100);
+        acc.gross += gross;
+        acc.discount += discount;
         acc.subtotal += net;
         acc.tax += tax;
         acc.total += net + tax;
         return acc;
       },
-      { subtotal: 0, tax: 0, total: 0 }
+      { gross: 0, discount: 0, subtotal: 0, tax: 0, total: 0 }
     );
   }, [form.items]);
 
   // Search contacts across Clients and Consumers
   const searchContacts = async (query: string) => {
     setContactQuery(query);
-    if (!query || query.trim().length < 2) {
+    if (!query || query.trim().length < 1) {
       setContactResults([]);
       setShowContactDropdown(false);
       return;
@@ -179,17 +367,36 @@ export default function QuotationsClient({
     try {
       setIsSearchingContacts(true);
       const res = await fetch(
-        `/api/admin/contacts/search?companyId=${companyId}&q=${encodeURIComponent(query)}`
+        `/api/admin/contacts/search?companyId=${encodeURIComponent(companyId)}&query=${encodeURIComponent(query)}`
       );
       const json = await res.json();
-      if (json.success && json.data) {
-        setContactResults(json.data.contacts || []);
+      if (json.success) {
+        setContactResults(json.data || json.contacts || []);
         setShowContactDropdown(true);
       }
     } catch (e) {
       console.error("Error searching contacts:", e);
     } finally {
       setIsSearchingContacts(false);
+    }
+  };
+
+  // Search contacts for Edit modal
+  const searchEditContacts = async (query: string) => {
+    try {
+      setIsSearchingEditContacts(true);
+      const res = await fetch(
+        `/api/admin/contacts/search?companyId=${encodeURIComponent(companyId)}&query=${encodeURIComponent(query)}`
+      );
+      const json = await res.json();
+      if (json.success) {
+        setEditContactResults(json.data || json.contacts || []);
+        setShowEditContactDropdown(true);
+      }
+    } catch (e) {
+      console.error("Error searching edit contacts:", e);
+    } finally {
+      setIsSearchingEditContacts(false);
     }
   };
 
@@ -213,15 +420,15 @@ export default function QuotationsClient({
         }),
       });
       const json = await res.json();
-      if (json.success && json.data?.contact) {
-        const contact = json.data.contact;
+      if (json.success && (json.data || json.contact)) {
+        const contact = json.contact || json.data;
         if (target === "CREATE") {
           setForm((prev) => ({
             ...prev,
             customerName: contact.name,
             customerEmail: contact.email || "",
             customerPhone: contact.phone || "",
-            clientId: contact.clientId || "",
+            clientId: contact.clientId || contact.id || "",
             consumerId: "",
           }));
         } else {
@@ -230,11 +437,12 @@ export default function QuotationsClient({
             customerName: contact.name,
             customerEmail: contact.email || "",
             customerPhone: contact.phone || "",
-            clientId: contact.clientId || "",
+            clientId: contact.clientId || contact.id || "",
             consumerId: "",
           }));
         }
         setShowContactDropdown(false);
+        setShowEditContactDropdown(false);
         alert(`Registered "${contact.name}" into client directory!`);
       } else {
         alert(json.error || "Failed to register new client");
@@ -243,6 +451,163 @@ export default function QuotationsClient({
       alert(e.message || "Failed to register contact");
     } finally {
       setIsRegisteringContact(false);
+    }
+  };
+
+  // Open Edit Quotation modal
+  const handleOpenEditModal = (quote: any) => {
+    setEditingQuotationId(quote.id);
+    setEditForm({
+      customerName: quote.customerName || "",
+      customerEmail: quote.customerEmail || "",
+      customerPhone: quote.customerPhone || "",
+      clientId: quote.clientId || "",
+      consumerId: quote.consumerId || "",
+      expiryDate: quote.expiryDate ? new Date(quote.expiryDate).toISOString().slice(0, 10) : "",
+      notes: quote.notes || "",
+      terms: quote.terms || "",
+      status: quote.status || "PENDING",
+      items:
+        quote.items && quote.items.length > 0
+          ? quote.items.map((it: any) => ({
+              description: it.description,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice,
+              taxRate: it.taxRate || 0,
+              discount: it.discount || 0,
+              productId: it.productId || "",
+              marketplaceListingId: it.marketplaceListingId || "",
+            }))
+          : [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" }],
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditAddItem = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
+      ],
+    }));
+  };
+
+  const handleEditRemoveItem = (index: number) => {
+    if (editForm.items.length <= 1) return;
+    setEditForm((prev) => {
+      const newItems = [...prev.items];
+      newItems.splice(index, 1);
+      return { ...prev, items: newItems };
+    });
+  };
+
+  const handleEditItemChange = (index: number, field: string, value: any) => {
+    setEditForm((prev) => {
+      const newItems = [...prev.items];
+      newItems[index] = { ...newItems[index], [field]: value };
+      return { ...prev, items: newItems };
+    });
+  };
+
+  // Compute live gross, discount, subtotal, tax, and total for Edit modal
+  const computedEditTotals = useMemo(() => {
+    return editForm.items.reduce(
+      (acc, it) => {
+        const gross = (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0);
+        const discount = gross * ((Number(it.discount) || 0) / 100);
+        const net = gross - discount;
+        const tax = net * ((Number(it.taxRate) || 0) / 100);
+        acc.gross += gross;
+        acc.discount += discount;
+        acc.subtotal += net;
+        acc.tax += tax;
+        acc.total += net + tax;
+        return acc;
+      },
+      { gross: 0, discount: 0, subtotal: 0, tax: 0, total: 0 }
+    );
+  }, [editForm.items]);
+
+  // Submit in-place quotation edit
+  const handleSaveEditQuotation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuotationId) return;
+    if (!editForm.customerName.trim()) {
+      alert("Customer name is required.");
+      return;
+    }
+    if (editForm.items.some((it) => !it.description.trim() || Number(it.unitPrice) <= 0)) {
+      alert("Please ensure all items have a description and valid price.");
+      return;
+    }
+
+    try {
+      setIsSubmittingEdit(true);
+      const res = await fetch(`/api/admin/quotations/${editingQuotationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setIsEditModalOpen(false);
+        setEditingQuotationId(null);
+        fetchQuotations();
+      } else {
+        alert(json.error || "Failed to save quotation changes");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to save quotation changes");
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  const handleCreateQuotation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.customerName.trim()) {
+      alert("Customer name is required.");
+      return;
+    }
+    if (form.items.some((it) => !it.description.trim() || Number(it.unitPrice) <= 0)) {
+      alert("Please ensure all items have a description and valid price.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/admin/quotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          companyId,
+          currency,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setIsCreateModalOpen(false);
+        setForm({
+          customerName: "",
+          customerEmail: "",
+          customerPhone: "",
+          clientId: "",
+          consumerId: "",
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+          notes: "",
+          terms: "Quotation valid for 30 calendar days. 50% mobilization deposit upon acceptance.",
+          items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" }],
+        });
+        fetchQuotations();
+      } else {
+        alert(json.error || "Failed to create quotation");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to create quotation");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -859,18 +1224,32 @@ export default function QuotationsClient({
                       <label className="block font-bold text-slate-700 dark:text-slate-300">
                         Customer / Entity Name *
                       </label>
-                      {form.customerName.trim() && !form.clientId && (
+                      <div className="flex items-center gap-2">
+                        {form.customerName.trim() && !form.clientId && (
+                          <button
+                            type="button"
+                            onClick={() => handleRegisterContact(form.customerName, form.customerEmail, form.customerPhone, "CREATE")}
+                            disabled={isRegisteringContact}
+                            className="text-[10px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1"
+                            title="Save this new customer into the company directory"
+                          >
+                            <UserPlusIcon className="h-3 w-3" />
+                            {isRegisteringContact ? "Saving..." : "Save to Database"}
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => handleRegisterContact(form.customerName, form.customerEmail, form.customerPhone, "CREATE")}
-                          disabled={isRegisteringContact}
-                          className="text-[10px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1"
-                          title="Save this new customer into the company directory"
+                          onClick={() => {
+                            setNewCustomerSource("CREATE");
+                            setNewCustomerForm({ name: "", email: "", phone: "" });
+                            setIsNewCustomerModalOpen(true);
+                          }}
+                          className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                          title="Register and select a new customer directly into database"
                         >
-                          <UserPlusIcon className="h-3 w-3" />
-                          {isRegisteringContact ? "Saving..." : "Save to Database"}
+                          <UserPlusIcon className="h-3 w-3" /> + New Customer
                         </button>
-                      )}
+                      </div>
                     </div>
                     <div className="relative">
                       <input
@@ -983,91 +1362,170 @@ export default function QuotationsClient({
 
                 {/* Line Items */}
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
                     <h4 className="font-extrabold uppercase text-[11px] text-sky-600 dark:text-sky-400 tracking-wider">Line Items & Deliverables</h4>
-                    <button
-                      type="button"
-                      onClick={handleAddItem}
-                      className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline font-bold text-xs"
-                    >
-                      <PlusIcon className="w-3.5 h-3.5 stroke-[3px]" /> Add Item
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenProductPicker("CREATE")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-bold text-xs transition-all shadow-sm"
+                      >
+                        <BuildingStorefrontIcon className="w-3.5 h-3.5" />
+                        <span>Browse Marketplace Catalog</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddItem}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 font-bold text-xs transition-all"
+                      >
+                        <PlusIcon className="w-3.5 h-3.5 stroke-[3px]" /> Add Item
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-2.5">
-                    {form.items.map((it, idx) => (
-                      <div key={idx} className="grid grid-cols-12 gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 items-center">
-                        <div className="col-span-5">
-                          <label className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Description</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Deliverable description"
-                            value={it.description}
-                            onChange={(e) => handleItemChange(idx, "description", e.target.value)}
-                            className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                          />
+                    {form.items.map((it, idx) => {
+                      const gross = (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0);
+                      const disc = gross * ((Number(it.discount) || 0) / 100);
+                      const lineNet = gross - disc;
+                      const lineTax = lineNet * ((Number(it.taxRate) || 0) / 100);
+                      const lineTotal = lineNet + lineTax;
+
+                      return (
+                        <div key={idx} className="p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 transition-all">
+                          <div className="grid grid-cols-12 gap-2.5 items-center">
+                            {/* Description & Catalog Picker button */}
+                            <div className="col-span-12 sm:col-span-5">
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="block text-[10px] font-bold uppercase text-slate-400">Description</label>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenProductPicker("CREATE", idx)}
+                                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                                >
+                                  <ShoppingBagIcon className="h-3 w-3" /> Catalog
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Deliverable description or select from catalog"
+                                value={it.description}
+                                onChange={(e) => handleItemChange(idx, "description", e.target.value)}
+                                className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                              />
+                            </div>
+
+                            {/* Quantity */}
+                            <div className="col-span-4 sm:col-span-2">
+                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Qty</label>
+                              <input
+                                type="number"
+                                min="1"
+                                step="any"
+                                required
+                                value={it.quantity}
+                                onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))}
+                                className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-center font-bold"
+                              />
+                            </div>
+
+                            {/* Unit Price */}
+                            <div className="col-span-4 sm:col-span-2">
+                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Unit Rate ({currency})</label>
+                              <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                required
+                                value={it.unitPrice}
+                                onChange={(e) => handleItemChange(idx, "unitPrice", Number(e.target.value))}
+                                className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
+                              />
+                            </div>
+
+                            {/* Tax % */}
+                            <div className="col-span-2 sm:col-span-1">
+                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tax%</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="any"
+                                value={it.taxRate ?? 16}
+                                onChange={(e) => handleItemChange(idx, "taxRate", Number(e.target.value))}
+                                className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-center"
+                              />
+                            </div>
+
+                            {/* Discount % */}
+                            <div className="col-span-2 sm:col-span-1">
+                              <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Disc%</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="any"
+                                value={it.discount ?? 0}
+                                onChange={(e) => handleItemChange(idx, "discount", Number(e.target.value))}
+                                className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-center"
+                              />
+                            </div>
+
+                            {/* Row Total & Delete */}
+                            <div className="col-span-12 sm:col-span-1 flex items-center justify-between sm:justify-end gap-1.5 pt-2 sm:pt-4">
+                              <div className="text-right sm:text-right">
+                                <span className="font-black text-xs text-slate-900 dark:text-white block">
+                                  {lineTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                </span>
+                                {disc > 0 && (
+                                  <span className="text-[9px] text-emerald-500 font-bold block">
+                                    -{currency} {disc.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                  </span>
+                                )}
+                              </div>
+                              {form.items.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveItem(idx)}
+                                  className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+                                  title="Remove item"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="col-span-2">
-                          <label className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Qty</label>
-                          <input
-                            type="number"
-                            min="1"
-                            required
-                            value={it.quantity}
-                            onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
-                            className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-center font-bold"
-                          />
-                        </div>
-                        <div className="col-span-3">
-                          <label className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Unit Rate ({currency})</label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            required
-                            value={it.unitPrice}
-                            onChange={(e) => handleItemChange(idx, "unitPrice", e.target.value)}
-                            className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-                          />
-                        </div>
-                        <div className="col-span-1 text-center">
-                          <label className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Total</label>
-                          <span className="font-black text-slate-900 dark:text-white">
-                            {((Number(it.quantity) || 1) * (Number(it.unitPrice) || 0)).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="col-span-1 flex justify-end items-end pt-4">
-                          {form.items.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveItem(idx)}
-                              className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg"
-                              title="Remove item"
-                            >
-                              <TrashIcon className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Summary */}
                 <div className="flex justify-end pt-2">
-                  <div className="w-72 space-y-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                    <div className="flex justify-between text-slate-500">
-                      <span>Subtotal:</span>
-                      <span className="font-bold">{currency} {computedTotals.subtotal.toLocaleString()}</span>
+                  <div className="w-80 space-y-2 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                    <div className="flex justify-between text-slate-500 text-xs">
+                      <span>Gross Subtotal:</span>
+                      <span className="font-bold">{currency} {computedTotals.gross.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between text-slate-500">
-                      <span>Estimated VAT (16%):</span>
-                      <span className="font-bold">{currency} {computedTotals.tax.toLocaleString()}</span>
+                    {computedTotals.discount > 0 && (
+                      <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                        <span>Total Discounts Given:</span>
+                        <span>- {currency} {computedTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-slate-600 dark:text-slate-300 text-xs">
+                      <span>Net Taxable Subtotal:</span>
+                      <span className="font-bold">{currency} {computedTotals.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-500 text-xs">
+                      <span>Estimated VAT:</span>
+                      <span className="font-bold">{currency} {computedTotals.tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between font-black text-sm pt-2 border-t border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
                       <span>Total Quotation:</span>
-                      <span className="text-sky-600 dark:text-sky-400">{currency} {computedTotals.total.toLocaleString()}</span>
+                      <span className="text-sky-600 dark:text-sky-400">{currency} {computedTotals.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
@@ -1553,19 +2011,114 @@ export default function QuotationsClient({
                   1. Recipient & Parameters
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Customer Name */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold mb-1.5 text-slate-700 dark:text-slate-300">
-                      Customer / Client Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editForm.customerName}
-                      onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
-                      className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
-                      placeholder="e.g. John Doe / Safaricom Ltd"
-                    />
+                  {/* Customer Combobox */}
+                  <div className="sm:col-span-2 relative">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Customer / Client Name *
+                      </label>
+                      <div className="flex items-center gap-2">
+                        {editForm.customerName.trim() && !editForm.clientId && (
+                          <button
+                            type="button"
+                            onClick={() => handleRegisterContact(editForm.customerName, editForm.customerEmail, editForm.customerPhone, "EDIT")}
+                            disabled={isRegisteringContact}
+                            className="text-[10px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1"
+                            title="Save this new customer into the company directory"
+                          >
+                            <UserPlusIcon className="h-3 w-3" />
+                            {isRegisteringContact ? "Saving..." : "Save to Database"}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewCustomerSource("EDIT");
+                            setNewCustomerForm({ name: "", email: "", phone: "" });
+                            setIsNewCustomerModalOpen(true);
+                          }}
+                          className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                          title="Register and select a new customer directly into database"
+                        >
+                          <UserPlusIcon className="h-3 w-3" /> + New Customer
+                        </button>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        value={editForm.customerName}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setEditForm({ ...editForm, customerName: val, clientId: "" });
+                          searchEditContacts(val);
+                        }}
+                        onFocus={() => {
+                          if (editContactResults.length > 0) setShowEditContactDropdown(true);
+                        }}
+                        className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                        placeholder="e.g. John Doe / Safaricom Ltd"
+                      />
+                      {isSearchingEditContacts && (
+                        <div className="absolute right-3 top-3">
+                          <span className="h-4 w-4 border-2 border-indigo-400/30 border-t-indigo-500 rounded-full animate-spin block" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Autocomplete Dropdown */}
+                    {showEditContactDropdown && editContactResults.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+                        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex justify-between">
+                          <span>Directory Matches</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowEditContactDropdown(false)}
+                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                          >
+                            Close ✕
+                          </button>
+                        </div>
+                        {editContactResults.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setEditForm({
+                                ...editForm,
+                                customerName: c.name,
+                                customerEmail: c.email || editForm.customerEmail,
+                                customerPhone: c.phone || editForm.customerPhone,
+                                clientId: c.clientId || "",
+                                consumerId: c.consumerId || "",
+                              });
+                              setShowEditContactDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-indigo-50/60 dark:hover:bg-indigo-950/40 border-b border-slate-100 dark:border-slate-800/60 transition-colors flex items-center justify-between gap-2"
+                          >
+                            <div className="truncate">
+                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <UserIcon className="h-3.5 w-3.5 text-slate-400" />
+                                {c.name}
+                              </div>
+                              <div className="text-[10px] text-slate-400 truncate">
+                                {c.email || "No email"} • {c.phone || "No phone"}
+                              </div>
+                            </div>
+                            <span
+                              className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase flex-shrink-0 ${
+                                c.type === "CLIENT"
+                                  ? "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                                  : "bg-purple-500/10 text-purple-500 border border-purple-500/20"
+                              }`}
+                            >
+                              {c.type}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Customer Email */}
@@ -1623,18 +2176,28 @@ export default function QuotationsClient({
 
               {/* Line Items */}
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
                     2. Deliverables & Rates ({editForm.items.length})
                   </h4>
-                  <button
-                    type="button"
-                    onClick={handleEditAddItem}
-                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-600/10 text-sky-600 dark:text-sky-400 hover:bg-sky-600/20 border border-sky-500/20 flex items-center gap-1 transition-all"
-                  >
-                    <PlusIcon className="h-3.5 w-3.5" />
-                    <span>Add Item</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProductPicker("EDIT")}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600/20 border border-indigo-500/20 flex items-center gap-1.5 transition-all shadow-sm"
+                    >
+                      <BuildingStorefrontIcon className="h-3.5 w-3.5" />
+                      <span>Browse Marketplace Catalog</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEditAddItem}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-600/10 text-sky-600 dark:text-sky-400 hover:bg-sky-600/20 border border-sky-500/20 flex items-center gap-1 transition-all"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5" />
+                      <span>Add Item</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2.5">
@@ -1653,7 +2216,16 @@ export default function QuotationsClient({
                         <div className="grid grid-cols-12 gap-2.5 items-center">
                           {/* Description */}
                           <div className="col-span-12 sm:col-span-5">
-                            <label className="block text-[10px] font-bold mb-1 text-slate-400">Deliverable / Description</label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-[10px] font-bold text-slate-400">Deliverable / Description</label>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenProductPicker("EDIT", idx)}
+                                className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                              >
+                                <ShoppingBagIcon className="h-3 w-3" /> Catalog
+                              </button>
+                            </div>
                             <input
                               type="text"
                               required
@@ -1771,9 +2343,23 @@ export default function QuotationsClient({
                 <div className="text-xs text-slate-500">
                   Total recalculates live as you edit deliverables, quantities, taxes, or discounts.
                 </div>
-                <div className="flex items-center gap-6 text-right">
+                <div className="flex flex-wrap items-center gap-6 text-right">
                   <div>
-                    <div className="text-[10px] font-bold text-slate-400">Subtotal</div>
+                    <div className="text-[10px] font-bold text-slate-400">Gross Subtotal</div>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {currency} {computedEditTotals.gross.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                  {computedEditTotals.discount > 0 && (
+                    <div>
+                      <div className="text-[10px] font-bold text-emerald-500">Discounts Given</div>
+                      <div className="text-xs font-bold text-emerald-500">
+                        - {currency} {computedEditTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400">Net Subtotal</div>
                     <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       {currency} {computedEditTotals.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </div>
@@ -1817,6 +2403,237 @@ export default function QuotationsClient({
                     <>
                       <CheckCircleIcon className="h-4 w-4" />
                       <span>Save Quotation Updates</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. MARKETPLACE / INVENTORY PRODUCT CATALOG PICKER MODAL                   */}
+      {/* ========================================================================= */}
+      {isProductPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fadeIn">
+          <div className="w-full max-w-3xl max-h-[88vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto transition-all">
+            {/* Header & Search */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-9 w-9 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                    <BuildingStorefrontIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white">Marketplace & Inventory Catalog</h4>
+                    <p className="text-xs text-slate-500">Select items directly into the proposal line items.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsProductPickerOpen(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <MagnifyingGlassIcon className="h-4 w-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  placeholder="Search catalog products by name, SKU, or description..."
+                  value={productSearch}
+                  onChange={(e) => {
+                    setProductSearch(e.target.value);
+                    fetchProductsCatalog(e.target.value);
+                  }}
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            {/* Products List Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2">
+              {isLoadingProducts ? (
+                <div className="py-16 text-center">
+                  <ArrowPathIcon className="h-8 w-8 animate-spin mx-auto mb-2 text-indigo-500" />
+                  <p className="text-xs font-semibold text-slate-500">Querying marketplace catalog...</p>
+                </div>
+              ) : productsList.length === 0 ? (
+                <div className="py-16 text-center">
+                  <ShoppingBagIcon className="h-10 w-10 mx-auto mb-2 text-slate-400 opacity-40" />
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">No Products Found</p>
+                  <p className="text-xs mt-1 text-slate-500">
+                    {productSearch
+                      ? `No catalog items matching "${productSearch}". Try another keyword.`
+                      : "No products currently available in this company catalog."}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {productsList.map((prod) => {
+                    const price = Number(prod.sellingPrice) || 0;
+                    const disc = Number(prod.discount) || 0;
+                    const imageUrl = prod.images && prod.images[0]?.url ? prod.images[0].url : null;
+
+                    return (
+                      <div
+                        key={prod.id}
+                        className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all flex flex-col justify-between"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                            {imageUrl ? (
+                              <img src={imageUrl} alt={prod.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <ShoppingBagIcon className="h-6 w-6 text-slate-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h5 className="font-bold text-xs truncate text-slate-900 dark:text-white">{prod.name}</h5>
+                              {prod.sku && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono">
+                                  {prod.sku}
+                                </span>
+                              )}
+                            </div>
+                            {prod.category?.name && (
+                              <span className="text-[10px] text-indigo-500 font-semibold block mt-0.5">
+                                {prod.category.name}
+                              </span>
+                            )}
+                            {prod.description && (
+                              <p className="text-[11px] line-clamp-1 mt-0.5 text-slate-500">{prod.description}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                          <div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="font-extrabold text-sm text-slate-900 dark:text-white">
+                                {currency} {price.toLocaleString()}
+                              </span>
+                              {disc > 0 && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold">
+                                  {disc}% OFF
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectProduct(prod)}
+                            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1"
+                          >
+                            <span>Select Item</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsProductPickerOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. QUICK REGISTER NEW CUSTOMER MODAL                                     */}
+      {/* ========================================================================= */}
+      {isNewCustomerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fadeIn">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto transition-all p-6 space-y-4">
+            <div className="flex justify-between items-start border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Directory</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Add New Customer / Client</h3>
+                <p className="text-xs mt-0.5 text-slate-500">
+                  Creates an authoritative record in your tenant database and selects them.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsNewCustomerModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNewCustomer} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Customer / Company Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. John Doe or Acme Corporation"
+                  value={newCustomerForm.name}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Email Address (Optional)</label>
+                <input
+                  type="email"
+                  placeholder="accounts@acme.com"
+                  value={newCustomerForm.email}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 text-slate-700 dark:text-slate-300">Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  placeholder="+254 712 345678"
+                  value={newCustomerForm.phone}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsNewCustomerModalOpen(false)}
+                  className="px-4 py-2 rounded-xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingNewCustomer}
+                  className="px-5 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isSubmittingNewCustomer ? (
+                    <>
+                      <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlusIcon className="h-4 w-4" />
+                      <span>Save & Select Customer</span>
                     </>
                   )}
                 </button>

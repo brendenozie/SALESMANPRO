@@ -51,7 +51,7 @@ export const GET = withApiHandler(
     const queryParsed = productQuerySchema.safeParse({
       page: searchParams.get("page"),
       limit: searchParams.get("limit"),
-      search: searchParams.get("search") || undefined,
+      search: searchParams.get("search") || searchParams.get("q") || searchParams.get("query") || undefined,
       categoryId: searchParams.get("categoryId") || undefined,
     });
 
@@ -75,7 +75,15 @@ export const GET = withApiHandler(
         const where: any = {
           companyId,
           ...(categoryId ? { productCategoryId: categoryId } : {}),
-          ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
+          ...(search
+            ? {
+                OR: [
+                  { name: { contains: search, mode: "insensitive" } },
+                  { description: { contains: search, mode: "insensitive" } },
+                  { sku: { contains: search, mode: "insensitive" } },
+                ],
+              }
+            : {}),
         };
 
         const [products, totalCount] = await Promise.all([

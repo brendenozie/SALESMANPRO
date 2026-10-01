@@ -55,6 +55,7 @@ export async function listCompanyPOSStaff(companyId: string) {
       "POS_CLOSE_SESSION",
       "POS_CREATE_ORDER",
     ],
+    loginCode: s.loginCode || null,
     hasCode: Boolean(s.loginCode || s.codeHash),
     isPosActive: s.isPosActive ?? true,
     codeLastUsedAt: s.codeLastUsedAt,

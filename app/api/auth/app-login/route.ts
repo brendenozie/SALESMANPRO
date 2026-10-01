@@ -5,6 +5,7 @@ import { encode, decode } from "next-auth/jwt";
 import { createHandoverToken } from "@/lib/auth/handover";
 import { HUB_URL } from "@/lib/auth/domain";
 import { authenticatePOSOperator } from "@/lib/pos/posSessionService";
+import { hashPOSCode } from "@/lib/pos/posStaffService";
 
 export const dynamic = "force-dynamic";
 
@@ -135,109 +136,305 @@ export async function POST(req: NextRequest) {
       appVersion,
     } = body;
 
-    // --- Mode 1: Staff Login Code (POS Operator) ---
-    const staffCode = loginCode || body.staffLoginCode;
+    // --- Mode 1: Staff / Educator / Student Login Code (Mobile & Desktop) ---
+    const staffCode = (loginCode || body.staffLoginCode || "").toString().trim();
     if (staffCode) {
-      // Find staff profile by loginCode if companyId not provided
-      let resolvedCompanyId = companyId;
-      if (!resolvedCompanyId) {
-        const staffProfile = await prisma.staffProfile.findFirst({
-          where: { loginCode: staffCode },
-          select: { companyId: true }
-        });
-        if (staffProfile) {
-          resolvedCompanyId = staffProfile.companyId;
-        } else {
-          // Look up User staffLoginCode
-          const userWithCode = await prisma.user.findFirst({
-            where: { staffLoginCode: staffCode },
-            select: { companyId: true }
-          });
-          if (userWithCode?.companyId) {
-            resolvedCompanyId = userWithCode.companyId;
-          }
-        }
-      }
+      const hashedCode = hashPOSCode(staffCode);
+      let user: any = null;
+      let resolvedCompany: any = null;
+      let resolvedCompanyId: string | null = companyId || null;
+      let role = "STAFF";
+      let staffProfile: any = null;
 
-      if (!resolvedCompanyId) {
-        // Fallback to first active company or error
-        const firstCompany = await prisma.company.findFirst({ select: { id: true } });
-        resolvedCompanyId = firstCompany?.id;
-      }
-
-      if (!resolvedCompanyId) {
-        return NextResponse.json(
-          { success: false, message: "No active company found for staff login code" },
-          { status: 400, headers: CORS_HEADERS }
-        );
-      }
-
-      const posResult = await authenticatePOSOperator({
-        companyId: resolvedCompanyId,
-        loginCode: staffCode,
-        terminalId: terminalId || "T01",
-      });
-
-      const company = await prisma.company.findUnique({
-        where: { id: companyId },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          currency: true,
-          logoUrl: true,
-          address: true,
-          contactPhone: true,
+      // 1. Check StaffProfile (POS Cashier / Operator / Manager)
+      staffProfile = await prisma.staffProfile.findFirst({
+        where: {
+          OR: [
+            { loginCode: staffCode },
+            { codeHash: hashedCode },
+          ],
+        },
+        include: {
+          user: true,
+          company: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              currency: true,
+              logoUrl: true,
+              address: true,
+              contactPhone: true,
+              contactEmail: true,
+            },
+          },
         },
       });
 
-      const stores = await resolveCompanyStores(companyId);
+      if (staffProfile && staffProfile.user) {
+        user = staffProfile.user;
+        resolvedCompany = staffProfile.company;
+        resolvedCompanyId = staffProfile.companyId;
+        role = staffProfile.posRole || staffProfile.jobTitle || "CASHIER";
+      }
+
+      // 2. Check Educator / Teacher
+      if (!user) {
+        const educator = await prisma.educator.findFirst({
+          where: { loginCode: staffCode },
+          include: {
+            user: true,
+            Company: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                currency: true,
+                logoUrl: true,
+                address: true,
+                contactPhone: true,
+                contactEmail: true,
+              },
+            },
+          },
+        });
+        if (educator && educator.user) {
+          user = educator.user;
+          resolvedCompany = educator.Company;
+          resolvedCompanyId = educator.companyId || educator.Company?.id || null;
+          role = "TEACHER";
+        }
+      }
+
+      // 3. Check Student
+      if (!user) {
+        const student = await prisma.student.findFirst({
+          where: { loginCode: staffCode },
+          include: {
+            user: true,
+            Company: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                currency: true,
+                logoUrl: true,
+                address: true,
+                contactPhone: true,
+                contactEmail: true,
+              },
+            },
+          },
+        });
+        if (student) {
+          user = student.user || {
+            id: student.id,
+            name: `${student.firstName} ${student.lastName}`,
+            email: `${student.loginCode}@student.salesmanpro.local`,
+            role: "STUDENT",
+            isActive: true,
+          };
+          resolvedCompany = student.Company;
+          resolvedCompanyId = student.companyId || student.Company?.id || null;
+          role = "STUDENT";
+        }
+      }
+
+      // 4. Check HeadTeacher
+      if (!user) {
+        const headTeacher = await prisma.headTeacher.findFirst({
+          where: { loginCode: staffCode },
+          include: {
+            user: true,
+            Company: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                currency: true,
+                logoUrl: true,
+                address: true,
+                contactPhone: true,
+                contactEmail: true,
+              },
+            },
+          },
+        });
+        if (headTeacher && headTeacher.user) {
+          user = headTeacher.user;
+          resolvedCompany = headTeacher.Company;
+          resolvedCompanyId = headTeacher.companyId || headTeacher.Company?.id || null;
+          role = "HEAD_TEACHER";
+        }
+      }
+
+      // 5. Check SalesAgent
+      if (!user) {
+        const agent = await prisma.salesAgent.findFirst({
+          where: { loginCode: staffCode },
+          include: {
+            user: true,
+            Company: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                currency: true,
+                logoUrl: true,
+                address: true,
+                contactPhone: true,
+                contactEmail: true,
+              },
+            },
+          },
+        });
+        if (agent && agent.user) {
+          user = agent.user;
+          resolvedCompany = agent.Company;
+          resolvedCompanyId = agent.companyId || agent.Company?.id || null;
+          role = "AGENT";
+        }
+      }
+
+      // 6. Check TransportDriver
+      if (!user) {
+        const driver = await prisma.transportDriver.findFirst({
+          where: { loginCode: staffCode },
+          include: {
+            user: true,
+            Company: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                currency: true,
+                logoUrl: true,
+                address: true,
+                contactPhone: true,
+                contactEmail: true,
+              },
+            },
+          },
+        });
+        if (driver && driver.user) {
+          user = driver.user;
+          resolvedCompany = driver.Company;
+          resolvedCompanyId = driver.companyId || driver.Company?.id || null;
+          role = "DRIVER";
+        }
+      }
+
+      if (!user) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Invalid login code. Please verify your PIN or contact your administrator.",
+            error: "Invalid login code. Please verify your PIN or contact your administrator.",
+          },
+          { status: 401, headers: CORS_HEADERS }
+        );
+      }
+
+      if (user.isActive === false) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "This account has been deactivated. Please contact your manager.",
+            error: "This account has been deactivated. Please contact your manager.",
+          },
+          { status: 403, headers: CORS_HEADERS }
+        );
+      }
+
+      // Resolve Company if not already populated
+      if (!resolvedCompany && resolvedCompanyId) {
+        resolvedCompany = await prisma.company.findUnique({
+          where: { id: resolvedCompanyId },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            currency: true,
+            logoUrl: true,
+            address: true,
+            contactPhone: true,
+            contactEmail: true,
+          },
+        });
+      }
+
+      if (!resolvedCompany) {
+        resolvedCompany = await resolveUserCompany(user.id, user.companyId || resolvedCompanyId);
+      }
+
+      const effectiveCompanyId = resolvedCompany?.id || resolvedCompanyId || null;
+
+      // Handle POS session if staff profile
+      let activePosSession: any = null;
+      if (staffProfile && effectiveCompanyId) {
+        try {
+          const posResult = await authenticatePOSOperator({
+            companyId: effectiveCompanyId,
+            loginCode: staffCode,
+            terminalId: terminalId || "T01",
+          });
+          activePosSession = posResult.session;
+        } catch (posErr: any) {
+          console.warn("[POS_OPERATOR_AUTH_NON_BLOCKING]", posErr.message);
+        }
+      }
+
+      const stores = effectiveCompanyId ? await resolveCompanyStores(effectiveCompanyId) : [];
 
       const sessionToken = await encode({
         token: {
-          id: posResult.operator.id,
-          sub: posResult.operator.id,
-          name: posResult.operator.name,
-          email: posResult.operator.email || `${posResult.operator.id}@salesmanpro.local`,
-          role: posResult.operator.role || "STAFF",
-          companyId,
+          id: user.id,
+          sub: user.id,
+          name: user.name || "Operator",
+          email: user.email || `${user.id}@salesmanpro.local`,
+          role: user.role || role || "STAFF",
+          companyId: effectiveCompanyId,
           terminalId: terminalId || "T01",
-          sessionId: posResult.session.id,
+          sessionId: activePosSession?.id || null,
+          hasTenantAccess: true,
         },
         secret: getAuthSecret(),
         maxAge: 30 * 24 * 60 * 60,
       });
 
       const { token: handoverToken } = await createHandoverToken({
-        id: posResult.operator.id,
-        name: posResult.operator.name,
-        email: posResult.operator.email,
-        role: posResult.operator.role || "STAFF",
-        companyId,
+        id: user.id,
+        name: user.name || "Operator",
+        email: user.email,
+        role: user.role || role || "STAFF",
+        companyId: effectiveCompanyId,
         hasTenantAccess: true,
       });
 
       return NextResponse.json(
         {
           success: true,
-          message: "Staff operator authenticated successfully",
+          message: `${role} authenticated successfully`,
           token: sessionToken,
           handoverToken,
           user: {
-            id: posResult.operator.id,
-            name: posResult.operator.name,
-            email: posResult.operator.email,
-            role: posResult.operator.role || "STAFF",
-            staffCode: loginCode,
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role || role,
+            staffCode,
+            loginCode: staffCode,
           },
-          company,
+          company: resolvedCompany,
           stores,
           activeStoreId: stores[0]?.id || null,
-          posSession: {
-            id: posResult.session.id,
-            terminalId: posResult.session.terminalId,
-            status: posResult.session.status,
-          },
+          posSession: activePosSession
+            ? {
+                id: activePosSession.id,
+                terminalId: activePosSession.terminalId,
+                status: activePosSession.status,
+              }
+            : null,
         },
         { headers: CORS_HEADERS }
       );
@@ -246,7 +443,7 @@ export async function POST(req: NextRequest) {
     // --- Mode 2: Direct Email & Password Login ---
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, message: "Please provide both email and password" },
+        { success: false, message: "Please provide both email and password", error: "Please provide both email and password" },
         { status: 400, headers: CORS_HEADERS }
       );
     }
@@ -258,14 +455,14 @@ export async function POST(req: NextRequest) {
 
     if (!user || !user.password) {
       return NextResponse.json(
-        { success: false, message: "Invalid email or password" },
+        { success: false, message: "Invalid email or password", error: "Invalid email or password" },
         { status: 401, headers: CORS_HEADERS }
       );
     }
 
     if (user.isActive === false) {
       return NextResponse.json(
-        { success: false, message: "This account has been deactivated. Please contact support." },
+        { success: false, message: "This account has been deactivated. Please contact support.", error: "This account has been deactivated. Please contact support." },
         { status: 403, headers: CORS_HEADERS }
       );
     }
@@ -273,7 +470,7 @@ export async function POST(req: NextRequest) {
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
       return NextResponse.json(
-        { success: false, message: "Invalid email or password" },
+        { success: false, message: "Invalid email or password", error: "Invalid email or password" },
         { status: 401, headers: CORS_HEADERS }
       );
     }
@@ -352,8 +549,9 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: any) {
     console.error("[APP_LOGIN_ERROR]", error);
+    const errMsg = error.message || "An unexpected login error occurred";
     return NextResponse.json(
-      { success: false, message: error.message || "An unexpected login error occurred" },
+      { success: false, message: errMsg, error: errMsg },
       { status: 500, headers: CORS_HEADERS }
     );
   }
@@ -397,7 +595,7 @@ async function resolveUserCompany(userId: string, defaultCompanyId?: string | nu
   const staff = await prisma.staffProfile.findFirst({
     where: { userId },
     include: {
-      Company: {
+      company: {
         select: {
           id: true,
           name: true,
@@ -411,7 +609,7 @@ async function resolveUserCompany(userId: string, defaultCompanyId?: string | nu
       },
     },
   });
-  if (staff?.Company) return staff.Company;
+  if (staff?.company) return staff.company;
 
   // Fallback to first available company
   return prisma.company.findFirst({

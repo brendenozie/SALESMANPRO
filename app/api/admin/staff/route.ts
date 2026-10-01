@@ -5,6 +5,7 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { enforceStaffLimit } from "@/lib/subscriptions/enforce-limits";
+import { hashPOSCode } from "@/lib/pos/posStaffService";
 
 // Helper to format staff data
 async function formatStaffData(staffMember: any) {
@@ -25,6 +26,8 @@ async function formatStaffData(staffMember: any) {
     jobTitle: staffMember.jobTitle || "N/A",
     department: staffMember.department || "N/A",
     employmentStatus: staffMember.employmentStatus,
+    loginCode: staffMember.loginCode || null,
+    hasLoginCode: Boolean(staffMember.loginCode || staffMember.codeHash),
     startDate: staffMember.startDate ? new Date(staffMember.startDate).toLocaleDateString() : "N/A",
     createdAt: staffMember.createdAt ? new Date(staffMember.createdAt).toLocaleDateString() : "N/A",
   };
@@ -89,7 +92,7 @@ async function getAllStaff(req: Request) {
 async function createStaff(req: Request) {
   
   const body = await req.json();
-  const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, companyId } = body;
+  const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, companyId, loginCode } = body;
 
   if (!name || !email || !jobTitle || !department || !companyId) {
     return formatResponse(false, null, "Missing required fields: name, email, jobTitle, department, companyId", 400);
@@ -116,7 +119,16 @@ async function createStaff(req: Request) {
     if (staffProfile) return formatResponse(false, null, "Staff profile already exists for this user", 409);
 
     const newStaff = await prisma.staffProfile.create({
-      data: { userId: user.id, companyId, jobTitle, department, employmentStatus, startDate: startDate ? new Date(startDate) : undefined },
+      data: {
+        userId: user.id,
+        companyId,
+        jobTitle,
+        department,
+        employmentStatus,
+        startDate: startDate ? new Date(startDate) : undefined,
+        loginCode: (loginCode && String(loginCode).trim()) || Math.floor(100000 + Math.random() * 900000).toString(),
+        codeHash: (loginCode && String(loginCode).trim()) ? hashPOSCode(String(loginCode).trim()) : undefined,
+      },
       include: { user: { select: { name: true, email: true, phone: true, profilePicture: true } } },
     });
 

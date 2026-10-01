@@ -31,6 +31,9 @@ import {
   ChatBubbleLeftRightIcon,
   PencilSquareIcon,
   UserPlusIcon,
+  BuildingStorefrontIcon,
+  ShoppingBagIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 
 interface InvoicingClientProps {
@@ -78,6 +81,26 @@ export default function InvoicingClient({
   const [showContactDropdown, setShowContactDropdown] = useState(false);
   const [isRegisteringContact, setIsRegisteringContact] = useState(false);
 
+  // Edit modal contact autocomplete states
+  const [editContactResults, setEditContactResults] = useState<any[]>([]);
+  const [isSearchingEditContacts, setIsSearchingEditContacts] = useState(false);
+  const [showEditContactDropdown, setShowEditContactDropdown] = useState(false);
+
+  // Quick Customer Registration Modal state
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [newCustomerTarget, setNewCustomerTarget] = useState<"CREATE" | "EDIT">("CREATE");
+  const [newCustomerForm, setNewCustomerForm] = useState({ name: "", email: "", phone: "" });
+  const [isSubmittingNewCustomer, setIsSubmittingNewCustomer] = useState(false);
+
+  // Product Catalog / Marketplace Selector Modal states
+  const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
+  const [productPickerTarget, setProductPickerTarget] = useState<"CREATE" | "EDIT">("CREATE");
+  const [targetItemIndex, setTargetItemIndex] = useState<number | null>(null);
+  const [productSearch, setProductSearch] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("ALL");
+  const [productsList, setProductsList] = useState<any[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+
   // AI Auto-Fill states
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
@@ -98,7 +121,7 @@ export default function InvoicingClient({
     terms: "",
     status: "PENDING",
     items: [
-      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
     ],
   });
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
@@ -114,7 +137,7 @@ export default function InvoicingClient({
     notes: "",
     terms: "Payment due within 30 days of invoice date.",
     items: [
-      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+      { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
     ],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -154,13 +177,175 @@ export default function InvoicingClient({
     fetchInvoices();
   }, [companyId, filterStatus]);
 
+  // Product Catalog Fetcher & Handlers
+  const fetchProductsCatalog = async (searchQuery: string = "") => {
+    try {
+      setIsLoadingProducts(true);
+      const params = new URLSearchParams({ companyId, limit: "50" });
+      if (searchQuery.trim()) {
+        params.append("search", searchQuery.trim());
+      }
+      const res = await fetch(`/api/admin/products?${params.toString()}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setProductsList(json.data.products || []);
+      }
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  const handleOpenProductPicker = (target: "CREATE" | "EDIT", itemIndex: number | null = null) => {
+    setProductPickerTarget(target);
+    setTargetItemIndex(itemIndex);
+    setIsProductPickerOpen(true);
+    setProductSearch("");
+    setProductCategoryFilter("ALL");
+    fetchProductsCatalog("");
+  };
+
+  const handleSelectProduct = (product: any) => {
+    const defaultDiscount = Number(product.discount) || 0;
+    const defaultPrice = Number(product.sellingPrice) || 0;
+    const desc = product.sku ? `${product.name} [${product.sku}]` : product.name;
+
+    if (productPickerTarget === "CREATE") {
+      setForm((prev) => {
+        const items = [...prev.items];
+        if (targetItemIndex !== null && items[targetItemIndex]) {
+          items[targetItemIndex] = {
+            ...items[targetItemIndex],
+            description: desc,
+            unitPrice: defaultPrice,
+            discount: defaultDiscount,
+            productId: product.id,
+            marketplaceListingId: product.marketplaceListing?.id || null,
+          };
+        } else {
+          if (items.length === 1 && !items[0].description.trim() && Number(items[0].unitPrice) === 0) {
+            items[0] = {
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            };
+          } else {
+            items.push({
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            });
+          }
+        }
+        return { ...prev, items };
+      });
+    } else {
+      setEditForm((prev) => {
+        const items = [...prev.items];
+        if (targetItemIndex !== null && items[targetItemIndex]) {
+          items[targetItemIndex] = {
+            ...items[targetItemIndex],
+            description: desc,
+            unitPrice: defaultPrice,
+            discount: defaultDiscount,
+            productId: product.id,
+            marketplaceListingId: product.marketplaceListing?.id || null,
+          };
+        } else {
+          if (items.length === 1 && !items[0].description.trim() && Number(items[0].unitPrice) === 0) {
+            items[0] = {
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            };
+          } else {
+            items.push({
+              description: desc,
+              quantity: 1,
+              unitPrice: defaultPrice,
+              taxRate: 16,
+              discount: defaultDiscount,
+              productId: product.id,
+              marketplaceListingId: product.marketplaceListing?.id || null,
+            });
+          }
+        }
+        return { ...prev, items };
+      });
+    }
+    setIsProductPickerOpen(false);
+  };
+
+  // Quick Customer Registration handler
+  const handleSaveNewCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustomerForm.name.trim()) return;
+    try {
+      setIsSubmittingNewCustomer(true);
+      const res = await fetch("/api/admin/contacts/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          name: newCustomerForm.name.trim(),
+          email: newCustomerForm.email.trim() || undefined,
+          phone: newCustomerForm.phone.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && (json.data || json.contact)) {
+        const contact = json.contact || json.data;
+        if (newCustomerTarget === "CREATE") {
+          setForm((prev) => ({
+            ...prev,
+            customerName: contact.name,
+            customerEmail: contact.email || prev.customerEmail,
+            customerPhone: contact.phone || prev.customerPhone,
+            clientId: contact.clientId || contact.id || "",
+            consumerId: "",
+          }));
+        } else {
+          setEditForm((prev) => ({
+            ...prev,
+            customerName: contact.name,
+            customerEmail: contact.email || prev.customerEmail,
+            customerPhone: contact.phone || prev.customerPhone,
+            clientId: contact.clientId || contact.id || "",
+            consumerId: "",
+          }));
+        }
+        setIsNewCustomerModalOpen(false);
+        setNewCustomerForm({ name: "", email: "", phone: "" });
+      } else {
+        alert(json.error || "Failed to register customer");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to save customer");
+    } finally {
+      setIsSubmittingNewCustomer(false);
+    }
+  };
+
   // Handle line item addition & change
   const handleAddItem = () => {
     setForm({
       ...form,
       items: [
         ...form.items,
-        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
       ],
     });
   };
@@ -178,7 +363,7 @@ export default function InvoicingClient({
     setForm({ ...form, items: newItems });
   };
 
-  // Compute live subtotal, tax, and total
+  // Compute live gross, discount, subtotal, tax, and total
   const computedTotals = useMemo(() => {
     return form.items.reduce(
       (acc, it) => {
@@ -186,12 +371,14 @@ export default function InvoicingClient({
         const discount = gross * ((Number(it.discount) || 0) / 100);
         const net = gross - discount;
         const tax = net * ((Number(it.taxRate) || 0) / 100);
+        acc.gross += gross;
+        acc.discount += discount;
         acc.subtotal += net;
         acc.tax += tax;
         acc.total += net + tax;
         return acc;
       },
-      { subtotal: 0, tax: 0, total: 0 }
+      { gross: 0, discount: 0, subtotal: 0, tax: 0, total: 0 }
     );
   }, [form.items]);
 
@@ -225,10 +412,12 @@ export default function InvoicingClient({
           customerName: "",
           customerEmail: "",
           customerPhone: "",
+          clientId: "",
+          consumerId: "",
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
           notes: "",
           terms: "Payment due within 30 days of invoice date.",
-          items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 }],
+          items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" }],
         });
         fetchInvoices();
       } else {
@@ -241,7 +430,7 @@ export default function InvoicingClient({
     }
   };
 
-  // Compute live subtotal, tax, and total for Edit modal
+  // Compute live gross, discount, subtotal, tax, and total for Edit modal
   const computedEditTotals = useMemo(() => {
     return editForm.items.reduce(
       (acc, it) => {
@@ -249,12 +438,14 @@ export default function InvoicingClient({
         const discount = gross * ((Number(it.discount) || 0) / 100);
         const net = gross - discount;
         const tax = net * ((Number(it.taxRate) || 0) / 100);
+        acc.gross += gross;
+        acc.discount += discount;
         acc.subtotal += net;
         acc.tax += tax;
         acc.total += net + tax;
         return acc;
       },
-      { subtotal: 0, tax: 0, total: 0 }
+      { gross: 0, discount: 0, subtotal: 0, tax: 0, total: 0 }
     );
   }, [editForm.items]);
 
@@ -267,12 +458,30 @@ export default function InvoicingClient({
       );
       const json = await res.json();
       if (json.success) {
-        setContactResults(json.data || []);
+        setContactResults(json.data || json.contacts || []);
       }
     } catch (e) {
       console.error("Error searching contacts:", e);
     } finally {
       setIsSearchingContacts(false);
+    }
+  };
+
+  // Search existing clients & consumers for Edit modal
+  const searchEditContacts = async (query: string) => {
+    try {
+      setIsSearchingEditContacts(true);
+      const res = await fetch(
+        `/api/admin/contacts/search?companyId=${encodeURIComponent(companyId)}&query=${encodeURIComponent(query)}`
+      );
+      const json = await res.json();
+      if (json.success) {
+        setEditContactResults(json.data || json.contacts || []);
+      }
+    } catch (e) {
+      console.error("Error searching edit contacts:", e);
+    } finally {
+      setIsSearchingEditContacts(false);
     }
   };
 
@@ -375,8 +584,10 @@ export default function InvoicingClient({
               unitPrice: it.unitPrice,
               taxRate: it.taxRate || 0,
               discount: it.discount || 0,
+              productId: it.productId || "",
+              marketplaceListingId: it.marketplaceListingId || "",
             }))
-          : [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 }],
+          : [{ description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" }],
     });
     setIsEditModalOpen(true);
   };
@@ -386,7 +597,7 @@ export default function InvoicingClient({
       ...prev,
       items: [
         ...prev.items,
-        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0 },
+        { description: "", quantity: 1, unitPrice: 0, taxRate: 16, discount: 0, productId: "", marketplaceListingId: "" },
       ],
     }));
   };
@@ -1057,9 +1268,23 @@ export default function InvoicingClient({
                   <h4 className="font-extrabold uppercase text-[11px] text-blue-500 tracking-wider">
                     Customer Information
                   </h4>
-                  <span className={`text-[10px] ${textMuted}`}>
-                    Select from existing database or type new details
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] hidden sm:inline ${textMuted}`}>
+                      Select from directory or add new
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewCustomerTarget("CREATE");
+                        setNewCustomerForm({ name: form.customerName || "", email: form.customerEmail || "", phone: form.customerPhone || "" });
+                        setIsNewCustomerModalOpen(true);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] border border-emerald-500/20 transition-all"
+                    >
+                      <UserPlusIcon className="h-3.5 w-3.5" />
+                      <span>+ New Customer</span>
+                    </button>
+                  </div>
                 </div>
                 <div
                   className={`grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 rounded-xl border ${
@@ -1213,100 +1438,199 @@ export default function InvoicingClient({
 
               {/* Section 2: Line Items */}
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-extrabold uppercase text-[11px] text-blue-500 tracking-wider">Invoice Items</h4>
-                  <button
-                    type="button"
-                    onClick={handleAddItem}
-                    className="flex items-center gap-1 text-blue-500 hover:text-blue-400 font-bold text-[11px]"
-                  >
-                    <PlusIcon className="h-3.5 w-3.5 stroke-[3px]" /> Add Item
-                  </button>
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <h4 className="font-extrabold uppercase text-[11px] text-blue-500 tracking-wider">
+                    Invoice Items ({form.items.length})
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProductPicker("CREATE")}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold text-[11px] border border-blue-500/20 transition-all shadow-sm"
+                    >
+                      <BuildingStorefrontIcon className="h-4 w-4" />
+                      <span>Browse Marketplace Catalog</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddItem}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] transition-all"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5 stroke-[3px]" />
+                      <span>Add Item</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2.5">
-                  {form.items.map((it, idx) => (
-                    <div
-                      key={idx}
-                      className={`grid grid-cols-12 gap-2 p-3 rounded-xl border items-center transition-all ${
-                        isDarkMode ? "bg-slate-950/40 border-slate-800" : "bg-slate-50 border-slate-200"
-                      }`}
-                    >
-                      <div className="col-span-5">
-                        <label className={`block text-[9px] font-bold uppercase mb-1 ${textMuted}`}>Description</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Product or Service name"
-                          value={it.description}
-                          onChange={(e) => handleItemChange(idx, "description", e.target.value)}
-                          className={`w-full p-2 rounded-lg border font-medium ${inputBg}`}
-                        />
+                  {form.items.map((it, idx) => {
+                    const gross = (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0);
+                    const disc = gross * ((Number(it.discount) || 0) / 100);
+                    const net = gross - disc;
+                    const tax = net * ((Number(it.taxRate) || 0) / 100);
+                    const lineTotal = net + tax;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-2xl border transition-all ${
+                          isDarkMode ? "bg-slate-950/40 border-slate-800" : "bg-slate-50 border-slate-200"
+                        }`}
+                      >
+                        <div className="grid grid-cols-12 gap-2.5 items-center">
+                          {/* Description + Catalog Picker Button */}
+                          <div className="col-span-12 sm:col-span-4">
+                            <div className="flex justify-between items-center mb-1">
+                              <label className={`block text-[10px] font-bold uppercase ${textMuted}`}>Description</label>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenProductPicker("CREATE", idx)}
+                                className="text-[10px] font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1 hover:underline"
+                                title="Select a product from your catalog for this line"
+                              >
+                                <BuildingStorefrontIcon className="h-3 w-3" />
+                                <span>Catalog</span>
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Product or service name"
+                              value={it.description}
+                              onChange={(e) => handleItemChange(idx, "description", e.target.value)}
+                              className={`w-full text-xs rounded-xl px-3 py-2 border font-medium ${inputBg}`}
+                            />
+                          </div>
+
+                          {/* Qty */}
+                          <div className="col-span-4 sm:col-span-2">
+                            <label className={`block text-[10px] font-bold uppercase mb-1 ${textMuted}`}>Qty</label>
+                            <input
+                              type="number"
+                              min="1"
+                              step="any"
+                              required
+                              value={it.quantity}
+                              onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))}
+                              className={`w-full text-xs rounded-xl px-2 py-2 border text-center font-bold ${inputBg}`}
+                            />
+                          </div>
+
+                          {/* Unit Price */}
+                          <div className="col-span-4 sm:col-span-2">
+                            <label className={`block text-[10px] font-bold uppercase mb-1 ${textMuted}`}>Price ({currency})</label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="any"
+                              required
+                              value={it.unitPrice}
+                              onChange={(e) => handleItemChange(idx, "unitPrice", Number(e.target.value))}
+                              className={`w-full text-xs rounded-xl px-3 py-2 border font-bold ${inputBg}`}
+                            />
+                          </div>
+
+                          {/* Tax % */}
+                          <div className="col-span-4 sm:col-span-1">
+                            <label className={`block text-[10px] font-bold uppercase mb-1 ${textMuted}`}>Tax%</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="any"
+                              value={it.taxRate}
+                              onChange={(e) => handleItemChange(idx, "taxRate", Number(e.target.value))}
+                              className={`w-full text-xs rounded-xl px-1 py-2 border text-center font-medium ${inputBg}`}
+                            />
+                          </div>
+
+                          {/* Disc % */}
+                          <div className="col-span-4 sm:col-span-1">
+                            <label className={`block text-[10px] font-bold uppercase mb-1 ${textMuted} text-emerald-600 dark:text-emerald-400`}>
+                              Disc%
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="any"
+                              placeholder="0"
+                              value={it.discount}
+                              onChange={(e) => handleItemChange(idx, "discount", Number(e.target.value))}
+                              className={`w-full text-xs rounded-xl px-1 py-2 border text-center font-bold text-emerald-600 dark:text-emerald-400 ${inputBg}`}
+                            />
+                          </div>
+
+                          {/* Row Total & Delete */}
+                          <div className="col-span-8 sm:col-span-2 flex items-center justify-end gap-2 pt-3 sm:pt-0">
+                            <div className="text-right">
+                              <span className={`text-xs font-black block ${textTitle}`}>
+                                {currency} {lineTotal.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                              </span>
+                              {disc > 0 && (
+                                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold block">
+                                  save -{currency} {disc.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                </span>
+                              )}
+                            </div>
+                            {form.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveItem(idx)}
+                                className="p-1.5 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors flex-shrink-0"
+                                title="Remove Line Item"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="col-span-2">
-                        <label className={`block text-[9px] font-bold uppercase mb-1 ${textMuted}`}>Qty</label>
-                        <input
-                          type="number"
-                          min="1"
-                          required
-                          placeholder="1"
-                          value={it.quantity}
-                          onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
-                          className={`w-full p-2 rounded-lg border text-center font-bold ${inputBg}`}
-                        />
-                      </div>
-                      <div className="col-span-3">
-                        <label className={`block text-[9px] font-bold uppercase mb-1 ${textMuted}`}>Unit Price ({currency})</label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          required
-                          placeholder="0.00"
-                          value={it.unitPrice}
-                          onChange={(e) => handleItemChange(idx, "unitPrice", e.target.value)}
-                          className={`w-full p-2 rounded-lg border font-bold ${inputBg}`}
-                        />
-                      </div>
-                      <div className="col-span-1 text-center">
-                        <label className={`block text-[9px] font-bold uppercase mb-1 ${textMuted}`}>Total</label>
-                        <span className={`font-black ${textTitle}`}>
-                          {((Number(it.quantity) || 1) * (Number(it.unitPrice) || 0)).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="col-span-1 flex justify-end items-end pt-4">
-                        {form.items.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveItem(idx)}
-                            className="p-1.5 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
-                            title="Remove Line Item"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Totals Summary */}
               <div className="flex justify-end pt-2">
-                <div className={`w-72 space-y-2 p-4 rounded-xl border ${
-                  isDarkMode ? "bg-slate-950/70 border-slate-800" : "bg-slate-100 border-slate-200"
-                }`}>
-                  <div className={`flex justify-between ${textMuted}`}>
-                    <span>Subtotal:</span>
-                    <span className="font-bold">{currency} {computedTotals.subtotal.toLocaleString()}</span>
+                <div
+                  className={`w-80 space-y-2 p-4 rounded-2xl border ${
+                    isDarkMode ? "bg-slate-950/70 border-slate-800" : "bg-slate-100 border-slate-200"
+                  }`}
+                >
+                  <div className={`flex justify-between text-xs ${textMuted}`}>
+                    <span>Gross Subtotal:</span>
+                    <span className="font-semibold">
+                      {currency} {computedTotals.gross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
-                  <div className={`flex justify-between ${textMuted}`}>
+                  {computedTotals.discount > 0 && (
+                    <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                      <span className="flex items-center gap-1">
+                        <TagIcon className="h-3.5 w-3.5" /> Total Discounts Given:
+                      </span>
+                      <span>
+                        - {currency} {computedTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
+                  <div className={`flex justify-between text-xs ${textMuted}`}>
+                    <span>Net Taxable Subtotal:</span>
+                    <span className="font-semibold">
+                      {currency} {computedTotals.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className={`flex justify-between text-xs ${textMuted}`}>
                     <span>Estimated Tax (16%):</span>
-                    <span className="font-bold">{currency} {computedTotals.tax.toLocaleString()}</span>
+                    <span className="font-semibold">
+                      {currency} {computedTotals.tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                   <div className={`flex justify-between font-black text-sm pt-2 border-t ${borderClass} ${textTitle}`}>
                     <span>Total Amount Due:</span>
-                    <span className="text-blue-500">{currency} {computedTotals.total.toLocaleString()}</span>
+                    <span className="text-blue-500">
+                      {currency} {computedTotals.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1920,12 +2244,26 @@ export default function InvoicingClient({
             <form onSubmit={handleSaveEditInvoice} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
               {/* Customer Information & Status */}
               <div>
-                <h4 className={`text-xs font-extrabold uppercase tracking-wider mb-3 ${textMuted}`}>
-                  1. Customer & Metadata
-                </h4>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className={`text-xs font-extrabold uppercase tracking-wider ${textMuted}`}>
+                    1. Customer & Metadata
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewCustomerTarget("EDIT");
+                      setNewCustomerForm({ name: editForm.customerName || "", email: editForm.customerEmail || "", phone: editForm.customerPhone || "" });
+                      setIsNewCustomerModalOpen(true);
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] border border-emerald-500/20 transition-all"
+                  >
+                    <UserPlusIcon className="h-3.5 w-3.5" />
+                    <span>+ New Customer</span>
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Customer Name */}
-                  <div className="sm:col-span-2">
+                  {/* Customer Name with Live Directory Search */}
+                  <div className="sm:col-span-2 relative">
                     <label className={`block text-xs font-bold mb-1.5 ${textSubtle}`}>
                       Customer / Client Name *
                     </label>
@@ -1933,10 +2271,107 @@ export default function InvoicingClient({
                       type="text"
                       required
                       value={editForm.customerName}
-                      onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditForm({ ...editForm, customerName: val });
+                        searchEditContacts(val);
+                        setShowEditContactDropdown(true);
+                      }}
+                      onFocus={() => {
+                        searchEditContacts(editForm.customerName);
+                        setShowEditContactDropdown(true);
+                      }}
                       className={`w-full text-xs rounded-xl px-3.5 py-2.5 border ${inputBg}`}
-                      placeholder="e.g. John Doe / Acme Inc"
+                      placeholder="Search existing or type customer name..."
                     />
+
+                    {/* Edit Modal Autocomplete Dropdown */}
+                    {showEditContactDropdown && (editForm.customerName.trim().length > 0 || editContactResults.length > 0) && (
+                      <div
+                        className={`absolute left-0 right-0 top-full mt-1 z-30 max-h-48 overflow-y-auto rounded-xl border shadow-xl ${
+                          isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"
+                        }`}
+                      >
+                        <div className="p-1.5 text-[10px] font-bold text-slate-400 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                          <span>Directory Contacts</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowEditContactDropdown(false)}
+                            className="hover:underline text-slate-500"
+                          >
+                            Close
+                          </button>
+                        </div>
+                        {editContactResults.map((c) => (
+                          <div
+                            key={`${c.type}-${c.id}`}
+                            onClick={() => {
+                              setEditForm({
+                                ...editForm,
+                                customerName: c.name,
+                                customerEmail: c.email || editForm.customerEmail,
+                                customerPhone: c.phone || editForm.customerPhone,
+                                clientId: c.type === "CLIENT" ? c.id : "",
+                                consumerId: c.type === "CONSUMER" ? c.id : "",
+                              });
+                              setShowEditContactDropdown(false);
+                            }}
+                            className="p-2 hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer transition-colors border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-xs">{c.name}</span>
+                              <span
+                                className={`text-[9px] px-1.5 py-0.5 rounded font-black ${
+                                  c.type === "CLIENT"
+                                    ? "bg-emerald-500/10 text-emerald-500"
+                                    : "bg-purple-500/10 text-purple-500"
+                                }`}
+                              >
+                                {c.type}
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 flex gap-2 mt-0.5">
+                              {c.email && <span>{c.email}</span>}
+                              {c.phone && <span>{c.phone}</span>}
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Option to register new client on the fly */}
+                        {editForm.customerName.trim() &&
+                          !editContactResults.some(
+                            (c) => c.name.toLowerCase() === editForm.customerName.trim().toLowerCase()
+                          ) && (
+                            <div className="p-2 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700">
+                              <button
+                                type="button"
+                                disabled={isRegisteringContact}
+                                onClick={async () => {
+                                  const created = await handleRegisterContact(
+                                    editForm.customerName,
+                                    editForm.customerEmail,
+                                    editForm.customerPhone
+                                  );
+                                  if (created) {
+                                    setEditForm({
+                                      ...editForm,
+                                      customerName: created.name,
+                                      customerEmail: created.email || editForm.customerEmail,
+                                      customerPhone: created.phone || editForm.customerPhone,
+                                      clientId: created.id,
+                                    });
+                                    setShowEditContactDropdown(false);
+                                  }
+                                }}
+                                className="w-full py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all"
+                              >
+                                <UserPlusIcon className="h-3.5 w-3.5" />
+                                <span>Save "{editForm.customerName}" to Clients database</span>
+                              </button>
+                            </div>
+                          )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Customer Email */}
@@ -1994,18 +2429,28 @@ export default function InvoicingClient({
 
               {/* Line Items */}
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h4 className={`text-xs font-extrabold uppercase tracking-wider ${textMuted}`}>
                     2. Line Items ({editForm.items.length})
                   </h4>
-                  <button
-                    type="button"
-                    onClick={handleEditAddItem}
-                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600/10 text-blue-500 hover:bg-blue-600/20 border border-blue-500/20 flex items-center gap-1 transition-all"
-                  >
-                    <PlusIcon className="h-3.5 w-3.5" />
-                    <span>Add Item</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProductPicker("EDIT")}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600/10 text-blue-500 hover:bg-blue-600/20 border border-blue-500/20 flex items-center gap-1.5 transition-all shadow-sm"
+                    >
+                      <BuildingStorefrontIcon className="h-3.5 w-3.5" />
+                      <span>Browse Marketplace Catalog</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEditAddItem}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 flex items-center gap-1 transition-all"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5" />
+                      <span>Add Item</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2.5">
@@ -2024,9 +2469,20 @@ export default function InvoicingClient({
                         }`}
                       >
                         <div className="grid grid-cols-12 gap-2.5 items-center">
-                          {/* Description */}
-                          <div className="col-span-12 sm:col-span-5">
-                            <label className={`block text-[10px] font-bold mb-1 ${textMuted}`}>Description</label>
+                          {/* Description + Catalog Button */}
+                          <div className="col-span-12 sm:col-span-4">
+                            <div className="flex justify-between items-center mb-1">
+                              <label className={`block text-[10px] font-bold ${textMuted}`}>Description</label>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenProductPicker("EDIT", idx)}
+                                className="text-[10px] font-bold text-blue-500 hover:text-blue-400 flex items-center gap-1 hover:underline"
+                                title="Select a product from your catalog for this line"
+                              >
+                                <BuildingStorefrontIcon className="h-3 w-3" />
+                                <span>Catalog</span>
+                              </button>
+                            </div>
                             <input
                               type="text"
                               required
@@ -2081,28 +2537,36 @@ export default function InvoicingClient({
 
                           {/* Discount % */}
                           <div className="col-span-4 sm:col-span-1">
-                            <label className={`block text-[10px] font-bold mb-1 ${textMuted}`}>Disc%</label>
+                            <label className={`block text-[10px] font-bold mb-1 text-emerald-600 dark:text-emerald-400`}>Disc%</label>
                             <input
                               type="number"
                               min="0"
                               max="100"
                               step="any"
+                              placeholder="0"
                               value={item.discount}
                               onChange={(e) => handleEditItemChange(idx, "discount", Number(e.target.value))}
-                              className={`w-full text-xs rounded-xl px-2 py-2 border ${inputBg} text-center`}
+                              className={`w-full text-xs rounded-xl px-2 py-2 border font-bold text-emerald-600 dark:text-emerald-400 ${inputBg} text-center`}
                             />
                           </div>
 
                           {/* Row Total & Delete */}
-                          <div className="col-span-8 sm:col-span-1 flex items-center justify-end gap-1.5 pt-4 sm:pt-0">
-                            <span className={`text-xs font-bold truncate ${textTitle}`} title={lineTotal.toFixed(2)}>
-                              {currency} {lineTotal.toLocaleString(undefined, { maximumFractionDigits: 1 })}
-                            </span>
+                          <div className="col-span-8 sm:col-span-2 flex items-center justify-end gap-2 pt-3 sm:pt-0">
+                            <div className="text-right">
+                              <span className={`text-xs font-black block ${textTitle}`} title={lineTotal.toFixed(2)}>
+                                {currency} {lineTotal.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                              </span>
+                              {disc > 0 && (
+                                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold block">
+                                  save -{currency} {disc.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                </span>
+                              )}
+                            </div>
                             {editForm.items.length > 1 && (
                               <button
                                 type="button"
                                 onClick={() => handleEditRemoveItem(idx)}
-                                className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                                className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors flex-shrink-0"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </button>
@@ -2148,23 +2612,37 @@ export default function InvoicingClient({
                 <div className={`text-xs ${textMuted}`}>
                   Amounts recalculate in real-time as items, quantities, or discounts are modified.
                 </div>
-                <div className="flex items-center gap-6 text-right">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-right">
                   <div>
-                    <div className={`text-[10px] font-bold ${textMuted}`}>Subtotal</div>
+                    <div className={`text-[10px] font-bold ${textMuted}`}>Gross Subtotal</div>
                     <div className={`text-xs font-bold ${textSubtle}`}>
-                      {currency} {computedEditTotals.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {currency} {computedEditTotals.gross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                  {computedEditTotals.discount > 0 && (
+                    <div>
+                      <div className="text-[10px] font-bold text-emerald-500">Total Discounts</div>
+                      <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        - {currency} {computedEditTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <div className={`text-[10px] font-bold ${textMuted}`}>Net Subtotal</div>
+                    <div className={`text-xs font-bold ${textSubtle}`}>
+                      {currency} {computedEditTotals.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                   <div>
                     <div className={`text-[10px] font-bold ${textMuted}`}>Tax</div>
                     <div className={`text-xs font-bold ${textSubtle}`}>
-                      {currency} {computedEditTotals.tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {currency} {computedEditTotals.tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                   <div className="pl-4 border-l border-slate-700/40">
                     <div className="text-[10px] font-extrabold text-blue-500 uppercase tracking-wider">Total</div>
                     <div className={`text-lg font-black ${textTitle}`}>
-                      {currency} {computedEditTotals.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {currency} {computedEditTotals.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                 </div>
@@ -2198,6 +2676,265 @@ export default function InvoicingClient({
                     <>
                       <CheckCircleIcon className="h-4 w-4" />
                       <span>Save Invoice Updates</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. PRODUCT CATALOG & MARKETPLACE SELECTOR MODAL                         */}
+      {/* ========================================================================= */}
+      {isProductPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fadeIn">
+          <div
+            className={`w-full max-w-3xl max-h-[88vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden my-auto transition-all ${modalBg}`}
+          >
+            {/* Header */}
+            <div className={`p-5 border-b flex items-center justify-between gap-4 ${borderClass}`}>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                  <BuildingStorefrontIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className={`text-lg font-bold flex items-center gap-2 ${textTitle}`}>
+                    Marketplace & Catalog Products
+                  </h3>
+                  <p className={`text-xs ${textMuted}`}>
+                    Select an item to auto-populate description, unit price, and default discount.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProductPickerOpen(false)}
+                className={`p-2 rounded-xl text-slate-400 hover:text-slate-200 transition-colors ${
+                  isDarkMode ? "hover:bg-slate-800" : "hover:bg-slate-100"
+                }`}
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Search & Filter Bar */}
+            <div className={`p-4 border-b space-y-3 ${borderClass} ${isDarkMode ? "bg-slate-900/50" : "bg-slate-50/70"}`}>
+              <div className="relative">
+                <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={(e) => {
+                    setProductSearch(e.target.value);
+                    fetchProductsCatalog(e.target.value);
+                  }}
+                  placeholder="Search catalog products by name, SKU, or description..."
+                  className={`w-full pl-9 pr-4 py-2.5 rounded-xl border text-xs font-medium ${inputBg} focus:outline-none`}
+                />
+                {productSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProductSearch("");
+                      fetchProductsCatalog("");
+                    }}
+                    className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-200"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Products List Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2">
+              {isLoadingProducts ? (
+                <div className="py-16 text-center">
+                  <ArrowPathIcon className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-500" />
+                  <p className={`text-xs font-semibold ${textMuted}`}>Querying marketplace products catalog...</p>
+                </div>
+              ) : productsList.length === 0 ? (
+                <div className="py-16 text-center">
+                  <ShoppingBagIcon className="h-10 w-10 mx-auto mb-2 text-slate-400 opacity-40" />
+                  <p className="font-bold text-sm">No Products Found</p>
+                  <p className={`text-xs mt-1 ${textMuted}`}>
+                    {productSearch
+                      ? `No products matching "${productSearch}". Try another keyword.`
+                      : "No products currently available in this company inventory."}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {productsList.map((prod) => {
+                    const price = Number(prod.sellingPrice) || 0;
+                    const disc = Number(prod.discount) || 0;
+                    const imageUrl = prod.images && prod.images[0]?.url ? prod.images[0].url : null;
+
+                    return (
+                      <div
+                        key={prod.id}
+                        className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between hover:border-blue-500/50 ${
+                          isDarkMode ? "bg-slate-900/60 border-slate-800 hover:bg-slate-800/50" : "bg-white border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                            {imageUrl ? (
+                              <img src={imageUrl} alt={prod.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <ShoppingBagIcon className="h-6 w-6 text-slate-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h5 className={`font-bold text-xs truncate ${textTitle}`}>{prod.name}</h5>
+                              {prod.sku && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono">
+                                  {prod.sku}
+                                </span>
+                              )}
+                            </div>
+                            {prod.category?.name && (
+                              <span className="text-[10px] text-blue-500 font-semibold block mt-0.5">
+                                {prod.category.name}
+                              </span>
+                            )}
+                            {prod.description && (
+                              <p className={`text-[11px] line-clamp-1 mt-0.5 ${textMuted}`}>{prod.description}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                          <div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className={`font-extrabold text-sm ${textTitle}`}>
+                                {currency} {price.toLocaleString()}
+                              </span>
+                              {disc > 0 && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold">
+                                  {disc}% OFF
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectProduct(prod)}
+                            className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1"
+                          >
+                            <span>Select Item</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className={`p-4 border-t flex justify-end ${borderClass}`}>
+              <button
+                type="button"
+                onClick={() => setIsProductPickerOpen(false)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold ${
+                  isDarkMode ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. QUICK REGISTER NEW CUSTOMER MODAL                                     */}
+      {/* ========================================================================= */}
+      {isNewCustomerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fadeIn">
+          <div
+            className={`w-full max-w-md rounded-3xl border shadow-2xl overflow-hidden my-auto transition-all p-6 space-y-4 ${modalBg}`}
+          >
+            <div className={`flex justify-between items-start border-b pb-3 ${borderClass}`}>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Directory</span>
+                <h3 className={`text-base font-bold ${textTitle}`}>Add New Customer / Client</h3>
+                <p className={`text-xs mt-0.5 ${textMuted}`}>
+                  Creates an authoritative record in your tenant database and selects them.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsNewCustomerModalOpen(false)}
+                className={`p-1.5 rounded-lg hover:opacity-70 ${textMuted}`}
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNewCustomer} className="space-y-3.5 text-xs">
+              <div>
+                <label className={`block font-bold mb-1 ${textSubtle}`}>Customer / Company Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. John Doe or Acme Corporation"
+                  value={newCustomerForm.name}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                  className={`w-full p-2.5 rounded-xl border font-medium ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`block font-bold mb-1 ${textSubtle}`}>Email Address (Optional)</label>
+                <input
+                  type="email"
+                  placeholder="accounts@acme.com"
+                  value={newCustomerForm.email}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+                  className={`w-full p-2.5 rounded-xl border font-medium ${inputBg}`}
+                />
+              </div>
+
+              <div>
+                <label className={`block font-bold mb-1 ${textSubtle}`}>Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  placeholder="+254 712 345678"
+                  value={newCustomerForm.phone}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                  className={`w-full p-2.5 rounded-xl border font-medium ${inputBg}`}
+                />
+              </div>
+
+              <div className={`flex justify-end gap-2.5 pt-3 border-t ${borderClass}`}>
+                <button
+                  type="button"
+                  onClick={() => setIsNewCustomerModalOpen(false)}
+                  className={`px-4 py-2 rounded-xl font-bold transition-all ${
+                    isDarkMode ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingNewCustomer}
+                  className="px-5 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isSubmittingNewCustomer ? (
+                    <>
+                      <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlusIcon className="h-4 w-4" />
+                      <span>Save & Select Customer</span>
                     </>
                   )}
                 </button>
