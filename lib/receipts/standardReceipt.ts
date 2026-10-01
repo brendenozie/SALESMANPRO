@@ -131,3 +131,7 @@ export function renderStandardReceiptHtml(data: UnifiedReceiptData): string {
     </div>
   `;
 }
+
+export const standardReceipt = renderStandardReceiptHtml;
+export default renderStandardReceiptHtml;
+

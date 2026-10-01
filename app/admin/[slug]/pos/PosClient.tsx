@@ -11,7 +11,7 @@ import {
   PrinterIcon,
   ArrowPathIcon,
   UserGroupIcon,
-  ArrowRightLeftIcon,
+  ArrowsRightLeftIcon,
   DocumentDuplicateIcon,
   ScissorsIcon,
   CheckCircleIcon,
@@ -1117,7 +1117,7 @@ export default function PosClient({
                   className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition border border-slate-700"
                   title="Move to another table"
                 >
-                  <ArrowRightLeftIcon className="w-4 h-4 text-sky-400" />
+                  <ArrowsRightLeftIcon className="w-4 h-4 text-sky-400" />
                   <span>Transfer</span>
                 </button>
 
@@ -1362,7 +1362,7 @@ export default function PosClient({
                   <ArrowPathIcon className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    <ArrowRightLeftIcon className="w-4 h-4" />
+                    <ArrowsRightLeftIcon className="w-4 h-4" />
                     <span>Complete Table Transfer</span>
                   </>
                 )}

@@ -210,6 +210,13 @@ const AdminServicePOSClient: React.FC<{
         setShowAuthModal(true);
     };
 
+    // Calculations
+    const taxRate = companyInfo?.taxRate ?? 0.00;
+    const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
+    const totalDiscountAmount = useMemo(() => (subtotal * discountPercent) / 100, [subtotal, discountPercent]);
+    const totalTax = useMemo(() => (subtotal - totalDiscountAmount) * taxRate, [subtotal, totalDiscountAmount, taxRate]);
+    const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
+
     // Held Orders State & Handlers
     const [heldOrders, setHeldOrders] = useState<POSHeldOrder[]>([]);
     const [showHeldOrdersModal, setShowHeldOrdersModal] = useState(false);
@@ -265,8 +272,6 @@ const AdminServicePOSClient: React.FC<{
     const [isSplit, setIsSplit] = useState(false);
     const [isPending, setIsPending] = useState(false);
 
-    const taxRate = companyInfo?.taxRate ?? 0.00;
-
     const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
     const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories || []);
 
@@ -284,12 +289,6 @@ const AdminServicePOSClient: React.FC<{
     const [variantModalProduct, setVariantModalProduct] = useState<MarketListingForm | null>(null);
     const [selectedVariants, setSelectedVariants] = useState<Record<string, VariantOptionItem>>({});
 
-    // Calculations
-    const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
-    const totalDiscountAmount = useMemo(() => (subtotal * discountPercent) / 100, [subtotal, discountPercent]);
-    const totalTax = useMemo(() => (subtotal - totalDiscountAmount) * taxRate, [subtotal, totalDiscountAmount, taxRate]);
-    const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
-    
     const [splits, setSplits] = useState<{ method: string; amount: number }[]>([
         { method: 'cash', amount: 0 }
     ]);
