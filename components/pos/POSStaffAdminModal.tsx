@@ -8,13 +8,6 @@ import {
   ShieldCheckIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-import {
-  XMarkIcon,
-  UserGroupIcon,
-  KeyIcon,
-  ShieldCheckIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
   ArrowPathIcon,
   PowerIcon,
   EnvelopeIcon,
