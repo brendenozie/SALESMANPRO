@@ -14,6 +14,7 @@ import {
   ChatBubbleLeftRightIcon, // New high-fidelity icon element for eTIMS Tax dashboard routing
   GlobeAltIcon,
   PrinterIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -26,6 +27,7 @@ import { KraTab } from './components/KraTab';
 import { WhatsAppAiTab } from './components/WhatsAppAiTab';
 import { SeoStrategyTab } from './components/SeoStrategyTab';
 import DocumentsPrintingClient from '../document-settings/DocumentsPrintingClient';
+import MascotSettingsClient from './ai-mascot/MascotSettingsClient';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 const A_RECORD_IP = process.env.VPS_IP || '161.97.149.171';
@@ -168,6 +170,7 @@ export default function UserSettingsPage({ companyId }: { companyId: string }) {
             { id: 'seo', label: 'SEO & Search Presence', Icon: GlobeAltIcon, text: 'text-indigo-500' },
             { id: 'documents', label: 'Documents & Printing', Icon: PrinterIcon, text: 'text-emerald-500' },
             { id: 'whatsapp', label: 'WhatsApp AI', Icon: ChatBubbleLeftRightIcon, text: 'text-green-500' },
+            { id: 'mascot', label: 'AI Mascot Assistant', Icon: SparklesIcon, text: 'text-sky-500' },
             { id: 'kra', label: 'KRA eTIMS Tax', Icon: DocumentCheckIcon, text: 'text-red-500' }, // Linked high fidelity tracking icon
             { id: 'account', label: 'Danger Operations', Icon: TrashIcon, text: 'text-gray-400' },
           ].map(({ id, label, Icon, text }) => (
@@ -208,6 +211,13 @@ export default function UserSettingsPage({ companyId }: { companyId: string }) {
               {activeTab === 'seo' && <SeoStrategyTab companyId={companyId} showStatus={showStatus} apiBaseUrl={apiBaseUrl} />}
               {activeTab === 'kra' && <KraTab companyId={companyId} showStatus={showStatus} apiBaseUrl={apiBaseUrl} />}
               {activeTab === 'whatsapp' && <WhatsAppAiTab companyId={companyId} showStatus={showStatus} apiBaseUrl={apiBaseUrl} />}
+              {activeTab === 'mascot' && (
+                <MascotSettingsClient
+                  companyId={companyId}
+                  storeSlug={storeFormData?.slug || 'store'}
+                  storeCategory={storeFormData?.category || 'E-commerce'}
+                />
+              )}
               {activeTab === 'account' && <AccountTab handleDeactivateAccount={deactivateAccount} />}
             </motion.div>
           </AnimatePresence>

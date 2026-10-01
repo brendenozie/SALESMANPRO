@@ -23,9 +23,15 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import dynamic from "next/dynamic";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
 import { useStoreContext } from "@/contexts/StoreContext";
 import PricingSection from "@/app/stores/PricingSection";
+
+const SalesmanProMascot = dynamic(
+  () => import("@/components/ai/mascot/SalesmanProMascot").then((mod) => mod.SalesmanProMascot),
+  { ssr: false }
+);
 
 // --- Types ---
 export interface SubMenuItem {
@@ -821,6 +827,8 @@ export default function AdminLayout({
         onSubscriptionSuccess={handleSubscriptionSuccess}
         isSubscriptionActive={isSubscriptionActive}
       />
+
+      <SalesmanProMascot />
     </>
   );
 }
