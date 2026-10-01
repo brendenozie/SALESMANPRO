@@ -169,7 +169,7 @@ const AdminServicePOSClient: React.FC<{
     // POS Session & Operator States
     const [operator, setOperator] = useState<POSOperator | null>(null);
     const [posSession, setPosSession] = useState<POSSession | null>(null);
-    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(true);
 
     // Check for active POS session on load
     useEffect(() => {
@@ -184,11 +184,19 @@ const AdminServicePOSClient: React.FC<{
                         setPosSession(sessionData);
                         if (sessionData.operator) {
                             setOperator(sessionData.operator);
+                            setShowAuthModal(false);
+                            return;
                         }
                     }
                 }
+                if (isMounted) {
+                    setShowAuthModal(true);
+                }
             } catch (err) {
                 console.error("Failed to fetch active POS session:", err);
+                if (isMounted) {
+                    setShowAuthModal(true);
+                }
             }
         };
         checkActiveSession();
@@ -592,6 +600,15 @@ const AdminServicePOSClient: React.FC<{
 
     // --- Complete Order & Sync Live Payload ---
     const finalizeSale = useCallback(async () => {
+        if (!operator && !posSession) {
+            setShowAuthModal(true);
+            return alert("Please authenticate with your staff or sales agent login code first.");
+        }
+
+        if (cart.length === 0) {
+            return alert("Cart is empty");
+        }
+
         if (isSplit && !isPending) {
           const totalAllocated = splits.reduce((sum, s) => sum + s.amount, 0);
           if (Math.abs(totalAllocated - finalTotal) > 0.01) {

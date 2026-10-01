@@ -330,13 +330,27 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
 };
 
 /* --- UPDATED CREATIVE 5-ITEM BOTTOM NAV BAR --- */
+{/* import Link from "next/link";
+import { useRouter } from "next/navigation"; // or next/router depending on your Next.js version
+import { 
+  HomeIcon, 
+  FilmIcon, 
+  BuildingLibraryIcon, 
+  MagnifyingGlassIcon, 
+  UserIcon 
+} from "@heroicons/react/24/outline"; // Update path if you use solid icons */}
+
 const BottomNav = ({ path }: { path: string }) => {
   const router = useRouter();
 
   const handleSellClick = () => {
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
+      if (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.endsWith(".localhost")
+      ) {
         router.push("/stores");
       } else {
         window.location.href = "https://salesmanpro.site/stores";
@@ -353,25 +367,30 @@ const BottomNav = ({ path }: { path: string }) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full z-50 md:hidden px-4 pb-3 pt-1 pointer-events-none">
-      <nav className="pointer-events-auto max-w-md mx-auto bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center justify-around px-2 py-1.5 relative">
+    // Outer wrapper: positions the dock slightly above the bottom of the screen
+    <div className="fixed bottom-4 left-0 w-full z-50 md:hidden px-4 pointer-events-none">
+      <nav className="pointer-events-auto max-w-md mx-auto bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl border border-white/40 dark:border-zinc-700/50 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between px-2 py-2 relative">
+        
         {items.map(({ name, icon: Icon, link, isAction }) => {
           const isActive = path === link || (link !== "/" && path?.startsWith(link));
 
           if (isAction) {
             return (
-              <button
-                key={name}
-                onClick={handleSellClick}
-                className="relative -top-5 flex flex-col items-center justify-center active:scale-90 transition-transform group"
-              >
-                <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-500 text-zinc-950 shadow-lg shadow-amber-500/40 flex items-center justify-center border-4 border-white dark:border-zinc-950 group-hover:rotate-6 transition-all">
-                  <Icon className="w-6 h-6 stroke-[2.5]" />
-                </div>
-                <span className="text-[10px] font-black tracking-tight text-amber-600 dark:text-amber-400 mt-0.5">
+              <div key={name} className="relative flex flex-col items-center">
+                {/* Floating Action Button */}
+                <button
+                  onClick={handleSellClick}
+                  className="group relative -top-6 flex items-center justify-center outline-none"
+                >
+                  <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
+                  <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 via-amber-400 to-amber-500 flex items-center justify-center border-[3px] border-white/90 dark:border-zinc-800/90 shadow-xl group-active:scale-90 group-hover:-translate-y-1 transition-all duration-300 ease-out">
+                    <Icon className="w-6 h-6 text-white stroke-[2.5]" />
+                  </div>
+                </button>
+                <span className="absolute -bottom-1 text-[10px] font-bold text-amber-600 dark:text-amber-400">
                   {name}
                 </span>
-              </button>
+              </div>
             );
           }
 
@@ -380,16 +399,40 @@ const BottomNav = ({ path }: { path: string }) => {
               key={name}
               href={link}
               prefetch={true}
-              className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all active:scale-90 ${
-                isActive
-                  ? "text-amber-500"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-              }`}
+              className="relative group flex flex-col items-center justify-center w-14 h-12 transition-all duration-300 ease-in-out active:scale-95"
             >
-              <Icon className={`w-5 h-5 ${isActive ? "fill-amber-500/10 stroke-[2.2] text-amber-500 scale-110" : "stroke-[1.7]"} transition-transform`} />
-              <span className={`text-[10px] mt-1 font-semibold ${isActive ? "font-black text-amber-500" : ""}`}>
+              {/* Icon Container with smooth Y-axis translation */}
+              <div
+                className={`transition-transform duration-300 flex flex-col items-center ${
+                  isActive ? "-translate-y-2" : "translate-y-0 group-hover:-translate-y-1"
+                }`}
+              >
+                <Icon
+                  className={`w-6 h-6 transition-colors duration-300 ${
+                    isActive
+                      ? "text-amber-500 stroke-[2.5]"
+                      : "text-zinc-500 dark:text-zinc-400 stroke-[1.5] group-hover:text-zinc-800 dark:group-hover:text-zinc-200"
+                  }`}
+                />
+              </div>
+
+              {/* Text fades in and moves up slightly when active */}
+              <span
+                className={`absolute bottom-1.5 text-[9px] font-semibold tracking-wide transition-all duration-300 ${
+                  isActive
+                    ? "text-amber-600 dark:text-amber-400 opacity-100 translate-y-0"
+                    : "text-zinc-500 dark:text-zinc-400 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+                }`}
+              >
                 {name}
               </span>
+
+              {/* Glowing Active Dot */}
+              <div
+                className={`absolute -bottom-0.5 w-1 h-1 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)] transition-all duration-300 ${
+                  isActive ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                }`}
+              />
             </Link>
           );
         })}
@@ -397,6 +440,8 @@ const BottomNav = ({ path }: { path: string }) => {
     </div>
   );
 };
+
+{/* export default BottomNav; */}
 
 const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
   const { addToCart, decreaseQuantity, removeFromCart } = useStateContext();

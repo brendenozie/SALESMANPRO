@@ -76,7 +76,7 @@ export default function PosClient({
   // Operator & Session State
   const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
   const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(true);
 
   // Restaurant Tables & Areas State
   const [areas, setAreas] = useState<RestaurantAreaRecord[]>([]);

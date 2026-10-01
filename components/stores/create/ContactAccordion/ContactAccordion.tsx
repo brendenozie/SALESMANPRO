@@ -12,55 +12,38 @@ const weekdays = [
 ];
 
 /* ================================
-    WhatsApp helpers (Kenya)
+    WhatsApp helpers (International)
 ================================ */
-
-const COUNTRY_CODE = '254';
 
 function normalizeWhatsAppNumber(input: string): string {
   if (!input) return '';
-  let digits = input.replace(/\D/g, '');
-  const match = digits.match(/^(?:254|0)+([71]\d*)$/) || digits.match(/^([71]\d*)$/);
-  if (match && match[1].length === 9) {
-    return `+254${match[1]}`;
-  }
-  return '';
+  // Extract only the digits
+  const digits = input.replace(/\D/g, '');
+  // Save with a leading + for standard international E.164 format
+  return digits ? `+${digits}` : '';
 }
 
 function formatWhileTyping(input: string): string {
-  let digits = input.replace(/\D/g, '');
-  if (!digits) return '';
-
-  const match = digits.match(/^(?:254|0)+([71]\d*)$/) || digits.match(/^([71]\d*)$/);
+  if (!input) return '';
+  // Allow leading +, digits, spaces, hyphens, and parentheses
+  let cleaned = input.replace(/[^\d\s\-+()]/g, '');
   
-  let subscriber = '';
-  if (match) {
-    subscriber = match[1];
-  } else {
-    if (digits.startsWith('254')) {
-      subscriber = digits.slice(3);
-    } else if (digits.startsWith('0')) {
-      subscriber = digits.slice(1);
-    } else {
-      subscriber = digits;
-    }
+  // Ensure the '+' sign only appears at the very beginning
+  const hasPlus = cleaned.startsWith('+');
+  cleaned = cleaned.replace(/\+/g, '');
+  if (hasPlus) {
+    cleaned = '+' + cleaned;
   }
-
-  subscriber = subscriber.slice(0, 9);
-
-  if (!subscriber && digits) {
-    if (input.endsWith('0')) return '+254 0';
-    return '+254 ';
-  }
-
-  return `+254 ${subscriber.replace(
-    /(\d{1})(\d{0,2})(\d{0,3})(\d{0,3})/,
-    (_, a, b, c, d) => [a + b, c, d].filter(Boolean).join(' ')
-  )}`;
+  
+  return cleaned;
 }
 
-export const isValidWhatsAppNumber = (phone: string) =>
-  /^\+254[71]\d{8}$/.test(phone);
+// A standard international number is between 7 and 15 digits long
+export const isValidWhatsAppNumber = (phone: string) => {
+  if (!phone) return false;
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+};
 
 /* ================================
     Props
@@ -171,14 +154,14 @@ export default function ContactAccordion({
                 <div className="relative rounded-xl shadow-xs">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.28-5.116-3.573-6.397-1.397l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.28-5.116-3.573-6.397-1.397l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                     </svg>
                   </div>
                   <input
                     type="tel"
                     value={displayPhone}
                     onChange={handlePhoneChange}
-                    placeholder="+254 7XX XXX XXX"
+                    placeholder="+1 (555) 000-0000"
                     className="block w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/70 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
@@ -190,7 +173,7 @@ export default function ContactAccordion({
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                         </svg>
-                        Enter a valid mobile number
+                        Enter a valid international number
                       </span>
                     ) : (
                       <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-lg border border-emerald-200/60 dark:border-emerald-900/40">
@@ -199,7 +182,8 @@ export default function ContactAccordion({
                           WhatsApp Active:
                         </span>
                         <a
-                          href={`https://wa.me/${contactPhone.replace('+', '')}`}
+                          // Ensures proper formatting for WhatsApp link by stripping out any whitespace or extra characters
+                          href={`https://wa.me/${contactPhone.replace(/\D/g, '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-bold hover:underline underline-offset-2 text-emerald-700 dark:text-emerald-300"

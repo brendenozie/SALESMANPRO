@@ -33,6 +33,7 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/
 
 function usePersistentState<T>(key: string, initial: T) {
   const [state, setState] = useState<T>(() => {
+    if (typeof window === 'undefined') return initial;
     try {
       const raw = sessionStorage.getItem(key);
       return raw ? (JSON.parse(raw) as T) : initial;
@@ -41,6 +42,7 @@ function usePersistentState<T>(key: string, initial: T) {
     }
   });
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     try {
       sessionStorage.setItem(key, JSON.stringify(state));
     } catch {}
@@ -325,9 +327,12 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             openedAt: sessionData.openedAt,
           });
           setShowAuthModal(false);
+        } else {
+          setShowAuthModal(true);
         }
       } catch (err) {
         console.error("Failed to check active POS session", err);
+        setShowAuthModal(true);
       }
     }
     checkSession();
@@ -346,6 +351,13 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     setCart([]);
     setShowAuthModal(true);
   };
+
+  // --- Cart Calculations ---
+  const taxRate = companyInfo?.taxRate ?? 0.00;
+  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
+  const totalDiscountAmount = useMemo(() => (subtotal * discountPercentage) / 100, [subtotal, discountPercentage]);
+  const totalTax = useMemo(() => (subtotal - totalDiscountAmount) * taxRate, [subtotal, totalDiscountAmount, taxRate]);
+  const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
 
   // Held Orders State & Handlers
   const [heldOrders, setHeldOrders] = useState<POSHeldOrder[]>([]);
@@ -388,7 +400,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [selectedVariants, setSelectedVariants] = useState<Record<string, VariantOptionItem>>({});
 
   const ripple = useRipple();
-  const taxRate = companyInfo?.taxRate ?? 0.00;
 
   const [currentAgent, setCurrentAgent] = useState<Agent | null>({
     id: 'agent-001',
@@ -595,12 +606,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     }
   }, []);
 
-  // --- Cart Math ---
-  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
-  const totalDiscountAmount = useMemo(() => (subtotal * discountPercentage) / 100, [subtotal, discountPercentage]);
-  const totalTax = useMemo(() => (subtotal - totalDiscountAmount) * taxRate, [subtotal, totalDiscountAmount, taxRate]);
-  const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
-  
    const [splits, setSplits] = useState<{ method: string; amount: number }[]>([
     { method: 'cash', amount: finalTotal }
   ]);
@@ -619,6 +624,11 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   
   // 2. Updated finalizeSale accepts the dynamic payment schema
   const finalizeSale = useCallback(async () => {
+    if (!operator && !posSession) {
+      setShowAuthModal(true);
+      return alert("Please authenticate with your staff or sales agent login code first.");
+    }
+
     if (cart.length === 0) return alert("Cart is empty");
     
     // Validate split totals match final total

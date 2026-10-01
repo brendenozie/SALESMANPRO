@@ -52,7 +52,7 @@ export default function POSOperatorModal({
 
   const handleSubmit = useCallback(async () => {
     if (!code || code.length < 3) {
-      setError('Please enter a valid staff login code');
+      setError('Please enter a valid staff or sales agent login code');
       return;
     }
 
@@ -127,7 +127,7 @@ export default function POSOperatorModal({
         </div>
 
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 mb-4 text-center">
-          Enter your staff login code to start or resume your POS session
+          Enter your staff or sales agent login code to start or resume your POS session
         </p>
 
         {/* PIN Display */}
