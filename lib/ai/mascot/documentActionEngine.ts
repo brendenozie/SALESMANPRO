@@ -164,13 +164,14 @@ export class MascotDocumentActionEngine {
 
         // Audit Log
         try {
-          await (prisma as any).aIAuditLog.create({
+          await prisma.aIAuditLog.create({
             data: {
-              companyId,
-              userId: isValidObjectId(userId) ? userId : undefined,
-              agentName: "SalesmanPro Mascot",
               action: "RECORD_DOCUMENT_EXPENSE",
+              actorId: isValidObjectId(userId) ? userId : undefined,
+              target: companyId,
               details: {
+                companyId,
+                agentName: "SalesmanPro Mascot",
                 expenseId: expense.id,
                 voucherId: expense.expenseId,
                 amount: expense.amount,

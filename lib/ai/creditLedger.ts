@@ -134,15 +134,20 @@ export class AICreditLedger {
     userId?: string;
     amount: number;
     description: string;
+    capability?: string;
     idempotencyKey?: string;
     referenceId?: string;
     metadata?: Record<string, unknown>;
-  }): Promise<{ transactionId: string; balanceAfter: number }> {
-    const { companyId, userId, amount, description, idempotencyKey, referenceId, metadata } = params;
+  }): Promise<{ transactionId: string; reservationId: string; balanceAfter: number }> {
+    const { companyId, userId, amount, description, idempotencyKey, referenceId } = params;
+    const metadata = {
+      ...(params.metadata || {}),
+      ...(params.capability ? { capability: params.capability } : {}),
+    };
 
     if (amount <= 0) {
       const balance = await this.getBalance(companyId);
-      return { transactionId: "zero_cost", balanceAfter: balance };
+      return { transactionId: "zero_cost", reservationId: "zero_cost", balanceAfter: balance };
     }
 
     // Check idempotency first if key is provided
@@ -154,6 +159,7 @@ export class AICreditLedger {
       if (existingTx) {
         return {
           transactionId: existingTx.id,
+          reservationId: existingTx.id,
           balanceAfter: existingTx.balanceAfter ?? (await this.getBalance(companyId)),
         };
       }
@@ -205,6 +211,7 @@ export class AICreditLedger {
 
       return {
         transactionId: transaction.id,
+        reservationId: transaction.id,
         balanceAfter: updatedCompany.aiCreditBalance,
       };
     }, TRANSACTION_OPTIONS);
@@ -258,6 +265,7 @@ export class AICreditLedger {
     description: string;
     idempotencyKey?: string;
     referenceId?: string;
+    reservationId?: string;
     usageData?: {
       capability: AICapability;
       provider: string;
@@ -273,8 +281,9 @@ export class AICreditLedger {
       errorMessage?: string;
     };
   }): Promise<{ transactionId: string; balanceAfter: number }> {
-    const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, referenceId, usageData } =
+    const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, usageData } =
       params;
+    const referenceId = params.referenceId || params.reservationId;
 
     if (idempotencyKey) {
       const existingUsage = await prisma.aIUsage.findFirst({

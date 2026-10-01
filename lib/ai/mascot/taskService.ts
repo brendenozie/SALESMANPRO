@@ -186,10 +186,10 @@ export class MascotTaskService {
           companyId,
           userId,
           amount: creditCost,
-          capability: "TEXT",
           description: `Mascot Task Reservation: ${title}`,
+          metadata: { capability: "TEXT" },
         });
-        reservationId = reserveRes.reservationId;
+        reservationId = reserveRes.transactionId;
       } catch (err: any) {
         if (err?.message?.includes("Company tenant not found")) {
           // Gracefully skip credit ledger reservation in synthetic / unit test environments
@@ -913,7 +913,8 @@ export class MascotTaskService {
       try {
         await creditLedger.finalizeCharge({
           companyId,
-          reservationId: task.credits.reservationId,
+          referenceId: task.credits.reservationId,
+          reservedAmount: task.credits.reserved,
           actualAmount: finalCredits,
           description: `Mascot Task Finalized: ${task.title}`,
         });
@@ -965,13 +966,14 @@ export class MascotTaskService {
     // Log audit log
     try {
       if (isValidObjectId(companyId)) {
-        await (prisma as any).aIAuditLog.create({
+        await prisma.aIAuditLog.create({
           data: {
-            companyId,
-            userId: isValidObjectId(task.userId) ? task.userId : undefined,
-            agentName: "SalesmanPro Mascot",
             action: `TASK_${task.taskType}`,
+            actorId: isValidObjectId(task.userId) ? task.userId : undefined,
+            target: companyId,
             details: {
+              companyId,
+              agentName: "SalesmanPro Mascot",
               taskId,
               title: task.title,
               state: finalState,
@@ -982,7 +984,7 @@ export class MascotTaskService {
         });
       }
     } catch (err) {
-      console.error("[MascotTaskService] Audit log write failed:", err);
+      console.warn("[MascotTaskService] Audit log write failed:", err);
     }
 
     const updated = (await this.getTaskById(taskId, companyId, true))!;
