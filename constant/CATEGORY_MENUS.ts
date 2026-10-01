@@ -546,6 +546,12 @@ const commonEcommerce = (
       minTier: "Ghuba Basic",
     },
     {
+      label: "Notifications",
+      href: `/admin/${adminSlug}/notifications`,
+      icon: BellIcon,
+      minTier: "Ghuba Basic",
+    },
+    {
       label: "Settings",
       icon: Cog6ToothIcon,
       minTier: "Ghuba Starter",
@@ -554,6 +560,11 @@ const commonEcommerce = (
           label: "Store & Profile Settings",
           href: `/admin/${adminSlug}/settings`,
           minTier: "Ghuba Starter",
+        },
+        {
+          label: "Notifications & Alerts",
+          href: `/admin/${adminSlug}/notifications`,
+          minTier: "Ghuba Basic",
         },
         {
           label: "Documents & Printing",
@@ -1209,6 +1220,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Basic",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -1346,6 +1363,12 @@ export const getCategoryMenus = (
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
         minTier: "Ghuba Basic",
       },
       {
@@ -1503,6 +1526,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -1669,6 +1698,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/health-reports`,
         icon: ChartBarIcon,
         minTier: "Ghuba Growth",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -1874,6 +1909,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Basic",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -2074,6 +2115,12 @@ export const getCategoryMenus = (
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
         minTier: "Ghuba Basic",
       },
       {
@@ -2286,6 +2333,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Basic",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -2444,6 +2497,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/companyPaymentsDashboard`,
         icon: CreditCardIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -3032,6 +3091,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -3236,6 +3301,12 @@ export const getCategoryMenus = (
         icon: TicketIcon,
         minTier: "Ghuba Growth",
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Company Portfolio": filterTiers([
@@ -3420,6 +3491,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
         minTier: "Ghuba Growth",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -3624,6 +3701,12 @@ export const getCategoryMenus = (
           },
         ],
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Event & Ticketing": filterTiers([
@@ -3782,6 +3865,12 @@ export const getCategoryMenus = (
         icon: WrenchScrewdriverIcon,
         minTier: "Ghuba Growth",
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Content Management": filterTiers([
@@ -3845,6 +3934,12 @@ export const getCategoryMenus = (
           // },
         ],
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "User Management": filterTiers([
@@ -3866,6 +3961,12 @@ export const getCategoryMenus = (
         icon: BuildingOfficeIcon,
         minTier: "Ghuba Starter",
       }, // Manage event organizers (if distinct from general users)
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Financials & Reports": filterTiers([
@@ -3892,6 +3993,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/reports/sales`,
         icon: ChartPieIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -3920,6 +4027,12 @@ export const getCategoryMenus = (
         icon: ListBulletIcon,
         minTier: "Ghuba Starter",
       }, // Track admin actions
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     // {
@@ -4084,6 +4197,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -4266,6 +4385,12 @@ export const getCategoryMenus = (
         icon: ServerStackIcon,
         minTier: "Ghuba Starter",
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Media & Entertainment": filterTiers([
@@ -4426,6 +4551,12 @@ export const getCategoryMenus = (
         icon: ChartBarIcon,
         minTier: "Ghuba Pro",
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Finance & Legal": filterTiers([
@@ -4464,6 +4595,12 @@ export const getCategoryMenus = (
         icon: DocumentTextIcon,
         subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -4736,6 +4873,12 @@ export const getCategoryMenus = (
       },
       // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
       // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Car Dealership": filterTiers([
@@ -4880,6 +5023,12 @@ export const getCategoryMenus = (
       },
       // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
       // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Car Dealership 2": filterTiers([
@@ -5024,6 +5173,12 @@ export const getCategoryMenus = (
       },
       // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
       // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Travel & Tourism": filterTiers([
@@ -5135,6 +5290,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/travel-testimonials`,
         icon: ChatBubbleLeftRightIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -5378,6 +5539,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/properties-settings`,
         icon: Cog6ToothIcon,
@@ -5615,6 +5782,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/fitness-settings`,
         icon: Cog6ToothIcon,
@@ -5798,6 +5971,12 @@ export const getCategoryMenus = (
         icon: QuestionMarkCircleIcon,
         minTier: "Ghuba Starter",
       }, // Manage frequently asked questions
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     "Billing & Finance": filterTiers([
@@ -5818,6 +5997,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/refunds`,
         icon: ArrowUturnLeftIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -5920,6 +6105,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -6093,6 +6284,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/gallery`,
         icon: PhotoIcon,
         minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -6402,6 +6599,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/finance-settings`,
         icon: Cog6ToothIcon,
@@ -6655,6 +6858,12 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -6796,6 +7005,12 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/social-settings`,
         icon: Cog6ToothIcon,
@@ -6855,6 +7070,12 @@ export const getCategoryMenus = (
         label: "My Profile",
         href: `/admin/${adminSlug}/school-driver-profile`,
         icon: UserCircleIcon,
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -6928,6 +7149,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/profile`,
         icon: UserCircleIcon,
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     //Old PAths
@@ -6981,6 +7208,12 @@ export const getCategoryMenus = (
         icon: ChatBubbleBottomCenterTextIcon,
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -7008,6 +7241,12 @@ export const getCategoryMenus = (
         label: "Messages",
         href: `/admin/${adminSlug}/messages`,
         icon: ChatBubbleBottomCenterTextIcon,
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -7090,6 +7329,12 @@ export const getCategoryMenus = (
         icon: ChatBubbleBottomCenterTextIcon,
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -7149,6 +7394,12 @@ export const getCategoryMenus = (
         icon: ChatBubbleBottomCenterTextIcon,
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -7186,6 +7437,12 @@ export const getCategoryMenus = (
         label: "Resources",
         href: `/admin/${adminSlug}/studentresources`,
         icon: PresentationChartBarIcon,
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -7235,6 +7492,12 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/studentresources`,
         icon: PresentationChartBarIcon,
       },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
     ]),
 
     Parent: filterTiers([
@@ -7256,6 +7519,12 @@ export const getCategoryMenus = (
         label: "Resources",
         href: `/admin/${adminSlug}/parentresources`,
         icon: PresentationChartBarIcon,
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
     ]),
 
@@ -7497,6 +7766,12 @@ export const getCategoryMenus = (
             href: `/admin/${adminSlug}/parentmessages`,
           },
         ],
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
       },
       {
         label: "Settings",
@@ -7749,6 +8024,12 @@ export const getCategoryMenus = (
         ],
       },
       {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,
         icon: Cog6ToothIcon,
@@ -7757,6 +8038,12 @@ export const getCategoryMenus = (
 
     Other: filterTiers([
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
       {
         label: "Settings",
         href: `/admin/${adminSlug}/settings`,

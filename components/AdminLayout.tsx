@@ -27,6 +27,7 @@ import dynamic from "next/dynamic";
 import { getCategoryMenus } from "@/constant/CATEGORY_MENUS";
 import { useStoreContext } from "@/contexts/StoreContext";
 import PricingSection from "@/app/stores/PricingSection";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const SalesmanProMascot = dynamic(
   () => import("@/components/ai/mascot/SalesmanProMascot").then((mod) => mod.SalesmanProMascot),
@@ -699,7 +700,12 @@ export default function AdminLayout({
               </div>
             </div>
 
-            <div className="flex items-center space-x-4 sm:space-x-6">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <NotificationBell
+                buttonClassName="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 p-2.5 rounded-full"
+                iconClassName="w-5 h-5 text-slate-600 dark:text-slate-300"
+              />
+
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleDarkMode}

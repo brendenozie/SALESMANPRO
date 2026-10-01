@@ -17,6 +17,7 @@ import {
   AcademicCapIcon,
   FilmIcon,
   CreditCardIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
 
 export const adminCategorySidebarMap: Record<
@@ -49,6 +50,7 @@ export const adminCategorySidebarMap: Record<
     },
     { label: "Reports", icon: ChartBarIcon, href: (id) => `/admin/${id}/reports` },
     { label: "Messages", icon: ChatBubbleBottomCenterTextIcon, href: (id) => `/admin/${id}/messages` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
     { label: "Settings", icon: Cog6ToothIcon, href: (id) => `/admin/${id}/settings` },
   ],
 
@@ -73,6 +75,7 @@ export const adminCategorySidebarMap: Record<
     },
     { label: "Reports", icon: ChartBarIcon, href: (id) => `/admin/${id}/reports` },
     { label: "Messages", icon: ChatBubbleBottomCenterTextIcon, href: (id) => `/admin/${id}/messages` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
     { label: "Settings", icon: Cog6ToothIcon, href: (id) => `/admin/${id}/settings` },
   ],
   "real estate": [
@@ -80,6 +83,7 @@ export const adminCategorySidebarMap: Record<
     { label: "Properties", icon: BuildingOfficeIcon, href: (id) => `/admin/${id}/properties` },
     { label: "Agents", icon: UsersIcon, href: (id) => `/admin/${id}/agents` },
     { label: "Clients", icon: UsersIcon, href: (id) => `/admin/${id}/clients` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
   ],
 
   "blog & content": [
@@ -94,6 +98,7 @@ export const adminCategorySidebarMap: Record<
     },
     { label: "Categories", icon: ClipboardDocumentListIcon, href: (id) => `/admin/${id}/categories` },
     { label: "Comments", icon: ChatBubbleBottomCenterTextIcon, href: (id) => `/admin/${id}/comments` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
     { label: "Analytics", icon: ChartBarIcon, href: (id) => `/admin/${id}/analytics` },
   ],
 
@@ -110,6 +115,7 @@ export const adminCategorySidebarMap: Record<
     { label: "Services", icon: WrenchScrewdriverIcon, href: (id) => `/admin/${id}/services` },
     { label: "Reports", icon: ChartBarIcon, href: (id) => `/admin/${id}/reports` },
     { label: "Messages", icon: ChatBubbleBottomCenterTextIcon, href: (id) => `/admin/${id}/messages` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
     { label: "Settings", icon: Cog6ToothIcon, href: (id) => `/admin/${id}/settings` },
   ],
 
@@ -125,6 +131,7 @@ export const adminCategorySidebarMap: Record<
     },
     { label: "Students", icon: UsersIcon, href: (id) => `/admin/${id}/students` },
     { label: "Instructors", icon: BriefcaseIcon, href: (id) => `/admin/${id}/instructors` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
   ],
 
   "media & entertainment": [
@@ -132,6 +139,7 @@ export const adminCategorySidebarMap: Record<
     { label: "Media Library", icon: FilmIcon, href: (id) => `/admin/${id}/media` },
     { label: "Schedule", icon: CalendarIcon, href: (id) => `/admin/${id}/schedule` },
     { label: "Sponsors", icon: BriefcaseIcon, href: (id) => `/admin/${id}/sponsors` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
   ],
 
   "fitness & wellness": [
@@ -139,6 +147,7 @@ export const adminCategorySidebarMap: Record<
     { label: "Programs", icon: ClipboardDocumentListIcon, href: (id) => `/admin/${id}/programs` },
     { label: "Trainers", icon: BriefcaseIcon, href: (id) => `/admin/${id}/trainers` },
     { label: "Clients", icon: UsersIcon, href: (id) => `/admin/${id}/clients` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
   ],
 
   "automotive": [
@@ -146,12 +155,14 @@ export const adminCategorySidebarMap: Record<
     { label: "Vehicles", icon: FilmIcon, href: (id) => `/admin/${id}/vehicles` },
     { label: "Requests", icon: ClipboardDocumentListIcon, href: (id) => `/admin/${id}/requests` },
     { label: "Clients", icon: UsersIcon, href: (id) => `/admin/${id}/clients` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
   ],
 
   // ... Add others as needed similarly
 
   other: [
     { label: "Dashboard", icon: HomeIcon, href: (id) => `/admin/${id}` },
+    { label: "Notifications", icon: BellIcon, href: (id) => `/admin/${id}/notifications` },
     { label: "Settings", icon: Cog6ToothIcon, href: (id) => `/admin/${id}/settings` },
   ],
 };
