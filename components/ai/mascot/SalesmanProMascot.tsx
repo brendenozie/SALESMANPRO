@@ -33,6 +33,29 @@ export const SalesmanProMascot: React.FC = () => {
   const [messages, setMessages] = useState<MascotMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [activeTaskCount, setActiveTaskCount] = useState(0);
+
+  // Poll for background task activity across dashboard
+  useEffect(() => {
+    if (!context?.companyId) return;
+    const checkActiveTasks = async () => {
+      try {
+        const res = await fetch(`/api/ai/mascot/tasks?companyId=${context.companyId}&limit=10`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.tasks)) {
+          const count = data.tasks.filter((t: any) =>
+            ["RUNNING", "QUEUED", "AWAITING_APPROVAL", "RETRYING"].includes(t.status)
+          ).length;
+          setActiveTaskCount(count);
+        }
+      } catch {
+        // silent
+      }
+    };
+    checkActiveTasks();
+    const interval = setInterval(checkActiveTasks, 6000);
+    return () => clearInterval(interval);
+  }, [context?.companyId]);
 
   // Position coordinates persisted in localStorage
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -304,6 +327,17 @@ export const SalesmanProMascot: React.FC = () => {
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
                 {unreadCount}
+              </span>
+            )}
+
+            {/* Active Background Tasks Badge */}
+            {activeTaskCount > 0 && unreadCount === 0 && (
+              <span
+                title={`${activeTaskCount} background task${activeTaskCount > 1 ? 's' : ''} running`}
+                className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-white font-bold text-[9px] rounded-full flex items-center gap-1 border-2 border-slate-900 shadow animate-pulse"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                {activeTaskCount}
               </span>
             )}
 

@@ -30,14 +30,20 @@ import {
   ShieldCheckIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
+  ClockIcon,
+  ChatBubbleLeftRightIcon,
+  PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import { MascotAvatar } from "./MascotAvatar";
+import { MascotTaskCenter } from "./MascotTaskCenter";
+import { DocumentReviewModal } from "./DocumentReviewModal";
 import {
   MascotState,
   MascotContext,
   MascotMessage,
   MascotActionCard,
 } from "@/lib/ai/mascot/types";
+import { ExtractedDocumentData, DocumentActionDraft } from "@/lib/ai/mascot/documentTypes";
 
 interface MascotChatPanelProps {
   context: MascotContext | null;
@@ -68,6 +74,81 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [voiceMuted, setVoiceMuted] = useState(false);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [panelTab, setPanelTab] = useState<"CHAT" | "TASKS">("CHAT");
+  const [activeTaskCount, setActiveTaskCount] = useState<number>(0);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [reviewModalData, setReviewModalData] = useState<{
+    extractedData: ExtractedDocumentData;
+    actionDraft: DocumentActionDraft;
+    previewUrl?: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input
+    e.target.value = "";
+
+    setUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (context?.companyId) {
+        formData.append("companyId", context.companyId);
+      }
+      if (context?.storeSlug) {
+        formData.append("storeSlug", context.storeSlug);
+      }
+      if (context?.userRole) {
+        formData.append("userRole", context.userRole);
+      }
+
+      const res = await fetch("/api/ai/mascot/documents", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.error || "Failed to process document");
+        return;
+      }
+
+      setReviewModalData({
+        extractedData: data.extractedData,
+        actionDraft: data.actionDraft,
+        previewUrl: data.previewUrl,
+      });
+    } catch (err: any) {
+      alert(err?.message || "Failed to upload document");
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  // Poll active task count for badge indicator
+  useEffect(() => {
+    if (!context?.companyId) return;
+    const checkTasks = async () => {
+      try {
+        const res = await fetch(`/api/ai/mascot/tasks?companyId=${context.companyId}&limit=10`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.tasks)) {
+          const count = data.tasks.filter((t: any) =>
+            ["RUNNING", "QUEUED", "AWAITING_APPROVAL", "RETRYING"].includes(t.status)
+          ).length;
+          setActiveTaskCount(count);
+        }
+      } catch (err) {
+        // silent
+      }
+    };
+    checkTasks();
+    const interval = setInterval(checkTasks, 5000);
+    return () => clearInterval(interval);
+  }, [context?.companyId]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -250,6 +331,50 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
         </Link>
       </div>
 
+      {/* 2b. PANEL NAVIGATION TABS */}
+      <div className="flex items-center px-3 pt-1.5 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/70 dark:border-slate-800/80 gap-1 text-xs font-semibold shrink-0">
+        <button
+          onClick={() => setPanelTab("CHAT")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg transition border-b-2 ${
+            panelTab === "CHAT"
+              ? "border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-sm"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          }`}
+        >
+          <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
+          <span>Chat</span>
+        </button>
+
+        <button
+          onClick={() => setPanelTab("TASKS")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg transition border-b-2 ${
+            panelTab === "TASKS"
+              ? "border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-sm"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          }`}
+        >
+          <ClockIcon className="w-3.5 h-3.5" />
+          <span>Background Tasks</span>
+          {activeTaskCount > 0 && (
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-600 text-white font-bold animate-pulse">
+              {activeTaskCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {panelTab === "TASKS" ? (
+        <div className="flex-1 overflow-hidden p-2 bg-slate-50/50 dark:bg-slate-950/30">
+          <MascotTaskCenter
+            companyId={context?.companyId || ""}
+            storeSlug={context?.storeSlug}
+            userRole={context?.userRole}
+            compact
+          />
+        </div>
+      ) : (
+        <>
+
       {/* 3. SUGGESTED ACTION PILLS */}
       {suggestedActions && suggestedActions.length > 0 && (
         <div className="px-3 py-2 bg-slate-100/50 dark:bg-slate-900/40 border-b border-slate-200/40 dark:border-slate-800/40 flex items-center space-x-1.5 overflow-x-auto no-scrollbar shrink-0">
@@ -406,6 +531,28 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
         )}
 
         <div className="flex items-center space-x-2">
+          {/* File Upload / Camera Trigger */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".pdf,.png,.jpg,.jpeg,.webp"
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingDoc}
+            title="Upload receipt or document"
+            className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
+          >
+            {uploadingDoc ? (
+              <ArrowPathIcon className="w-4 h-4 animate-spin text-indigo-500" />
+            ) : (
+              <PaperClipIcon className="w-4 h-4" />
+            )}
+          </button>
+
           {/* Voice Microphone Toggle */}
           <button
             type="button"
@@ -439,6 +586,24 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
           </button>
         </div>
       </form>
+      </>
+      )}
+
+      {/* Side-by-Side Document Review & Approval Modal */}
+      {reviewModalData && (
+        <DocumentReviewModal
+          isOpen={!!reviewModalData}
+          onClose={() => setReviewModalData(null)}
+          extracted={reviewModalData.extractedData}
+          suggestedAction={reviewModalData.actionDraft}
+          previewUrl={reviewModalData.previewUrl}
+          companyId={context?.companyId || ""}
+          storeSlug={context?.storeSlug}
+          onSuccess={(result) => {
+            onSend(`I have approved and booked expense record ${result?.record?.expenseId || "Voucher"} for KES ${result?.record?.amount?.toLocaleString() || ""}.`);
+          }}
+        />
+      )}
     </motion.div>
   );
 };
