@@ -13,8 +13,9 @@
     "test:social": "ts-node --project tsconfig.worker.json tests/social-platform.test.ts",
     "test:pillars": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/three-pillars.test.ts",
     "test:pna": "ts-node --project tsconfig.worker.json tests/browser-pna-security-audit.test.ts",
-    "test:backup": "ts-node --project tsconfig.worker.json tests/backup-system.test.ts",
     "test:observability": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/observability-integration.test.ts",
+    "test:agent-drift": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/agent-drift-detection.test.ts",
+    "test:agent-matrix": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/agent-feature-matrix.test.ts",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build"

@@ -166,6 +166,7 @@ flowchart TD
 | **Admin Orders HQ** | Real-time order monitoring, line item audit, and fulfillment status transitions | `app/admin/[slug]/orders/page.tsx`, `app/admin/[slug]/orders/OrdersClient.tsx` | `OrdersClient`, `OrderInspector`, `OrderTile` | `/api/admin/customer-orders` (GET, POST, PATCH) | `CustomerOrder`, `OrderItem`, `InventoryItem` | Atomic transactions, cacheDel |
 | **Admin CRM Portfolio** | Client lifecycle, contact info, transaction history, and retention tracking | `app/admin/[slug]/customers/page.tsx`, `app/admin/[slug]/customers/ClientsClient.tsx` | `ClientsClient`, `ClientCard`, Add/Edit/Delete modals | `/api/admin/clients` (GET, POST, PUT, DELETE) | `Client`, `User`, `CustomerOrder` | MongoDB groupBy aggregations |
 | **Vertical Industry Dashboards** | Industry-specific KPI aggregations (SaaS, Coach, Logistics, E-commerce) | `app/admin/[slug]/page.tsx`, `components/admin/*` | `SaaSDashboardClient`, `CoachDashboardClient`, `LogisticsDashboard` | `/api/admin/dashboard/saas/*`, `/coach/*`, `/logistics/*` | `Company`, `Booking`, `Delivery`, `Task` | Dynamic vertical router |
+| **Agent & Staff Workspace** | Capability-gated operational cockpit for sales agents, technicians, cashiers, and branch staff | `app/agents/[slug]/*`, `lib/features/featureRegistry.ts`, `lib/auth/agentGuard.ts` | `AgentLayout`, `AgentNav`, `AgentOrdersClient`, `AgentCustomersClient` | `/api/agent/auth/login-code`, `/api/agent/dashboard`, `/api/admin/orders` | `StaffProfile`, `SalesAgent`, `CustomerOrder`, `PosSession` | Machine-readable registry (`feature-map.json`), NextAuth, Server-Side Guards |
 
 ---
 
@@ -717,6 +718,11 @@ POS Session & Customer Logic  lib/pos/ (posSessionService.ts, posCustomerService
 POS Backend APIs              app/api/pos/ (auth/login-code, session, session/end, customers)
 School Management System       app/school/* & lib/school/schoolService.ts
 Background Worker Supervisor   workers/ (Individual ts worker files)
+Agent Feature Registry         docs/architecture/feature-map.json & lib/features/featureRegistry.ts
+Agent Route & API Guards       lib/auth/agentGuard.ts (assertAgentRouteAccess, assertAgentApiAccess)
+Agent Navigation & Layout      components/agent/ (AgentLayout.tsx, AgentNav.tsx)
+Agent Canonical Workspaces     app/agents/[slug]/ (dashboard, orders, customers, sales, inventory, pos, bookings, members, tables, tasks, messages, profile)
+Agent Architecture Specs       docs/agents/AGENT_ARCHITECTURE.md & docs/agents/AGENT_UPDATE_WORKFLOW.md & docs/architecture/ADMIN_AGENT_FEATURE_MAP.md
 ```
 
 ---
@@ -777,6 +783,7 @@ graph TD
 | **POS Customer CRM Sync** | **CANONICAL** | `lib/pos/posCustomerService.ts` | **Mandatory:** In-POS customer search, creation, and deduplication synced to canonical `User` + `Client` + `Consumer`. |
 | **Shared POS Offline Engine** | **CANONICAL** | `lib/pos/offline/*`, `contexts/POSOfflineContext.tsx` | **Mandatory:** Universal offline operational edge, transaction journal, sync client, and connectivity manager for StorePOS, ServicePOS, and FitnessPOS. |
 | **POS Offline Sync Endpoints** | **CANONICAL** | `app/api/pos/sync/route.ts`, `app/api/pos/health/route.ts` | **Mandatory:** Reconciles offline mutation batches, idempotency checking, and incremental delta pulls without duplicate orders. |
+| **Agent Capability & Feature Registry** | **CANONICAL** | `docs/architecture/feature-map.json`, `lib/features/featureRegistry.ts`, `lib/auth/agentGuard.ts` | **Mandatory:** Resolves operational feature availability, category POS routing, and server-side route guards for `/agents/[slug]/*`. |
 | **Fitness Domain Service** | **CANONICAL** | `server/services/fitnessService.ts` | **Mandatory:** Equipment maintenance, membership plans, authoritative gym check-in, and course entitlement verification. |
 | **Fitness Check-In & Gate** | **CANONICAL** | `app/api/fitness/check-in/route.ts` | Authoritative physical gym check-in verifying active membership and location scope. |
 | **Fitness Entitlements** | **CANONICAL** | `app/api/fitness/entitlements/verify/route.ts` | Server-side digital access verification for courses, videos, and lesson attachments. |

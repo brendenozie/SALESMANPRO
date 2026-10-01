@@ -146,9 +146,16 @@ async function findUserByLoginCode(loginCode: string) {
 
   const salesAgent = await prisma.salesAgent.findUnique({
     where: { loginCode },
-    include: { user: true },
+    include: { user: true, company: true },
   });
-  if (salesAgent) return { user: salesAgent.user, role: "AGENT" };
+  if (salesAgent && salesAgent.user && salesAgent.isActive) {
+    return {
+      user: salesAgent.user,
+      role: "AGENT",
+      companyId: salesAgent.companyId,
+      companySlug: salesAgent.company?.slug,
+    };
+  }
 
   const driver = await prisma.transportDriver.findUnique({
     where: { loginCode },
@@ -164,10 +171,15 @@ async function findUserByLoginCode(loginCode: string) {
 
   const staff = await prisma.staffProfile.findUnique({
     where: { loginCode },
-    include: { user: true },
+    include: { user: true, company: true },
   });
   if (staff && staff.user && staff.employmentStatus === "ACTIVE") {
-    return { user: staff.user, role: staff.user.role || "STAFF" };
+    return {
+      user: staff.user,
+      role: staff.posRole || staff.user.role || "STAFF",
+      companyId: staff.companyId,
+      companySlug: staff.company?.slug,
+    };
   }
 
   return null;
@@ -392,14 +404,16 @@ export const createAuthOptions = (
           const user = loginCodeResult.user;
           if (user.isActive === false) return null;
 
+          const effectiveCompanyId = loginCodeResult.companyId || user.companyId;
           const hasTenantAccess = await resolveHasTenantAccess(
             user.id,
             (loginCodeResult.role as string) || user.role,
-            user.companyId,
+            effectiveCompanyId,
           );
 
           return sessionUserFromDb({
             ...user,
+            companyId: effectiveCompanyId,
             role: (loginCodeResult.role as string) || user.role,
             hasTenantAccess,
           });
@@ -605,19 +619,37 @@ export const createAuthOptions = (
                 companyId = dbUser.companyId ?? companyId;
               }
               if (!companyId && user.id) {
-                const educatorRec = await prisma.educator.findUnique({
+                const staffRec = await prisma.staffProfile.findFirst({
                   where: { userId: user.id },
-                  select: { companyId: true },
+                  select: { companyId: true, posRole: true },
                 });
-                if (educatorRec?.companyId) {
-                  companyId = educatorRec.companyId;
+                if (staffRec?.companyId) {
+                  companyId = staffRec.companyId;
+                  if (staffRec.posRole && role === "USER") role = staffRec.posRole;
                 } else {
-                  const studentRec = await prisma.student.findUnique({
+                  const salesAgentRec = await prisma.salesAgent.findFirst({
                     where: { userId: user.id },
                     select: { companyId: true },
                   });
-                  if (studentRec?.companyId) {
-                    companyId = studentRec.companyId;
+                  if (salesAgentRec?.companyId) {
+                    companyId = salesAgentRec.companyId;
+                    if (role === "USER") role = "AGENT";
+                  } else {
+                    const educatorRec = await prisma.educator.findUnique({
+                      where: { userId: user.id },
+                      select: { companyId: true },
+                    });
+                    if (educatorRec?.companyId) {
+                      companyId = educatorRec.companyId;
+                    } else {
+                      const studentRec = await prisma.student.findUnique({
+                        where: { userId: user.id },
+                        select: { companyId: true },
+                      });
+                      if (studentRec?.companyId) {
+                        companyId = studentRec.companyId;
+                      }
+                    }
                   }
                 }
               }
@@ -662,19 +694,37 @@ export const createAuthOptions = (
             token.companyId = dbUser.companyId;
 
             if (!token.companyId && token.id) {
-              const educatorRec = await prisma.educator.findUnique({
+              const staffRec = await prisma.staffProfile.findFirst({
                 where: { userId: String(token.id) },
-                select: { companyId: true },
+                select: { companyId: true, posRole: true },
               });
-              if (educatorRec?.companyId) {
-                token.companyId = educatorRec.companyId;
+              if (staffRec?.companyId) {
+                token.companyId = staffRec.companyId;
+                if (staffRec.posRole && token.role === "USER") token.role = staffRec.posRole;
               } else {
-                const studentRec = await prisma.student.findUnique({
+                const salesAgentRec = await prisma.salesAgent.findFirst({
                   where: { userId: String(token.id) },
                   select: { companyId: true },
                 });
-                if (studentRec?.companyId) {
-                  token.companyId = studentRec.companyId;
+                if (salesAgentRec?.companyId) {
+                  token.companyId = salesAgentRec.companyId;
+                  if (token.role === "USER") token.role = "AGENT";
+                } else {
+                  const educatorRec = await prisma.educator.findUnique({
+                    where: { userId: String(token.id) },
+                    select: { companyId: true },
+                  });
+                  if (educatorRec?.companyId) {
+                    token.companyId = educatorRec.companyId;
+                  } else {
+                    const studentRec = await prisma.student.findUnique({
+                      where: { userId: String(token.id) },
+                      select: { companyId: true },
+                    });
+                    if (studentRec?.companyId) {
+                      token.companyId = studentRec.companyId;
+                    }
+                  }
                 }
               }
             }

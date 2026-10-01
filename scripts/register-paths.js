@@ -11,7 +11,7 @@ Module._resolveFilename = function (request, parent, isMain, options) {
     const relativePath = request.slice(2);
     let absolutePath = path.resolve(__dirname, '..', relativePath);
     if (!fs.existsSync(absolutePath)) {
-      for (const ext of ['.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx', '/index.js']) {
+      for (const ext of ['.ts', '.tsx', '.js', '.jsx', '.json', '/index.ts', '/index.tsx', '/index.js']) {
         if (fs.existsSync(absolutePath + ext)) {
           absolutePath = absolutePath + ext;
           break;

@@ -40,6 +40,7 @@ const OPERATOR_PREFIXES = [
   "/admin",
   "/clients",
   "/agents",
+  "/agent",
   "/users",
 ];
 
@@ -98,6 +99,11 @@ export default async function middleware(
     return NextResponse.redirect(
       `https://${host.replace("www.", "")}${pathname}${url.search}`,
     );
+  }
+
+  if (pathname.startsWith("/agent/") || pathname === "/agent") {
+    url.pathname = pathname.replace(/^\/agent(\/|$)/, "/agents$1");
+    return NextResponse.redirect(url);
   }
 
   let session = null;

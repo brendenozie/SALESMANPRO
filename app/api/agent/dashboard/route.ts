@@ -1,23 +1,52 @@
-// app/api/admin/agents/dashboard/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { getAuthSession } from "@/lib/auth";
 
-// GET /api/admin/agents/dashboard
+// GET /api/agent/dashboard
 export const GET = withApiHandler(async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+  let salesAgentId = searchParams.get("salesAgentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-const { searchParams } = new URL(request.url);
-const salesAgentId = searchParams.get("salesAgentId");
-const limit = parseInt(searchParams.get("limit") || "10", 10);
-const offset = parseInt(searchParams.get("offset") || "0", 10);
+  if (!salesAgentId) {
+    const session = await getAuthSession();
+    if (session?.user?.id) {
+      const agent = await prisma.salesAgent.findFirst({
+        where: { userId: session.user.id },
+        select: { id: true },
+      });
+      salesAgentId = agent?.id || null;
+    }
+  }
 
-if (!salesAgentId || typeof salesAgentId !== "string") {
-return formatResponse(false, null, "Sales agent ID is required", 400);
-}
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return formatResponse(false, null, "Invalid pagination parameters", 400);
+  }
 
-if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-return formatResponse(false, null, "Invalid pagination parameters", 400);
-}
+  if (!salesAgentId) {
+    // Return empty dashboard structure rather than hard erroring
+    return formatResponse(
+      true,
+      {
+        clientData: { newClients: 0 },
+        inventoryData: { lowStock: 0 },
+        orderData: { pendingOrders: 0 },
+        requestData: { pendingRequests: 0 },
+        salesData: {
+          todaySales: 0,
+          monthlyTargetProgress: 0,
+          leadsConverted: 0,
+          demosConducted: 0,
+          commissionEarned: 0,
+        },
+        taskData: { tasks: [] },
+      },
+      "Default agent dashboard data",
+      200
+    );
+  }
 
 try {
 // New clients created today
