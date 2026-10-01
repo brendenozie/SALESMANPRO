@@ -156,11 +156,14 @@ export const DocumentReviewModal: React.FC<DocumentReviewModalProps> = ({
               </div>
             )}
 
-            {/* Confidence Badge */}
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-medium">Extraction Confidence:</span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+            {/* Confidence & AI Credit Cost Badges */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                 {Math.round(extracted.confidence * 100)}% Verified
+              </span>
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800">
+                <SparklesIcon className="w-3.5 h-3.5 text-indigo-500" />
+                <span>{suggestedAction.creditCost || 2} AI Credits</span>
               </span>
             </div>
           </div>

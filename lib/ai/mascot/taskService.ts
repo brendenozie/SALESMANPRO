@@ -680,9 +680,10 @@ export class MascotTaskService {
       try {
         await creditLedger.refundCredits({
           companyId,
-          reservationId: task.credits.reservationId,
+          referenceId: task.credits.reservationId,
           amount: task.credits.reserved,
-          reason: `Task approval rejected: ${reason}`,
+          description: `Task approval rejected: ${reason}`,
+          metadata: { reason },
         });
       } catch (err) {
         console.error("[MascotTaskService] Failed to refund credits on rejection:", err);
@@ -736,9 +737,10 @@ export class MascotTaskService {
       try {
         await creditLedger.refundCredits({
           companyId,
-          reservationId: task.credits.reservationId,
+          referenceId: task.credits.reservationId,
           amount: task.credits.reserved,
-          reason: `Task cancelled: ${reason}`,
+          description: `Task cancelled: ${reason}`,
+          metadata: { reason },
         });
       } catch (err) {
         console.error("[MascotTaskService] Credit refund failed on cancellation:", err);
@@ -1060,9 +1062,10 @@ export class MascotTaskService {
       try {
         await creditLedger.refundCredits({
           companyId,
-          reservationId: task.credits.reservationId,
+          referenceId: task.credits.reservationId,
           amount: task.credits.reserved,
-          reason: `Task execution failed: ${error.message}`,
+          description: `Task execution failed: ${error.message}`,
+          metadata: { reason: error.message },
         });
       } catch (err) {
         console.error("[MascotTaskService] Credit refund failed on task error:", err);

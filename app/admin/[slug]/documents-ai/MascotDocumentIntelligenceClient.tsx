@@ -61,9 +61,26 @@ export default function MascotDocumentIntelligenceClient({
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeReviewItem, setActiveReviewItem] = useState<UploadedBatchItem | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch tenant AI credit balance
+  React.useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const res = await fetch(`/api/ai/credits?companyId=${companyId}`);
+        const data = await res.json();
+        if (typeof data.balance === "number") {
+          setCreditBalance(data.balance);
+        }
+      } catch (e) {
+        // silent
+      }
+    };
+    fetchBalance();
+  }, [companyId]);
 
   // Handle files selected via file input or drag-and-drop
   const handleFiles = (files: FileList | File[]) => {
@@ -98,6 +115,17 @@ export default function MascotDocumentIntelligenceClient({
 
   // Process all queued documents in sequence or parallel
   const processBatch = async () => {
+    const queuedItems = batchItems.filter((it) => it.status === "QUEUED");
+    if (queuedItems.length === 0) return;
+
+    const estimatedCredits = queuedItems.length * 2;
+    if (creditBalance !== null && creditBalance < estimatedCredits) {
+      alert(
+        `Insufficient AI credits. Processing ${queuedItems.length} document(s) requires ${estimatedCredits} credits, but your store currently has ${creditBalance} credits. Please top up your credits to proceed.`
+      );
+      return;
+    }
+
     setIsProcessing(true);
 
     for (let i = 0; i < batchItems.length; i++) {
@@ -123,6 +151,10 @@ export default function MascotDocumentIntelligenceClient({
 
         const data = await res.json();
         if (data.success) {
+          if (data.creditUsage?.balanceRemaining !== undefined) {
+            setCreditBalance(data.creditUsage.balanceRemaining);
+          }
+
           setBatchItems((prev) =>
             prev.map((it) =>
               it.id === item.id
@@ -182,6 +214,16 @@ export default function MascotDocumentIntelligenceClient({
         </div>
 
         <div className="flex items-center gap-2.5">
+          {/* AI Credit Balance Pill */}
+          <Link
+            href={`/admin/${storeSlug}/ai-settings`}
+            title="Manage Store AI Credits"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 transition shadow-sm"
+          >
+            <SparklesIcon className="w-4 h-4 text-indigo-500" />
+            <span>{creditBalance !== null ? `${creditBalance.toLocaleString()} Credits` : "AI Credits"}</span>
+          </Link>
+
           <Link
             href={`/admin/${storeSlug}/expenses`}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
@@ -287,7 +329,9 @@ export default function MascotDocumentIntelligenceClient({
                   ) : (
                     <>
                       <SparklesIcon className="w-3.5 h-3.5" />
-                      <span>Extract All Queued</span>
+                      <span>
+                        Extract All Queued ({batchItems.filter((it) => it.status === "QUEUED").length * 2} Credits)
+                      </span>
                     </>
                   )}
                 </button>

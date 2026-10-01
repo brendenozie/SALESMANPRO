@@ -78,6 +78,15 @@ export interface DuplicateCheckResult {
   existingRecordUrl?: string;
 }
 
+export interface DocumentCreditUsage {
+  ocrExtractionCost: number;
+  classificationCost: number;
+  actionPreparationCost: number;
+  totalCredits: number;
+  reservationId?: string;
+  isRefunded?: boolean;
+}
+
 export interface DocumentActionDraft {
   actionType: DocumentActionType;
   title: string;
@@ -87,6 +96,7 @@ export interface DocumentActionDraft {
   duplicateWarning?: DuplicateCheckResult;
   requiresApproval: boolean;
   creditCost: number;
+  creditUsage?: DocumentCreditUsage;
 }
 
 export interface ProcessedDocumentRecord {

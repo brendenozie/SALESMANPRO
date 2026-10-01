@@ -116,6 +116,10 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
         return;
       }
 
+      if (context && typeof data.creditUsage?.balanceRemaining === "number") {
+        context.aiCreditBalance = data.creditUsage.balanceRemaining;
+      }
+
       setReviewModalData({
         extractedData: data.extractedData,
         actionDraft: data.actionDraft,

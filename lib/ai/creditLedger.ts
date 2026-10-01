@@ -387,12 +387,16 @@ export class AICreditLedger {
     companyId: string;
     userId?: string;
     amount: number;
-    description: string;
+    description?: string;
+    reason?: string;
+    reservationId?: string;
     idempotencyKey?: string;
     referenceId?: string;
     metadata?: Record<string, unknown>;
   }): Promise<{ transactionId: string; balanceAfter: number }> {
-    const { companyId, userId, amount, description, idempotencyKey, referenceId, metadata } = params;
+    const { companyId, userId, amount, idempotencyKey, metadata } = params;
+    const description = params.description || params.reason || "Credit refund";
+    const referenceId = params.referenceId || params.reservationId;
 
     if (amount <= 0) {
       const balance = await this.getBalance(companyId);

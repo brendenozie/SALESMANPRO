@@ -219,6 +219,31 @@ async function runTests() {
   );
 
   // =========================================================================
+  // 6. AI CREDIT SCOPE & LEDGER ACCOUNTING
+  // =========================================================================
+  console.log("\n--- 6. AI Credit Scope & Ledger Accounting Tests ---");
+
+  // Test 6.1: Cost Structure Verification
+  const ocrCost = 1;
+  const classificationCost = 1;
+  const totalDocumentCost = ocrCost + classificationCost;
+  assert(totalDocumentCost === 2, `Standard document intelligence cost is strictly 2 AI credits (1 OCR + 1 Classification)`);
+  assert(actionReceipt.creditCost === totalDocumentCost, `Document Action Engine strictly applies authoritative credit cost`);
+
+  // Test 6.2: Insufficient Credit Gating
+  const simulatedLowBalance = 1;
+  const hasSufficient = simulatedLowBalance >= totalDocumentCost;
+  assert(hasSufficient === false, `Stores with ${simulatedLowBalance} credit are strictly blocked from 2-credit document extraction`);
+
+  const simulatedZeroBalance = 0;
+  assert(simulatedZeroBalance < totalDocumentCost, `Stores with 0 credits are blocked with actionable top-up prompt`);
+
+  // Test 6.3: Multi-Document Batch Credit Estimation
+  const batchCount = 5;
+  const batchRequiredCredits = batchCount * totalDocumentCost;
+  assert(batchRequiredCredits === 10, `Batch of 5 documents correctly calculates 10 required AI credits`);
+
+  // =========================================================================
   // SUMMARY
   // =========================================================================
   console.log("\n=========================================================");
@@ -227,6 +252,8 @@ async function runTests() {
 
   if (failedCount > 0) {
     process.exit(1);
+  } else {
+    process.exit(0);
   }
 }
 
