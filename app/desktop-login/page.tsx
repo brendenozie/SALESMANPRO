@@ -12,8 +12,32 @@ export default function DesktopSignIn() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    await signIn("google", { redirect: true, callbackUrl: encodeURIComponent(callbackUrl) });
+    try {
+      const isAuthDomain =
+        typeof window !== "undefined" &&
+        (window.location.hostname === "auth.salesmanpro.site" ||
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1");
+
+      if (!isAuthDomain) {
+        // Guarantee redirect_uri matches Google Cloud Console registered URI
+        const centralOAuthUrl = new URL("https://auth.salesmanpro.site/api/auth/signin/google");
+        centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
+        window.location.href = centralOAuthUrl.toString();
+        return;
+      }
+
+      await signIn("google", { redirect: true, callbackUrl });
+    } catch {
+      setLoading(false);
+    }
   };
+
+  const modernSignInUrl = (() => {
+    const u = new URL("https://auth.salesmanpro.site/signin");
+    u.searchParams.set("callbackUrl", callbackUrl);
+    return u.toString();
+  })();
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center bg-[#050505] overflow-hidden font-sans">
@@ -74,7 +98,7 @@ export default function DesktopSignIn() {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-lg font-medium text-gray-200">System Authentication</h2>
-              <p className="text-sm text-gray-500 mt-1">Please sign in to access your dashboard</p>
+              <p className="text-sm text-gray-500 mt-1">Please sign in to access your authorized workspace</p>
             </div>
 
             <motion.button
@@ -82,7 +106,7 @@ export default function DesktopSignIn() {
               whileTap={{ scale: 0.98 }}
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="group relative w-full flex items-center justify-center space-x-3 bg-white text-black py-4 rounded-2xl font-bold transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50"
+              className="group relative w-full flex items-center justify-center space-x-3 bg-white text-black py-4 rounded-2xl font-bold transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <ArrowPathIcon className="w-5 h-5 animate-spin" />
@@ -98,6 +122,21 @@ export default function DesktopSignIn() {
                 </>
               )}
             </motion.button>
+
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink mx-4 text-gray-500 text-xs uppercase tracking-wider">or</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <div className="text-center">
+              <a
+                href={modernSignInUrl}
+                className="inline-flex items-center justify-center text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Sign in with Email & Password &rarr;
+              </a>
+            </div>
           </div>
 
           {/* Footer Info */}

@@ -48,8 +48,9 @@ export async function getAuthenticatedUser(
   // 3. Fallback to getServerSession
   try {
     const session = await getServerSession(authOptions());
-    if (session?.user?.id) {
-      return session.user as VerifiedUser;
+    const sessionUser = session?.user as (VerifiedUser & { id?: string }) | undefined;
+    if (sessionUser?.id) {
+      return sessionUser as VerifiedUser;
     }
   } catch {
     // Ignore session read error

@@ -16,6 +16,7 @@ const syncPayment_1 = require("@/lib/payments/syncPayment");
 const metaClient_1 = require("../metaClient");
 const repository_1 = require("../repository");
 const crypto_1 = require("@/lib/crypto");
+const notificationService_1 = require("@/lib/notifications/notificationService");
 async function processMpesaCallback(payload) {
     const stk = payload?.Body?.stkCallback;
     if (!stk) {
@@ -118,6 +119,27 @@ async function processMpesaCallback(payload) {
                 }
             }
         }
+        // Dispatches store-wide notification for payment received
+        try {
+            await notificationService_1.NotificationService.publishEvent({
+                title: `💰 Payment Received: ${order.Company?.currency ?? "KES"} ${amount}`,
+                message: `M-Pesa payment of ${order.Company?.currency ?? "KES"} ${amount} received for Order #${order.trackingNumber ?? order.id} (Receipt: ${receipt}).`,
+                eventType: "PAYMENT_COMPLETED",
+                severity: "INFO",
+                companyId: order.companyId,
+                actionUrl: `/admin/orders?orderId=${order.id}`,
+                resourceType: "payment",
+                resourceId: order.id,
+                recipientPolicy: {
+                    type: "STORE_ADMINS",
+                },
+                channels: ["IN_APP", "PUSH_DESKTOP"],
+                idempotencyKey: `payment_${order.id}_completed_${receipt}`,
+            });
+        }
+        catch (notifErr) {
+            console.warn("[mpesaCallbackHandler] Notification warning:", notifErr);
+        }
         console.log(`[MPESA_PAYMENT_SUCCESS] Order #${order.trackingNumber ?? order.id} marked as PAID. Receipt: ${receipt}`);
         return { success: true, message: "Payment completed successfully", orderId: order.id };
     }
@@ -132,6 +154,27 @@ async function processMpesaCallback(payload) {
                 : `[M-Pesa Failed]: ${ResultDesc}`,
         },
     });
+    // Dispatches store-wide notification for failed payment
+    try {
+        await notificationService_1.NotificationService.publishEvent({
+            title: `❌ Payment Failed: Order #${order.trackingNumber ?? order.id}`,
+            message: `M-Pesa payment failed for Order #${order.trackingNumber ?? order.id}: ${ResultDesc || "Transaction cancelled"}.`,
+            eventType: "PAYMENT_FAILED",
+            severity: "WARNING",
+            companyId: order.companyId,
+            actionUrl: `/admin/orders?orderId=${order.id}`,
+            resourceType: "payment",
+            resourceId: order.id,
+            recipientPolicy: {
+                type: "STORE_ADMINS",
+            },
+            channels: ["IN_APP"],
+            idempotencyKey: `payment_${order.id}_failed_${ResultDesc || "error"}`,
+        });
+    }
+    catch (notifErr) {
+        console.warn("[mpesaCallbackHandler] Failure notification warning:", notifErr);
+    }
     console.warn(`[MPESA_PAYMENT_FAILED] Order #${order.trackingNumber ?? order.id}: ${ResultDesc}`);
     return { success: true, message: `Payment failed: ${ResultDesc}`, orderId: order.id };
 }

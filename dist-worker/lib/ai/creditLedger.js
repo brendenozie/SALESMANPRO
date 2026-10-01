@@ -108,10 +108,14 @@ class AICreditLedger {
      * Prevents concurrent race conditions or overages.
      */
     async reserveCredits(params) {
-        const { companyId, userId, amount, description, idempotencyKey, referenceId, metadata } = params;
+        const { companyId, userId, amount, description, idempotencyKey, referenceId } = params;
+        const metadata = {
+            ...(params.metadata || {}),
+            ...(params.capability ? { capability: params.capability } : {}),
+        };
         if (amount <= 0) {
             const balance = await this.getBalance(companyId);
-            return { transactionId: "zero_cost", balanceAfter: balance };
+            return { transactionId: "zero_cost", reservationId: "zero_cost", balanceAfter: balance };
         }
         // Check idempotency first if key is provided
         if (idempotencyKey) {
@@ -121,6 +125,7 @@ class AICreditLedger {
             if (existingTx) {
                 return {
                     transactionId: existingTx.id,
+                    reservationId: existingTx.id,
                     balanceAfter: existingTx.balanceAfter ?? (await this.getBalance(companyId)),
                 };
             }
@@ -161,6 +166,7 @@ class AICreditLedger {
             });
             return {
                 transactionId: transaction.id,
+                reservationId: transaction.id,
                 balanceAfter: updatedCompany.aiCreditBalance,
             };
         }, TRANSACTION_OPTIONS);
@@ -197,7 +203,8 @@ class AICreditLedger {
      * If actual consumption is higher, deducts additional amount.
      */
     async finalizeCharge(params) {
-        const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, referenceId, usageData } = params;
+        const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, usageData } = params;
+        const referenceId = params.referenceId || params.reservationId;
         if (idempotencyKey) {
             const existingUsage = await prismadb_1.default.aIUsage.findFirst({
                 where: { companyId, idempotencyKey },
@@ -300,7 +307,9 @@ class AICreditLedger {
      * Refunds reserved credits when generation fails or is cancelled.
      */
     async refundCredits(params) {
-        const { companyId, userId, amount, description, idempotencyKey, referenceId, metadata } = params;
+        const { companyId, userId, amount, idempotencyKey, metadata } = params;
+        const description = params.description || params.reason || "Credit refund";
+        const referenceId = params.referenceId || params.reservationId;
         if (amount <= 0) {
             const balance = await this.getBalance(companyId);
             return { transactionId: "zero_refund", balanceAfter: balance };

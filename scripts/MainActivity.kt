@@ -32,7 +32,8 @@ import site.salesmanpro.android.data.models.AppSession
 import site.salesmanpro.android.data.preferences.SessionManager
 import site.salesmanpro.android.hardware.UnifiedPrinterManager
 import site.salesmanpro.android.hardware.bluetooth.BluetoothPrinterService
-import site.salesmanpro.android.ui.screens.BluetoothScannerScreen
+import site.salesmanpro.android.ui.components.BluetoothScannerDialog
+import site.salesmanpro.android.data.models.BluetoothDeviceItem
 import site.salesmanpro.android.ui.screens.LoginScreen
 import site.salesmanpro.android.ui.screens.MainWebViewScreen
 import site.salesmanpro.android.ui.viewmodels.BluetoothViewModel
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleIntent(intent)
 
         val sessionManager = SessionManager(this)
         val apiService = ApiService()
@@ -63,13 +65,45 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val coroutineScope = rememberCoroutineScope()
 
+            // Handle incoming deep link from Google OAuth or central handover
+            LaunchedEffect(deepLinkUri) {
+                val uri = deepLinkUri ?: return@LaunchedEffect
+                if (uri.scheme == "salesmanpro" && uri.host == "callback") {
+                    val token = uri.getQueryParameter("token")
+                    val destination = uri.getQueryParameter("destination")
+                    if (!token.isNullOrEmpty()) {
+                        isCheckingSession = true
+                        val exchangeResult = apiService.exchangeHandoverToken(token)
+                        exchangeResult.onSuccess { session ->
+                            val finalSession = if (!destination.isNullOrEmpty()) {
+                                session.copy(destination = destination)
+                            } else {
+                                session
+                            }
+                            sessionManager.saveSession(finalSession)
+                            currentSession = finalSession
+                            Toast.makeText(context, "Welcome, ${finalSession.user.name}", Toast.LENGTH_SHORT).show()
+                        }.onFailure { err ->
+                            Toast.makeText(context, "Sign-in failed: ${err.message}", Toast.LENGTH_LONG).show()
+                        }
+                        isCheckingSession = false
+                        deepLinkUri = null
+                    }
+                }
+            }
+
             // Validate existing session on launch
             LaunchedEffect(Unit) {
                 currentSession?.let { session ->
                     val result = apiService.validateSession(session.token, session.company.id, session.activeStoreId)
                     result.onSuccess { refreshed ->
-                        sessionManager.saveSession(refreshed)
-                        currentSession = refreshed
+                        val merged = if (session.destination != null && refreshed.destination == null) {
+                            refreshed.copy(destination = session.destination)
+                        } else {
+                            refreshed
+                        }
+                        sessionManager.saveSession(merged)
+                        currentSession = merged
                     }.onFailure {
                         // Session expired
                         sessionManager.clearSession()
@@ -122,17 +156,32 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             } else {
-                // Authenticated Session -> Load POS WebView
+                // Authenticated Session -> Load Role-Specific Authorized Workspace
                 val session = currentSession!!
                 val slug = session.company.slug?.ifEmpty { "admin" } ?: "admin"
                 val storeId = session.activeStoreId
                 val deviceId = session.device.deviceId
 
-                val posUrl = "https://salesmanpro.site/admin/$slug/storepos?token=${session.token}&storeId=$storeId&deviceId=$deviceId&platform=ANDROID"
+                val roleDestination = session.destination?.ifEmpty { null }
+                val targetPath = if (!roleDestination.isNullOrEmpty()) {
+                    roleDestination
+                } else if (session.user.role == "STAFF" || session.user.role == "CASHIER") {
+                    "/admin/$slug/storepos?storeId=$storeId&deviceId=$deviceId"
+                } else if (session.user.role == "SUPER_ADMIN") {
+                    "/super-admin"
+                } else if (session.user.role == "AGENT") {
+                    "/agents"
+                } else {
+                    "/admin/$slug"
+                }
+
+                val fullUrl = if (targetPath.startsWith("http")) targetPath else "https://salesmanpro.site$targetPath"
+                val separator = if (fullUrl.contains("?")) "&" else "?"
+                val finalWebUrl = "$fullUrl${separator}token=${session.token}&platform=ANDROID"
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     MainWebViewScreen(
-                        url = posUrl,
+                        url = finalWebUrl,
                         webInterface = webAppInterface,
                         onPickFiles = { mimeTypes, callback ->
                             filePickerCallback = callback
@@ -158,13 +207,13 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Column {
                                 Text(
-                                    text = "${session.company.name} • ${session.activeStore?.name ?: "Main Store"}",
+                                    text = "${session.company.name} • ${session.user.name}",
                                     color = Color.White,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "${session.user.name} (${session.user.role})",
+                                    text = "${session.activeStore?.name ?: "All Stores"} (${session.user.role})",
                                     color = Color(0xFF94A3B8),
                                     fontSize = 10.sp
                                 )
@@ -212,9 +261,9 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (showScanner) {
-                        BluetoothScannerScreen(
+                        BluetoothScannerDialog(
                             devices = bluetoothViewModel.pairedDevices,
-                            onDeviceSelected = { device ->
+                            onDeviceSelected = { device: BluetoothDeviceItem ->
                                 sessionManager.savePrinterMac(device.address)
                                 sessionManager.savePrinterType("BLUETOOTH")
                                 showScanner = false
@@ -238,7 +287,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_VIEW) {
+        if (intent?.action == Intent.ACTION_VIEW && intent.data != null) {
             deepLinkUri = intent.data
         }
     }

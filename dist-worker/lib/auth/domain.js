@@ -106,8 +106,11 @@ function parseAbsoluteUrl(value) {
             }
         }
         const url = new URL(decoded);
-        if (url.protocol !== "https:" && url.protocol !== "http:")
+        if (url.protocol !== "https:" &&
+            url.protocol !== "http:" &&
+            !(url.protocol === "salesmanpro:" && url.hostname === "callback")) {
             return null;
+        }
         if (url.username || url.password)
             return null;
         return url;

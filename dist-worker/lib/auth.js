@@ -144,10 +144,16 @@ async function findUserByLoginCode(loginCode) {
         return { user: consumer.user, role: consumer.user.role || "USER" };
     const salesAgent = await prismadb_1.default.salesAgent.findUnique({
         where: { loginCode },
-        include: { user: true },
+        include: { user: true, company: true },
     });
-    if (salesAgent)
-        return { user: salesAgent.user, role: "AGENT" };
+    if (salesAgent && salesAgent.user && salesAgent.isActive) {
+        return {
+            user: salesAgent.user,
+            role: "AGENT",
+            companyId: salesAgent.companyId,
+            companySlug: salesAgent.company?.slug,
+        };
+    }
     const driver = await prismadb_1.default.transportDriver.findUnique({
         where: { loginCode },
         include: { user: true },
@@ -162,10 +168,15 @@ async function findUserByLoginCode(loginCode) {
         return { user: parent.user, role: "PARENT" };
     const staff = await prismadb_1.default.staffProfile.findUnique({
         where: { loginCode },
-        include: { user: true },
+        include: { user: true, company: true },
     });
     if (staff && staff.user && staff.employmentStatus === "ACTIVE") {
-        return { user: staff.user, role: staff.user.role || "STAFF" };
+        return {
+            user: staff.user,
+            role: staff.posRole || staff.user.role || "STAFF",
+            companyId: staff.companyId,
+            companySlug: staff.company?.slug,
+        };
     }
     return null;
 }
@@ -333,9 +344,11 @@ const createAuthOptions = (ctx = {}) => {
                     const user = loginCodeResult.user;
                     if (user.isActive === false)
                         return null;
-                    const hasTenantAccess = await resolveHasTenantAccess(user.id, loginCodeResult.role || user.role, user.companyId);
+                    const effectiveCompanyId = loginCodeResult.companyId || user.companyId;
+                    const hasTenantAccess = await resolveHasTenantAccess(user.id, loginCodeResult.role || user.role, effectiveCompanyId);
                     return sessionUserFromDb({
                         ...user,
+                        companyId: effectiveCompanyId,
                         role: loginCodeResult.role || user.role,
                         hasTenantAccess,
                     });
@@ -516,20 +529,42 @@ const createAuthOptions = (ctx = {}) => {
                                 companyId = dbUser.companyId ?? companyId;
                             }
                             if (!companyId && user.id) {
-                                const educatorRec = await prismadb_1.default.educator.findUnique({
+                                const staffRec = await prismadb_1.default.staffProfile.findFirst({
                                     where: { userId: user.id },
-                                    select: { companyId: true },
+                                    select: { companyId: true, posRole: true },
                                 });
-                                if (educatorRec?.companyId) {
-                                    companyId = educatorRec.companyId;
+                                if (staffRec?.companyId) {
+                                    companyId = staffRec.companyId;
+                                    if (staffRec.posRole && role === "USER")
+                                        role = staffRec.posRole;
                                 }
                                 else {
-                                    const studentRec = await prismadb_1.default.student.findUnique({
+                                    const salesAgentRec = await prismadb_1.default.salesAgent.findFirst({
                                         where: { userId: user.id },
                                         select: { companyId: true },
                                     });
-                                    if (studentRec?.companyId) {
-                                        companyId = studentRec.companyId;
+                                    if (salesAgentRec?.companyId) {
+                                        companyId = salesAgentRec.companyId;
+                                        if (role === "USER")
+                                            role = "AGENT";
+                                    }
+                                    else {
+                                        const educatorRec = await prismadb_1.default.educator.findUnique({
+                                            where: { userId: user.id },
+                                            select: { companyId: true },
+                                        });
+                                        if (educatorRec?.companyId) {
+                                            companyId = educatorRec.companyId;
+                                        }
+                                        else {
+                                            const studentRec = await prismadb_1.default.student.findUnique({
+                                                where: { userId: user.id },
+                                                select: { companyId: true },
+                                            });
+                                            if (studentRec?.companyId) {
+                                                companyId = studentRec.companyId;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -537,6 +572,18 @@ const createAuthOptions = (ctx = {}) => {
                     }
                     const hasTenantAccess = u.hasTenantAccess ??
                         (await resolveHasTenantAccess(user.id, role, companyId));
+                    let companySlug = u.companySlug;
+                    if (!companySlug && companyId) {
+                        try {
+                            const comp = await prismadb_1.default.company.findUnique({
+                                where: { id: companyId },
+                                select: { slug: true },
+                            });
+                            if (comp)
+                                companySlug = comp.slug;
+                        }
+                        catch { }
+                    }
                     Object.assign(token, {
                         id: user.id,
                         name: user.name,
@@ -550,6 +597,7 @@ const createAuthOptions = (ctx = {}) => {
                         emailVerified,
                         isActive: isActive !== false,
                         companyId,
+                        companySlug,
                         hasTenantAccess,
                     });
                     (0, telemetry_1.authLog)(cId, "jwt_callback_duration", Date.now() - jwtStart, { userId: user.id, role });
@@ -570,22 +618,55 @@ const createAuthOptions = (ctx = {}) => {
                         token.isActive = dbUser.isActive;
                         token.companyId = dbUser.companyId;
                         if (!token.companyId && token.id) {
-                            const educatorRec = await prismadb_1.default.educator.findUnique({
+                            const staffRec = await prismadb_1.default.staffProfile.findFirst({
                                 where: { userId: String(token.id) },
-                                select: { companyId: true },
+                                select: { companyId: true, posRole: true },
                             });
-                            if (educatorRec?.companyId) {
-                                token.companyId = educatorRec.companyId;
+                            if (staffRec?.companyId) {
+                                token.companyId = staffRec.companyId;
+                                if (staffRec.posRole && token.role === "USER")
+                                    token.role = staffRec.posRole;
                             }
                             else {
-                                const studentRec = await prismadb_1.default.student.findUnique({
+                                const salesAgentRec = await prismadb_1.default.salesAgent.findFirst({
                                     where: { userId: String(token.id) },
                                     select: { companyId: true },
                                 });
-                                if (studentRec?.companyId) {
-                                    token.companyId = studentRec.companyId;
+                                if (salesAgentRec?.companyId) {
+                                    token.companyId = salesAgentRec.companyId;
+                                    if (token.role === "USER")
+                                        token.role = "AGENT";
+                                }
+                                else {
+                                    const educatorRec = await prismadb_1.default.educator.findUnique({
+                                        where: { userId: String(token.id) },
+                                        select: { companyId: true },
+                                    });
+                                    if (educatorRec?.companyId) {
+                                        token.companyId = educatorRec.companyId;
+                                    }
+                                    else {
+                                        const studentRec = await prismadb_1.default.student.findUnique({
+                                            where: { userId: String(token.id) },
+                                            select: { companyId: true },
+                                        });
+                                        if (studentRec?.companyId) {
+                                            token.companyId = studentRec.companyId;
+                                        }
+                                    }
                                 }
                             }
+                        }
+                        if (!token.companySlug && token.companyId) {
+                            try {
+                                const comp = await prismadb_1.default.company.findUnique({
+                                    where: { id: String(token.companyId) },
+                                    select: { slug: true },
+                                });
+                                if (comp)
+                                    token.companySlug = comp.slug;
+                            }
+                            catch { }
                         }
                         token.hasTenantAccess = await resolveHasTenantAccess(String(token.id), dbUser.role, token.companyId || dbUser.companyId);
                     }
@@ -612,6 +693,7 @@ const createAuthOptions = (ctx = {}) => {
                         emailVerified: token.emailVerified,
                         isActive: token.isActive,
                         companyId: token.companyId,
+                        companySlug: token.companySlug,
                         hasTenantAccess: token.hasTenantAccess,
                     });
                 }

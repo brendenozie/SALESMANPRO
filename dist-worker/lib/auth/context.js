@@ -46,6 +46,15 @@ async function resolveReturnContext(callbackUrl) {
             }
         }
     }
+    if (url.protocol === "salesmanpro:" && url.hostname === "callback") {
+        return {
+            kind: "hub",
+            returnHost: "site.salesmanpro.android",
+            returnUrl: url.toString(),
+            tenantSlug: null,
+            issuedAt: Date.now(),
+        };
+    }
     const host = (0, domain_1.normalizeHost)(url.hostname);
     if (!host)
         return null;
@@ -98,6 +107,9 @@ async function isAllowedReturnUrl(raw) {
     const url = (0, domain_1.parseAbsoluteUrl)(raw);
     if (!url)
         return false;
+    if (url.protocol === "salesmanpro:" && url.hostname === "callback") {
+        return true;
+    }
     if (process.env.NODE_ENV === "production" && url.protocol !== "https:") {
         if ((0, domain_1.normalizeHost)(url.hostname) !== "localhost" && (0, domain_1.normalizeHost)(url.hostname) !== "127.0.0.1") {
             return false;

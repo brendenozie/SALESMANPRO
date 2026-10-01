@@ -107,7 +107,13 @@ export function parseAbsoluteUrl(value: string | null | undefined): URL | null {
       }
     }
     const url = new URL(decoded);
-    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (
+      url.protocol !== "https:" &&
+      url.protocol !== "http:" &&
+      !(url.protocol === "salesmanpro:" && url.hostname === "callback")
+    ) {
+      return null;
+    }
     if (url.username || url.password) return null;
     return url;
   } catch {

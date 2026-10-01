@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Web.WebView2.Core;
 using SalesmanProDesktop.Models;
 using SalesmanProDesktop.Services;
@@ -20,7 +23,8 @@ namespace SalesmanProDesktop.Views
         private readonly PrintManager _printManager;
         private readonly PrinterDiscoveryService _discoveryService;
 
-        private PrinterConnection? _selectedHardwarePrinter;
+        private PrinterConnection? _selectedConfigPrinter;
+        private bool _isStaffPinTab = false;
 
         public MainWindow()
         {
@@ -40,13 +44,14 @@ namespace SalesmanProDesktop.Views
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            UpdatePrinterStatusBadge();
             await InitializeWebViewAsync();
 
-            // Try restoring existing secure session
             var restored = _authService.RestorePersistedSession();
             if (restored != null)
             {
                 ApplySessionUi(restored);
+                SplashStatusText.Text = "Validating session...";
                 var valid = await _authService.ValidateCurrentSessionAsync();
                 if (valid)
                 {
@@ -63,22 +68,22 @@ namespace SalesmanProDesktop.Views
             }
         }
 
-        private async System.Threading.Tasks.Task InitializeWebViewAsync()
+        private async Task InitializeWebViewAsync()
         {
             try
             {
                 var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SalesmanPro", "WebView2");
                 var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
-                await WebBrowser.EnsureCoreWebView2Async(env);
+                await webView.EnsureCoreWebView2Async(env);
 
-                WebBrowser.CoreWebView2.Settings.IsStatusBarEnabled = false;
-                WebBrowser.CoreWebView2.Settings.AreDevToolsEnabled = true;
+                webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
+                webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
 
-                WebBrowser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+                webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to initialize WebView2: {ex.Message}", "WebView2 Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                SplashStatusText.Text = $"WebView2 Error: {ex.Message}";
             }
         }
 
@@ -100,22 +105,52 @@ namespace SalesmanProDesktop.Views
         private void ApplySessionUi(AppSession session)
         {
             LoginOverlay.Visibility = Visibility.Collapsed;
-            UserBadge.Text = session.User.Name;
-            CompanyBadge.Text = session.Company.Name;
-            RoleBadge.Text = session.User.Role.ToUpper();
+            SplashSection.Visibility = Visibility.Collapsed;
 
-            StoreSelector.ItemsSource = session.Stores;
-            StoreSelector.SelectedValue = session.ActiveStoreId;
-            if (StoreSelector.SelectedItem == null && session.Stores.Count > 0)
+            var store = session.ActiveStore;
+            StoreContextText.Text = store != null ? $"{session.Company.Name} • {store.Name}" : session.Company.Name;
+            StoreContextBadge.Visibility = Visibility.Visible;
+
+            UserNameText.Text = $"{session.User.Name} ({session.User.Role})";
+            UserContextPanel.Visibility = Visibility.Visible;
+
+            if (StoreSelectorCombo != null)
             {
-                StoreSelector.SelectedIndex = 0;
+                StoreSelectorCombo.ItemsSource = session.Stores;
+                StoreSelectorCombo.SelectedValuePath = "Id";
+                StoreSelectorCombo.DisplayMemberPath = "Name";
+                StoreSelectorCombo.SelectedValue = session.ActiveStoreId;
+                if (StoreSelectorCombo.SelectedItem == null && session.Stores.Count > 0)
+                {
+                    StoreSelectorCombo.SelectedIndex = 0;
+                }
             }
+
+            UpdatePrinterStatusBadge();
         }
 
         private void ShowLoginOverlay()
         {
+            SplashSection.Visibility = Visibility.Collapsed;
             LoginOverlay.Visibility = Visibility.Visible;
-            LoginErrorText.Visibility = Visibility.Collapsed;
+            LoginErrorBanner.Visibility = Visibility.Collapsed;
+            StoreContextBadge.Visibility = Visibility.Collapsed;
+            UserContextPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdatePrinterStatusBadge()
+        {
+            var p = _profileService.ResolvePrinter("RECEIPT", _authService.CurrentSession?.ActiveStoreId, _authService.CurrentSession?.Device.DeviceId);
+            if (p != null && p.IsConfigured)
+            {
+                PrinterStatusText.Text = p.Name;
+                PrinterDot.Fill = new SolidColorBrush(Color.FromRgb(16, 185, 129));
+            }
+            else
+            {
+                PrinterStatusText.Text = "No Printer";
+                PrinterDot.Fill = new SolidColorBrush(Color.FromRgb(239, 68, 68));
+            }
         }
 
         private void LoadStorePosInWebView()
@@ -123,12 +158,32 @@ namespace SalesmanProDesktop.Views
             var session = _authService.CurrentSession;
             if (session == null || string.IsNullOrEmpty(session.Token)) return;
 
-            var companySlug = session.Company.Slug ?? "admin";
-            var url = $"{_authService.BaseUrl}/admin/{companySlug}/storepos?token={session.Token}&storeId={session.ActiveStoreId}&deviceId={session.Device.DeviceId}&platform=WPF";
+            var companySlug = session.Company?.Slug ?? "admin";
+            string path;
+            var role = session.User?.Role?.ToUpperInvariant() ?? "STAFF";
 
-            if (WebBrowser.CoreWebView2 != null)
+            if (role == "SUPER_ADMIN")
             {
-                WebBrowser.CoreWebView2.Navigate(url);
+                path = $"/super-admin?token={session.Token}&platform=WPF";
+            }
+            else if (role == "AGENT")
+            {
+                path = $"/agents?token={session.Token}&platform=WPF";
+            }
+            else if (role == "STAFF" || role == "CASHIER")
+            {
+                path = $"/admin/{companySlug}/storepos?token={session.Token}&storeId={session.ActiveStoreId}&deviceId={session.Device.DeviceId}&platform=WPF";
+            }
+            else
+            {
+                path = $"/admin/{companySlug}?token={session.Token}&platform=WPF";
+            }
+
+            var url = $"{_authService.BaseUrl}{path}";
+
+            if (webView.CoreWebView2 != null)
+            {
+                webView.CoreWebView2.Navigate(url);
             }
         }
 
@@ -149,15 +204,12 @@ namespace SalesmanProDesktop.Views
                     if (root.TryGetProperty("payload", out var pElem))
                     {
                         var rawPayload = pElem.GetRawText();
-
-                        // Check if normalized v1
                         if (pElem.TryGetProperty("protocolVersion", out var pv) && pv.GetInt32() == 1)
                         {
                             payload = JsonSerializer.Deserialize<NormalizedPrintPayload>(rawPayload);
                         }
                         else
                         {
-                            // Legacy fallback
                             var legacyOrder = JsonSerializer.Deserialize<OrderData>(rawPayload);
                             if (legacyOrder != null)
                             {
@@ -168,7 +220,6 @@ namespace SalesmanProDesktop.Views
 
                     if (payload != null)
                     {
-                        // Fill device & store context from desktop session
                         if (_authService.CurrentSession != null)
                         {
                             if (string.IsNullOrEmpty(payload.StoreId)) payload.StoreId = _authService.CurrentSession.ActiveStoreId;
@@ -177,66 +228,99 @@ namespace SalesmanProDesktop.Views
                         }
 
                         var result = await _printManager.ProcessPrintJobAsync(payload);
-
-                        if (!result.Success)
+                        if (!result.Success && !result.IsDuplicate)
                         {
                             MessageBox.Show($"Print failed: {result.ErrorMessage}", "Printer Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
                     }
                 }
-                else if (msgType == "SHOW_NOTIFICATION" || msgType == "NOTIFICATION_RECEIVED")
-                {
-                    if (root.TryGetProperty("payload", out var notifElem))
-                    {
-                        var title = notifElem.TryGetProperty("title", out var titleProp) ? titleProp.GetString() : "SalesmanPro Alert";
-                        var message = notifElem.TryGetProperty("message", out var msgProp) ? msgProp.GetString() : "";
-                        var severity = notifElem.TryGetProperty("severity", out var sevProp) ? sevProp.GetString() : "INFO";
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            // Play subtle system alert chime
-                            System.Media.SystemSounds.Asterisk.Play();
-                            if (severity == "CRITICAL")
-                            {
-                                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-                            }
-                        });
-                    }
-                }
-                else if (msgType == "REGISTER_DEVICE")
-                {
-                    if (_authService.CurrentSession != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Desktop Device Active: {_authService.CurrentSession.Device.DeviceId}");
-                    }
-                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Error parsing web message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Error: {ex.Message}");
             }
         }
 
-        private async void BtnLogin_Click(object sender, RoutedEventArgs e)
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            LoginErrorText.Visibility = Visibility.Collapsed;
-            var email = TxtEmail.Text.Trim();
-            var password = TxtPassword.Password;
-
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
-                LoginErrorText.Text = "Please enter both email and password.";
-                LoginErrorText.Visibility = Visibility.Visible;
-                return;
+                DragMove();
+            }
+        }
+
+        private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+        private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void Retry_Click(object sender, RoutedEventArgs e)
+        {
+            OfflineSection.Visibility = Visibility.Collapsed;
+            SplashSection.Visibility = Visibility.Visible;
+            MainWindow_Loaded(this, e);
+        }
+
+        private void TabCredentials_Click(object sender, RoutedEventArgs e)
+        {
+            _isStaffPinTab = false;
+            CredentialsForm.Visibility = Visibility.Visible;
+            StaffPinForm.Visibility = Visibility.Collapsed;
+            TabCredentialsBtn.Opacity = 1.0;
+            TabPinBtn.Opacity = 0.5;
+        }
+
+        private void TabPin_Click(object sender, RoutedEventArgs e)
+        {
+            _isStaffPinTab = true;
+            CredentialsForm.Visibility = Visibility.Collapsed;
+            StaffPinForm.Visibility = Visibility.Visible;
+            TabCredentialsBtn.Opacity = 0.5;
+            TabPinBtn.Opacity = 1.0;
+        }
+
+        private async void LoginSubmit_Click(object sender, RoutedEventArgs e)
+        {
+            LoginErrorBanner.Visibility = Visibility.Collapsed;
+            LoginSubmitBtn.IsEnabled = false;
+            LoginLoadingBar.Visibility = Visibility.Visible;
+
+            bool success;
+            string message;
+            AppSession? session;
+
+            if (!_isStaffPinTab)
+            {
+                var email = LoginEmailInput.Text.Trim();
+                var password = LoginPasswordInput.Password;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                {
+                    LoginErrorText.Text = "Please enter both email and password.";
+                    LoginErrorBanner.Visibility = Visibility.Visible;
+                    LoginSubmitBtn.IsEnabled = true;
+                    LoginLoadingBar.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                (success, message, session) = await _authService.LoginAsync(email, password);
+            }
+            else
+            {
+                var pin = LoginStaffPinInput.Password.Trim();
+                if (string.IsNullOrEmpty(pin))
+                {
+                    LoginErrorText.Text = "Please enter your Staff POS PIN code.";
+                    LoginErrorBanner.Visibility = Visibility.Visible;
+                    LoginSubmitBtn.IsEnabled = true;
+                    LoginLoadingBar.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                (success, message, session) = await _authService.StaffLoginAsync(pin);
             }
 
-            BtnLogin.IsEnabled = false;
-            BtnLogin.Content = "Signing In...";
-
-            var (success, message, session) = await _authService.LoginAsync(email, password);
-
-            BtnLogin.IsEnabled = true;
-            BtnLogin.Content = "Sign In with Credentials";
+            LoginSubmitBtn.IsEnabled = true;
+            LoginLoadingBar.Visibility = Visibility.Collapsed;
 
             if (success && session != null)
             {
@@ -245,133 +329,93 @@ namespace SalesmanProDesktop.Views
             else
             {
                 LoginErrorText.Text = message;
-                LoginErrorText.Visibility = Visibility.Visible;
+                LoginErrorBanner.Visibility = Visibility.Visible;
             }
         }
 
-        private async void BtnStaffLogin_Click(object sender, RoutedEventArgs e)
+        private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            LoginErrorText.Visibility = Visibility.Collapsed;
-            var pin = TxtStaffCode.Password.Trim();
-
-            if (string.IsNullOrEmpty(pin))
+            var res = MessageBox.Show("Are you sure you want to sign out?", "Confirm Sign Out", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (res == MessageBoxResult.Yes)
             {
-                LoginErrorText.Text = "Please enter your Staff POS Code / PIN.";
-                LoginErrorText.Visibility = Visibility.Visible;
-                return;
-            }
-
-            BtnStaffLogin.IsEnabled = false;
-            BtnStaffLogin.Content = "Verifying PIN...";
-
-            var (success, message, session) = await _authService.StaffLoginAsync(pin);
-
-            BtnStaffLogin.IsEnabled = true;
-            BtnStaffLogin.Content = "Sign In with Staff PIN";
-
-            if (success && session != null)
-            {
-                LoadStorePosInWebView();
-            }
-            else
-            {
-                LoginErrorText.Text = message;
-                LoginErrorText.Visibility = Visibility.Visible;
+                _authService.Logout();
             }
         }
 
-        private void StoreSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            if (StoreSelector.SelectedValue is string storeId && !string.IsNullOrEmpty(storeId))
-            {
-                _authService.SetActiveStore(storeId);
-                LoadStorePosInWebView();
-            }
+            RefreshPrintersList();
+            SettingsOverlay.Visibility = Visibility.Visible;
         }
 
-        private void BtnHardware_Click(object sender, RoutedEventArgs e)
+        private void CloseSettings_Click(object sender, RoutedEventArgs e)
         {
-            LoadHardwareProfiles();
-            HardwareModal.Visibility = Visibility.Visible;
+            SettingsOverlay.Visibility = Visibility.Collapsed;
+            UpdatePrinterStatusBadge();
         }
 
-        private void BtnCloseHardware_Click(object sender, RoutedEventArgs e)
-        {
-            HardwareModal.Visibility = Visibility.Collapsed;
-        }
-
-        private void LoadHardwareProfiles()
+        private void RefreshPrintersList()
         {
             var profiles = _profileService.GetAllProfiles();
-            ListPrinters.ItemsSource = null;
-            ListPrinters.ItemsSource = profiles;
+            ConfiguredPrintersList.ItemsSource = null;
+            ConfiguredPrintersList.ItemsSource = profiles;
 
-            if (profiles.Count > 0 && ListPrinters.SelectedItem == null)
+            if (profiles.Count > 0 && ConfiguredPrintersList.SelectedItem == null)
             {
-                ListPrinters.SelectedIndex = 0;
+                ConfiguredPrintersList.SelectedIndex = 0;
             }
         }
 
-        private void ListPrinters_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ConfiguredPrintersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ListPrinters.SelectedItem is PrinterConnection p)
+            if (ConfiguredPrintersList.SelectedItem is PrinterConnection p)
             {
-                _selectedHardwarePrinter = p;
-                TxtPrinterName.Text = p.Name;
-                ComboConnType.SelectedIndex = (int)p.Type;
-                TxtPrinterAddress.Text = p.Address;
-                TxtPrinterPort.Text = p.Port.ToString();
-                ComboWidth.SelectedIndex = p.PaperWidth == "58mm" ? 0 : (p.PaperWidth == "A4" ? 2 : 1);
-                ComboPurpose.SelectedIndex = p.Purpose == "INVOICE" ? 1 : (p.Purpose == "KITCHEN" ? 2 : (p.Purpose == "BAR" ? 3 : 0));
-                ChkIsDefault.IsChecked = p.IsDefault;
+                _selectedConfigPrinter = p;
+                PrinterIdentifierInput.Text = p.Address;
+                PrinterTypeCombo.SelectedIndex = (int)p.Type;
+                PaperWidthCombo.SelectedIndex = p.PaperWidth == "58mm" ? 0 : (p.PaperWidth == "A4" ? 2 : 1);
+                PrinterPurposeCombo.SelectedIndex = p.Purpose == "INVOICE" ? 1 : (p.Purpose == "KITCHEN" ? 2 : (p.Purpose == "BAR" ? 3 : 0));
             }
         }
 
-        private void BtnSavePrinter_Click(object sender, RoutedEventArgs e)
+        private void ScanPrinters_Click(object sender, RoutedEventArgs e)
         {
-            var p = _selectedHardwarePrinter ?? new PrinterConnection();
-            p.Name = TxtPrinterName.Text.Trim();
-            p.Type = (ConnectionType)ComboConnType.SelectedIndex;
-            p.Address = TxtPrinterAddress.Text.Trim();
-            if (int.TryParse(TxtPrinterPort.Text.Trim(), out var port)) p.Port = port;
+            var winPrinters = _discoveryService.GetInstalledWindowsPrinters();
+            var serialPrinters = _discoveryService.GetSerialPorts();
 
-            p.PaperWidth = (ComboWidth.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "80mm";
-            p.Purpose = (ComboPurpose.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "RECEIPT";
-            p.IsDefault = ChkIsDefault.IsChecked == true;
+            var all = new List<PrinterConnection>();
+            all.AddRange(winPrinters);
+            all.AddRange(serialPrinters);
 
-            if (_authService.CurrentSession != null)
+            FoundPrintersList.ItemsSource = all;
+            if (all.Count > 0)
             {
-                p.StoreId = _authService.CurrentSession.ActiveStoreId;
-                p.DeviceId = _authService.CurrentSession.Device.DeviceId;
-            }
-
-            _profileService.SaveProfile(p);
-            LoadHardwareProfiles();
-            MessageBox.Show("Printer settings saved successfully.", "Hardware Settings", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void BtnDeletePrinter_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedHardwarePrinter != null)
-            {
-                _profileService.DeleteProfile(_selectedHardwarePrinter.Id);
-                _selectedHardwarePrinter = null;
-                LoadHardwareProfiles();
+                FoundPrintersList.SelectedIndex = 0;
             }
         }
 
-        private async void BtnTestPrint_Click(object sender, RoutedEventArgs e)
+        private void FoundPrintersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_selectedHardwarePrinter == null)
+            if (FoundPrintersList.SelectedItem is PrinterConnection p)
             {
-                MessageBox.Show("Please select or save a printer configuration first.", "Test Print", MessageBoxButton.OK, MessageBoxImage.Warning);
+                PrinterIdentifierInput.Text = p.Address;
+                PrinterTypeCombo.SelectedIndex = (int)p.Type;
+            }
+        }
+
+        private async void TestPrinter_Click(object sender, RoutedEventArgs e)
+        {
+            var p = _selectedConfigPrinter ?? CreateFromInputs();
+            if (p == null || string.IsNullOrEmpty(p.Address))
+            {
+                MessageBox.Show("Please select or enter printer details.", "Test Printer", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var storeName = _authService.CurrentSession?.ActiveStore?.Name ?? "Main Branch";
-            var deviceName = _authService.CurrentSession?.Device?.DeviceName ?? Environment.MachineName;
+            var deviceName = _authService.CurrentSession?.Device.DeviceName ?? Environment.MachineName;
 
-            var (success, error) = await _printerService.PrintTestSlipAsync(_selectedHardwarePrinter, storeName, deviceName);
+            var (success, error) = await _printerService.PrintTestSlipAsync(p, storeName, deviceName);
             if (success)
             {
                 MessageBox.Show("Test slip printed successfully!", "Test Print OK", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -382,49 +426,60 @@ namespace SalesmanProDesktop.Views
             }
         }
 
-        private void BtnScanPrinters_Click(object sender, RoutedEventArgs e)
+        private void SetDefaultPrinter_Click(object sender, RoutedEventArgs e)
         {
-            var windowsPrinters = _discoveryService.GetInstalledWindowsPrinters();
-            var serialPorts = _discoveryService.GetSerialPorts();
-
-            var combined = new List<PrinterConnection>();
-            combined.AddRange(windowsPrinters);
-            combined.AddRange(serialPorts);
-
-            if (combined.Count > 0)
+            if (_selectedConfigPrinter != null)
             {
-                foreach (var found in combined)
-                {
-                    _profileService.SaveProfile(found);
-                }
-                LoadHardwareProfiles();
-                MessageBox.Show($"Found and added {combined.Count} local printer device(s).", "Scan Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                MessageBox.Show("No new printers detected via Windows spooler or Serial/Bluetooth ports.", "Scan Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                _selectedConfigPrinter.IsDefault = true;
+                _profileService.SaveProfile(_selectedConfigPrinter);
+                RefreshPrintersList();
+                UpdatePrinterStatusBadge();
+                MessageBox.Show($"'{_selectedConfigPrinter.Name}' set as default receipt printer.", "Default Printer", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        private void RemovePrinter_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to sign out?", "Confirm Sign Out", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            if (_selectedConfigPrinter != null)
             {
-                _authService.Logout();
+                _profileService.DeleteProfile(_selectedConfigPrinter.Id);
+                _selectedConfigPrinter = null;
+                RefreshPrintersList();
+                UpdatePrinterStatusBadge();
             }
         }
 
-        private void TabEmail_Click(object sender, RoutedEventArgs e)
+        private void SavePrinter_Click(object sender, RoutedEventArgs e)
         {
-            EmailLoginForm.Visibility = Visibility.Visible;
-            StaffLoginForm.Visibility = Visibility.Collapsed;
+            var p = _selectedConfigPrinter ?? new PrinterConnection();
+            p.Address = PrinterIdentifierInput.Text.Trim();
+            p.Name = !string.IsNullOrEmpty(p.Address) ? p.Address : "Printer";
+            p.Type = (ConnectionType)PrinterTypeCombo.SelectedIndex;
+            p.PaperWidth = (PaperWidthCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "80mm";
+            p.Purpose = (PrinterPurposeCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "RECEIPT";
+
+            if (_authService.CurrentSession != null)
+            {
+                p.StoreId = _authService.CurrentSession.ActiveStoreId;
+                p.DeviceId = _authService.CurrentSession.Device.DeviceId;
+            }
+
+            _profileService.SaveProfile(p);
+            RefreshPrintersList();
+            UpdatePrinterStatusBadge();
+            MessageBox.Show("Printer configuration saved.", "Hardware Saved", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void TabStaff_Click(object sender, RoutedEventArgs e)
+        private PrinterConnection CreateFromInputs()
         {
-            EmailLoginForm.Visibility = Visibility.Collapsed;
-            StaffLoginForm.Visibility = Visibility.Visible;
+            return new PrinterConnection
+            {
+                Address = PrinterIdentifierInput.Text.Trim(),
+                Name = PrinterIdentifierInput.Text.Trim(),
+                Type = (ConnectionType)PrinterTypeCombo.SelectedIndex,
+                PaperWidth = (PaperWidthCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "80mm",
+                Purpose = (PrinterPurposeCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "RECEIPT"
+            };
         }
     }
 }

@@ -35,6 +35,7 @@ data class DeviceContext(
 data class AppSession(
     @SerializedName("token") val token: String = "",
     @SerializedName("handoverToken") val handoverToken: String? = null,
+    @SerializedName("destination") val destination: String? = null,
     @SerializedName("user") val user: UserDto = UserDto(),
     @SerializedName("company") val company: CompanyDto = CompanyDto(),
     @SerializedName("stores") val stores: List<StoreDto> = emptyList(),

@@ -116,6 +116,7 @@ export interface MascotTaskRecord {
   id: string;
   companyId: string;
   storeSlug?: string;
+  storeId?: string;
   userId: string;
   userRole: string;
   requiredPermissions: string[];

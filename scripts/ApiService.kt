@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import site.salesmanpro.android.data.models.AppSession
+import site.salesmanpro.android.data.models.UserDto
+import site.salesmanpro.android.data.models.CompanyDto
 import com.google.gson.Gson
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -97,6 +99,66 @@ class ApiService(private val baseUrl: String = "https://salesmanpro.site") {
                 }
             } catch (e: Exception) {
                 Result.failure(Exception("Unable to connect to server: ${e.message}"))
+            }
+        }
+    }
+
+    suspend fun exchangeHandoverToken(handoverToken: String): Result<AppSession> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("$baseUrl/api/auth/handover")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+                conn.connectTimeout = 10000
+                conn.readTimeout = 10000
+
+                val payload = JSONObject().apply {
+                    put("token", handoverToken)
+                    put("platform", "ANDROID")
+                }
+
+                OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
+
+                val responseCode = conn.responseCode
+                val stream = if (responseCode in 200..299) conn.inputStream else conn.errorStream
+                val responseText = BufferedReader(InputStreamReader(stream)).use { it.readText() }
+
+                if (responseCode in 200..299) {
+                    val json = JSONObject(responseText)
+                    val sessionToken = json.getString("token")
+                    val userObj = json.getJSONObject("user")
+                    val destination = json.optString("destination", "/dashboards")
+
+                    val user = UserDto(
+                        id = userObj.optString("id"),
+                        email = userObj.optString("email"),
+                        name = userObj.optString("name"),
+                        role = userObj.optString("role")
+                    )
+                    val companyId = userObj.optString("companyId", "")
+                    val company = CompanyDto(id = companyId, name = "SalesmanPro")
+
+                    val session = AppSession(
+                        token = sessionToken,
+                        handoverToken = handoverToken,
+                        destination = destination,
+                        user = user,
+                        company = company,
+                        activeStoreId = ""
+                    )
+                    Result.success(session)
+                } else {
+                    val errMsg = try {
+                        JSONObject(responseText).optString("message", "Handover exchange failed (HTTP $responseCode)")
+                    } catch (e: Exception) {
+                        "Handover exchange failed (HTTP $responseCode)"
+                    }
+                    Result.failure(Exception(errMsg))
+                }
+            } catch (e: Exception) {
+                Result.failure(Exception("Unable to exchange handover token: ${e.message}"))
             }
         }
     }

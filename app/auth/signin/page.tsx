@@ -39,6 +39,20 @@ export default function SignInPage() {
       setLoading(true);
       setError(null);
       localStorage.setItem("callbackUrl", callbackUrl);
+
+      const isAuthHost =
+        typeof window !== "undefined" &&
+        (window.location.hostname === "auth.salesmanpro.site" ||
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1");
+
+      if (!isAuthHost) {
+        const centralOAuthUrl = new URL("https://auth.salesmanpro.site/api/auth/signin/google");
+        centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
+        window.location.href = centralOAuthUrl.toString();
+        return;
+      }
+
       await signIn("google", {
         redirect: true,
         callbackUrl: callbackUrl,

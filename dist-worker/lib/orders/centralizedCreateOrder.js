@@ -8,6 +8,7 @@ const pricing_1 = require("@/lib/pricing");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const client_1 = require("@prisma/client");
 const crypto_1 = __importDefault(require("crypto"));
+const notificationService_1 = require("@/lib/notifications/notificationService");
 /* -------------------------------------------------------------------------- */
 /* HELPERS                                                                    */
 /* -------------------------------------------------------------------------- */
@@ -130,6 +131,7 @@ async function createOrder(input) {
         computedOrderStatus = client_1.OrderStatus.PAID;
     }
     // 6. DB Transaction (Order Creation + Inventory Decrement)
+    const lowStockWarnings = [];
     const order = await prismadb_1.default.$transaction(async (tx) => {
         const createdOrder = await tx.customerOrder.create({
             data: {
@@ -242,6 +244,14 @@ async function createOrder(input) {
                 if (currentListing.quantity < pItem.quantity) {
                     throw new Error(`Insufficient stock for "${currentListing.name}". Available: ${currentListing.quantity}, Requested: ${pItem.quantity}`);
                 }
+                const remainingQty = currentListing.quantity - pItem.quantity;
+                if (remainingQty <= 5) {
+                    lowStockWarnings.push({
+                        id: currentListing.id,
+                        name: currentListing.name,
+                        remaining: Math.max(0, remainingQty),
+                    });
+                }
                 // 1. Decrement MarketplaceListing
                 await tx.marketplaceListings.update({
                     where: { id: pItem.marketplaceListingId },
@@ -249,7 +259,7 @@ async function createOrder(input) {
                         quantity: {
                             decrement: pItem.quantity,
                         },
-                        ...(currentListing.quantity - pItem.quantity <= 0
+                        ...(remainingQty <= 0
                             ? { isAvailable: false }
                             : {}),
                     },
@@ -323,6 +333,51 @@ async function createOrder(input) {
         }
         return createdOrder;
     }, { maxWait: 10_000, timeout: 20_000 });
+    // Asynchronously dispatch notifications without blocking order response
+    (async () => {
+        try {
+            // 1. Order Created Notification
+            await notificationService_1.NotificationService.publishEvent({
+                title: `New Order #${trackingNumber || order.id.slice(-6)}`,
+                message: `Order of KES ${pricing.total} received from ${customerName || "Customer"} (${pricing.items.length} items).`,
+                eventType: "ORDER_CREATED",
+                severity: "INFO",
+                companyId: resolvedCompanyId,
+                actionUrl: `/admin/orders?orderId=${order.id}`,
+                resourceType: "order",
+                resourceId: order.id,
+                recipientPolicy: {
+                    type: "STORE_STAFF",
+                },
+                channels: ["IN_APP", "PUSH_DESKTOP"],
+                idempotencyKey: `order_${order.id}_created`,
+            });
+            // 2. Low Stock Warnings
+            for (const item of lowStockWarnings) {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                await notificationService_1.NotificationService.publishEvent({
+                    title: item.remaining === 0 ? `🚨 Stockout Alert: ${item.name}` : `⚠️ Low Stock Alert: ${item.name}`,
+                    message: item.remaining === 0
+                        ? `Item "${item.name}" is completely out of stock.`
+                        : `Item "${item.name}" has only ${item.remaining} units remaining. Restock recommended.`,
+                    eventType: item.remaining === 0 ? "STOCKOUT_WARNING" : "LOW_STOCK_WARNING",
+                    severity: item.remaining === 0 ? "CRITICAL" : "WARNING",
+                    companyId: resolvedCompanyId,
+                    actionUrl: `/admin/inventory`,
+                    resourceType: "inventory",
+                    resourceId: item.id,
+                    recipientPolicy: {
+                        type: "STORE_ADMINS",
+                    },
+                    channels: ["IN_APP", "EMAIL"],
+                    idempotencyKey: `low_stock_${item.id}_${todayStr}`,
+                });
+            }
+        }
+        catch (notifErr) {
+            console.warn("[centralizedCreateOrder] Notification dispatch warning:", notifErr?.message || notifErr);
+        }
+    })();
     return {
         order,
         pricing: {

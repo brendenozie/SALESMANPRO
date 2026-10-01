@@ -10,6 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.evaluateAlertRules = exports.ensureDefaultAlertRules = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+const notificationService_1 = require("@/lib/notifications/notificationService");
 const DEFAULT_ALERT_RULES = [
     {
         name: "High CPU Utilization",
@@ -159,6 +160,27 @@ async function evaluateAlertRules(snapshot) {
                 rule.state = "TRIGGERED";
                 rule.lastTriggeredAt = now;
                 rule.lastValue = metricValue;
+                // Dispatch platform alert notification
+                try {
+                    const cooldownWindow = Math.floor(now.getTime() / (rule.cooldownMinutes * 60 * 1000));
+                    await notificationService_1.NotificationService.publishEvent({
+                        title: `🚨 [Platform Alert] ${rule.name}`,
+                        message: `${rule.description || rule.name}. Current value: ${metricValue} (Threshold: ${rule.threshold}). Immediate inspection advised.`,
+                        eventType: "OBSERVABILITY_ALERT",
+                        severity: rule.severity === "CRITICAL" ? "CRITICAL" : "WARNING",
+                        actionUrl: `/admin/observability/alerts?alertId=${rule.id}`,
+                        resourceType: "alert",
+                        resourceId: rule.id,
+                        recipientPolicy: {
+                            type: "SUPER_ADMINS",
+                        },
+                        channels: ["IN_APP", "EMAIL"],
+                        idempotencyKey: `alert_${rule.id}_${cooldownWindow}`,
+                    });
+                }
+                catch (notifErr) {
+                    console.warn("[alertEngine] Failed to dispatch alert notification:", notifErr);
+                }
             }
         }
         else {

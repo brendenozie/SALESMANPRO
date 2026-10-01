@@ -40,6 +40,16 @@ export async function resolveReturnContext(callbackUrl: string | null | undefine
     }
   }
 
+  if (url.protocol === "salesmanpro:" && url.hostname === "callback") {
+    return {
+      kind: "hub",
+      returnHost: "site.salesmanpro.android",
+      returnUrl: url.toString(),
+      tenantSlug: null,
+      issuedAt: Date.now(),
+    };
+  }
+
   const host = normalizeHost(url.hostname);
   if (!host) return null;
 
@@ -91,6 +101,10 @@ export async function attachAuthContextFromRequest(request: NextRequest, res: Ne
 export async function isAllowedReturnUrl(raw: string | null | undefined): Promise<boolean> {
   const url = parseAbsoluteUrl(raw);
   if (!url) return false;
+
+  if (url.protocol === "salesmanpro:" && url.hostname === "callback") {
+    return true;
+  }
 
   if (process.env.NODE_ENV === "production" && url.protocol !== "https:") {
     if (normalizeHost(url.hostname) !== "localhost" && normalizeHost(url.hostname) !== "127.0.0.1") {

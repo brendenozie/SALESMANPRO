@@ -193,6 +193,19 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       localStorage.setItem("callbackUrl", callbackUrl);
       authLog(cId, "signin_invocation", Date.now() - startTime, { provider: providerId });
 
+      const isAuthHost =
+        typeof window !== "undefined" &&
+        (window.location.hostname === "auth.salesmanpro.site" ||
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1");
+
+      if (!isAuthHost) {
+        const centralOAuthUrl = new URL(`https://auth.salesmanpro.site/api/auth/signin/${providerId}`);
+        centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
+        window.location.href = centralOAuthUrl.toString();
+        return;
+      }
+
       await signIn(providerId, { redirect: true, callbackUrl });
     } catch (err) {
       clearTimeoutTimer();

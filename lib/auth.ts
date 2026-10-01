@@ -660,6 +660,17 @@ export const createAuthOptions = (
             u.hasTenantAccess ??
             (await resolveHasTenantAccess(user.id, role, companyId));
 
+          let companySlug = u.companySlug;
+          if (!companySlug && companyId) {
+            try {
+              const comp = await prisma.company.findUnique({
+                where: { id: companyId },
+                select: { slug: true },
+              });
+              if (comp) companySlug = comp.slug;
+            } catch {}
+          }
+
           Object.assign(token, {
             id: user.id,
             name: user.name,
@@ -673,6 +684,7 @@ export const createAuthOptions = (
             emailVerified,
             isActive: isActive !== false,
             companyId,
+            companySlug,
             hasTenantAccess,
           });
 
@@ -729,6 +741,16 @@ export const createAuthOptions = (
               }
             }
 
+            if (!token.companySlug && token.companyId) {
+              try {
+                const comp = await prisma.company.findUnique({
+                  where: { id: String(token.companyId) },
+                  select: { slug: true },
+                });
+                if (comp) token.companySlug = comp.slug;
+              } catch {}
+            }
+
             token.hasTenantAccess = await resolveHasTenantAccess(
               String(token.id),
               dbUser.role,
@@ -757,6 +779,7 @@ export const createAuthOptions = (
             emailVerified: token.emailVerified,
             isActive: token.isActive,
             companyId: token.companyId,
+            companySlug: token.companySlug,
             hasTenantAccess: token.hasTenantAccess,
           });
         }

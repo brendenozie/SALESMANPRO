@@ -4,6 +4,7 @@ import { AUTH_HOST, classifyHost } from "@/lib/auth/domain";
 import { canAccessDashboard } from "@/lib/auth/authorization";
 import { attachAuthContextFromRequest } from "@/lib/auth/context";
 import { getTrustedHost, getTrustedProtocol } from "@/lib/requestIdentity";
+import { resolveDestinationFromToken } from "@/lib/auth/destinationResolver";
 
 const PRIMARY_HOST_NAME = "salesmanpro.site";
 
@@ -42,6 +43,7 @@ const OPERATOR_PREFIXES = [
   "/agents",
   "/agent",
   "/users",
+  "/super-admin",
 ];
 
 function isOperatorPath(pathname: string) {
@@ -120,18 +122,19 @@ export default async function middleware(
     });
   }
 
-  const isAuthPage =
-    pathname.startsWith("/desktop-login") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.includes("_next") ||
-    pathname.includes("favicon.ico");
-
-  if (isDesktop && !session && !isAuthPage) {
-    return NextResponse.redirect(new URL("/desktop-login", request.url));
-  }
-
-  if (isDesktop && session && pathname === "/desktop-login") {
-    return NextResponse.redirect(new URL("/dashboards", request.url));
+  // Legacy /desktop-login handling: route authenticated users to their authorized dashboard,
+  // or redirect unauthenticated requests to the modern unified signin page.
+  if (pathname === "/desktop-login") {
+    if (session) {
+      const dest = resolveDestinationFromToken(session);
+      return NextResponse.redirect(new URL(dest, request.url));
+    }
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    const canonicalCallbackUrl = isLocalHost
+      ? request.url
+      : `${proto}://${host}/dashboards`;
+    authUrl.searchParams.set("callbackUrl", canonicalCallbackUrl);
+    return NextResponse.redirect(authUrl);
   }
 
   const classified = classifyHost(host);
@@ -153,25 +156,30 @@ export default async function middleware(
       authUrl.searchParams.set("callbackUrl", canonicalCallbackUrl);
       return NextResponse.redirect(authUrl);
     }
-    if (session.emailVerified === false) {
-      const verifyUrl = new URL("/verify-email", request.url);
-      verifyUrl.searchParams.set("email", String(session.email || ""));
-      return NextResponse.redirect(verifyUrl);
-    }
-    if (session.isActive === false) {
-      return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
-    }
-    if (
-      !pathname.startsWith("/stores") &&
-      !canAccessDashboard({
-        role: session.role as string,
-        companyId: session.companyId as string | undefined,
-        emailVerified: session.emailVerified as boolean | null,
-        isActive: session.isActive as boolean | null,
-        hasTenantAccess: session.hasTenantAccess as boolean | undefined,
-      })
-    ) {
-      return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
+    if (session) {
+      if (session.emailVerified === false) {
+        const verifyUrl = new URL("/verify-email", request.url);
+        verifyUrl.searchParams.set("email", String(session.email || ""));
+        return NextResponse.redirect(verifyUrl);
+      }
+      if (session.isActive === false) {
+        return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
+      }
+      if (pathname.startsWith("/super-admin") && session.role !== "SUPER_ADMIN") {
+        return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
+      }
+      if (
+        !pathname.startsWith("/stores") &&
+        !canAccessDashboard({
+          role: session.role as string,
+          companyId: session.companyId as string | undefined,
+          emailVerified: session.emailVerified as boolean | null,
+          isActive: session.isActive as boolean | null,
+          hasTenantAccess: session.hasTenantAccess as boolean | undefined,
+        })
+      ) {
+        return NextResponse.redirect(new URL("/unauthorized?reason=forbidden", request.url));
+      }
     }
   }
 
@@ -187,7 +195,8 @@ export default async function middleware(
       hasTenantAccess: session.hasTenantAccess as boolean | undefined,
     })
   ) {
-    return NextResponse.redirect(new URL("/dashboards", request.url));
+    const dest = resolveDestinationFromToken(session);
+    return NextResponse.redirect(new URL(dest, request.url));
   }
 
   if (host === PRIMARY_HOST_NAME || isLocalHost || host === AUTH_HOST) {

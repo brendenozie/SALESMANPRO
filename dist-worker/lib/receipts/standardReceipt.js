@@ -4,7 +4,7 @@
  * For legitimate non-eTIMS sales and non-fiscal businesses.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderStandardReceiptHtml = void 0;
+exports.standardReceipt = exports.renderStandardReceiptHtml = void 0;
 function renderStandardReceiptHtml(data) {
     const isReprint = Boolean(data.isReprint);
     const itemsHtml = data.items
@@ -121,3 +121,5 @@ function renderStandardReceiptHtml(data) {
   `;
 }
 exports.renderStandardReceiptHtml = renderStandardReceiptHtml;
+exports.standardReceipt = renderStandardReceiptHtml;
+exports.default = renderStandardReceiptHtml;
