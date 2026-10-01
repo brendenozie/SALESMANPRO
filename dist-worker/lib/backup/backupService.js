@@ -76,9 +76,11 @@ class BackupService {
         let message = "All systems healthy. Automated backups and cloud archives are up to date.";
         if (!lastBackup || lastBackupAgeMinutes > 24 * 60) {
             healthStatus = "CRITICAL";
-            message = "CRITICAL: No successful backup within the last 24 hours! RPO target breached.";
+            message =
+                "CRITICAL: No successful backup within the last 24 hours! RPO target breached.";
         }
-        else if (lastBackupAgeMinutes > 3 * rpoTargetMinutes || recentFailuresCount > 2) {
+        else if (lastBackupAgeMinutes > 3 * rpoTargetMinutes ||
+            recentFailuresCount > 2) {
             healthStatus = "WARNING";
             message = `WARNING: Last successful backup was ${lastBackupAgeMinutes} minutes ago. Recent failures: ${recentFailuresCount}.`;
         }
@@ -97,7 +99,8 @@ class BackupService {
                 ? {
                     id: lastVerified.id,
                     type: lastVerified.backupType,
-                    verifiedAt: lastVerified.verifiedAt?.toISOString() || lastVerified.createdAt.toISOString(),
+                    verifiedAt: lastVerified.verifiedAt?.toISOString() ||
+                        lastVerified.createdAt.toISOString(),
                     checksum: lastVerified.checksum || "",
                     ageMinutes: Math.round((now - new Date(lastVerified.createdAt).getTime()) / 60000),
                 }
@@ -288,7 +291,9 @@ class BackupService {
                 err.$metadata?.httpStatusCode === 403 ||
                 err.message?.includes("Access Denied") ||
                 err.message?.includes("Forbidden");
-            if (isAccessDenied && backup.checksum && (backup.status === "COMPLETED" || backup.status === "VERIFIED")) {
+            if (isAccessDenied &&
+                backup.checksum &&
+                (backup.status === "COMPLETED" || backup.status === "VERIFIED")) {
                 console.warn(`[BackupService] S3 GetObject returned 403 AccessDenied for ${backup.storageKey}. S3 IAM credentials are write-only. Verifying against stored cryptographic SHA256 receipt.`);
                 dump = { manifest: backup.manifest };
             }

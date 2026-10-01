@@ -221,6 +221,36 @@ namespace SalesmanProDesktop.Services
                 WriteAscii(ms, FormatLine("BALANCE DUE:", $"{totals.Currency} {totals.Balance:N2}", lineWidth) + "\n");
             }
 
+            // eTIMS Fiscal Details (KRA Compliance)
+            var fiscal = doc.FiscalDetails;
+            if (fiscal != null && !string.IsNullOrEmpty(fiscal.TaxpayerPin))
+            {
+                WriteAscii(ms, new string('-', lineWidth) + "\n");
+                ms.Write(ESC_ALIGN_CENTER, 0, ESC_ALIGN_CENTER.Length);
+                ms.Write(ESC_BOLD_ON, 0, ESC_BOLD_ON.Length);
+                WriteAscii(ms, "** KRA eTIMS FISCAL RECEIPT **\n");
+                ms.Write(ESC_BOLD_OFF, 0, ESC_BOLD_OFF.Length);
+
+                ms.Write(ESC_ALIGN_LEFT, 0, ESC_ALIGN_LEFT.Length);
+                WriteAscii(ms, $"KRA PIN : {fiscal.TaxpayerPin}\n");
+                if (!string.IsNullOrEmpty(fiscal.BranchId)) WriteAscii(ms, $"Branch  : {fiscal.BranchName ?? "Head Office"} ({fiscal.BranchId})\n");
+                if (!string.IsNullOrEmpty(fiscal.DeviceId)) WriteAscii(ms, $"SCU ID  : {fiscal.DeviceId}\n");
+                if (!string.IsNullOrEmpty(fiscal.ControlCode)) WriteAscii(ms, $"Ctrl No : {fiscal.ControlCode}\n");
+                if (!string.IsNullOrEmpty(fiscal.InternalData)) WriteAscii(ms, $"Sign    : {fiscal.InternalData}\n");
+            }
+
+            // QR Code (eTIMS verification or receipt validation)
+            var qrUrl = fiscal?.QrCodeUrl ?? doc.QrCodeUrl;
+            if (!string.IsNullOrEmpty(qrUrl))
+            {
+                WriteAscii(ms, new string('-', lineWidth) + "\n");
+                ms.Write(ESC_ALIGN_CENTER, 0, ESC_ALIGN_CENTER.Length);
+                WriteAscii(ms, "Scan to Verify with KRA:\n");
+                byte[] qrBytes = GenerateEscPosQrCode(qrUrl);
+                ms.Write(qrBytes, 0, qrBytes.Length);
+                WriteAscii(ms, "\n");
+            }
+
             // Footer
             WriteAscii(ms, new string('-', lineWidth) + "\n");
             ms.Write(ESC_ALIGN_CENTER, 0, ESC_ALIGN_CENTER.Length);
@@ -229,6 +259,29 @@ namespace SalesmanProDesktop.Services
 
             // Feed and cut
             ms.Write(ESC_FEED_AND_CUT, 0, ESC_FEED_AND_CUT.Length);
+
+            return ms.ToArray();
+        }
+
+        private static byte[] GenerateEscPosQrCode(string content)
+        {
+            using var ms = new MemoryStream();
+            var dataBytes = Encoding.UTF8.GetBytes(content);
+            int dataLen = dataBytes.Length + 3;
+            byte pL = (byte)(dataLen % 256);
+            byte pH = (byte)(dataLen / 256);
+
+            // 1. Select QR Model (Model 2)
+            ms.Write(new byte[] { 0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00 }, 0, 9);
+            // 2. Set Module Size (5 dots)
+            ms.Write(new byte[] { 0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x05 }, 0, 8);
+            // 3. Error Correction Level (Level M)
+            ms.Write(new byte[] { 0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31 }, 0, 8);
+            // 4. Store Data
+            ms.Write(new byte[] { 0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30 }, 0, 8);
+            ms.Write(dataBytes, 0, dataBytes.Length);
+            // 5. Print Symbol
+            ms.Write(new byte[] { 0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30 }, 0, 8);
 
             return ms.ToArray();
         }
@@ -374,6 +427,47 @@ namespace SalesmanProDesktop.Services
                     g.DrawString($"TOTAL: {payload.Document.Totals.Currency} {payload.Document.Totals.Total:N2}", totalFont, Brushes.Black, x + width - 200, y);
                     y += 35;
 
+                    // eTIMS Fiscal Details (KRA Compliance)
+                    var fiscal = payload.Document.FiscalDetails;
+                    if (fiscal != null && !string.IsNullOrEmpty(fiscal.TaxpayerPin))
+                    {
+                        g.DrawLine(Pens.Black, x, y, x + width, y);
+                        y += 10;
+                        g.DrawString("** KRA eTIMS FISCAL RECEIPT **", subHeaderFont, Brushes.Black, x, y);
+                        y += 18;
+                        g.DrawString($"KRA PIN: {fiscal.TaxpayerPin}", bodyFont, Brushes.Black, x, y);
+                        y += 16;
+                        if (!string.IsNullOrEmpty(fiscal.BranchId))
+                        {
+                            g.DrawString($"Branch: {fiscal.BranchName ?? "Head Office"} ({fiscal.BranchId})", bodyFont, Brushes.Black, x, y);
+                            y += 16;
+                        }
+                        if (!string.IsNullOrEmpty(fiscal.DeviceId))
+                        {
+                            g.DrawString($"SCU ID: {fiscal.DeviceId}", bodyFont, Brushes.Black, x, y);
+                            y += 16;
+                        }
+                        if (!string.IsNullOrEmpty(fiscal.ControlCode))
+                        {
+                            g.DrawString($"Control No: {fiscal.ControlCode}", bodyFont, Brushes.Black, x, y);
+                            y += 16;
+                        }
+                        if (!string.IsNullOrEmpty(fiscal.InternalData))
+                        {
+                            g.DrawString($"Signature: {fiscal.InternalData}", bodyFont, Brushes.Black, x, y);
+                            y += 16;
+                        }
+                    }
+
+                    var qrUrl = fiscal?.QrCodeUrl ?? payload.Document.QrCodeUrl;
+                    if (!string.IsNullOrEmpty(qrUrl))
+                    {
+                        y += 10;
+                        g.DrawString($"Verify with KRA: {qrUrl}", bodyFont, Brushes.DarkBlue, x, y);
+                        y += 20;
+                    }
+
+                    y += 15;
                     g.DrawString(payload.Document.Footer ?? "Thank you for your business!", bodyFont, Brushes.Gray, x, y);
                 };
 

@@ -54,6 +54,11 @@ function renderStandardReceiptHtml(data) {
         <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
           <span>Cashier:</span><span>${data.cashierName}</span>
         </div>
+        ${data.tableNumber
+        ? `<div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                <span>Dining:</span><span style="font-weight: 700; color: #4338ca;">Table ${data.tableNumber}${data.guestCount ? ` (${data.guestCount} guests)` : ""}</span>
+              </div>`
+        : ""}
         ${data.customerName && data.customerName !== "Walk-in Customer"
         ? `<div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
                 <span>Customer:</span><span style="font-weight: 600;">${data.customerName}</span>

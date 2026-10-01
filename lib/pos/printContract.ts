@@ -77,6 +77,18 @@ export interface NormalizedPrintPayment {
   details?: Record<string, any>;
 }
 
+export interface NormalizedFiscalDetails {
+  taxpayerPin?: string;
+  branchId?: string;
+  branchName?: string;
+  deviceId?: string;
+  controlCode?: string;
+  internalData?: string;
+  qrCodeUrl?: string;
+  invoiceType?: "ORIGINAL" | "CREDIT_NOTE";
+  taxBreakdown?: Record<string, { taxableAmount: number; taxAmount: number }>;
+}
+
 export interface NormalizedPrintDocument {
   number: string;
   date: string;
@@ -86,6 +98,7 @@ export interface NormalizedPrintDocument {
   items: NormalizedPrintItem[];
   totals: NormalizedPrintTotals;
   payment: NormalizedPrintPayment;
+  fiscalDetails?: NormalizedFiscalDetails;
   qrCodeUrl?: string;
   footer?: string;
   notes?: string;

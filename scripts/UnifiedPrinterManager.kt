@@ -249,6 +249,41 @@ class UnifiedPrinterManager(
 
             bos.write(divider.toByteArray(Charsets.US_ASCII))
 
+            // eTIMS Fiscal Details (KRA Compliance)
+            val fiscal = doc.fiscalDetails
+            if (fiscal != null && fiscal.taxpayerPin.isNotEmpty()) {
+                bos.write(ESC_ALIGN_CENTER)
+                bos.write(ESC_BOLD_ON)
+                bos.write("** KRA eTIMS FISCAL RECEIPT **\n".toByteArray(Charsets.US_ASCII))
+                bos.write(ESC_BOLD_OFF)
+                bos.write(ESC_ALIGN_LEFT)
+                bos.write("KRA PIN : ${fiscal.taxpayerPin}\n".toByteArray(Charsets.US_ASCII))
+                if (!fiscal.branchId.isNullOrEmpty()) {
+                    val bName = fiscal.branchName ?: "Head Office"
+                    bos.write("Branch  : $bName (${fiscal.branchId})\n".toByteArray(Charsets.US_ASCII))
+                }
+                if (!fiscal.deviceId.isNullOrEmpty()) {
+                    bos.write("SCU ID  : ${fiscal.deviceId}\n".toByteArray(Charsets.US_ASCII))
+                }
+                if (!fiscal.controlCode.isNullOrEmpty()) {
+                    bos.write("Ctrl No : ${fiscal.controlCode}\n".toByteArray(Charsets.US_ASCII))
+                }
+                if (!fiscal.internalData.isNullOrEmpty()) {
+                    bos.write("Sign    : ${fiscal.internalData}\n".toByteArray(Charsets.US_ASCII))
+                }
+                bos.write(divider.toByteArray(Charsets.US_ASCII))
+            }
+
+            // QR Code (eTIMS Verification / Receipt)
+            val qrUrl = fiscal?.qrCodeUrl ?: doc.qrCodeUrl
+            if (!qrUrl.isNullOrEmpty()) {
+                bos.write(ESC_ALIGN_CENTER)
+                bos.write("Scan to Verify with KRA:\n".toByteArray(Charsets.US_ASCII))
+                bos.write(getQrCodeBytes(qrUrl))
+                bos.write("\n".toByteArray(Charsets.US_ASCII))
+                bos.write(divider.toByteArray(Charsets.US_ASCII))
+            }
+
             // Footer
             bos.write(ESC_ALIGN_CENTER)
             bos.write(((doc.footer ?: "Thank you for your business!") + "\n\n").toByteArray(Charsets.US_ASCII))
@@ -256,6 +291,27 @@ class UnifiedPrinterManager(
 
             bos.write(ESC_FEED_AND_CUT)
             return bos.toByteArray()
+        }
+
+        fun getQrCodeBytes(content: String): ByteArray {
+            val bytes = mutableListOf<Byte>()
+            // Select model (Model 2)
+            bytes.addAll(listOf(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00).map { it.toByte() })
+            // Set module size (5 dots)
+            val size = 0x05.toByte()
+            bytes.addAll(listOf(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, size).map { it.toByte() })
+            // Error correction level (Level M)
+            bytes.addAll(listOf(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31).map { it.toByte() })
+            // Store data
+            val dataBytes = content.toByteArray(Charsets.UTF_8)
+            val dataLen = dataBytes.size + 3
+            val pL = (dataLen % 256).toByte()
+            val pH = (dataLen / 256).toByte()
+            bytes.addAll(listOf(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30).map { it.toByte() })
+            bytes.addAll(dataBytes.toList())
+            // Print symbol
+            bytes.addAll(listOf(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30).map { it.toByte() })
+            return bytes.toByteArray()
         }
 
         private fun formatLine(left: String, right: String, width: Int): String {
@@ -277,7 +333,42 @@ class UnifiedPrinterManager(
             }
             sb.append("</table><hr/>")
             sb.append("<p style='text-align:right;'><b>TOTAL: ${doc.totals.currency} ${String.format("%.2f", doc.totals.total)}</b></p>")
-            sb.append("<p style='text-align:center;'>${doc.footer ?: "Thank you!"}</p>")
+
+            val fiscal = doc.fiscalDetails
+            if (fiscal != null && fiscal.taxpayerPin.isNotEmpty()) {
+                sb.append("<hr/>")
+                sb.append("<div style='text-align:center;font-weight:bold;'>** KRA eTIMS FISCAL RECEIPT **</div>")
+                sb.append("<div>KRA PIN: ${fiscal.taxpayerPin}</div>")
+                if (!fiscal.branchId.isNullOrEmpty()) {
+                    sb.append("<div>Branch: ${fiscal.branchName ?: "Head Office"} (${fiscal.branchId})</div>")
+                }
+                if (!fiscal.deviceId.isNullOrEmpty()) {
+                    sb.append("<div>SCU ID: ${fiscal.deviceId}</div>")
+                }
+                if (!fiscal.controlCode.isNullOrEmpty()) {
+                    sb.append("<div>Control No: ${fiscal.controlCode}</div>")
+                }
+                if (!fiscal.internalData.isNullOrEmpty()) {
+                    sb.append("<div style='word-break:break-all;'>Signature: ${fiscal.internalData}</div>")
+                }
+            }
+
+            val qrUrl = fiscal?.qrCodeUrl ?: doc.qrCodeUrl
+            if (!qrUrl.isNullOrEmpty()) {
+                sb.append("<hr/>")
+                sb.append("<div style='text-align:center;'>")
+                sb.append("<div>Scan to Verify with KRA:</div>")
+                try {
+                    val encoded = java.net.URLEncoder.encode(qrUrl, "UTF-8")
+                    sb.append("<img src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encoded}' style='width:120px;height:120px;margin-top:8px;' /><br/>")
+                } catch (e: Exception) {
+                    // Fallback
+                }
+                sb.append("<div style='font-size:10px;word-break:break-all;margin-top:4px;'>${qrUrl}</div>")
+                sb.append("</div>")
+            }
+
+            sb.append("<p style='text-align:center;margin-top:16px;'>${doc.footer ?: "Thank you!"}</p>")
             sb.append("</body></html>")
             return sb.toString()
         }

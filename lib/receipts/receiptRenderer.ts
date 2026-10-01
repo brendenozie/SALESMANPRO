@@ -77,6 +77,19 @@ export class ReceiptRenderer {
           method: data.paymentMethodDetails || data.paymentMethod,
           reference: data.transactionReference || "",
         },
+        fiscalDetails: isFiscal
+          ? {
+              taxpayerPin: data.kraPin,
+              branchId: data.branchId || "00",
+              branchName: data.branchName || "Head Office",
+              deviceId: data.deviceId || data.scuId,
+              controlCode: data.controlCode,
+              internalData: data.internalData,
+              qrCodeUrl: data.qrCodeUrl,
+              invoiceType: data.invoiceType || "ORIGINAL",
+              taxBreakdown: data.taxBreakdown as any,
+            }
+          : undefined,
         qrCodeUrl: data.qrCodeUrl,
         footer: isFiscal ? "Fiscal Receipt - Thank You!" : "Thank you for shopping with us!",
       },

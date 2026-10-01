@@ -52,8 +52,13 @@ export interface UnifiedReceiptData {
   totalDiscount: number;
   totalTax: number;
   finalTotal: number;
+  amountPaid?: number;
+  changeAmount?: number;
   paymentMethod: string;
   paymentMethodDetails?: string;
+  transactionReference?: string;
+  companyId?: string;
+  storeId?: string;
 
   // Line Items
   items: ReceiptLineItem[];

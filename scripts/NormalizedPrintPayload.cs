@@ -128,6 +128,39 @@ namespace SalesmanProDesktop.Models
 
         [JsonPropertyName("footer")]
         public string? Footer { get; set; }
+
+        [JsonPropertyName("qrCodeUrl")]
+        public string? QrCodeUrl { get; set; }
+
+        [JsonPropertyName("fiscalDetails")]
+        public NormalizedFiscalDetails? FiscalDetails { get; set; }
+    }
+
+    public class NormalizedFiscalDetails
+    {
+        [JsonPropertyName("taxpayerPin")]
+        public string? TaxpayerPin { get; set; }
+
+        [JsonPropertyName("branchId")]
+        public string? BranchId { get; set; }
+
+        [JsonPropertyName("branchName")]
+        public string? BranchName { get; set; }
+
+        [JsonPropertyName("deviceId")]
+        public string? DeviceId { get; set; }
+
+        [JsonPropertyName("controlCode")]
+        public string? ControlCode { get; set; }
+
+        [JsonPropertyName("internalData")]
+        public string? InternalData { get; set; }
+
+        [JsonPropertyName("qrCodeUrl")]
+        public string? QrCodeUrl { get; set; }
+
+        [JsonPropertyName("invoiceType")]
+        public string? InvoiceType { get; set; }
     }
 
     public class NormalizedPrintPayload

@@ -15,14 +15,16 @@ exports.unifiedOrderItemSchema = zod_1.z.object({
     date: zod_1.z.string().nullable().optional(),
     timeSlot: zod_1.z.string().nullable().optional(),
     serviceNotes: zod_1.z.string().nullable().optional(),
+    course: zod_1.z.string().nullable().optional(),
+    kitchenStatus: zod_1.z.string().nullable().optional(),
     selectedOptions: zod_1.z.array(exports.selectedOptionSchema).optional(),
     appointmentId: zod_1.z.string().optional(),
     productId: zod_1.z.string().optional(),
 });
 exports.unifiedOrderSchema = zod_1.z.object({
-    name: zod_1.z.string().min(1),
-    email: zod_1.z.string().email(),
-    phone: zod_1.z.string().min(1),
+    name: zod_1.z.string().min(1).default("Walk-in Customer"),
+    email: zod_1.z.string().optional().default("walkin@pos.local"),
+    phone: zod_1.z.string().optional().default("N/A"),
     mpesaPhone: zod_1.z.string().optional(),
     consumerId: zod_1.z.string().optional(),
     companyId: zod_1.z.string().optional(),
@@ -30,7 +32,7 @@ exports.unifiedOrderSchema = zod_1.z.object({
         .enum(["PRODUCT", "SERVICE", "RENTAL", "BOOKING", "OTHER"])
         .default("PRODUCT"),
     source: zod_1.z
-        .enum(["WEBSITE", "IN_PERSON", "MOBILE", "WHATSAPP", "AI"])
+        .enum(["WEBSITE", "IN_PERSON", "MOBILE", "WHATSAPP", "AI", "POS"])
         .default("WEBSITE"),
     paymentOption: zod_1.z
         .enum([
@@ -53,12 +55,24 @@ exports.unifiedOrderSchema = zod_1.z.object({
     promoCode: zod_1.z.string().optional(),
     notes: zod_1.z.string().optional(),
     trackingNumber: zod_1.z.string().optional(),
-    idempotencyKey: zod_1.z.string().uuid().optional(),
+    idempotencyKey: zod_1.z.string().optional(),
     customerPin: zod_1.z.string().optional(),
     terminalId: zod_1.z.string().optional(),
     cashierName: zod_1.z.string().optional(),
     posSessionId: zod_1.z.string().optional(),
     operatorId: zod_1.z.string().optional(),
+    tableId: zod_1.z.string().optional(),
+    tableSessionId: zod_1.z.string().optional(),
+    tableNumber: zod_1.z.string().optional(),
+    guestCount: zod_1.z.number().int().optional(),
+    serviceMode: zod_1.z.string().optional(),
+    kitchenStatus: zod_1.z.string().optional(),
+    isHeld: zod_1.z.boolean().optional(),
+    heldNote: zod_1.z.string().optional(),
+    isWalkIn: zod_1.z.boolean().optional(),
+    customerType: zod_1.z.string().optional(),
+    channel: zod_1.z.enum(["WEBSITE", "MOBILE", "WHATSAPP", "FACEBOOK", "INSTAGRAM", "POS", "API", "AI"]).optional(),
+    actorType: zod_1.z.enum(["CUSTOMER", "USER", "STAFF", "AI", "SYSTEM"]).optional(),
     paymentData: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).optional(),
     metadata: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).optional(),
 });

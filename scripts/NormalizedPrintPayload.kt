@@ -40,6 +40,18 @@ data class NormalizedPaymentInfo(
     @SerializedName("reference") val reference: String? = null
 )
 
+data class NormalizedFiscalDetails(
+    @SerializedName("taxpayerPin") val taxpayerPin: String = "",
+    @SerializedName("branchId") val branchId: String? = null,
+    @SerializedName("branchName") val branchName: String? = null,
+    @SerializedName("deviceId") val deviceId: String? = null,
+    @SerializedName("controlCode") val controlCode: String? = null,
+    @SerializedName("internalData") val internalData: String? = null,
+    @SerializedName("receiptNumber") val receiptNumber: String? = null,
+    @SerializedName("qrCodeUrl") val qrCodeUrl: String? = null,
+    @SerializedName("invoiceType") val invoiceType: String? = null
+)
+
 data class NormalizedDocument(
     @SerializedName("number") val number: String = "",
     @SerializedName("date") val date: String = "",
@@ -51,6 +63,8 @@ data class NormalizedDocument(
     @SerializedName("items") val items: List<NormalizedPrintItem> = emptyList(),
     @SerializedName("totals") val totals: NormalizedPrintTotals = NormalizedPrintTotals(),
     @SerializedName("payments") val payments: List<NormalizedPaymentInfo> = emptyList(),
+    @SerializedName("fiscalDetails") val fiscalDetails: NormalizedFiscalDetails? = null,
+    @SerializedName("qrCodeUrl") val qrCodeUrl: String? = null,
     @SerializedName("footer") val footer: String? = null
 )
 

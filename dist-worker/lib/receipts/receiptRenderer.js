@@ -22,15 +22,81 @@ class ReceiptRenderer {
      */
     renderEscPos(data, mode = "STANDARD") {
         const isFiscal = mode === "ETIMS" || data.isFiscal;
+        const documentId = data.invoiceNumber || data.trackingNumber;
+        const jobId = `job_${data.trackingNumber || Date.now().toString(36)}_${Date.now()}`;
         return {
             type: "PRINT_ESC_POS",
+            protocolVersion: 1,
+            jobId,
+            documentType: "RECEIPT",
+            documentId,
+            companyId: data.companyId || "",
+            storeId: data.storeId || "",
             mode: isFiscal ? "ETIMS" : "STANDARD",
             isReprint: Boolean(data.isReprint),
+            reprintCount: data.isReprint ? 1 : 0,
+            createdAt: new Date().toISOString(),
+            document: {
+                number: documentId,
+                date: `${data.date} ${data.time}`,
+                cashier: data.cashierName,
+                customer: {
+                    name: data.customerName,
+                    pin: data.customerPin || "",
+                },
+                business: {
+                    name: data.storeName,
+                    address: data.storeAddress || "",
+                    phone: data.storePhone || "",
+                    taxPin: data.kraPin || "",
+                    branchName: data.branchName || "",
+                    branchId: data.branchId || "00",
+                },
+                items: data.items.map((item) => ({
+                    name: item.name + (item.variantDescription ? ` (${item.variantDescription})` : ""),
+                    quantity: item.quantity,
+                    price: item.unitPrice,
+                    discount: item.discount || 0,
+                    total: item.subtotal,
+                    route: item.route || "receipt",
+                    taxTypeCode: item.taxTypeCode || "A",
+                })),
+                totals: {
+                    subtotal: data.subtotal,
+                    discount: data.totalDiscount,
+                    tax: data.totalTax,
+                    taxRate: 16.0,
+                    total: data.finalTotal,
+                    paid: data.amountPaid || data.finalTotal,
+                    change: data.changeAmount || 0,
+                    currency: data.currency,
+                },
+                payment: {
+                    method: data.paymentMethodDetails || data.paymentMethod,
+                    reference: data.transactionReference || "",
+                },
+                fiscalDetails: isFiscal
+                    ? {
+                        taxpayerPin: data.kraPin,
+                        branchId: data.branchId || "00",
+                        branchName: data.branchName || "Head Office",
+                        deviceId: data.deviceId || data.scuId,
+                        controlCode: data.controlCode,
+                        internalData: data.internalData,
+                        qrCodeUrl: data.qrCodeUrl,
+                        invoiceType: data.invoiceType || "ORIGINAL",
+                        taxBreakdown: data.taxBreakdown,
+                    }
+                    : undefined,
+                qrCodeUrl: data.qrCodeUrl,
+                footer: isFiscal ? "Fiscal Receipt - Thank You!" : "Thank you for shopping with us!",
+            },
+            // Backward compatibility fields for legacy clients
             BusinessName: data.storeName,
             BusinessAddress: data.storeAddress || "",
             PhoneNumber: data.storePhone || "",
             ReceiptNumber: data.trackingNumber,
-            InvoiceId: data.invoiceNumber || data.trackingNumber,
+            InvoiceId: documentId,
             CustomerName: data.customerName,
             CustomerPin: data.customerPin || "",
             StaffName: data.cashierName,
@@ -47,6 +113,7 @@ class ReceiptRenderer {
                 Price: item.unitPrice,
                 Discount: item.discount || 0,
                 Subtotal: item.subtotal,
+                Total: item.subtotal,
                 TaxType: item.taxTypeCode || "A",
             })),
             FiscalDetails: isFiscal
@@ -86,10 +153,12 @@ class ReceiptRenderer {
                 if (escPosPayload) {
                     window.chrome.webview.postMessage(escPosPayload);
                 }
-                window.chrome.webview.postMessage({
-                    type: "PRINT_HTML_RECEIPT",
-                    payload: htmlContent,
-                });
+                else {
+                    window.chrome.webview.postMessage({
+                        type: "PRINT_HTML_RECEIPT",
+                        payload: htmlContent,
+                    });
+                }
                 window.chrome.webview.postMessage({
                     type: "NOTIFY",
                     message: "Receipt sent to printer!",
