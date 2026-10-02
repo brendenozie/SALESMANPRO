@@ -648,6 +648,11 @@ model Company {
   activityAssignments    ActivityAssignment[]    @relation("ActivityAssignments")
   activityAttempts       ActivityAttempt[]       @relation("ActivityAttempts")
 
+  // Financial Ledger & Withdrawal relations
+  storeSettlementBalance StoreSettlementBalance?
+  withdrawalRequests     WithdrawalRequest[]
+  transactionLedgers     TransactionLedger[]
+
   @@index([userId])
   @@index([name])
   @@index([companyCategoryId])
@@ -2509,6 +2514,146 @@ model Payment {
   @@index([internalReference])
 }
 
+// ============================================================
+// FINANCIAL LEDGER & WITHDRAWAL MANAGEMENT
+// ============================================================
+
+enum WithdrawalStatus {
+  REQUESTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PROCESSING
+  PAID
+  FAILED
+  CANCELLED
+  RECONCILIATION_REQUIRED
+}
+
+enum PayoutMethod {
+  MPESA_B2C
+  BANK_TRANSFER
+  PAYSTACK_TRANSFER
+  MANUAL_EFT
+}
+
+enum LedgerEntryType {
+  COLLECTION_CUSTOMER
+  COMMISSION_GHUBA
+  REFUND_DEDUCTION
+  WITHDRAWAL_RESERVE
+  WITHDRAWAL_RELEASE
+  WITHDRAWAL_REVERSAL
+  MANUAL_ADJUSTMENT
+}
+
+model StoreSettlementBalance {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String    @unique @db.ObjectId
+  company           Company   @relation(fields: [companyId], references: [id])
+  currency          String    @default("KES")
+
+  lifetimeEarnings  Float     @default(0.0) // Total Net Ghuba Sales
+  lifetimeWithdrawn Float     @default(0.0) // Total Successfully Paid
+  availableBalance  Float     @default(0.0) // Ready for withdrawal
+  reservedBalance   Float     @default(0.0) // Currently in requested/processing withdrawal
+
+  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime  @default(now())
+}
+
+model WithdrawalRequest {
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  reference             String            @unique // e.g., WTH-2026-XXXXX
+
+  companyId             String            @db.ObjectId
+  company               Company           @relation(fields: [companyId], references: [id])
+
+  requestedById         String            @db.ObjectId
+  requestedBy           User              @relation("WithdrawalRequester", fields: [requestedById], references: [id])
+
+  reviewedById          String?           @db.ObjectId
+  reviewedBy            User?             @relation("WithdrawalReviewer", fields: [reviewedById], references: [id])
+
+  amount                Float
+  feeAmount             Float             @default(0.0)
+  netPayout             Float
+  currency              String            @default("KES")
+
+  status                WithdrawalStatus  @default(REQUESTED)
+  payoutMethod          PayoutMethod      @default(MPESA_B2C)
+
+  destinationDetails    Json
+
+  providerReference     String?
+  providerResponse      Json?
+  rejectionReason       String?
+  failureReason         String?
+  notes                 String?
+
+  reviewedAt            DateTime?
+  processedAt           DateTime?
+  completedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  ledgerEntries         TransactionLedger[]
+
+  @@index([companyId, status])
+  @@index([status, createdAt])
+}
+
+model TransactionLedger {
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId             String            @db.ObjectId
+  company               Company           @relation(fields: [companyId], references: [id])
+
+  entryType             LedgerEntryType
+  amount                Float
+  balanceAfter          Float
+  currency              String            @default("KES")
+
+  reference             String
+  description           String
+
+  paymentId             String?           @db.ObjectId
+  withdrawalRequestId   String?           @db.ObjectId
+  withdrawalRequest     WithdrawalRequest? @relation(fields: [withdrawalRequestId], references: [id])
+
+  operatorId            String?           @db.ObjectId
+  metadata              Json?
+
+  createdAt             DateTime          @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([reference])
+  @@index([entryType])
+}
+
+model PaymentException {
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  provider              String
+  providerTransactionId String?
+  reference             String?
+  amount                Float?
+  currency              String            @default("KES")
+
+  exceptionType         String
+  description           String
+  rawPayload            Json?
+
+  isResolved            Boolean           @default(false)
+  resolvedById          String?           @db.ObjectId
+  resolutionNotes       String?
+  resolvedAt            DateTime?
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([isResolved, createdAt])
+  @@index([provider, isResolved])
+}
+
 enum AppointmentStatus {
   SCHEDULED
   PENDING
@@ -3047,6 +3192,9 @@ model User {
   RequestApprovedBy Request[] @relation(name: "RequestApprovedBy")
 
   ReturnApprovedBy Return[] @relation("ReturnApprovedBy")
+
+  withdrawalRequestsRequested WithdrawalRequest[] @relation("WithdrawalRequester")
+  withdrawalRequestsReviewed  WithdrawalRequest[] @relation("WithdrawalReviewer")
 
   HeadTeacher       HeadTeacher[]   @relation(name: "headteacher")
   consumerProfile   Consumer[]      @relation("ConsumerProfile")
