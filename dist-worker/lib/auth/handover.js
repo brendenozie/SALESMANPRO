@@ -6,7 +6,7 @@ const jwt_1 = require("next-auth/jwt");
 const cache_1 = require("../cache");
 const context_1 = require("./context");
 const domain_1 = require("./domain");
-const HANDOVER_MAX_AGE = 120;
+const HANDOVER_MAX_AGE = 300; // 5 minutes for mobile deep links and app switching
 const PURPOSE = "cross-domain-handover";
 function handoverSecret() {
     return (process.env.NEXTAUTH_SECRET ||
@@ -40,10 +40,19 @@ exports.createHandoverToken = createHandoverToken;
 function matchesHandoverAudience(tokenAudience, expectedHost) {
     if (!tokenAudience)
         return true;
+    const normalizedAud = (0, domain_1.normalizeHost)(tokenAudience);
     const expected = (0, domain_1.normalizeHost)(expectedHost || "");
-    if (!expected)
-        return false;
-    return (0, domain_1.normalizeHost)(tokenAudience) === expected;
+    // 1. Exact match between token audience and consuming host
+    if (expected && normalizedAud === expected)
+        return true;
+    // 2. Native client applications (Android and Desktop apps) exchanging tokens at API endpoints
+    if (normalizedAud === "site.salesmanpro.android" ||
+        normalizedAud === "salesmanpro.android" ||
+        normalizedAud === "site.salesmanpro.desktop" ||
+        normalizedAud === "salesmanpro.desktop") {
+        return true;
+    }
+    return false;
 }
 exports.matchesHandoverAudience = matchesHandoverAudience;
 async function consumeHandoverToken(raw, expectedHost) {

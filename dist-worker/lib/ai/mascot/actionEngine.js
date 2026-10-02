@@ -15,6 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MascotActionEngine = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const creditLedger_1 = require("@/lib/ai/creditLedger");
+const website_service_1 = require("@/lib/website-builder/website-service");
+const template_registry_1 = require("@/lib/website-builder/template-registry");
+const onboarding_1 = require("@/lib/integrations/onboarding");
+const verification_1 = require("@/lib/integrations/verification");
 class MascotActionEngine {
     /**
      * Primary entrypoint to execute or prepare a planned mascot action.
@@ -75,6 +79,24 @@ class MascotActionEngine {
         try {
             let result;
             switch (capability.id) {
+                case "website:view_config":
+                    result = await this.handleWebsiteViewConfig(companyId, storeSlug);
+                    break;
+                case "website:update_theme":
+                    result = await this.handleWebsiteUpdateTheme(companyId, storeSlug, entities, userId);
+                    break;
+                case "website:update_section":
+                    result = await this.handleWebsiteUpdateSection(companyId, storeSlug, entities, userId);
+                    break;
+                case "website:reorder_sections":
+                    result = await this.handleWebsiteReorderSections(companyId, storeSlug, entities, userId);
+                    break;
+                case "website:generate_content":
+                    result = await this.handleWebsiteGenerateContent(companyId, storeSlug, entities);
+                    break;
+                case "website:publish_website":
+                    result = await this.handleWebsitePublish(companyId, storeSlug, approved, userId);
+                    break;
                 case "inventory:check_stock_levels":
                     result = await this.handleCheckInventory(companyId, storeSlug, entities);
                     break;
@@ -113,6 +135,24 @@ class MascotActionEngine {
                 case "education:view_student_records":
                 case "education:generate_student_report":
                     result = await this.handleEducation(companyId, storeSlug, entities);
+                    break;
+                case "integrations:list_connections":
+                    result = await this.handleListConnections(companyId, storeSlug);
+                    break;
+                case "integrations:connect_provider":
+                    result = await this.handleConnectProvider(companyId, storeSlug, entities, userId, context.userRole);
+                    break;
+                case "integrations:verify_health":
+                    result = await this.handleVerifyHealth(companyId, storeSlug, entities);
+                    break;
+                case "integrations:disconnect_account":
+                    result = await this.handleDisconnectAccount(companyId, storeSlug, entities, userId, approved);
+                    break;
+                case "tasks:query_active_tasks":
+                    result = await this.handleQueryActiveTasks(companyId, storeSlug);
+                    break;
+                case "approvals:query_pending_approvals":
+                    result = await this.handleQueryPendingApprovals(companyId, storeSlug);
                     break;
                 default:
                     result = await this.handleDefaultSearch(companyId, storeSlug, entities);
@@ -629,16 +669,520 @@ class MascotActionEngine {
         }
     }
     // =========================================================================
+    // WEBSITE BUILDER & STOREFRONT HANDLERS
+    // =========================================================================
+    static async handleWebsiteViewConfig(companyId, storeSlug) {
+        try {
+            const { website, config } = await (0, website_service_1.getOrCreateWebsite)(companyId || storeSlug);
+            const template = (0, template_registry_1.getTemplateById)(config.templateKey);
+            const pageCount = (config.pages || []).length;
+            const homePage = (config.pages || []).find((p) => p.isHomepage || p.slug === "home");
+            const sectionCount = (homePage?.sections || []).length;
+            const isDraftNewer = website?.updatedAt && website?.publishedAt ? new Date(website.updatedAt) > new Date(website.publishedAt) : false;
+            const summary = `Storefront is powered by **${template?.name || config.templateKey}** (${config.templateKey}). ` +
+                `Layout: \`${template?.shellLayout || "Default"}\`, Body: \`${template?.bodyComponent || "DefaultSite"}\`. ` +
+                `Current site contains **${pageCount} pages** and **${sectionCount} active sections** on the homepage. ` +
+                (isDraftNewer ? `⚠️ You have unpublished draft changes ready to preview or publish.` : `✅ All changes are published live.`);
+            return {
+                success: true,
+                summary,
+                data: {
+                    templateKey: config.templateKey,
+                    themeName: template?.name,
+                    category: template?.category,
+                    variant: template?.variant,
+                    pageCount,
+                    sectionCount,
+                    isDraftNewer,
+                    primaryColor: config.theme?.primaryColor,
+                    secondaryColor: config.theme?.secondaryColor,
+                    builderUrl: `/admin/${storeSlug}/website-builder`,
+                },
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Could not retrieve website configuration: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleWebsiteUpdateTheme(companyId, storeSlug, entities, userId) {
+        try {
+            const { config } = await (0, website_service_1.getOrCreateWebsite)(companyId || storeSlug);
+            const updatedTheme = {
+                ...config.theme,
+                ...(entities.primaryColor ? { primaryColor: entities.primaryColor } : {}),
+                ...(entities.secondaryColor ? { secondaryColor: entities.secondaryColor } : {}),
+                ...(entities.accentColor ? { accentColor: entities.accentColor } : {}),
+                ...(entities.headingFont ? { headingFont: entities.headingFont } : {}),
+                ...(entities.bodyFont ? { bodyFont: entities.bodyFont } : {}),
+            };
+            const updatedConfig = {
+                ...config,
+                theme: updatedTheme,
+            };
+            await (0, website_service_1.saveWebsiteDraft)(companyId, updatedConfig, userId);
+            await this.recordAuditLog({
+                action: "WEBSITE_UPDATE_THEME",
+                companyId,
+                userId: userId || "mascot",
+                details: { updatedTheme },
+            });
+            return {
+                success: true,
+                summary: `Theme appearance updated successfully! Primary: \`${updatedTheme.primaryColor}\`, Font: \`${updatedTheme.headingFont}\`. Your changes have been saved to your draft. Open the Website Builder to preview or publish.`,
+                data: { theme: updatedTheme, builderUrl: `/admin/${storeSlug}/website-builder` },
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to update theme colors: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleWebsiteUpdateSection(companyId, storeSlug, entities, userId) {
+        try {
+            const { config } = await (0, website_service_1.getOrCreateWebsite)(companyId || storeSlug);
+            const targetSlug = entities.pageSlug || "home";
+            let pageFound = false;
+            const updatedPages = (config.pages || []).map((page) => {
+                if (page.slug !== targetSlug && !(page.isHomepage && targetSlug === "home")) {
+                    return page;
+                }
+                pageFound = true;
+                const updatedSections = (page.sections || []).map((sec, idx) => {
+                    const isTarget = entities.sectionId ? sec.id === entities.sectionId : (entities.sectionType ? sec.type === entities.sectionType : idx === 0);
+                    if (!isTarget)
+                        return sec;
+                    return {
+                        ...sec,
+                        content: {
+                            ...(sec.content || {}),
+                            ...(entities.headline ? { headline: entities.headline, title: entities.headline } : {}),
+                            ...(entities.title ? { title: entities.title, headline: entities.title } : {}),
+                            ...(entities.subline ? { subline: entities.subline, subtitle: entities.subline, description: entities.subline } : {}),
+                            ...(entities.eyebrow ? { eyebrow: entities.eyebrow, badgeText: entities.eyebrow } : {}),
+                            ...(entities.ctaText ? { ctaText: entities.ctaText, primaryButtonText: entities.ctaText, buttonText: entities.ctaText } : {}),
+                            ...(entities.ctaLink ? { ctaLink: entities.ctaLink, primaryButtonUrl: entities.ctaLink, buttonUrl: entities.ctaLink } : {}),
+                            ...(entities.content ? entities.content : {}),
+                        },
+                    };
+                });
+                return { ...page, sections: updatedSections };
+            });
+            if (!pageFound) {
+                return {
+                    success: false,
+                    summary: `Page '${targetSlug}' was not found in your store's website.`,
+                };
+            }
+            const updatedConfig = { ...config, pages: updatedPages };
+            await (0, website_service_1.saveWebsiteDraft)(companyId, updatedConfig, userId);
+            await this.recordAuditLog({
+                action: "WEBSITE_UPDATE_SECTION",
+                companyId,
+                userId: userId || "mascot",
+                details: { targetSlug, entities },
+            });
+            return {
+                success: true,
+                summary: `Website section on page '${targetSlug}' has been updated with your new content and saved to the draft.`,
+                data: { builderUrl: `/admin/${storeSlug}/website-builder` },
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to update section content: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleWebsiteReorderSections(companyId, storeSlug, entities, userId) {
+        try {
+            const { config } = await (0, website_service_1.getOrCreateWebsite)(companyId || storeSlug);
+            const targetSlug = entities.pageSlug || "home";
+            const updatedPages = (config.pages || []).map((page) => {
+                if (page.slug !== targetSlug && !(page.isHomepage && targetSlug === "home")) {
+                    return page;
+                }
+                let sections = [...(page.sections || [])];
+                if (entities.sectionId && entities.isVisible !== undefined) {
+                    sections = sections.map((s) => s.id === entities.sectionId ? { ...s, isVisible: !!entities.isVisible } : s);
+                }
+                else if (Array.isArray(entities.orderedIds)) {
+                    const map = new Map(sections.map((s) => [s.id, s]));
+                    sections = entities.orderedIds
+                        .map((id, idx) => {
+                        const sec = map.get(id);
+                        return sec ? { ...sec, order: idx } : null;
+                    })
+                        .filter(Boolean);
+                }
+                return { ...page, sections };
+            });
+            const updatedConfig = { ...config, pages: updatedPages };
+            await (0, website_service_1.saveWebsiteDraft)(companyId, updatedConfig, userId);
+            await this.recordAuditLog({
+                action: "WEBSITE_REORDER_SECTIONS",
+                companyId,
+                userId: userId || "mascot",
+                details: { targetSlug, entities },
+            });
+            return {
+                success: true,
+                summary: `Section arrangement updated and saved to draft for page '${targetSlug}'.`,
+                data: { builderUrl: `/admin/${storeSlug}/website-builder` },
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to reorder sections: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleWebsiteGenerateContent(companyId, storeSlug, entities) {
+        const { config } = await (0, website_service_1.getOrCreateWebsite)(companyId || storeSlug);
+        const storeName = config.storeName || "Our Store";
+        const headline = entities.headline || `Discover Exceptional Quality at ${storeName}`;
+        const subline = entities.subline || `Crafted for discerning clients who demand durability, style, and premier service.`;
+        const ctaText = entities.ctaText || "Explore Products";
+        return {
+            success: true,
+            summary: `I've prepared suggested promotional content for ${storeName}:\n\n` +
+                `**Headline:** ${headline}\n` +
+                `**Subline:** ${subline}\n` +
+                `**CTA Button:** ${ctaText}\n\n` +
+                `Would you like me to apply this copy to your homepage hero section draft?`,
+            data: {
+                headline,
+                subline,
+                ctaText,
+                ctaLink: "/products",
+            },
+        };
+    }
+    static async handleWebsitePublish(companyId, storeSlug, approved, userId) {
+        try {
+            const pubResult = await (0, website_service_1.publishWebsite)(companyId, "Published by SalesmanPro AI Mascot", userId);
+            await this.recordAuditLog({
+                action: "WEBSITE_PUBLISH",
+                companyId,
+                userId: userId || "mascot",
+                details: { versionNumber: pubResult.versionNumber },
+            });
+            return {
+                success: true,
+                summary: `🚀 **Website Published Live!** Revision #${pubResult.versionNumber} is now active. Your public storefront cache has been refreshed.`,
+                data: {
+                    versionNumber: pubResult.versionNumber,
+                    publicUrl: `/site/${storeSlug}`,
+                    storeSlug,
+                },
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to publish website: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    // =========================================================================
+    // INTEGRATIONS & OPERATIONAL OPERATIONS
+    // =========================================================================
+    static async handleListConnections(companyId, storeSlug) {
+        try {
+            const integrations = await onboarding_1.MascotIntegrationOnboardingService.getStoreIntegrationsOverview(companyId);
+            const connected = integrations.filter((i) => i.isConnected);
+            const disconnected = integrations.filter((i) => !i.isConnected);
+            let summary = `Your store has **${connected.length} active integration(s)**:\n`;
+            if (connected.length > 0) {
+                summary += connected.map((c) => `• **${c.name}**: Connected as "${c.accountName}" (${c.status})`).join("\n");
+            }
+            else {
+                summary += "No external accounts are currently connected.";
+            }
+            if (disconnected.length > 0) {
+                summary += `\n\n**Ready to connect (${disconnected.length}):**\n`;
+                summary += disconnected.slice(0, 4).map((d) => `• **${d.name}**: ${d.description}`).join("\n");
+            }
+            return {
+                success: true,
+                summary,
+                data: { connected, disconnected },
+                deepLinks: [
+                    { label: "Manage Integrations", href: `/admin/${storeSlug}/mascot/integrations`, icon: "KeyIcon" },
+                    { label: "Mascot Dashboard", href: `/admin/${storeSlug}/mascot`, icon: "SparklesIcon" },
+                ],
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to load integrations: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleConnectProvider(companyId, storeSlug, entities, userId, userRole) {
+        const providerId = (entities.provider || "facebook").toLowerCase();
+        const origin = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+        try {
+            const guide = await onboarding_1.MascotIntegrationOnboardingService.getOnboardingGuide({
+                providerId,
+                companyId,
+                userRole,
+                userId,
+                storeSlug,
+                origin,
+            });
+            if (!guide.canConnect) {
+                return {
+                    success: false,
+                    summary: `Cannot connect ${guide.providerName}: ${guide.blockReason || guide.summary}`,
+                    deepLinks: [
+                        { label: "Integrations Hub", href: `/admin/${storeSlug}/mascot/integrations` },
+                    ],
+                };
+            }
+            let summary = `### Guided Setup: ${guide.providerName}\n\n`;
+            summary += `${guide.summary}\n\n`;
+            summary += `**What connecting enables:**\n`;
+            summary += guide.whatItEnables.map((e) => `• ${e}`).join("\n");
+            if (guide.connectUrl) {
+                summary += `\n\n👉 **Click the button below** to authenticate securely with ${guide.providerName}. Once authorized, you'll be redirected back to your mascot dashboard.`;
+            }
+            const actionCard = {
+                id: `connect_${providerId}_${Date.now()}`,
+                type: "PREVIEW_CHANGES",
+                title: `Connect ${guide.providerName}`,
+                summary: `Initiate official authorization with ${guide.providerName}`,
+                riskLevel: "SAFE_READ",
+                affectedRecordsCount: 1,
+                changesPreview: [
+                    { field: "Provider", oldValue: "Disconnected", newValue: guide.providerName },
+                    { field: "Authorization", oldValue: "None", newValue: "Official Provider OAuth" },
+                ],
+                primaryActionLabel: guide.connectUrl ? `Authorize ${guide.providerName}` : "Open Integrations Hub",
+                primaryActionPayload: { connectUrl: guide.connectUrl },
+                cancelActionLabel: "Cancel",
+            };
+            return {
+                success: true,
+                summary,
+                data: guide,
+                actionCard,
+                deepLinks: [
+                    ...(guide.connectUrl ? [{ label: `Connect ${guide.providerName}`, href: guide.connectUrl, icon: "ArrowRightIcon" }] : []),
+                    { label: "All Integrations", href: `/admin/${storeSlug}/mascot/integrations`, icon: "KeyIcon" },
+                ],
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to initiate connection: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleVerifyHealth(companyId, storeSlug, entities) {
+        const provider = (entities.provider || "facebook").toLowerCase();
+        try {
+            const integrations = await onboarding_1.MascotIntegrationOnboardingService.getStoreIntegrationsOverview(companyId);
+            const target = integrations.find((i) => i.id === provider && i.isConnected);
+            if (!target || !target.accountId) {
+                return {
+                    success: false,
+                    summary: `No active account for **${provider}** is currently connected to your store. Would you like me to guide you through connecting it?`,
+                    deepLinks: [
+                        { label: `Connect ${provider}`, href: `/admin/${storeSlug}/mascot/integrations` },
+                    ],
+                };
+            }
+            const check = await verification_1.IntegrationVerificationService.verifyAccount({
+                provider,
+                accountId: target.accountId,
+                companyId,
+            });
+            const summary = check.healthy
+                ? `✅ **${target.name} connection is healthy & active!**\n\n${check.message}\n• Latency: ${check.latencyMs || 45}ms\n• Checked: Just now`
+                : `⚠️ **${target.name} connection needs attention:**\n\n${check.message}\n${check.reauthorizationRequired ? "\n👉 Reauthorization is required to refresh security tokens." : ""}`;
+            return {
+                success: check.healthy,
+                summary,
+                data: check,
+                deepLinks: [
+                    { label: "Manage Integrations", href: `/admin/${storeSlug}/mascot/integrations` },
+                ],
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Health check probe failed: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleDisconnectAccount(companyId, storeSlug, entities, userId, approved) {
+        const provider = (entities.provider || "facebook").toLowerCase();
+        const integrations = await onboarding_1.MascotIntegrationOnboardingService.getStoreIntegrationsOverview(companyId);
+        const target = integrations.find((i) => i.id === provider && i.isConnected);
+        if (!target || !target.accountId) {
+            return {
+                success: false,
+                summary: `No active ${provider} account is connected to disconnect.`,
+            };
+        }
+        if (!approved) {
+            const actionCard = {
+                id: `disconnect_${provider}_${Date.now()}`,
+                type: "CONFIRM_ACTION",
+                title: `Disconnect ${target.name}?`,
+                summary: `This will stop scheduled marketing posts and remove credentials for ${target.accountName}.`,
+                riskLevel: "DESTRUCTIVE",
+                affectedRecordsCount: 1,
+                requiresApproval: true,
+                primaryActionLabel: "Yes, Disconnect Account",
+                cancelActionLabel: "Keep Connected",
+            };
+            return {
+                success: false,
+                summary: `Are you sure you want to disconnect **${target.name}** (${target.accountName})? This will stop automated publishing and clear stored tokens.`,
+                actionCard,
+            };
+        }
+        const res = await verification_1.IntegrationVerificationService.disconnectAccount({
+            provider,
+            accountId: target.accountId,
+            companyId,
+            userId,
+        });
+        return {
+            success: true,
+            summary: `Successfully disconnected ${target.name}. Scheduled posts and automated publishing have been paused.`,
+            data: res,
+            deepLinks: [{ label: "Integrations Hub", href: `/admin/${storeSlug}/mascot/integrations` }],
+        };
+    }
+    static async handleQueryActiveTasks(companyId, storeSlug) {
+        try {
+            const activeTasks = await prismadb_1.default.aIAgentTask.findMany({
+                where: {
+                    companyId,
+                    status: { in: ["RUNNING", "QUEUED", "WAITING_APPROVAL", "RETRYING"] },
+                },
+                orderBy: { createdAt: "desc" },
+                take: 5,
+                select: {
+                    id: true,
+                    title: true,
+                    taskType: true,
+                    status: true,
+                    priority: true,
+                    startedAt: true,
+                    createdAt: true,
+                },
+            });
+            if (activeTasks.length === 0) {
+                return {
+                    success: true,
+                    summary: "There are currently **no active background tasks** running for your store. All operations are up to date!",
+                    deepLinks: [
+                        { label: "Mascot Operations Hub", href: `/admin/${storeSlug}/mascot` },
+                        { label: "All Tasks History", href: `/admin/${storeSlug}/mascot/tasks` },
+                    ],
+                };
+            }
+            let summary = `The background agent is currently handling **${activeTasks.length} task(s)**:\n\n`;
+            summary += activeTasks
+                .map((t) => `• **${t.title}** (${t.status.replace("_", " ")})\n  Type: \`${t.taskType}\` • Started: ${new Date(t.createdAt).toLocaleTimeString()}`)
+                .join("\n\n");
+            return {
+                success: true,
+                summary,
+                data: { activeTasks },
+                deepLinks: [
+                    { label: "View Task Monitor", href: `/admin/${storeSlug}/mascot/tasks` },
+                    { label: "Operations Dashboard", href: `/admin/${storeSlug}/mascot` },
+                ],
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to query active tasks: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    static async handleQueryPendingApprovals(companyId, storeSlug) {
+        try {
+            const approvals = await prismadb_1.default.aIAgentApproval.findMany({
+                where: {
+                    companyId,
+                    status: "PENDING",
+                },
+                orderBy: { createdAt: "desc" },
+                take: 5,
+                include: { task: true },
+            });
+            if (approvals.length === 0) {
+                return {
+                    success: true,
+                    summary: "You have **no pending approvals** waiting right now! Everything has been reviewed.",
+                    deepLinks: [
+                        { label: "Mascot Operations", href: `/admin/${storeSlug}/mascot` },
+                    ],
+                };
+            }
+            let summary = `You have **${approvals.length} item(s) awaiting your authorization**:\n\n`;
+            summary += approvals
+                .map((a) => `• **${a.title}**\n  Action: \`${a.actionType}\` • Requested: ${new Date(a.createdAt).toLocaleTimeString()}`)
+                .join("\n\n");
+            summary += `\n\n👉 You can review and authorize these directly in your Approvals Center.`;
+            return {
+                success: true,
+                summary,
+                data: { approvals },
+                deepLinks: [
+                    { label: "Review Approvals", href: `/admin/${storeSlug}/mascot/approvals`, icon: "CheckCircleIcon" },
+                    { label: "Operations Hub", href: `/admin/${storeSlug}/mascot` },
+                ],
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                summary: `Failed to query pending approvals: ${err.message}`,
+                error: err.message,
+            };
+        }
+    }
+    // =========================================================================
     // AUDIT LOGGING
     // =========================================================================
     static async recordAuditLog(params) {
         try {
+            const isValidObjectId = params.userId && /^[0-9a-fA-F]{24}$/.test(params.userId);
             await prismadb_1.default.aIAuditLog.create({
                 data: {
                     action: params.action,
-                    actorId: params.userId,
+                    actorId: isValidObjectId ? params.userId : null,
                     target: params.companyId,
-                    details: params.details,
+                    details: {
+                        ...params.details,
+                        ...(!isValidObjectId && params.userId ? { actor: params.userId } : {}),
+                    },
                 },
             });
         }

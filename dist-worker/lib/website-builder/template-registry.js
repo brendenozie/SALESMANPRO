@@ -10,7 +10,7 @@
  * Guaranteed: Original designs are preserved in full fidelity as the authoritative asset.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTemplatesForCategory = exports.getTemplateForCompany = exports.getAllTemplates = exports.getTemplateById = exports.resolveCanonicalTemplate = exports.TEMPLATE_REGISTRY = exports.ALIAS_TO_CANONICAL_ID = exports.makeShell = exports.makeCoursePages = exports.makeBookingPages = exports.makeEcommercePages = exports.normalizeKey = void 0;
+exports.getTemplatesForCategory = exports.getTemplateForCompany = exports.getAllTemplates = exports.getTemplateById = exports.resolveCanonicalTemplate = exports.TEMPLATE_REGISTRY = exports.resolvePageSlugAlias = exports.PAGE_SLUG_ALIASES = exports.ALIAS_TO_CANONICAL_ID = exports.makeShell = exports.makeCoursePages = exports.makeBookingPages = exports.makeEcommercePages = exports.normalizeKey = void 0;
 const ecommerce_1 = require("./registry/ecommerce");
 const bookings_1 = require("./registry/bookings");
 const content_1 = require("./registry/content");
@@ -24,6 +24,8 @@ const security_1 = require("./registry/security");
 const default_1 = require("./registry/default");
 const aliases_1 = require("./registry/aliases");
 Object.defineProperty(exports, "ALIAS_TO_CANONICAL_ID", { enumerable: true, get: function () { return aliases_1.ALIAS_TO_CANONICAL_ID; } });
+Object.defineProperty(exports, "PAGE_SLUG_ALIASES", { enumerable: true, get: function () { return aliases_1.PAGE_SLUG_ALIASES; } });
+Object.defineProperty(exports, "resolvePageSlugAlias", { enumerable: true, get: function () { return aliases_1.resolvePageSlugAlias; } });
 const helpers_1 = require("./registry/helpers");
 Object.defineProperty(exports, "normalizeKey", { enumerable: true, get: function () { return helpers_1.normalizeKey; } });
 Object.defineProperty(exports, "makeEcommercePages", { enumerable: true, get: function () { return helpers_1.makeEcommercePages; } });

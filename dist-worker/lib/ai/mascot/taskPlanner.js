@@ -249,6 +249,120 @@ class MascotTaskPlanner {
                 actionCard,
             };
         }
+        // --- INTENT: Active Agent Tasks Inquiry ---
+        if (promptLower.includes("working on") ||
+            promptLower.includes("active task") ||
+            promptLower.includes("what is the agent") ||
+            promptLower.includes("current task") ||
+            promptLower.includes("background job")) {
+            const cap = this.findAuthorizedCap(authorizedCaps, "tasks:query_active_tasks");
+            return {
+                intent: "query_active_tasks",
+                capabilityId: cap.id,
+                capability: cap,
+                entities: {},
+                actionType: "READ",
+                requiresApproval: false,
+                creditCost: cap.creditCost,
+                explanation: "Inspect currently active background tasks and worker progress.",
+            };
+        }
+        // --- INTENT: Pending Approvals Inquiry ---
+        if (promptLower.includes("waiting for my approval") ||
+            promptLower.includes("pending approval") ||
+            promptLower.includes("approvals waiting") ||
+            promptLower.includes("tasks need approval") ||
+            (promptLower.includes("approval") && (promptLower.includes("show") || promptLower.includes("what") || promptLower.includes("which")))) {
+            const cap = this.findAuthorizedCap(authorizedCaps, "approvals:query_pending_approvals");
+            return {
+                intent: "query_pending_approvals",
+                capabilityId: cap.id,
+                capability: cap,
+                entities: {},
+                actionType: "READ",
+                requiresApproval: false,
+                creditCost: cap.creditCost,
+                explanation: "Check tasks awaiting human-in-the-loop review and authorization.",
+            };
+        }
+        // --- INTENT: Integrations Overview & Missing Accounts ---
+        if (promptLower.includes("need connecting") ||
+            promptLower.includes("which accounts") ||
+            promptLower.includes("connected accounts") ||
+            promptLower.includes("integration status") ||
+            promptLower.includes("show my integrations") ||
+            (promptLower.includes("integration") && (promptLower.includes("what") || promptLower.includes("show") || promptLower.includes("status")))) {
+            const cap = this.findAuthorizedCap(authorizedCaps, "integrations:list_connections");
+            return {
+                intent: "list_connections",
+                capabilityId: cap.id,
+                capability: cap,
+                entities: {},
+                actionType: "READ",
+                requiresApproval: false,
+                creditCost: cap.creditCost,
+                explanation: "Inspect active and available account integrations for this store.",
+            };
+        }
+        // --- INTENT: Integration Troubleshooting & Health Check ---
+        if (((promptLower.includes("not working") || promptLower.includes("why is")) &&
+            (promptLower.includes("facebook") || promptLower.includes("instagram") || promptLower.includes("whatsapp") || promptLower.includes("connection"))) ||
+            promptLower.includes("test connection") ||
+            promptLower.includes("verify connection") ||
+            promptLower.includes("connection health")) {
+            const cap = this.findAuthorizedCap(authorizedCaps, "integrations:verify_health");
+            const provider = promptLower.includes("facebook")
+                ? "facebook"
+                : promptLower.includes("instagram")
+                    ? "instagram"
+                    : promptLower.includes("whatsapp")
+                        ? "whatsapp"
+                        : promptLower.includes("google")
+                            ? "google"
+                            : "facebook";
+            return {
+                intent: "verify_health",
+                capabilityId: cap.id,
+                capability: cap,
+                entities: { provider },
+                actionType: "READ",
+                requiresApproval: false,
+                creditCost: cap.creditCost,
+                explanation: `Execute health check probe to diagnose ${provider} connection.`,
+            };
+        }
+        // --- INTENT: Connect Account / Guided Integration Onboarding ---
+        if (promptLower.includes("connect") ||
+            promptLower.includes("link my") ||
+            promptLower.includes("set up whatsapp") ||
+            promptLower.includes("setup whatsapp") ||
+            promptLower.includes("configure payment") ||
+            promptLower.includes("connect payment")) {
+            const cap = this.findAuthorizedCap(authorizedCaps, "integrations:connect_provider");
+            let provider = "facebook";
+            if (promptLower.includes("instagram"))
+                provider = "instagram";
+            else if (promptLower.includes("whatsapp"))
+                provider = "whatsapp";
+            else if (promptLower.includes("google"))
+                provider = "google";
+            else if (promptLower.includes("payment") || promptLower.includes("mpesa") || promptLower.includes("daraja"))
+                provider = "mpesa";
+            else if (promptLower.includes("stripe"))
+                provider = "stripe";
+            else if (promptLower.includes("email"))
+                provider = "email_smtp";
+            return {
+                intent: "connect_provider",
+                capabilityId: cap.id,
+                capability: cap,
+                entities: { provider },
+                actionType: "PREPARE",
+                requiresApproval: false,
+                creditCost: cap.creditCost,
+                explanation: `Initiate guided onboarding workflow for ${provider}.`,
+            };
+        }
         // --- INTENT I: WhatsApp Customer Message ---
         if (promptLower.includes("whatsapp") || (promptLower.includes("message") && promptLower.includes("customer"))) {
             const isSend = promptLower.includes("send");

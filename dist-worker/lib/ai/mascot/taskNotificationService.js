@@ -22,7 +22,9 @@ class MascotTaskNotificationService {
         let channels = ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"];
         const taskTitle = task.title || task.taskType.replace(/_/g, " ");
         const dashboardLink = details?.actionUrl ||
-            (task.storeSlug ? `/admin/${task.storeSlug}/ai-tasks?taskId=${task.id}` : `/admin/ai-tasks?taskId=${task.id}`);
+            (eventType === "APPROVAL_REQUESTED"
+                ? (task.storeSlug ? `/admin/${task.storeSlug}/mascot/approvals` : `/dashboards/mascot?tab=approvals`)
+                : (task.storeSlug ? `/admin/${task.storeSlug}/mascot/tasks` : `/dashboards/mascot?tab=tasks`));
         switch (eventType) {
             case "TASK_ACCEPTED":
                 title = `🤖 AI Task Queued: ${taskTitle}`;

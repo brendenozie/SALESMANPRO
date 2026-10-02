@@ -14,7 +14,8 @@ exports.attributeOrderFinancials = exports.DEFAULT_GHUBA_COMMISSION_RATE = expor
 function roundCurrency(amount) {
     if (isNaN(amount) || !isFinite(amount))
         return 0;
-    return Math.round((amount + Number.EPSILON) * 100) / 100;
+    const res = Math.round((amount + Number.EPSILON) * 100) / 100;
+    return res === 0 ? 0 : res;
 }
 exports.roundCurrency = roundCurrency;
 /**

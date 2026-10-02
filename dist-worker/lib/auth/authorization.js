@@ -22,6 +22,7 @@ exports.DASHBOARD_ROLES = new Set([
     "HEAD_OF_SCHOOL",
     "SCHOOL_HEAD",
     "SERVICE_PROVIDER",
+    "RIDER",
 ]);
 exports.CONSUMER_ACCOUNT_ROLES = new Set(["USER", "CONSUMER"]);
 function normalizeRole(role) {

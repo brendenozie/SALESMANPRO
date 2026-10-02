@@ -36,6 +36,8 @@ exports.DEFAULT_MASCOT_SETTINGS = {
         property: true,
         restaurant: true,
         service: true,
+        website: true,
+        integrations: true,
         system: true,
     },
     roleRestrictions: {},

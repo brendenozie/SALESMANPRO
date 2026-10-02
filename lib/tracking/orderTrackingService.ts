@@ -233,7 +233,7 @@ async function fetchFullOrderTracking(
         include: {
           assignment: {
             include: {
-              rider: {
+              riderProfile: {
                 select: {
                   id: true,
                   fullName: true,
@@ -246,8 +246,8 @@ async function fetchFullOrderTracking(
                     select: {
                       make: true,
                       model: true,
-                      plateNumber: true,
-                      vehicleType: true,
+                      registration: true,
+                      type: true,
                       color: true,
                     },
                   },
@@ -260,7 +260,7 @@ async function fetchFullOrderTracking(
       Delivery: {
         include: {
           rider: { select: { id: true, name: true, phone: true, image: true } },
-          vehicle: { select: { plateNumber: true, model: true, type: true } },
+          vehicle: { select: { registration: true, model: true, type: true } },
           tracking: { orderBy: { recordedAt: "desc" }, take: 10 },
           proofs: { orderBy: { createdAt: "desc" }, take: 1 },
         },
@@ -297,7 +297,7 @@ async function fetchFullOrderTracking(
         },
         assignment: {
           include: {
-            rider: {
+            riderProfile: {
               select: {
                 id: true,
                 fullName: true,
@@ -310,8 +310,8 @@ async function fetchFullOrderTracking(
                   select: {
                     make: true,
                     model: true,
-                    plateNumber: true,
-                    vehicleType: true,
+                    registration: true,
+                    type: true,
                     color: true,
                   },
                 },
@@ -373,7 +373,7 @@ async function fetchFullOrderTracking(
 
   if (activeDeliveryReq) {
     const assignment = activeDeliveryReq.assignment;
-    const assignedRider = assignment?.rider;
+    const assignedRider = assignment?.riderProfile;
     const vehicle = assignedRider?.vehicles?.[0];
 
     if (assignedRider) {
@@ -387,8 +387,8 @@ async function fetchFullOrderTracking(
           : null,
         rating: assignedRider.rating || 5.0,
         vehicle: vehicle ? `${vehicle.make} ${vehicle.model}` : "Motorbike",
-        plateNumber: vehicle?.plateNumber || null,
-        vehicleType: vehicle?.vehicleType || "MOTORBIKE",
+        plateNumber: vehicle?.registration || null,
+        vehicleType: vehicle?.type || "MOTORBIKE",
         currentLat: assignedRider.currentLat,
         currentLng: assignedRider.currentLng,
       };
@@ -427,7 +427,7 @@ async function fetchFullOrderTracking(
         phone: activeFleetDelivery.rider.phone,
         image: activeFleetDelivery.rider.image,
         vehicle: activeFleetDelivery.vehicle?.model || null,
-        plateNumber: activeFleetDelivery.vehicle?.plateNumber || null,
+        plateNumber: activeFleetDelivery.vehicle?.registration || null,
         vehicleType: activeFleetDelivery.vehicle?.type || null,
       };
     }
@@ -551,7 +551,7 @@ async function fetchFullOrderTracking(
 
 function formatDeliveryRequestTracking(delReq: any): TrackingResultData {
   const assignment = delReq.assignment;
-  const rider = assignment?.rider;
+  const rider = assignment?.riderProfile;
   const vehicle = rider?.vehicles?.[0];
 
   const riderInfo: TrackingRiderInfo | null = rider
