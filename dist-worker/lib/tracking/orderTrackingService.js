@@ -135,8 +135,8 @@ async function fetchFullOrderTracking(cleanQuery, storeCompanyId) {
                                         select: {
                                             make: true,
                                             model: true,
-                                            registration: true,
-                                            type: true,
+                                            plateNumber: true,
+                                            vehicleType: true,
                                             color: true,
                                         },
                                     },
@@ -198,8 +198,8 @@ async function fetchFullOrderTracking(cleanQuery, storeCompanyId) {
                                     select: {
                                         make: true,
                                         model: true,
-                                        registration: true,
-                                        type: true,
+                                        plateNumber: true,
+                                        vehicleType: true,
                                         color: true,
                                     },
                                 },
@@ -234,13 +234,14 @@ async function fetchFullOrderTracking(cleanQuery, storeCompanyId) {
     const listingMap = new Map(listings.map((l) => [l.id, l]));
     const enrichedItems = order.items.map((item) => {
         const listing = item.marketplaceListingId ? listingMap.get(item.marketplaceListingId) : null;
+        const firstImage = listing?.images?.[0];
         return {
             id: item.id,
             name: listing?.name || "Store Item",
             quantity: item.quantity,
             price: item.price,
             totalPrice: item.totalPrice,
-            image: listing?.images && listing.images.length > 0 ? listing.images[0] : null,
+            image: typeof firstImage === "string" ? firstImage : null,
             selectedOptions: item.selectedOptions,
         };
     });
@@ -263,8 +264,8 @@ async function fetchFullOrderTracking(cleanQuery, storeCompanyId) {
                     : null,
                 rating: assignedRider.rating || 5.0,
                 vehicle: vehicle ? `${vehicle.make} ${vehicle.model}` : "Motorbike",
-                plateNumber: vehicle?.registration || null,
-                vehicleType: vehicle?.type || "MOTORBIKE",
+                plateNumber: vehicle?.plateNumber || null,
+                vehicleType: vehicle?.vehicleType || "MOTORBIKE",
                 currentLat: assignedRider.currentLat,
                 currentLng: assignedRider.currentLng,
             };
