@@ -30,7 +30,7 @@ import { MARKETPLACE_TEMPLATES } from "./registry/marketplace";
 import { SECURITY_TEMPLATES } from "./registry/security";
 import { DEFAULT_TEMPLATES } from "./registry/default";
 
-import { ALIAS_TO_CANONICAL_ID, initAliases } from "./registry/aliases";
+import { ALIAS_TO_CANONICAL_ID, PAGE_SLUG_ALIASES, resolvePageSlugAlias, initAliases } from "./registry/aliases";
 import { normalizeKey, makeEcommercePages, makeBookingPages, makeCoursePages, makeShell } from "./registry/helpers";
 
 export type {
@@ -49,7 +49,10 @@ export {
   makeCoursePages,
   makeShell,
   ALIAS_TO_CANONICAL_ID,
+  PAGE_SLUG_ALIASES,
+  resolvePageSlugAlias,
 };
+
 
 /* =========================================================================
    CANONICAL TEMPLATE REGISTRY (ALL 56 TEMPLATES MERGED)

@@ -9,6 +9,8 @@ import type { Metadata } from "next";
 import { SEOService } from "@/lib/seo";
 import { isGhubaMarketplace } from "@/lib/ghuba-helpers";
 
+import { resolvePageSlugAlias } from "@/lib/website-builder/template-registry";
+
 export const revalidate = 60;
 
 interface CustomStorePageProps {
@@ -20,7 +22,9 @@ interface CustomStorePageProps {
 
 export async function generateMetadata({ params }: CustomStorePageProps): Promise<Metadata> {
   const { slug, pageSlug } = await params;
-  const currentSlug = pageSlug ? pageSlug.join("/") : "home";
+  const rawSlug = pageSlug ? pageSlug.join("/") : "home";
+  const currentSlug = rawSlug.trim().toLowerCase();
+  const targetSlug = resolvePageSlugAlias(currentSlug);
   const { raw } = await loadStore(slug);
 
   if (!raw) {
@@ -33,7 +37,10 @@ export async function generateMetadata({ params }: CustomStorePageProps): Promis
   }
 
   const page = (activeConfig.pages || []).find(
-    (p: any) => p.slug === currentSlug || (p.isHomepage && currentSlug === "home")
+    (p: any) =>
+      p.slug === currentSlug ||
+      p.slug === targetSlug ||
+      (p.isHomepage && (currentSlug === "home" || targetSlug === "home"))
   );
 
   const pageTitle = page?.seo?.metaTitle || page?.title || currentSlug.replace(/-/g, " ");
@@ -75,14 +82,15 @@ export async function generateMetadata({ params }: CustomStorePageProps): Promis
 
 export default async function CustomStorePage({ params }: CustomStorePageProps) {
   const { slug, pageSlug } = await params;
-  const currentSlug = pageSlug ? pageSlug.join("/") : "home";
+  const rawSlug = pageSlug ? pageSlug.join("/") : "home";
+  const currentSlug = rawSlug.trim().toLowerCase();
+  const targetSlug = resolvePageSlugAlias(currentSlug);
 
   const { pageData, raw, canonicalTemplate } = await loadStore(slug);
 
   let activeConfig = raw?.website?.publishedConfig as any;
 
-  // Compile from template defaults lazily (once) only if there is no published config.
-  // This avoids calling compileWebsiteFromCompany() multiple times per request.
+  // Compile from template defaults lazily (once) only if needed.
   let compiledFallback: ReturnType<typeof compileWebsiteFromCompany> | null = null;
   const getCompiledFallback = () => {
     if (!compiledFallback) compiledFallback = compileWebsiteFromCompany(raw);
@@ -93,35 +101,67 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
     activeConfig = getCompiledFallback();
   }
 
-  // Check if page exists in active config
-  let pageExists = (activeConfig.pages || []).some(
-    (p: any) => p.slug === currentSlug || (p.isHomepage && currentSlug === "home")
+  // 1. Direct match on currentSlug or targetSlug in activeConfig.pages
+  let matchedPage = (activeConfig.pages || []).find(
+    (p: any) =>
+      p.slug === currentSlug ||
+      p.slug === targetSlug ||
+      (p.isHomepage && (currentSlug === "home" || targetSlug === "home"))
   );
 
-  // If not found in custom pages, check if it's a known canonical template page
-  if (!pageExists) {
-    const isTemplatePage = canonicalTemplate.defaultPages.some((p) => p.slug === currentSlug);
-    if (isTemplatePage) {
-      // Re-use the already-compiled fallback — no second compile needed
-      const freshConfig = getCompiledFallback();
+  // 2. If not found in active config, check template defaultPages or compiled fallback
+  if (!matchedPage) {
+    const freshConfig = getCompiledFallback();
+    matchedPage = (freshConfig.pages || []).find(
+      (p: any) =>
+        p.slug === currentSlug ||
+        p.slug === targetSlug ||
+        (p.isHomepage && (currentSlug === "home" || targetSlug === "home"))
+    );
+
+    if (matchedPage) {
       activeConfig = {
         ...activeConfig,
-        pages: [...(activeConfig.pages || []), ...(freshConfig.pages.filter((p) => p.slug === currentSlug))],
+        pages: [...(activeConfig.pages || []), { ...matchedPage, slug: currentSlug }],
       };
-      pageExists = true;
     }
   }
 
-  if (!pageExists) {
+  // 3. Fallback for common navigation items (e.g. products/shop, categories, about, contact)
+  if (!matchedPage) {
+    const freshConfig = getCompiledFallback();
+    // Try matching any page by pageType
+    if (["shop", "products", "catalog", "store"].includes(currentSlug)) {
+      matchedPage = (freshConfig.pages || []).find((p: any) => p.pageType === "PRODUCT_LIST" || p.slug === "products");
+    } else if (["categories", "departments", "collections"].includes(currentSlug)) {
+      matchedPage = (freshConfig.pages || []).find((p: any) => p.pageType === "CATEGORY_LIST" || p.slug === "categories");
+    } else if (["about", "about-us", "story", "our-story"].includes(currentSlug)) {
+      matchedPage = (freshConfig.pages || []).find((p: any) => p.pageType === "ABOUT" || p.slug === "about");
+    } else if (["contact", "contact-us", "support"].includes(currentSlug)) {
+      matchedPage = (freshConfig.pages || []).find((p: any) => p.pageType === "CONTACT" || p.slug === "contact");
+    }
+
+    if (matchedPage) {
+      activeConfig = {
+        ...activeConfig,
+        pages: [...(activeConfig.pages || []), { ...matchedPage, slug: currentSlug }],
+      };
+    }
+  }
+
+  if (!matchedPage) {
     notFound();
   }
+
+  // Effective slug to pass down to renderer (matching activePage)
+  const effectiveSlug = matchedPage.slug || currentSlug;
 
   return (
     <main className="text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto">
       <StoreDataSync data={pageData} />
       <WebsiteRenderer
         config={activeConfig}
-        pageSlug={currentSlug}
+        pageSlug={effectiveSlug}
         companyId={raw.id}
         storeLogoUrl={raw.logoUrl || raw.bannerUrl}
         contactPhone={raw.contactPhone}

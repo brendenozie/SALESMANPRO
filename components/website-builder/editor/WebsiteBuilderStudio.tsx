@@ -1014,6 +1014,7 @@ export default function WebsiteBuilderStudio({
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
   const [activeTab, setActiveTab] = useState<SidebarTab>("sections");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -1705,21 +1706,31 @@ export default function WebsiteBuilderStudio({
   // Viewport Container Widths
   const viewportWidthClass = {
     desktop: "w-full max-w-full",
-    tablet: "w-[768px] shadow-2xl rounded-2xl border border-zinc-700/50 my-6 mx-auto",
-    mobile: "w-[390px] shadow-2xl rounded-3xl border border-zinc-700/50 my-6 mx-auto",
+    tablet: "w-full max-w-[768px] shadow-2xl rounded-2xl border border-zinc-700/50 my-4 sm:my-6 mx-auto",
+    mobile: "w-full max-w-[390px] shadow-2xl rounded-3xl border border-zinc-700/50 my-4 sm:my-6 mx-auto",
   }[viewport];
 
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden select-none">
       {/* 1. TOP HEADER APP BAR */}
-      <header className="h-16 shrink-0 flex items-center justify-between px-4 lg:px-6 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 z-30 shadow-xs">
+      <header className="h-16 shrink-0 flex items-center justify-between px-3 sm:px-4 lg:px-6 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 z-30 shadow-xs">
         {/* Left: Store Name & Page Selector */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Mobile Sidebar Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="lg:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            title="Toggle Navigation & Tools"
+          >
+            <Bars3Icon className="w-5 h-5" />
+          </button>
+
           <div className="flex items-center gap-2">
-            <span className="font-black text-base text-zinc-900 dark:text-white tracking-tight">
+            <span className="font-black text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight truncate max-w-[120px] sm:max-w-none">
               {storeName}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+            <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               Website Builder
             </span>
             <span className="hidden md:flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
@@ -1728,7 +1739,7 @@ export default function WebsiteBuilderStudio({
             </span>
           </div>
 
-          <div className="h-4 w-px bg-zinc-200 dark:border-zinc-800" />
+          <div className="hidden sm:block h-4 w-px bg-zinc-200 dark:border-zinc-800" />
 
           {/* Page Picker Dropdown */}
           <div className="flex items-center gap-2">
@@ -1908,9 +1919,34 @@ export default function WebsiteBuilderStudio({
 
       {/* 2. STUDIO WORKSPACE BODY */}
       <div className="flex grow overflow-hidden relative">
-        {/* LEFT SIDEBAR (Hidden in Preview Mode) */}
+        {/* Backdrop for mobile sidebar drawer */}
+        {!isPreviewMode && isMobileSidebarOpen && (
+          <div
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-xs"
+          />
+        )}
+
+        {/* LEFT SIDEBAR (Hidden in Preview Mode, Drawer on Mobile) */}
         {!isPreviewMode && (
-          <aside className="w-80 shrink-0 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col z-20">
+          <aside
+            className={`
+              ${isMobileSidebarOpen ? "fixed inset-y-0 left-0 z-50 shadow-2xl flex" : "hidden lg:flex"}
+              w-80 shrink-0 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex-col z-20 transition-all duration-200
+            `}
+          >
+            {/* Mobile Close Button Bar */}
+            <div className="lg:hidden flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60">
+              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">Theme & Sections</span>
+              <button
+                type="button"
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+
             {/* Sidebar Navigation Tabs */}
             <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 p-1">
               <button
@@ -2715,7 +2751,7 @@ export default function WebsiteBuilderStudio({
 
         {/* RIGHT INSPECTOR PANEL (When Element or Section is Selected) */}
         {!isPreviewMode && (selectedElement || selectedSection) && (
-          <aside className="w-80 shrink-0 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-20 animate-fadeIn">
+          <aside className="fixed inset-y-0 right-0 z-50 shadow-2xl w-full max-w-[340px] lg:relative lg:inset-auto lg:shadow-none lg:w-80 shrink-0 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-20 animate-fadeIn">
             {selectedElement ? (
               // ELEMENT-LEVEL PROPERTY INSPECTOR
               <>

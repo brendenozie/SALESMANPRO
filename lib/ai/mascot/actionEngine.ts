@@ -11,6 +11,8 @@
 import prisma from "@/server/db/prismadb";
 import { MascotContext, MascotCapability, MascotExecutionResult, MascotActionCard } from "./types";
 import { creditLedger } from "@/lib/ai/creditLedger";
+import { getOrCreateWebsite, saveWebsiteDraft, publishWebsite } from "@/lib/website-builder/website-service";
+import { getTemplateById } from "@/lib/website-builder/template-registry";
 
 export class MascotActionEngine {
   /**
@@ -84,6 +86,30 @@ export class MascotActionEngine {
       let result: MascotExecutionResult;
 
       switch (capability.id) {
+        case "website:view_config":
+          result = await this.handleWebsiteViewConfig(companyId, storeSlug);
+          break;
+
+        case "website:update_theme":
+          result = await this.handleWebsiteUpdateTheme(companyId, storeSlug, entities, userId);
+          break;
+
+        case "website:update_section":
+          result = await this.handleWebsiteUpdateSection(companyId, storeSlug, entities, userId);
+          break;
+
+        case "website:reorder_sections":
+          result = await this.handleWebsiteReorderSections(companyId, storeSlug, entities, userId);
+          break;
+
+        case "website:generate_content":
+          result = await this.handleWebsiteGenerateContent(companyId, storeSlug, entities);
+          break;
+
+        case "website:publish_website":
+          result = await this.handleWebsitePublish(companyId, storeSlug, approved, userId);
+          break;
+
         case "inventory:check_stock_levels":
           result = await this.handleCheckInventory(companyId, storeSlug, entities);
           break;
@@ -772,6 +798,286 @@ export class MascotActionEngine {
   }
 
   // =========================================================================
+  // WEBSITE BUILDER & STOREFRONT HANDLERS
+  // =========================================================================
+
+  private static async handleWebsiteViewConfig(
+    companyId: string,
+    storeSlug: string,
+  ): Promise<MascotExecutionResult> {
+    try {
+      const { website, config } = await getOrCreateWebsite(companyId || storeSlug);
+      const template = getTemplateById(config.templateKey);
+
+      const pageCount = (config.pages || []).length;
+      const homePage = (config.pages || []).find((p) => p.isHomepage || p.slug === "home");
+      const sectionCount = (homePage?.sections || []).length;
+      const isDraftNewer = website?.updatedAt && website?.publishedAt ? new Date(website.updatedAt) > new Date(website.publishedAt) : false;
+
+      const summary = `Storefront is powered by **${template?.name || config.templateKey}** (${config.templateKey}). ` +
+        `Layout: \`${template?.shellLayout || "Default"}\`, Body: \`${template?.bodyComponent || "DefaultSite"}\`. ` +
+        `Current site contains **${pageCount} pages** and **${sectionCount} active sections** on the homepage. ` +
+        (isDraftNewer ? `⚠️ You have unpublished draft changes ready to preview or publish.` : `✅ All changes are published live.`);
+
+      return {
+        success: true,
+        summary,
+        data: {
+          templateKey: config.templateKey,
+          themeName: template?.name,
+          category: template?.category,
+          variant: template?.variant,
+          pageCount,
+          sectionCount,
+          isDraftNewer,
+          primaryColor: config.theme?.primaryColor,
+          secondaryColor: config.theme?.secondaryColor,
+          builderUrl: `/admin/${storeSlug}/website-builder`,
+        },
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Could not retrieve website configuration: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleWebsiteUpdateTheme(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>,
+    userId?: string,
+  ): Promise<MascotExecutionResult> {
+    try {
+      const { config } = await getOrCreateWebsite(companyId || storeSlug);
+
+      const updatedTheme = {
+        ...config.theme,
+        ...(entities.primaryColor ? { primaryColor: entities.primaryColor } : {}),
+        ...(entities.secondaryColor ? { secondaryColor: entities.secondaryColor } : {}),
+        ...(entities.accentColor ? { accentColor: entities.accentColor } : {}),
+        ...(entities.headingFont ? { headingFont: entities.headingFont } : {}),
+        ...(entities.bodyFont ? { bodyFont: entities.bodyFont } : {}),
+      };
+
+      const updatedConfig = {
+        ...config,
+        theme: updatedTheme,
+      };
+
+      await saveWebsiteDraft(companyId, updatedConfig, userId);
+
+      await this.recordAuditLog({
+        action: "WEBSITE_UPDATE_THEME",
+        companyId,
+        userId: userId || "mascot",
+        details: { updatedTheme },
+      });
+
+      return {
+        success: true,
+        summary: `Theme appearance updated successfully! Primary: \`${updatedTheme.primaryColor}\`, Font: \`${updatedTheme.headingFont}\`. Your changes have been saved to your draft. Open the Website Builder to preview or publish.`,
+        data: { theme: updatedTheme, builderUrl: `/admin/${storeSlug}/website-builder` },
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to update theme colors: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleWebsiteUpdateSection(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>,
+    userId?: string,
+  ): Promise<MascotExecutionResult> {
+    try {
+      const { config } = await getOrCreateWebsite(companyId || storeSlug);
+      const targetSlug = entities.pageSlug || "home";
+
+      let pageFound = false;
+      const updatedPages = (config.pages || []).map((page) => {
+        if (page.slug !== targetSlug && !(page.isHomepage && targetSlug === "home")) {
+          return page;
+        }
+        pageFound = true;
+
+        const updatedSections = (page.sections || []).map((sec, idx) => {
+          const isTarget = entities.sectionId ? sec.id === entities.sectionId : (entities.sectionType ? sec.type === entities.sectionType : idx === 0);
+          if (!isTarget) return sec;
+
+          return {
+            ...sec,
+            content: {
+              ...(sec.content || {}),
+              ...(entities.headline ? { headline: entities.headline, title: entities.headline } : {}),
+              ...(entities.title ? { title: entities.title, headline: entities.title } : {}),
+              ...(entities.subline ? { subline: entities.subline, subtitle: entities.subline, description: entities.subline } : {}),
+              ...(entities.eyebrow ? { eyebrow: entities.eyebrow, badgeText: entities.eyebrow } : {}),
+              ...(entities.ctaText ? { ctaText: entities.ctaText, primaryButtonText: entities.ctaText, buttonText: entities.ctaText } : {}),
+              ...(entities.ctaLink ? { ctaLink: entities.ctaLink, primaryButtonUrl: entities.ctaLink, buttonUrl: entities.ctaLink } : {}),
+              ...(entities.content ? entities.content : {}),
+            },
+          };
+        });
+
+        return { ...page, sections: updatedSections };
+      });
+
+      if (!pageFound) {
+        return {
+          success: false,
+          summary: `Page '${targetSlug}' was not found in your store's website.`,
+        };
+      }
+
+      const updatedConfig = { ...config, pages: updatedPages };
+      await saveWebsiteDraft(companyId, updatedConfig, userId);
+
+      await this.recordAuditLog({
+        action: "WEBSITE_UPDATE_SECTION",
+        companyId,
+        userId: userId || "mascot",
+        details: { targetSlug, entities },
+      });
+
+      return {
+        success: true,
+        summary: `Website section on page '${targetSlug}' has been updated with your new content and saved to the draft.`,
+        data: { builderUrl: `/admin/${storeSlug}/website-builder` },
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to update section content: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleWebsiteReorderSections(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>,
+    userId?: string,
+  ): Promise<MascotExecutionResult> {
+    try {
+      const { config } = await getOrCreateWebsite(companyId || storeSlug);
+      const targetSlug = entities.pageSlug || "home";
+
+      const updatedPages = (config.pages || []).map((page) => {
+        if (page.slug !== targetSlug && !(page.isHomepage && targetSlug === "home")) {
+          return page;
+        }
+
+        let sections = [...(page.sections || [])];
+        if (entities.sectionId && entities.isVisible !== undefined) {
+          sections = sections.map((s) => s.id === entities.sectionId ? { ...s, isVisible: !!entities.isVisible } : s);
+        } else if (Array.isArray(entities.orderedIds)) {
+          const map = new Map(sections.map((s) => [s.id, s]));
+          sections = entities.orderedIds
+            .map((id: string, idx: number) => {
+              const sec = map.get(id);
+              return sec ? { ...sec, order: idx } : null;
+            })
+            .filter(Boolean) as any[];
+        }
+
+        return { ...page, sections };
+      });
+
+      const updatedConfig = { ...config, pages: updatedPages };
+      await saveWebsiteDraft(companyId, updatedConfig, userId);
+
+      await this.recordAuditLog({
+        action: "WEBSITE_REORDER_SECTIONS",
+        companyId,
+        userId: userId || "mascot",
+        details: { targetSlug, entities },
+      });
+
+      return {
+        success: true,
+        summary: `Section arrangement updated and saved to draft for page '${targetSlug}'.`,
+        data: { builderUrl: `/admin/${storeSlug}/website-builder` },
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to reorder sections: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleWebsiteGenerateContent(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>,
+  ): Promise<MascotExecutionResult> {
+    const { config } = await getOrCreateWebsite(companyId || storeSlug);
+    const storeName = config.storeName || "Our Store";
+
+    const headline = entities.headline || `Discover Exceptional Quality at ${storeName}`;
+    const subline = entities.subline || `Crafted for discerning clients who demand durability, style, and premier service.`;
+    const ctaText = entities.ctaText || "Explore Products";
+
+    return {
+      success: true,
+      summary: `I've prepared suggested promotional content for ${storeName}:\n\n` +
+        `**Headline:** ${headline}\n` +
+        `**Subline:** ${subline}\n` +
+        `**CTA Button:** ${ctaText}\n\n` +
+        `Would you like me to apply this copy to your homepage hero section draft?`,
+      data: {
+        headline,
+        subline,
+        ctaText,
+        ctaLink: "/products",
+      },
+    };
+  }
+
+  private static async handleWebsitePublish(
+    companyId: string,
+    storeSlug: string,
+    approved?: boolean,
+    userId?: string,
+  ): Promise<MascotExecutionResult> {
+    try {
+      const pubResult = await publishWebsite(companyId, "Published by SalesmanPro AI Mascot", userId);
+
+      await this.recordAuditLog({
+        action: "WEBSITE_PUBLISH",
+        companyId,
+        userId: userId || "mascot",
+        details: { versionNumber: pubResult.versionNumber },
+      });
+
+      return {
+        success: true,
+        summary: `🚀 **Website Published Live!** Revision #${pubResult.versionNumber} is now active. Your public storefront cache has been refreshed.`,
+        data: {
+          versionNumber: pubResult.versionNumber,
+          publicUrl: `/site/${storeSlug}`,
+          storeSlug,
+        },
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to publish website: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  // =========================================================================
   // AUDIT LOGGING
   // =========================================================================
 
@@ -782,12 +1088,16 @@ export class MascotActionEngine {
     details: Record<string, any>;
   }) {
     try {
+      const isValidObjectId = params.userId && /^[0-9a-fA-F]{24}$/.test(params.userId);
       await prisma.aIAuditLog.create({
         data: {
           action: params.action,
-          actorId: params.userId,
+          actorId: isValidObjectId ? params.userId : null,
           target: params.companyId,
-          details: params.details,
+          details: {
+            ...params.details,
+            ...(!isValidObjectId && params.userId ? { actor: params.userId } : {}),
+          },
         },
       });
     } catch (err) {
@@ -795,3 +1105,4 @@ export class MascotActionEngine {
     }
   }
 }
+

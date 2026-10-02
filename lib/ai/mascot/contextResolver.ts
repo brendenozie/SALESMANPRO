@@ -214,11 +214,12 @@ export class MascotContextResolver {
       "messaging",
       "marketing",
       "staff",
+      "website",
       "system",
     ];
 
     if (c.includes("school") || c.includes("tutor") || c.includes("education") || c.includes("student")) {
-      return ["education", "finance", "messaging", "staff", "system"];
+      return ["education", "finance", "messaging", "staff", "website", "system"];
     }
 
     if (c.includes("restaurant") || c.includes("food") || c.includes("cake")) {
@@ -226,11 +227,11 @@ export class MascotContextResolver {
     }
 
     if (c.includes("property") || c.includes("real estate")) {
-      return ["property", "finance", "messaging", "marketing", "staff", "system"];
+      return ["property", "finance", "messaging", "marketing", "staff", "website", "system"];
     }
 
     if (c.includes("service") || c.includes("booking") || c.includes("appointment")) {
-      return ["service", "finance", "messaging", "marketing", "staff", "system"];
+      return ["service", "finance", "messaging", "marketing", "staff", "website", "system"];
     }
 
     // Default retail/e-commerce
@@ -251,7 +252,21 @@ export class MascotContextResolver {
     // Filter helper
     const hasCap = (id: string) => authorizedCaps.some((c) => c.id === id || c.capability === id);
 
-    if (path.includes("inventory") || path.includes("stock")) {
+    if (path.includes("website-builder") || path.includes("website") || path.includes("site-builder")) {
+      if (hasCap("website:view_config")) {
+        suggestions.push("What theme is currently active on my store?");
+        suggestions.push("Show my website pages and sections");
+      }
+      if (hasCap("website:update_section")) {
+        suggestions.push("Update my homepage hero headline");
+      }
+      if (hasCap("website:update_theme")) {
+        suggestions.push("Suggest theme color palette for this store");
+      }
+      if (hasCap("website:publish_website")) {
+        suggestions.push("Publish all website builder changes live");
+      }
+    } else if (path.includes("inventory") || path.includes("stock")) {
       if (hasCap("inventory:check_stock_levels")) {
         suggestions.push("Which products are low in stock?");
         suggestions.push("What items should I reorder today?");
