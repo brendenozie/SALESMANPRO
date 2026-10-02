@@ -21,6 +21,7 @@ export interface CreditEarningPayload {
   grossAmount: number;
   platformCommission: number;
   netAmount: number;
+  paymentType?: string;
 }
 
 export interface RequestPayoutPayload {
@@ -45,6 +46,7 @@ export class RiderLedgerService {
       grossAmount,
       platformCommission,
       netAmount,
+      paymentType = "GHUBA_ESCROW",
     } = payload;
 
     // Check if an earning has already been recorded for this assignment to prevent duplicate credits
@@ -69,18 +71,44 @@ export class RiderLedgerService {
           grossAmount,
           platformCommission,
           netAmount,
+          paymentType,
           status: "EARNED",
         },
       });
 
-      // 2. Update rider wallet balance and total earnings
-      await tx.riderProfile.update({
-        where: { id: riderProfileId },
-        data: {
-          walletBalance: { increment: netAmount },
-          totalEarnings: { increment: netAmount },
-        },
-      });
+      // 2. Update rider wallet balance and total earnings based on payment type
+      if (paymentType === "CASH_ON_PICKUP" || paymentType === "CASH_ON_DELIVERY") {
+        // Rider collected full gross amount in cash from store or customer.
+        // Ghuba's 4% transaction cost is debited from rider's wallet balance.
+        await tx.riderProfile.update({
+          where: { id: riderProfileId },
+          data: {
+            walletBalance: { decrement: platformCommission },
+            totalEarnings: { increment: netAmount },
+          },
+        });
+      } else {
+        // GHUBA_ESCROW: Store deposited the delivery fee with Ghuba upfront.
+        // Release escrow and credit net rider earnings directly into rider's wallet.
+        await tx.riderProfile.update({
+          where: { id: riderProfileId },
+          data: {
+            walletBalance: { increment: netAmount },
+            totalEarnings: { increment: netAmount },
+          },
+        });
+
+        if (deliveryRequestId) {
+          await tx.deliveryRequest.update({
+            where: { id: deliveryRequestId },
+            data: { escrowStatus: "RELEASED_TO_RIDER" },
+          });
+          await tx.deliveryAssignment.update({
+            where: { id: assignmentId },
+            data: { escrowStatus: "RELEASED_TO_RIDER" },
+          });
+        }
+      }
 
       return earning;
     });

@@ -9444,11 +9444,18 @@ model DeliveryRequest {
   vehicleTypeRequired    String?               @default("ANY") // ANY, MOTORBIKE, BICYCLE, CAR, VAN
   deliveryPriority       String                @default("STANDARD") // STANDARD, EXPRESS, URGENT
   
-  // Financial breakdown
+  // Financial breakdown & Escrow
   customerDeliveryCharge Float                 @default(0.0)
   offeredRiderFee        Float
   platformFee            Float                 @default(0.0)
   finalAgreedFee         Float?
+  
+  // Payment Type & Ghuba Escrow Deposit
+  paymentType            String                @default("GHUBA_ESCROW") // GHUBA_ESCROW, CASH_ON_PICKUP, CASH_ON_DELIVERY
+  escrowStatus           String                @default("DEPOSITED") // PENDING_DEPOSIT, DEPOSITED, RELEASED_TO_RIDER, REFUNDED, NOT_APPLICABLE
+  escrowAmount           Float                 @default(0.0)
+  escrowDepositedAt      DateTime?
+  transactionFeePercent  Float                 @default(4.0)
   
   // Allocation mode & bidding
   biddingEnabled         Boolean               @default(false)
@@ -9533,6 +9540,9 @@ model DeliveryAssignment {
   agreedFee            Float
   platformCommission   Float           @default(0.0)
   netRiderEarning      Float
+  paymentType          String          @default("GHUBA_ESCROW")
+  escrowStatus         String          @default("DEPOSITED")
+  escrowAmount         Float           @default(0.0)
   
   status               String          @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED, REASSIGNED
   assignedAt           DateTime        @default(now())
@@ -9643,6 +9653,19 @@ model StoreDeliveryConfig {
   
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+}
+
+model PlatformDeliveryConfig {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  transactionFeePercent Float    @default(4.0) // 4% default transaction cost on rider fee, configurable by Super Admin
+  minRiderFee           Float    @default(100.0)
+  maxRiderFee           Float    @default(5000.0)
+  defaultDispatchRadiusKm Float  @default(5.0)
+  maxDispatchRadiusKm   Float    @default(25.0)
+  escrowAutoRelease     Boolean  @default(true)
+  updatedBy             String?
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
 }
 
 model Idempotency {

@@ -41,6 +41,7 @@ export interface CreateDeliveryRequestInput {
   customerDeliveryCharge?: number;
   offeredRiderFee: number;
   platformFee?: number;
+  paymentType?: "GHUBA_ESCROW" | "CASH_ON_PICKUP" | "CASH_ON_DELIVERY";
   biddingEnabled?: boolean;
   minBidFee?: number;
   maxBidFee?: number;
@@ -93,8 +94,17 @@ export class DispatchEngine {
 
     const trackingNumber = `DEL-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
-    // Calculate platform commission (default 10% or admin-configured)
-    const platformFee = input.platformFee ?? Math.round(input.offeredRiderFee * 0.1);
+    // Calculate platform transaction cost (default 4% or SuperAdmin-configured)
+    const platformConfig = await prisma.platformDeliveryConfig.findFirst();
+    const feePercent = platformConfig?.transactionFeePercent ?? 4.0;
+    const platformFee = input.platformFee ?? Math.round((input.offeredRiderFee * feePercent) / 100);
+
+    // Escrow Deposit determination
+    const paymentType = input.paymentType || "GHUBA_ESCROW";
+    const isEscrow = paymentType === "GHUBA_ESCROW";
+    const escrowStatus = isEscrow ? "DEPOSITED" : "NOT_APPLICABLE";
+    const escrowAmount = isEscrow ? input.offeredRiderFee : 0.0;
+    const escrowDepositedAt = isEscrow ? new Date() : null;
 
     // 3. Create Delivery Request Record in DB
     const request = await prisma.deliveryRequest.create({
@@ -123,6 +133,11 @@ export class DispatchEngine {
         customerDeliveryCharge: input.customerDeliveryCharge ?? 0,
         offeredRiderFee: input.offeredRiderFee,
         platformFee,
+        paymentType,
+        escrowStatus,
+        escrowAmount,
+        escrowDepositedAt,
+        transactionFeePercent: feePercent,
         biddingEnabled: input.biddingEnabled ?? (storeConfig?.biddingAllowed ?? true),
         minBidFee: input.minBidFee || null,
         maxBidFee: input.maxBidFee || null,
@@ -366,7 +381,8 @@ export class DispatchEngine {
     }
 
     const agreedFee = request.offeredRiderFee;
-    const platformCommission = request.platformFee ?? Math.round(agreedFee * 0.1);
+    const feePercent = request.transactionFeePercent ?? 4.0;
+    const platformCommission = request.platformFee ?? Math.round((agreedFee * feePercent) / 100);
     const netRiderEarning = agreedFee - platformCommission;
 
     // Create assignment and update rider active status
@@ -378,6 +394,9 @@ export class DispatchEngine {
         agreedFee,
         platformCommission,
         netRiderEarning,
+        paymentType: request.paymentType,
+        escrowStatus: request.escrowStatus,
+        escrowAmount: request.escrowAmount,
         status: "ACTIVE",
       },
     });
@@ -545,6 +564,16 @@ export class DispatchEngine {
       throw new Error("Rider currently has another active delivery.");
     }
 
+    const platformConfig = await prisma.platformDeliveryConfig.findFirst();
+    const feePercent = platformConfig?.transactionFeePercent ?? 4.0;
+    const platformCommission = Math.round((bid.proposedFee * feePercent) / 100);
+    const netRiderEarning = bid.proposedFee - platformCommission;
+
+    const paymentType = bid.deliveryRequest.paymentType || "GHUBA_ESCROW";
+    const isEscrow = paymentType === "GHUBA_ESCROW";
+    const escrowAmount = isEscrow ? bid.proposedFee : 0.0;
+    const escrowStatus = isEscrow ? "DEPOSITED" : "NOT_APPLICABLE";
+
     // Atomic conditional update
     const result = await prisma.deliveryRequest.updateMany({
       where: {
@@ -556,15 +585,16 @@ export class DispatchEngine {
         status: DeliveryRequestStatus.ASSIGNED,
         assignedRiderProfileId: rider.id,
         finalAgreedFee: bid.proposedFee,
+        platformFee: platformCommission,
+        escrowAmount,
+        escrowStatus,
+        escrowDepositedAt: isEscrow ? new Date() : null,
       },
     });
 
     if (result.count === 0) {
       throw new Error("Request already assigned or closed.");
     }
-
-    const platformCommission = Math.round(bid.proposedFee * 0.1);
-    const netRiderEarning = bid.proposedFee - platformCommission;
 
     const assignment = await prisma.deliveryAssignment.create({
       data: {
@@ -574,6 +604,9 @@ export class DispatchEngine {
         agreedFee: bid.proposedFee,
         platformCommission,
         netRiderEarning,
+        paymentType,
+        escrowStatus,
+        escrowAmount,
         status: "ACTIVE",
       },
     });
@@ -675,18 +708,16 @@ export class DispatchEngine {
         });
       }
 
-      // Free rider's active delivery slot
+      // Free rider's active delivery slot and update trip stats
       await prisma.riderProfile.update({
         where: { id: riderProfileId },
         data: {
           activeDeliveryRequestId: null,
           totalCompletedDeliveries: { increment: 1 },
-          walletBalance: { increment: assignment.netRiderEarning },
-          totalEarnings: { increment: assignment.netRiderEarning },
         },
       });
 
-      // Credit rider financial earnings ledger
+      // Credit rider financial earnings ledger & release escrow
       await creditRiderEarning({
         riderProfileId,
         assignmentId: assignment.id,
@@ -696,6 +727,7 @@ export class DispatchEngine {
         grossAmount: assignment.agreedFee,
         platformCommission: assignment.platformCommission,
         netAmount: assignment.netRiderEarning,
+        paymentType: assignment.paymentType,
       });
     }
 

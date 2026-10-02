@@ -46,42 +46,62 @@ export async function GET() {
       return json({ success: true, hasActiveDelivery: false, delivery: null });
     }
 
+    const deliveryPayload = {
+      id: request.id,
+      orderNumber: request.trackingNumber || request.id.slice(-6).toUpperCase(),
+      trackingNumber: request.trackingNumber,
+      status: request.status,
+      customerName: request.dropoffContactName,
+      customerPhone: request.dropoffContactPhone,
+      pickupAddress: request.pickupAddress,
+      pickupLat: request.pickupLat,
+      pickupLng: request.pickupLng,
+      dropoffAddress: request.dropoffAddress,
+      dropoffLat: request.dropoffLat,
+      dropoffLng: request.dropoffLng,
+      riderFee: request.assignment.agreedFee,
+      storeName: request.company.name,
+      store: {
+        name: request.company.name,
+        phone: request.pickupContactPhone || request.company.contactPhone,
+        address: request.pickupAddress,
+        lat: request.pickupLat,
+        lng: request.pickupLng,
+        instructions: request.pickupInstructions,
+      },
+      dropoff: {
+        customerName: request.dropoffContactName,
+        customerPhone: request.dropoffContactPhone,
+        address: request.dropoffAddress,
+        lat: request.dropoffLat,
+        lng: request.dropoffLng,
+        instructions: request.dropoffInstructions,
+      },
+      package: {
+        description: request.packageDescription,
+        weightKg: request.packageWeightKg,
+        dimensions: request.packageDimensions,
+      },
+      financials: {
+        agreedFee: request.assignment.agreedFee,
+        platformCommission: request.assignment.platformCommission,
+        netEarnings: request.assignment.netRiderEarning,
+        paymentType: request.assignment.paymentType || request.paymentType || "GHUBA_ESCROW",
+        escrowStatus: request.assignment.escrowStatus || request.escrowStatus || "DEPOSITED",
+        escrowAmount: request.assignment.escrowAmount || request.escrowAmount || request.assignment.agreedFee,
+      },
+      paymentType: request.assignment.paymentType || request.paymentType || "GHUBA_ESCROW",
+      escrowStatus: request.assignment.escrowStatus || request.escrowStatus || "DEPOSITED",
+      escrowAmount: request.assignment.escrowAmount || request.escrowAmount || request.assignment.agreedFee,
+      assignedAt: request.assignment.assignedAt,
+      pickupConfirmedAt: request.assignment.pickupConfirmedAt,
+    };
+
     return json({
       success: true,
       hasActiveDelivery: true,
-      delivery: {
-        id: request.id,
-        trackingNumber: request.trackingNumber,
-        status: request.status,
-        store: {
-          name: request.company.name,
-          phone: request.pickupContactPhone || request.company.contactPhone,
-          address: request.pickupAddress,
-          lat: request.pickupLat,
-          lng: request.pickupLng,
-          instructions: request.pickupInstructions,
-        },
-        dropoff: {
-          customerName: request.dropoffContactName,
-          customerPhone: request.dropoffContactPhone,
-          address: request.dropoffAddress,
-          lat: request.dropoffLat,
-          lng: request.dropoffLng,
-          instructions: request.dropoffInstructions,
-        },
-        package: {
-          description: request.packageDescription,
-          weightKg: request.packageWeightKg,
-          dimensions: request.packageDimensions,
-        },
-        financials: {
-          agreedFee: request.assignment.agreedFee,
-          platformCommission: request.assignment.platformCommission,
-          netEarnings: request.assignment.netRiderEarning,
-        },
-        assignedAt: request.assignment.assignedAt,
-        pickupConfirmedAt: request.assignment.pickupConfirmedAt,
-      },
+      delivery: deliveryPayload,
+      data: deliveryPayload,
     });
   } catch (error: any) {
     console.error("[RIDER_ACTIVE_DELIVERY_GET_ERROR]", error);

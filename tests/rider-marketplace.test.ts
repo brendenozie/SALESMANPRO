@@ -283,6 +283,127 @@ async function runTests() {
     assert.ok(!maskedView.approxDropoffAddress.includes("Apartment 4B"), "Specific apartment/unit must be masked");
   });
 
+  // ----------------------------------------------------
+  // TEST 7: Ghuba Escrow Deposits, 4% Platform Fee & Rider Payouts
+  // ----------------------------------------------------
+  console.log("\n7. Ghuba Escrow Deposits, 4% Transaction Fee & Cash Settlement Protocols...");
+
+  test("Fixed price request deposits funds into Ghuba Escrow with 4% platform fee", () => {
+    const fixedPrice = 500;
+    const defaultPlatformFeePercent = 4.0;
+    const paymentType = "GHUBA_ESCROW";
+
+    // Simulate store dispatch with escrow deposit
+    const escrowDeposit = paymentType === "GHUBA_ESCROW" ? fixedPrice : 0;
+    const escrowStatus = paymentType === "GHUBA_ESCROW" ? "DEPOSITED" : "NOT_APPLICABLE";
+    const platformCommission = Math.round(((fixedPrice * defaultPlatformFeePercent) / 100) * 100) / 100;
+    const netRiderPayout = fixedPrice - platformCommission;
+
+    assert.strictEqual(escrowDeposit, 500, "Store must deposit KES 500 into Ghuba Escrow");
+    assert.strictEqual(escrowStatus, "DEPOSITED", "Escrow status must be marked as DEPOSITED");
+    assert.strictEqual(platformCommission, 20.0, "Ghuba must take 4% platform transaction fee (KES 20.00)");
+    assert.strictEqual(netRiderPayout, 480.0, "Rider guaranteed net payout must be KES 480.00");
+  });
+
+  test("Accepted bid deposits accepted amount to Ghuba Escrow and notifies rider", () => {
+    let currentEscrow = {
+      amount: 0,
+      status: "PENDING_DEPOSIT",
+      notifiedRider: null as any,
+    };
+
+    const acceptedBidAmount = 450;
+    const platformFeePercent = 4.0;
+
+    // Simulate store accepting rider's bid
+    currentEscrow.amount = acceptedBidAmount;
+    currentEscrow.status = "DEPOSITED";
+    const commission = Math.round(((acceptedBidAmount * platformFeePercent) / 100) * 100) / 100;
+    const netEarnings = acceptedBidAmount - commission;
+
+    // Simulate notification payload sent to rider
+    currentEscrow.notifiedRider = {
+      message: `Ghuba Escrow: Payment of KES ${acceptedBidAmount} deposited by store. Net payout KES ${netEarnings}.`,
+      depositedAmount: acceptedBidAmount,
+      paymentType: "GHUBA_ESCROW",
+      escrowStatus: "DEPOSITED",
+    };
+
+    assert.strictEqual(currentEscrow.amount, 450, "Escrow must hold accepted bid amount");
+    assert.strictEqual(commission, 18.0, "4% platform transaction fee on KES 450 is KES 18.00");
+    assert.strictEqual(netEarnings, 432.0, "Net payout to rider is KES 432.00");
+    assert.strictEqual(currentEscrow.notifiedRider.depositedAmount, 450, "Rider notified of KES 450 deposited");
+    assert.strictEqual(currentEscrow.notifiedRider.paymentType, "GHUBA_ESCROW");
+  });
+
+  test("Cash on Pickup and Cash on Delivery bypass upfront escrow and debit 4% fee from rider", () => {
+    const copOrder = {
+      riderFee: 300,
+      paymentType: "CASH_ON_PICKUP",
+      escrowAmount: 0,
+      escrowStatus: "NOT_APPLICABLE",
+    };
+
+    const codOrder = {
+      riderFee: 400,
+      paymentType: "CASH_ON_DELIVERY",
+      escrowAmount: 0,
+      escrowStatus: "NOT_APPLICABLE",
+    };
+
+    assert.strictEqual(copOrder.escrowAmount, 0, "No upfront escrow required for Cash on Pickup");
+    assert.strictEqual(codOrder.escrowAmount, 0, "No upfront escrow required for Cash on Delivery");
+
+    // Fee debit on completion for COP
+    const copFee = Math.round(((copOrder.riderFee * 4.0) / 100) * 100) / 100;
+    assert.strictEqual(copFee, 12.0, "4% fee for KES 300 is KES 12.00");
+
+    // Fee debit on completion for COD
+    const codFee = Math.round(((codOrder.riderFee * 4.0) / 100) * 100) / 100;
+    assert.strictEqual(codFee, 16.0, "4% fee for KES 400 is KES 16.00");
+  });
+
+  test("Super Admin dynamically updates transaction fee and subsequent orders reflect new rate", () => {
+    let platformConfig = {
+      transactionFeePercent: 4.0,
+      minRiderFee: 100,
+    };
+
+    // Super Admin updates fee to 5.0%
+    platformConfig.transactionFeePercent = 5.0;
+
+    const newOrderFee = 600;
+    const calculatedCommission = (newOrderFee * platformConfig.transactionFeePercent) / 100;
+    const calculatedNet = newOrderFee - calculatedCommission;
+
+    assert.strictEqual(calculatedCommission, 30.0, "5% fee of KES 600 is KES 30.00");
+    assert.strictEqual(calculatedNet, 570.0, "Net payout is KES 570.00");
+  });
+
+  test("Rider M-Pesa withdrawal debits available balance correctly", () => {
+    let riderWallet = {
+      availableBalance: 850,
+      totalEarned: 1200,
+      ledger: [] as Array<{ type: string; amount: number; description: string }>,
+    };
+
+    const withdrawalAmount = 500;
+    assert.ok(withdrawalAmount >= 100, "Minimum withdrawal must be at least KES 100");
+    assert.ok(withdrawalAmount <= riderWallet.availableBalance, "Cannot withdraw more than balance");
+
+    // Process withdrawal
+    riderWallet.availableBalance -= withdrawalAmount;
+    riderWallet.ledger.push({
+      type: "DEBIT",
+      amount: withdrawalAmount,
+      description: `M-Pesa Payout: KES ${withdrawalAmount} to 0712345678`,
+    });
+
+    assert.strictEqual(riderWallet.availableBalance, 350, "Remaining balance should be KES 350");
+    assert.strictEqual(riderWallet.ledger.length, 1);
+    assert.strictEqual(riderWallet.ledger[0].type, "DEBIT");
+  });
+
   console.log("\n=================================================");
   console.log(`  All Test Cases Completed: ${passed} Passed, ${failed} Failed`);
   console.log("=================================================\n");

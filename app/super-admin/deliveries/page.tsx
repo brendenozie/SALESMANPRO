@@ -17,6 +17,7 @@ import {
   BanknotesIcon,
   UserCircleIcon,
   DocumentTextIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 interface RiderItem {
@@ -62,12 +63,18 @@ interface OperationMetrics {
 }
 
 export default function SuperAdminDeliveriesPage() {
-  const [activeTab, setActiveTab] = useState<"VERIFICATION" | "RIDERS" | "OPERATIONS" | "DISPUTES">("VERIFICATION");
+  const [activeTab, setActiveTab] = useState<"VERIFICATION" | "RIDERS" | "OPERATIONS" | "DISPUTES" | "CONFIG">("VERIFICATION");
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<OperationMetrics | null>(null);
   const [riders, setRiders] = useState<RiderItem[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  // Platform Fee & Escrow Config
+  const [platformFeePercent, setPlatformFeePercent] = useState<number>(4.0);
+  const [minRiderFee, setMinRiderFee] = useState<number>(100);
+  const [escrowStats, setEscrowStats] = useState<any>(null);
+  const [savingConfig, setSavingConfig] = useState(false);
 
   // Inspection & Review Modal
   const [selectedRider, setSelectedRider] = useState<RiderItem | null>(null);
@@ -78,22 +85,57 @@ export default function SuperAdminDeliveriesPage() {
   // Disputes
   const [disputes, setDisputes] = useState<any[]>([]);
 
+  const handleSaveConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingConfig(true);
+    try {
+      const res = await fetch("/api/super-admin/deliveries/config", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transactionFeePercent: platformFeePercent,
+          minRiderFee,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Platform fee configuration updated successfully!");
+        if (json.data?.stats) {
+          setEscrowStats(json.data.stats);
+        }
+      } else {
+        toast.error(json.message || "Failed to update configuration");
+      }
+    } catch {
+      toast.error("Network error while saving config");
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [metRes, ridRes, disRes] = await Promise.all([
+      const [metRes, ridRes, disRes, cfgRes] = await Promise.all([
         fetch("/api/super-admin/deliveries/operations"),
         fetch("/api/super-admin/riders"),
         fetch("/api/super-admin/deliveries/disputes"),
+        fetch("/api/super-admin/deliveries/config"),
       ]);
 
       const metJson = await metRes.json();
       const ridJson = await ridRes.json();
       const disJson = await disRes.json();
+      const cfgJson = await cfgRes.json();
 
       if (metJson.success) setMetrics(metJson.data);
       if (ridJson.success) setRiders(ridJson.data || []);
       if (disJson.success) setDisputes(disJson.data || []);
+      if (cfgJson.success && cfgJson.data) {
+        setPlatformFeePercent(cfgJson.data.transactionFeePercent);
+        setMinRiderFee(cfgJson.data.minRiderFee);
+        setEscrowStats(cfgJson.data.stats);
+      }
     } catch (err) {
       toast.error("Failed to load operations data");
     } finally {
@@ -272,6 +314,18 @@ export default function SuperAdminDeliveriesPage() {
         >
           <ExclamationTriangleIcon className="w-4 h-4" />
           Disputes ({disputes.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("CONFIG")}
+          className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 ${
+            activeTab === "CONFIG"
+              ? "bg-indigo-600 text-white font-black shadow-md"
+              : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <Cog6ToothIcon className="w-4 h-4" />
+          Escrow & Fee Settings
         </button>
       </div>
 
@@ -596,6 +650,215 @@ export default function SuperAdminDeliveriesPage() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Tab 5: Escrow & Platform Fee Configuration */}
+      {activeTab === "CONFIG" && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Cog6ToothIcon className="w-5 h-5 text-indigo-400" />
+                Ghuba Escrow & Platform Transaction Cost Controls
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Configure dynamic platform transaction fees on rider fees and monitor real-time escrow liquidity.
+              </p>
+            </div>
+            <button
+              onClick={() => fetchData()}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-800 flex items-center gap-1.5 transition"
+            >
+              <ArrowPathIcon className="w-3.5 h-3.5" /> Refresh Stats
+            </button>
+          </div>
+
+          {/* Financial Escrow Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-slate-900 border border-indigo-500/20 shadow-xl space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                Total Escrow Deposited
+              </span>
+              <p className="text-2xl font-black text-white">
+                KES {(escrowStats?.totalEscrowDeposited || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-400">Stores prepayments held securely by Ghuba</p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-900 border border-emerald-500/20 shadow-xl space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                Ghuba Platform Commission
+              </span>
+              <p className="text-2xl font-black text-emerald-400">
+                KES {(escrowStats?.totalPlatformCommission || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-400">Earned from platform transaction fees</p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-900 border border-blue-500/20 shadow-xl space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
+                Released to Riders
+              </span>
+              <p className="text-2xl font-black text-blue-400">
+                KES {(escrowStats?.totalEscrowReleased || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-400">Net payouts credited to rider wallets</p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-900 border border-amber-500/20 shadow-xl space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                Active In Escrow
+              </span>
+              <p className="text-2xl font-black text-amber-400">
+                KES {(escrowStats?.activeEscrowLocked || 0).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-400">Locked pending delivery verification</p>
+            </div>
+          </div>
+
+          {/* Config Settings Form */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+              <div>
+                <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Platform Fee Settings
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Adjust the transaction commission rate Ghuba retains on every completed delivery request.
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveConfig} className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-slate-200">
+                      Platform Transaction Fee Percentage (%)
+                    </label>
+                    <span className="text-sm font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-xl border border-indigo-500/20 font-mono">
+                      {platformFeePercent}%
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    step="0.5"
+                    value={platformFeePercent}
+                    onChange={(e) => setPlatformFeePercent(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="text-[11px] text-slate-400">Presets:</span>
+                    {[2.0, 3.0, 4.0, 5.0, 7.5, 10.0].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setPlatformFeePercent(preset)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                          platformFeePercent === preset
+                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                            : "bg-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {preset}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-200">
+                    Minimum Rider Trip Floor Fee (KES)
+                  </label>
+                  <input
+                    type="number"
+                    min="50"
+                    step="10"
+                    value={minRiderFee}
+                    onChange={(e) => setMinRiderFee(parseFloat(e.target.value) || 50)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Stores cannot dispatch delivery requests below this floor price.
+                  </p>
+                </div>
+
+                {/* Example Breakdown Simulator */}
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Live Calculation Preview (KES 500 Rider Fee Example)
+                  </p>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400">Store Offered / Accepted Bid:</span>
+                    <span className="font-mono font-bold text-white">KES 500.00</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-400">Ghuba Platform Fee ({platformFeePercent}%):</span>
+                    <span className="font-mono font-bold text-indigo-400">
+                      KES {((500 * platformFeePercent) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs border-t border-slate-800 pt-1.5">
+                    <span className="text-slate-300 font-semibold">Net Payout to Rider:</span>
+                    <span className="font-mono font-black text-emerald-400">
+                      KES {(500 - (500 * platformFeePercent) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={savingConfig}
+                    className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider transition shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+                  >
+                    {savingConfig ? (
+                      <>
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="w-4 h-4" /> Save Configuration
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Protocol Explanation */}
+            <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                Escrow Settlement Logic
+              </h4>
+
+              <div className="space-y-3 text-xs text-slate-300">
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                  <p className="font-bold text-emerald-400">1. Ghuba Escrow (Prepaid)</p>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    When store creates request or accepts bid, funds are deposited into Ghuba Escrow. Rider is notified of deposited amount before starting delivery. Upon OTP confirmation, Ghuba takes {platformFeePercent}% and pays rider the remainder.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                  <p className="font-bold text-amber-400">2. Cash on Pickup (COP)</p>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Rider collects full fee from store upon arrival. Ghuba does not hold escrow, but debits the {platformFeePercent}% transaction cost from the rider's platform wallet balance.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                  <p className="font-bold text-blue-400">3. Cash on Delivery (COD)</p>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Rider collects delivery fee from the customer at dropoff. Ghuba debits the {platformFeePercent}% transaction fee from the rider's wallet.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
