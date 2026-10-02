@@ -265,7 +265,13 @@ export async function resolveUserDestination(
     }
   }
   // 7. Drivers / Logistics
-  else if (role === "DRIVER" || role === "TRANSPORT_DRIVER") {
+  else if (role === "RIDER") {
+    destination = "/ghuba/rider/dashboard";
+    if (opts.preferredDestination && opts.preferredDestination.startsWith("/ghuba/rider")) {
+      destination = opts.preferredDestination;
+    }
+  }
+  else if (role === "DRIVER" || role === "TRANSPORT_DRIVER" || role === "STORE_DRIVER" || role === "SCHOOL_DRIVER") {
     if (effectiveCompanySlug) {
       destination = `/admin/${effectiveCompanySlug}/store-transport-routes`;
     } else {

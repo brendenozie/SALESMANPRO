@@ -532,6 +532,8 @@ model Company {
   TourPackage           TourPackage[]
   // @@index([slug])
   Delivery              Delivery[]
+  deliveryRequests      DeliveryRequest[]
+  storeDeliveryConfig   StoreDeliveryConfig?
   subscriptionCompanies SubscriptionCompany[]
   feeItems              FeeItem[]
   classrooms            Classroom[]
@@ -3270,6 +3272,7 @@ model User {
   transportShifts         TransportShift[]
   librarySuppliers        LibrarySupplier[]
   transportDriver         TransportDriver?
+  riderProfile            RiderProfile?
   hostelStaffs            HostelStaff[]
   userRoles               UserRole[]
   staffAttendanceRecords  StaffAttendanceRecord[]
@@ -4387,6 +4390,7 @@ model CustomerOrder {
   deliveryId String? @db.ObjectId
 
   Delivery Delivery? @relation("DeliveryToOrders", fields: [deliveryId], references: [id])
+  deliveryRequests DeliveryRequest[]
 
   DeliveryStop DeliveryStop[]
 
@@ -9047,6 +9051,7 @@ model Delivery {
   createdAt DateTime @default(now())
 
   CustomerOrders CustomerOrder[] @relation("DeliveryToOrders")
+  deliveryRequests DeliveryRequest[]
 
   stops     DeliveryStop[]
   tracking  DeliveryTracking[]
@@ -9091,6 +9096,15 @@ enum DeliveryStatus {
   RESCHEDULED
   RETURNED
   ON_HOLD
+  SEARCHING_FOR_RIDER
+  OFFERED
+  BIDDING
+  RIDER_ASSIGNED
+  RIDER_EN_ROUTE_TO_PICKUP
+  ORDER_COLLECTED
+  ARRIVED_AT_DROPOFF
+  EXPIRED
+  DISPUTED
 }
 
 enum StopStatus {
@@ -9256,6 +9270,379 @@ model TransportIncident {
   @@index([driverId])
   @@index([deliveryId])
   @@index([status])
+}
+
+// ============================================================
+// ON-DEMAND DELIVERY & RIDER MARKETPLACE MODELS
+// ============================================================
+
+enum RiderVerificationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  NEEDS_INFO
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DeliveryRequestStatus {
+  DRAFT
+  REQUESTED
+  SEARCHING_FOR_RIDER
+  OFFERED
+  BIDDING
+  ASSIGNED
+  RIDER_EN_ROUTE_TO_PICKUP
+  ARRIVED_AT_PICKUP
+  ORDER_COLLECTED
+  IN_TRANSIT
+  ARRIVED_AT_DROPOFF
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  FAILED
+  DISPUTED
+}
+
+model RiderProfile {
+  id                       String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId                   String                  @unique @db.ObjectId
+  user                     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  fullName                 String
+  phone                    String
+  email                    String?
+  profilePhoto             String?
+  
+  riderType                String                  @default("MOTORBIKE") // MOTORBIKE, BICYCLE, CAR, VAN, TRUCK
+  isCompany                Boolean                 @default(false)
+  companyName              String?
+  
+  // Verification Details
+  verificationStatus       RiderVerificationStatus @default(DRAFT)
+  rejectionReason          String?
+  reviewerNotes            String?
+  reviewedAt               DateTime?
+  reviewedById             String?                 @db.ObjectId
+  
+  idType                   String?                 @default("NATIONAL_ID") // NATIONAL_ID, PASSPORT, MILITARY_ID
+  idNumber                 String?
+  idFrontUrl               String?
+  idBackUrl                String?
+  passportUrl              String?
+  
+  drivingLicenseNo         String?
+  drivingLicenseUrl        String?
+  drivingLicenseExpiry     DateTime?
+  selfieUrl                String?
+  
+  // Service Areas & Logistics
+  serviceAreas             String[]
+  operatingCounty          String?
+  operatingCity            String?
+  maxDistanceKm            Float                   @default(20.0)
+  
+  // Availability & GPS Tracking
+  isOnline                 Boolean                 @default(false)
+  lastOnlineAt             DateTime?
+  currentLat               Float?
+  currentLng               Float?
+  locationUpdatedAt        DateTime?
+  heading                  Float?
+  speedKph                 Float?
+  
+  // Financial & Payout Settings
+  payoutMethod             String?                 @default("MPESA") // MPESA, BANK
+  mpesaPhone               String?
+  bankAccountDetails       Json?
+  
+  // Reputation & Balances
+  rating                   Float                   @default(5.0)
+  totalRatingsCount        Int                     @default(0)
+  totalCompletedDeliveries  Int                     @default(0)
+  totalEarnings            Float                   @default(0.0)
+  walletBalance            Float                   @default(0.0)
+  activeDeliveryRequestId  String?                 @db.ObjectId
+  
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  
+  vehicles                 RiderVehicle[]
+  offers                   DeliveryOffer[]
+  bids                     DeliveryBid[]
+  assignments              DeliveryAssignment[]
+  earnings                 RiderEarning[]
+  payouts                  RiderPayout[]
+  
+  @@index([verificationStatus])
+  @@index([isOnline])
+  @@index([operatingCounty])
+}
+
+model RiderVehicle {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  riderProfileId     String       @db.ObjectId
+  riderProfile       RiderProfile @relation(fields: [riderProfileId], references: [id], onDelete: Cascade)
+  
+  vehicleType        String       @default("MOTORBIKE") // MOTORBIKE, BICYCLE, CAR, VAN
+  make               String?
+  model              String?
+  year               Int?
+  color              String?
+  plateNumber        String?
+  vehiclePhoto       String?
+  logbookUrl         String?
+  insuranceNumber    String?
+  insuranceExpiry    DateTime?
+  insuranceCertUrl   String?
+  
+  verificationStatus String       @default("PENDING") // PENDING, APPROVED, REJECTED
+  isActive           Boolean      @default(true)
+  
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  
+  @@index([riderProfileId])
+  @@index([vehicleType])
+}
+
+model DeliveryRequest {
+  id                     String                @id @default(auto()) @map("_id") @db.ObjectId
+  companyId              String                @db.ObjectId
+  company                Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  orderId                String?               @db.ObjectId
+  order                  CustomerOrder?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  deliveryId             String?               @db.ObjectId
+  delivery               Delivery?             @relation(fields: [deliveryId], references: [id], onDelete: SetNull)
+  
+  trackingNumber         String                @unique
+  orderReference         String?
+  
+  // Locations
+  pickupAddress          String
+  pickupLat              Float
+  pickupLng              Float
+  pickupContactName      String
+  pickupContactPhone     String
+  pickupInstructions     String?
+  
+  dropoffAddress         String
+  dropoffLat             Float
+  dropoffLng             Float
+  dropoffContactName     String
+  dropoffContactPhone    String
+  dropoffInstructions    String?
+  
+  // Package details
+  packageDescription     String?
+  packageWeightKg        Float?
+  packageDimensions      String?
+  vehicleTypeRequired    String?               @default("ANY") // ANY, MOTORBIKE, BICYCLE, CAR, VAN
+  deliveryPriority       String                @default("STANDARD") // STANDARD, EXPRESS, URGENT
+  
+  // Financial breakdown
+  customerDeliveryCharge Float                 @default(0.0)
+  offeredRiderFee        Float
+  platformFee            Float                 @default(0.0)
+  finalAgreedFee         Float?
+  
+  // Allocation mode & bidding
+  biddingEnabled         Boolean               @default(false)
+  minBidFee              Float?
+  maxBidFee              Float?
+  
+  // Dispatch parameters
+  dispatchRadiusKm       Float                 @default(5.0)
+  maxDispatchRadiusKm    Float                 @default(25.0)
+  status                 DeliveryRequestStatus @default(SEARCHING_FOR_RIDER)
+  
+  assignedRiderProfileId String?               @db.ObjectId
+  expiresAt              DateTime?
+  pickupDeadline         DateTime?
+  idempotencyKey         String?               @unique
+  
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  
+  offers                 DeliveryOffer[]
+  bids                   DeliveryBid[]
+  assignment             DeliveryAssignment?
+  disputes               DeliveryDispute[]
+  
+  @@index([companyId])
+  @@index([orderId])
+  @@index([status])
+  @@index([assignedRiderProfileId])
+  @@index([createdAt])
+}
+
+model DeliveryOffer {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  deliveryRequestId String          @db.ObjectId
+  deliveryRequest   DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  
+  riderProfileId    String          @db.ObjectId
+  riderProfile      RiderProfile    @relation(fields: [riderProfileId], references: [id], onDelete: Cascade)
+  
+  status            String          @default("PENDING") // PENDING, ACCEPTED, REJECTED, EXPIRED
+  offeredAt         DateTime        @default(now())
+  expiresAt         DateTime
+  respondedAt       DateTime?
+  riderDistanceKm   Float?
+  
+  @@index([deliveryRequestId])
+  @@index([riderProfileId])
+  @@index([status])
+}
+
+model DeliveryBid {
+  id                     String          @id @default(auto()) @map("_id") @db.ObjectId
+  deliveryRequestId      String          @db.ObjectId
+  deliveryRequest        DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  
+  riderProfileId         String          @db.ObjectId
+  riderProfile           RiderProfile    @relation(fields: [riderProfileId], references: [id], onDelete: Cascade)
+  
+  proposedFee            Float
+  estimatedPickupMinutes Int?
+  note                   String?
+  status                 String          @default("SUBMITTED") // SUBMITTED, ACCEPTED, REJECTED, WITHDRAWN, EXPIRED
+  
+  submittedAt            DateTime        @default(now())
+  decidedAt              DateTime?
+  
+  @@index([deliveryRequestId])
+  @@index([riderProfileId])
+  @@index([status])
+}
+
+model DeliveryAssignment {
+  id                   String          @id @default(auto()) @map("_id") @db.ObjectId
+  deliveryRequestId    String          @unique @db.ObjectId
+  deliveryRequest      DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  
+  riderProfileId       String          @db.ObjectId
+  riderProfile         RiderProfile    @relation(fields: [riderProfileId], references: [id], onDelete: Restrict)
+  
+  deliveryId           String?         @db.ObjectId
+  
+  agreedFee            Float
+  platformCommission   Float           @default(0.0)
+  netRiderEarning      Float
+  
+  status               String          @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED, REASSIGNED
+  assignedAt           DateTime        @default(now())
+  pickupConfirmedAt    DateTime?
+  deliveryConfirmedAt  DateTime?
+  
+  proofType            String?         // OTP, PHOTO, SIGNATURE
+  proofData            Json?
+  cancellationReason   String?
+  cancelledBy          String?
+  
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  
+  earnings             RiderEarning[]
+  
+  @@index([riderProfileId])
+  @@index([status])
+}
+
+model RiderEarning {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  riderProfileId     String              @db.ObjectId
+  riderProfile       RiderProfile        @relation(fields: [riderProfileId], references: [id], onDelete: Cascade)
+  
+  assignmentId       String              @db.ObjectId
+  assignment         DeliveryAssignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  
+  deliveryRequestId  String?             @db.ObjectId
+  orderId            String?             @db.ObjectId
+  storeId            String?             @db.ObjectId
+  
+  grossAmount        Float
+  platformCommission Float               @default(0.0)
+  netAmount          Float
+  
+  status             String              @default("EARNED") // EARNED, SETTLED, DISPUTED, WITHDRAWN
+  settledAt          DateTime?
+  createdAt          DateTime            @default(now())
+  
+  @@index([riderProfileId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RiderPayout {
+  id                   String       @id @default(auto()) @map("_id") @db.ObjectId
+  riderProfileId       String       @db.ObjectId
+  riderProfile         RiderProfile @relation(fields: [riderProfileId], references: [id], onDelete: Cascade)
+  
+  amount               Float
+  payoutMethod         String       @default("MPESA") // MPESA, BANK
+  destinationAccount   String
+  transactionReference String?
+  gatewayResponse      Json?
+  
+  status               String       @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  failureReason        String?
+  requestedAt          DateTime     @default(now())
+  processedAt          DateTime?
+  
+  @@index([riderProfileId])
+  @@index([status])
+}
+
+model DeliveryDispute {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  deliveryRequestId String          @db.ObjectId
+  deliveryRequest   DeliveryRequest @relation(fields: [deliveryRequestId], references: [id], onDelete: Cascade)
+  
+  deliveryId        String?         @db.ObjectId
+  companyId         String          @db.ObjectId
+  
+  raisedBy          String          // STORE, RIDER, CUSTOMER, SUPER_ADMIN
+  raisedById        String          @db.ObjectId
+  category          String          // PACKAGE_DAMAGED, WRONG_ITEM, NOT_DELIVERED, MISCONDUCT, PAYMENT_ISSUE, OTHER
+  description       String
+  evidenceUrls      String[]
+  
+  status            String          @default("OPEN") // OPEN, UNDER_REVIEW, RESOLVED, DISMISSED
+  resolution        String?
+  resolvedById      String?         @db.ObjectId
+  resolvedAt        DateTime?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([deliveryRequestId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model StoreDeliveryConfig {
+  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId               String   @unique @db.ObjectId
+  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  onDemandDeliveryEnabled Boolean  @default(false)
+  autoDispatchEnabled     Boolean  @default(false)
+  biddingAllowed          Boolean  @default(true)
+  defaultOfferedFee       Float    @default(200.0)
+  minRiderFee             Float    @default(100.0)
+  maxRiderFee             Float    @default(2000.0)
+  maxDeliveryRadiusKm     Float    @default(20.0)
+  allowedVehicleTypes     String[]
+  preferredDispatchMode   String   @default("SEQUENTIAL") // SEQUENTIAL, PARALLEL
+  responseTimeoutSeconds  Int      @default(60)
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
 
 model Idempotency {

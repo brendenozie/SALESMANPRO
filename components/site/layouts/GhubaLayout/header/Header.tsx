@@ -170,6 +170,9 @@ const TopBar = ({ locationName, isOpen, setIsOpen, phone, email }: any) => (
           <MapPinIcon className="w-3.5 h-3.5" />
           <span>{locationName || "Select Location"}</span>
         </span>
+        <Link href="/ghuba/rider/join" className="cursor-pointer hover:text-white dark:hover:text-black transition-colors font-bold flex items-center gap-1">
+          <TruckIcon className="w-3.5 h-3.5" /> Become a Rider
+        </Link>
         <span className="cursor-pointer hover:text-white dark:hover:text-black transition-colors">FAQs</span>
       </div>
     </div>
@@ -614,6 +617,7 @@ const menuItems: MenuItem[] = [
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
   { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.site/stores", isExternal: true }, 
+  { name: "Deliver with Us", icon: <TruckIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/rider/join" },
   { name: "Track Order", icon: <TruckIcon className="w-5 h-5" />, link: "/ghuba/orderTracking" },
 ];
 

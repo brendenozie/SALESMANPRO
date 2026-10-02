@@ -96,10 +96,10 @@ const Footer = () => {
             <div className="space-y-5">
               <h2 className="text-xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2 inline-block">About Us</h2>
               <ul className="space-y-3">
-                {["Careers", "Our Stores", "Our Cares", "Terms & Conditions", "Privacy Policy"].map((item, index) => (
+                {["Careers", "Become a Rider", "Our Stores", "Our Cares", "Terms & Conditions", "Privacy Policy"].map((item, index) => (
                   <li key={index}>
                     <Link 
-                      href={`/ghuba/${item.toLowerCase().replace(/\s+/g, '-')}`} 
+                      href={item === "Become a Rider" ? "/ghuba/rider/join" : `/ghuba/${item.toLowerCase().replace(/\s+/g, '-')}`} 
                       className="block text-sm text-gray-800 dark:text-gray-300 opacity-80 hover:opacity-100 hover:text-yellow-500 transition-all transform hover:translate-x-1 duration-200"
                     >
                       {item}

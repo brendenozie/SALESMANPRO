@@ -16,6 +16,7 @@ import {
   BellAlertIcon,
   KeyIcon,
   SparklesIcon,
+  TruckIcon,
 } from "@heroicons/react/24/outline";
 
 export const metadata = {
@@ -25,6 +26,7 @@ export const metadata = {
 
 const navigation = [
   { name: "Overview", href: "/super-admin", icon: ChartBarIcon },
+  { name: "Riders & Deliveries", href: "/super-admin/deliveries", icon: TruckIcon },
   { name: "Mascot & Agents", href: "/super-admin/mascot", icon: SparklesIcon },
   { name: "Integrations & APIs", href: "/super-admin/integrations", icon: KeyIcon },
   { name: "Notification Center", href: "/super-admin/notifications", icon: BellAlertIcon },
