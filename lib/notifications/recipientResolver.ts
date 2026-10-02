@@ -17,7 +17,7 @@ export class RecipientResolver {
     const resolvedUserIds = new Set<string>();
 
     // If explicit userIds were provided on any policy, include them
-    if (recipientPolicy.userIds && recipientPolicy.userIds.length > 0) {
+    if (recipientPolicy?.userIds && recipientPolicy.userIds.length > 0) {
       recipientPolicy.userIds.forEach((id) => {
         if (/^[0-9a-fA-F]{24}$/.test(id)) {
           resolvedUserIds.add(id);
@@ -25,7 +25,8 @@ export class RecipientResolver {
       });
     }
 
-    switch (recipientPolicy.type) {
+    if (recipientPolicy?.type) {
+      switch (recipientPolicy.type) {
       case "SPECIFIC_USERS": {
         // Already added above
         break;
@@ -133,9 +134,10 @@ export class RecipientResolver {
         break;
       }
     }
+  }
 
     // Apply explicit exclusions
-    if (recipientPolicy.excludeUserIds) {
+    if (recipientPolicy?.excludeUserIds) {
       recipientPolicy.excludeUserIds.forEach((id) => resolvedUserIds.delete(id));
     }
 

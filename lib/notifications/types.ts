@@ -46,11 +46,18 @@ export type NotificationEventType =
   | "SYSTEM_OUTAGE"
   // General / Announcements
   | "STORE_ANNOUNCEMENT"
-  | "PLATFORM_ANNOUNCEMENT";
+  | "PLATFORM_ANNOUNCEMENT"
+  // Delivery & Rider Marketplace
+  | "NEARBY_DELIVERY_OFFER"
+  | "RIDER_ASSIGNED"
+  | "RIDER_BID_RECEIVED"
+  | "BID_ACCEPTED"
+  | "DELIVERY_COMPLETED"
+  | "EARNING_CREDITED";
 
 export type NotificationSeverity = "INFO" | "WARNING" | "CRITICAL";
 
-export type NotificationChannel = "IN_APP" | "EMAIL" | "PUSH_ANDROID" | "PUSH_DESKTOP";
+export type NotificationChannel = "IN_APP" | "EMAIL" | "PUSH" | "PUSH_ANDROID" | "PUSH_DESKTOP" | "SMS";
 
 export type RecipientPolicyType =
   | "SPECIFIC_USERS"
@@ -76,16 +83,17 @@ export interface RecipientPolicy {
 export interface NotificationEventContract {
   eventType: NotificationEventType;
   severity: NotificationSeverity;
+  scope?: "STORE" | "GHUBA" | "PLATFORM";
   companyId?: string | null;
   storeId?: string | null;
   title: string;
   message: string;
   actionUrl?: string;
-  resourceType?: "order" | "mascot_task" | "inventory" | "alert" | "user" | "payment" | "staff";
+  resourceType?: "order" | "mascot_task" | "inventory" | "alert" | "user" | "payment" | "staff" | "delivery";
   resourceId?: string;
   actorId?: string;
   actorRole?: string;
-  recipientPolicy: RecipientPolicy;
+  recipientPolicy?: RecipientPolicy;
   channels?: NotificationChannel[];
   idempotencyKey?: string;
   metadata?: Record<string, any>;

@@ -670,7 +670,7 @@ export class DispatchEngine {
   ) {
     const request = await prisma.deliveryRequest.findUnique({
       where: { id: deliveryRequestId },
-      include: { assignment: true, riderProfile: false },
+      include: { assignment: true },
     });
 
     if (!request || !request.assignment) {

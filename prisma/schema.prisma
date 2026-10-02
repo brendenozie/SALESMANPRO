@@ -9578,6 +9578,7 @@ model RiderEarning {
   grossAmount        Float
   platformCommission Float               @default(0.0)
   netAmount          Float
+  paymentType        String?             @default("GHUBA_ESCROW")
   
   status             String              @default("EARNED") // EARNED, SETTLED, DISPUTED, WITHDRAWN
   settledAt          DateTime?
