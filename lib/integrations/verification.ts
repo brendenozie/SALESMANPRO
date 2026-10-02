@@ -54,7 +54,7 @@ export class IntegrationVerificationService {
     if (!account.accessTokenEncrypted || !account.accessTokenIv || !account.accessTokenTag) {
       await prisma.socialAccount.update({
         where: { id: account.id },
-        data: { status: "SETUP_REQUIRED" },
+        data: { status: "ERROR" },
       });
       return {
         healthy: false,
@@ -113,7 +113,7 @@ export class IntegrationVerificationService {
         await prisma.socialAccount.update({
           where: { id: account.id },
           data: {
-            status: isAuthError ? "REVOKED" : "ACTION_REQUIRED",
+            status: isAuthError ? "REVOKED" : "ERROR",
           },
         });
 
@@ -131,7 +131,7 @@ export class IntegrationVerificationService {
       await prisma.socialAccount.update({
         where: { id: account.id },
         data: {
-          status: "ACTIVE",
+          status: "CONNECTED",
           lastSyncAt: new Date(),
         },
       });
@@ -159,7 +159,7 @@ export class IntegrationVerificationService {
     id: string,
     companyId: string
   ): Promise<IntegrationHealthCheckResult> {
-    const wa = await prisma.whatsappAccount.findFirst({
+    const wa = await prisma.whatsAppAccount.findFirst({
       where: { id, companyId },
     });
 
@@ -202,7 +202,7 @@ export class IntegrationVerificationService {
     const { provider, accountId, companyId, userId } = params;
 
     if (provider.toLowerCase() === "whatsapp") {
-      await prisma.whatsappAccount.updateMany({
+      await prisma.whatsAppAccount.updateMany({
         where: { id: accountId, companyId },
         data: {
           status: "DISCONNECTED",

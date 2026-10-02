@@ -106,33 +106,40 @@ export interface MascotMessage {
   timestamp: string;
   state?: MascotState;
   suggestedActions?: string[];
-  deepLinks?: Array<{ label: string; href: string }>;
+  deepLinks?: Array<{ label: string; href: string; icon?: string }>;
   actionCard?: MascotActionCard;
   creditCost?: number;
 }
 
 export interface MascotActionCard {
   id: string;
-  capabilityId: string;
+  capabilityId?: string;
   title: string;
-  description: string;
+  description?: string;
   riskLevel: MascotActionRiskLevel;
-  requiresApproval: boolean;
-  status: "draft" | "pending_approval" | "approved" | "rejected" | "executed" | "failed";
-  payload: Record<string, any>;
+  requiresApproval?: boolean;
+  status?: "draft" | "pending_approval" | "approved" | "rejected" | "executed" | "failed";
+  payload?: Record<string, any>;
   previewData?: Record<string, any>;
   beforeState?: any;
   afterState?: any;
   affectedCount?: number;
   approvalId?: string;
   errorMessage?: string;
+  type?: string;
+  summary?: string;
+  affectedRecordsCount?: number;
+  changesPreview?: Array<{ field: string; oldValue?: any; newValue?: any }>;
+  primaryActionLabel?: string;
+  primaryActionPayload?: any;
+  cancelActionLabel?: string;
 }
 
 export interface MascotExecutionResult {
   success: boolean;
   summary: string;
   data?: any;
-  deepLinks?: Array<{ label: string; href: string }>;
+  deepLinks?: Array<{ label: string; href: string; icon?: string }>;
   actionCard?: MascotActionCard;
   requiresApproval?: boolean;
   creditsConsumed?: number;

@@ -34,6 +34,7 @@ export const DEFAULT_MASCOT_SETTINGS: MascotSettings = {
     restaurant: true,
     service: true,
     website: true,
+    integrations: true,
     system: true,
   },
   roleRestrictions: {},

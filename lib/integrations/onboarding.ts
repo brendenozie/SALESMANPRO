@@ -186,7 +186,7 @@ export class MascotIntegrationOnboardingService {
    */
   private static async findExistingConnection(providerId: string, companyId: string) {
     if (providerId === "whatsapp") {
-      const wa = await prisma.whatsappAccount.findFirst({
+      const wa = await prisma.whatsAppAccount.findFirst({
         where: { companyId, status: { not: "DISCONNECTED" } },
         select: {
           id: true,
@@ -239,7 +239,7 @@ export class MascotIntegrationOnboardingService {
       },
     });
 
-    const whatsappAccounts = await prisma.whatsappAccount.findMany({
+    const whatsappAccounts = await prisma.whatsAppAccount.findMany({
       where: { companyId },
       select: {
         id: true,
