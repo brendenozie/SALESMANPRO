@@ -215,6 +215,7 @@ export class MascotContextResolver {
       "marketing",
       "staff",
       "website",
+      "integrations",
       "system",
     ];
 

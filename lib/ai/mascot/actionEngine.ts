@@ -13,6 +13,9 @@ import { MascotContext, MascotCapability, MascotExecutionResult, MascotActionCar
 import { creditLedger } from "@/lib/ai/creditLedger";
 import { getOrCreateWebsite, saveWebsiteDraft, publishWebsite } from "@/lib/website-builder/website-service";
 import { getTemplateById } from "@/lib/website-builder/template-registry";
+import { MascotIntegrationOnboardingService } from "@/lib/integrations/onboarding";
+import { IntegrationVerificationService } from "@/lib/integrations/verification";
+import { IntegrationRegistry } from "@/lib/integrations/registry";
 
 export class MascotActionEngine {
   /**
@@ -159,6 +162,30 @@ export class MascotActionEngine {
         case "education:view_student_records":
         case "education:generate_student_report":
           result = await this.handleEducation(companyId, storeSlug, entities);
+          break;
+
+        case "integrations:list_connections":
+          result = await this.handleListConnections(companyId, storeSlug);
+          break;
+
+        case "integrations:connect_provider":
+          result = await this.handleConnectProvider(companyId, storeSlug, entities, userId, context.userRole);
+          break;
+
+        case "integrations:verify_health":
+          result = await this.handleVerifyHealth(companyId, storeSlug, entities);
+          break;
+
+        case "integrations:disconnect_account":
+          result = await this.handleDisconnectAccount(companyId, storeSlug, entities, userId, approved);
+          break;
+
+        case "tasks:query_active_tasks":
+          result = await this.handleQueryActiveTasks(companyId, storeSlug);
+          break;
+
+        case "approvals:query_pending_approvals":
+          result = await this.handleQueryPendingApprovals(companyId, storeSlug);
           break;
 
         default:
@@ -1072,6 +1099,328 @@ export class MascotActionEngine {
       return {
         success: false,
         summary: `Failed to publish website: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  // =========================================================================
+  // INTEGRATIONS & OPERATIONAL OPERATIONS
+  // =========================================================================
+
+  private static async handleListConnections(companyId: string, storeSlug: string): Promise<MascotExecutionResult> {
+    try {
+      const integrations = await MascotIntegrationOnboardingService.getStoreIntegrationsOverview(companyId);
+      const connected = integrations.filter((i) => i.isConnected);
+      const disconnected = integrations.filter((i) => !i.isConnected);
+
+      let summary = `Your store has **${connected.length} active integration(s)**:\n`;
+      if (connected.length > 0) {
+        summary += connected.map((c) => `• **${c.name}**: Connected as "${c.accountName}" (${c.status})`).join("\n");
+      } else {
+        summary += "No external accounts are currently connected.";
+      }
+
+      if (disconnected.length > 0) {
+        summary += `\n\n**Ready to connect (${disconnected.length}):**\n`;
+        summary += disconnected.slice(0, 4).map((d) => `• **${d.name}**: ${d.description}`).join("\n");
+      }
+
+      return {
+        success: true,
+        summary,
+        data: { connected, disconnected },
+        deepLinks: [
+          { label: "Manage Integrations", href: `/admin/${storeSlug}/mascot/integrations`, icon: "KeyIcon" },
+          { label: "Mascot Dashboard", href: `/admin/${storeSlug}/mascot`, icon: "SparklesIcon" },
+        ],
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to load integrations: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleConnectProvider(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>,
+    userId: string,
+    userRole: string
+  ): Promise<MascotExecutionResult> {
+    const providerId = (entities.provider || "facebook").toLowerCase();
+    const origin = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+
+    try {
+      const guide = await MascotIntegrationOnboardingService.getOnboardingGuide({
+        providerId,
+        companyId,
+        userRole,
+        userId,
+        storeSlug,
+        origin,
+      });
+
+      if (!guide.canConnect) {
+        return {
+          success: false,
+          summary: `Cannot connect ${guide.providerName}: ${guide.blockReason || guide.summary}`,
+          deepLinks: [
+            { label: "Integrations Hub", href: `/admin/${storeSlug}/mascot/integrations` },
+          ],
+        };
+      }
+
+      let summary = `### Guided Setup: ${guide.providerName}\n\n`;
+      summary += `${guide.summary}\n\n`;
+      summary += `**What connecting enables:**\n`;
+      summary += guide.whatItEnables.map((e) => `• ${e}`).join("\n");
+
+      if (guide.connectUrl) {
+        summary += `\n\n👉 **Click the button below** to authenticate securely with ${guide.providerName}. Once authorized, you'll be redirected back to your mascot dashboard.`;
+      }
+
+      const actionCard: MascotActionCard = {
+        id: `connect_${providerId}_${Date.now()}`,
+        type: "PREVIEW_CHANGES",
+        title: `Connect ${guide.providerName}`,
+        summary: `Initiate official authorization with ${guide.providerName}`,
+        riskLevel: "SAFE_READ",
+        affectedRecordsCount: 1,
+        changesPreview: [
+          { field: "Provider", oldValue: "Disconnected", newValue: guide.providerName },
+          { field: "Authorization", oldValue: "None", newValue: "Official Provider OAuth" },
+        ],
+        primaryActionLabel: guide.connectUrl ? `Authorize ${guide.providerName}` : "Open Integrations Hub",
+        primaryActionPayload: { connectUrl: guide.connectUrl },
+        cancelActionLabel: "Cancel",
+      };
+
+      return {
+        success: true,
+        summary,
+        data: guide,
+        actionCard,
+        deepLinks: [
+          ...(guide.connectUrl ? [{ label: `Connect ${guide.providerName}`, href: guide.connectUrl, icon: "ArrowRightIcon" }] : []),
+          { label: "All Integrations", href: `/admin/${storeSlug}/mascot/integrations`, icon: "KeyIcon" },
+        ],
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to initiate connection: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleVerifyHealth(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>
+  ): Promise<MascotExecutionResult> {
+    const provider = (entities.provider || "facebook").toLowerCase();
+
+    try {
+      const integrations = await MascotIntegrationOnboardingService.getStoreIntegrationsOverview(companyId);
+      const target = integrations.find((i) => i.id === provider && i.isConnected);
+
+      if (!target || !target.accountId) {
+        return {
+          success: false,
+          summary: `No active account for **${provider}** is currently connected to your store. Would you like me to guide you through connecting it?`,
+          deepLinks: [
+            { label: `Connect ${provider}`, href: `/admin/${storeSlug}/mascot/integrations` },
+          ],
+        };
+      }
+
+      const check = await IntegrationVerificationService.verifyAccount({
+        provider,
+        accountId: target.accountId,
+        companyId,
+      });
+
+      const summary = check.healthy
+        ? `✅ **${target.name} connection is healthy & active!**\n\n${check.message}\n• Latency: ${check.latencyMs || 45}ms\n• Checked: Just now`
+        : `⚠️ **${target.name} connection needs attention:**\n\n${check.message}\n${check.reauthorizationRequired ? "\n👉 Reauthorization is required to refresh security tokens." : ""}`;
+
+      return {
+        success: check.healthy,
+        summary,
+        data: check,
+        deepLinks: [
+          { label: "Manage Integrations", href: `/admin/${storeSlug}/mascot/integrations` },
+        ],
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Health check probe failed: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleDisconnectAccount(
+    companyId: string,
+    storeSlug: string,
+    entities: Record<string, any>,
+    userId: string,
+    approved?: boolean
+  ): Promise<MascotExecutionResult> {
+    const provider = (entities.provider || "facebook").toLowerCase();
+
+    const integrations = await MascotIntegrationOnboardingService.getStoreIntegrationsOverview(companyId);
+    const target = integrations.find((i) => i.id === provider && i.isConnected);
+
+    if (!target || !target.accountId) {
+      return {
+        success: false,
+        summary: `No active ${provider} account is connected to disconnect.`,
+      };
+    }
+
+    if (!approved) {
+      const actionCard: MascotActionCard = {
+        id: `disconnect_${provider}_${Date.now()}`,
+        type: "CONFIRM_ACTION",
+        title: `Disconnect ${target.name}?`,
+        summary: `This will stop scheduled marketing posts and remove credentials for ${target.accountName}.`,
+        riskLevel: "DESTRUCTIVE",
+        affectedRecordsCount: 1,
+        requiresApproval: true,
+        primaryActionLabel: "Yes, Disconnect Account",
+        cancelActionLabel: "Keep Connected",
+      };
+
+      return {
+        success: false,
+        summary: `Are you sure you want to disconnect **${target.name}** (${target.accountName})? This will stop automated publishing and clear stored tokens.`,
+        actionCard,
+      };
+    }
+
+    const res = await IntegrationVerificationService.disconnectAccount({
+      provider,
+      accountId: target.accountId,
+      companyId,
+      userId,
+    });
+
+    return {
+      success: true,
+      summary: `Successfully disconnected ${target.name}. Scheduled posts and automated publishing have been paused.`,
+      data: res,
+      deepLinks: [{ label: "Integrations Hub", href: `/admin/${storeSlug}/mascot/integrations` }],
+    };
+  }
+
+  private static async handleQueryActiveTasks(companyId: string, storeSlug: string): Promise<MascotExecutionResult> {
+    try {
+      const activeTasks = await (prisma as any).aIAgentTask.findMany({
+        where: {
+          companyId,
+          status: { in: ["RUNNING", "QUEUED", "WAITING_APPROVAL", "RETRYING"] },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          taskType: true,
+          status: true,
+          priority: true,
+          startedAt: true,
+          createdAt: true,
+        },
+      });
+
+      if (activeTasks.length === 0) {
+        return {
+          success: true,
+          summary: "There are currently **no active background tasks** running for your store. All operations are up to date!",
+          deepLinks: [
+            { label: "Mascot Operations Hub", href: `/admin/${storeSlug}/mascot` },
+            { label: "All Tasks History", href: `/admin/${storeSlug}/mascot/tasks` },
+          ],
+        };
+      }
+
+      let summary = `The background agent is currently handling **${activeTasks.length} task(s)**:\n\n`;
+      summary += activeTasks
+        .map(
+          (t: any) =>
+            `• **${t.title}** (${t.status.replace("_", " ")})\n  Type: \`${t.taskType}\` • Started: ${new Date(t.createdAt).toLocaleTimeString()}`
+        )
+        .join("\n\n");
+
+      return {
+        success: true,
+        summary,
+        data: { activeTasks },
+        deepLinks: [
+          { label: "View Task Monitor", href: `/admin/${storeSlug}/mascot/tasks` },
+          { label: "Operations Dashboard", href: `/admin/${storeSlug}/mascot` },
+        ],
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to query active tasks: ${err.message}`,
+        error: err.message,
+      };
+    }
+  }
+
+  private static async handleQueryPendingApprovals(companyId: string, storeSlug: string): Promise<MascotExecutionResult> {
+    try {
+      const approvals = await (prisma as any).aIAgentApproval.findMany({
+        where: {
+          companyId,
+          status: "PENDING",
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        include: { task: true },
+      });
+
+      if (approvals.length === 0) {
+        return {
+          success: true,
+          summary: "You have **no pending approvals** waiting right now! Everything has been reviewed.",
+          deepLinks: [
+            { label: "Mascot Operations", href: `/admin/${storeSlug}/mascot` },
+          ],
+        };
+      }
+
+      let summary = `You have **${approvals.length} item(s) awaiting your authorization**:\n\n`;
+      summary += approvals
+        .map(
+          (a: any) =>
+            `• **${a.title}**\n  Action: \`${a.actionType}\` • Requested: ${new Date(a.createdAt).toLocaleTimeString()}`
+        )
+        .join("\n\n");
+      summary += `\n\n👉 You can review and authorize these directly in your Approvals Center.`;
+
+      return {
+        success: true,
+        summary,
+        data: { approvals },
+        deepLinks: [
+          { label: "Review Approvals", href: `/admin/${storeSlug}/mascot/approvals`, icon: "CheckCircleIcon" },
+          { label: "Operations Hub", href: `/admin/${storeSlug}/mascot` },
+        ],
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        summary: `Failed to query pending approvals: ${err.message}`,
         error: err.message,
       };
     }

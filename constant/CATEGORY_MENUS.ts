@@ -589,13 +589,35 @@ export const getCategoryMenus = (
   currentTier: string = "Ghuba Starter",
   isSubscriptionActive: boolean = false,
 ) => {
-  const filterTiers = (items: MenuItem[]) =>
-    evaluateMenuItemsAccess(
-      items,
+  const mascotMenuItem: MenuItem = {
+    label: "AI Mascot & Agents",
+    icon: SparklesIcon,
+    minTier: "Ghuba Starter",
+    subItems: [
+      { label: "Operations Hub", href: `/admin/${adminSlug}/mascot`, minTier: "Ghuba Starter" },
+      { label: "Agent Tasks", href: `/admin/${adminSlug}/mascot/tasks`, minTier: "Ghuba Starter" },
+      { label: "Integrations & OAuth", href: `/admin/${adminSlug}/mascot/integrations`, minTier: "Ghuba Starter" },
+      { label: "Pending Approvals", href: `/admin/${adminSlug}/mascot/approvals`, minTier: "Ghuba Starter" },
+      { label: "Activity Timeline", href: `/admin/${adminSlug}/mascot/activity`, minTier: "Ghuba Starter" },
+      { label: "Mascot Settings", href: `/admin/${adminSlug}/settings/ai-mascot`, minTier: "Ghuba Starter" },
+    ],
+  };
+
+  const filterTiers = (items: MenuItem[]) => {
+    const hasMascot = items.some((i) => i.label === "AI Mascot & Agents" || i.label === "AI Mascot Operations");
+    const mergedItems = hasMascot
+      ? items
+      : items.length > 1
+      ? [items[0], mascotMenuItem, ...items.slice(1)]
+      : [...items, mascotMenuItem];
+
+    return evaluateMenuItemsAccess(
+      mergedItems,
       currentTier,
       isSubscriptionActive,
       accessLevel,
     );
+  };
 
   return {
     "E-commerce": filterTiers([

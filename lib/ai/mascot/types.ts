@@ -45,6 +45,7 @@ export type MascotModule =
   | "restaurant"
   | "service"
   | "website"
+  | "integrations"
   | "system";
 
 export interface MascotCapability {
