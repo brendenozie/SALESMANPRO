@@ -138,7 +138,18 @@ class ApiService(private val baseUrl: String = "https://salesmanpro.site") {
                         role = userObj.optString("role")
                     )
                     val companyId = userObj.optString("companyId", "")
-                    val company = CompanyDto(id = companyId, name = "SalesmanPro")
+                    val companyObj = json.optJSONObject("company")
+                    val company = if (companyObj != null) {
+                        CompanyDto(
+                            id = companyObj.optString("id", companyId),
+                            name = companyObj.optString("name", "SalesmanPro"),
+                            slug = if (companyObj.has("slug") && !companyObj.isNull("slug")) companyObj.getString("slug") else null
+                        )
+                    } else {
+                        CompanyDto(id = companyId, name = "SalesmanPro")
+                    }
+
+                    val activeStoreId = json.optString("activeStoreId", "")
 
                     val session = AppSession(
                         token = sessionToken,
@@ -146,7 +157,7 @@ class ApiService(private val baseUrl: String = "https://salesmanpro.site") {
                         destination = destination,
                         user = user,
                         company = company,
-                        activeStoreId = ""
+                        activeStoreId = activeStoreId
                     )
                     Result.success(session)
                 } else {

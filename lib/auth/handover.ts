@@ -4,7 +4,7 @@ import { cacheGet, cacheSet } from "../cache";
 import { isAllowedReturnUrl } from "./context";
 import { HUB_URL, normalizeHost, parseAbsoluteUrl } from "./domain";
 
-const HANDOVER_MAX_AGE = 120;
+const HANDOVER_MAX_AGE = 300; // 5 minutes for mobile deep links and app switching
 const PURPOSE = "cross-domain-handover";
 
 function handoverSecret(): string {
@@ -53,9 +53,23 @@ export function matchesHandoverAudience(
   expectedHost: string | null | undefined,
 ) {
   if (!tokenAudience) return true;
+  const normalizedAud = normalizeHost(tokenAudience);
   const expected = normalizeHost(expectedHost || "");
-  if (!expected) return false;
-  return normalizeHost(tokenAudience) === expected;
+
+  // 1. Exact match between token audience and consuming host
+  if (expected && normalizedAud === expected) return true;
+
+  // 2. Native client applications (Android and Desktop apps) exchanging tokens at API endpoints
+  if (
+    normalizedAud === "site.salesmanpro.android" ||
+    normalizedAud === "salesmanpro.android" ||
+    normalizedAud === "site.salesmanpro.desktop" ||
+    normalizedAud === "salesmanpro.desktop"
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 export async function consumeHandoverToken(raw: string, expectedHost?: string | null) {

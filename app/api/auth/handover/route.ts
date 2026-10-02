@@ -5,6 +5,7 @@ import { createHandoverToken, consumeHandoverToken, safeHandoverTarget } from "@
 import { HUB_URL, normalizeHost } from "@/lib/auth/domain";
 import { authLog, generateCorrelationId } from "@/lib/auth/telemetry";
 import { resolveUserDestination } from "@/lib/auth/destinationResolver";
+import prisma from "@/server/db/prismadb";
 
 function getAuthSecret(): string {
   return (
@@ -306,6 +307,46 @@ export async function POST(req: NextRequest) {
       maxAge: 30 * 24 * 60 * 60,
     });
 
+    const effectiveCompanyId = resolved.companyId || decoded.companyId || null;
+    let company: any = null;
+    if (effectiveCompanyId) {
+      company = await prisma.company.findUnique({
+        where: { id: effectiveCompanyId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          currency: true,
+          logoUrl: true,
+          address: true,
+          contactPhone: true,
+          contactEmail: true,
+        },
+      });
+    }
+    if (!company && decoded.id) {
+      company = await prisma.company.findFirst({
+        where: { userId: decoded.id },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          currency: true,
+          logoUrl: true,
+          address: true,
+          contactPhone: true,
+          contactEmail: true,
+        },
+      });
+    }
+
+    const stores = company?.id
+      ? await prisma.store.findMany({
+          where: { companyId: company.id, isActive: true },
+          select: { id: true, name: true, code: true, address: true, isActive: true },
+        })
+      : [];
+
     authLog(cId, "handover_api_consume", Date.now() - start, {
       status: "success",
       userId: decoded.id,
@@ -321,8 +362,15 @@ export async function POST(req: NextRequest) {
         email: decoded.email,
         name: decoded.name,
         role: decoded.role,
-        companyId: decoded.companyId,
+        companyId: company?.id || effectiveCompanyId,
       },
+      company: company || {
+        id: effectiveCompanyId || "",
+        name: "SalesmanPro",
+        slug: resolved.companySlug || null,
+      },
+      stores,
+      activeStoreId: stores[0]?.id || null,
       destination: resolved.destination,
     });
 

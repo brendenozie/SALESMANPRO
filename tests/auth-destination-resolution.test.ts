@@ -196,7 +196,40 @@ async function runTests() {
     console.log("ok 10 - Server independently rejects unauthorized destination overrides");
   }
 
+  // Test 11: Handover Audience Matching for Mobile and Desktop apps
+  {
+    const { matchesHandoverAudience } = await import("../lib/auth/handover");
+    assert.strictEqual(
+      matchesHandoverAudience("site.salesmanpro.android", "salesmanpro.site"),
+      true,
+      "Android package audience must be accepted at API host"
+    );
+    assert.strictEqual(
+      matchesHandoverAudience("salesmanpro.android", "auth.salesmanpro.site"),
+      true,
+      "Android client audience must be accepted at auth host"
+    );
+    assert.strictEqual(
+      matchesHandoverAudience("site.salesmanpro.desktop", "salesmanpro.site"),
+      true,
+      "Desktop client audience must be accepted at API host"
+    );
+    assert.strictEqual(
+      matchesHandoverAudience("salesmanpro.site", "salesmanpro.site"),
+      true,
+      "Matching web host must be accepted"
+    );
+    assert.strictEqual(
+      matchesHandoverAudience("malicious-site.com", "salesmanpro.site"),
+      false,
+      "Unrelated origin host must be rejected"
+    );
+
+    console.log("ok 11 - Handover audience matching correctly handles Android and Desktop clients");
+  }
+
   console.log("\nAll Role-Based Destination Resolution Tests passed successfully!");
+  process.exit(0);
 }
 
 runTests().catch((err) => {

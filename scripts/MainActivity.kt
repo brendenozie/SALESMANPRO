@@ -92,24 +92,26 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // Validate existing session on launch
+            // Validate existing session on launch (only if not processing incoming deep link)
             LaunchedEffect(Unit) {
-                currentSession?.let { session ->
-                    val result = apiService.validateSession(session.token, session.company.id, session.activeStoreId)
-                    result.onSuccess { refreshed ->
-                        val merged = if (session.destination != null && refreshed.destination == null) {
-                            refreshed.copy(destination = session.destination)
-                        } else {
-                            refreshed
+                if (deepLinkUri == null) {
+                    currentSession?.let { session ->
+                        val result = apiService.validateSession(session.token, session.company.id, session.activeStoreId)
+                        result.onSuccess { refreshed ->
+                            val merged = if (session.destination != null && refreshed.destination == null) {
+                                refreshed.copy(destination = session.destination)
+                            } else {
+                                refreshed
+                            }
+                            sessionManager.saveSession(merged)
+                            currentSession = merged
+                        }.onFailure {
+                            // Session expired
+                            sessionManager.clearSession()
+                            currentSession = null
                         }
-                        sessionManager.saveSession(merged)
-                        currentSession = merged
-                    }.onFailure {
-                        // Session expired
-                        sessionManager.clearSession()
-                        currentSession = null
+                        isCheckingSession = false
                     }
-                    isCheckingSession = false
                 }
             }
 
