@@ -1,0 +1,928 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "generatedAt": "2026-10-02T17:36:00Z",
+  "platformDomain": "salesmanpro.site",
+  "authDomain": "auth.salesmanpro.site",
+  "productionAppDir": "/var/www/salesmanpro",
+  "summary": {
+    "totalIntegrations": 26,
+    "categories": [
+      "AI_INFRASTRUCTURE",
+      "META_WHATSAPP",
+      "SOCIAL_PLATFORMS",
+      "PAYMENTS",
+      "AUTHENTICATION",
+      "COMMUNICATIONS",
+      "STORAGE_CDN",
+      "INFRASTRUCTURE_OPS"
+    ],
+    "statusCounts": {
+      "CONFIGURED": 19,
+      "REGISTRATION_REQUIRED": 5,
+      "VERIFICATION_REQUIRED": 19,
+      "DISCOVERED": 2
+    }
+  },
+  "integrations": [
+    {
+      "id": "ai-groq",
+      "provider": "Groq",
+      "serviceName": "Groq Cloud Inference Engine",
+      "category": "AI_INFRASTRUCTURE",
+      "scope": "PLATFORM",
+      "envVariables": ["GROQ_API_KEY", "GROQ_MODEL"],
+      "credentialTypes": ["API_KEY", "MODEL_IDENTIFIER"],
+      "portalUrl": "https://console.groq.com/keys",
+      "docUrl": "https://console.groq.com/docs/quickstart",
+      "accountType": "Developer / Organization",
+      "verificationPrerequisites": "Verified Email & Phone",
+      "requiredScopes": ["Inference"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/whatsapp/ai/groqProvider.ts",
+        "lib/ai/superAdminService.ts",
+        "workers/ai-job-worker.ts",
+        "workers/ai-workforce-worker.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Call GET https://api.groq.com/openai/v1/models with Bearer token; execute minimal non-streaming prompt"
+    },
+    {
+      "id": "ai-openai",
+      "provider": "OpenAI",
+      "serviceName": "OpenAI API (GPT-4o, Embeddings, Vision)",
+      "category": "AI_INFRASTRUCTURE",
+      "scope": "PLATFORM",
+      "envVariables": ["OPENAI_API_KEY", "OPENAI_MODEL"],
+      "credentialTypes": ["API_KEY", "MODEL_IDENTIFIER"],
+      "portalUrl": "https://platform.openai.com/api-keys",
+      "docUrl": "https://platform.openai.com/docs/overview",
+      "accountType": "Tier 1+ Developer Account",
+      "verificationPrerequisites": "Verified Phone & Organization Billing",
+      "requiredScopes": ["model.read", "model.request"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/whatsapp/ai/openaiProvider.ts",
+        "lib/ai/superAdminService.ts",
+        "workers/ai-job-worker.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query GET https://api.openai.com/v1/models using Bearer auth; verify response code 200 and model availability"
+    },
+    {
+      "id": "ai-google-gemini",
+      "provider": "Google Cloud",
+      "serviceName": "Google Gemini & Multimodal GenAI",
+      "category": "AI_INFRASTRUCTURE",
+      "scope": "PLATFORM",
+      "envVariables": ["GEMINI_API_KEY", "GOOGLE_GENAI_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY", "NEXT_PUBLIC_GEMINI_API_KEY"],
+      "credentialTypes": ["API_KEY"],
+      "portalUrl": "https://aistudio.google.com/app/apikey",
+      "docUrl": "https://ai.google.dev/gemini-api/docs",
+      "accountType": "Google Cloud / AI Studio Account",
+      "verificationPrerequisites": "Google Workspace / Consumer Account with Billing",
+      "requiredScopes": ["Generative Language API"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/ai/superAdminService.ts",
+        "lib/ai/geminiClient.ts",
+        "app/api/ai/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query GET https://generativelanguage.googleapis.com/v1beta/models?key={KEY}; verify active status"
+    },
+    {
+      "id": "ai-anthropic",
+      "provider": "Anthropic",
+      "serviceName": "Claude API (Claude 3.5 Sonnet / Haiku)",
+      "category": "AI_INFRASTRUCTURE",
+      "scope": "PLATFORM",
+      "envVariables": ["ANTHROPIC_API_KEY"],
+      "credentialTypes": ["API_KEY"],
+      "portalUrl": "https://console.anthropic.com/settings/keys",
+      "docUrl": "https://docs.anthropic.com/claude/reference/getting-started",
+      "accountType": "Anthropic Console Workspace",
+      "verificationPrerequisites": "Verified Phone & Active Credits",
+      "requiredScopes": ["Messages API"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": false,
+      "localConfigured": false,
+      "status": "REGISTRATION_REQUIRED",
+      "codeReferences": [
+        "lib/ai/superAdminService.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "POST https://api.anthropic.com/v1/messages with x-api-key header and ant-version header"
+    },
+    {
+      "id": "ai-serpapi",
+      "provider": "SerpApi",
+      "serviceName": "Search Engine Results API",
+      "category": "AI_INFRASTRUCTURE",
+      "scope": "PLATFORM",
+      "envVariables": ["SERPAPI_API_KEY"],
+      "credentialTypes": ["API_KEY"],
+      "portalUrl": "https://serpapi.com/manage-api-key",
+      "docUrl": "https://serpapi.com/docs",
+      "accountType": "Registered Developer Account",
+      "verificationPrerequisites": "Email Confirmation",
+      "requiredScopes": ["Search Queries"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": false,
+      "status": "REGISTRATION_REQUIRED",
+      "codeReferences": [
+        "lib/ai/superAdminService.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "GET https://serpapi.com/account?api_key={KEY}; verify account status and remaining queries"
+    },
+    {
+      "id": "meta-whatsapp",
+      "provider": "Meta Developer Platform",
+      "serviceName": "WhatsApp Cloud API",
+      "category": "META_WHATSAPP",
+      "scope": "HYBRID",
+      "envVariables": [
+        "WHATSAPP_VERIFY_TOKEN",
+        "WHATSAPP_ACCESS_TOKEN",
+        "WHATSAPP_PHONE_NUMBER_ID",
+        "WHATSAPP_BUSINESS_ACCOUNT_ID",
+        "WHATSAPP_APP_SECRET",
+        "WHATSAPP_GRAPH_VERSION",
+        "WHATSAPP_GRAPH_BASE_URL",
+        "WHATSAPP_ALLOW_UNSIGNED_WEBHOOK"
+      ],
+      "credentialTypes": [
+        "SYSTEM_USER_PERMANENT_TOKEN",
+        "PHONE_NUMBER_ID",
+        "WABA_ID",
+        "APP_SECRET",
+        "VERIFY_TOKEN"
+      ],
+      "portalUrl": "https://developers.facebook.com/apps/",
+      "docUrl": "https://developers.facebook.com/docs/whatsapp/cloud-api",
+      "accountType": "Meta Business Account & WhatsApp Business App",
+      "verificationPrerequisites": "Meta Business Verification & 2FA System User",
+      "requiredScopes": [
+        "whatsapp_business_messaging",
+        "whatsapp_business_management"
+      ],
+      "redirectUris": [],
+      "webhookUrls": [
+        "https://salesmanpro.site/api/webhooks/whatsapp"
+      ],
+      "sandboxSeparate": true,
+      "billingRequired": true,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/whatsapp/credentials.ts",
+        "lib/whatsapp/metaClient.ts",
+        "lib/whatsapp/webhook.ts",
+        "app/api/webhooks/whatsapp/route.ts",
+        "workers/whatsapp-worker.ts"
+      ],
+      "dependencies": ["redis-bullmq"],
+      "verificationProcedure": "Call GET https://graph.facebook.com/{WHATSAPP_GRAPH_VERSION}/{WHATSAPP_PHONE_NUMBER_ID} with Bearer token; verify display_phone_number and quality_rating"
+    },
+    {
+      "id": "social-facebook",
+      "provider": "Meta Developer Platform",
+      "serviceName": "Facebook Graph API & Page Management",
+      "category": "SOCIAL_PLATFORMS",
+      "scope": "HYBRID",
+      "envVariables": [
+        "FACEBOOK_CLIENT_ID",
+        "FACEBOOK_CLIENT_SECRET",
+        "META_APP_ID",
+        "META_APP_SECRET"
+      ],
+      "credentialTypes": ["APP_ID", "APP_SECRET"],
+      "portalUrl": "https://developers.facebook.com/apps/",
+      "docUrl": "https://developers.facebook.com/docs/pages-api",
+      "accountType": "Meta Business App with Facebook Login for Business",
+      "verificationPrerequisites": "Meta Business Verification & App Review",
+      "requiredScopes": [
+        "pages_show_list",
+        "pages_read_engagement",
+        "pages_manage_posts"
+      ],
+      "redirectUris": [
+        "https://salesmanpro.site/api/social/callback/facebook"
+      ],
+      "webhookUrls": [],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/social/adapters/facebookAdapter.ts",
+        "app/api/social/connect/[platform]/route.ts",
+        "app/api/social/callback/facebook/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "GET https://graph.facebook.com/v21.0/{APP_ID}?access_token={APP_ID}|{APP_SECRET}; verify application metadata"
+    },
+    {
+      "id": "social-instagram",
+      "provider": "Meta Developer Platform",
+      "serviceName": "Instagram Graph API for Business",
+      "category": "SOCIAL_PLATFORMS",
+      "scope": "HYBRID",
+      "envVariables": [
+        "INSTAGRAM_CLIENT_ID",
+        "INSTAGRAM_CLIENT_SECRET",
+        "META_APP_ID",
+        "META_APP_SECRET"
+      ],
+      "credentialTypes": ["APP_ID", "APP_SECRET"],
+      "portalUrl": "https://developers.facebook.com/apps/",
+      "docUrl": "https://developers.facebook.com/docs/instagram-platform/instagram-graph-api",
+      "accountType": "Meta Business App with Instagram Graph API",
+      "verificationPrerequisites": "Meta Business Verification & Connected Instagram Professional Account",
+      "requiredScopes": [
+        "instagram_basic",
+        "instagram_content_publish",
+        "instagram_manage_insights"
+      ],
+      "redirectUris": [
+        "https://salesmanpro.site/api/social/callback/instagram"
+      ],
+      "webhookUrls": [],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/social/adapters/instagramAdapter.ts",
+        "app/api/social/callback/instagram/route.ts"
+      ],
+      "dependencies": ["social-facebook"],
+      "verificationProcedure": "Validate app credentials via Meta Graph API debug_token endpoint"
+    },
+    {
+      "id": "social-tiktok",
+      "provider": "TikTok for Developers",
+      "serviceName": "TikTok Content Posting API",
+      "category": "SOCIAL_PLATFORMS",
+      "scope": "HYBRID",
+      "envVariables": [
+        "TIKTOK_CLIENT_KEY",
+        "TIKTOK_CLIENT_SECRET",
+        "TIKTOK_APP_ID",
+        "TIKTOK_APP_SECRET"
+      ],
+      "credentialTypes": ["CLIENT_KEY", "CLIENT_SECRET"],
+      "portalUrl": "https://developers.tiktok.com/",
+      "docUrl": "https://developers.tiktok.com/doc/content-posting-api-get-started",
+      "accountType": "TikTok Developer Account (Business)",
+      "verificationPrerequisites": "Organization Identity Verification & App Review for Content Posting",
+      "requiredScopes": [
+        "user.info.basic",
+        "video.publish",
+        "video.upload"
+      ],
+      "redirectUris": [
+        "https://salesmanpro.site/api/social/callback/tiktok"
+      ],
+      "webhookUrls": [],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": true,
+      "localConfigured": false,
+      "status": "REGISTRATION_REQUIRED",
+      "codeReferences": [
+        "lib/social/adapters/tiktokAdapter.ts",
+        "app/api/social/callback/tiktok/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Initiate client_credentials token request to https://open.tiktokapis.com/v2/oauth/token/ and check HTTP 200 response"
+    },
+    {
+      "id": "social-youtube",
+      "provider": "Google Cloud Platform",
+      "serviceName": "YouTube Data API v3 & Partner Uploads",
+      "category": "SOCIAL_PLATFORMS",
+      "scope": "HYBRID",
+      "envVariables": [
+        "YOUTUBE_CLIENT_ID",
+        "YOUTUBE_CLIENT_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
+      ],
+      "credentialTypes": ["OAUTH_CLIENT_ID", "OAUTH_CLIENT_SECRET"],
+      "portalUrl": "https://console.cloud.google.com/apis/credentials",
+      "docUrl": "https://developers.google.com/youtube/v3/getting-started",
+      "accountType": "Google Cloud Project with YouTube Data API v3 enabled",
+      "verificationPrerequisites": "OAuth Consent Screen Verification (External)",
+      "requiredScopes": [
+        "https://www.googleapis.com/auth/youtube.upload",
+        "https://www.googleapis.com/auth/youtube.readonly"
+      ],
+      "redirectUris": [
+        "https://salesmanpro.site/api/social/callback/youtube"
+      ],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/social/adapters/youtubeAdapter.ts",
+        "app/api/social/callback/youtube/route.ts"
+      ],
+      "dependencies": ["auth-google-oauth"],
+      "verificationProcedure": "Fetch Google Discovery document for YouTube v3 and test OAuth authorization endpoint resolution"
+    },
+    {
+      "id": "payment-mpesa",
+      "provider": "Safaricom Daraja",
+      "serviceName": "Daraja 2.0 M-Pesa Express & C2B/B2C",
+      "category": "PAYMENTS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "MPESA_ENVIRONMENT",
+        "MPESA_BASE_URL",
+        "MPESA_CONSUMER_KEY",
+        "MPESA_CONSUMER_SECRET",
+        "MPESA_SHORTCODE",
+        "MPESA_PASSKEY",
+        "MPESA_CALLBACK_URL",
+        "MPESA_USE_SANDBOX",
+        "MPESA_WEBHOOK_SECRET"
+      ],
+      "credentialTypes": [
+        "CONSUMER_KEY",
+        "CONSUMER_SECRET",
+        "PASSKEY",
+        "SHORTCODE",
+        "CALLBACK_URL"
+      ],
+      "portalUrl": "https://developer.safaricom.co.ke/",
+      "docUrl": "https://developer.safaricom.co.ke/docs",
+      "accountType": "Daraja Developer Account (Sandbox) / Safaricom Org Portal (Live)",
+      "verificationPrerequisites": "Business Till / Paybill number, KYC documentation, Static IP for production",
+      "requiredScopes": ["Lipa na M-Pesa Online (STK Push)", "C2B Payment Validation"],
+      "redirectUris": [],
+      "webhookUrls": [
+        "https://salesmanpro.site/api/mpesa/callback",
+        "https://salesmanpro.site/api/webhooks/mpesa"
+      ],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/whatsapp/payments/mpesaCallbackHandler.ts",
+        "app/api/mpesa/callback/route.ts",
+        "app/api/webhooks/mpesa/route.ts",
+        "app/api/payments/mpesa/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Request OAuth bearer token from {MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials with Basic auth"
+    },
+    {
+      "id": "payment-paystack",
+      "provider": "Paystack",
+      "serviceName": "Paystack Payments & Subscriptions",
+      "category": "PAYMENTS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "PAYSTACK_PUBLIC_KEY",
+        "PAYSTACK_SECRET_KEY",
+        "PAYSTACK_BASE_URL",
+        "PAYSTACK_CALLBACK_URL",
+        "PAYSTACK_SECRET"
+      ],
+      "credentialTypes": ["PUBLIC_KEY", "SECRET_KEY"],
+      "portalUrl": "https://dashboard.paystack.com/#/settings/developer",
+      "docUrl": "https://paystack.com/docs/api/",
+      "accountType": "Paystack Registered Business / Starter",
+      "verificationPrerequisites": "Bank account verification & CAC/KYC documentation",
+      "requiredScopes": ["Transactions", "Subaccounts", "Dedicated Virtual Accounts"],
+      "redirectUris": [
+        "https://salesmanpro.site/api/webhooks/paystack"
+      ],
+      "webhookUrls": [
+        "https://salesmanpro.site/api/webhooks/paystack"
+      ],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "app/api/webhooks/paystack/route.ts",
+        "app/api/payments/paystack/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query GET https://api.paystack.co/balance using Authorization: Bearer {PAYSTACK_SECRET_KEY}"
+    },
+    {
+      "id": "payment-stripe",
+      "provider": "Stripe",
+      "serviceName": "Stripe Checkout, Elements & Webhooks",
+      "category": "PAYMENTS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "STRIPE_PUBLISHABLE_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_SIGNING_SECRET",
+        "STRIPE_WEBHOOK_URL",
+        "STRIPE_PUBLIC_KEY",
+        "STRIPE_SECRET",
+        "STRIPE_WEBHOOK_SECRET"
+      ],
+      "credentialTypes": ["PUBLISHABLE_KEY", "SECRET_KEY", "WEBHOOK_SIGNING_SECRET"],
+      "portalUrl": "https://dashboard.stripe.com/apikeys",
+      "docUrl": "https://stripe.com/docs/api",
+      "accountType": "Stripe Verified Business",
+      "verificationPrerequisites": "Tax identification, bank account, business verification",
+      "requiredScopes": ["Charges", "PaymentIntents", "Webhooks"],
+      "redirectUris": [],
+      "webhookUrls": [
+        "https://salesmanpro.site/api/webhooks/stripe"
+      ],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "app/api/webhooks/stripe/route.ts",
+        "app/api/payments/stripe/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query GET https://api.stripe.com/v1/balance using Bearer {STRIPE_SECRET_KEY}"
+    },
+    {
+      "id": "payment-paypal",
+      "provider": "PayPal Developer",
+      "serviceName": "PayPal Orders v2 & Webhook Ingress",
+      "category": "PAYMENTS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "PAYPAL_CLIENT_ID",
+        "PAYPAL_SECRET",
+        "PAYPAL_BASE_URL",
+        "PAYPAL_WEBHOOK_ID",
+        "PAYPAL_USE_SANDBOX"
+      ],
+      "credentialTypes": ["CLIENT_ID", "SECRET", "WEBHOOK_ID"],
+      "portalUrl": "https://developer.paypal.com/dashboard/applications",
+      "docUrl": "https://developer.paypal.com/api/rest/",
+      "accountType": "PayPal Business Account",
+      "verificationPrerequisites": "Verified PayPal Business Entity",
+      "requiredScopes": ["Checkout", "Webhooks"],
+      "redirectUris": [],
+      "webhookUrls": [
+        "https://salesmanpro.site/api/webhooks/paypal"
+      ],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "app/api/webhooks/paypal/route.ts",
+        "app/api/payments/paypal/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Request OAuth2 token from {PAYPAL_BASE_URL}/v1/oauth2/token using client_credentials grant"
+    },
+    {
+      "id": "payment-ghuba",
+      "provider": "Ghuba Marketplace Platform",
+      "serviceName": "Ghuba Shared Payment Infrastructure & Multi-Store Split Gateway",
+      "category": "PAYMENTS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "GHUBA_MERCHANT_ID",
+        "GHUBA_API_KEY",
+        "GHUBA_BASE_URL",
+        "GHUBA_CALLBACK_URL",
+        "GHUBA_ENDPOINT"
+      ],
+      "credentialTypes": ["MERCHANT_ID", "API_KEY", "CALLBACK_URL"],
+      "portalUrl": "https://ghuba.shop/merchant/api-settings",
+      "docUrl": "https://ghuba.shop/docs/api",
+      "accountType": "Ghuba Master Aggregator Account",
+      "verificationPrerequisites": "Merchant KYC and Fee Settlement Agreement",
+      "requiredScopes": ["Checkout Ingress", "Store Subaccount Split", "Payout Reconciliation"],
+      "redirectUris": [],
+      "webhookUrls": [
+        "https://salesmanpro.site/api/webhooks/ghuba"
+      ],
+      "sandboxSeparate": true,
+      "billingRequired": true,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "app/api/webhooks/ghuba/route.ts",
+        "app/api/ghuba/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query GET {GHUBA_BASE_URL}/api/v1/merchant/status with x-api-key: {GHUBA_API_KEY}"
+    },
+    {
+      "id": "auth-nextauth",
+      "provider": "SalesmanPro Internal Core",
+      "serviceName": "NextAuth.js Session & Token Handler",
+      "category": "AUTHENTICATION",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "NEXTAUTH_SECRET",
+        "AUTH_SECRET",
+        "NEXTAUTH_URL",
+        "NEXTAUTH_URL_INTERNAL",
+        "AUTH_TRUST_HOST",
+        "JWT_SECRET"
+      ],
+      "credentialTypes": ["HMAC_SHA256_SECRET", "CANONICAL_URL"],
+      "portalUrl": "Internal / Environment Generated",
+      "docUrl": "https://next-auth.js.org/configuration/options",
+      "accountType": "Self-hosted cryptographic secrets",
+      "verificationPrerequisites": "32+ byte high-entropy random string",
+      "requiredScopes": ["Session Cookie Signing", "JWT Encryption"],
+      "redirectUris": [
+        "https://salesmanpro.site/api/auth/callback/*",
+        "https://auth.salesmanpro.site/api/auth/callback/*"
+      ],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/verifyAuth.ts",
+        "app/api/auth/[...nextauth]/route.ts",
+        "middleware.ts"
+      ],
+      "dependencies": ["db-mongodb"],
+      "verificationProcedure": "Verify cryptographic entropy (length >= 32 chars) and test session encode/decode roundtrip"
+    },
+    {
+      "id": "auth-google-oauth",
+      "provider": "Google Cloud Identity",
+      "serviceName": "Google Sign-In & Workspace Single Sign-On",
+      "category": "AUTHENTICATION",
+      "scope": "PLATFORM",
+      "envVariables": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+      "credentialTypes": ["OAUTH_CLIENT_ID", "OAUTH_CLIENT_SECRET"],
+      "portalUrl": "https://console.cloud.google.com/apis/credentials",
+      "docUrl": "https://developers.google.com/identity/protocols/oauth2",
+      "accountType": "Google Cloud Project with OAuth Consent Screen",
+      "verificationPrerequisites": "Configured authorized JavaScript origins and redirect URIs; Domain Verification",
+      "requiredScopes": ["openid", "email", "profile"],
+      "redirectUris": [
+        "https://salesmanpro.site/api/auth/callback/google",
+        "https://auth.salesmanpro.site/api/auth/callback/google",
+        "http://localhost:3000/api/auth/callback/google"
+      ],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": false,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "app/api/auth/[...nextauth]/route.ts"
+      ],
+      "dependencies": ["auth-nextauth"],
+      "verificationProcedure": "Fetch https://accounts.google.com/.well-known/openid-configuration and validate client registration format"
+    },
+    {
+      "id": "comm-smtp-gateway",
+      "provider": "Hostinger / Custom SMTP",
+      "serviceName": "Transactional Email SMTP Relay",
+      "category": "COMMUNICATIONS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "DEFAULT_EMAIL_PROVIDER",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_SECURE",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "DEFAULT_FROM_NAME",
+        "DEFAULT_FROM_EMAIL",
+        "DEFAULT_REPLY_TO",
+        "EMAIL_RECEIVER"
+      ],
+      "credentialTypes": ["SMTP_HOSTNAME", "PORT", "USERNAME", "PASSWORD"],
+      "portalUrl": "https://hpanel.hostinger.com/",
+      "docUrl": "https://nodemailer.com/smtp/",
+      "accountType": "Mail Server / Hosted Mailbox",
+      "verificationPrerequisites": "SPF, DKIM, DMARC DNS records for salesmanpro.site",
+      "requiredScopes": ["SMTP AUTH", "TLS/STARTTLS"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "service/mailService.ts",
+        "app/api/post-email/route.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Initiate TLS handshake to {SMTP_HOST}:{SMTP_PORT} and run SMTP EHLO/AUTH verification"
+    },
+    {
+      "id": "comm-resend",
+      "provider": "Resend",
+      "serviceName": "Resend Developer Email API",
+      "category": "COMMUNICATIONS",
+      "scope": "PLATFORM",
+      "envVariables": ["RESEND_API_KEY"],
+      "credentialTypes": ["API_KEY"],
+      "portalUrl": "https://resend.com/api-keys",
+      "docUrl": "https://resend.com/docs/api-reference/introduction",
+      "accountType": "Resend Developer Account",
+      "verificationPrerequisites": "Verified sending domain with MX, SPF, DKIM",
+      "requiredScopes": ["email.send"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": true,
+      "localConfigured": false,
+      "status": "REGISTRATION_REQUIRED",
+      "codeReferences": [
+        "service/mailService.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query GET https://api.resend.com/api-keys using Bearer token"
+    },
+    {
+      "id": "comm-textsms",
+      "provider": "TextSMS Kenya",
+      "serviceName": "Transactional SMS & OTP Gateway",
+      "category": "COMMUNICATIONS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "SMS_API_KEY",
+        "SMS_PARTNER_ID",
+        "SMS_SENDER_ID",
+        "SMS_BASE_URL"
+      ],
+      "credentialTypes": ["API_KEY", "PARTNER_ID", "SENDER_ID"],
+      "portalUrl": "https://sms.textsms.co.ke/",
+      "docUrl": "https://sms.textsms.co.ke/api/docs",
+      "accountType": "Licensed Bulk SMS Account",
+      "verificationPrerequisites": "Registered Sender ID with Communications Authority of Kenya (CAK)",
+      "requiredScopes": ["SMS Broadcast", "SMS Status Callback"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": true,
+      "billingRequired": true,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/sms/index.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Query balance endpoint at {SMS_BASE_URL} with apikey and partnerID"
+    },
+    {
+      "id": "comm-firebase-fcm",
+      "provider": "Google Firebase",
+      "serviceName": "Firebase Cloud Messaging (Android & Web Push)",
+      "category": "COMMUNICATIONS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "FIREBASE_CLIENT_API_KEY",
+        "FIREBASE_CLIENT_AUTH_DOMAIN",
+        "FIREBASE_CLIENT_PROJECT_ID",
+        "FIREBASE_CLIENT_STORAGE_BUCKET",
+        "FIREBASE_CLIENT_MESSAGING_SENDER_ID",
+        "FIREBASE_CLIENT_APP_ID"
+      ],
+      "credentialTypes": ["FIREBASE_WEB_CONFIG_OBJECT"],
+      "portalUrl": "https://console.firebase.google.com/project/_/settings/general",
+      "docUrl": "https://firebase.google.com/docs/cloud-messaging",
+      "accountType": "Google Firebase Console Project",
+      "verificationPrerequisites": "Registered Web App & Android SHA-256 fingerprint",
+      "requiredScopes": ["FCM Token Registration", "Push Notifications"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/firebase.ts",
+        "lib/notification-device-service.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Validate Firebase Project ID and public configuration against Google Identity Toolkit"
+    },
+    {
+      "id": "storage-aws-s3",
+      "provider": "Amazon Web Services (AWS) or Wasabi / Cloudflare R2",
+      "serviceName": "S3 Object Storage & CloudFront Asset CDN",
+      "category": "STORAGE_CDN",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_REGION",
+        "AWS_BUCKET_NAME",
+        "AACCESS_KEY_ID",
+        "ASECRET_ACCESS_KEY",
+        "AREGION",
+        "AS3_BUCKET_NAME",
+        "S3_BUCKET_NAME",
+        "NEXT_PUBLIC_CDN_URL"
+      ],
+      "credentialTypes": ["IAM_ACCESS_KEY_ID", "IAM_SECRET_ACCESS_KEY", "BUCKET_NAME", "REGION"],
+      "portalUrl": "https://us-east-1.console.aws.amazon.com/iam/",
+      "docUrl": "https://docs.aws.amazon.com/s3/",
+      "accountType": "AWS Account with Least-Privilege IAM User",
+      "verificationPrerequisites": "Bucket CORS configuration & CloudFront Distribution setup",
+      "requiredScopes": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": true,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/s3.ts",
+        "app/api/upload-url/route.ts",
+        "workers/video-transcode-runner.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Execute HeadBucketCommand and non-destructive PutObjectCommand with test payload, followed by immediate DeleteObjectCommand"
+    },
+    {
+      "id": "storage-backup-dr",
+      "provider": "S3 Compatible Object Storage (Wasabi / AWS / R2)",
+      "serviceName": "Automated Database Backup & Disaster Recovery Vault",
+      "category": "STORAGE_CDN",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "BACKUP_STORAGE_PROVIDER",
+        "BACKUP_S3_BUCKET",
+        "BACKUP_S3_REGION",
+        "BACKUP_S3_PREFIX",
+        "BACKUP_S3_ACCESS_KEY",
+        "BACKUP_S3_SECRET_KEY",
+        "BACKUP_S3_ENDPOINT",
+        "BACKUP_ENCRYPTION_KEY",
+        "BACKUP_ENCRYPTION_KEY_VERSION",
+        "BACKUP_SECRET",
+        "BACKUP_CRON_SECRET"
+      ],
+      "credentialTypes": ["ACCESS_KEY", "SECRET_KEY", "AES_GCM_ENCRYPTION_KEY"],
+      "portalUrl": "https://console.wasabisys.com/ / AWS S3 Console",
+      "docUrl": "https://docs.aws.amazon.com/cli/latest/reference/s3/",
+      "accountType": "Dedicated Isolated Backup Vault",
+      "verificationPrerequisites": "Bucket Versioning & Lifecycle Retention Rules",
+      "requiredScopes": ["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": true,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/crypto.ts",
+        "lib/verifyBackupSecret.ts",
+        "workers/backup-worker.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Verify S3 HeadBucket connectivity on backup vault and test AES-256-GCM encryption key integrity"
+    },
+    {
+      "id": "infra-mongodb",
+      "provider": "MongoDB Database",
+      "serviceName": "MongoDB 7.0 Engine with rs0 Replica Set",
+      "category": "INFRASTRUCTURE_OPS",
+      "scope": "PLATFORM",
+      "envVariables": ["DATABASE_URL"],
+      "credentialTypes": ["MONGODB_CONNECTION_URI"],
+      "portalUrl": "Contabo VPS local service / MongoDB Atlas",
+      "docUrl": "https://www.mongodb.com/docs/manual/replication/",
+      "accountType": "Self-hosted MongoDB Replica Set",
+      "verificationPrerequisites": "Replica Set 'rs0' initiated for transaction & change stream support",
+      "requiredScopes": ["readWriteAnyDatabase", "clusterMonitor"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "prisma/schema.prisma",
+        "server/db/prismadb.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Execute $runCommand: { ping: 1 } and check replica set status rs.status() via Prisma"
+    },
+    {
+      "id": "infra-redis-bullmq",
+      "provider": "Redis Engine",
+      "serviceName": "Redis Cache, Pub/Sub & BullMQ Background Queue",
+      "category": "INFRASTRUCTURE_OPS",
+      "scope": "PLATFORM",
+      "envVariables": ["REDIS_URL"],
+      "credentialTypes": ["REDIS_CONNECTION_URI"],
+      "portalUrl": "Contabo VPS local service (127.0.0.1:6379)",
+      "docUrl": "https://redis.io/docs/latest/develop/connect/clients/nodejs/ioredis/",
+      "accountType": "Redis Instance",
+      "verificationPrerequisites": "Persistent append-only file (AOF) or snapshotting",
+      "requiredScopes": ["Data Storage", "Pub/Sub", "Stream Processing"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": true,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/redis.ts",
+        "workers/whatsapp-worker.ts",
+        "workers/ai-job-worker.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Send Redis PING command via ioredis client and verify PONG response"
+    },
+    {
+      "id": "infra-encryption",
+      "provider": "SalesmanPro Security Subsystem",
+      "serviceName": "AES-256-GCM Tenant Secret & Backup Cipher",
+      "category": "INFRASTRUCTURE_OPS",
+      "scope": "PLATFORM",
+      "envVariables": [
+        "ENCRYPTION_KEY",
+        "MASTER_ENCRYPTION_KEY",
+        "BACKUP_ENCRYPTION_KEY"
+      ],
+      "credentialTypes": ["CRYPTOGRAPHIC_KEY_32_BYTES"],
+      "portalUrl": "Environment Configuration",
+      "docUrl": "https://nodejs.org/api/crypto.html#cryptocipheriv",
+      "accountType": "High Entropy Secrets",
+      "verificationPrerequisites": "Exact 32 bytes (64 hex characters or 32 ASCII characters)",
+      "requiredScopes": ["AES-256-GCM Authenticated Encryption & Decryption"],
+      "redirectUris": [],
+      "webhookUrls": [],
+      "sandboxSeparate": false,
+      "billingRequired": false,
+      "domainVerificationRequired": false,
+      "localConfigured": true,
+      "status": "VERIFICATION_REQUIRED",
+      "codeReferences": [
+        "lib/crypto.ts",
+        "lib/crypto/aes.ts",
+        "lib/social/socialCrypto.ts"
+      ],
+      "dependencies": [],
+      "verificationProcedure": "Run round-trip encryption, decryption, and authentication tag validation with sample test vector"
+    }
+  ]
+}

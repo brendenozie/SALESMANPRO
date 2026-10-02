@@ -1,0 +1,119 @@
+{
+  "timestamp": "2026-10-02T14:46:44.860Z",
+  "environment": "development",
+  "totalTested": 9,
+  "passedCount": 3,
+  "failedCount": 6,
+  "results": [
+    {
+      "providerId": "ai-groq",
+      "success": false,
+      "testedAt": "2026-10-02T14:47:04.450Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "Groq authentication failed with HTTP 401",
+      "error": "{\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}\n"
+    },
+    {
+      "providerId": "ai-openai",
+      "success": false,
+      "testedAt": "2026-10-02T14:47:04.450Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "OPENAI_API_KEY is missing or empty."
+    },
+    {
+      "providerId": "ai-google-gemini",
+      "success": false,
+      "testedAt": "2026-10-02T14:47:05.221Z",
+      "environment": "development",
+      "credentialStatus": "PERM...[REDACTED-17-CHARS]...NIED",
+      "message": "Google Gemini API returned HTTP 403",
+      "error": "{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission denied: Consumer 'api_key:[REDACTED_CREDENTIAL]' has been suspended.\",\n    \"status\": \"PERMISSION_DENIED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"CONSUMER_SUSPENDED\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\",\n          \"consumer\": \"projects/633476758082\",\n          \"containerInfo\": \"api_key:[REDACTED_CREDENTIAL]\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"Permission denied: Consumer 'api_key:[REDACTED_CREDENTIAL]' has been suspended.\"\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "providerId": "meta-whatsapp",
+      "success": false,
+      "testedAt": "2026-10-02T14:47:05.222Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "WHATSAPP_ACCESS_TOKEN or WHATSAPP_PHONE_NUMBER_ID is missing."
+    },
+    {
+      "providerId": "payment-mpesa",
+      "success": true,
+      "testedAt": "2026-10-02T14:47:08.538Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "Safaricom Daraja OAuth verified successfully. Token expires in 3599s. Target Gateway: https://sandbox.safaricom.co.ke.",
+      "accountDetails": {
+        "accountName": "Safaricom Daraja API Account",
+        "permissions": [
+          "Lipa na M-Pesa Online"
+        ]
+      }
+    },
+    {
+      "providerId": "payment-paystack",
+      "success": true,
+      "testedAt": "2026-10-02T14:47:09.933Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "Paystack API operational. Available Currency Ledger: [KES: 175009.53].",
+      "accountDetails": {
+        "accountName": "Paystack Merchant Account",
+        "permissions": [
+          "Transactions",
+          "Balance"
+        ]
+      }
+    },
+    {
+      "providerId": "payment-stripe",
+      "success": false,
+      "testedAt": "2026-10-02T14:47:10.709Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "Stripe balance request failed: Invalid API Key provided: key_goes*here",
+      "error": "{\"error\":{\"message\":\"Invalid API Key provided: key_goes*here\",\"type\":\"invalid_request_error\"}}"
+    },
+    {
+      "providerId": "storage-aws-s3",
+      "success": false,
+      "testedAt": "2026-10-02T14:47:11.542Z",
+      "environment": "development",
+      "credentialStatus": "PERM...[REDACTED-17-CHARS]...NIED",
+      "message": "S3 Storage check failed: UnknownError",
+      "error": "403: UnknownError"
+    },
+    {
+      "providerId": "comm-smtp-gateway",
+      "success": true,
+      "testedAt": "2026-10-02T14:47:13.394Z",
+      "environment": "development",
+      "credentialStatus": "***[REDACTED]***",
+      "message": "SMTP connection established successfully to smtp.gmail.com:587 for tulivuapps@gmail.com. Handshake and AUTH verified.",
+      "accountDetails": {
+        "accountName": "SMTP [tulivuapps@gmail.com]",
+        "permissions": [
+          "SMTP AUTH",
+          "TLS"
+        ]
+      }
+    }
+  ],
+  "infrastructure": {
+    "mongodb": {
+      "status": "HEALTHY",
+      "message": "MongoDB replica set connection verified (ACID transactions enabled)."
+    },
+    "redis": {
+      "status": "HEALTHY",
+      "message": "Redis ping successful (PONG received). Queue workers ready."
+    },
+    "cryptoCipher": {
+      "status": "HEALTHY",
+      "message": "AES-256-GCM cipher round-trip verified with authentication tag integrity."
+    }
+  }
+}
