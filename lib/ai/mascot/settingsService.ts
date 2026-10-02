@@ -33,6 +33,7 @@ export const DEFAULT_MASCOT_SETTINGS: MascotSettings = {
     property: true,
     restaurant: true,
     service: true,
+    website: true,
     system: true,
   },
   roleRestrictions: {},
