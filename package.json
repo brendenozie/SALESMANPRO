@@ -17,6 +17,7 @@
     "test:agent-drift": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/agent-drift-detection.test.ts",
     "test:agent-matrix": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/agent-feature-matrix.test.ts",
     "test:rider": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/rider-marketplace.test.ts",
+    "test:order-tracking": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/order-tracking.test.ts",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build"

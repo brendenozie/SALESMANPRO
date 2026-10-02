@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
       multipleOrders: result.multipleOrders,
     });
   } catch (error: any) {
-    console.error("[SHOP_TRACK_ORDER_API_ERROR]", error);
+    console.error("[ORDERS_TRACK_API_ERROR]", error);
     return withCors(
       {
         success: false,

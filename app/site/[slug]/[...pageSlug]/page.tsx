@@ -10,6 +10,7 @@ import { SEOService } from "@/lib/seo";
 import { isGhubaMarketplace } from "@/lib/ghuba-helpers";
 
 import { resolvePageSlugAlias } from "@/lib/website-builder/template-registry";
+import OrderTrackingView from "@/components/site/OrderTrackingView";
 
 export const revalidate = 60;
 
@@ -87,6 +88,18 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
   const targetSlug = resolvePageSlugAlias(currentSlug);
 
   const { pageData, raw, canonicalTemplate } = await loadStore(slug);
+
+  // Direct render for order tracking requests across all template sites
+  if (["track", "trackorder", "track-order", "ordertracking", "order-tracking"].includes(currentSlug)) {
+    return (
+      <main className="text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto bg-slate-50 dark:bg-slate-950">
+        <StoreDataSync data={pageData} />
+        <div className="pt-6 pb-16">
+          <OrderTrackingView storeSlug={slug} storeName={raw?.name} />
+        </div>
+      </main>
+    );
+  }
 
   let activeConfig = raw?.website?.publishedConfig as any;
 
