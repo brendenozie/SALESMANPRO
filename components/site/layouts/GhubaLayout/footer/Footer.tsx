@@ -54,7 +54,7 @@ const Footer = () => {
       }];
 
   // Paths where the footer should be hidden entirely
-  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed'];
+  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider'];
   if (hiddenPaths.some(p => path?.includes(p))) return null;
 
   // Hide footer on mobile for specific path

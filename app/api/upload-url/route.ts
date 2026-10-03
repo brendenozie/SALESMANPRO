@@ -5,7 +5,9 @@
  * Security & Optimization Features:
  * - Session verification & tenant isolation (scoped by companyId)
  * - Strict MIME type whitelisting & rejection of dangerous file types (executables, scripts, HTML)
- * - Strict file size bounds (15MB image, 100MB video, 50MB documents)
+ * - Strict file size bounds (15MB image, 100MB video, 50MB books, 5MB verification documents)
+ * - Verification documents (KYC: IDs, licenses, insurance) require auth, a declared size,
+ *   and have ContentLength signed into the URL so S3 rejects oversized bodies
  * - Path traversal sanitization (replaces dangerous characters and prevents directory escaping)
  * - Immutable CDN caching headers injected into PutObjectCommand (Cache-Control: public, max-age=31536000, immutable)
  * - Supports both GET (query parameters) and POST (JSON body)
@@ -61,6 +63,18 @@ const MEDIA_RULES: Record<
     maxSizeBytes: 50 * 1024 * 1024, // 50MB
     defaultExt: "pdf",
   },
+  // KYC / verification documents (rider ID, license, insurance, vehicle photos)
+  document: {
+    allowedMimes: [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ],
+    maxSizeBytes: 5 * 1024 * 1024, // 5MB
+    defaultExt: "jpg",
+  },
 };
 
 // Dangerous file extensions strictly rejected
@@ -112,11 +126,18 @@ async function generatePresignedUpload(
     ? "video"
     : type === "book"
     ? "book"
+    : type === "document"
+    ? "document"
     : "image";
 
   const rule = MEDIA_RULES[category];
   if (!rule) {
     return NextResponse.json({ success: false, error: `Unsupported media type: ${type}` }, { status: 400 });
+  }
+
+  // Verification documents must declare their exact size (it is signed into the URL below)
+  if (category === "document" && (!fileSize || !Number.isFinite(fileSize) || fileSize <= 0)) {
+    return NextResponse.json({ success: false, error: "File size is required for document uploads" }, { status: 400 });
   }
 
   // Validate declared file size if provided
@@ -172,6 +193,8 @@ async function generatePresignedUpload(
   const auth = await verifyAuth(req);
   if (auth.success && auth.user) {
     companyScope = (auth.user.companyId || explicitCompanyId || auth.user.id || "seller").toString();
+  } else if (category === "document") {
+    return NextResponse.json({ success: false, error: "Please sign in to upload verification documents" }, { status: 401 });
   } else if (explicitCompanyId) {
     companyScope = explicitCompanyId.replace(/[^a-zA-Z0-9_-]/g, "");
   }
@@ -191,6 +214,8 @@ async function generatePresignedUpload(
     Key: key,
     ContentType: resolvedContentType,
     CacheControl: "public, max-age=31536000, immutable",
+    // Bind exact size for KYC documents so S3 rejects bodies that differ from the declared size
+    ...(category === "document" && fileSize ? { ContentLength: fileSize } : {}),
   });
 
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 }); // 15 minutes validity

@@ -13,11 +13,14 @@ import {
   CheckCircleIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
-  CloudArrowUpIcon,
   ShieldCheckIcon,
   ClockIcon,
   ExclamationTriangleIcon,
+  PencilSquareIcon,
+  EyeIcon,
+  DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
+import { RiderDocumentUpload } from "@/components/media/RiderDocumentUpload";
 
 export default function RiderOnboardingPage() {
   const router = useRouter();
@@ -57,6 +60,7 @@ export default function RiderOnboardingPage() {
     insuranceNumber: "",
     insuranceExpiry: "",
     insuranceCertUrl: "",
+    logbookUrl: "",
     // Step 4: Service Area
     serviceAreas: ["Westlands", "CBD", "Kilimani", "Eastleigh"],
     maxDistanceKm: 20,
@@ -66,6 +70,8 @@ export default function RiderOnboardingPage() {
     // Step 6: Agreement
     termsAccepted: false,
   });
+
+  const isMotorized = ["MOTORBIKE", "CAR", "VAN", "TRUCK"].includes(formData.riderType);
 
   // Counties in Kenya
   const counties = [
@@ -79,6 +85,8 @@ export default function RiderOnboardingPage() {
     "Uasin Gishu",
     "Meru",
     "Kilifi",
+    "Nyeri",
+    "Kakamega",
   ];
 
   useEffect(() => {
@@ -97,6 +105,8 @@ export default function RiderOnboardingPage() {
             email: p.email || prev.email,
             operatingCounty: p.operatingCounty || prev.operatingCounty,
             operatingCity: p.operatingCity || prev.operatingCity,
+            emergencyContactName: p.emergencyContactName || prev.emergencyContactName,
+            emergencyContactPhone: p.emergencyContactPhone || prev.emergencyContactPhone,
             idType: p.idType || prev.idType,
             idNumber: p.idNumber || prev.idNumber,
             idFrontUrl: p.idFrontUrl || prev.idFrontUrl,
@@ -119,6 +129,11 @@ export default function RiderOnboardingPage() {
             vehicleColor: p.vehicles?.[0]?.color || prev.vehicleColor,
             vehiclePhotoUrl: p.vehicles?.[0]?.vehiclePhoto || prev.vehiclePhotoUrl,
             insuranceNumber: p.vehicles?.[0]?.insuranceNumber || prev.insuranceNumber,
+            insuranceExpiry: p.vehicles?.[0]?.insuranceExpiry
+              ? new Date(p.vehicles[0].insuranceExpiry).toISOString().split("T")[0]
+              : prev.insuranceExpiry,
+            insuranceCertUrl: p.vehicles?.[0]?.insuranceCertUrl || prev.insuranceCertUrl,
+            logbookUrl: p.vehicles?.[0]?.logbookUrl || prev.logbookUrl,
           }));
         }
       } catch (e) {
@@ -152,6 +167,151 @@ export default function RiderOnboardingPage() {
     });
   };
 
+  // Step-by-Step Validation Logic
+  const validateStep = (step: number): { valid: boolean; message?: string } => {
+    switch (step) {
+      case 1: {
+        if (!formData.fullName.trim() || formData.fullName.trim().length < 3) {
+          return { valid: false, message: "Please enter your full legal name (at least 3 characters)." };
+        }
+        const cleanPhone = formData.phone.replace(/[\s+-]/g, "");
+        if (!cleanPhone || cleanPhone.length < 9) {
+          return { valid: false, message: "Please enter a valid phone number (e.g. 0712345678 or 254712345678)." };
+        }
+        if (!formData.operatingCounty) {
+          return { valid: false, message: "Please select your primary operating county." };
+        }
+        if (!formData.operatingCity.trim()) {
+          return { valid: false, message: "Please enter your operating city, town, or sub-county." };
+        }
+        if (!formData.emergencyContactName.trim()) {
+          return { valid: false, message: "Please provide an emergency contact name." };
+        }
+        const cleanEmergencyPhone = formData.emergencyContactPhone.replace(/[\s+-]/g, "");
+        if (!cleanEmergencyPhone || cleanEmergencyPhone.length < 9) {
+          return { valid: false, message: "Please provide an emergency contact phone number." };
+        }
+        return { valid: true };
+      }
+
+      case 2: {
+        if (!formData.idNumber.trim() || formData.idNumber.trim().length < 4) {
+          return { valid: false, message: "Please enter your Government ID or Document Number." };
+        }
+        if (!formData.idFrontUrl) {
+          return { valid: false, message: "Please upload the front photo of your National ID or Passport." };
+        }
+        if ((formData.idType === "NATIONAL_ID" || formData.idType === "ALIEN_ID") && !formData.idBackUrl) {
+          return { valid: false, message: "Please upload the back photo of your National ID." };
+        }
+        if (!formData.selfieUrl) {
+          return { valid: false, message: "Please upload a clear selfie or passport-style portrait photo." };
+        }
+
+        if (isMotorized) {
+          if (!formData.drivingLicenseNo.trim()) {
+            return { valid: false, message: "Driving license number is required for motorized transport." };
+          }
+          if (!formData.drivingLicenseUrl) {
+            return { valid: false, message: "Please upload a clear document or photo of your driving license." };
+          }
+          if (!formData.drivingLicenseExpiry) {
+            return { valid: false, message: "Please enter your driving license expiry date." };
+          }
+        }
+        return { valid: true };
+      }
+
+      case 3: {
+        if (isMotorized) {
+          if (!formData.vehiclePlate.trim()) {
+            return { valid: false, message: "Please enter your vehicle registration / number plate (e.g. KMDF 123X)." };
+          }
+          if (!formData.vehicleMake.trim()) {
+            return { valid: false, message: "Please enter your vehicle make / brand (e.g. Boxer, Bajaj, Toyota)." };
+          }
+          if (!formData.vehicleModel.trim()) {
+            return { valid: false, message: "Please enter your vehicle model and color." };
+          }
+          if (!formData.insuranceNumber.trim()) {
+            return { valid: false, message: "Please enter your vehicle insurance policy number." };
+          }
+          if (!formData.insuranceExpiry) {
+            return { valid: false, message: "Please enter your insurance expiration date." };
+          }
+          if (!formData.vehiclePhotoUrl) {
+            return { valid: false, message: "Please upload a clear photo of your vehicle showing the registration plate." };
+          }
+          if (!formData.insuranceCertUrl) {
+            return { valid: false, message: "Please upload your vehicle insurance certificate." };
+          }
+        }
+        return { valid: true };
+      }
+
+      case 4: {
+        if (!formData.serviceAreas || formData.serviceAreas.length === 0) {
+          return { valid: false, message: "Please select at least one operating service area." };
+        }
+        if (!formData.maxDistanceKm || formData.maxDistanceKm < 5) {
+          return { valid: false, message: "Please specify your maximum delivery radius (at least 5 km)." };
+        }
+        return { valid: true };
+      }
+
+      case 5: {
+        if (!formData.mpesaPhone.trim()) {
+          return { valid: false, message: "Please enter your M-Pesa registered mobile number for payouts." };
+        }
+        const cleanMpesa = formData.mpesaPhone.replace(/[\s+-]/g, "");
+        if (cleanMpesa.length < 9) {
+          return { valid: false, message: "Please enter a valid M-Pesa phone number (e.g. 0712345678)." };
+        }
+        return { valid: true };
+      }
+
+      case 6: {
+        if (!formData.termsAccepted) {
+          return { valid: false, message: "Please review and accept the Delivery Provider Terms and Code of Conduct." };
+        }
+        return { valid: true };
+      }
+
+      default:
+        return { valid: true };
+    }
+  };
+
+  const handleNextStep = () => {
+    const result = validateStep(currentStep);
+    if (!result.valid) {
+      toast.error(result.message || "Please complete all required fields before proceeding.");
+      return;
+    }
+    setCurrentStep((s) => Math.min(s + 1, 6));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleStepJump = (targetStep: number) => {
+    if (targetStep <= currentStep) {
+      setCurrentStep(targetStep);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    // Validate all intervening steps before allowing forward jump
+    for (let s = 1; s < targetStep; s++) {
+      const res = validateStep(s);
+      if (!res.valid) {
+        toast.error(`Please complete Step ${s} first: ${res.message}`);
+        setCurrentStep(s);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
+    setCurrentStep(targetStep);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleSaveDraft = async () => {
     try {
       setSubmitting(true);
@@ -162,7 +322,7 @@ export default function RiderOnboardingPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to save draft");
-      toast.success("Draft saved successfully.");
+      toast.success("Application draft saved successfully.");
     } catch (err: any) {
       toast.error(err.message || "Error saving draft");
     } finally {
@@ -171,13 +331,15 @@ export default function RiderOnboardingPage() {
   };
 
   const handleSubmitApplication = async () => {
-    if (!formData.fullName || !formData.phone) {
-      toast.error("Please fill in your name and phone number.");
-      return;
-    }
-    if (!formData.termsAccepted) {
-      toast.error("Please accept the delivery rider terms and conditions.");
-      return;
+    // Validate all 6 steps before final submission
+    for (let s = 1; s <= 6; s++) {
+      const res = validateStep(s);
+      if (!res.valid) {
+        toast.error(`Step ${s} Incomplete: ${res.message}`);
+        setCurrentStep(s);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
     }
 
     try {
@@ -194,6 +356,8 @@ export default function RiderOnboardingPage() {
             vehiclePhoto: formData.vehiclePhotoUrl,
             insuranceNumber: formData.insuranceNumber,
             insuranceExpiry: formData.insuranceExpiry,
+            insuranceCertUrl: formData.insuranceCertUrl,
+            logbookUrl: formData.logbookUrl,
           },
         ],
         submitForReview: true,
@@ -276,39 +440,40 @@ export default function RiderOnboardingPage() {
           >
             ← Back to Overview
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={handleSaveDraft}
               disabled={submitting}
-              className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all"
+              className="px-4 py-2 rounded-full text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all flex items-center gap-1.5"
             >
-              Save Draft
+              <span>💾</span> Save Draft
             </button>
           </div>
         </div>
 
         {/* Existing Status Banner if Under Review */}
-        {existingStatus === "SUBMITTED" || existingStatus === "UNDER_REVIEW" ? (
-          <div className="mb-8 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-200 text-xs flex items-center gap-3">
+        {(existingStatus === "SUBMITTED" || existingStatus === "UNDER_REVIEW") && (
+          <div className="mb-8 p-5 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-200 text-xs flex items-center gap-3">
             <ClockIcon className="w-6 h-6 text-blue-400 shrink-0" />
             <div>
               <p className="font-bold text-sm text-blue-300">Application Under Verification</p>
-              <p className="text-zinc-300">
-                Our compliance team is currently reviewing your documents. You will receive an SMS and email notification upon approval. You can update details below if needed.
+              <p className="text-zinc-300 mt-0.5">
+                Our compliance team is currently reviewing your documents. You will receive an SMS and email notification upon approval. You can update details or documents below if needed.
               </p>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {existingStatus === "REJECTED" ? (
-          <div className="mb-8 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs flex items-center gap-3">
+        {existingStatus === "REJECTED" && (
+          <div className="mb-8 p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs flex items-center gap-3">
             <ExclamationTriangleIcon className="w-6 h-6 text-rose-400 shrink-0" />
             <div>
               <p className="font-bold text-sm text-rose-300">Application Requires Corrections</p>
-              <p className="text-zinc-300">{rejectionReason || "Please review and re-upload clear photos of your ID and license."}</p>
+              <p className="text-zinc-300 mt-0.5">{rejectionReason || "Please review and re-upload clear photos of your ID, license, or insurance certificate."}</p>
             </div>
           </div>
-        ) : null}
+        )}
 
         {/* Title */}
         <div className="text-center mb-8">
@@ -316,7 +481,7 @@ export default function RiderOnboardingPage() {
             Rider Onboarding Wizard
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400">
-            Step {currentStep} of 6 — {steps[currentStep - 1].title}
+            Step {currentStep} of 6 — <span className="text-amber-400 font-bold">{steps[currentStep - 1].title}</span>
           </p>
         </div>
 
@@ -328,13 +493,14 @@ export default function RiderOnboardingPage() {
             return (
               <button
                 key={s.num}
-                onClick={() => setCurrentStep(s.num)}
+                type="button"
+                onClick={() => handleStepJump(s.num)}
                 className={`py-2 rounded-xl text-center flex flex-col items-center justify-center transition-all ${
                   isCurrent
                     ? "bg-amber-500 text-zinc-950 font-black shadow-lg shadow-amber-500/20"
                     : isCompleted
-                    ? "bg-zinc-800 text-emerald-400 font-bold"
-                    : "bg-zinc-900/60 text-zinc-500"
+                    ? "bg-zinc-800 text-emerald-400 font-bold hover:bg-zinc-700/80"
+                    : "bg-zinc-900/60 text-zinc-500 hover:text-zinc-300"
                 }`}
               >
                 <s.icon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
@@ -349,14 +515,19 @@ export default function RiderOnboardingPage() {
           {/* STEP 1: Personal Details */}
           {currentStep === 1 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-black text-amber-400 flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <UserIcon className="w-5 h-5" /> 1. Personal & Contact Information
-              </h2>
+              <div className="border-b border-zinc-800 pb-3">
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  <UserIcon className="w-5 h-5" /> 1. Personal & Contact Information
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Ensure all details match your official identification documents.
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Full Legal Name *
+                    Full Legal Name <span className="text-amber-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -367,11 +538,12 @@ export default function RiderOnboardingPage() {
                     className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
                     required
                   />
+                  <p className="text-[11px] text-zinc-500 mt-1">Must match your National ID name.</p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Phone Number (SMS & WhatsApp) *
+                    Phone Number (SMS & WhatsApp) <span className="text-amber-400">*</span>
                   </label>
                   <input
                     type="tel"
@@ -382,6 +554,7 @@ export default function RiderOnboardingPage() {
                     className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
                     required
                   />
+                  <p className="text-[11px] text-zinc-500 mt-1">Used for order alerts and store communication.</p>
                 </div>
 
                 <div>
@@ -400,7 +573,7 @@ export default function RiderOnboardingPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Primary Operating County *
+                    Primary Operating County <span className="text-amber-400">*</span>
                   </label>
                   <select
                     name="operatingCounty"
@@ -418,46 +591,68 @@ export default function RiderOnboardingPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    City / Town / Sub-County *
+                    City / Town / Sub-County <span className="text-amber-400">*</span>
                   </label>
                   <input
                     type="text"
                     name="operatingCity"
                     value={formData.operatingCity}
                     onChange={handleChange}
-                    placeholder="e.g. Westlands / Central"
+                    placeholder="e.g. Westlands / Nairobi Central"
                     className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Emergency Contact Name & Phone
+                    Emergency Contact Name <span className="text-amber-400">*</span>
                   </label>
                   <input
                     type="text"
                     name="emergencyContactName"
                     value={formData.emergencyContactName}
                     onChange={handleChange}
-                    placeholder="e.g. Mary Kariuki (0722000000)"
+                    placeholder="e.g. Mary Kariuki (Spouse / Relative)"
                     className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                    Emergency Contact Phone Number <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="emergencyContactPhone"
+                    value={formData.emergencyContactPhone}
+                    onChange={handleChange}
+                    placeholder="e.g. 0722000000"
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    required
                   />
                 </div>
               </div>
             </div>
           )}
 
-          {/* STEP 2: Identity & Verification */}
+          {/* STEP 2: Identity & Verification with File Uploads */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-black text-amber-400 flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <IdentificationIcon className="w-5 h-5" /> 2. Government Identification & Licenses
-              </h2>
+              <div className="border-b border-zinc-800 pb-3">
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  <IdentificationIcon className="w-5 h-5" /> 2. Government Identification & Licenses
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Upload clear photos or scans (up to 5MB each). Documents are securely encrypted and reviewed exclusively by compliance officers.
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    ID Document Type *
+                    ID Document Type <span className="text-amber-400">*</span>
                   </label>
                   <select
                     name="idType"
@@ -474,7 +669,7 @@ export default function RiderOnboardingPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    ID / Document Number *
+                    ID / Document Number <span className="text-amber-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -483,112 +678,118 @@ export default function RiderOnboardingPage() {
                     onChange={handleChange}
                     placeholder="e.g. 31234567"
                     className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    required
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Driving License Number (if motorized)
-                  </label>
-                  <input
-                    type="text"
-                    name="drivingLicenseNo"
-                    value={formData.drivingLicenseNo}
-                    onChange={handleChange}
-                    placeholder="e.g. DL-98765432"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                {isMotorized && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Driving License Number <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="drivingLicenseNo"
+                        value={formData.drivingLicenseNo}
+                        onChange={handleChange}
+                        placeholder="e.g. DL-98765432"
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Driving License Expiry Date
-                  </label>
-                  <input
-                    type="date"
-                    name="drivingLicenseExpiry"
-                    value={formData.drivingLicenseExpiry}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Driving License Expiry Date <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        name="drivingLicenseExpiry"
+                        value={formData.drivingLicenseExpiry}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* Document Photo Uploads */}
+              {/* Document Photo Uploaders */}
               <div className="space-y-4 pt-4 border-t border-zinc-800">
-                <p className="text-xs text-zinc-400 font-semibold">
-                  Provide direct URLs or image evidence of your verification documents (encrypted and restricted to compliance reviewers):
-                </p>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <ShieldCheckIcon className="w-4 h-4" /> Required Document Uploads
+                  </h3>
+                  <span className="text-[11px] text-zinc-400">Strict 5MB limit per file</span>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-300 mb-1">
-                      National ID Front Image URL
-                    </label>
-                    <input
-                      type="url"
-                      name="idFrontUrl"
-                      value={formData.idFrontUrl}
-                      onChange={handleChange}
-                      placeholder="https://.../id_front.jpg"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-300 mb-1">
-                      National ID Back Image URL
-                    </label>
-                    <input
-                      type="url"
-                      name="idBackUrl"
+                  {/* National ID Front */}
+                  <RiderDocumentUpload
+                    label={formData.idType === "PASSPORT" ? "Passport Bio-Data Page" : "National ID (Front Side)"}
+                    sublabel="Clear photo with full name, ID number, and face visible"
+                    value={formData.idFrontUrl}
+                    onChange={(url) => setFormData((prev) => ({ ...prev, idFrontUrl: url }))}
+                    required
+                    maxSizeBytes={5 * 1024 * 1024}
+                  />
+
+                  {/* National ID Back */}
+                  {(formData.idType === "NATIONAL_ID" || formData.idType === "ALIEN_ID") && (
+                    <RiderDocumentUpload
+                      label="National ID (Back Side)"
+                      sublabel="Clear photo showing the barcode, serial number, and signature"
                       value={formData.idBackUrl}
-                      onChange={handleChange}
-                      placeholder="https://.../id_back.jpg"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
+                      onChange={(url) => setFormData((prev) => ({ ...prev, idBackUrl: url }))}
+                      required
+                      maxSizeBytes={5 * 1024 * 1024}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-300 mb-1">
-                      Driving License Image URL
-                    </label>
-                    <input
-                      type="url"
-                      name="drivingLicenseUrl"
+                  )}
+
+                  {/* Rider Portrait Selfie */}
+                  <RiderDocumentUpload
+                    label="Rider Portrait / Clear Selfie"
+                    sublabel="Neutral expression, front-facing, no sunglasses or helmets"
+                    value={formData.selfieUrl}
+                    onChange={(url) => setFormData((prev) => ({ ...prev, selfieUrl: url }))}
+                    required
+                    maxSizeBytes={5 * 1024 * 1024}
+                  />
+
+                  {/* Driving License Document */}
+                  {isMotorized && (
+                    <RiderDocumentUpload
+                      label="Driving License Document / Card"
+                      sublabel="Valid NTSA smart or interim driving license photo"
                       value={formData.drivingLicenseUrl}
-                      onChange={handleChange}
-                      placeholder="https://.../license.jpg"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
+                      onChange={(url) => setFormData((prev) => ({ ...prev, drivingLicenseUrl: url }))}
+                      required
+                      maxSizeBytes={5 * 1024 * 1024}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-300 mb-1">
-                      Profile Selfie URL
-                    </label>
-                    <input
-                      type="url"
-                      name="selfieUrl"
-                      value={formData.selfieUrl}
-                      onChange={handleChange}
-                      placeholder="https://.../selfie.jpg"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                    />
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* STEP 3: Vehicle Info */}
+          {/* STEP 3: Vehicle Info with File Uploads */}
           {currentStep === 3 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-black text-amber-400 flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <TruckIcon className="w-5 h-5" /> 3. Vehicle & Transport Details
-              </h2>
+              <div className="border-b border-zinc-800 pb-3">
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  <TruckIcon className="w-5 h-5" /> 3. Vehicle & Transport Details
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Specify your primary delivery vehicle and upload registration / insurance documents.
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Vehicle Type *
+                    Vehicle Type <span className="text-amber-400">*</span>
                   </label>
                   <select
                     name="riderType"
@@ -604,89 +805,147 @@ export default function RiderOnboardingPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Number Plate / Registration (if motorized)
-                  </label>
-                  <input
-                    type="text"
-                    name="vehiclePlate"
-                    value={formData.vehiclePlate}
-                    onChange={handleChange}
-                    placeholder="e.g. KMDF 123X"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none uppercase"
-                  />
-                </div>
+                {isMotorized && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Number Plate / Registration <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="vehiclePlate"
+                        value={formData.vehiclePlate}
+                        onChange={handleChange}
+                        placeholder="e.g. KMDF 123X"
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none uppercase"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Make / Brand
-                  </label>
-                  <input
-                    type="text"
-                    name="vehicleMake"
-                    value={formData.vehicleMake}
-                    onChange={handleChange}
-                    placeholder="e.g. Boxer / Bajaj / Toyota / Hero"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Make / Brand <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="vehicleMake"
+                        value={formData.vehicleMake}
+                        onChange={handleChange}
+                        placeholder="e.g. Boxer / Bajaj / Toyota / Hero"
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Model & Color
-                  </label>
-                  <input
-                    type="text"
-                    name="vehicleModel"
-                    value={formData.vehicleModel}
-                    onChange={handleChange}
-                    placeholder="e.g. 150cc Red"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Model & Color <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="vehicleModel"
+                        value={formData.vehicleModel}
+                        onChange={handleChange}
+                        placeholder="e.g. 150cc Red"
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Insurance Policy Number
-                  </label>
-                  <input
-                    type="text"
-                    name="insuranceNumber"
-                    value={formData.insuranceNumber}
-                    onChange={handleChange}
-                    placeholder="e.g. INS-2026-X89"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Insurance Policy Number <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="insuranceNumber"
+                        value={formData.insuranceNumber}
+                        onChange={handleChange}
+                        placeholder="e.g. INS-2026-X89"
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Vehicle Photo URL
-                  </label>
-                  <input
-                    type="url"
-                    name="vehiclePhotoUrl"
-                    value={formData.vehiclePhotoUrl}
-                    onChange={handleChange}
-                    placeholder="https://.../vehicle.jpg"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                        Insurance Expiry Date <span className="text-amber-400">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        name="insuranceExpiry"
+                        value={formData.insuranceExpiry}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
               </div>
+
+              {/* Vehicle Document & Photo Uploaders */}
+              {isMotorized && (
+                <div className="space-y-4 pt-4 border-t border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                      <TruckIcon className="w-4 h-4" /> Vehicle Verification Files
+                    </h3>
+                    <span className="text-[11px] text-zinc-400">Strict 5MB limit per file</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Vehicle Photo */}
+                    <RiderDocumentUpload
+                      label="Vehicle Photo (Showing Registration)"
+                      sublabel="Clear photo of the complete vehicle with license plate readable"
+                      value={formData.vehiclePhotoUrl}
+                      onChange={(url) => setFormData((prev) => ({ ...prev, vehiclePhotoUrl: url }))}
+                      required
+                      maxSizeBytes={5 * 1024 * 1024}
+                    />
+
+                    {/* Insurance Certificate */}
+                    <RiderDocumentUpload
+                      label="Vehicle Insurance Certificate / Sticker"
+                      sublabel="Valid commercial or third-party insurance certificate"
+                      value={formData.insuranceCertUrl}
+                      onChange={(url) => setFormData((prev) => ({ ...prev, insuranceCertUrl: url }))}
+                      required
+                      maxSizeBytes={5 * 1024 * 1024}
+                    />
+
+                    {/* Logbook / Ownership (Optional) */}
+                    <div className="sm:col-span-2">
+                      <RiderDocumentUpload
+                        label="Logbook / Proof of Ownership (Optional)"
+                        sublabel="Logbook copy or power of attorney if vehicle is leased"
+                        value={formData.logbookUrl}
+                        onChange={(url) => setFormData((prev) => ({ ...prev, logbookUrl: url }))}
+                        maxSizeBytes={5 * 1024 * 1024}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* STEP 4: Service Areas & Radius */}
           {currentStep === 4 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-black text-amber-400 flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <MapPinIcon className="w-5 h-5" /> 4. Service Areas & Delivery Radius
-              </h2>
+              <div className="border-b border-zinc-800 pb-3">
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  <MapPinIcon className="w-5 h-5" /> 4. Service Areas & Delivery Radius
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Choose where you prefer to pick up and drop orders in {formData.operatingCounty}.
+                </p>
+              </div>
 
               <div>
                 <label className="block text-xs font-bold text-zinc-300 mb-2">
-                  Select Operating Areas in {formData.operatingCounty}:
+                  Select Operating Neighborhoods / Zones <span className="text-amber-400">*</span>:
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -701,6 +960,9 @@ export default function RiderOnboardingPage() {
                     "Thika Road",
                     "Embakasi",
                     "Industrial Area",
+                    "Ngong Road",
+                    "Kasarani",
+                    "Langata",
                   ].map((area) => {
                     const isSelected = formData.serviceAreas.includes(area);
                     return (
@@ -720,6 +982,9 @@ export default function RiderOnboardingPage() {
                     );
                   })}
                 </div>
+                {formData.serviceAreas.length === 0 && (
+                  <p className="text-xs text-rose-400 mt-2">Please select at least one zone to continue.</p>
+                )}
               </div>
 
               <div className="space-y-3 pt-4 border-t border-zinc-800">
@@ -750,18 +1015,19 @@ export default function RiderOnboardingPage() {
           {/* STEP 5: Payout Details */}
           {currentStep === 5 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-black text-amber-400 flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <BanknotesIcon className="w-5 h-5" /> 5. Payment & M-Pesa Withdrawal Details
-              </h2>
-
-              <p className="text-xs text-zinc-400">
-                Your delivery fees and tips are credited directly to your digital wallet upon proof-of-delivery confirmation. Provide your withdrawal payout account:
-              </p>
+              <div className="border-b border-zinc-800 pb-3">
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  <BanknotesIcon className="w-5 h-5" /> 5. Payment & M-Pesa Withdrawal Details
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Your delivery earnings and customer tips are credited directly to your digital wallet upon proof-of-delivery confirmation.
+                </p>
+              </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Preferred Payout Method *
+                    Preferred Payout Method <span className="text-amber-400">*</span>
                   </label>
                   <select
                     name="payoutMethod"
@@ -776,7 +1042,7 @@ export default function RiderOnboardingPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    M-Pesa Registered Mobile Number *
+                    M-Pesa Registered Mobile Number <span className="text-amber-400">*</span>
                   </label>
                   <input
                     type="tel"
@@ -785,6 +1051,7 @@ export default function RiderOnboardingPage() {
                     onChange={handleChange}
                     placeholder="e.g. 0712345678 or 254712345678"
                     className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    required
                   />
                   <p className="text-[11px] text-zinc-500 mt-1">
                     Must be registered under your legal name matching your National ID.
@@ -797,41 +1064,210 @@ export default function RiderOnboardingPage() {
           {/* STEP 6: Review & Submit */}
           {currentStep === 6 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-black text-amber-400 flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <CheckCircleIcon className="w-5 h-5" /> 6. Final Review & Policy Acceptance
-              </h2>
+              <div className="border-b border-zinc-800 pb-3">
+                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
+                  <CheckCircleIcon className="w-5 h-5" /> 6. Final Review & Document Verification
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Double check all submitted personal details, vehicle data, and uploaded document evidence before submitting.
+                </p>
+              </div>
 
-              <div className="bg-zinc-950/80 rounded-2xl p-5 border border-zinc-800 space-y-3 text-xs">
-                <div className="flex justify-between border-b border-zinc-800/80 pb-2">
-                  <span className="text-zinc-400">Full Legal Name:</span>
-                  <span className="font-bold text-white">{formData.fullName || "Not provided"}</span>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Personal & Contact */}
+                <div className="bg-zinc-950/80 rounded-2xl p-4 border border-zinc-800 space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">Personal & Contact</span>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(1)}
+                      className="text-zinc-400 hover:text-amber-400 flex items-center gap-1 text-[11px]"
+                    >
+                      <PencilSquareIcon className="w-3.5 h-3.5" /> Edit
+                    </button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Full Name:</span>
+                    <span className="font-bold text-white">{formData.fullName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Phone:</span>
+                    <span className="font-bold text-white">{formData.phone}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Operating City:</span>
+                    <span className="font-bold text-white">{formData.operatingCity}, {formData.operatingCounty}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Emergency Contact:</span>
+                    <span className="font-bold text-white">{formData.emergencyContactName} ({formData.emergencyContactPhone})</span>
+                  </div>
                 </div>
-                <div className="flex justify-between border-b border-zinc-800/80 pb-2">
-                  <span className="text-zinc-400">Phone:</span>
-                  <span className="font-bold text-white">{formData.phone || "Not provided"}</span>
+
+                {/* Vehicle & Payout */}
+                <div className="bg-zinc-950/80 rounded-2xl p-4 border border-zinc-800 space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">Vehicle & Settlement</span>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(3)}
+                      className="text-zinc-400 hover:text-amber-400 flex items-center gap-1 text-[11px]"
+                    >
+                      <PencilSquareIcon className="w-3.5 h-3.5" /> Edit
+                    </button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Transport Mode:</span>
+                    <span className="font-bold text-white">{formData.riderType}</span>
+                  </div>
+                  {isMotorized && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-400">Registration Plate:</span>
+                        <span className="font-bold text-amber-400 uppercase">{formData.vehiclePlate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-400">Make & Model:</span>
+                        <span className="font-bold text-white">{formData.vehicleMake} {formData.vehicleModel}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-400">Insurance Policy:</span>
+                        <span className="font-bold text-white">{formData.insuranceNumber}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">M-Pesa Payout:</span>
+                    <span className="font-bold text-emerald-400">{formData.mpesaPhone}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between border-b border-zinc-800/80 pb-2">
-                  <span className="text-zinc-400">Vehicle Type:</span>
-                  <span className="font-bold text-white">{formData.riderType}</span>
+              </div>
+
+              {/* Uploaded Documents Gallery */}
+              <div className="bg-zinc-950/80 rounded-2xl p-4 border border-zinc-800 space-y-3">
+                <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <DocumentCheckIcon className="w-4 h-4" /> Uploaded Document Credentials
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className="text-zinc-400 hover:text-amber-400 flex items-center gap-1 text-[11px]"
+                  >
+                    <PencilSquareIcon className="w-3.5 h-3.5" /> Edit Documents
+                  </button>
                 </div>
-                <div className="flex justify-between border-b border-zinc-800/80 pb-2">
-                  <span className="text-zinc-400">Plate Number:</span>
-                  <span className="font-bold text-white">{formData.vehiclePlate || "N/A"}</span>
-                </div>
-                <div className="flex justify-between border-b border-zinc-800/80 pb-2">
-                  <span className="text-zinc-400">Operating County:</span>
-                  <span className="font-bold text-white">{formData.operatingCounty}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-400">M-Pesa Payout Account:</span>
-                  <span className="font-bold text-amber-400">
-                    {formData.mpesaPhone || formData.phone || "Not provided"}
-                  </span>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                  {/* ID Front */}
+                  <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
+                    <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">ID Front</p>
+                    {formData.idFrontUrl ? (
+                      <a href={formData.idFrontUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={formData.idFrontUrl} alt="ID Front" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
+                          <EyeIcon className="w-4 h-4" />
+                        </div>
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-rose-400">Missing</span>
+                    )}
+                  </div>
+
+                  {/* ID Back */}
+                  {(formData.idType === "NATIONAL_ID" || formData.idType === "ALIEN_ID") && (
+                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
+                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">ID Back</p>
+                      {formData.idBackUrl ? (
+                        <a href={formData.idBackUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={formData.idBackUrl} alt="ID Back" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
+                            <EyeIcon className="w-4 h-4" />
+                          </div>
+                        </a>
+                      ) : (
+                        <span className="text-[10px] text-rose-400">Missing</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Selfie */}
+                  <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
+                    <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Face Portrait</p>
+                    {formData.selfieUrl ? (
+                      <a href={formData.selfieUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={formData.selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
+                          <EyeIcon className="w-4 h-4" />
+                        </div>
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-rose-400">Missing</span>
+                    )}
+                  </div>
+
+                  {/* Driving License */}
+                  {isMotorized && (
+                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
+                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Driving License</p>
+                      {formData.drivingLicenseUrl ? (
+                        <a href={formData.drivingLicenseUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={formData.drivingLicenseUrl} alt="License" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
+                            <EyeIcon className="w-4 h-4" />
+                          </div>
+                        </a>
+                      ) : (
+                        <span className="text-[10px] text-rose-400">Missing</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Vehicle Photo */}
+                  {isMotorized && (
+                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
+                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Vehicle Photo</p>
+                      {formData.vehiclePhotoUrl ? (
+                        <a href={formData.vehiclePhotoUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={formData.vehiclePhotoUrl} alt="Vehicle" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
+                            <EyeIcon className="w-4 h-4" />
+                          </div>
+                        </a>
+                      ) : (
+                        <span className="text-[10px] text-rose-400">Missing</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Insurance Certificate */}
+                  {isMotorized && (
+                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
+                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Insurance Cert</p>
+                      {formData.insuranceCertUrl ? (
+                        <a href={formData.insuranceCertUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={formData.insuranceCertUrl} alt="Insurance" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
+                            <EyeIcon className="w-4 h-4" />
+                          </div>
+                        </a>
+                      ) : (
+                        <span className="text-[10px] text-rose-400">Missing</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Terms Agreement */}
-              <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+              <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -842,7 +1278,7 @@ export default function RiderOnboardingPage() {
                   />
                   <span className="text-xs text-zinc-300 leading-relaxed">
                     I confirm that the identification documents, driver license, and vehicle details submitted are authentic and legally registered in Kenya. I agree to adhere to the{" "}
-                    <span className="text-amber-400 underline">Ghuba Delivery Provider Code of Conduct</span>{" "}
+                    <span className="text-amber-400 underline font-semibold">Ghuba Delivery Provider Code of Conduct</span>{" "}
                     and road safety standards.
                   </span>
                 </label>
@@ -850,7 +1286,7 @@ export default function RiderOnboardingPage() {
             </div>
           )}
 
-          {/* Wizard Controls Bottom */}
+          {/* Wizard Navigation Controls Bottom */}
           <div className="flex items-center justify-between pt-6 border-t border-zinc-800 mt-8">
             {currentStep > 1 ? (
               <button
@@ -867,8 +1303,8 @@ export default function RiderOnboardingPage() {
             {currentStep < 6 ? (
               <button
                 type="button"
-                onClick={() => setCurrentStep((s) => s + 1)}
-                className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-amber-500/20"
+                onClick={handleNextStep}
+                className="px-7 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95"
               >
                 Next Step <ArrowRightIcon className="w-3.5 h-3.5 stroke-[3]" />
               </button>
@@ -879,7 +1315,7 @@ export default function RiderOnboardingPage() {
                 disabled={submitting}
                 className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl shadow-amber-500/30 active:scale-95 disabled:opacity-50"
               >
-                {submitting ? "Submitting..." : "Submit Application for Verification"}
+                {submitting ? "Submitting Application..." : "Submit Application for Verification"}
                 <ArrowRightIcon className="w-4 h-4 stroke-[3]" />
               </button>
             )}

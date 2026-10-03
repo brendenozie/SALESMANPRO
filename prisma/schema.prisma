@@ -9315,6 +9315,8 @@ model RiderProfile {
   phone                    String
   email                    String?
   profilePhoto             String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
   
   riderType                String                  @default("MOTORBIKE") // MOTORBIKE, BICYCLE, CAR, VAN, TRUCK
   isCompany                Boolean                 @default(false)

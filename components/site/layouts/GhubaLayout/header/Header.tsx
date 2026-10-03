@@ -58,7 +58,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed'];
+  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider'];
   if (hiddenPaths.some(p => path.includes(p))) return null;
 
   return (

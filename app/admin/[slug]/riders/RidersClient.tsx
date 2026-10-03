@@ -29,6 +29,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
+import { RiderDocumentUpload } from '@/components/media/RiderDocumentUpload';
 
 // Assuming this is still used from the outer component's type definition
 // export type Rider = { /* ... */ }; 
@@ -424,23 +425,17 @@ const AddEditRiderModal: React.FC<AddEditRiderModalProps> = ({ isOpen, onClose, 
             </div>
           </div>
 
-          {/* Profile Image URL */}
+          {/* Profile Image */}
           <div>
-            <label htmlFor="profileImageUrl" className="block text-sm font-medium text-gray-700 mb-1">Profile Image URL (Optional)</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <UserCircleIcon className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="url"
-                id="profileImageUrl"
-                name="profileImageUrl"
-                value={formData.profileImageUrl || ""}
-                onChange={handleChange}
-                placeholder="https://example.com/profile.jpg"
-                className="w-full p-3 pl-10 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+            <RiderDocumentUpload
+              label="Driver Profile Photo"
+              sublabel="Upload a clear portrait photo for customer and store identification"
+              value={formData.profileImageUrl || ""}
+              onChange={(url) => setFormData((prev) => ({ ...prev, profileImageUrl: url }))}
+              maxSizeBytes={5 * 1024 * 1024}
+              mediaType="image"
+              accept={["image/jpeg", "image/jpg", "image/png", "image/webp"]}
+            />
           </div>
 
           {/* Bio */}

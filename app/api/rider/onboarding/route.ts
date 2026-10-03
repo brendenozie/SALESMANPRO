@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
       fullName,
       phone,
       email,
+      emergencyContactName,
+      emergencyContactPhone,
       riderType = "MOTORBIKE",
       isCompany = false,
       companyName,
@@ -72,8 +74,54 @@ export async function POST(req: NextRequest) {
       submitForReview = true,
     } = body;
 
-    if (!fullName || !phone) {
-      return json({ success: false, message: "Full legal name and phone number are required." }, 400);
+    // Server-side validation
+    if (!fullName || typeof fullName !== "string" || fullName.trim().length < 3) {
+      return json({ success: false, message: "Full legal name is required (at least 3 characters)." }, 400);
+    }
+    if (!phone || typeof phone !== "string" || phone.trim().length < 9) {
+      return json({ success: false, message: "A valid phone number is required." }, 400);
+    }
+
+    const isMotorized = ["MOTORBIKE", "CAR", "VAN", "TRUCK"].includes(riderType);
+
+    // If submitting for formal verification, ensure all required documents and details are complete
+    if (submitForReview) {
+      if (!operatingCounty || !operatingCity) {
+        return json({ success: false, message: "Operating county and city/town are required." }, 400);
+      }
+      if (!idNumber || typeof idNumber !== "string" || idNumber.trim().length < 4) {
+        return json({ success: false, message: "Government ID / document number is required." }, 400);
+      }
+      if (!idFrontUrl) {
+        return json({ success: false, message: "Please upload the front photo of your National ID or Passport." }, 400);
+      }
+      if ((idType === "NATIONAL_ID" || idType === "ALIEN_ID") && !idBackUrl) {
+        return json({ success: false, message: "Please upload the back photo of your National ID." }, 400);
+      }
+      if (!selfieUrl) {
+        return json({ success: false, message: "Please upload a clear selfie or passport-style photo." }, 400);
+      }
+      if (isMotorized) {
+        if (!drivingLicenseNo || !drivingLicenseUrl) {
+          return json({ success: false, message: "Driving license number and document upload are required for motorized transport." }, 400);
+        }
+        const v = Array.isArray(vehicles) && vehicles.length > 0 ? vehicles[0] : null;
+        if (!v || !v.plateNumber || !v.make || !v.model) {
+          return json({ success: false, message: "Vehicle registration plate, make, and model are required." }, 400);
+        }
+        if (!v.vehiclePhoto) {
+          return json({ success: false, message: "Please upload a clear photo of your delivery vehicle." }, 400);
+        }
+        if (!v.insuranceNumber || !v.insuranceCertUrl) {
+          return json({ success: false, message: "Vehicle insurance policy number and certificate document are required." }, 400);
+        }
+      }
+      if (!Array.isArray(serviceAreas) || serviceAreas.length === 0) {
+        return json({ success: false, message: "Please select at least one preferred service area." }, 400);
+      }
+      if (!mpesaPhone || typeof mpesaPhone !== "string" || mpesaPhone.trim().length < 9) {
+        return json({ success: false, message: "A valid M-Pesa phone number is required for earnings payouts." }, 400);
+      }
     }
 
     const verificationStatus = submitForReview
@@ -85,18 +133,20 @@ export async function POST(req: NextRequest) {
       where: { userId },
       create: {
         userId,
-        fullName,
-        phone,
+        fullName: fullName.trim(),
+        phone: phone.trim(),
         email: email || session.user.email || null,
+        emergencyContactName: emergencyContactName || null,
+        emergencyContactPhone: emergencyContactPhone || null,
         riderType,
         isCompany,
         companyName: companyName || null,
         idType,
-        idNumber: idNumber || null,
+        idNumber: idNumber ? idNumber.trim() : null,
         idFrontUrl: idFrontUrl || null,
         idBackUrl: idBackUrl || null,
         passportUrl: passportUrl || null,
-        drivingLicenseNo: drivingLicenseNo || null,
+        drivingLicenseNo: drivingLicenseNo ? drivingLicenseNo.trim() : null,
         drivingLicenseUrl: drivingLicenseUrl || null,
         drivingLicenseExpiry: drivingLicenseExpiry ? new Date(drivingLicenseExpiry) : null,
         selfieUrl: selfieUrl || null,
@@ -105,23 +155,25 @@ export async function POST(req: NextRequest) {
         operatingCity: operatingCity || null,
         maxDistanceKm: Number(maxDistanceKm) || 20.0,
         payoutMethod,
-        mpesaPhone: mpesaPhone || phone,
+        mpesaPhone: mpesaPhone ? mpesaPhone.trim() : phone.trim(),
         bankAccountDetails: bankAccountDetails || null,
         verificationStatus,
       },
       update: {
-        fullName,
-        phone,
+        fullName: fullName.trim(),
+        phone: phone.trim(),
         email: email || undefined,
+        emergencyContactName: emergencyContactName || undefined,
+        emergencyContactPhone: emergencyContactPhone || undefined,
         riderType,
         isCompany,
         companyName: companyName || null,
         idType: idType || undefined,
-        idNumber: idNumber || undefined,
+        idNumber: idNumber ? idNumber.trim() : undefined,
         idFrontUrl: idFrontUrl || undefined,
         idBackUrl: idBackUrl || undefined,
         passportUrl: passportUrl || undefined,
-        drivingLicenseNo: drivingLicenseNo || undefined,
+        drivingLicenseNo: drivingLicenseNo ? drivingLicenseNo.trim() : undefined,
         drivingLicenseUrl: drivingLicenseUrl || undefined,
         drivingLicenseExpiry: drivingLicenseExpiry ? new Date(drivingLicenseExpiry) : undefined,
         selfieUrl: selfieUrl || undefined,
@@ -130,7 +182,7 @@ export async function POST(req: NextRequest) {
         operatingCity: operatingCity || undefined,
         maxDistanceKm: maxDistanceKm ? Number(maxDistanceKm) : undefined,
         payoutMethod: payoutMethod || undefined,
-        mpesaPhone: mpesaPhone || undefined,
+        mpesaPhone: mpesaPhone ? mpesaPhone.trim() : undefined,
         bankAccountDetails: bankAccountDetails || undefined,
         verificationStatus,
       },
