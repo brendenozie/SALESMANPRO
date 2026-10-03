@@ -2,409 +2,439 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
+import useSWR from "swr";
 import {
   BuildingStorefrontIcon,
-  ArrowRightIcon,
-  ArrowLeftOnRectangleIcon,
   PlusIcon,
-  ComputerDesktopIcon,
-  DevicePhoneMobileIcon,
-  CircleStackIcon,
-  WrenchScrewdriverIcon,
+  ArrowLeftOnRectangleIcon,
+  ArrowRightIcon,
+  SparklesIcon,
   ShieldCheckIcon,
-  AcademicCapIcon,
+  ExclamationCircleIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 import fit1 from "@/assets/fit1.png";
+import PeriodSelector from "@/components/dashboard/PeriodSelector";
+import PortfolioKPISection from "@/components/dashboard/PortfolioKPISection";
+import PortfolioTrendsChart from "@/components/dashboard/PortfolioTrendsChart";
+import TopPerformingStores from "@/components/dashboard/TopPerformingStores";
+import OperationalAlertsSection from "@/components/dashboard/OperationalAlertsSection";
+import RecentActivityFeed from "@/components/dashboard/RecentActivityFeed";
+import { ReportingPeriod } from "@/lib/dashboard/dateRangeHelper";
+import { PortfolioDashboardData } from "@/lib/dashboard/portfolioService";
 
-// --- Custom Variants for Orchestrated Stagger Animations ---
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
-  },
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { credentials: "include" });
+  if (!res.ok) {
+    const errorJson = await res.json().catch(() => ({}));
+    throw new Error(errorJson.message || "Failed to load portfolio overview");
+  }
+  const json = await res.json();
+  return json.data;
 };
 
 // ------------------------------------------------------------------
-// --- 1. PREMIUM SKELETON SCREEN LOADER ---
+// --- 1. SKELETON SCREEN LOADER ---
 // ------------------------------------------------------------------
-function WelcomeLoader() {
+function DashboardSkeleton() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden relative flex flex-col justify-between">
-      {/* Dynamic Background Ambient Gradients */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-orange-400/10 to-amber-400/10 dark:from-orange-500/5 dark:to-transparent rounded-full blur-3xl opacity-70 animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-br from-indigo-400/10 to-purple-400/10 dark:from-indigo-500/5 dark:to-transparent rounded-full blur-3xl opacity-60" />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-10 space-y-8 animate-pulse">
+      {/* Top Navbar Skeleton */}
+      <div className="flex justify-between items-center h-14 bg-white/50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800/50">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-800" />
+          <div className="h-5 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
+        </div>
+        <div className="h-9 w-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
       </div>
 
-      <div className="max-w-7xl w-full mx-auto p-6 md:p-12 relative z-10 flex-1 flex flex-col justify-center">
-        {/* Top Navbar Skeleton */}
-        <div className="flex justify-between items-center mb-16">
-          <div className="flex items-center gap-4">
-            <div className="relative w-11 h-11 bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
-            <div className="space-y-2">
-              <div className="h-5 w-32 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
-              <div className="h-3 w-20 bg-slate-100 dark:bg-slate-900 rounded-md animate-pulse" />
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
+      {/* Header Skeleton */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
+        <div className="space-y-2">
+          <div className="h-8 w-64 bg-slate-300 dark:bg-slate-800 rounded-xl" />
+          <div className="h-4 w-96 bg-slate-200 dark:bg-slate-800/60 rounded-md" />
         </div>
-
-        <div className="grid lg:grid-cols-12 gap-12 items-center">
-          {/* Hero Segment Skeleton */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="space-y-3">
-              <div className="h-14 w-3/4 bg-slate-300 dark:bg-slate-800 rounded-2xl animate-pulse" />
-              <div className="h-14 w-1/2 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
-            </div>
-            <div className="space-y-2 max-w-sm pt-2">
-              <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
-              <div className="h-4 w-5/6 bg-slate-100 dark:bg-slate-900 rounded-full animate-pulse" />
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <div className="h-14 w-full sm:w-48 rounded-xl bg-slate-300 dark:bg-slate-800 animate-pulse" />
-              <div className="h-14 w-full sm:w-36 rounded-xl bg-slate-200 dark:bg-slate-800/60 border border-transparent animate-pulse" />
-            </div>
-          </div>
-
-          {/* Right Action Bento Skeleton Grid */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((item) => (
-              <div
-                key={item}
-                className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-[1.75rem] p-6 min-h-[160px] flex flex-col justify-between"
-              >
-                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
-                <div className="space-y-2 mt-4">
-                  <div className="h-5 w-28 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse" />
-                  <div className="h-3.5 w-full bg-slate-100 dark:bg-slate-900 rounded-md animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          <div className="h-10 w-36 bg-slate-200 dark:bg-slate-800 rounded-xl" />
         </div>
       </div>
 
-      {/* Modern Fixed Blur Loading Track */}
-      <div className="pb-8 flex justify-center w-full z-20">
-        <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl shadow-slate-950/5">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full"
-          />
-          <span className="text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300">
-            Assembling Workspace...
-          </span>
-        </div>
+      {/* 8 KPI Cards Grid Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div
+            key={i}
+            className="h-32 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-3"
+          >
+            <div className="flex justify-between">
+              <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
+              <div className="w-16 h-5 rounded-full bg-slate-100 dark:bg-slate-800" />
+            </div>
+            <div className="h-7 w-28 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+            <div className="h-3 w-40 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
+          </div>
+        ))}
+      </div>
+
+      {/* Trends & Distribution Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 h-80 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-6" />
+        <div className="lg:col-span-4 h-80 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-6" />
       </div>
     </div>
   );
 }
 
 // ------------------------------------------------------------------
-// --- 2. MAIN HUB INTERFACE PAGE ---
+// --- 2. MAIN ADMIN DASHBOARD ---
 // ------------------------------------------------------------------
-export default function WelcomePage() {
+export default function AdminDashboardPage() {
   const { data: session, status } = useSession();
-  const [greeting, setGreeting] = useState("Welcome");
-
-  const userName = session?.user?.name?.split(" ")[0] || "Operator";
-
   const pathname = usePathname();
-  
-  // --- Auth & Loading Pipeline ---
-  if (status === 'unauthenticated') {
-    if (typeof window !== 'undefined') {
+
+  const [greeting, setGreeting] = useState("Good Day");
+  const [period, setPeriod] = useState<ReportingPeriod>("last7days");
+  const [customRange, setCustomRange] = useState<{ start?: string; end?: string }>({});
+  const [rankingMetric, setRankingMetric] = useState("revenue");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Authentication Redirect
+  if (status === "unauthenticated") {
+    if (typeof window !== "undefined") {
       const callbackUrl = `${window.location.origin}${pathname}`;
-      
       const authUrl = new URL("https://auth.salesmanpro.site/signin");
       authUrl.searchParams.set("callbackUrl", callbackUrl);
-      
       window.location.href = authUrl.toString();
     }
     return null;
   }
 
-  const [schoolSlug, setSchoolSlug] = useState<string | null>(null);
-
-  const userRole = ((session?.user as any)?.role || "").toUpperCase();
-  const isEducationRole = [
-    "EDUCATOR",
-    "TEACHER",
-    "TUTOR",
-    "LECTURER",
-    "HEADTEACHER",
-    "PRINCIPAL",
-    "STUDENT",
-    "PARENT",
-  ].includes(userRole);
-
+  // Greeting by local time
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good Morning");
     else if (hour < 18) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
-
-    fetch("/api/stores", { credentials: "include" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (json?.data && Array.isArray(json.data) && json.data.length > 0) {
-          const first = json.data[0];
-          if (first?.slug) setSchoolSlug(first.slug);
-        }
-      })
-      .catch(() => {});
   }, []);
 
-  const launchActions = [
-    ...(schoolSlug || isEducationRole
-      ? [
-          {
-            title: isEducationRole ? "School Command Center" : "School Portal",
-            desc: "Open your active school workspace, classes, and schedule.",
-            icon: <AcademicCapIcon />,
-            color: "text-indigo-600 dark:text-indigo-400",
-            bg: "bg-indigo-50 dark:bg-indigo-950/30",
-            border: "hover:border-indigo-500/40",
-            href: schoolSlug ? `/admin/${schoolSlug}` : "/stores",
-          },
-        ]
-      : []),
-    {
-      title: "My Stores",
-      desc: "Access active digital marketplace environments.",
-      icon: <BuildingStorefrontIcon />,
-      color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-50 dark:bg-blue-950/30",
-      border: "hover:border-blue-500/30",
-      href: "/stores",
-    },
-    {
-      title: "Custom Gateways",
-      desc: "Manage endpoints, webhooks and domains.",
-      icon: <CircleStackIcon />,
-      color: "text-purple-600 dark:text-purple-400",
-      bg: "bg-purple-50 dark:bg-purple-950/30",
-      border: "hover:border-purple-500/30",
-      href: "#",
-    },
-    {
-      title: "System Config",
-      desc: "Calibrate localized core sales parameters.",
-      icon: <WrenchScrewdriverIcon />,
-      color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-50 dark:bg-amber-950/30",
-      border: "hover:border-amber-500/30",
-      href: "#",
-    },
-  ];
+  const userName = session?.user?.name?.split(" ")[0] || "Administrator";
 
-  // Force Loader view during session acquisition or invalid context boundaries
-  if (status === "loading" || !session?.user?.name) {
-    return <WelcomeLoader />;
+  // Build SWR Query URL
+  const queryParams = new URLSearchParams();
+  queryParams.set("period", period);
+  if (period === "custom" && customRange.start && customRange.end) {
+    queryParams.set("startDate", customRange.start);
+    queryParams.set("endDate", customRange.end);
   }
+  queryParams.set("rankingMetric", rankingMetric);
+
+  const endpointUrl = session?.user?.id
+    ? `/api/admin/dashboard/overview?${queryParams.toString()}`
+    : null;
+
+  const {
+    data: dashboardData,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<PortfolioDashboardData>(endpointUrl, fetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: true,
+    dedupingInterval: 30000, // 30s deduping
+  });
+
+  const handlePeriodChange = (
+    newPeriod: ReportingPeriod,
+    start?: string,
+    end?: string,
+  ) => {
+    setPeriod(newPeriod);
+    if (newPeriod === "custom" && start && end) {
+      setCustomRange({ start, end });
+    } else {
+      setCustomRange({});
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const refreshParams = new URLSearchParams(queryParams);
+      refreshParams.set("refresh", "true");
+      const refreshUrl = `/api/admin/dashboard/overview?${refreshParams.toString()}`;
+      const refreshedData = await fetcher(refreshUrl);
+      await mutate(refreshedData, false);
+    } catch (e) {
+      console.error("Refresh error:", e);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (status === "loading" || (isLoading && !dashboardData)) {
+    return <DashboardSkeleton />;
+  }
+
+  const kpis = dashboardData?.kpis;
+  const totalStores = kpis?.totalStores.total || 0;
+  const currency = dashboardData?.primaryCurrency || "KES";
+  const periodLabel = dashboardData?.metadata.periodLabel || "Last 7 Days";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans selection:bg-orange-500/20 relative overflow-hidden transition-colors duration-300">
-      {/* Decorative Structural Grid Overlay Background Elements */}
+      {/* Structural Ambient Background */}
       <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-70" />
-        <div className="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-orange-400/10 to-transparent rounded-full blur-3xl opacity-40 dark:opacity-20" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-500/10 to-transparent rounded-full blur-3xl opacity-40 dark:opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-60" />
+        <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-to-tr from-orange-400/10 to-transparent rounded-full blur-3xl opacity-40 dark:opacity-20" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-500/10 to-transparent rounded-full blur-3xl opacity-40 dark:opacity-20" />
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 md:p-12 flex flex-col justify-between min-h-screen relative z-10">
-        {/* --- NAVBAR SECTOR --- */}
-        <nav className="flex justify-between items-center mb-12 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm">
-          <div className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center">
-              <img
-                src={fit1.src}
-                alt="SalesmanPro System Logo"
-                className="w-9 h-9 object-contain group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 space-y-8 relative z-10">
+        {/* --- TOP NAVBAR --- */}
+        <nav className="flex justify-between items-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md px-5 py-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800/80 shadow-sm">
+          <div className="flex items-center gap-3">
+            <img
+              src={fit1.src}
+              alt="SalesmanPro Logo"
+              className="w-8 h-8 object-contain"
+            />
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
+                Salesman<span className="text-orange-600">Pro</span>
+              </span>
+              <span className="hidden sm:inline-block text-[11px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-400">
+                Portfolio BI
+              </span>
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-              Salesman<span className="text-orange-600">Pro</span>
-            </span>
           </div>
 
-          <button
-            onClick={() => { const returnTo = window.location.origin;
-            signOut({
-                redirect: true,
-                callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
-              })
-            }}
-            className="group flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/50 transition-all duration-200"
-            title="Disconnect Terminal Session"
-          >
-            <span className="hidden sm:inline">Sign Out</span>
-            <ArrowLeftOnRectangleIcon className="w-4 h-4 stroke-[2.5]" />
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Direct view of My Stores */}
+            <Link
+              href="/stores"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
+            >
+              <BuildingStorefrontIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>Store Manager</span>
+            </Link>
+
+            <button
+              onClick={() => {
+                const returnTo = window.location.origin;
+                signOut({
+                  redirect: true,
+                  callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                });
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+              title="Sign Out"
+            >
+              <span className="hidden md:inline">Sign Out</span>
+              <ArrowLeftOnRectangleIcon className="w-4 h-4" />
+            </button>
+          </div>
         </nav>
 
-        {/* --- MAIN HERO CORE GRID --- */}
-        <main className="grid lg:grid-cols-12 gap-12 items-center my-auto">
-          {/* Left Hero Segment */}
-          <div className="lg:col-span-5 flex flex-col justify-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              className="space-y-6"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {/* --- WELCOME HEADER & PRIMARY ACTIONS --- */}
+        <section className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            {/* Title & Overview Greeting */}
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Terminal Online
+                Portfolio Operations Live
               </div>
-
-              <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-[0.95] text-slate-950 dark:text-white">
-                {greeting},
-                <br />
-                <span className="bg-gradient-to-r from-slate-400 via-slate-500 to-slate-600 dark:from-slate-400 dark:to-slate-600 bg-clip-text text-transparent">
-                  {userName}.
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-950 dark:text-white">
+                {greeting},{" "}
+                <span className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-transparent">
+                  {userName}
                 </span>
               </h1>
-
-              <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
-                Your commerce ecosystem operational node is completely loaded. Select a system module framework or create a storefront deployment block to initiate execution loops.
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+                Aggregated business intelligence and operational oversight across{" "}
+                <span className="font-bold text-slate-800 dark:text-slate-200">
+                  {totalStores} {totalStores === 1 ? "store" : "stores"}
+                </span>{" "}
+                for the selected reporting window.
               </p>
+            </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                <Link
-                  href="/stores/create"
-                  className="inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white px-6 py-4 rounded-xl font-bold shadow-md shadow-orange-600/10 hover:shadow-orange-500/20 hover:shadow-lg active:scale-[0.99] transition-all group w-full sm:w-auto text-sm"
-                >
-                  <PlusIcon className="w-4 h-4 stroke-[2.5]" />
-                  <span>Launch New Store</span>
-                  <ArrowRightIcon className="w-4 h-4 stroke-[2.5] opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                </Link>
-              </div>
+            {/* Quick Actions & Reporting Controls */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+              {/* Period Selector with Refresh */}
+              <PeriodSelector
+                currentPeriod={period}
+                onPeriodChange={handlePeriodChange}
+                lastUpdated={dashboardData?.metadata.lastUpdated}
+                isRefreshing={isRefreshing}
+                onRefresh={handleManualRefresh}
+              />
 
-              {/* Cross-Platform Compiled Distribution Blocks */}
-              <div className="pt-4 border-t border-slate-200/60 dark:border-slate-900">
-                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 block mb-3">
-                  Download Standalone Nodes
-                </span>
-                <div className="flex flex-wrap gap-3">
-                  <a
-                    href="https://salesmanpro.site/download-desktop/SalesmanProDesktop.application"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:border-orange-500/40 dark:hover:border-orange-500/40 transition-all shadow-sm"
-                  >
-                    <ComputerDesktopIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                    <span>Desktop App</span>
-                  </a>
-                  <a
-                    href="https://salesmanpro.site/download-mobile/app-release.apk"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:border-orange-500/40 dark:hover:border-orange-500/40 transition-all shadow-sm"
-                  >
-                    <DevicePhoneMobileIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                    <span>Mobile Android APK</span>
-                  </a>
-                </div>
-              </div>
-            </motion.div>
+              {/* View My Stores (Preserves Existing Stores Page) */}
+              <Link
+                href="/stores"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs md:text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+              >
+                <BuildingStorefrontIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 stroke-[2]" />
+                <span>View My Stores</span>
+              </Link>
+
+              {/* Launch New Store (Preserves Existing Store Creation) */}
+              <Link
+                href="/stores/create"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs md:text-sm font-bold rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-md shadow-orange-600/15 active:scale-[0.99] transition-all"
+              >
+                <PlusIcon className="w-4 h-4 stroke-[2.5]" />
+                <span>Launch New Store</span>
+              </Link>
+            </div>
           </div>
 
-          {/* Right Architecture Bento Grid Segment */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4"
-          >
-            {/* System Action Matrix Blocks */}
-            {launchActions.map((action, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                whileHover={{
-                  y: -4,
-                  boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.05)",
-                }}
-                className={`group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800/80 p-6 rounded-2xl flex flex-col justify-between min-h-[170px] transition-all border-b-2 ${action.border}`}
+          {/* Currency Distribution Pill (if multiple currencies exist) */}
+          {dashboardData?.currencyBreakdown && dashboardData.currencyBreakdown.length > 1 && (
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 text-xs">
+              <span className="font-bold text-slate-400 uppercase tracking-wider text-[11px]">
+                Currency Volume:
+              </span>
+              {dashboardData.currencyBreakdown.map((cb) => (
+                <div
+                  key={cb.currency}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800/60 font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  <span className="w-2 h-2 rounded-full bg-orange-500" />
+                  <span>{cb.currency}:</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">
+                    {cb.sales.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    ({cb.storeCount} stores)
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Error Notification (if any) */}
+        {error && (
+          <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 flex items-center gap-3 text-sm font-semibold">
+            <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
+            <span>Failed to sync recent data: {error.message}. Showing cached state.</span>
+          </div>
+        )}
+
+        {/* --- EMPTY PORTFOLIO ONBOARDING STATE --- */}
+        {totalStores === 0 && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center max-w-xl mx-auto shadow-sm space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto">
+              <BuildingStorefrontIcon className="w-8 h-8 stroke-[2]" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              No Stores In Your Portfolio Yet
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Launch your first e-commerce store, service business, or digital storefront to start monitoring portfolio performance, sales trajectories, and fulfillment operations.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/stores/create"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 text-white font-bold text-sm shadow-lg shadow-orange-600/20 hover:from-orange-500 hover:to-amber-400 transition-all"
               >
-                <Link href={action.href} className="flex flex-col h-full justify-between">
-                  <div
-                    className={`w-12 h-12 ${action.bg} ${action.color} rounded-xl flex items-center justify-center mb-4 border border-transparent dark:border-slate-800`}
-                  >
-                    {React.cloneElement(action.icon, { className: "w-6 h-6 stroke-[1.8]" })}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors flex items-center gap-1.5">
-                      {action.title}
-                      <ArrowRightIcon className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-orange-500" />
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-1 leading-normal">
-                      {action.desc}
-                    </p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                <PlusIcon className="w-4 h-4 stroke-[2.5]" />
+                <span>Launch Your First Store</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
-            {/* Comprehensive Integrated Infrastructure Status Module */}
-            <motion.div
-              variants={itemVariants}
-              className="sm:col-span-2 relative overflow-hidden bg-gradient-to-br from-indigo-950 to-slate-900 dark:from-slate-900 dark:to-slate-950 p-6 rounded-2xl border border-slate-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 shadow-xl"
+        {/* --- CORE SECTIONS (Rendered when stores exist) --- */}
+        {kpis && totalStores > 0 && (
+          <>
+            {/* 1. Portfolio KPI Cards Row */}
+            <section aria-label="Portfolio Key Performance Indicators">
+              <PortfolioKPISection kpis={kpis} periodLabel={periodLabel} />
+            </section>
+
+            {/* 2. Interactive Trends & Fulfillment Flow */}
+            <section aria-label="Portfolio Trends & Fulfillment">
+              <PortfolioTrendsChart
+                timeline={dashboardData.performanceTrends.timeline}
+                orderStatusBreakdown={
+                  dashboardData.performanceTrends.orderStatusBreakdown
+                }
+                currency={currency}
+                periodLabel={periodLabel}
+              />
+            </section>
+
+            {/* 3. Top Performing Stores & Live Activity Stream */}
+            <section
+              aria-label="Store Rankings and Live Activity"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6"
             >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm tracking-wide uppercase">
-                  <ShieldCheckIcon className="w-5 h-5 stroke-[2]" />
-                  <span>All Clusters Optimal</span>
-                </div>
-                <h4 className="text-xl font-bold text-white tracking-tight pt-1">
-                  System Gateways Operational
-                </h4>
-                <p className="text-slate-400 text-xs max-w-sm leading-normal">
-                  Distributed edge parameters, persistent proxy networks, and secure payment modules are executing cleanly.
-                </p>
+              <div className="lg:col-span-7">
+                <TopPerformingStores
+                  stores={dashboardData.topPerformingStores}
+                  totalStoresCount={totalStores}
+                  selectedMetric={rankingMetric}
+                  onMetricChange={setRankingMetric}
+                />
               </div>
 
-              {/* Connected Active Nodes Badge Indicators */}
-              <div className="flex items-center gap-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80 self-stretch sm:self-auto justify-center">
-                <div className="flex -space-x-1.5 overflow-hidden">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="w-7 h-7 rounded-lg border border-slate-900 bg-indigo-600 flex items-center justify-center text-[10px] text-white font-black"
-                    >
-                      U{i}
-                    </div>
-                  ))}
-                </div>
-                <div className="text-[11px] font-bold text-slate-300 px-1.5">
-                  +12 Edge Nodes Active
-                </div>
+              <div className="lg:col-span-5">
+                <RecentActivityFeed
+                  activities={dashboardData.recentActivity}
+                  totalStoresCount={totalStores}
+                />
               </div>
-            </motion.div>
-          </motion.div>
-        </main>
+            </section>
 
-        {/* --- DYNAMIC FOOTER FOOTPRINT --- */}
-        <footer className="mt-12 pt-6 border-t border-slate-200/50 dark:border-slate-800/50 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 font-medium gap-4">
-          <p>© SalesmanPro Core Distribution Architecture Framework.</p>
-          <div className="flex gap-4">
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> API: v2.4.16
+            {/* 4. Store Health & Operational Alerts */}
+            <section aria-label="Store Health and Operational Alerts">
+              <OperationalAlertsSection
+                alerts={dashboardData.operationalAlerts}
+              />
+            </section>
+          </>
+        )}
+
+        {/* --- SYSTEM FOOTER --- */}
+        <footer className="pt-8 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-slate-600 dark:text-slate-400">
+              SalesmanPro Operations Hub
             </span>
-            <span>Security Isolation: Active</span>
+            <span>•</span>
+            <span>Multi-Tenant Node</span>
+          </div>
+
+          <div className="flex items-center gap-5">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Redis Cache: Singleflight Active
+            </span>
+            <Link
+              href="/stores"
+              className="hover:text-orange-500 transition-colors"
+            >
+              Stores Page
+            </Link>
+            <Link
+              href="/orders"
+              className="hover:text-orange-500 transition-colors"
+            >
+              Orders
+            </Link>
+            <Link
+              href="/payments"
+              className="hover:text-orange-500 transition-colors"
+            >
+              Payments
+            </Link>
           </div>
         </footer>
       </div>

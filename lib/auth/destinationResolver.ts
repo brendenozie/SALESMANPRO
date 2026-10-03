@@ -224,7 +224,7 @@ export async function resolveUserDestination(
     const ownedCount = user.id ? await countUserCompanies(user.id) : 1;
 
     if (ownedCount > 1) {
-      destination = "/stores";
+      destination = "/dashboards";
     } else if (effectiveCompanySlug) {
       if (
         opts.preferredDestination &&
@@ -236,7 +236,7 @@ export async function resolveUserDestination(
         destination = `/admin/${effectiveCompanySlug}`;
       }
     } else {
-      destination = "/stores";
+      destination = "/dashboards";
     }
   }
   // 5. Staff / POS Operator
@@ -394,7 +394,7 @@ export function resolveDestinationFromToken(token: {
   if (role === "SUPER_ADMIN") return "/super-admin";
   if (role === "ADMIN") {
     if (token.companySlug) return `/admin/${token.companySlug}`;
-    return "/stores";
+    return "/dashboards";
   }
   if (role === "STAFF" || role === "STAFF_MEMBER" || role === "CASHIER" || role === "MANAGER") {
     if (token.companySlug) {

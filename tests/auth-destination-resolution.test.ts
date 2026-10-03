@@ -75,6 +75,24 @@ async function runTests() {
     console.log("ok 4 - Store/Company Admin resolves to /admin/{companySlug}");
   }
 
+  // Test 4b: Multi-Store / Portfolio Admin (no specific company slug)
+  {
+    const multiStoreAdmin: UserDestinationContext = {
+      id: "usr_multi_admin",
+      email: "director@retailgroup.com",
+      role: "ADMIN",
+      companyId: null,
+      companySlug: null,
+      isActive: true,
+      emailVerified: true,
+    };
+    const res = await resolveUserDestination(multiStoreAdmin);
+    assert.strictEqual(res.isAuthorized, true);
+    assert.strictEqual(res.destination, "/dashboards");
+    assert.strictEqual(resolveDestinationFromToken(multiStoreAdmin), "/dashboards");
+    console.log("ok 4b - Multi-Store Admin resolves to /dashboards");
+  }
+
   // Test 5: Staff on Web vs Staff on POS client (Android/WPF)
   {
     const staffUser: UserDestinationContext = {
