@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   TruckIcon,
   MapPinIcon,
@@ -16,7 +17,6 @@ import {
   ExclamationTriangleIcon,
   PhoneIcon,
   ArrowTopRightOnSquareIcon,
-  CurrencyDollarIcon,
   UserCircleIcon,
   SignalIcon,
   ChevronRightIcon,
@@ -103,6 +103,13 @@ interface RiderProfile {
   };
 }
 
+// Animation variants for tab content
+const tabVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { opacity: 0, y: -15, transition: { duration: 0.2, ease: "easeIn" } },
+};
+
 export default function RiderDashboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"ACTIVE" | "NEARBY" | "EARNINGS" | "SETTINGS">("ACTIVE");
@@ -140,7 +147,6 @@ export default function RiderDashboardPage() {
   // 1. Fetch Profile & Active Status
   const fetchDashboardData = useCallback(async () => {
     try {
-      // Profile
       const profRes = await fetch("/api/rider/profile");
       if (profRes.status === 401) {
         router.push("/auth/signin?callbackUrl=/ghuba/rider/dashboard");
@@ -152,12 +158,10 @@ export default function RiderDashboardPage() {
         setIsOnline(profData.data.isOnline ?? false);
         setPayoutPhone(profData.data.phone || "");
       } else if (profRes.status === 404) {
-        // Not registered as rider yet
         router.push("/ghuba/rider/onboarding");
         return;
       }
 
-      // Active Delivery
       const activeRes = await fetch("/api/rider/deliveries/active");
       const activeData = await activeRes.json();
       if (activeData?.success && (activeData?.data || activeData?.delivery)) {
@@ -166,14 +170,12 @@ export default function RiderDashboardPage() {
         setActiveDelivery(null);
       }
 
-      // Available Deliveries
       const availRes = await fetch("/api/rider/deliveries/available");
       const availData = await availRes.json();
       if (availData?.success && availData?.data) {
         setAvailableDeliveries(availData.data);
       }
 
-      // Earnings
       const earnRes = await fetch("/api/rider/earnings");
       const earnData = await earnRes.json();
       if (earnData?.success && earnData?.data) {
@@ -188,11 +190,11 @@ export default function RiderDashboardPage() {
 
   useEffect(() => {
     fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 20000); // Polling every 20s
+    const interval = setInterval(fetchDashboardData, 20000);
     return () => clearInterval(interval);
   }, [fetchDashboardData]);
 
-  // 2. GPS Beacon - Transmit location to server when online
+  // 2. GPS Beacon
   const sendLocationUpdate = useCallback(async (coords: GeolocationCoordinates) => {
     try {
       const payload = {
@@ -234,14 +236,12 @@ export default function RiderDashboardPage() {
 
     setGpsStatus("ACQUIRING");
 
-    // Single immediate fetch
     navigator.geolocation.getCurrentPosition(
       (pos) => sendLocationUpdate(pos.coords),
       () => setGpsStatus("DENIED"),
       { enableHighAccuracy: true, timeout: 10000 }
     );
 
-    // Watch position
     gpsWatchId.current = navigator.geolocation.watchPosition(
       (pos) => sendLocationUpdate(pos.coords),
       (err) => {
@@ -420,97 +420,113 @@ export default function RiderDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-3">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 transition-colors duration-300">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-3"
+        >
           <ArrowPathIcon className="w-10 h-10 text-emerald-500 animate-spin" />
-          <p className="text-sm font-medium text-slate-400">Loading Rider Dashboard...</p>
-        </div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Loading Rider Dashboard...</p>
+        </motion.div>
       </div>
     );
   }
 
+  const tabs = [
+    { id: "ACTIVE", label: "Active Job", showBadge: !!activeDelivery },
+    { id: "NEARBY", label: `Nearby (${availableDeliveries.length})`, showBadge: false },
+    { id: "EARNINGS", label: "Wallet", showBadge: false },
+    { id: "SETTINGS", label: "Profile", showBadge: false },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20 transition-colors duration-300 font-sans">
       <Toaster position="top-right" />
 
-      {/* Top Bar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+      {/* Top Bar - Glassmorphism */}
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 py-3 transition-colors duration-300">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+            <div className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
               <TruckIcon className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-base md:text-lg text-white">
+                <h1 className="font-bold text-base md:text-lg text-slate-900 dark:text-white">
                   {profile?.fullName || "Rider Portal"}
                 </h1>
                 {profile?.verificationStatus === "APPROVED" ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                     <ShieldCheckIcon className="w-3 h-3" /> Verified
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
                     <ClockIcon className="w-3 h-3" /> {profile?.verificationStatus || "Pending"}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {profile?.operatingCity}, {profile?.operatingCounty} • {profile?.vehicle?.plateNumber || "Bicycle"}
               </p>
             </div>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => fetchDashboardData()}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
             title="Refresh feed"
           >
-            <ArrowPathIcon className="w-4 h-4" />
-          </button>
+            <ArrowPathIcon className="w-5 h-5" />
+          </motion.button>
         </div>
       </header>
 
-      {/* Verification Notice if not approved */}
+      {/* Verification Notice */}
       {profile && profile.verificationStatus !== "APPROVED" && (
-        <div className="max-w-4xl mx-auto px-4 mt-4">
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-start gap-3">
-            <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <div className="text-xs leading-relaxed">
-              <p className="font-semibold text-sm text-amber-200">Account Under Review</p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto px-4 mt-5">
+          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 flex items-start gap-3 shadow-sm">
+            <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <div className="text-sm leading-relaxed">
+              <p className="font-bold text-amber-900 dark:text-amber-200 mb-1">Account Under Review</p>
               Your documents and vehicle verification are currently being reviewed by administrators. Once approved, you can toggle online and receive deliveries.
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Availability & GPS Broadcast Status Card */}
-      <section className="max-w-4xl mx-auto px-4 mt-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <section className="max-w-4xl mx-auto px-4 mt-5">
+        <motion.div
+          layout
+          className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition-colors duration-300"
+        >
           <div className="flex items-center gap-4">
             <div className="relative">
               <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                   isOnline
-                    ? "bg-emerald-500/20 text-emerald-400 ring-2 ring-emerald-500/50"
-                    : "bg-slate-800 text-slate-400"
+                    ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-4 ring-emerald-100 dark:ring-emerald-500/30"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
                 }`}
               >
-                <SignalIcon className={`w-6 h-6 ${isOnline ? "animate-pulse" : ""}`} />
+                <SignalIcon className={`w-7 h-7 ${isOnline ? "animate-pulse" : ""}`} />
               </div>
               {isOnline && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900 animate-ping" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping" />
               )}
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Dispatch Status</p>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Dispatch Status</p>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 {isOnline ? "ONLINE - Ready for Jobs" : "OFFLINE"}
               </h2>
-              <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
-                <span>
+              <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
+                <span className="flex items-center gap-1">
                   GPS:{" "}
-                  <strong className={gpsStatus === "ACTIVE" ? "text-emerald-400" : "text-amber-400"}>
+                  <strong className={gpsStatus === "ACTIVE" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
                     {gpsStatus}
                   </strong>
                 </span>
@@ -519,716 +535,728 @@ export default function RiderDashboardPage() {
             </div>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleToggleOnline}
             disabled={togglingOnline || profile?.verificationStatus !== "APPROVED"}
-            className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 ${
+            className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${
               isOnline
-                ? "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30"
-                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30"
+                ? "bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 dark:shadow-emerald-600/30"
             } disabled:opacity-50`}
           >
             {togglingOnline ? (
-              <ArrowPathIcon className="w-4 h-4 animate-spin" />
+              <ArrowPathIcon className="w-5 h-5 animate-spin" />
             ) : isOnline ? (
               "Go Offline"
             ) : (
               "Go Online"
             )}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </section>
 
       {/* Tabs */}
-      <section className="max-w-4xl mx-auto px-4 mt-6">
-        <div className="grid grid-cols-4 gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl">
-          <button
-            onClick={() => setActiveTab("ACTIVE")}
-            className={`py-2 text-xs font-bold rounded-lg transition relative ${
-              activeTab === "ACTIVE" ? "bg-emerald-600 text-white shadow" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Active Job
-            {activeDelivery && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("NEARBY")}
-            className={`py-2 text-xs font-bold rounded-lg transition ${
-              activeTab === "NEARBY" ? "bg-emerald-600 text-white shadow" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Nearby ({availableDeliveries.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("EARNINGS")}
-            className={`py-2 text-xs font-bold rounded-lg transition ${
-              activeTab === "EARNINGS" ? "bg-emerald-600 text-white shadow" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Wallet
-          </button>
-          <button
-            onClick={() => setActiveTab("SETTINGS")}
-            className={`py-2 text-xs font-bold rounded-lg transition ${
-              activeTab === "SETTINGS" ? "bg-emerald-600 text-white shadow" : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Profile
-          </button>
+      <section className="max-w-4xl mx-auto px-4 mt-8">
+        <div className="flex p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-x-auto hide-scrollbar">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`relative flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-white"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-emerald-600 rounded-xl"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center justify-center gap-1.5">
+                {tab.label}
+                {tab.showBadge && (
+                  <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                )}
+              </span>
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* Tab 1: Active Delivery */}
-      {activeTab === "ACTIVE" && (
-        <section className="max-w-4xl mx-auto px-4 mt-6 space-y-4">
-          {activeDelivery ? (
-            <div className="p-5 rounded-2xl bg-slate-900 border border-emerald-500/30 shadow-2xl space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
-                    Assigned Job
-                  </span>
-                  <h3 className="text-base font-bold text-white">Order #{activeDelivery.orderNumber}</h3>
+      {/* Tab Content with Framer Motion AnimatePresence */}
+      <section className="max-w-4xl mx-auto px-4 mt-6">
+        <AnimatePresence mode="wait">
+          {/* Tab 1: Active Delivery */}
+          {activeTab === "ACTIVE" && (
+            <motion.div key="ACTIVE" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-4">
+              {activeDelivery ? (
+                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-500/30 shadow-2xl shadow-emerald-900/5 dark:shadow-none space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+                        Assigned Job
+                      </span>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">Order #{activeDelivery.orderNumber}</h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Net Payout</p>
+                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                        KES {(activeDelivery.financials?.netEarnings ?? (activeDelivery.riderFee * 0.96)).toLocaleString()}
+                      </p>
+                      <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+                        Gross Fee: KES {activeDelivery.riderFee?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Payment & Escrow Guarantee Notice */}
+                  {(() => {
+                    const payType = activeDelivery.financials?.paymentType || activeDelivery.paymentType || "GHUBA_ESCROW";
+                    const escStatus = activeDelivery.financials?.escrowStatus || activeDelivery.escrowStatus || "DEPOSITED";
+                    const escAmount = activeDelivery.financials?.escrowAmount ?? activeDelivery.escrowAmount ?? activeDelivery.riderFee;
+                    const netPayout = activeDelivery.financials?.netEarnings ?? (activeDelivery.riderFee * 0.96);
+                    const platformFee = activeDelivery.financials?.platformCommission ?? (activeDelivery.riderFee * 0.04);
+
+                    if (payType === "GHUBA_ESCROW") {
+                      return (
+                         <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/40 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheckIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                              <span className="font-bold text-xs uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                                Escrow Secured: KES {escAmount.toLocaleString()}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-200/50 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
+                              {escStatus}
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-200/90 leading-relaxed font-medium">
+                            Payment was deposited into Ghuba Escrow by the store before dispatch. Ghuba takes a 4% platform transaction fee (KES {platformFee.toFixed(2)}). Upon OTP handover to the customer, your guaranteed payout of <strong>KES {netPayout.toLocaleString()}</strong> will be automatically credited to your wallet for immediate withdrawal.
+                          </p>
+                        </div>
+                      );
+                    } else if (payType === "CASH_ON_PICKUP") {
+                      return (
+                        <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-500/40 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <BanknotesIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                              <span className="font-bold text-xs uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                                Cash On Pickup: Collect KES {activeDelivery.riderFee.toLocaleString()} From Store
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-amber-200/50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                              Cash Settlement
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-amber-700 dark:text-amber-200/90 leading-relaxed font-medium">
+                            Collect your full delivery fee of <strong>KES {activeDelivery.riderFee.toLocaleString()} in cash</strong> directly from the store at pickup. Ghuba's 4% platform transaction fee (KES {platformFee.toFixed(2)}) will be debited from your balance upon trip completion.
+                          </p>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="p-5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-500/40 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <BanknotesIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              <span className="font-bold text-xs uppercase tracking-wider text-blue-800 dark:text-blue-300">
+                                Cash On Delivery: Collect KES {activeDelivery.riderFee.toLocaleString()} From Customer
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-blue-200/50 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-500/30">
+                              Cash Settlement
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-blue-700 dark:text-blue-200/90 leading-relaxed font-medium">
+                            Collect your delivery fee of <strong>KES {activeDelivery.riderFee.toLocaleString()} in cash</strong> directly from the customer at dropoff. Ghuba's 4% platform transaction fee (KES {platformFee.toFixed(2)}) will be debited from your balance upon trip completion.
+                          </p>
+                        </div>
+                      );
+                    }
+                  })()}
+
+                  {/* Status Banner */}
+                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs sm:text-sm">
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">Current Phase:</span>
+                    <span className="font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+                      {activeDelivery.status.replace(/_/g, " ")}
+                    </span>
+                  </div>
+
+                  {/* Waypoint details with timeline line */}
+                  <div className="relative space-y-4 text-sm">
+                    {/* Visual Line */}
+                    <div className="absolute top-10 bottom-10 left-[21px] w-0.5 bg-slate-200 dark:bg-slate-800 rounded-full hidden sm:block z-0" />
+
+                    {/* Pickup */}
+                    <div className="relative z-10 flex items-start gap-4 p-4 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-inner">
+                        <MapPinIcon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-[10px]">
+                          Step 1: Pick Up from Store
+                        </p>
+                        <p className="text-base font-black text-slate-900 dark:text-white mt-1">
+                          {activeDelivery.storeName || "Store Partner"}
+                        </p>
+                        <p className="text-slate-600 dark:text-slate-300 font-medium text-sm mt-1">{activeDelivery.pickupAddress}</p>
+                        {activeDelivery.pickupLat && activeDelivery.pickupLng && (
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${activeDelivery.pickupLat},${activeDelivery.pickupLng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold mt-3 hover:underline"
+                          >
+                            Navigate to Store <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Dropoff */}
+                    <div className="relative z-10 flex items-start gap-4 p-4 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-inner">
+                        <MapPinIcon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-[10px]">
+                          Step 2: Deliver to Customer
+                        </p>
+                        <p className="text-base font-black text-slate-900 dark:text-white mt-1">{activeDelivery.customerName}</p>
+                        <p className="text-slate-600 dark:text-slate-300 font-medium text-sm mt-1">{activeDelivery.dropoffAddress}</p>
+                        {activeDelivery.customerPhone && (
+                          <div className="flex items-center gap-3 mt-3">
+                            <a
+                              href={`tel:${activeDelivery.customerPhone}`}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold transition-colors"
+                            >
+                              <PhoneIcon className="w-4 h-4 text-emerald-500" /> Call ({activeDelivery.customerPhone})
+                            </a>
+                          </div>
+                        )}
+                        {activeDelivery.dropoffLat && activeDelivery.dropoffLng && (
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${activeDelivery.dropoffLat},${activeDelivery.dropoffLng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold mt-4 hover:underline block"
+                          >
+                            Navigate to Customer <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => {
+                        if (activeDelivery.status === "RIDER_ASSIGNED") handleAdvanceStep("RIDER_EN_ROUTE_TO_PICKUP");
+                        else if (activeDelivery.status === "RIDER_EN_ROUTE_TO_PICKUP") handleAdvanceStep("ARRIVED_AT_PICKUP");
+                        else if (activeDelivery.status === "ARRIVED_AT_PICKUP") handleAdvanceStep("ORDER_COLLECTED");
+                        else if (activeDelivery.status === "ORDER_COLLECTED") handleAdvanceStep("IN_TRANSIT");
+                        else if (activeDelivery.status === "IN_TRANSIT") handleAdvanceStep("ARRIVED_AT_DROPOFF");
+                        else if (activeDelivery.status === "ARRIVED_AT_DROPOFF") setShowPodModal(true);
+                      }}
+                      disabled={completingStep}
+                      className={`w-full py-4 rounded-2xl font-black text-sm md:text-base shadow-lg transition flex items-center justify-center gap-2 ${
+                        activeDelivery.status === "ARRIVED_AT_DROPOFF"
+                          ? "bg-emerald-500 hover:bg-emerald-400 text-slate-900 shadow-emerald-500/30"
+                          : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30"
+                      }`}
+                    >
+                      {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : 
+                       activeDelivery.status === "RIDER_ASSIGNED" ? "I Am En Route to Store" :
+                       activeDelivery.status === "RIDER_EN_ROUTE_TO_PICKUP" ? "I Have Arrived at Store" :
+                       activeDelivery.status === "ARRIVED_AT_PICKUP" ? "Confirm Package Collected" :
+                       activeDelivery.status === "ORDER_COLLECTED" ? "Start Trip to Customer" :
+                       activeDelivery.status === "IN_TRANSIT" ? "I Have Arrived at Customer" :
+                       <><CheckCircleIcon className="w-6 h-6" /> Complete Delivery & Claim Earnings</>}
+                    </motion.button>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-400">Net Payout</p>
-                  <p className="text-lg font-extrabold text-emerald-400">
-                    KES {(activeDelivery.financials?.netEarnings ?? (activeDelivery.riderFee * 0.96)).toLocaleString()}
+              ) : (
+                <div className="p-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none text-center space-y-4">
+                  <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-2">
+                     <TruckIcon className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+                  </div>
+                  <h3 className="font-black text-xl text-slate-900 dark:text-white">No Active Delivery</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium leading-relaxed">
+                    You are currently free for new jobs. Check the Nearby tab for open store delivery requests.
                   </p>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    Gross Fee: KES {activeDelivery.riderFee?.toLocaleString()}
-                  </span>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setActiveTab("NEARBY")}
+                    className="mt-4 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md transition inline-flex items-center gap-2"
+                  >
+                    Browse Nearby Deliveries <ChevronRightIcon className="w-4 h-4 font-bold" />
+                  </motion.button>
                 </div>
-              </div>
+              )}
+            </motion.div>
+          )}
 
-              {/* Payment & Escrow Guarantee Notice */}
-              {(() => {
-                const payType = activeDelivery.financials?.paymentType || activeDelivery.paymentType || "GHUBA_ESCROW";
-                const escStatus = activeDelivery.financials?.escrowStatus || activeDelivery.escrowStatus || "DEPOSITED";
-                const escAmount = activeDelivery.financials?.escrowAmount ?? activeDelivery.escrowAmount ?? activeDelivery.riderFee;
-                const netPayout = activeDelivery.financials?.netEarnings ?? (activeDelivery.riderFee * 0.96);
-                const platformFee = activeDelivery.financials?.platformCommission ?? (activeDelivery.riderFee * 0.04);
-
-                if (payType === "GHUBA_ESCROW") {
-                  return (
-                    <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheckIcon className="w-5 h-5 text-emerald-400" />
-                          <span className="font-black text-xs uppercase tracking-wider text-emerald-300">
-                            Ghuba Escrow Secured: KES {escAmount.toLocaleString()} Deposited
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          {escStatus}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-emerald-200/90 leading-relaxed">
-                        Payment was deposited into Ghuba Escrow by the store before dispatch. Ghuba takes a 4% platform transaction fee (KES {platformFee.toFixed(2)}). Upon OTP handover to the customer, your guaranteed payout of <strong>KES {netPayout.toLocaleString()}</strong> will be automatically credited to your Ghuba wallet for immediate M-Pesa withdrawal.
-                      </p>
-                    </div>
-                  );
-                } else if (payType === "CASH_ON_PICKUP") {
-                  return (
-                    <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <BanknotesIcon className="w-5 h-5 text-amber-400" />
-                          <span className="font-black text-xs uppercase tracking-wider text-amber-300">
-                            Cash On Pickup: Collect KES {activeDelivery.riderFee.toLocaleString()} From Store
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                          Cash Settlement
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                        Collect your full delivery fee of <strong>KES {activeDelivery.riderFee.toLocaleString()} in cash</strong> directly from the store at pickup. Ghuba's 4% platform transaction fee (KES {platformFee.toFixed(2)}) will be debited from your Ghuba wallet balance upon trip completion.
-                      </p>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className="p-4 rounded-xl bg-blue-950/40 border border-blue-500/40 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <BanknotesIcon className="w-5 h-5 text-blue-400" />
-                          <span className="font-black text-xs uppercase tracking-wider text-blue-300">
-                            Cash On Delivery: Collect KES {activeDelivery.riderFee.toLocaleString()} From Customer
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                          Cash Settlement
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-blue-200/90 leading-relaxed">
-                        Collect your delivery fee of <strong>KES {activeDelivery.riderFee.toLocaleString()} in cash</strong> directly from the customer at dropoff. Ghuba's 4% platform transaction fee (KES {platformFee.toFixed(2)}) will be debited from your Ghuba wallet balance upon trip completion.
-                      </p>
-                    </div>
-                  );
-                }
-              })()}
-
-              {/* Status Banner */}
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between text-xs">
-                <span className="text-slate-400">Current Phase:</span>
-                <span className="font-bold text-emerald-400 uppercase tracking-wide">
-                  {activeDelivery.status.replace(/_/g, " ")}
+          {/* Tab 2: Nearby Deliveries */}
+          {activeTab === "NEARBY" && (
+            <motion.div key="NEARBY" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-5">
+              <div className="flex items-center justify-between px-2">
+                <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Available Opportunities</h2>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 px-3 py-1 rounded-full">
+                  Within {profile?.maxDeliveryRadiusKm || 15} km
                 </span>
               </div>
 
-              {/* Waypoint details */}
-              <div className="space-y-4 text-xs">
-                {/* Pickup */}
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 mt-0.5">
-                    <MapPinIcon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">
-                      Step 1: Pick Up from Store
-                    </p>
-                    <p className="text-sm font-bold text-white mt-0.5">
-                      {activeDelivery.storeName || "Store Partner"}
-                    </p>
-                    <p className="text-slate-300 mt-0.5">{activeDelivery.pickupAddress}</p>
-                    {activeDelivery.pickupLat && activeDelivery.pickupLng && (
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${activeDelivery.pickupLat},${activeDelivery.pickupLng}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-emerald-400 font-semibold mt-2 hover:underline"
-                      >
-                        Navigate to Store <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
+              {availableDeliveries.length === 0 ? (
+                <div className="p-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none text-center space-y-4">
+                  <ClockIcon className="w-14 h-14 text-slate-300 dark:text-slate-600 mx-auto" />
+                  <p className="font-bold text-lg text-slate-800 dark:text-slate-300">No active requests nearby</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
+                    Stay online and keep GPS enabled. When stores near you create delivery requests, they will appear here instantly.
+                  </p>
                 </div>
-
-                {/* Dropoff */}
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 mt-0.5">
-                    <MapPinIcon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">
-                      Step 2: Deliver to Customer
-                    </p>
-                    <p className="text-sm font-bold text-white mt-0.5">{activeDelivery.customerName}</p>
-                    <p className="text-slate-300 mt-0.5">{activeDelivery.dropoffAddress}</p>
-                    {activeDelivery.customerPhone && (
-                      <div className="flex items-center gap-3 mt-2">
-                        <a
-                          href={`tel:${activeDelivery.customerPhone}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 font-semibold"
-                        >
-                          <PhoneIcon className="w-3.5 h-3.5" /> Call Customer ({activeDelivery.customerPhone})
-                        </a>
-                      </div>
-                    )}
-                    {activeDelivery.dropoffLat && activeDelivery.dropoffLng && (
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${activeDelivery.dropoffLat},${activeDelivery.dropoffLng}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-amber-400 font-semibold mt-2 hover:underline block"
-                      >
-                        Navigate to Customer <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons mapped to state */}
-              <div className="pt-2">
-                {activeDelivery.status === "RIDER_ASSIGNED" && (
-                  <button
-                    onClick={() => handleAdvanceStep("RIDER_EN_ROUTE_TO_PICKUP")}
-                    disabled={completingStep}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
-                  >
-                    {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "I Am En Route to Store"}
-                  </button>
-                )}
-
-                {activeDelivery.status === "RIDER_EN_ROUTE_TO_PICKUP" && (
-                  <button
-                    onClick={() => handleAdvanceStep("ARRIVED_AT_PICKUP")}
-                    disabled={completingStep}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
-                  >
-                    {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "I Have Arrived at Store"}
-                  </button>
-                )}
-
-                {activeDelivery.status === "ARRIVED_AT_PICKUP" && (
-                  <button
-                    onClick={() => handleAdvanceStep("ORDER_COLLECTED")}
-                    disabled={completingStep}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
-                  >
-                    {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Confirm Package Collected"}
-                  </button>
-                )}
-
-                {activeDelivery.status === "ORDER_COLLECTED" && (
-                  <button
-                    onClick={() => handleAdvanceStep("IN_TRANSIT")}
-                    disabled={completingStep}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
-                  >
-                    {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Start Trip to Customer"}
-                  </button>
-                )}
-
-                {activeDelivery.status === "IN_TRANSIT" && (
-                  <button
-                    onClick={() => handleAdvanceStep("ARRIVED_AT_DROPOFF")}
-                    disabled={completingStep}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
-                  >
-                    {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "I Have Arrived at Customer"}
-                  </button>
-                )}
-
-                {activeDelivery.status === "ARRIVED_AT_DROPOFF" && (
-                  <button
-                    onClick={() => setShowPodModal(true)}
-                    className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 transition flex items-center justify-center gap-2"
-                  >
-                    <CheckCircleIcon className="w-5 h-5" /> Complete Delivery & Claim Earnings
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
-              <TruckIcon className="w-12 h-12 text-slate-600 mx-auto" />
-              <h3 className="font-bold text-base text-white">No Active Delivery</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                You are currently free for new jobs. Check the Nearby tab for open store delivery requests.
-              </p>
-              <button
-                onClick={() => setActiveTab("NEARBY")}
-                className="mt-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition inline-flex items-center gap-1.5"
-              >
-                Browse Nearby Deliveries <ChevronRightIcon className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Tab 2: Nearby Deliveries Marketplace */}
-      {activeTab === "NEARBY" && (
-        <section className="max-w-4xl mx-auto px-4 mt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">Available Opportunities</h2>
-            <span className="text-xs text-slate-400">Within {profile?.maxDeliveryRadiusKm || 15} km</span>
-          </div>
-
-          {availableDeliveries.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
-              <ClockIcon className="w-10 h-10 text-slate-600 mx-auto" />
-              <p className="font-semibold text-sm text-slate-300">No active delivery requests nearby</p>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                Stay online and keep GPS enabled. When stores near you create delivery requests, they will appear here instantly.
-              </p>
-            </div>
-          ) : (
-            availableDeliveries.map((job) => (
-              <div
-                key={job.id}
-                className="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition shadow-lg space-y-3"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
-                        {job.packageType || "Standard Parcel"}
-                      </span>
-                      {job.paymentType === "GHUBA_ESCROW" || !job.paymentType ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                          🛡️ Escrow Deposited
-                        </span>
-                      ) : job.paymentType === "CASH_ON_PICKUP" ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                          💵 Cash on Pickup
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                          📦 Cash on Delivery
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-base text-white mt-1">{job.storeName}</h3>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-slate-400">Net Payout</p>
-                    <p className="text-base font-extrabold text-emerald-400">
-                      KES {(job.netRiderPayout || (job.offeredFee * 0.96)).toLocaleString()}
-                    </p>
-                    <p className="text-[10px] text-slate-500">
-                      Gross: KES {job.offeredFee.toLocaleString()} ({job.transactionFeePercent || 4}% fee)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                  <div>
-                    <p className="text-slate-500 text-[10px] uppercase">Pickup Area</p>
-                    <p className="font-semibold text-slate-200 truncate">{job.pickupAddress}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 text-[10px] uppercase">Delivery Area</p>
-                    <p className="font-semibold text-slate-200 truncate">{job.approxDropoffAddress}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-slate-400 font-medium">
-                    Distance: <strong>{job.distanceKm} km</strong>
-                  </span>
-                  <div className="flex items-center gap-2">
-                    {job.allowBidding && (
-                      <button
-                        onClick={() => {
-                          setBiddingDelivery(job);
-                          setBidAmount(job.offeredFee.toString());
-                        }}
-                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition"
-                      >
-                        Place Bid
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleAcceptDelivery(job.id)}
-                      className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition"
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {availableDeliveries.map((job) => (
+                    <motion.div
+                      whileHover={{ y: -4 }}
+                      key={job.id}
+                      className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-slate-700 transition-all shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col justify-between"
                     >
-                      Accept Job
-                    </button>
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                              <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                {job.packageType || "Standard Parcel"}
+                              </span>
+                              {job.paymentType === "GHUBA_ESCROW" || !job.paymentType ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+                                  🛡️ Escrow Deposited
+                                </span>
+                              ) : job.paymentType === "CASH_ON_PICKUP" ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30">
+                                  💵 Cash on Pickup
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30">
+                                  📦 Cash on Delivery
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-black text-lg text-slate-900 dark:text-white leading-tight">{job.storeName}</h3>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Net Payout</p>
+                            <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+                              KES {(job.netRiderPayout || (job.offeredFee * 0.96)).toLocaleString()}
+                            </p>
+                            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+                              Gross: KES {job.offeredFee.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+                          <div>
+                            <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Pickup Area</p>
+                            <p className="font-bold text-slate-700 dark:text-slate-200 truncate">{job.pickupAddress}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Delivery Area</p>
+                            <p className="font-bold text-slate-700 dark:text-slate-200 truncate">{job.approxDropoffAddress}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-5 mt-auto">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                          Distance: <strong className="text-slate-800 dark:text-slate-200">{job.distanceKm} km</strong>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {job.allowBidding && (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                setBiddingDelivery(job);
+                                setBidAmount(job.offeredFee.toString());
+                              }}
+                              className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition"
+                            >
+                              Bid
+                            </motion.button>
+                          )}
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleAcceptDelivery(job.id)}
+                            className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition"
+                          >
+                            Accept
+                          </motion.button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Tab 3: Wallet & Earnings */}
+          {activeTab === "EARNINGS" && (
+            <motion.div key="EARNINGS" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
+              {/* Escrow Banner */}
+              <div className="p-5 rounded-3xl bg-indigo-50 dark:bg-slate-900 border border-indigo-200 dark:border-indigo-500/30 shadow-xl shadow-indigo-100/50 dark:shadow-none space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg">
+                     <ShieldCheckIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
+                  <h4 className="text-xs font-black uppercase tracking-widest text-indigo-900 dark:text-indigo-300">
+                    M-Pesa Withdrawal Guarantee
+                  </h4>
+                </div>
+                <p className="text-xs sm:text-sm text-indigo-800/80 dark:text-slate-300 leading-relaxed font-medium">
+                  When a store uses <strong>Ghuba Escrow</strong>, payment is locked up front. Upon successful delivery, net earnings are credited instantly to your <strong>Available Balance</strong> for direct M-Pesa withdrawal.
+                </p>
+              </div>
+
+              {/* Balance Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-500/30 shadow-xl shadow-emerald-100/50 dark:shadow-none flex flex-col justify-between">
+                  <div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-extrabold">Available Balance</p>
+                    <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-2 tracking-tight">
+                      KES {(earnings?.availableBalance || 0).toLocaleString()}
+                    </h3>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: (earnings?.availableBalance || 0) >= 100 ? 1.02 : 1 }}
+                    whileTap={{ scale: (earnings?.availableBalance || 0) >= 100 ? 0.98 : 1 }}
+                    onClick={() => setShowPayoutModal(true)}
+                    disabled={(earnings?.availableBalance || 0) < 100}
+                    className="mt-5 w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white text-sm font-bold transition flex items-center justify-center gap-2"
+                  >
+                    <BanknotesIcon className="w-5 h-5" /> Withdraw to M-Pesa
+                  </motion.button>
+                </div>
+
+                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-extrabold">Total Earned</p>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white mt-2 tracking-tight">
+                    KES {(earnings?.totalEarned || 0).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-500 mt-3">From {earnings?.completedDeliveriesCount || 0} trips</p>
+                </div>
+
+                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-extrabold">Pending Payouts</p>
+                  <h3 className="text-3xl font-black text-amber-500 dark:text-amber-400 mt-2 tracking-tight">
+                    KES {(earnings?.pendingPayouts || 0).toLocaleString()}
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-500 mt-3">M-Pesa processing queue</p>
                 </div>
               </div>
-            ))
-          )}
-        </section>
-      )}
 
-      {/* Tab 3: Wallet & Earnings */}
-      {activeTab === "EARNINGS" && (
-        <section className="max-w-4xl mx-auto px-4 mt-6 space-y-6">
-          {/* Escrow Deposit & Payout Explainer Banner */}
-          <div className="p-4 rounded-2xl bg-slate-900 border border-indigo-500/30 shadow-xl space-y-2">
-            <div className="flex items-center gap-2">
-              <ShieldCheckIcon className="w-5 h-5 text-indigo-400" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-                Ghuba Escrow Deposits & M-Pesa Withdrawal Guarantee
-              </h4>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              When a store requests a delivery or accepts your bid with <strong>Ghuba Escrow</strong>, the payment is deposited and locked in escrow up front. Once you complete the delivery with recipient confirmation, your net earnings (after the 4% platform transaction fee) are instantly credited to your <strong>Available Balance</strong>. You can request to withdraw your deposits anytime directly to your registered M-Pesa phone number.
-            </p>
-          </div>
-
-          {/* Balance Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-2xl bg-slate-900 border border-emerald-500/30 shadow-xl">
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Available Balance</p>
-              <h3 className="text-2xl font-black text-emerald-400 mt-1">
-                KES {(earnings?.availableBalance || 0).toLocaleString()}
-              </h3>
-              <button
-                onClick={() => setShowPayoutModal(true)}
-                disabled={(earnings?.availableBalance || 0) < 100}
-                className="mt-3 w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-bold transition flex items-center justify-center gap-1.5"
-              >
-                <BanknotesIcon className="w-4 h-4" /> Withdraw via M-Pesa
-              </button>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total Earned</p>
-              <h3 className="text-2xl font-black text-white mt-1">
-                KES {(earnings?.totalEarned || 0).toLocaleString()}
-              </h3>
-              <p className="text-xs text-slate-500 mt-3">From {earnings?.completedDeliveriesCount || 0} completed trips</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Pending Payouts</p>
-              <h3 className="text-2xl font-black text-amber-400 mt-1">
-                KES {(earnings?.pendingPayouts || 0).toLocaleString()}
-              </h3>
-              <p className="text-xs text-slate-500 mt-3">M-Pesa processing queue</p>
-            </div>
-          </div>
-
-          {/* Transactions Ledger */}
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Transaction Ledger</h3>
-            {!earnings?.recentLedger || earnings.recentLedger.length === 0 ? (
-              <p className="text-xs text-slate-500 py-4 text-center">No transaction records yet</p>
-            ) : (
-              <div className="divide-y divide-slate-800 text-xs">
-                {earnings.recentLedger.map((item) => (
-                  <div key={item.id} className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-200">{item.description}</p>
-                      <p className="text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={`font-bold text-sm ${
-                          item.type === "CREDIT" ? "text-emerald-400" : "text-amber-400"
-                        }`}
-                      >
-                        {item.type === "CREDIT" ? "+" : "-"}KES {item.amount.toLocaleString()}
-                      </p>
-                      <span className="text-[10px] text-slate-400 uppercase">{item.status}</span>
-                    </div>
+              {/* Transactions Ledger */}
+              <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-4">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Transaction Ledger</h3>
+                {!earnings?.recentLedger || earnings.recentLedger.length === 0 ? (
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-500 py-6 text-center">No transaction records yet</p>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                    {earnings.recentLedger.map((item) => (
+                      <div key={item.id} className="py-4 flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-slate-800 dark:text-slate-200">{item.description}</p>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-500 mt-0.5">{new Date(item.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <p
+                            className={`font-black text-base ${
+                              item.type === "CREDIT" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+                            }`}
+                          >
+                            {item.type === "CREDIT" ? "+" : "-"}KES {item.amount.toLocaleString()}
+                          </p>
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{item.status}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
-          </div>
-        </section>
-      )}
+            </motion.div>
+          )}
 
-      {/* Tab 4: Profile & Operating Settings */}
-      {activeTab === "SETTINGS" && (
-        <section className="max-w-4xl mx-auto px-4 mt-6 space-y-4">
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-            <div className="flex items-center gap-3">
-              <UserCircleIcon className="w-12 h-12 text-slate-400" />
-              <div>
-                <h3 className="font-bold text-base text-white">{profile?.fullName}</h3>
-                <p className="text-xs text-slate-400">{profile?.phone}</p>
+          {/* Tab 4: Profile & Operating Settings */}
+          {activeTab === "SETTINGS" && (
+            <motion.div key="SETTINGS" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-4">
+              <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+                     <UserCircleIcon className="w-16 h-16 text-slate-400 dark:text-slate-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-xl text-slate-900 dark:text-white">{profile?.fullName}</h3>
+                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-0.5">{profile?.phone}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">Registered Vehicle</span>
+                    <p className="font-black text-slate-900 dark:text-white mt-1">
+                      {profile?.vehicle?.make} {profile?.vehicle?.model} ({profile?.vehicle?.vehicleType})
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium text-xs mt-1">{profile?.vehicle?.plateNumber}</p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">Operating Area</span>
+                    <p className="font-black text-slate-900 dark:text-white mt-1">
+                      {profile?.operatingCity}, {profile?.operatingCounty}
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium text-xs mt-1">Max Delivery Radius: {profile?.maxDeliveryRadiusKm} km</p>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Link
+                    href="/ghuba/rider/onboarding"
+                    className="w-full py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300 text-sm font-bold transition flex items-center justify-center gap-2"
+                  >
+                    Update Verification Documents
+                  </Link>
+                </div>
               </div>
-            </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-3 border-t border-slate-800">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-slate-500 text-[10px] uppercase">Registered Vehicle</span>
-                <p className="font-bold text-white mt-0.5">
-                  {profile?.vehicle?.make} {profile?.vehicle?.model} ({profile?.vehicle?.vehicleType})
-                </p>
-                <p className="text-slate-400">{profile?.vehicle?.plateNumber}</p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-slate-500 text-[10px] uppercase">Operating Area</span>
-                <p className="font-bold text-white mt-0.5">
-                  {profile?.operatingCity}, {profile?.operatingCounty}
-                </p>
-                <p className="text-slate-400">Max Delivery Radius: {profile?.maxDeliveryRadiusKm} km</p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Link
-                href="/ghuba/rider/onboarding"
-                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center justify-center gap-2"
-              >
-                Update Verification Documents
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Modal: Bidding */}
-      {biddingDelivery && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-white">Place Delivery Bid</h3>
-              <button
-                onClick={() => setBiddingDelivery(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
-              >
-                <XCircleIcon className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="text-xs text-slate-300 space-y-1">
-              <p>Store: <strong>{biddingDelivery.storeName}</strong></p>
-              <p>Store Offer: <strong>KES {biddingDelivery.offeredFee.toLocaleString()}</strong></p>
-            </div>
-
-            <form onSubmit={handleSubmitBid} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Your Proposed Fee (KES)</label>
-                <input
-                  type="number"
-                  required
-                  value={bidAmount}
-                  onChange={(e) => setBidAmount(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold text-sm focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Estimated Pickup Time (Minutes)</label>
-                <input
-                  type="number"
-                  required
-                  value={bidEta}
-                  onChange={(e) => setBidEta(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold text-sm focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
+      {/* Modals using Framer Motion */}
+      <AnimatePresence>
+        {/* Modal: Bidding */}
+        {biddingDelivery && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="font-black text-lg text-slate-900 dark:text-white">Place Delivery Bid</h3>
                 <button
-                  type="button"
                   onClick={() => setBiddingDelivery(null)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold transition hover:bg-slate-700"
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingBid}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-1.5"
-                >
-                  {submittingBid ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Send Bid"}
+                  <XCircleIcon className="w-6 h-6" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Modal: Proof of Delivery */}
-      {showPodModal && activeDelivery && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-white">Complete Delivery Proof</h3>
-              <button
-                onClick={() => setShowPodModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
-              >
-                <XCircleIcon className="w-6 h-6" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-400">
-              Provide recipient confirmation details or the customer OTP verification code to confirm handover.
-            </p>
-
-            <div className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Delivery OTP / Confirmation Code</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 4-digit code if supplied"
-                  value={podCode}
-                  onChange={(e) => setPodCode(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold text-sm focus:border-emerald-500 focus:outline-none"
-                />
+              <div className="text-sm font-medium text-slate-600 dark:text-slate-300 space-y-1.5 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                <p>Store: <strong className="text-slate-900 dark:text-white">{biddingDelivery.storeName}</strong></p>
+                <p>Store Offer: <strong className="text-emerald-600 dark:text-emerald-400">KES {biddingDelivery.offeredFee.toLocaleString()}</strong></p>
               </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Recipient Notes / Name</label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g. Received by customer at front door"
-                  value={podNotes}
-                  onChange={(e) => setPodNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
+              <form onSubmit={handleSubmitBid} className="space-y-4 text-sm">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1.5 font-bold text-xs uppercase tracking-wider">Your Proposed Fee (KES)</label>
+                  <input
+                    type="number"
+                    required
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-black focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition"
+                  />
+                </div>
 
-              <div className="flex gap-2 pt-2">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1.5 font-bold text-xs uppercase tracking-wider">Estimated Pickup Time (Mins)</label>
+                  <input
+                    type="number"
+                    required
+                    value={bidEta}
+                    onChange={(e) => setBidEta(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-black focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setBiddingDelivery(null)}
+                    className="flex-1 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingBid}
+                    className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
+                  >
+                    {submittingBid ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Send Bid"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Modal: Proof of Delivery */}
+        {showPodModal && activeDelivery && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="font-black text-lg text-slate-900 dark:text-white">Complete Delivery</h3>
                 <button
-                  type="button"
                   onClick={() => setShowPodModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold transition hover:bg-slate-700"
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAdvanceStep("DELIVERED", { code: podCode, notes: podNotes })}
-                  disabled={completingStep}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-1.5"
-                >
-                  {completingStep ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Confirm Handover"}
+                  <XCircleIcon className="w-6 h-6" />
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Modal: Payout */}
-      {showPayoutModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-white">M-Pesa Payout Request</h3>
-              <button
-                onClick={() => setShowPayoutModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
-              >
-                <XCircleIcon className="w-6 h-6" />
-              </button>
-            </div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                Provide recipient confirmation details or the customer OTP verification code to confirm handover.
+              </p>
 
-            <form onSubmit={handleRequestPayout} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">
-                  Amount (KES) - Max: KES {(earnings?.availableBalance || 0).toLocaleString()}
-                </label>
-                <input
-                  type="number"
-                  required
-                  min={100}
-                  max={earnings?.availableBalance || 0}
-                  value={payoutAmount}
-                  onChange={(e) => setPayoutAmount(e.target.value)}
-                  placeholder="Min KES 100"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold text-sm focus:border-emerald-500 focus:outline-none"
-                />
+              <div className="space-y-4 text-sm">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1.5 font-bold text-xs uppercase tracking-wider">Delivery OTP (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 4-digit code"
+                    value={podCode}
+                    onChange={(e) => setPodCode(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-black focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition placeholder-slate-300 dark:placeholder-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1.5 font-bold text-xs uppercase tracking-wider">Recipient Notes</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Received by John at reception"
+                    value={podNotes}
+                    onChange={(e) => setPodNotes(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-medium focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition placeholder-slate-300 dark:placeholder-slate-600"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPodModal(false)}
+                    className="flex-1 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAdvanceStep("DELIVERED", { code: podCode, notes: podNotes })}
+                    disabled={completingStep}
+                    className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
+                  >
+                    {completingStep ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Confirm"}
+                  </button>
+                </div>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
 
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">M-Pesa Phone Number</label>
-                <input
-                  type="tel"
-                  required
-                  value={payoutPhone}
-                  onChange={(e) => setPayoutPhone(e.target.value)}
-                  placeholder="07XXXXXXXX or 2547XXXXXXXX"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold text-sm focus:border-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
+        {/* Modal: Payout */}
+        {showPayoutModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-5 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h3 className="font-black text-lg text-slate-900 dark:text-white">M-Pesa Payout</h3>
                 <button
-                  type="button"
                   onClick={() => setShowPayoutModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold transition hover:bg-slate-700"
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingPayout}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-1.5"
-                >
-                  {submittingPayout ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Confirm Payout"}
+                  <XCircleIcon className="w-6 h-6" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <form onSubmit={handleRequestPayout} className="space-y-4 text-sm">
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1.5 font-bold text-xs uppercase tracking-wider">
+                    Amount (Max: KES {(earnings?.availableBalance || 0).toLocaleString()})
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={100}
+                    max={earnings?.availableBalance || 0}
+                    value={payoutAmount}
+                    onChange={(e) => setPayoutAmount(e.target.value)}
+                    placeholder="Min KES 100"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-black focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition placeholder-slate-300 dark:placeholder-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 dark:text-slate-400 mb-1.5 font-bold text-xs uppercase tracking-wider">M-Pesa Number</label>
+                  <input
+                    type="tel"
+                    required
+                    value={payoutPhone}
+                    onChange={(e) => setPayoutPhone(e.target.value)}
+                    placeholder="07XXXXXXXX"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-black focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition placeholder-slate-300 dark:placeholder-slate-600"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPayoutModal(false)}
+                    className="flex-1 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold transition hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingPayout}
+                    className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2"
+                  >
+                    {submittingPayout ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Confirm Payout"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -298,7 +298,6 @@ export default function RiderOnboardingPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    // Validate all intervening steps before allowing forward jump
     for (let s = 1; s < targetStep; s++) {
       const res = validateStep(s);
       if (!res.valid) {
@@ -331,7 +330,6 @@ export default function RiderOnboardingPage() {
   };
 
   const handleSubmitApplication = async () => {
-    // Validate all 6 steps before final submission
     for (let s = 1; s <= 6; s++) {
       const res = validateStep(s);
       if (!res.valid) {
@@ -384,10 +382,10 @@ export default function RiderOnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-bold text-zinc-400">Loading Onboarding Portal...</p>
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center text-zinc-900 dark:text-white transition-colors duration-300">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin shadow-lg" />
+          <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">Loading Onboarding Portal...</p>
         </div>
       </div>
     );
@@ -396,19 +394,19 @@ export default function RiderOnboardingPage() {
   // If already approved, direct to dashboard
   if (existingStatus === "APPROVED") {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto text-3xl">
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white flex items-center justify-center p-4 transition-colors duration-300">
+        <div className="max-w-md w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center space-y-5 shadow-2xl transition-colors duration-300">
+          <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto text-4xl shadow-inner">
             ✓
           </div>
           <h2 className="text-2xl font-black">Account Verified & Active!</h2>
-          <p className="text-sm text-zinc-300">
+          <p className="text-sm text-zinc-500 dark:text-zinc-300 leading-relaxed">
             Your rider application is fully approved. You can toggle online and receive deliveries in your service area.
           </p>
           <div className="pt-4">
             <Link
               href="/ghuba/rider/dashboard"
-              className="block w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-amber-500/25"
+              className="block w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-white dark:text-zinc-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50"
             >
               Go to Rider Dashboard
             </Link>
@@ -428,15 +426,15 @@ export default function RiderOnboardingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500 selection:text-zinc-950 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans selection:bg-amber-500 selection:text-white dark:selection:text-zinc-950 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <Toaster position="top-right" />
 
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Top Header */}
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-800/80">
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-200 dark:border-zinc-800/80 transition-colors duration-300">
           <Link
             href="/ghuba/rider/join"
-            className="text-xs uppercase font-bold tracking-wider text-zinc-400 hover:text-amber-400 transition-colors"
+            className="text-xs uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
           >
             ← Back to Overview
           </Link>
@@ -445,20 +443,20 @@ export default function RiderOnboardingPage() {
               type="button"
               onClick={handleSaveDraft}
               disabled={submitting}
-              className="px-4 py-2 rounded-full text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-full text-xs font-bold bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-all flex items-center gap-2 shadow-sm"
             >
-              <span>💾</span> Save Draft
+              <span className="text-sm">💾</span> Save Draft
             </button>
           </div>
         </div>
 
         {/* Existing Status Banner if Under Review */}
         {(existingStatus === "SUBMITTED" || existingStatus === "UNDER_REVIEW") && (
-          <div className="mb-8 p-5 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-200 text-xs flex items-center gap-3">
-            <ClockIcon className="w-6 h-6 text-blue-400 shrink-0" />
+          <div className="mb-8 p-5 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-blue-800 dark:text-blue-200 text-xs flex items-center gap-4 shadow-sm">
+            <ClockIcon className="w-7 h-7 text-blue-600 dark:text-blue-400 shrink-0" />
             <div>
-              <p className="font-bold text-sm text-blue-300">Application Under Verification</p>
-              <p className="text-zinc-300 mt-0.5">
+              <p className="font-bold text-sm text-blue-900 dark:text-blue-300">Application Under Verification</p>
+              <p className="text-blue-700 dark:text-zinc-300 mt-1 leading-relaxed">
                 Our compliance team is currently reviewing your documents. You will receive an SMS and email notification upon approval. You can update details or documents below if needed.
               </p>
             </div>
@@ -466,27 +464,27 @@ export default function RiderOnboardingPage() {
         )}
 
         {existingStatus === "REJECTED" && (
-          <div className="mb-8 p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs flex items-center gap-3">
-            <ExclamationTriangleIcon className="w-6 h-6 text-rose-400 shrink-0" />
+          <div className="mb-8 p-5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-4 shadow-sm">
+            <ExclamationTriangleIcon className="w-7 h-7 text-rose-600 dark:text-rose-400 shrink-0" />
             <div>
-              <p className="font-bold text-sm text-rose-300">Application Requires Corrections</p>
-              <p className="text-zinc-300 mt-0.5">{rejectionReason || "Please review and re-upload clear photos of your ID, license, or insurance certificate."}</p>
+              <p className="font-bold text-sm text-rose-900 dark:text-rose-300">Application Requires Corrections</p>
+              <p className="text-rose-700 dark:text-zinc-300 mt-1 leading-relaxed">{rejectionReason || "Please review and re-upload clear photos of your ID, license, or insurance certificate."}</p>
             </div>
           </div>
         )}
 
         {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">
             Rider Onboarding Wizard
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-400">
-            Step {currentStep} of 6 — <span className="text-amber-400 font-bold">{steps[currentStep - 1].title}</span>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+            Step {currentStep} of 6 — <span className="text-amber-500 dark:text-amber-400 font-bold">{steps[currentStep - 1].title}</span>
           </p>
         </div>
 
         {/* Progress Bar / Step Pills */}
-        <div className="grid grid-cols-6 gap-1.5 sm:gap-2 mb-8">
+        <div className="grid grid-cols-6 gap-2 sm:gap-3 mb-10">
           {steps.map((s) => {
             const isCompleted = s.num < currentStep;
             const isCurrent = s.num === currentStep;
@@ -495,39 +493,40 @@ export default function RiderOnboardingPage() {
                 key={s.num}
                 type="button"
                 onClick={() => handleStepJump(s.num)}
-                className={`py-2 rounded-xl text-center flex flex-col items-center justify-center transition-all ${
+                className={`py-3 rounded-2xl text-center flex flex-col items-center justify-center transition-all duration-300 ${
                   isCurrent
-                    ? "bg-amber-500 text-zinc-950 font-black shadow-lg shadow-amber-500/20"
+                    ? "bg-amber-500 text-white dark:text-zinc-950 font-black shadow-lg shadow-amber-500/30 transform scale-105"
                     : isCompleted
-                    ? "bg-zinc-800 text-emerald-400 font-bold hover:bg-zinc-700/80"
-                    : "bg-zinc-900/60 text-zinc-500 hover:text-zinc-300"
+                    ? "bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-100 dark:hover:bg-zinc-700 border border-emerald-200 dark:border-transparent"
+                    : "bg-white dark:bg-zinc-900/60 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 border border-zinc-200 dark:border-transparent shadow-sm"
                 }`}
               >
-                <s.icon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-                <span className="text-[10px] hidden sm:inline">{s.title.split(" ")[0]}</span>
+                <s.icon className={`w-5 h-5 sm:w-6 sm:h-6 mb-1 ${isCurrent ? "stroke-2" : ""}`} />
+                <span className="text-[10px] sm:text-xs font-semibold hidden sm:inline">{s.title.split(" ")[0]}</span>
               </button>
             );
           })}
         </div>
 
         {/* WIZARD CARD */}
-        <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-6 sm:p-10 backdrop-blur-xl shadow-2xl">
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-10 shadow-xl dark:shadow-2xl transition-colors duration-300">
+          
           {/* STEP 1: Personal Details */}
           {currentStep === 1 && (
-            <div className="space-y-6">
-              <div className="border-b border-zinc-800 pb-3">
-                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
-                  <UserIcon className="w-5 h-5" /> 1. Personal & Contact Information
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h2 className="text-xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-3">
+                  <UserIcon className="w-6 h-6" /> 1. Personal & Contact Information
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                   Ensure all details match your official identification documents.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Full Legal Name <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Full Legal Name <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -535,15 +534,15 @@ export default function RiderOnboardingPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="e.g. Samuel Mwangi Kariuki"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
-                  <p className="text-[11px] text-zinc-500 mt-1">Must match your National ID name.</p>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1.5">Must match your National ID name.</p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Phone Number (SMS & WhatsApp) <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Phone Number (SMS & WhatsApp) <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -551,14 +550,14 @@ export default function RiderOnboardingPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="e.g. 0712345678 or 254712345678"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
-                  <p className="text-[11px] text-zinc-500 mt-1">Used for order alerts and store communication.</p>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1.5">Used for order alerts and store communication.</p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
                     Email Address
                   </label>
                   <input
@@ -567,19 +566,19 @@ export default function RiderOnboardingPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="samuel@gmail.com"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Primary Operating County <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Primary Operating County <span className="text-amber-500">*</span>
                   </label>
                   <select
                     name="operatingCounty"
                     value={formData.operatingCounty}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm appearance-none"
                   >
                     {counties.map((c) => (
                       <option key={c} value={c}>
@@ -590,8 +589,8 @@ export default function RiderOnboardingPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    City / Town / Sub-County <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    City / Town / Sub-County <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -599,14 +598,14 @@ export default function RiderOnboardingPage() {
                     value={formData.operatingCity}
                     onChange={handleChange}
                     placeholder="e.g. Westlands / Nairobi Central"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Emergency Contact Name <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Emergency Contact Name <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -614,14 +613,14 @@ export default function RiderOnboardingPage() {
                     value={formData.emergencyContactName}
                     onChange={handleChange}
                     placeholder="e.g. Mary Kariuki (Spouse / Relative)"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Emergency Contact Phone Number <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Emergency Contact Phone Number <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -629,7 +628,7 @@ export default function RiderOnboardingPage() {
                     value={formData.emergencyContactPhone}
                     onChange={handleChange}
                     placeholder="e.g. 0722000000"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
                 </div>
@@ -639,26 +638,26 @@ export default function RiderOnboardingPage() {
 
           {/* STEP 2: Identity & Verification with File Uploads */}
           {currentStep === 2 && (
-            <div className="space-y-6">
-              <div className="border-b border-zinc-800 pb-3">
-                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
-                  <IdentificationIcon className="w-5 h-5" /> 2. Government Identification & Licenses
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h2 className="text-xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-3">
+                  <IdentificationIcon className="w-6 h-6" /> 2. Government Identification & Licenses
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                   Upload clear photos or scans (up to 5MB each). Documents are securely encrypted and reviewed exclusively by compliance officers.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    ID Document Type <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    ID Document Type <span className="text-amber-500">*</span>
                   </label>
                   <select
                     name="idType"
                     value={formData.idType}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm appearance-none"
                   >
                     <option value="NATIONAL_ID">Kenyan National ID</option>
                     <option value="PASSPORT">Passport</option>
@@ -668,8 +667,8 @@ export default function RiderOnboardingPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    ID / Document Number <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    ID / Document Number <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -677,7 +676,7 @@ export default function RiderOnboardingPage() {
                     value={formData.idNumber}
                     onChange={handleChange}
                     placeholder="e.g. 31234567"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
                 </div>
@@ -685,8 +684,8 @@ export default function RiderOnboardingPage() {
                 {isMotorized && (
                   <>
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Driving License Number <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Driving License Number <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -694,21 +693,21 @@ export default function RiderOnboardingPage() {
                         value={formData.drivingLicenseNo}
                         onChange={handleChange}
                         placeholder="e.g. DL-98765432"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Driving License Expiry Date <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Driving License Expiry Date <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="date"
                         name="drivingLicenseExpiry"
                         value={formData.drivingLicenseExpiry}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -717,16 +716,15 @@ export default function RiderOnboardingPage() {
               </div>
 
               {/* Document Photo Uploaders */}
-              <div className="space-y-4 pt-4 border-t border-zinc-800">
+              <div className="space-y-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <ShieldCheckIcon className="w-4 h-4" /> Required Document Uploads
+                  <h3 className="text-sm font-black uppercase tracking-wider text-amber-500 dark:text-amber-400 flex items-center gap-2">
+                    <ShieldCheckIcon className="w-5 h-5" /> Required Document Uploads
                   </h3>
-                  <span className="text-[11px] text-zinc-400">Strict 5MB limit per file</span>
+                  <span className="text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full font-medium">5MB Limit</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* National ID Front */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <RiderDocumentUpload
                     label={formData.idType === "PASSPORT" ? "Passport Bio-Data Page" : "National ID (Front Side)"}
                     sublabel="Clear photo with full name, ID number, and face visible"
@@ -736,7 +734,6 @@ export default function RiderOnboardingPage() {
                     maxSizeBytes={5 * 1024 * 1024}
                   />
 
-                  {/* National ID Back */}
                   {(formData.idType === "NATIONAL_ID" || formData.idType === "ALIEN_ID") && (
                     <RiderDocumentUpload
                       label="National ID (Back Side)"
@@ -748,7 +745,6 @@ export default function RiderOnboardingPage() {
                     />
                   )}
 
-                  {/* Rider Portrait Selfie */}
                   <RiderDocumentUpload
                     label="Rider Portrait / Clear Selfie"
                     sublabel="Neutral expression, front-facing, no sunglasses or helmets"
@@ -758,7 +754,6 @@ export default function RiderOnboardingPage() {
                     maxSizeBytes={5 * 1024 * 1024}
                   />
 
-                  {/* Driving License Document */}
                   {isMotorized && (
                     <RiderDocumentUpload
                       label="Driving License Document / Card"
@@ -776,26 +771,26 @@ export default function RiderOnboardingPage() {
 
           {/* STEP 3: Vehicle Info with File Uploads */}
           {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="border-b border-zinc-800 pb-3">
-                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
-                  <TruckIcon className="w-5 h-5" /> 3. Vehicle & Transport Details
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h2 className="text-xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-3">
+                  <TruckIcon className="w-6 h-6" /> 3. Vehicle & Transport Details
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                   Specify your primary delivery vehicle and upload registration / insurance documents.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Vehicle Type <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Vehicle Type <span className="text-amber-500">*</span>
                   </label>
                   <select
                     name="riderType"
                     value={formData.riderType}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm appearance-none"
                   >
                     <option value="MOTORBIKE">Motorbike (Boda Boda)</option>
                     <option value="BICYCLE">Bicycle Courier</option>
@@ -808,8 +803,8 @@ export default function RiderOnboardingPage() {
                 {isMotorized && (
                   <>
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Number Plate / Registration <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Number Plate / Registration <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -817,14 +812,14 @@ export default function RiderOnboardingPage() {
                         value={formData.vehiclePlate}
                         onChange={handleChange}
                         placeholder="e.g. KMDF 123X"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none uppercase"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none uppercase transition-all shadow-sm"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Make / Brand <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Make / Brand <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -832,14 +827,14 @@ export default function RiderOnboardingPage() {
                         value={formData.vehicleMake}
                         onChange={handleChange}
                         placeholder="e.g. Boxer / Bajaj / Toyota / Hero"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Model & Color <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Model & Color <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -847,14 +842,14 @@ export default function RiderOnboardingPage() {
                         value={formData.vehicleModel}
                         onChange={handleChange}
                         placeholder="e.g. 150cc Red"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Insurance Policy Number <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Insurance Policy Number <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -862,21 +857,21 @@ export default function RiderOnboardingPage() {
                         value={formData.insuranceNumber}
                         onChange={handleChange}
                         placeholder="e.g. INS-2026-X89"
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                        Insurance Expiry Date <span className="text-amber-400">*</span>
+                      <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Insurance Expiry Date <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="date"
                         name="insuranceExpiry"
                         value={formData.insuranceExpiry}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -884,18 +879,16 @@ export default function RiderOnboardingPage() {
                 )}
               </div>
 
-              {/* Vehicle Document & Photo Uploaders */}
               {isMotorized && (
-                <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <div className="space-y-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                      <TruckIcon className="w-4 h-4" /> Vehicle Verification Files
+                    <h3 className="text-sm font-black uppercase tracking-wider text-amber-500 dark:text-amber-400 flex items-center gap-2">
+                      <TruckIcon className="w-5 h-5" /> Vehicle Verification Files
                     </h3>
-                    <span className="text-[11px] text-zinc-400">Strict 5MB limit per file</span>
+                    <span className="text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full font-medium">5MB Limit</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Vehicle Photo */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <RiderDocumentUpload
                       label="Vehicle Photo (Showing Registration)"
                       sublabel="Clear photo of the complete vehicle with license plate readable"
@@ -905,7 +898,6 @@ export default function RiderOnboardingPage() {
                       maxSizeBytes={5 * 1024 * 1024}
                     />
 
-                    {/* Insurance Certificate */}
                     <RiderDocumentUpload
                       label="Vehicle Insurance Certificate / Sticker"
                       sublabel="Valid commercial or third-party insurance certificate"
@@ -915,7 +907,6 @@ export default function RiderOnboardingPage() {
                       maxSizeBytes={5 * 1024 * 1024}
                     />
 
-                    {/* Logbook / Ownership (Optional) */}
                     <div className="sm:col-span-2">
                       <RiderDocumentUpload
                         label="Logbook / Proof of Ownership (Optional)"
@@ -933,21 +924,21 @@ export default function RiderOnboardingPage() {
 
           {/* STEP 4: Service Areas & Radius */}
           {currentStep === 4 && (
-            <div className="space-y-6">
-              <div className="border-b border-zinc-800 pb-3">
-                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
-                  <MapPinIcon className="w-5 h-5" /> 4. Service Areas & Delivery Radius
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h2 className="text-xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-3">
+                  <MapPinIcon className="w-6 h-6" /> 4. Service Areas & Delivery Radius
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                   Choose where you prefer to pick up and drop orders in {formData.operatingCounty}.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-2">
-                  Select Operating Neighborhoods / Zones <span className="text-amber-400">*</span>:
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-4">
+                  Select Operating Neighborhoods / Zones <span className="text-amber-500">*</span>:
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {[
                     "CBD",
                     "Westlands",
@@ -970,10 +961,10 @@ export default function RiderOnboardingPage() {
                         type="button"
                         key={area}
                         onClick={() => handleAreaToggle(area)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 border ${
                           isSelected
-                            ? "bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20"
-                            : "bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
+                            ? "bg-amber-500 text-white dark:text-zinc-950 border-amber-500 shadow-md shadow-amber-500/30 transform scale-105"
+                            : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-amber-400 hover:text-amber-500 dark:hover:text-white dark:hover:bg-zinc-700"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -983,27 +974,29 @@ export default function RiderOnboardingPage() {
                   })}
                 </div>
                 {formData.serviceAreas.length === 0 && (
-                  <p className="text-xs text-rose-400 mt-2">Please select at least one zone to continue.</p>
+                  <p className="text-sm text-rose-500 mt-3 font-medium">Please select at least one zone to continue.</p>
                 )}
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-zinc-800">
-                <div className="flex justify-between items-center text-sm font-bold">
-                  <span className="text-zinc-300">Maximum Preferred Delivery Radius:</span>
-                  <span className="text-amber-400 font-black text-lg">
+              <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex justify-between items-center font-bold">
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">Maximum Preferred Delivery Radius:</span>
+                  <span className="text-amber-500 dark:text-amber-400 font-black text-xl bg-amber-50 dark:bg-amber-500/10 px-4 py-1.5 rounded-lg border border-amber-200 dark:border-amber-500/20">
                     {formData.maxDistanceKm} km
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="50"
-                  name="maxDistanceKm"
-                  value={formData.maxDistanceKm}
-                  onChange={handleChange}
-                  className="w-full accent-amber-500 cursor-pointer h-2 bg-zinc-800 rounded-lg"
-                />
-                <div className="flex justify-between text-[11px] text-zinc-500">
+                <div className="py-4">
+                  <input
+                    type="range"
+                    min="5"
+                    max="50"
+                    name="maxDistanceKm"
+                    value={formData.maxDistanceKm}
+                    onChange={handleChange}
+                    className="w-full accent-amber-500 cursor-pointer h-3 bg-zinc-200 dark:bg-zinc-800 rounded-full appearance-none outline-none focus:ring-4 focus:ring-amber-500/30 transition-all"
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400">
                   <span>5 km (Local Drops)</span>
                   <span>25 km (Metropolitan)</span>
                   <span>50 km (Cross-County)</span>
@@ -1014,26 +1007,26 @@ export default function RiderOnboardingPage() {
 
           {/* STEP 5: Payout Details */}
           {currentStep === 5 && (
-            <div className="space-y-6">
-              <div className="border-b border-zinc-800 pb-3">
-                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
-                  <BanknotesIcon className="w-5 h-5" /> 5. Payment & M-Pesa Withdrawal Details
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h2 className="text-xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-3">
+                  <BanknotesIcon className="w-6 h-6" /> 5. Payment & M-Pesa Withdrawal Details
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                   Your delivery earnings and customer tips are credited directly to your digital wallet upon proof-of-delivery confirmation.
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6 max-w-xl">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    Preferred Payout Method <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    Preferred Payout Method <span className="text-amber-500">*</span>
                   </label>
                   <select
                     name="payoutMethod"
                     value={formData.payoutMethod}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm appearance-none"
                   >
                     <option value="MPESA">Safaricom M-Pesa (Instant Withdrawal)</option>
                     <option value="BANK">Direct Bank Transfer</option>
@@ -1041,8 +1034,8 @@ export default function RiderOnboardingPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-                    M-Pesa Registered Mobile Number <span className="text-amber-400">*</span>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                    M-Pesa Registered Mobile Number <span className="text-amber-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -1050,10 +1043,10 @@ export default function RiderOnboardingPage() {
                     value={formData.mpesaPhone}
                     onChange={handleChange}
                     placeholder="e.g. 0712345678 or 254712345678"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-sm"
                     required
                   />
-                  <p className="text-[11px] text-zinc-500 mt-1">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-2">
                     Must be registered under your legal name matching your National ID.
                   </p>
                 </div>
@@ -1063,203 +1056,195 @@ export default function RiderOnboardingPage() {
 
           {/* STEP 6: Review & Submit */}
           {currentStep === 6 && (
-            <div className="space-y-6">
-              <div className="border-b border-zinc-800 pb-3">
-                <h2 className="text-lg font-black text-amber-400 flex items-center gap-2">
-                  <CheckCircleIcon className="w-5 h-5" /> 6. Final Review & Document Verification
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                <h2 className="text-xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-3">
+                  <CheckCircleIcon className="w-6 h-6" /> 6. Final Review & Document Verification
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
                   Double check all submitted personal details, vehicle data, and uploaded document evidence before submitting.
                 </p>
               </div>
 
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Personal & Contact */}
-                <div className="bg-zinc-950/80 rounded-2xl p-4 border border-zinc-800 space-y-2.5 text-xs">
-                  <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                    <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">Personal & Contact</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-zinc-50 dark:bg-zinc-950/80 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 space-y-3 text-sm shadow-sm">
+                  <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-2">
+                    <span className="font-black text-amber-500 dark:text-amber-400 uppercase tracking-wider text-xs">Personal & Contact</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
-                      className="text-zinc-400 hover:text-amber-400 flex items-center gap-1 text-[11px]"
+                      className="text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 text-xs font-bold transition-colors"
                     >
-                      <PencilSquareIcon className="w-3.5 h-3.5" /> Edit
+                      <PencilSquareIcon className="w-4 h-4" /> Edit
                     </button>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Full Name:</span>
-                    <span className="font-bold text-white">{formData.fullName}</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">Full Name:</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">{formData.fullName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Phone:</span>
-                    <span className="font-bold text-white">{formData.phone}</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">Phone:</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">{formData.phone}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Operating City:</span>
-                    <span className="font-bold text-white">{formData.operatingCity}, {formData.operatingCounty}</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">Operating City:</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">{formData.operatingCity}, {formData.operatingCounty}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Emergency Contact:</span>
-                    <span className="font-bold text-white">{formData.emergencyContactName} ({formData.emergencyContactPhone})</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">Emergency Contact:</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">{formData.emergencyContactName} ({formData.emergencyContactPhone})</span>
                   </div>
                 </div>
 
-                {/* Vehicle & Payout */}
-                <div className="bg-zinc-950/80 rounded-2xl p-4 border border-zinc-800 space-y-2.5 text-xs">
-                  <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                    <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">Vehicle & Settlement</span>
+                <div className="bg-zinc-50 dark:bg-zinc-950/80 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 space-y-3 text-sm shadow-sm">
+                  <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-2">
+                    <span className="font-black text-amber-500 dark:text-amber-400 uppercase tracking-wider text-xs">Vehicle & Settlement</span>
                     <button
                       type="button"
                       onClick={() => setCurrentStep(3)}
-                      className="text-zinc-400 hover:text-amber-400 flex items-center gap-1 text-[11px]"
+                      className="text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 text-xs font-bold transition-colors"
                     >
-                      <PencilSquareIcon className="w-3.5 h-3.5" /> Edit
+                      <PencilSquareIcon className="w-4 h-4" /> Edit
                     </button>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Transport Mode:</span>
-                    <span className="font-bold text-white">{formData.riderType}</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">Transport Mode:</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">{formData.riderType}</span>
                   </div>
                   {isMotorized && (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Registration Plate:</span>
-                        <span className="font-bold text-amber-400 uppercase">{formData.vehiclePlate}</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Registration Plate:</span>
+                        <span className="font-black text-amber-600 dark:text-amber-400 uppercase bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded">{formData.vehiclePlate}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Make & Model:</span>
-                        <span className="font-bold text-white">{formData.vehicleMake} {formData.vehicleModel}</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Make & Model:</span>
+                        <span className="font-bold text-zinc-900 dark:text-white">{formData.vehicleMake} {formData.vehicleModel}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Insurance Policy:</span>
-                        <span className="font-bold text-white">{formData.insuranceNumber}</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Insurance Policy:</span>
+                        <span className="font-bold text-zinc-900 dark:text-white">{formData.insuranceNumber}</span>
                       </div>
                     </>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">M-Pesa Payout:</span>
-                    <span className="font-bold text-emerald-400">{formData.mpesaPhone}</span>
+                    <span className="text-zinc-500 dark:text-zinc-400">M-Pesa Payout:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{formData.mpesaPhone}</span>
                   </div>
                 </div>
               </div>
 
               {/* Uploaded Documents Gallery */}
-              <div className="bg-zinc-950/80 rounded-2xl p-4 border border-zinc-800 space-y-3">
-                <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <DocumentCheckIcon className="w-4 h-4" /> Uploaded Document Credentials
+              <div className="bg-zinc-50 dark:bg-zinc-950/80 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
+                <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-amber-500 dark:text-amber-400 flex items-center gap-2">
+                    <DocumentCheckIcon className="w-5 h-5" /> Uploaded Credentials
                   </h3>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
-                    className="text-zinc-400 hover:text-amber-400 flex items-center gap-1 text-[11px]"
+                    className="text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 text-xs font-bold transition-colors"
                   >
-                    <PencilSquareIcon className="w-3.5 h-3.5" /> Edit Documents
+                    <PencilSquareIcon className="w-4 h-4" /> Edit Documents
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                  {/* ID Front */}
-                  <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
-                    <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">ID Front</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                  <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-between shadow-sm">
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold mb-2 truncate w-full">ID Front</p>
                     {formData.idFrontUrl ? (
-                      <a href={formData.idFrontUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                      <a href={formData.idFrontUrl} target="_blank" rel="noreferrer" className="relative group block w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 shadow-sm">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={formData.idFrontUrl} alt="ID Front" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
-                          <EyeIcon className="w-4 h-4" />
+                        <img src={formData.idFrontUrl} alt="ID Front" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition-opacity duration-300">
+                          <EyeIcon className="w-5 h-5" />
                         </div>
                       </a>
                     ) : (
-                      <span className="text-[10px] text-rose-400">Missing</span>
+                      <span className="text-[11px] text-rose-500 font-medium">Missing</span>
                     )}
                   </div>
 
-                  {/* ID Back */}
                   {(formData.idType === "NATIONAL_ID" || formData.idType === "ALIEN_ID") && (
-                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
-                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">ID Back</p>
+                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-between shadow-sm">
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold mb-2 truncate w-full">ID Back</p>
                       {formData.idBackUrl ? (
-                        <a href={formData.idBackUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                        <a href={formData.idBackUrl} target="_blank" rel="noreferrer" className="relative group block w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 shadow-sm">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={formData.idBackUrl} alt="ID Back" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
-                            <EyeIcon className="w-4 h-4" />
+                          <img src={formData.idBackUrl} alt="ID Back" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition-opacity duration-300">
+                            <EyeIcon className="w-5 h-5" />
                           </div>
                         </a>
                       ) : (
-                        <span className="text-[10px] text-rose-400">Missing</span>
+                        <span className="text-[11px] text-rose-500 font-medium">Missing</span>
                       )}
                     </div>
                   )}
 
-                  {/* Selfie */}
-                  <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
-                    <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Face Portrait</p>
+                  <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-between shadow-sm">
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold mb-2 truncate w-full">Face Portrait</p>
                     {formData.selfieUrl ? (
-                      <a href={formData.selfieUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                      <a href={formData.selfieUrl} target="_blank" rel="noreferrer" className="relative group block w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 shadow-sm">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={formData.selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
-                          <EyeIcon className="w-4 h-4" />
+                        <img src={formData.selfieUrl} alt="Selfie" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition-opacity duration-300">
+                          <EyeIcon className="w-5 h-5" />
                         </div>
                       </a>
                     ) : (
-                      <span className="text-[10px] text-rose-400">Missing</span>
+                      <span className="text-[11px] text-rose-500 font-medium">Missing</span>
                     )}
                   </div>
 
-                  {/* Driving License */}
                   {isMotorized && (
-                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
-                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Driving License</p>
+                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-between shadow-sm">
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold mb-2 truncate w-full">Driving License</p>
                       {formData.drivingLicenseUrl ? (
-                        <a href={formData.drivingLicenseUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                        <a href={formData.drivingLicenseUrl} target="_blank" rel="noreferrer" className="relative group block w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 shadow-sm">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={formData.drivingLicenseUrl} alt="License" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
-                            <EyeIcon className="w-4 h-4" />
+                          <img src={formData.drivingLicenseUrl} alt="License" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition-opacity duration-300">
+                            <EyeIcon className="w-5 h-5" />
                           </div>
                         </a>
                       ) : (
-                        <span className="text-[10px] text-rose-400">Missing</span>
+                        <span className="text-[11px] text-rose-500 font-medium">Missing</span>
                       )}
                     </div>
                   )}
 
-                  {/* Vehicle Photo */}
                   {isMotorized && (
-                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
-                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Vehicle Photo</p>
+                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-between shadow-sm">
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold mb-2 truncate w-full">Vehicle Photo</p>
                       {formData.vehiclePhotoUrl ? (
-                        <a href={formData.vehiclePhotoUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                        <a href={formData.vehiclePhotoUrl} target="_blank" rel="noreferrer" className="relative group block w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 shadow-sm">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={formData.vehiclePhotoUrl} alt="Vehicle" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
-                            <EyeIcon className="w-4 h-4" />
+                          <img src={formData.vehiclePhotoUrl} alt="Vehicle" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition-opacity duration-300">
+                            <EyeIcon className="w-5 h-5" />
                           </div>
                         </a>
                       ) : (
-                        <span className="text-[10px] text-rose-400">Missing</span>
+                        <span className="text-[11px] text-rose-500 font-medium">Missing</span>
                       )}
                     </div>
                   )}
 
-                  {/* Insurance Certificate */}
                   {isMotorized && (
-                    <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-between">
-                      <p className="text-[10px] text-zinc-400 font-bold mb-1.5 truncate w-full">Insurance Cert</p>
+                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-between shadow-sm">
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold mb-2 truncate w-full">Insurance Cert</p>
                       {formData.insuranceCertUrl ? (
-                        <a href={formData.insuranceCertUrl} target="_blank" rel="noreferrer" className="relative group block w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40">
+                        <a href={formData.insuranceCertUrl} target="_blank" rel="noreferrer" className="relative group block w-16 h-16 rounded-lg overflow-hidden border border-emerald-500/40 shadow-sm">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={formData.insuranceCertUrl} alt="Insurance" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px]">
-                            <EyeIcon className="w-4 h-4" />
+                          <img src={formData.insuranceCertUrl} alt="Insurance" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition-opacity duration-300">
+                            <EyeIcon className="w-5 h-5" />
                           </div>
                         </a>
                       ) : (
-                        <span className="text-[10px] text-rose-400">Missing</span>
+                        <span className="text-[11px] text-rose-500 font-medium">Missing</span>
                       )}
                     </div>
                   )}
@@ -1267,18 +1252,18 @@ export default function RiderOnboardingPage() {
               </div>
 
               {/* Terms Agreement */}
-              <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
-                <label className="flex items-start gap-3 cursor-pointer">
+              <div className="p-6 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 space-y-3 shadow-inner">
+                <label className="flex items-start gap-4 cursor-pointer">
                   <input
                     type="checkbox"
                     name="termsAccepted"
                     checked={formData.termsAccepted}
                     onChange={handleChange}
-                    className="mt-1 w-4 h-4 accent-amber-500 rounded"
+                    className="mt-1 w-5 h-5 accent-amber-500 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer"
                   />
-                  <span className="text-xs text-zinc-300 leading-relaxed">
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     I confirm that the identification documents, driver license, and vehicle details submitted are authentic and legally registered in Kenya. I agree to adhere to the{" "}
-                    <span className="text-amber-400 underline font-semibold">Ghuba Delivery Provider Code of Conduct</span>{" "}
+                    <span className="text-amber-600 dark:text-amber-400 underline font-bold hover:text-amber-500 transition-colors">Ghuba Delivery Provider Code of Conduct</span>{" "}
                     and road safety standards.
                   </span>
                 </label>
@@ -1287,14 +1272,14 @@ export default function RiderOnboardingPage() {
           )}
 
           {/* Wizard Navigation Controls Bottom */}
-          <div className="flex items-center justify-between pt-6 border-t border-zinc-800 mt-8">
+          <div className="flex items-center justify-between pt-8 border-t border-zinc-200 dark:border-zinc-800 mt-10">
             {currentStep > 1 ? (
               <button
                 type="button"
                 onClick={() => setCurrentStep((s) => s - 1)}
-                className="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-300 flex items-center gap-1.5 transition-colors"
+                className="px-6 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 transition-all duration-300 shadow-sm"
               >
-                <ArrowLeftIcon className="w-3.5 h-3.5" /> Previous
+                <ArrowLeftIcon className="w-4 h-4" /> Previous
               </button>
             ) : (
               <div />
@@ -1304,19 +1289,19 @@ export default function RiderOnboardingPage() {
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="px-7 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95"
+                className="px-8 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-white dark:text-zinc-950 text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all duration-300 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 active:scale-95"
               >
-                Next Step <ArrowRightIcon className="w-3.5 h-3.5 stroke-[3]" />
+                Next Step <ArrowRightIcon className="w-4 h-4 stroke-[3]" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handleSubmitApplication}
                 disabled={submitting}
-                className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl shadow-amber-500/30 active:scale-95 disabled:opacity-50"
+                className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white dark:text-zinc-950 text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all duration-300 shadow-xl shadow-amber-500/40 hover:shadow-amber-500/60 active:scale-95 disabled:opacity-50"
               >
                 {submitting ? "Submitting Application..." : "Submit Application for Verification"}
-                <ArrowRightIcon className="w-4 h-4 stroke-[3]" />
+                <ArrowRightIcon className="w-5 h-5 stroke-[3]" />
               </button>
             )}
           </div>
