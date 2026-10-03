@@ -23,6 +23,8 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   reactStrictMode: false,
   poweredByHeader: false,
+  // Limit Next.js in-memory page/data cache size to 10MB to prevent memory bloat on production VPS
+  cacheMaxMemorySize: 10485760,
 
   transpilePackages: [
     "@fullcalendar/core",

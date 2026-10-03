@@ -60,8 +60,8 @@ function createRedisClient(customOptions) {
     const options = {
         maxRetriesPerRequest: null,
         enableReadyCheck: false,
-        connectTimeout: 5000,
-        commandTimeout: 5000,
+        disableClientInfo: true,
+        connectTimeout: 10000,
         retryStrategy(times) {
             if (isBuildPhase)
                 return null;
@@ -139,8 +139,8 @@ function getBullMQConnectionOptions() {
     return {
         maxRetriesPerRequest: null,
         enableReadyCheck: false,
-        connectTimeout: 5000,
-        commandTimeout: 5000,
+        disableClientInfo: true,
+        connectTimeout: 10000,
         retryStrategy(times) {
             if (isBuildPhase)
                 return null;

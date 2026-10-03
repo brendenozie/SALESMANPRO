@@ -176,4 +176,27 @@ if (fs.existsSync(serverJsPath)) {
   }
 }
 
+// 8. Neutralize any hard process.exit(1) in traced playwright-core bootstrap
+const pwBootstrapCandidates = [
+  path.join(STANDALONE_DIR, 'node_modules', 'playwright-core', 'lib', 'bootstrap.js'),
+  path.join(STANDALONE_DIR, 'node_modules', 'playwright', 'node_modules', 'playwright-core', 'lib', 'bootstrap.js'),
+];
+for (const pwBootstrap of pwBootstrapCandidates) {
+  if (fs.existsSync(pwBootstrap)) {
+    try {
+      console.log(`-> Hardening Playwright bootstrap at ${pwBootstrap}...`);
+      let pwContent = fs.readFileSync(pwBootstrap, 'utf8');
+      if (pwContent.includes('process.exit(1)')) {
+        pwContent = pwContent.replace(
+          'process.exit(1);',
+          'console.warn("[WARNING] Playwright Node.js version requirement not met. Playwright features disabled."); throw new Error("Playwright requires Node.js 20 or higher.");'
+        );
+        fs.writeFileSync(pwBootstrap, pwContent, 'utf8');
+      }
+    } catch (err) {
+      console.warn(`[pack-standalone] Warning hardening ${pwBootstrap}:`, err.message);
+    }
+  }
+}
+
 console.log('✅ Standalone production bundle assembled successfully at .next/standalone');

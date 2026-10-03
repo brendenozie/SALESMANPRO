@@ -60,8 +60,8 @@ function createRedisClient(customOptions?: Partial<RedisOptions>): Redis {
   const options: RedisOptions = {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
-    connectTimeout: 5000,
-    commandTimeout: 5000,
+    disableClientInfo: true,
+    connectTimeout: 10000,
     retryStrategy(times) {
       if (isBuildPhase) return null;
       // Exponential backoff capped at 5000ms. Never return null in runtime/production
@@ -144,8 +144,8 @@ export function getBullMQConnectionOptions(): RedisOptions {
   return {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
-    connectTimeout: 5000,
-    commandTimeout: 5000,
+    disableClientInfo: true,
+    connectTimeout: 10000,
     retryStrategy(times) {
       if (isBuildPhase) return null;
       return Math.min(times * 200, 5000);
