@@ -162,7 +162,9 @@ class ApiService(private val baseUrl: String = "https://salesmanpro.site") {
                     Result.success(session)
                 } else {
                     val errMsg = try {
-                        JSONObject(responseText).optString("message", "Handover exchange failed (HTTP $responseCode)")
+                        val json = JSONObject(responseText)
+                        val m = json.optString("message", json.optString("error", ""))
+                        if (m.isNotEmpty()) m else "Handover exchange failed (HTTP $responseCode)"
                     } catch (e: Exception) {
                         "Handover exchange failed (HTTP $responseCode)"
                     }

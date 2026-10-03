@@ -308,44 +308,9 @@ export async function POST(req: NextRequest) {
     });
 
     const effectiveCompanyId = resolved.companyId || decoded.companyId || null;
-    let company: any = null;
-    if (effectiveCompanyId) {
-      company = await prisma.company.findUnique({
-        where: { id: effectiveCompanyId },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          currency: true,
-          logoUrl: true,
-          address: true,
-          contactPhone: true,
-          contactEmail: true,
-        },
-      });
-    }
-    if (!company && decoded.id) {
-      company = await prisma.company.findFirst({
-        where: { userId: decoded.id },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          currency: true,
-          logoUrl: true,
-          address: true,
-          contactPhone: true,
-          contactEmail: true,
-        },
-      });
-    }
-
-    const stores = company?.id
-      ? await prisma.store.findMany({
-          where: { companyId: company.id, isActive: true },
-          select: { id: true, name: true, code: true, address: true, isActive: true },
-        })
-      : [];
+    const company = await resolveUserCompany(decoded.id, effectiveCompanyId);
+    const resolvedCompanyId = company?.id || effectiveCompanyId;
+    const stores = resolvedCompanyId ? await resolveCompanyStores(resolvedCompanyId) : [];
 
     authLog(cId, "handover_api_consume", Date.now() - start, {
       status: "success",
@@ -362,15 +327,15 @@ export async function POST(req: NextRequest) {
         email: decoded.email,
         name: decoded.name,
         role: decoded.role,
-        companyId: company?.id || effectiveCompanyId,
+        companyId: resolvedCompanyId,
       },
       company: company || {
-        id: effectiveCompanyId || "",
+        id: resolvedCompanyId || "",
         name: "SalesmanPro",
         slug: resolved.companySlug || null,
       },
       stores,
-      activeStoreId: stores[0]?.id || null,
+      activeStoreId: stores[0]?.id || (resolvedCompanyId ? `store_${resolvedCompanyId}` : "store_default"),
       destination: resolved.destination,
     });
 
@@ -384,13 +349,136 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
+    console.error("[HANDOVER_API_ERROR]", error);
     authLog(cId, "handover_api_consume", Date.now() - start, {
       status: "error",
       error: error.message,
     });
     return NextResponse.json(
-      { success: false, message: "Handover exchange failed" },
+      { success: false, message: error.message || "Handover exchange failed", error: error.message },
       { status: 500 },
     );
+  }
+}
+
+async function resolveUserCompany(userId: string, defaultCompanyId?: string | null) {
+  try {
+    if (defaultCompanyId) {
+      const comp = await prisma.company.findUnique({
+        where: { id: defaultCompanyId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          currency: true,
+          logoUrl: true,
+          address: true,
+          contactPhone: true,
+          contactEmail: true,
+        },
+      });
+      if (comp) return comp;
+    }
+
+    // Look for company owned by user
+    const owned = await prisma.company.findFirst({
+      where: { userId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        currency: true,
+        logoUrl: true,
+        address: true,
+        contactPhone: true,
+        contactEmail: true,
+      },
+    });
+    if (owned) return owned;
+
+    // Look for company via staff profile
+    const staff = await prisma.staffProfile.findFirst({
+      where: { userId },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            currency: true,
+            logoUrl: true,
+            address: true,
+            contactPhone: true,
+            contactEmail: true,
+          },
+        },
+      },
+    });
+    if (staff?.company) return staff.company;
+
+    // Fallback to first available company
+    return await prisma.company.findFirst({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        currency: true,
+        logoUrl: true,
+        address: true,
+        contactPhone: true,
+        contactEmail: true,
+      },
+    });
+  } catch (e) {
+    console.error("[RESOLVE_COMPANY_ERROR]", e);
+    return null;
+  }
+}
+
+async function resolveCompanyStores(companyId: string) {
+  try {
+    const companyLocations = await prisma.companyLocation.findMany({
+      where: { companyId, visible: true },
+      include: {
+        location: true,
+      },
+      orderBy: { sortOrder: "asc" },
+    });
+
+    if (companyLocations.length > 0) {
+      return companyLocations.map((cl) => ({
+        id: cl.id,
+        name: cl.displayName || cl.location.name,
+        address: cl.addressLine1Override || cl.location.address || "",
+        city: cl.cityOverride || cl.location.city || "",
+        phone: cl.location.phone || "",
+      }));
+    }
+
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { name: true, address: true, contactPhone: true },
+    });
+
+    return [
+      {
+        id: `store_${companyId}`,
+        name: `${company?.name || "Main"} Branch`,
+        address: company?.address || "Main Store",
+        city: "Main",
+        phone: company?.contactPhone || "",
+      },
+    ];
+  } catch (err) {
+    console.error("[RESOLVE_STORES_ERROR]", err);
+    return [
+      {
+        id: `store_${companyId}`,
+        name: "Main Branch",
+        address: "Head Office",
+        city: "Default",
+        phone: "",
+      },
+    ];
   }
 }
