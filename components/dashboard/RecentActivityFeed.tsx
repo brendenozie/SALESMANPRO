@@ -119,10 +119,10 @@ export default function RecentActivityFeed({
       <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
         <span className="text-slate-400">Auto-updating portfolio stream</span>
         <Link
-          href="/orders"
+          href="/stores"
           className="font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1"
         >
-          <span>View All Orders</span>
+          <span>Manage Store Orders</span>
           <ArrowRightIcon className="w-3.5 h-3.5" />
         </Link>
       </div>

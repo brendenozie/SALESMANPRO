@@ -1037,7 +1037,9 @@ export async function getPortfolioDashboardData(
       description: `${stagnantPendingOrdersCount} order(s) placed over 24 hours ago remain unprocessed.`,
       count: stagnantPendingOrdersCount,
       affectedStores: companies.slice(0, 2).map((c) => ({ name: c.name, slug: c.slug })),
-      actionUrl: "/orders",
+      actionUrl: companies[0]?.slug
+        ? `/admin/${companies[0].slug}/customerorders`
+        : "/stores",
     });
   }
 
@@ -1051,7 +1053,9 @@ export async function getPortfolioDashboardData(
       description: `${failedPaymentsCount} payment transaction(s) failed or were rejected during this period.`,
       count: failedPaymentsCount,
       affectedStores: companies.slice(0, 2).map((c) => ({ name: c.name, slug: c.slug })),
-      actionUrl: "/payments",
+      actionUrl: companies[0]?.slug
+        ? `/admin/${companies[0].slug}/payments`
+        : "/stores",
     });
   }
 

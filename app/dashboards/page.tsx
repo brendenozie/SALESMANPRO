@@ -421,19 +421,13 @@ export default function AdminDashboardPage() {
               href="/stores"
               className="hover:text-orange-500 transition-colors"
             >
-              Stores Page
+              Store Manager
             </Link>
             <Link
-              href="/orders"
+              href="/stores/create"
               className="hover:text-orange-500 transition-colors"
             >
-              Orders
-            </Link>
-            <Link
-              href="/payments"
-              className="hover:text-orange-500 transition-colors"
-            >
-              Payments
+              New Store
             </Link>
           </div>
         </footer>
