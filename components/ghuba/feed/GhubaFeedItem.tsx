@@ -31,6 +31,9 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const galleryContainerRef = useRef<HTMLDivElement>(null);
+  // Cache clientWidth to avoid forced synchronous layout reads in scroll handlers
+  const galleryWidthRef = useRef<number>(0);
+  const activeImageIndexRef = useRef<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [showPlayIcon, setShowPlayIcon] = useState<boolean>(false);
   const [videoError, setVideoError] = useState<boolean>(false);
@@ -45,6 +48,7 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
 
   useEffect(() => {
     if (!isActive) {
+      activeImageIndexRef.current = 0;
       setActiveImageIndex(0);
       if (galleryContainerRef.current) {
         galleryContainerRef.current.scrollLeft = 0;
@@ -52,16 +56,32 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
     }
   }, [isActive]);
 
+  // Cache container width via ResizeObserver to avoid forced layout reads on scroll
+  useEffect(() => {
+    const container = galleryContainerRef.current;
+    if (!container) return;
+    galleryWidthRef.current = container.clientWidth;
+    const ro = new ResizeObserver((entries) => {
+      if (entries[0]) galleryWidthRef.current = entries[0].contentRect.width;
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [isGallery]);
+
+  // Does NOT read layout properties on every scroll event;
+  // uses cached galleryWidthRef instead of clientWidth to avoid forced layout.
   const handleGalleryScroll = useCallback(() => {
     if (!galleryContainerRef.current) return;
-    const container = galleryContainerRef.current;
-    if (container.clientWidth > 0) {
-      const newIndex = Math.round(container.scrollLeft / container.clientWidth);
-      if (newIndex >= 0 && newIndex < item.media.images.length && newIndex !== activeImageIndex) {
+    const width = galleryWidthRef.current;
+    if (width > 0) {
+      const newIndex = Math.round(galleryContainerRef.current.scrollLeft / width);
+      if (newIndex >= 0 && newIndex < item.media.images.length && newIndex !== activeImageIndexRef.current) {
+        activeImageIndexRef.current = newIndex;
         setActiveImageIndex(newIndex);
       }
     }
-  }, [activeImageIndex, item.media.images.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.media.images.length]); // removed activeImageIndex dep - use ref instead
 
   const scrollToImage = useCallback((index: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -172,10 +192,8 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
       {/* MEDIA LAYER */}
       <div className="absolute inset-0 h-full w-full flex items-center justify-center">
         {hasVideo ? (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            className="relative h-full w-full flex items-center justify-center"
+          <div 
+            className="relative h-full w-full flex items-center justify-center animate-ghuba-fade-in"
           >
             <div
               className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ease-in-out ${
@@ -193,13 +211,17 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
               onError={() => setVideoError(true)}
               className="relative z-10 h-full w-full object-cover sm:object-contain"
             />
-          </motion.div>
+          </div>
         ) : isGallery ? (
           <div className="relative h-full w-full overflow-hidden">
+            {/* Blurred ambient background — use blur-2xl (40px) not blur-3xl (64px)
+                 blur-3xl on a full-height element forces expensive GPU compositing on mobile.
+                 contain: paint isolates the compositing layer to this slide only. */}
             <div
-              className="absolute inset-0 bg-cover bg-center blur-3xl opacity-40 scale-110 transition-all duration-700 ease-in-out"
+              className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110 transition-opacity duration-700 ease-in-out"
               style={{
                 backgroundImage: `url(${imageVariants?.feed || item.media.images[activeImageIndex] || item.media.poster})`,
+                contain: "paint",
               }}
             />
             <div
@@ -279,9 +301,13 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
           </div>
         ) : (
           <div className="relative h-full w-full overflow-hidden">
+            {/* Blurred ambient background — blur-2xl not blur-3xl for mobile GPU cost */}
             <div
-              className="absolute inset-0 bg-cover bg-center blur-3xl opacity-40 scale-110"
-              style={{ backgroundImage: `url(${item.media.poster || item.media.thumbnail})` }}
+              className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110"
+              style={{
+                backgroundImage: `url(${item.media.poster || item.media.thumbnail})`,
+                contain: "paint",
+              }}
             />
             <div className="relative h-full w-full flex items-center justify-center">
               <img

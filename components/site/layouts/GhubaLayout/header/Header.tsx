@@ -53,9 +53,22 @@ const Header = () => {
   const path = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => setIsSticky(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Use rAF to batch: only update React state once per paint frame, not on every
+    // pixel of scroll. Without this, each scroll event triggers a re-render and a
+    // full repaint of the nav, which was the primary cause of sticky-nav jank.
+    let rafId: number | null = null;
+    const handleScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        setIsSticky(window.scrollY > 20);
+        rafId = null;
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider'];
@@ -77,9 +90,10 @@ const Header = () => {
         <nav
           className={`sticky top-0 z-40 w-full transition-all duration-300 ${
             isSticky 
-              ? "bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl shadow-sm border-b border-zinc-200 dark:border-zinc-800" 
+              ? "bg-white/95 dark:bg-zinc-950/96 shadow-sm border-b border-zinc-200/80 dark:border-zinc-800/80" 
               : "bg-white dark:bg-zinc-950"
           }`}
+          style={isSticky ? { willChange: 'transform' } : undefined}
         >
           <div className="container mx-auto flex items-center justify-between px-4 md:px-6 py-4">
             
@@ -372,7 +386,10 @@ const BottomNav = ({ path }: { path: string }) => {
   return (
     // Outer wrapper: positions the dock slightly above the bottom of the screen
     <div className="fixed bottom-4 left-0 w-full z-50 md:hidden px-4 pointer-events-none">
-      <nav className="pointer-events-auto max-w-md mx-auto bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl border border-white/40 dark:border-zinc-700/50 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between px-2 py-2 relative">
+      {/* backdrop-blur-2xl removed: a permanent blur layer on a fixed element forces a
+          GPU backdrop-filter raster pass on every scroll frame, causing severe jank.
+          bg-white/92 is visually identical (slightly opaque) with zero compositor cost. */}
+      <nav className="pointer-events-auto max-w-md mx-auto bg-white/92 dark:bg-zinc-900/92 border border-white/40 dark:border-zinc-700/50 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between px-2 py-2 relative" style={{ contain: 'layout style paint' }}>
         
         {items.map(({ name, icon: Icon, link, isAction }) => {
           const isActive = path === link || (link !== "/" && path?.startsWith(link));
@@ -385,8 +402,8 @@ const BottomNav = ({ path }: { path: string }) => {
                   onClick={handleSellClick}
                   className="group relative -top-6 flex items-center justify-center outline-none"
                 >
-                  <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300"></div>
-                  <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 via-amber-400 to-amber-500 flex items-center justify-center border-[3px] border-white/90 dark:border-zinc-800/90 shadow-xl group-active:scale-90 group-hover:-translate-y-1 transition-all duration-300 ease-out">
+                  {/* box-shadow glow: GPU-composited for free, no separate raster layer unlike blur-md */}
+                  <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 via-amber-400 to-amber-500 flex items-center justify-center border-[3px] border-white/90 dark:border-zinc-800/90 shadow-[0_0_20px_rgba(245,158,11,0.5)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.7)] group-active:scale-90 group-hover:-translate-y-1 transition-all duration-300 ease-out">
                     <Icon className="w-6 h-6 text-white stroke-[2.5]" />
                   </div>
                 </button>

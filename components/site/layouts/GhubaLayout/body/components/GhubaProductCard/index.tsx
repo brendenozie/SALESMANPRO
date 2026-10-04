@@ -254,7 +254,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
             />
 
             {/* Subtle overlay for hover details */}
-            <div className="absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+            <div className="absolute inset-0 bg-black/25 dark:bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
               <span className="bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 font-bold text-[10px] uppercase tracking-widest px-5 py-2.5 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                 View Details
               </span>
@@ -266,7 +266,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                 type="button"
                 aria-label="Share listing"
                 onClick={handleShare}
-                className="p-1.5 sm:p-2 rounded-full backdrop-blur-md bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80 transition-all hover:scale-110 active:scale-95 shadow-sm"
+                className="p-1.5 sm:p-2 rounded-full bg-white/90 text-zinc-600 dark:bg-black/60 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80 transition-all hover:scale-110 active:scale-95 shadow-sm"
               >
                 <ShareIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
@@ -275,10 +275,10 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                 type="button"
                 aria-label="Save to wishlist"
                 onClick={handleToggleSave}
-                className={`p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 shadow-sm ${
+                className={`p-1.5 sm:p-2 rounded-full transition-all hover:scale-110 active:scale-95 shadow-sm ${
                   isSaved
                     ? "bg-amber-50 text-amber-500 dark:bg-amber-500/20 dark:text-amber-400"
-                    : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
+                    : "bg-white/90 text-zinc-600 dark:bg-black/60 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
                 }`}
               >
                 {isSaved ? <BookmarkSolidIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <BookmarkIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
@@ -288,7 +288,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                 type="button"
                 aria-label="Like listing"
                 onClick={(e) => { e.stopPropagation(); toggleLike?.(product.id); }}
-                className={`p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95 shadow-sm ${likedItems?.[product.id]
+                className={`p-1.5 sm:p-2 rounded-full transition-all hover:scale-110 active:scale-95 shadow-sm ${likedItems?.[product.id]
                     ? "bg-red-50 text-[#E63946] dark:bg-red-500/20 dark:text-red-400"
                     : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
                   }`}
@@ -298,7 +298,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
             </div>
 
             {resolvedMedia.hasVideo && (
-              <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-white/10 tracking-wide uppercase pointer-events-none">
+              <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 bg-black/80 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-white/10 tracking-wide uppercase pointer-events-none">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Video</span>
               </div>

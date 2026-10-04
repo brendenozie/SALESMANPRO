@@ -36,6 +36,10 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const impressionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Stable refs to avoid observer recreation
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const observedSlidesRef = useRef<Set<Element>>(new Set());
+  const activeIndexRef = useRef<number>(0);
 
   // Load feed items when type changes or on initial mount if empty
   const fetchFeed = useCallback(
@@ -80,36 +84,67 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     }
   }, [activeIndex, items.length, hasMore, isLoadingMore, cursor, selectedType, fetchFeed]);
 
-  // Viewport IntersectionObserver to track active slide
+  // Viewport IntersectionObserver — created ONCE, observes new slides incrementally.
+  // Previously this used [items] as its dependency which caused ALL observers to be
+  // torn down and rebuilt on every infinite scroll append (O(n) re-attachment = jank).
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute("data-index"));
-            if (!isNaN(index)) {
-              setActiveIndex(index);
+    // Create the observer only once
+    if (!observerRef.current) {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const index = Number(entry.target.getAttribute("data-index"));
+              if (!isNaN(index) && index !== activeIndexRef.current) {
+                activeIndexRef.current = index;
+                setActiveIndex(index);
+              }
             }
-          }
-        });
-      },
-      {
-        root: container,
-        threshold: 0.65,
-      }
-    );
+          });
+        },
+        {
+          root: container,
+          threshold: 0.65,
+        }
+      );
+    }
 
+    const observer = observerRef.current;
+
+    // Drop slides that were unmounted (e.g. feed reset on filter change)
+    observedSlidesRef.current.forEach((el) => {
+      if (!el.isConnected) {
+        observer.unobserve(el);
+        observedSlidesRef.current.delete(el);
+      }
+    });
+
+    // Only observe slides that are not yet being observed
     slideRefs.current.forEach((el) => {
-      if (el) observer.observe(el);
+      if (el && !observedSlidesRef.current.has(el)) {
+        observer.observe(el);
+        observedSlidesRef.current.add(el);
+      }
     });
 
     return () => {
-      observer.disconnect();
+      // Do NOT disconnect here — disconnect only on full unmount
     };
-  }, [items]);
+  }, [items]); // still runs when items added, but only observes NEW slides
+
+  // Cleanup observer on unmount
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+        observedSlidesRef.current.clear();
+      }
+    };
+  }, []);
 
   // Analytics: Record impression when item stays active for >= 1.2 seconds
   useEffect(() => {
@@ -191,6 +226,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
 
   const handleTypeSelect = (type: FeedListingType | null) => {
     setSelectedType(type);
+    activeIndexRef.current = 0;
     setActiveIndex(0);
     fetchFeed(type);
   };
