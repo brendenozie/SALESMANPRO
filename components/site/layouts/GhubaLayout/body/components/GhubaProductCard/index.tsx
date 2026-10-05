@@ -43,6 +43,15 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
   const [formError, setFormError] = useState('');
   const [isSaved, setIsSaved] = useState(Boolean(product.isSaved));
 
+  const impressionContext = useMemo(() => ({
+    marketplaceListingId: product?.id,
+    productId: product?.productId,
+    companyId: product?.companyId,
+    sourceSection: "catalog_card",
+  }), [product?.id, product?.productId, product?.companyId]);
+
+  const cardRef = useMemo(() => observeImpression(impressionContext), [observeImpression, impressionContext]);
+
   const itemType = useMemo(() => resolveProductType(product), [product]);
   const displayTitle = itemType === "AUTO" && product.make ? `${product.make} ${product.model}` : product.name || product.title;
 
@@ -215,12 +224,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
     <>
       <div className="relative group h-full">
         <div
-          ref={observeImpression({
-            marketplaceListingId: product.id,
-            productId: product.productId,
-            companyId: product.companyId,
-            sourceSection: "catalog_card",
-          })}
+          ref={cardRef}
           onClick={() => {
             trackCardClick({
               marketplaceListingId: product.id,
@@ -243,11 +247,11 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
             <Image
               width={400}
               height={400}
-              unoptimized
               src={imageError ? 'https://via.placeholder.com/400x400?text=No+Image' : primaryImage}
               alt={displayTitle}
               priority={priority}
               loading={priority ? undefined : "lazy"}
+              decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={() => setImageError(true)}

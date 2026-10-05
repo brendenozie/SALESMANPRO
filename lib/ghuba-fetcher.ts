@@ -44,8 +44,22 @@ const listingSelect = {
 const listingWhere = {
   status: "ACTIVE" as ListingStatus,
   isAvailable: true,
-  ghubaAdminApproved: true,
-  ghubaStatus: "APPROVED",
+  AND: [
+    {
+      OR: [
+        { ghubaAdminApproved: true },
+        { ghubaAdminApproved: null },
+        { ghubaAdminApproved: { isSet: false } },
+      ],
+    },
+    {
+      OR: [
+        { ghubaStatus: "APPROVED" },
+        { ghubaStatus: null },
+        { ghubaStatus: { isSet: false } },
+      ],
+    },
+  ],
 };
 
 export const getGhubaHomepageCached = unstable_cache(
@@ -157,7 +171,7 @@ export const getGhubaHomepageCached = unstable_cache(
       },
     };
   },
-  ["ghuba:homepage:data:v4"], // Updated cache key with company relation
+  ["ghuba:homepage:data:v5"], // Updated cache key to refresh homepage data with approved listings
   {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300

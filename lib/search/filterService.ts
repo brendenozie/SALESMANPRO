@@ -32,10 +32,31 @@ export class FilterService {
     where.status = "ACTIVE" as any;
     where.isAvailable = filters.isAvailable !== false;
 
+    // 3. Category, SubCategory & Brand Clauses (built with AND clauses to avoid OR clobbering)
+    const andClauses: Prisma.marketplaceListingsWhereInput[] = [];
+
     if (scope === "GHUBA") {
-      where.showOnGhuba = true;
-      where.ghubaAdminApproved = true;
-      where.ghubaStatus = "APPROVED";
+      andClauses.push({
+        OR: [
+          { showOnGhuba: true },
+          { showOnGhuba: null },
+          { showOnGhuba: { isSet: false } },
+        ],
+      });
+      andClauses.push({
+        OR: [
+          { ghubaAdminApproved: true },
+          { ghubaAdminApproved: null },
+          { ghubaAdminApproved: { isSet: false } },
+        ],
+      });
+      andClauses.push({
+        OR: [
+          { ghubaStatus: "APPROVED" },
+          { ghubaStatus: null },
+          { ghubaStatus: { isSet: false } },
+        ],
+      });
       where.company = {
         OR: [{ showOnGhuba: true }, { showOnGhuba: { isSet: false } }],
       };
@@ -55,8 +76,6 @@ export class FilterService {
       };
     }
 
-    // 3. Category, SubCategory & Brand Clauses (built with AND clauses to avoid OR clobbering)
-    const andClauses: Prisma.marketplaceListingsWhereInput[] = [];
 
     if (filters.category && filters.category.length > 0) {
       andClauses.push({
@@ -175,7 +194,13 @@ export class FilterService {
       status: "ACTIVE" as any,
       isAvailable: true,
       ...(scope === "GHUBA"
-        ? { showOnGhuba: true, ghubaAdminApproved: true, ghubaStatus: "APPROVED" }
+        ? {
+            AND: [
+              { OR: [{ showOnGhuba: true }, { showOnGhuba: null }, { showOnGhuba: { isSet: false } }] },
+              { OR: [{ ghubaAdminApproved: true }, { ghubaAdminApproved: null }, { ghubaAdminApproved: { isSet: false } }] },
+              { OR: [{ ghubaStatus: "APPROVED" }, { ghubaStatus: null }, { ghubaStatus: { isSet: false } }] },
+            ],
+          }
         : { companyId: params.companyId }),
     };
 

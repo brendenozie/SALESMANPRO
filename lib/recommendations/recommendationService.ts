@@ -39,8 +39,22 @@ const publicListingSelect = {
 const activeListingFilter = {
   status: "ACTIVE" as any,
   isAvailable: true,
-  ghubaAdminApproved: true,
-  ghubaStatus: "APPROVED",
+  AND: [
+    {
+      OR: [
+        { ghubaAdminApproved: true },
+        { ghubaAdminApproved: null },
+        { ghubaAdminApproved: { isSet: false } },
+      ],
+    },
+    {
+      OR: [
+        { ghubaStatus: "APPROVED" },
+        { ghubaStatus: null },
+        { ghubaStatus: { isSet: false } },
+      ],
+    },
+  ],
 };
 
 export class RecommendationService {
