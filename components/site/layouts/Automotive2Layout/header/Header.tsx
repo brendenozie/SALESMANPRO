@@ -164,9 +164,8 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   <Image
                     src={data.logoUrl}
                     alt={data.name || "Brand Logo"}
-                    loader={({ src }) => src}
-                    unoptimized
                     fill
+                    decoding="async"
                     className="object-contain filter dark:brightness-110"
                   />
                 </div>
@@ -266,8 +265,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                         height={32}
                         alt="User Profile"
                         className="object-cover h-full w-full"
-                        loader={({ src }) => src}
-                        unoptimized
+                        decoding="async"
                       />
                     ) : (
                       <UserIcon className="h-4 w-4 text-amber-500" />

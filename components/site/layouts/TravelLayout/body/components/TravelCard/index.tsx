@@ -42,8 +42,8 @@ const TravelCardComponent = ({ listing }: any) => {
         <Image
           src={listing.images?.[0] || listing.thumbnail || "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800"}
           alt={listing.name || "Destination"}
-          unoptimized
           loading="lazy"
+          decoding="async"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -53,13 +53,13 @@ const TravelCardComponent = ({ listing }: any) => {
 
         {/* Floating Badges */}
         <div className="absolute top-5 left-5 right-5 flex justify-between items-start">
-          <div className="bg-white/10 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl border border-white/20 shadow-lg">
+          <div className="bg-black/60 text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl border border-white/20 shadow-lg">
             {listing.subCategoryName || "Exclusive Luxury"}
           </div>
           
           <button
             onClick={(e) => { e.preventDefault(); setIsLiked(!isLiked); }}
-            className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-all"
+            className="p-3 rounded-2xl bg-black/60 border border-white/20 text-white hover:bg-white hover:text-rose-500 transition-all"
           >
             {isLiked ? <HeartSolid className="h-5 w-5 text-rose-500" /> : <HeartOutline className="h-5 w-5" />}
           </button>
@@ -67,7 +67,7 @@ const TravelCardComponent = ({ listing }: any) => {
 
         {/* Price Tag */}
         <div className="absolute bottom-5 right-5 z-20">
-          <div className="bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 shadow-xl">
+          <div className="bg-slate-900/95 px-4 py-2.5 rounded-2xl border border-white/10 shadow-xl">
             <p className="text-white text-sm font-black tracking-tight">
               {formatCurrency(listing.finalPrice || listing.sellingPrice || 0)}
               <span className="text-[10px] text-slate-400 font-bold ml-1 uppercase">/pp</span>

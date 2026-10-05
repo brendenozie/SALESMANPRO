@@ -159,12 +159,12 @@ export default function ProductCard({ product }: { product: MarketListingForm })
               fill
               sizes="(max-width: 640px) 50vw, 33vw"
               className="object-cover p-4 transition-transform duration-500 md:group-hover:scale-105"
-              priority={product.isNewArrival}
+              decoding="async"
             />
           </Link>
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 bg-black/85 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
               <VideoCameraIcon className="w-3 h-3 text-emerald-400" />
               <span>Video</span>
             </div>
@@ -261,7 +261,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-3 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md rounded-xl shadow-md text-[#25D366] border border-zinc-100 dark:border-zinc-700 block flex items-center justify-center"
+              className="p-3 bg-white dark:bg-zinc-800 rounded-xl shadow-md text-[#25D366] border border-zinc-100 dark:border-zinc-700 block flex items-center justify-center"
               aria-label="Inquire via WhatsApp"
             >
               <WhatsAppIcon className="w-4 h-4 sm:w-5 h-5" />

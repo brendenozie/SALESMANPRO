@@ -60,10 +60,20 @@ export default function Header() {
     router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
   };
 
-  // Scroll logic
+  // Scroll logic - optimized rAF passive listener with state latching
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -77,18 +87,17 @@ export default function Header() {
     <>
       <header
         className={`
-          fixed top-0 left-0 right-0 w-full z-50 transition-all duration-500
+          fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300
           ${scrolled ? 'py-3' : 'py-6'}
         `}
       >
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div 
-            layout
+          <div 
             className={`
               relative flex items-center justify-between px-6 py-3 rounded-[2rem]
-              transition-all duration-500 border
+              transition-all duration-300 border
               ${scrolled 
-                ? 'bg-white/80 dark:bg-black/80 backdrop-blur-xl border-slate-200/50 dark:border-gray-800/50 shadow-2xl shadow-black/5' 
+                ? 'bg-white/95 dark:bg-black/95 border-slate-200/50 dark:border-gray-800/50 shadow-lg shadow-black/5' 
                 : 'bg-transparent border-transparent'}
             `}
           >
@@ -164,7 +173,7 @@ export default function Header() {
                 {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Mobile Menu Slide */}

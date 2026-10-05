@@ -125,7 +125,7 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
                   className="object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]"
                   loader={loader}
                   priority
-                  unoptimized
+                  decoding="async"
                 />
               </motion.div>
             </div>

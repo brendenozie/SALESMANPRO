@@ -151,8 +151,8 @@ const DishCard: React.FC<DishCardProps> = React.memo(({ dish }) => {
             src={dish.images?.[0] || "/placeholder-food.jpg"}
             alt={dish.name}
             fill
-            unoptimized
             loading="lazy"
+            decoding="async"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-1000 group-hover:scale-110 brightness-95 group-hover:brightness-105"
           />
@@ -172,7 +172,7 @@ const DishCard: React.FC<DishCardProps> = React.memo(({ dish }) => {
           </div>
 
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-            <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-orange-100 dark:border-zinc-800">
+            <div className="bg-white/95 dark:bg-zinc-900/95 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-orange-100 dark:border-zinc-800">
               <FireIcon className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
               <span className="text-[9px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">Bestseller</span>
             </div>

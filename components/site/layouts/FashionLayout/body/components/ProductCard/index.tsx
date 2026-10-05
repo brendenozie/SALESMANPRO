@@ -110,15 +110,15 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
               src={img}
               alt={name}
               fill
-              unoptimized
               loading="lazy"
+              decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-[2s] scale-100 group-hover:scale-105 group-active:scale-102"
             />
           </Link>
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-4 left-5 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <div className="absolute bottom-4 left-5 z-10 flex items-center gap-1.5 bg-black/85 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
               <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Video</span>
             </div>

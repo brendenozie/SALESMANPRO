@@ -70,7 +70,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
               src={imageSrc}
               alt={name}
               fill
-              unoptimized
+              decoding="async"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               loading="lazy"
@@ -79,7 +79,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
           </Link>
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 z-10 flex items-center gap-1 bg-black/85 text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
               <VideoCameraIcon className="w-3 h-3 text-emerald-400" />
               <span>Video</span>
             </div>
@@ -106,7 +106,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
           </a>
 
           {/* HOVER OVERLAY FOR WIDE VIEWPORTS */}
-          <div className="absolute inset-0 z-10 hidden lg:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/10 backdrop-blur-[2px]">
+          <div className="absolute inset-0 z-10 hidden lg:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/30">
             <button
               onClick={(e) => {
                 e.preventDefault();

@@ -133,9 +133,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <Image
               src={imageSrc}
               alt={name}
-              loader={({src})=>src}
               fill
-              unoptimized
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              decoding="async"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </Link>
@@ -147,7 +147,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 -{discount}% FLUID
               </span>
             )}
-            <span className="bg-zinc-900/90 dark:bg-black/80 text-amber-400 font-mono text-[8px] font-bold px-1.5 py-0.5 rounded-xs flex items-center gap-1 backdrop-blur-xs border-l-2 border-amber-500">
+            <span className="bg-zinc-900/95 dark:bg-black/95 text-amber-400 font-mono text-[8px] font-bold px-1.5 py-0.5 rounded-xs flex items-center gap-1 border-l-2 border-amber-500">
               <ShieldCheckIcon className="w-2.5 h-2.5" /> CERTIFIED
             </span>
             {resolvedMedia.hasVideo && (

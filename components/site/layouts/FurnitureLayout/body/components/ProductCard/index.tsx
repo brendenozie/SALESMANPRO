@@ -182,8 +182,8 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
             <Image
               src={resolvedMedia.primaryImageUrl}
               alt={product.name}
-              unoptimized
               loading="lazy"
+              decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               fill
               className="object-cover transition-transform duration-[2s] ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
@@ -191,7 +191,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
           </Link>
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5 bg-black/70 backdrop-blur-md text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-1.5 bg-black/85 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
               <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Video</span>
             </div>
@@ -411,8 +411,8 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
                   <Image
                     src={resolvedMedia.primaryImageUrl}
                     alt={product.name}
-                    unoptimized
                     fill
+                    decoding="async"
                     className="object-cover"
                   />
                 )}

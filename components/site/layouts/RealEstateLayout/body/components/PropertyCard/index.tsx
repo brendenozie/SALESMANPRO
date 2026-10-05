@@ -81,14 +81,14 @@ const PropertyCardComponent = ({ item, key }: any) => {
             src={resolvedMedia.primaryImageUrl}
             alt={item.name}
             fill
-            unoptimized
             loading="lazy"
+            decoding="async"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
           />
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/85 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
               <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Video</span>
             </div>
@@ -100,7 +100,7 @@ const PropertyCardComponent = ({ item, key }: any) => {
               <SparklesIcon className="w-3.5 h-3.5" />
               {item.type || "Market Listing"}
             </div>
-            <div className="bg-white/90 backdrop-blur-md text-zinc-900 text-[9px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+            <div className="bg-white text-zinc-900 text-[9px] font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
                <CheckBadgeIcon className="w-3.5 h-3.5 text-blue-500" />
                Verified Listing
             </div>

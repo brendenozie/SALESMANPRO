@@ -86,9 +86,8 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 <Image
                   src={data.logoUrl}
                   alt={data.name}
-                  loader={({ src }) => src}
-                  unoptimized
                   fill
+                  decoding="async"
                   className={`object-contain transition-all duration-500 h-20 w-32 ${isDarkMode ? "filter brightness-125" : ""}`}
                 />
               </div>
@@ -171,7 +170,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   <Image 
                      src={user.image || "https://ui-avatars.com/api/?name=" + user.name} 
                      width={36} height={36} alt="User" className="object-cover"
-                     loader={({ src }) => src} unoptimized 
+                     decoding="async" 
                   />
                 </div>
               </button>

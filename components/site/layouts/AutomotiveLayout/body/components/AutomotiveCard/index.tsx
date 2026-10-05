@@ -99,14 +99,14 @@ const AutomotiveCardComponent = ({ item }: { item: any }) => {
             src={resolvedMedia.primaryImageUrl}
             alt={`${item.make} ${item.model}`}
             fill
-            unoptimized
             loading="lazy"
+            decoding="async"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-3 left-4 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider">
+            <div className="absolute bottom-3 left-4 z-10 flex items-center gap-1 bg-black/85 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider">
               <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Video</span>
             </div>
