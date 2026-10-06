@@ -9,7 +9,6 @@ import { StoreForm } from '@/types/typings';
 import CategorySection from './components/CategorySection';
 import ContactSection from './components/ContactSection/ContactSection';
 
-: Adapted for dual-mode visibility
 
 // 🧠 Dynamic imports for heavy or client-only sections
 import DynamicPopularProducts from './components/PopularProducts';

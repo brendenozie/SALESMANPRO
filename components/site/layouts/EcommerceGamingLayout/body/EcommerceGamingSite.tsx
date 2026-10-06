@@ -7,9 +7,6 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components
 import CategorySection from './components/CategorySection';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
-
- - now theme-aware
-
 // Dynamically import client-side sections
 import DynamicPopularProducts from './components/PopularProducts';
 import DynamicDailyBestSells from './components/DailyBestSells';
