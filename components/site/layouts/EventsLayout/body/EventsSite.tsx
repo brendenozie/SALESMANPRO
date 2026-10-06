@@ -3,7 +3,6 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React from "react";
-import dynamic from 'next/dynamic';
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported

@@ -3,51 +3,22 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React, { Suspense } from "react";
-import dynamic from "next/dynamic";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { StoreForm } from "@/types/typings";
 import BannerSlider from "./components/BannerSlider/BannerSlider";
-import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
 // Reusable Loading Fallback
-const ComponentSkeleton = () => (
-  <div className="py-20 bg-gray-50 dark:bg-gray-900">
-    <SkeletonGrid count={8} />
-  </div>
-);
 
-// Corrected Dynamic Imports
-const FlashDeals = dynamic(() => import("./components/flashDeals/FlashDeals"), {
-  ssr: true,
-  loading: ComponentSkeleton,
-});
 
-const TopCate = dynamic(() => import("./components/top"), {
-  ssr: true,
-  loading: ComponentSkeleton,
-});
-
-const NewArrivals = dynamic(() => import("./components/newarrivals"), {
-  ssr: true,
-  loading: ComponentSkeleton,
-});
-
-const Discount = dynamic(() => import("./components/discount"), {
-  ssr: true,
-  loading: ComponentSkeleton,
-});
-
-const Shop = dynamic(() => import("./components/shops"), {
-  ssr: true,
-  loading: ComponentSkeleton,
-});
-
-const Annocument = dynamic(() => import("./components/annocument/Annocument"));
-const Wrapper = dynamic(() => import("./components/wrapper/Wrapper"));
-const GhubaPersonalizedSection = dynamic(
-  () => import("@/components/ghuba/recommendations/GhubaPersonalizedSection"),
-  { }
-);
+// Below-the-fold components - statically imported
+import FlashDeals from "./components/flashDeals/FlashDeals";
+import TopCate from "./components/top";
+import NewArrivals from "./components/newarrivals";
+import Discount from "./components/discount";
+import Shop from "./components/shops";
+import Annocument from "./components/annocument/Annocument";
+import Wrapper from "./components/wrapper/Wrapper";
+import GhubaPersonalizedSection from "@/components/ghuba/recommendations/GhubaPersonalizedSection";
 
 interface HomePageProps {
   pageData: StoreForm;

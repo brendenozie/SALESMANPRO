@@ -1,21 +1,18 @@
 'use client';
 
 import React from "react";
-import dynamic from 'next/dynamic';
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import RestaurantHero from "../components/RestaurantSite";
 
-// Loading skeleton
-import { SkeletonGrid } from './SkeletonGrid/SkeletonGrid';
 
-// Dynamically import below-the-fold components
-const SignatureDishes = dynamic(() => import('../components/SignatureDishes'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const WhyDineWithUs = dynamic(() => import('../components/WhyDineWithUs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const Testimonials = dynamic(() => import('../components/Testimonials'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const RestaurantGallery = dynamic(() => import('../components/RestaurantGallery'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const RestaurantFAQs = dynamic(() => import('../components/RestaurantFAQs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+// Below-the-fold components - statically imported
+import SignatureDishes from '../components/SignatureDishes';
+import WhyDineWithUs from '../components/WhyDineWithUs';
+import Testimonials from '../components/Testimonials';
+import RestaurantGallery from '../components/RestaurantGallery';
+import RestaurantFAQs from '../components/RestaurantFAQs';
 
 import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
 

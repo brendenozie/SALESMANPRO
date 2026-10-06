@@ -4,16 +4,13 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 // File: components/site/layouts/BookingsLayout/BookingsSite.tsx
 
 import React from 'react';
-import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import 'react-datepicker/dist/react-datepicker.css';
 import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import Hero from './components/HeroSection';
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
-// Loading skeleton
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 

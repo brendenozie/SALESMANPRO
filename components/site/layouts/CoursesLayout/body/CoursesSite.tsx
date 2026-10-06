@@ -3,16 +3,13 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React from "react";
-import dynamic from 'next/dynamic';
 
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import HeroSection from "./components/HeroSection";
 import GlassInfoCardsSection from "./components/GlassInfoCardsSection";
-import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
-// Loading skeleton
 
 import SchoolSection from './components/SchoolSection';
 import MainCoursesSection from './components/MainCoursesSection';

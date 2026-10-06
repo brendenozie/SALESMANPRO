@@ -3,15 +3,11 @@
 
 import React from "react";
 import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
-import dynamic from 'next/dynamic';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import HeroSection from "../components/HeroSection";
-
-// Loading skeleton
-import { SkeletonGrid } from './SkeletonGrid/SkeletonGrid';
 
 // Direct imports for reliable SSR and zero layout shifts
 import AboutSection from '../components/aboutUs';

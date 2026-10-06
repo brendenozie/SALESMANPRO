@@ -3,7 +3,6 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React, { useState, useEffect, useCallback } from "react";
-import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
@@ -11,19 +10,17 @@ import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import HeroSection, { SearchFilters } from "./components/HeroSection";
-import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
-// Loading skeleton
-// Dynamically import below-the-fold components
-const AutomotiveFeaturedListingsWrapper = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const HowItWorks = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const BrowseByCategory = dynamic(() => import('./components/BrowseByCategorySection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FilterBarSection = dynamic(() => import('./components/FilterBarSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const TrendingLocations = dynamic(() => import('./components/TrendingLocationsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const PopularVehiclesWrapper = dynamic(() => import('./components/PopularVehicleSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const VideoShowcaseSection = dynamic(() => import('./components/VideoShowcaseSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const MarketInsightsSection = dynamic(() => import('./components/MarketInsightsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const TestimonialsCarouselSection = dynamic(() => import('./components/TestimonialsCarouselSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+// Below-the-fold components - statically imported
+import AutomotiveFeaturedListingsWrapper from './components/FeaturedListingsSection';
+import HowItWorks from './components/HowItWorksSection';
+import BrowseByCategory from './components/BrowseByCategorySection';
+import FilterBarSection from './components/FilterBarSection';
+import TrendingLocations from './components/TrendingLocationsSection';
+import PopularVehiclesWrapper from './components/PopularVehicleSection';
+import VideoShowcaseSection from './components/VideoShowcaseSection';
+import MarketInsightsSection from './components/MarketInsightsSection';
+import TestimonialsCarouselSection from './components/TestimonialsCarouselSection';
 
 interface VehicleCardProps {
   id: string;

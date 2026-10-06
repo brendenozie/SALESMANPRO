@@ -3,26 +3,23 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React from "react";
-import dynamic from 'next/dynamic';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import HeroSection from "./components/HeroSection";
-import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
-// Loading skeleton
 
-// Dynamically import below-the-fold components
-const SocialProofSection = dynamic(() => import('./components/SocialProofSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const ServicesSection = dynamic(() => import('./components/ServicesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FeaturedListings = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const HowItWorks = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const BrowseByCategory = dynamic(() => import('./components/BrowseByCategorySection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const VideoShowcaseSection = dynamic(() => import('./components/VideoShowcaseSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const TestimonialsCarouselSection = dynamic(() => import('./components/TestimonialsCarouselSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const CallToActionSection = dynamic(() => import('./components/CallToActionSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+// Below-the-fold components - statically imported
+import SocialProofSection from './components/SocialProofSection';
+import AboutSection from './components/AboutSection';
+import ServicesSection from './components/ServicesSection';
+import FeaturedListings from './components/FeaturedListingsSection';
+import HowItWorks from './components/HowItWorksSection';
+import BrowseByCategory from './components/BrowseByCategorySection';
+import VideoShowcaseSection from './components/VideoShowcaseSection';
+import TestimonialsCarouselSection from './components/TestimonialsCarouselSection';
+import CallToActionSection from './components/CallToActionSection';
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());

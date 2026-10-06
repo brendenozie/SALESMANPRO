@@ -8,9 +8,7 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import HeroSection from './components/HeroSection';
 
-// Loading skeleton
 
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Section components statically imported to eliminate mid-scroll chunk loading and hydration churn

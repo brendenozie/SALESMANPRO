@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm, ListingMarketStatus, ListingSystemStatus, ListingTransactionType } from '@/types/typings';
 import Image from 'next/image';
@@ -22,7 +21,6 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import CategoriesSection from './components/CategorySection';
 import FeaturesSection from './components/FeaturesSection';
 
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -30,23 +28,21 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 }
 
 // 🧠 Dynamically import client-side sections
-const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'));
-const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'));
-const DynamicTrending = dynamic(() => import('./components/Trending'));
-const PromoSection = dynamic(() => import('./components/PromoSection'));
-const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'));
-const AllProducts = dynamic(() => import('./components/AllProducts'));
-const MetricsSection = dynamic(() => import('./components/MetricsSection'));
-const AwardsSection = dynamic(() => import('./components/AwardsSection'));
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'));
-const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'));
+import DynamicPopularProducts from './components/PopularProducts';
+import DynamicDailyBestSells from './components/DailyBestSells';
+import DynamicTrending from './components/Trending';
+import PromoSection from './components/PromoSection';
+import SecondPromoSection from './components/SecondPromoSection';
+import AllProducts from './components/AllProducts';
+import MetricsSection from './components/MetricsSection';
+import AwardsSection from './components/AwardsSection';
+import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection';
+import NewsletterSection from './components/NewsletterSection/NewsletterSection';
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
   companyId: string;
 };
-
-
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
@@ -238,7 +234,6 @@ const MOCK_PRODUCTS: MarketListingForm[] = [
     listingTransactionType: ListingTransactionType.SALE
   }
 ];
-
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },

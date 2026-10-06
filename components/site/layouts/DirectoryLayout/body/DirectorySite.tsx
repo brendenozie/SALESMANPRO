@@ -12,10 +12,8 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import HeroSection from './components/HeroSection';
 import PopularProductsSection from './components/PopularSection';
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
-// Loading skeleton
 
 import PromotionSection from './components/PromotionSection';
 import NewArrivalsSection from './components/NewArrivalsSection';

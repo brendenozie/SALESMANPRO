@@ -1,38 +1,26 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import HeroSlider from './components/HeroSlider';
 import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components
 import CategorySection from './components/CategorySection';
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
-// Loading skeleton - now theme-aware
+ - now theme-aware
 
 // Dynamically import client-side sections
-const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
-  loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  });
-
-const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
-  loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  });
-
-const DynamicTrending = dynamic(() => import('./components/Trending'), {
-  loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  });
-
-const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-
-const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+import DynamicPopularProducts from './components/PopularProducts';
+import DynamicDailyBestSells from './components/DailyBestSells';
+import DynamicTrending from './components/Trending';
+import PromoSection from './components/PromoSection';
+import SecondPromoSection from './components/SecondPromoSection';
+import AllProducts from './components/AllProducts';
+import MetricsSection from './components/MetricsSection';
+import AwardsSection from './components/AwardsSection';
+import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection';
+import NewsletterSection from './components/NewsletterSection/NewsletterSection';
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
