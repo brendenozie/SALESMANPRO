@@ -123,7 +123,7 @@ export default function CallToActionSection() {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           viewport={{ once: true, amount: 0.3 }}
-          className="max-w-xl mx-auto bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden"
+          className="max-w-xl mx-auto bg-gray-900/95 border border-gray-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden"
         >
           <AnimatePresence mode="wait">
             {formStatus !== 'success' ? (

@@ -190,7 +190,7 @@ export default function Header() {
             </Link>
 
             {/* --- Desktop Nav --- */}
-            <nav className="hidden lg:flex items-center space-x-2 bg-gray-800/60 backdrop-blur-md border border-gray-700/50 p-2 rounded-full shadow-lg">
+            <nav className="hidden lg:flex items-center space-x-2 bg-gray-800/95 border border-gray-700/50 p-2 rounded-full shadow-lg">
               {navItems.map((item) => (
                 <NavLink key={item.key} href={item.href}>
                   {item.label}

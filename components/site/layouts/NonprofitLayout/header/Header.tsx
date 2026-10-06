@@ -88,7 +88,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md transition-all duration-200">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 transition-all duration-200">
       
       {/* 1. Flat Top Bar Info Stream */}
       <div className="hidden md:block bg-slate-50 border-b border-slate-200 text-xs font-semibold tracking-wide text-slate-600">

@@ -4,7 +4,6 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 // File: components/site/layouts/DirectoryLayout/DirectorySite.tsx
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
 
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -18,18 +17,13 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // Loading skeleton
 
-// Dynamically import below-the-fold components
-const PromotionSection = dynamic(() => import('./components/PromotionSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const NewArrivalsSection = dynamic(() => import('./components/NewArrivalsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const CategorySection = dynamic(() => import('./components/CategorySection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FeaturedListingsOverviewSection = dynamic(() => import('./components/FeaturedListingsOverviewSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-
-// Dynamic loader for optimized images
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+import PromotionSection from './components/PromotionSection';
+import NewArrivalsSection from './components/NewArrivalsSection';
+import CategorySection from './components/CategorySection';
+import FeaturedListingsOverviewSection from './components/FeaturedListingsOverviewSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import CtaSection from './components/CtaSection';
+import FAQSection from './components/FAQSection';
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());

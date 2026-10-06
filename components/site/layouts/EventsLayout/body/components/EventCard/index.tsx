@@ -64,7 +64,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
         </Link>
 
         {/* Floating Date Badge Component */}
-        <div className="absolute top-4 left-4 flex flex-col items-center justify-center bg-white/95 dark:bg-zinc-900/95 backdrop-blur shadow-xl rounded-2xl px-3.5 py-2 min-w-[52px] text-center">
+        <div className="absolute top-4 left-4 flex flex-col items-center justify-center bg-white/95 dark:bg-zinc-900/95 shadow-xl rounded-2xl px-3.5 py-2 min-w-[52px] text-center">
           <span className="text-[10px] font-black tracking-wider text-zinc-400 dark:text-zinc-500 uppercase leading-none">
             {monthStr}
           </span>
@@ -75,7 +75,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
 
         {/* Floating Category/Status Pill */}
         {event.category && (
-          <div className="absolute top-4 right-4 bg-zinc-900/80 backdrop-blur text-white text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-xl border border-white/10">
+          <div className="absolute top-4 right-4 bg-zinc-900/95 text-white text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-xl border border-white/10">
             {event.category}
           </div>
         )}

@@ -30,30 +30,7 @@ export type StoreForm = {
   };
 };
 
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-const useStoreContext = () => ({
-  storeFormData: {
-    name: 'Ducun Vijed Directory', // Fallback for main title
-    tagline: 'Your ultimate guide to local services and businesses.', // Fallback for subtitle
-    appPromos: [
-      {
-        id: 'promo-1',
-        title: 'Unlock a World of Local Services',
-        description: 'Discover top-rated businesses, book appointments, and connect with professionals in your community—all in one place.',
-        imageUrl: 'https://images.unsplash.com/photo-1556740738-b6154637d57a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image URL
-        ctaText: 'Explore Services Now',
-        ctaLink: '/explore-services',
-        // imagePosition: 'right', // Example if you add this to your AppPromo model
-      },
-      // You can add more app promos, and choose which one to display
-      // based on some criteria (e.g., 'isActive' flag, 'order' field, etc.)
-    ],
-    themeSettings: {
-      primaryColor: '#2563EB', // Example: Tailwind blue-600
-    },
-  } as StoreForm,
-});
+
 
 // Loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;

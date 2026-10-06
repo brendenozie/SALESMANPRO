@@ -127,7 +127,7 @@ export default function CtaBoldSection({ storeFormData }: CtaBoldSectionProps) {
             </div>
 
             {/* Right Column: Interactive Dispatch Terminal (6 Columns) */}
-            <div className="lg:col-span-6 bg-slate-950/40 backdrop-blur-md rounded-2xl border border-white/5 p-6 md:p-10 min-h-[460px] flex flex-col justify-center">
+            <div className="lg:col-span-6 bg-slate-950/80 rounded-2xl border border-white/5 p-6 md:p-10 min-h-[460px] flex flex-col justify-center">
               <AnimatePresence mode="wait">
                 {status !== 'success' ? (
                   <motion.div

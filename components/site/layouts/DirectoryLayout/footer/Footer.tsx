@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { useStoreContext } from '@/contexts/StoreContext';
 import { 
   FaceSmileIcon, 
   MapPinIcon, 
@@ -52,10 +55,12 @@ interface Store {
 }
 
 interface FooterProps {
-  storeFormData: Store;
+  storeFormData?: any;
 }
 
-const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
+const Footer: React.FC<FooterProps> = ({ storeFormData: propData }) => {
+  const { storeFormData: contextData } = useStoreContext();
+  const storeFormData = propData || contextData;
   const {
     contactEmail,
     contactPhone,

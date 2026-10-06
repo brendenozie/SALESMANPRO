@@ -141,7 +141,7 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
               href="/events/products"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-white font-semibold py-3 px-6 rounded-full flex items-center gap-2 transition-transform duration-300"
+              className="bg-gray-800 border border-gray-700 text-white font-semibold py-3 px-6 rounded-full flex items-center gap-2 transition-transform duration-300"
             >
               Explore All <ArrowRightIcon className="h-4 w-4" />
             </motion.a>

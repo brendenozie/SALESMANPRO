@@ -17,7 +17,7 @@ export default function DirectoryHeaderLayout({ params, children }: DirectoryLay
       </div>
         <section >{children}</section>
       <div id="section-footer" data-editor-section="footer" data-editor-component="Footer">
-        <Footer storeFormData={storeFormData} />
+        <Footer />
       </div>
     </>
   );

@@ -143,7 +143,7 @@ export default function HowItWorksSection() {
               className="relative flex flex-col items-center text-center"
             >
               <div className="relative z-10 flex items-center justify-center w-24 h-24 rounded-full bg-gray-900 border-2 border-gray-700">
-                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-gray-800/80 backdrop-blur-sm">
+                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-gray-800">
                   {iconMap[step.icon]}
                 </div>
               </div>
