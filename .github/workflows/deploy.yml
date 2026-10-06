@@ -59,6 +59,7 @@ jobs:
 
       - name: Build Next.js Standalone
         env:
+          STANDALONE: 'true'
           NEXT_IS_BUILD_PHASE: 'true'
           DATABASE_URL: 'mongodb://localhost:27017/build_placeholder'
         run: |

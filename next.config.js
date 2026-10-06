@@ -9,8 +9,8 @@ try {
 const { PHASE_PRODUCTION_BUILD } = require('next/constants');
 
 const nextConfig = {
-  // Opt into output tracing only when STANDALONE env is explicitly requested to prevent ENOSPC disk exhaustion
-  output: process.env.STANDALONE ? 'standalone' : undefined,
+  // Opt into output tracing for standalone builds (in CI, deployment, or when STANDALONE env is set)
+  output: (process.env.STANDALONE || process.env.CI) ? 'standalone' : undefined,
   outputFileTracingRoot: path.join(__dirname),
 
   eslint: {
