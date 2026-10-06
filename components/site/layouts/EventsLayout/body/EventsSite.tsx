@@ -8,32 +8,14 @@ import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import HeroComponent from "./components/HeroSection";
-
-// Loading skeleton
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
-
-// Dynamically import below-the-fold components
-const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FeaturesSection = dynamic(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const HowItWorksSection = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const LiveEventsSection = dynamic(() => import('./components/LiveEventsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const PricingSection = dynamic(() => import('./components/PricingSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const CallToActionSection = dynamic(() => import('./components/CallToActionSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-
-//----------------------------------------------
-// Image loader (same as elsewhere)
-//----------------------------------------------
-const loader = ({
-  src,
-  width,
-  quality,
-}: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => `${src}?w=${width}&q=${quality || 75}`;
+import AboutSection from './components/AboutSection';
+import FeaturesSection from './components/FeaturesSection';
+import HowItWorksSection from './components/HowItWorksSection';
+import LiveEventsSection from './components/LiveEventsSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import PricingSection from './components/PricingSection';
+import FAQSection from './components/FAQSection';
+import CallToActionSection from './components/CallToActionSection';
 
 
 //----------------------------------------------

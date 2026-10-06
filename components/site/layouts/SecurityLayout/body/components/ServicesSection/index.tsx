@@ -204,7 +204,7 @@ export default function SecuritySolutionsSection({ name, slug, description, them
           
           {/* COMPACT FOOTER ANCHOR */}
           <motion.div 
-            className="mt-20 flex flex-col sm:flex-row items-center justify-between p-8 rounded-2xl bg-gray-50/50 border border-gray-100/80 backdrop-blur-sm gap-6"
+            className="mt-20 flex flex-col sm:flex-row items-center justify-between p-8 rounded-2xl bg-gray-50 border border-gray-100 gap-6"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}

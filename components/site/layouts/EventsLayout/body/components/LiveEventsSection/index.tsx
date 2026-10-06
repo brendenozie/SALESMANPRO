@@ -117,8 +117,8 @@ export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
   return (
     <section id="events" className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative Blobs */}
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-purple-600/10 rounded-full filter blur-3xl opacity-50 animate-blob" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000" />
+      <div className="absolute top-1/4 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.h2

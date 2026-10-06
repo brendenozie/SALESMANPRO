@@ -5,14 +5,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
-// Mock implementation for the custom hook and context data
-const useStoreContext = () => ({
+import { useStoreContext as useActualStoreContext } from '@/contexts/StoreContext';
+
+const useStoreContext = () => {
+  try {
+    const ctx = useActualStoreContext();
+    if (ctx?.storeFormData) return ctx;
+  } catch (e) {}
+  return {
     storeFormData: {
-        name: 'The Wellness Hub',
-        testimonials: [],
-        themeSettings: { primaryColor: '#059669' }, // Emerald 600
+      name: 'The Wellness Hub',
+      testimonials: [],
+      themeSettings: { primaryColor: '#059669' },
     }
-});
+  };
+};
 
 // Fallback static testimonials
 const staticTestimonials = [
@@ -61,7 +68,7 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
     <motion.div 
         whileHover={{ y: -6, scale: 1.01 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="relative h-full flex flex-col justify-between p-8 lg:p-10 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden group"
+        className="relative h-full flex flex-col justify-between p-8 lg:p-10 rounded-3xl border border-white/40 bg-white/95 dark:bg-zinc-900/95 shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden group"
     >
         {/* Decorative dynamic ambient glow inside card top-right */}
         <div 

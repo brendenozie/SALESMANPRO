@@ -100,8 +100,8 @@ export default function WhyChooseUsSection({ promotions, description }: Features
   return (
     <section className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative Background */}
-      <div className="absolute -top-20 -right-20 w-96 h-96 bg-indigo-600/20 rounded-full filter blur-3xl opacity-40 animate-blob animation-delay-4000" />
-      <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-purple-600/20 rounded-full filter blur-3xl opacity-40 animate-blob animation-delay-2000" />
+      <div className="absolute -top-20 -right-20 w-96 h-96 bg-indigo-600/20 rounded-full blur-2xl opacity-30 pointer-events-none" />
+      <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-2xl opacity-30 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto text-center relative z-10">
         <motion.div

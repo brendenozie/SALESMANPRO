@@ -23,12 +23,13 @@ const telemetryVariants = {
 };
 
 const floatingVisualVariants = {
-  animate: {
-    y: [0, -12, 0],
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
     transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: "easeInOut"
+      duration: 0.6,
+      ease: "easeOut"
     }
   }
 };
@@ -85,8 +86,8 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
           <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: `radial-gradient(${secondaryColor} 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
           {/* Large structural glass geometric shape in the background */}
           <div className="absolute top-[-10%] right-[-5%] w-[55vw] h-[120vh] bg-gradient-to-bl from-gray-50 via-slate-50/50 to-transparent transform rotate-6 border-l border-gray-100/70" />
-          {/* Radial Ambient Glow */}
-          <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] rounded-full mix-blend-multiply filter blur-[120px] opacity-[0.08] animate-pulse" style={{ backgroundColor: secondaryColor }} />
+          {/* Radial Ambient Glow - Static lightweight blur */}
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 rounded-full blur-2xl opacity-10 pointer-events-none" style={{ backgroundColor: secondaryColor }} />
         </div>
 
         {/* --- MAIN HERO WRAPPER --- */}
@@ -102,9 +103,9 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
             {/* System Status Pill Tag */}
             <motion.div 
               variants={telemetryVariants}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-gray-200 bg-gray-50/80 shadow-sm backdrop-blur-md"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-gray-200 bg-gray-50 shadow-sm"
             >
-              <div className="h-2 w-2 rounded-full animate-ping" style={{ backgroundColor: primaryColor }} />
+              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: primaryColor }} />
               <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
                 {tagline || "SYSTEMS ACTIVE // ZERO TRUST ENFORCED"}
               </span>
@@ -194,7 +195,8 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
 
             <motion.div
               variants={floatingVisualVariants}
-              animate="animate"
+              initial="hidden"
+              animate="visible"
               className="relative w-full max-w-sm aspect-[4/5] rounded-[2rem] p-1 bg-gradient-to-b from-gray-100 to-transparent shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] group"
             >
               {/* Glassmorphic Shell Outer Layer */}
@@ -223,7 +225,7 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
                 </div>
 
                 {/* Simulated Floating Status Callout Card */}
-                <div className="bg-white/80 backdrop-blur-md border border-gray-100 shadow-sm p-3.5 rounded-xl flex items-center gap-3 transform translate-y-2 group-hover:-translate-y-1 transition-transform duration-500">
+                <div className="bg-white border border-gray-100 shadow-sm p-3.5 rounded-xl flex items-center gap-3 transform translate-y-2 group-hover:-translate-y-1 transition-transform duration-500">
                   <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-inner" style={{ backgroundColor: primaryColor }}>
                     ✓
                   </div>

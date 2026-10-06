@@ -90,8 +90,8 @@ export default function HowItWorksSection() {
   return (
     <section className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative Background */}
-      <div className="absolute top-1/4 right-0 w-96 h-96 bg-pink-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000" />
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-pink-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto text-center relative z-10">
         {/* Heading */}

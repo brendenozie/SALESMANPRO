@@ -3,24 +3,18 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React from "react";
-import dynamic from 'next/dynamic';
 import { StoreForm } from "@/types/typings";
 
-// Above-the-fold components - statically imported
+// Statically imported sections for zero layout shift and instant mobile scroll
 import HeroSection from "./components/heroSection";
-
-// Loading skeleton
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
-
-// Dynamically import below-the-fold components
-const PracticeAreasSection = dynamic(() => import('./components/PracticeAreasSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const WhyChooseUsSection = dynamic(() => import('./components/WhyChooseUsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const CaseStudiesTestimonials = dynamic(() => import('./components/CaseStudiesTestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const ProcessWorkflowSection = dynamic(() => import('./components/ProcessWorkflowSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const MeetOurExperts = dynamic(() => import('./components/MeetOurExperts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const ConsultationPackagesSection = dynamic(() => import('./components/ConsultationPackagesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+import PracticeAreasSection from './components/PracticeAreasSection';
+import WhyChooseUsSection from './components/WhyChooseUsSection';
+import CaseStudiesTestimonials from './components/CaseStudiesTestimonialsSection';
+import ProcessWorkflowSection from './components/ProcessWorkflowSection';
+import MeetOurExperts from './components/MeetOurExperts';
+import ConsultationPackagesSection from './components/ConsultationPackagesSection';
+import FAQSection from './components/FAQSection';
+import ContactSection from './components/ContactSection';
 
 // --- Global Theme Colors (for Navbar and Footer consistency) ---
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer

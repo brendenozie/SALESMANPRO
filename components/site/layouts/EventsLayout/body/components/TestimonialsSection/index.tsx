@@ -55,8 +55,8 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
   return (
     <section className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-purple-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000" />
+      <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto text-center relative z-10">
         <motion.h2

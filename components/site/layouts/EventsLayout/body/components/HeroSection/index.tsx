@@ -22,9 +22,6 @@ const fallbackEvent: any & { bannerUrl: string } = {
   bannerUrl: '/default-event-banner.jpg',
 };
 
-// --- Image loader ---
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality ?? 75}`;
 
 // --- Motion Variants ---
 const containerVariants = {
@@ -76,10 +73,10 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
   return (
     <section className="relative w-full min-h-[calc(120vh-80px)] overflow-hidden bg-gray-900 text-white flex items-center justify-center p-4">
       {/* Aurora Background */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-3xl animate-blob"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-600 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
+      <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-600/30 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/30 rounded-full blur-2xl"></div>
       </div>
 
       {/* Content Grid */}
@@ -95,8 +92,8 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
             <Image decoding="async"
               priority
               src={bannerSrc}
-              layout="fill"
-              objectFit="cover"
+              fill
+              className="object-cover"
               alt={eventTitle}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent"></div>

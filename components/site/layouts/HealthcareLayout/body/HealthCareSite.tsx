@@ -4,25 +4,19 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 // File: components/site/layouts/HealthcareLayout/HealthcareSite.tsx
 
 import React from 'react';
-import dynamic from 'next/dynamic';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StoreForm } from '@/types/typings';
 
-// Above-the-fold components - statically imported
+// Statically imported sections for zero layout shift and instant mobile scroll
 import HealthcareHero from './components/HeroSection';
-
-// Loading skeleton
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
-
-// Dynamically import below-the-fold components
-const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const MedicalServicesSection = dynamic(() => import('./components/MedicalServicesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const HealthTipsSection = dynamic(() => import('./components/HealthTipsSections'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const DoctorsSection = dynamic(() => import('./components/DoctorsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const PatientSection = dynamic(() => import('./components/PatientSections'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const FAQsSection = dynamic(() => import('./components/FAQsSections'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const CTASection = dynamic(() => import('./components/CTASection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+import AboutSection from './components/AboutSection';
+import MedicalServicesSection from './components/MedicalServicesSection';
+import HealthTipsSection from './components/HealthTipsSections';
+import DoctorsSection from './components/DoctorsSection';
+import PatientSection from './components/PatientSections';
+import FAQsSection from './components/FAQsSections';
+import ContactSection from './components/ContactSection';
+import CTASection from './components/CTASection';
 
 // --- Sample Data (for when storeFormData is empty or specific fields are missing) ---
 const defaultStoreName = "Harmony Health Clinic";

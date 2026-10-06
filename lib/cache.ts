@@ -47,9 +47,7 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
       }
       return null;
     } catch (err: any) {
-      if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
-        markRedisQuotaExceeded();
-      }
+      markRedisQuotaExceeded();
       console.warn(`[Cache] Redis GET failed for key "${key}", falling back to memory:`, err.message);
     }
   }
@@ -93,9 +91,7 @@ export async function cacheSet<T>(key: string, value: T, ttlSeconds = 60, swrSec
         await redisConnection.set(key, serialized);
       }
     } catch (err: any) {
-      if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
-        markRedisQuotaExceeded();
-      }
+      markRedisQuotaExceeded();
       console.warn(`[Cache] Redis SET failed for key "${key}":`, err.message);
     }
   }
