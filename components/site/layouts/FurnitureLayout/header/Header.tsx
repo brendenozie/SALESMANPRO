@@ -111,8 +111,8 @@ export default function Header() {
         <div
           className={`max-w-[1600px] mx-auto rounded-2xl md:rounded-full border border-white/20 shadow-2xl overflow-hidden transition-all duration-500 ${
             scrolled
-              ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl py-2.5 px-4 md:py-3 md:px-6'
-              : 'bg-white/40 dark:bg-black/20 backdrop-blur-md py-4 px-4 md:py-5 md:px-10'
+              ? 'bg-white/95 dark:bg-zinc-900/95 py-2.5 px-4 md:py-3 md:px-6'
+              : 'bg-white/90 dark:bg-black/80 py-4 px-4 md:py-5 md:px-10'
           }`}
         >
           <div className="flex items-center justify-between gap-2">

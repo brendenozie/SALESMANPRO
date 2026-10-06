@@ -155,7 +155,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
             <Image
               src={resolvedMedia.primaryImageUrl}
               alt={product.name}
-              loader={loader}
               fill
               sizes="(max-width: 640px) 50vw, 33vw"
               className="object-cover p-4 transition-transform duration-500 md:group-hover:scale-105"

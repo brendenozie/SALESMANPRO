@@ -1,0 +1,1250 @@
+[
+  {
+    "id": "ecommerce-shoes@v1",
+    "name": "Modern Shoes Store",
+    "bodyComponent": "EcommerceShoesSite",
+    "category": "ecommerce",
+    "storeCount": 1,
+    "stores": [
+      "shoes-store"
+    ],
+    "authenticSections": [
+      "HeroSlider",
+      "FeaturesSection",
+      "CategoriesSection",
+      "CategorySection",
+      "PromoSection",
+      "PopularProducts",
+      "MetricsSection",
+      "DailyBestSells",
+      "SleepTapeAd",
+      "AllProducts",
+      "TrendingPromotion",
+      "AwardsSection",
+      "BannerSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-default@v1",
+    "name": "General E-Commerce Storefront",
+    "bodyComponent": "EcommerceSite",
+    "category": "ecommerce",
+    "storeCount": 3,
+    "stores": [
+      "thevehicleshop",
+      "duka-yangu",
+      "duka-mpya"
+    ],
+    "authenticSections": [
+      "HeroSlider",
+      "CategoriesSection",
+      "PopularProducts",
+      "PromoSection",
+      "DailyBestSells",
+      "AllProducts",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-gaming@v1",
+    "name": "Gaming & Esports Store",
+    "bodyComponent": "EcommerceGamingSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "PopularProducts",
+      "DailyBestSells",
+      "Trending",
+      "PromoSection",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-agrovet@v1",
+    "name": "Agrovet & Agricultural Supplies",
+    "bodyComponent": "EcommerceAgrovetSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "AgroCTA"
+    ]
+  },
+  {
+    "id": "ecommerce-meat@v1",
+    "name": "Modern Meat & Gourmet Butchery",
+    "bodyComponent": "EcommerceMeatSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "AgroCTA"
+    ]
+  },
+  {
+    "id": "ecommerce-hardware@v1",
+    "name": "Hardware & Tools Store",
+    "bodyComponent": "EcommerceHardwareSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-watch@v1",
+    "name": "Luxury Timepieces & Watches",
+    "bodyComponent": "EcommerceWatchSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-flowers@v1",
+    "name": "Boutique Florist & Flowers",
+    "bodyComponent": "EcommerceFlowersSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-groceries@v1",
+    "name": "Supermarket & Fresh Groceries",
+    "bodyComponent": "EcommerceGroceriesSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-earphones@v1",
+    "name": "Pro Audio & Earphones",
+    "bodyComponent": "EcommerceEarphonesSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "id": "ecommerce-glasses@v1",
+    "name": "Eyewear & Optics Studio",
+    "bodyComponent": "EcommerceGlassesSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureGrid",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "QualityStandards",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AppointmentSection",
+      "LatestUpdates",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-honey@v1",
+    "name": "Pure Honey & Organic Bee Products",
+    "bodyComponent": "EcommerceHoneySite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "MissionNewsSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "ProductCommunitySection",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-peanuts@v1",
+    "name": "Organic Nuts & Peanuts",
+    "bodyComponent": "EcommercePeanutsSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "ProductShowcaseSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-baby@v1",
+    "name": "Baby & Toddler Boutique",
+    "bodyComponent": "EcommerceBabySite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-cake@v1",
+    "name": "Bakery & Designer Cakes",
+    "bodyComponent": "EcommerceCakeSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-pets@v1",
+    "name": "Pet Food & Supplies Store",
+    "bodyComponent": "EcommercePetsSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "StoreFeatures",
+      "CategorySection",
+      "PromoBanners",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-bike@v1",
+    "name": "Bicycles & Cycling Pro Shop",
+    "bodyComponent": "EcommerceBikeSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-motorcycle@v1",
+    "name": "Motorcycles & Riding Gear",
+    "bodyComponent": "EcommerceMotorCycleSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "CategorySection",
+      "FeatureSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MeetTheWatchmaker",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-book@v1",
+    "name": "Bookstore & Stationery",
+    "bodyComponent": "EcommerceBookSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "ecommerce-accessories@v1",
+    "name": "Auto Accessories & Parts",
+    "bodyComponent": "EcommerceAccessoriesSite",
+    "category": "ecommerce",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "FeaturesBarSection",
+      "CategorySection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "NewsletterPromoGrid",
+      "ProductShowcaseGrid",
+      "PromoBannerGridSection",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "services@v1",
+    "name": "Professional Agency & Service Provider",
+    "bodyComponent": "ServiceSite",
+    "category": "services",
+    "storeCount": 1,
+    "stores": [
+      "service-provider"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "AboutSection",
+      "ExcellenceSection",
+      "ServicesSection",
+      "PricingSection",
+      "TestimonialSection",
+      "FAQSection",
+      "CleaningTipsSection",
+      "GetStartedSection",
+      "BookingFormSection"
+    ]
+  },
+  {
+    "id": "bookings@v1",
+    "name": "General Appointment & Booking Hub",
+    "bodyComponent": "BookingsSite",
+    "category": "bookings",
+    "storeCount": 1,
+    "stores": [
+      "booking"
+    ],
+    "authenticSections": [
+      "Hero",
+      "FeaturesSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "PricingAndStatsSection",
+      "MassageFeatures",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "id": "barbershop@v1",
+    "name": "Classic Barbershop & Grooming",
+    "bodyComponent": "BarbershopBookingsSite",
+    "category": "bookings",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "Hero",
+      "FeaturesSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "PricingAndStatsSection",
+      "MassageFeatures",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "id": "salon-bookings@v1",
+    "name": "Luxury Salon & Spa Bookings",
+    "bodyComponent": "SalonBookingsSite",
+    "category": "bookings",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "Hero",
+      "FeaturesSection",
+      "StyleGallerySection",
+      "BenefitsSection",
+      "PricingAndStatsSection",
+      "MassageFeatures",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQsSection"
+    ]
+  },
+  {
+    "id": "drycleaning@v1",
+    "name": "Drycleaning & Laundry Express",
+    "bodyComponent": "DrycleaningBookingsSite",
+    "category": "bookings",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "AboutSection",
+      "ExcellenceSection",
+      "ServicesSection",
+      "PricingSection",
+      "TestimonialSection",
+      "FAQSection",
+      "CleaningTipsSection",
+      "GetStartedSection",
+      "BookingFormSection"
+    ]
+  },
+  {
+    "id": "consultancy@v1",
+    "name": "Executive Advisory & Business Coaching",
+    "bodyComponent": "ConsultancySite",
+    "category": "consultancy",
+    "storeCount": 2,
+    "stores": [
+      "flourishhub",
+      "flourishhub-3"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "SocialProofSection",
+      "AboutSection",
+      "ServicesSection",
+      "FeaturedListings",
+      "HowItWorks",
+      "BrowseByCategory",
+      "VideoShowcaseSection",
+      "TestimonialsCarouselSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "id": "blog@v1",
+    "name": "Digital Magazine & Editorial Blog",
+    "bodyComponent": "BlogSite",
+    "category": "blog",
+    "storeCount": 1,
+    "stores": [
+      "blog-content"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "FeaturedCategoriesSection",
+      "LatestNewsSection",
+      "StaffWritersSection",
+      "PopularBlogsSection",
+      "LatestPodcastSection",
+      "CtaSection"
+    ]
+  },
+  {
+    "id": "media@v1",
+    "name": "Film Studio & Media Entertainment",
+    "bodyComponent": "MediaSite",
+    "category": "media",
+    "storeCount": 1,
+    "stores": [
+      "media-entertainment"
+    ],
+    "authenticSections": [
+      "MediaHeroSection",
+      "EnhancedCategoriesSection",
+      "TopPicksCarousel",
+      "LatestReleasesSection",
+      "FeaturedArticlesSection",
+      "LatestVideosSection",
+      "TestimonialsSlider",
+      "NewsletterSignup",
+      "FAQsSection"
+    ]
+  },
+  {
+    "id": "nonprofit@v1",
+    "name": "Charity, Foundation & NGO",
+    "bodyComponent": "NonProfitSite",
+    "category": "nonprofit",
+    "storeCount": 1,
+    "stores": [
+      "nonprofit-community"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "id": "events@v1",
+    "name": "Event Ticketing & Experiences",
+    "bodyComponent": "EventsSite",
+    "category": "events",
+    "storeCount": 1,
+    "stores": [
+      "event-ticketing"
+    ],
+    "authenticSections": [
+      "HeroComponent",
+      "AboutSection",
+      "FeaturesSection",
+      "HowItWorksSection",
+      "LiveEventsSection",
+      "TestimonialsSection",
+      "PricingSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "id": "directory@v1",
+    "name": "Local Business Directory",
+    "bodyComponent": "DirectorySite",
+    "category": "directory",
+    "storeCount": 1,
+    "stores": [
+      "directory-listings"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "PromotionSection",
+      "NewArrivalsSection",
+      "CategorySection",
+      "PopularProductsSection",
+      "FeaturedListingsOverviewSection",
+      "TestimonialsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "id": "public-speaking@v1",
+    "name": "Keynote Speaker & Author",
+    "bodyComponent": "PublicSpeakingSite",
+    "category": "publicspeaking",
+    "storeCount": 3,
+    "stores": [
+      "pflourishhub",
+      "pflourishhub",
+      "flourishhub-2"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "SocialProofSection",
+      "ServicesSection",
+      "FeaturedListings",
+      "HowItWorks",
+      "BrowseByCategory",
+      "AboutSection",
+      "TestimonialsCarouselSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "id": "finance@v1",
+    "name": "Wealth Advisory & Financial Solutions",
+    "bodyComponent": "FinanceSite",
+    "category": "finance",
+    "storeCount": 1,
+    "stores": [
+      "finance-legal"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "PracticeAreasSection",
+      "WhyChooseUsSection",
+      "CaseStudiesTestimonials",
+      "ProcessWorkflowSection",
+      "MeetOurExperts",
+      "ConsultationPackagesSection",
+      "FAQSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "id": "healthcare@v1",
+    "name": "Medical Clinic & Health Center",
+    "bodyComponent": "HealthCareSite",
+    "category": "healthcare",
+    "storeCount": 1,
+    "stores": [
+      "healthcare-clinics"
+    ],
+    "authenticSections": [
+      "HealthcareHero",
+      "AboutSection",
+      "MedicalServicesSection",
+      "HealthTipsSection",
+      "DoctorsSection",
+      "PatientSection",
+      "FAQsSection",
+      "ContactSection",
+      "CTASection"
+    ]
+  },
+  {
+    "id": "portfolio@v1",
+    "name": "Creative Portfolio & CV",
+    "bodyComponent": "PortfolioSite",
+    "category": "portfolio",
+    "storeCount": 1,
+    "stores": [
+      "portfolio-personal-branding"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "BusinessSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "CaseStudiesSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection",
+      "MarketListingForm",
+      "FeaturedProjectsProps"
+    ]
+  },
+  {
+    "id": "company-portfolio@v1",
+    "name": "Corporate Enterprise Portfolio (Dark)",
+    "bodyComponent": "CompanyPortfolioSite",
+    "category": "corporate",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "GreyServicesSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "id": "company-portfolio-light@v1",
+    "name": "Corporate Enterprise Portfolio (Light)",
+    "bodyComponent": "CompanyPortfolioLightSite",
+    "category": "corporate",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "CoreHighlightsSection",
+      "GreyServicesSection",
+      "AboutUsSpotlight",
+      "ProgramsCausesSection",
+      "ImpactStatsSection",
+      "EventsUpdatesSection",
+      "NewsSection",
+      "TestimonialsNewsSection",
+      "CtaBoldSection",
+      "FAQSection",
+      "CallToActionSection"
+    ]
+  },
+  {
+    "id": "real-estate@v1",
+    "name": "Luxury Properties & Realty",
+    "bodyComponent": "RealEstateSite",
+    "category": "realestate",
+    "storeCount": 1,
+    "stores": [
+      "real-estate"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "CategoriesSection",
+      "FeaturedListingsWrapper",
+      "TrendingLocations",
+      "ListingsSection",
+      "WhyChooseUs",
+      "AgentsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "BlogSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "property-management@v1",
+    "name": "Property Asset & Tenancy Management",
+    "bodyComponent": "PropertyManagementSite",
+    "category": "realestate",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "CategoriesSection",
+      "FeaturedListingsWrapper",
+      "TrendingLocations",
+      "ListingsSection",
+      "WhyChooseUs",
+      "AgentsSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "BlogSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "automotive@v1",
+    "name": "Premier Car Dealership & Motors (Layout 1)",
+    "bodyComponent": "AutomotiveSite",
+    "category": "automotive",
+    "storeCount": 1,
+    "stores": [
+      "automotive"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "HowItWorks",
+      "BrowseByCategory",
+      "TrendingLocations",
+      "PopularVehiclesWrapper",
+      "VideoShowcaseSection",
+      "MarketInsightsSection",
+      "TestimonialsCarouselSection"
+    ]
+  },
+  {
+    "id": "automotive-2@v1",
+    "name": "Luxury Motors Dealership (Layout 2)",
+    "bodyComponent": "Automotive2Site",
+    "category": "automotive",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "AutomotiveFeaturedListingsWrapper",
+      "HowItWorks",
+      "BrowseByCategory",
+      "TrendingLocations",
+      "PopularVehiclesWrapper",
+      "VideoShowcaseSection",
+      "MarketInsightsSection",
+      "TestimonialsCarouselSection"
+    ]
+  },
+  {
+    "id": "courses@v1",
+    "name": "Online Academy & Courses (Layout 1)",
+    "bodyComponent": "CoursesSite",
+    "category": "courses",
+    "storeCount": 1,
+    "stores": [
+      "educational-online-courses"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "GlassInfoCardsSection",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "id": "courses-2@v1",
+    "name": "Modern University & Courses (Layout 2)",
+    "bodyComponent": "CoursesSite2",
+    "category": "courses",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "GlassInfoCardsSection",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "id": "courses-3@v1",
+    "name": "Executive Bootcamp (Layout 3)",
+    "bodyComponent": "CoursesSite3",
+    "category": "courses",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSection",
+      "GlassInfoCardsSection",
+      "SchoolSection",
+      "MainCoursesSection",
+      "AboutSection",
+      "TestimonialsSection",
+      "PopularBlogsSection",
+      "CtaSection",
+      "FAQSection"
+    ]
+  },
+  {
+    "id": "fashion@v1",
+    "name": "Modern Fashion & Apparel Boutique",
+    "bodyComponent": "FashionSite",
+    "category": "fashion",
+    "storeCount": 2,
+    "stores": [
+      "thefashionstore",
+      "fashion-store"
+    ],
+    "authenticSections": [
+      "HeroSlider",
+      "FeaturesSection",
+      "CategoriesSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "furniture@v1",
+    "name": "Contemporary Furniture & Interior Design",
+    "bodyComponent": "FurnitureSite",
+    "category": "furniture",
+    "storeCount": 1,
+    "stores": [
+      "furniture-store"
+    ],
+    "authenticSections": [
+      "HeroSlider",
+      "USPSlider",
+      "CategorySection",
+      "WeeklyProducts",
+      "RoomSection",
+      "DynamicPopularProducts",
+      "PromoSection",
+      "DynamicTrending",
+      "DynamicDailyBestSells",
+      "SecondPromoSection",
+      "AllProducts",
+      "MetricsSection",
+      "AwardsSection",
+      "TestimonialsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "restaurant@v1",
+    "name": "Bistro, Restaurant & Food Delivery",
+    "bodyComponent": "RestaurentSite",
+    "category": "restaurant",
+    "storeCount": 1,
+    "stores": [
+      "restaurant-food-delivery"
+    ],
+    "authenticSections": [
+      "RestaurantHero",
+      "SignatureDishes",
+      "WhyDineWithUs",
+      "Testimonials",
+      "RestaurantGallery",
+      "RestaurantFAQs"
+    ]
+  },
+  {
+    "id": "fitness@v1",
+    "name": "Gym, Fitness & Personal Training",
+    "bodyComponent": "FitnessSite",
+    "category": "fitness",
+    "storeCount": 1,
+    "stores": [
+      "fitness-wellness"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "CategorySection",
+      "ClassesGrid",
+      "ListingsGrid",
+      "VirtualTours",
+      "LocationsSection",
+      "MarketInsights",
+      "ExpertsSection",
+      "GallerySection",
+      "TestimonialsSection",
+      "AppPromotionSection",
+      "FaqsSection",
+      "NewsletterSection"
+    ]
+  },
+  {
+    "id": "travel@v1",
+    "name": "Safari Expeditions & Travel Agency",
+    "bodyComponent": "TravelSite",
+    "category": "travel",
+    "storeCount": 1,
+    "stores": [
+      "travel-tourism"
+    ],
+    "authenticSections": [
+      "Hero",
+      "FilterBar",
+      "Listings",
+      "TrendingLocations",
+      "VirtualTours",
+      "MarketInsights",
+      "MeetAgents",
+      "Testimonials",
+      "MobileAppPromo",
+      "NewsletterSignup"
+    ]
+  },
+  {
+    "id": "delivery@v1",
+    "name": "Courier & Express Logistics",
+    "bodyComponent": "DeliverySite",
+    "category": "logistics",
+    "storeCount": 0,
+    "stores": [],
+    "authenticSections": [
+      "HeroSlider",
+      "AbSection",
+      "TeamSection",
+      "ServicesSection",
+      "BookingSection",
+      "TestimonialsCarouselSection",
+      "WorkShowcase",
+      "ProcessTimeline",
+      "SocialProofSection",
+      "NetworkMap",
+      "BlogSection",
+      "ContactSection"
+    ]
+  },
+  {
+    "id": "marketplace@v1",
+    "name": "Multi-Vendor Marketplace",
+    "bodyComponent": "MarketPlaceSite",
+    "category": "marketplace",
+    "storeCount": 1,
+    "stores": [
+      "marketplace"
+    ],
+    "authenticSections": [
+      "HeroBanner",
+      "CategoryCarousel",
+      "StorePageSection",
+      "ReviewsSection"
+    ]
+  },
+  {
+    "id": "ghuba@v1",
+    "name": "Ghuba Super App Ecosystem",
+    "bodyComponent": "GhubaSite",
+    "category": "portal",
+    "storeCount": 1,
+    "stores": [
+      "ghuba"
+    ],
+    "authenticSections": [
+      "BannerSlider",
+      "FlashDeals",
+      "TopCate",
+      "NewArrivals",
+      "Discount",
+      "Shop",
+      "Annocument",
+      "Wrapper"
+    ]
+  },
+  {
+    "id": "security@v1",
+    "name": "Security Guarding & Systems (Layout 1)",
+    "bodyComponent": "SecuritySite",
+    "category": "security",
+    "storeCount": 1,
+    "stores": [
+      "security-services"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "ServicesSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "CaseStudiesSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection",
+      "MarketListingForm",
+      "FeaturedProjectsProps"
+    ]
+  },
+  {
+    "id": "security-2@v1",
+    "name": "Cyber & Security Consulting (Layout 2)",
+    "bodyComponent": "Security2Site",
+    "category": "security",
+    "storeCount": 1,
+    "stores": [
+      "security-services-2"
+    ],
+    "authenticSections": [
+      "HeroSection",
+      "ServicesSection",
+      "CaseStudiesSection",
+      "MarketplaceListingsSection",
+      "GettingStartedSection",
+      "FeaturesSection",
+      "AboutSection",
+      "DiscoveryCallSection",
+      "TestimonialsSection",
+      "FAQSection",
+      "CtaSection",
+      "ContactSection",
+      "MarketListingForm",
+      "FeaturedProjectsProps"
+    ]
+  },
+  {
+    "id": "saas@v1",
+    "name": "Cloud Software & Tech Platform",
+    "bodyComponent": "SaaSSite",
+    "category": "saas",
+    "storeCount": 1,
+    "stores": [
+      "saas-web-apps"
+    ],
+    "authenticSections": [
+      "EnhancedHeroSection",
+      "FeaturesSection",
+      "EnhancedPricingSection",
+      "EnhancedTestimonialsSection",
+      "EnhancedFAQsSection"
+    ]
+  },
+  {
+    "id": "default-site@v1",
+    "name": "Universal Clean Storefront",
+    "bodyComponent": "DefaultSite",
+    "category": "general",
+    "storeCount": 8,
+    "stores": [
+      "theduka",
+      "test-shop",
+      "my-duka",
+      "other",
+      "testother",
+      "students",
+      "school-head",
+      "dashboards"
+    ],
+    "authenticSections": [
+      "DefaultSite"
+    ]
+  }
+]

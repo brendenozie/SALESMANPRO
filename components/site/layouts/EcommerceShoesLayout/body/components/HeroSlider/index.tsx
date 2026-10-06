@@ -231,7 +231,6 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
                       priority
                       className="object-contain drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)] select-none pointer-events-none transform transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-2"
                       sizes="(max-width: 768px) 80vw, 40vw"
-                      loader={({ src }) => src}
                     />
                   )}
                 </EditableElement>

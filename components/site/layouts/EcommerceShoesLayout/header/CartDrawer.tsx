@@ -227,8 +227,7 @@ export default function CartDrawer({
                           alt={item.name} 
                           fill 
                           className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                          unoptimized
-                          loader={({ src }) => src}
+                          decoding="async"
                         />
                       </div>
                       

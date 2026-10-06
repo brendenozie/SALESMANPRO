@@ -29,29 +29,17 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   return `${src}?w=${width}&q=${quality || 75}`;
 }
 
-// 🧠 Dynamically import client-side sections (with skeleton fallback)
-const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
-  loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  ssr: false,
-});
-
-const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
-  loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  ssr: false,
-});
-
-const DynamicTrending = dynamic(() => import('./components/Trending'), {
-  loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  ssr: false,
-});
-
-const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+// 🧠 Dynamically import client-side sections
+const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'));
+const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'));
+const DynamicTrending = dynamic(() => import('./components/Trending'));
+const PromoSection = dynamic(() => import('./components/PromoSection'));
+const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'));
+const AllProducts = dynamic(() => import('./components/AllProducts'));
+const MetricsSection = dynamic(() => import('./components/MetricsSection'));
+const AwardsSection = dynamic(() => import('./components/AwardsSection'));
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'));
+const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'));
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
@@ -270,7 +258,8 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
           src={item.images[0] || 'https://via.placeholder.com/400'} 
           alt={item.name} 
           fill 
-          loader={loader}
+          sizes="(max-width: 768px) 50vw, 25vw"
+          decoding="async"
           className="object-cover transition-transform duration-700 group-hover:scale-110" 
         />
         
@@ -289,7 +278,7 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
 
         {/* Quick Actions */}
         <div className="absolute bottom-4 left-0 right-0 px-4 flex justify-between translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <button className="w-full bg-white/90 backdrop-blur text-slate-900 py-3 rounded-lg text-sm font-bold hover:bg-slate-900 hover:text-white transition-colors shadow-lg">
+          <button className="w-full bg-white/95 text-slate-900 py-3 rounded-lg text-sm font-bold hover:bg-slate-900 hover:text-white transition-colors shadow-lg">
             Add to Cart
           </button>
         </div>

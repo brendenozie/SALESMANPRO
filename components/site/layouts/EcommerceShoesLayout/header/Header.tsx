@@ -130,7 +130,6 @@ export default function Header() {
                   width={160}
                   height={80}
                   className="object-contain w-32 h-20 group-hover:rotate-12 transition-transform"
-                  loader={imageLoader}
                 />
               ) : (
                 <EditableElement

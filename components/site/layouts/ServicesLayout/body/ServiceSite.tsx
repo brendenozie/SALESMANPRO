@@ -13,16 +13,16 @@ import HeroSection from "../components/HeroSection";
 // Loading skeleton
 import { SkeletonGrid } from './SkeletonGrid/SkeletonGrid';
 
-// Dynamically import below-the-fold components
-const AboutSection = dynamic(() => import('../components/aboutUs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const ExcellenceSection = dynamic(() => import('../components/ExcellenceSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const ServicesSection = dynamic(() => import('../components/ServicesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const PricingSection = dynamic(() => import('../components/PricingSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const TestimonialSection = dynamic(() => import('../components/TestimonialSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const FAQSection = dynamic(() => import('../components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const CleaningTipsSection = dynamic(() => import('../components/CleaningTipsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const GetStartedSection = dynamic(() => import('../components/GetStartedSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const BookingFormSection = dynamic(() => import('../components/BookingFormSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+// Direct imports for reliable SSR and zero layout shifts
+import AboutSection from '../components/aboutUs';
+import ExcellenceSection from '../components/ExcellenceSection';
+import ServicesSection from '../components/ServicesSection';
+import PricingSection from '../components/PricingSection';
+import TestimonialSection from '../components/TestimonialSection';
+import FAQSection from '../components/FAQSection';
+import CleaningTipsSection from '../components/CleaningTipsSection';
+import GetStartedSection from '../components/GetStartedSection';
+import BookingFormSection from '../components/BookingFormSection';
 
 export default function ServiceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const { storeFormData } = useStoreContext(); // Use for global theme settings only

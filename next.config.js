@@ -9,8 +9,8 @@ try {
 const { PHASE_PRODUCTION_BUILD } = require('next/constants');
 
 const nextConfig = {
-  // Opt into output tracing for lightweight standalone production builds
-  output: 'standalone',
+  // Opt into output tracing only when STANDALONE env is explicitly requested to prevent ENOSPC disk exhaustion
+  output: process.env.STANDALONE ? 'standalone' : undefined,
   outputFileTracingRoot: path.join(__dirname),
 
   eslint: {
@@ -178,8 +178,8 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // In CI environments, disable Webpack disk packfile cache to prevent disk exhaustion (ENOSPC)
-    if (process.env.CI) {
+    // Disable Webpack disk packfile cache during build to prevent disk exhaustion (ENOSPC)
+    if (process.env.CI || process.env.NEXT_IS_BUILD_PHASE || process.env.DISABLE_WEBPACK_CACHE) {
       config.cache = false;
     }
 

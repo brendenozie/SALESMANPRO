@@ -198,9 +198,8 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
                 <Link href={buildUrl('/ecommerceshoes/products', { category: cat.category?.slug || cat.id })} className="block h-full w-full">
                   <Image
                     src={FALLBACK_IMAGES[idx % 3]}
-                    alt={cat.displayName || 'Category Collection'}
-                    loader={loader}
                     fill
+                    decoding="async"
                     className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-2"
                   />
                 </Link>

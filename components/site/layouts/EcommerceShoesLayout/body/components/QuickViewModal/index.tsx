@@ -179,7 +179,6 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                           fill
                           className="object-contain p-6"
                           sizes="(max-width: 768px) 100vw, 50vw"
-                          loader={({ src }) => src}
                         />
                       )}
                     </motion.div>
@@ -202,7 +201,6 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                             alt="" 
                             fill 
                             className="object-cover" 
-                            loader={({ src }) => src} 
                           />
                           {item.type === 'video' && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

@@ -71,7 +71,6 @@ export default function PopularSection({ promotions, themeSettings }: any) {
                 alt={categoryData.title}
                 fill
                 priority
-                loader={loader}
                 className="object-contain -rotate-12 drop-shadow-[0_35px_35px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_35px_35px_rgba(255,255,255,0.03)]"
               />
             </motion.div>
@@ -146,7 +145,6 @@ export default function PopularSection({ promotions, themeSettings }: any) {
                   alt="Feature Silhouette Variant"
                   width={140}
                   height={140}
-                  loader={loader}
                   className="object-contain -rotate-6 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-12 drop-shadow-md"
                 />
               </div>
@@ -194,7 +192,6 @@ export default function PopularSection({ promotions, themeSettings }: any) {
                   <div key={idx} className="h-5 relative w-12 flex items-center">
                     <Image 
                       src={logo || ''} 
-                      loader={loader}
                       alt="Brand Partner Identifier" 
                       fill
                       className="object-contain" 

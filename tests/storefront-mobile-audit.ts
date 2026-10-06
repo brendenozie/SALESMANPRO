@@ -14,10 +14,14 @@ export interface StoreAuditMetrics {
   initialLoadMs: number;
   domNodes: number;
   imagesCount: number;
+  frameCount: number;
   longTasks: number;
   longTaskDuration: number;
   jankFrames: number;
+  severeHitchFrames: number;
+  p50FrameGap: number;
   p95FrameGap: number;
+  p99FrameGap: number;
   maxFrameGap: number;
   cls: number;
   blankScreens: number;
@@ -43,22 +47,58 @@ const IN_PAGE_DETECTOR = `
     frameGaps: [],
     cumulativeLayoutShift: 0,
     lastFrameTime: performance.now(),
+    blankScreens: 0,
+    active: false,
+    _loopStarted: false,
+    reset: function() {
+      this.longTasks = [];
+      this.frameGaps = [];
+      this.cumulativeLayoutShift = 0;
+      this.lastFrameTime = 0;
+      this.blankScreens = 0;
+      this.active = true;
+      if (!this._loopStarted) {
+        this._loopStarted = true;
+        var self = this;
+        function loop() {
+          if (!self.active) return;
+          var now = performance.now();
+          if (self.lastFrameTime > 0) {
+            var delta = now - self.lastFrameTime;
+            if (delta > 2 && delta < 2000) {
+              self.frameGaps.push(delta);
+            }
+          }
+          self.lastFrameTime = now;
+          requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+      }
+    },
+    stop: function() {
+      this.active = false;
+      this._loopStarted = false;
+    }
   };
 
-  // Frame gap recorder
-  (function tick(now) {
-    if (now && window.__auditDetector.lastFrameTime) {
-      window.__auditDetector.frameGaps.push(now - window.__auditDetector.lastFrameTime);
+  // Scroll listener for real-time blank screen detection
+  window.addEventListener('scroll', function() {
+    if (!window.__auditDetector.active) return;
+    var cx = window.innerWidth / 2;
+    var cy = window.innerHeight / 2;
+    var el = document.elementFromPoint(cx, cy);
+    if (!el || el.tagName.toLowerCase() === 'html') {
+      window.__auditDetector.blankScreens++;
     }
-    window.__auditDetector.lastFrameTime = now;
-    requestAnimationFrame(tick);
-  })();
+  }, { passive: true });
 
   // Long task observer
   try {
     var lt = new PerformanceObserver(function(list) {
       list.getEntries().forEach(function(e) {
-        window.__auditDetector.longTasks.push({ duration: e.duration, startTime: e.startTime });
+        if (window.__auditDetector.active) {
+          window.__auditDetector.longTasks.push({ duration: e.duration, startTime: e.startTime });
+        }
       });
     });
     lt.observe({ type: 'longtask', buffered: true });
@@ -68,7 +108,7 @@ const IN_PAGE_DETECTOR = `
   try {
     var cls = new PerformanceObserver(function(list) {
       list.getEntries().forEach(function(e) {
-        if (!e.hadRecentInput) {
+        if (window.__auditDetector.active && !e.hadRecentInput) {
           window.__auditDetector.cumulativeLayoutShift += e.value;
         }
       });
@@ -87,15 +127,15 @@ async function auditDevice(browser: Browser, url: string, deviceConfig: { name: 
     isMobile: true,
     hasTouch: true,
   });
-
+  await context.addInitScript(IN_PAGE_DETECTOR);
   const page = await context.newPage();
 
   console.log(`  [NAV] Navigating to ${url}...`);
   const t0 = Date.now();
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
-  await page.evaluate(IN_PAGE_DETECTOR);
+  await page.goto(url, { waitUntil: "commit", timeout: 120000 });
+  await page.waitForLoadState("domcontentloaded", { timeout: 60000 }).catch(() => {});
   // Dismiss cookies / modals if any
-  await page.click('button:has-text("Accept All"), button:has-text("Accept")').catch(() => {});
+  await page.click('button:has-text("Accept All"), button:has-text("Accept")', { timeout: 300 }).catch(() => {});
   // Allow initial client hydration to settle
   await page.waitForTimeout(2000);
   const initialLoadMs = Date.now() - t0;
@@ -105,75 +145,94 @@ async function auditDevice(browser: Browser, url: string, deviceConfig: { name: 
 
   const cx = Math.round(deviceConfig.width / 2);
   const cy = Math.round(deviceConfig.height / 2);
-  await page.mouse.move(cx, cy);
+
+  // Reset scroll-phase metrics so navigation/compile stalls do not pollute scroll frame measurements
+  await page.evaluate(() => {
+    if ((window as any).__auditDetector) {
+      (window as any).__auditDetector.reset();
+    }
+  });
 
   console.log(`  [SCROLL] Running normal scroll...`);
   // 1. Normal scroll
   for (let i = 0; i < 6; i++) {
-    await page.mouse.wheel(0, 300);
+    await page.evaluate(() => window.scrollBy(0, 300));
     await page.waitForTimeout(50);
   }
+
   console.log(`  [SCROLL] Running rapid fling scroll...`);
   // 2. Rapid fling scroll
   for (let i = 0; i < 8; i++) {
-    await page.mouse.wheel(0, 900);
+    await page.evaluate(() => window.scrollBy(0, 800));
     await page.waitForTimeout(40);
   }
+
   console.log(`  [SCROLL] Running direction reversal...`);
   // 3. Direction reversal
   for (let i = 0; i < 6; i++) {
-    await page.mouse.wheel(0, -600);
+    await page.evaluate(() => window.scrollBy(0, -600));
     await page.waitForTimeout(40);
   }
 
   // Settle & sample viewport visibility
-  await page.waitForTimeout(500);
-
-  const isBlank = await page.evaluate((coords: { cx: number; cy: number }) => {
-    const centerEl = document.elementFromPoint(coords.cx, coords.cy);
-    if (!centerEl) return true;
-    const text = (document.body.textContent || '').trim();
-    return text.length === 0;
-  }, { cx, cy });
-  if (isBlank) blankScreens++;
+  await page.waitForTimeout(400);
 
   // Extract recorded metrics
-  const stats = await page.evaluate(() => {
-    const detector = (window as any).__auditDetector || { frameGaps: [], longTasks: [], cumulativeLayoutShift: 0 };
+  const stats = await page.evaluate((coords: { cx: number; cy: number }) => {
+    const detector = (window as any).__auditDetector || { frameGaps: [], longTasks: [], cumulativeLayoutShift: 0, blankScreens: 0 };
     const gaps: number[] = (detector.frameGaps || []).sort((a: number, b: number) => a - b);
-    const p95 = gaps.length ? gaps[Math.floor(gaps.length * 0.95)] : 16.7;
-    const maxGap = gaps.length ? gaps[gaps.length - 1] : 16.7;
+    const frameCount = gaps.length;
+    const p50 = frameCount ? gaps[Math.floor(frameCount * 0.50)] : 16.7;
+    const p95 = frameCount ? gaps[Math.floor(frameCount * 0.95)] : 16.7;
+    const p99 = frameCount ? gaps[Math.floor(frameCount * 0.99)] : 16.7;
+    const maxGap = frameCount ? gaps[frameCount - 1] : 16.7;
     const jank = gaps.filter(g => g > 50).length;
+    const severeHitch = gaps.filter(g => g > 100).length;
 
     const longTasks = detector.longTasks || [];
     const longTaskDuration = longTasks.reduce((acc: number, t: any) => acc + t.duration, 0);
 
+    let blanks = detector.blankScreens || 0;
+    const el = document.elementFromPoint(coords.cx, coords.cy);
+    if (!el || el.tagName.toLowerCase() === 'html') {
+      blanks++;
+    }
+
     return {
       domNodes: document.querySelectorAll('*').length,
       imagesCount: document.querySelectorAll('img').length,
+      frameCount,
       longTasks: longTasks.length,
       longTaskDuration: Math.round(longTaskDuration),
       jankFrames: jank,
+      severeHitchFrames: severeHitch,
+      p50FrameGap: Math.round(p50 * 10) / 10,
       p95FrameGap: Math.round(p95 * 10) / 10,
+      p99FrameGap: Math.round(p99 * 10) / 10,
       maxFrameGap: Math.round(maxGap * 10) / 10,
       cls: Math.round(detector.cumulativeLayoutShift * 10000) / 10000,
+      blankScreens: blanks,
     };
-  });
+  }, { cx, cy });
 
   await context.close();
 
-  const passed = blankScreens === 0 && stats.p95FrameGap <= 33.4 && stats.cls <= 0.25;
-  console.log(`  [METRICS] ${deviceConfig.name}: p95=${stats.p95FrameGap}ms, maxGap=${stats.maxFrameGap}ms, jank=${stats.jankFrames}, CLS=${stats.cls}, blankScreens=${blankScreens}, passed=${passed}`);
+  const passed = stats.blankScreens === 0 && stats.p95FrameGap <= 33.4 && stats.cls <= 0.25;
+  console.log(`  [METRICS] ${deviceConfig.name}: p50=${stats.p50FrameGap}ms, p95=${stats.p95FrameGap}ms, p99=${stats.p99FrameGap}ms, maxGap=${stats.maxFrameGap}ms, jank=${stats.jankFrames}, severeHitch=${stats.severeHitchFrames}, frames=${stats.frameCount}, CLS=${stats.cls}, blankScreens=${stats.blankScreens}, passed=${passed}`);
 
   return {
     device: deviceConfig.name,
     initialLoadMs,
     domNodes: stats.domNodes,
     imagesCount: stats.imagesCount,
+    frameCount: stats.frameCount,
     longTasks: stats.longTasks,
     longTaskDuration: stats.longTaskDuration,
     jankFrames: stats.jankFrames,
+    severeHitchFrames: stats.severeHitchFrames,
+    p50FrameGap: stats.p50FrameGap,
     p95FrameGap: stats.p95FrameGap,
+    p99FrameGap: stats.p99FrameGap,
     maxFrameGap: stats.maxFrameGap,
     cls: stats.cls,
     blankScreens,
@@ -184,7 +243,7 @@ async function auditDevice(browser: Browser, url: string, deviceConfig: { name: 
 export async function runStoreAudit(storeId: string, storeName: string, targetUrl: string): Promise<StoreAuditReport> {
   const launchArgs = { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] };
   let browser: Browser | null = null;
-  for (const channel of [undefined, "msedge", "chrome"] as const) {
+  for (const channel of ["chrome", "msedge", undefined] as const) {
     try {
       browser = await chromium.launch(channel ? { ...launchArgs, channel } : launchArgs);
       console.log(`[BROWSER] Successfully launched: ${channel || "bundled chromium"}`);

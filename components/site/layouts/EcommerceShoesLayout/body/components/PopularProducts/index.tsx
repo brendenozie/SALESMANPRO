@@ -157,7 +157,7 @@ const ProductGridItem = ({
               src={imageSrc}
               alt={product.name}
               fill
-              loader={loader}
+              decoding="async"
               className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors duration-500" />
@@ -352,7 +352,7 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
   const primary = themeSettings?.primaryColor || '#6366f1'; 
   const secondary = themeSettings?.secondaryColor || '#f43f5e';
 
-  const url = `${apiBaseUrl}/productsByFlag?companyId=${id}&flag=isFeatured&limit=5`;
+  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isFeatured&limit=5`;
   const { data, isLoading } = useSWR(url, createCachedFetcher(`products-${id}-featured`), {
     fallbackData: marketplaceListings?.length ? { data: marketplaceListings } : undefined,
   });

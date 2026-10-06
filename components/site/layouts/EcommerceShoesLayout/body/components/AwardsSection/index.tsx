@@ -101,7 +101,6 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                          <Image
                             src={src}
                             alt={award?.name}
-                            loader={imageLoader}
                             fill
                             className="object-contain"
                           />

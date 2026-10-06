@@ -200,7 +200,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
           {/* ELEGANT BADGES */}
           <div className="absolute top-6 left-6 flex flex-col gap-2 z-10">
             {product.isNewArrival && (
-              <span className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-zinc-900 dark:text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-[0.3em] rounded-full shadow-sm border border-white/20">
+              <span className="bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-[0.3em] rounded-full shadow-sm border border-white/20">
                 Limited Edition
               </span>
             )}
@@ -216,13 +216,13 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
 
           {/* TOP RIGHT ACTIONS */}
           <div className="absolute top-6 right-6 z-10 flex flex-col gap-3">
-            <button className="p-3 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-xl text-zinc-900 dark:text-white hover:bg-white dark:hover:bg-white dark:hover:text-black transition-all shadow-xl">
+            <button className="p-3 rounded-full bg-white/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-white hover:bg-white dark:hover:bg-white dark:hover:text-black transition-all shadow-xl">
               <HeartIcon className="w-4 h-4" />
             </button>
 
             <button 
               onClick={() => setIsQuickViewOpen(true)}
-              className="p-3 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-xl text-zinc-900 dark:text-white hover:bg-white dark:hover:bg-white dark:hover:text-black transition-all shadow-xl"
+              className="p-3 rounded-full bg-white/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-white hover:bg-white dark:hover:bg-white dark:hover:text-black transition-all shadow-xl"
               title="Quick Specifications View"
             >
               <EyeIcon className="w-4 h-4" />
@@ -232,7 +232,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="md:hidden p-3 rounded-full bg-[#25D366]/90 backdrop-blur-xl text-white shadow-xl active:scale-90 transition-transform"
+              className="md:hidden p-3 rounded-full bg-[#25D366] text-white shadow-xl active:scale-90 transition-transform"
             >
               <WhatsAppIcon className="w-4 h-4" />
             </a>
@@ -250,7 +250,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
                 >
                   <button
                     onClick={handleMainAction}
-                    className="relative flex-[3] h-14 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl text-zinc-900 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 rounded-2xl shadow-2xl border border-white/20 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all"
+                    className="relative flex-[3] h-14 bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 rounded-2xl shadow-2xl border border-white/20 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {hasVariants ? "Configure Setup" : "Reserve Piece"}
@@ -266,7 +266,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 h-14 bg-white/40 dark:bg-black/40 backdrop-blur-2xl text-zinc-900 dark:text-white flex items-center justify-center rounded-2xl shadow-2xl border border-white/10 hover:bg-zinc-900 dark:hover:bg-white dark:hover:text-zinc-950 transition-all hidden md:flex"
+                    className="flex-1 h-14 bg-white/80 dark:bg-zinc-800/80 text-zinc-900 dark:text-white flex items-center justify-center rounded-2xl shadow-2xl border border-white/10 hover:bg-zinc-900 dark:hover:bg-white dark:hover:text-zinc-950 transition-all hidden md:flex"
                     title="Consult Designer"
                   >
                     <WhatsAppIcon className="w-5 h-5" />
@@ -418,7 +418,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
                 )}
                 <button
                   onClick={() => setIsQuickViewOpen(false)}
-                  className="absolute top-6 left-6 p-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-full border border-zinc-200/50 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:scale-105 transition-transform md:hidden"
+                  className="absolute top-6 left-6 p-3 bg-white dark:bg-zinc-900 rounded-full border border-zinc-200/50 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:scale-105 transition-transform md:hidden"
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
