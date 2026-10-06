@@ -146,13 +146,12 @@ export default function EnhancedTestimonialsSection({ testimonials = [] }: { tes
                 className="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden flex-shrink-0 z-10 ring-4 ring-indigo-300 dark:ring-indigo-200 shadow-lg"
                 variants={itemVariants}
               >
-                <Image
+                <Image decoding="async"
                   src={featuredTestimonial.avatarUrl}
                   alt={featuredTestimonial.author}
                   width={128}
                   height={128}
                   className="object-cover w-full h-full"
-                  loader={customLoader}
                   priority
                 />
               </motion.div>
@@ -212,13 +211,12 @@ export default function EnhancedTestimonialsSection({ testimonials = [] }: { tes
                 {/* Avatar */}
                 {t.avatarUrl && (
                   <div className="w-20 h-20 rounded-full overflow-hidden mb-4 flex-shrink-0 z-10 ring-4 ring-indigo-400 dark:ring-indigo-300">
-                    <Image
+                    <Image decoding="async"
                       src={t.avatarUrl}
                       alt={t.author}
                       width={80}
                       height={80}
                       className="object-cover w-full h-full"
-                      loader={customLoader}
                     />
                   </div>
                 )}

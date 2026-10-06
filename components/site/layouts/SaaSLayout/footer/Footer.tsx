@@ -74,12 +74,11 @@ export default function SaasFooter() {
         <div className="space-y-6">
           <Link href={`/`} className="flex items-center space-x-2 cursor-pointer">
             {storeFormData?.logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={storeFormData?.logoUrl}
                 alt={storeFormData?.name}
                 width={48}
                 height={48}
-                loader={loader}
                 className="rounded-full"
               />
             ) : (
@@ -217,7 +216,7 @@ export default function SaasFooter() {
                 onMouseLeave={(e : any) => (e.currentTarget.style.color = primary)}
               >
                 {s.channel.toString().toLowerCase() === "twitter" && (
-                  <Image
+                  <Image decoding="async"
                     src="/icons/twitter.svg"
                     alt="Twitter"
                     width={20}
@@ -225,7 +224,7 @@ export default function SaasFooter() {
                   />
                 )}
                 {s.channel.toString().toLowerCase() === "linkedin" && (
-                  <Image
+                  <Image decoding="async"
                     src="/icons/linkedin.svg"
                     alt="LinkedIn"
                     width={20}
@@ -233,7 +232,7 @@ export default function SaasFooter() {
                   />
                 )}
                 {s.channel.toString().toLowerCase() === "github" && (
-                  <Image
+                  <Image decoding="async"
                     src="/icons/github.svg"
                     alt="GitHub"
                     width={20}

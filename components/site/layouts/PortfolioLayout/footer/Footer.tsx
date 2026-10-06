@@ -118,12 +118,11 @@ export default function Footer() {
           <motion.div className="space-y-5" variants={itemVariants}>
             <Link href={`/${slug}`} className="inline-block group">
               {logoUrl && logoUrl !== 'https://placehold.co/140x40/png/gray/white?text=Logo' ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name}
                   width={140}
                   height={36}
-                  loader={loader}
                   className="object-contain dark:brightness-200 transition-all duration-300"
                 />
               ) : (

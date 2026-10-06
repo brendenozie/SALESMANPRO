@@ -312,9 +312,8 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                                     >
                                     {/* --- Image Section --- */}
                                     <div className="relative w-full h-64 overflow-hidden bg-gray-100">
-                                        <Image
+                                        <Image decoding="async"
                                         src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop'}
-                                        loader={loader}
                                         alt={item.name}
                                         fill
                                         className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
@@ -436,9 +435,8 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                                 {/* Service Details (Left Side) */}
                                 <div className="space-y-6">
                                     <div className="relative w-full h-[250px] md:h-[300px] rounded-xl overflow-hidden shadow-xl border border-gray-200">
-                                        <Image
+                                        <Image decoding="async"
                                             src={selected.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-                                            loader={loader}
                                             alt={selected.name}
                                             fill
                                             sizes="(max-width: 768px) 100vw, 50vw"

@@ -47,10 +47,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             className="lg:col-span-7 relative group cursor-pointer"
           >
             <div className="relative h-[600px] w-full rounded-[3.5rem] overflow-hidden shadow-2xl bg-stone-900">
-              <Image
+              <Image decoding="async"
                 src={promotions[0].bannerUrl || 'https://images.unsplash.com/photo-1544022613-e87ca75a784a'}
                 alt={promotions[0].title}
-                loader={({ src }) => src}
                 fill
                 className="object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105 group-hover:opacity-100"
               />
@@ -120,12 +119,11 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     </a>
                     
                     <div className="h-16 w-16 rounded-2xl overflow-hidden relative rotate-3 group-hover:rotate-0 transition-transform duration-500 shadow-xl">
-                        <Image 
+                        <Image decoding="async" 
                             src={promo.bannerUrl || 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f'} 
                             alt="promo-thumb" 
                             fill 
                             className="object-cover"
-                            loader={({ src }) => src}
                         />
                     </div>
                   </div>

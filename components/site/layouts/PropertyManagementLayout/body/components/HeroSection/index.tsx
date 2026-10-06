@@ -142,13 +142,12 @@ export default function HeroSection({
           transition={{ duration: 1.2 }}
           className="absolute inset-0"
         >
-          <Image
+          <Image decoding="async"
             src={heroSlides[current].productImageUrl || heroSlides[current].imageUrl ||  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
             alt="Property"
             fill
             className="object-cover brightness-[0.6] saturate-[1.1]"
             priority
-            loader={({ src }) => src}
           />
         </motion.div>
       </AnimatePresence>

@@ -71,10 +71,9 @@ export default function CorporateHeroSection({ slideData, onPlay }: CorporateHer
         >
             {/* Background Image/Video Placeholder */}
             {slide.imageUrl && (
-                <Image
+                <Image decoding="async"
                     src={slide.imageUrl}
                     alt={slide.headline || "Featured Solution"}
-                    loader={loader}
                     fill
                     // Set image to be subtle, desaturated, and slightly blurred for a professional feel
                     className="absolute inset-0 object-cover object-center w-full h-full transition-transform duration-500 ease-in-out" 

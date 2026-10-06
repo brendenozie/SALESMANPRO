@@ -137,9 +137,8 @@ export default function CoreValuesSection({ themeSettings, CoreValues }: CoreVal
                   {/* Clean Framed Media Port */}
                   {item.icon && (
                     <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-slate-100 mb-5 bg-slate-50">
-                      <Image
+                      <Image decoding="async"
                         src={item.icon}
-                        loader={imageLoader}
                         alt={item.title}
                         fill
                         sizes="(max-w-7xl) 25vw, 50vw"

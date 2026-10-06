@@ -112,10 +112,9 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
             >
               {/* IMAGE ASSET CONTROLLER */}
               <div className="relative h-56 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
-                <Image
+                <Image decoding="async"
                   src={svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
                   alt={svc.name}
-                  loader={customLoader}
                   fill
                   className="object-cover transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

@@ -76,10 +76,9 @@ export default function ContactSection() {
             
             {/* Visual Side */}
             <div className="relative h-64 lg:h-auto min-h-[400px]">
-              <Image
+              <Image decoding="async"
                 src="https://images.unsplash.com/photo-1521791136368-1a46827d0af1?q=80&w=1200"
                 alt="Support community"
-                loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
                 fill
                 className="object-cover opacity-80"
               />
@@ -95,9 +94,8 @@ export default function ContactSection() {
                 <div className="flex -space-x-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center overflow-hidden">
-                      <Image 
+                      <Image decoding="async" 
                         src={`https://i.pravatar.cc/100?img=${i + 6}`}
-                        loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
                         alt="customer support member" 
                         width={32} 
                         height={32} 

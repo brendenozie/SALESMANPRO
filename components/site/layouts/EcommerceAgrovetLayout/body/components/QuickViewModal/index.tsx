@@ -145,13 +145,12 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                       animate={{ opacity: 1 }}
                       className="h-full w-full"
                     >
-                      <Image
+                      <Image decoding="async"
                         src={images[selectedImage]?.url || images[selectedImage] || FALLBACK_IMAGE_URL}
                         alt={product.name}
                         fill
                         className="object-cover p-4"
                         sizes="(max-width: 768px) 100vw, 50vw"
-                        loader={loader}
                       />
                     </motion.div>
                   </div>
@@ -170,12 +169,11 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                             }`}
                             style={{ borderColor: selectedImage === idx ? primaryColor : 'transparent' }}
                           >
-                            <Image 
+                            <Image decoding="async" 
                               src={currentSrc} 
                               alt="" 
                               fill 
                               className="object-cover" 
-                              loader={loader} 
                             />
                           </button>
                         );

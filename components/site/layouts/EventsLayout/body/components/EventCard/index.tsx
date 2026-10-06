@@ -48,12 +48,11 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
       {/* Event Hero Media Container */}
       <div className="relative aspect-[16/10] w-full rounded-[1.8rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 mb-5">
         <Link href={`/events/products/${event.id}`} className="block w-full h-full">
-          <Image
+          <Image decoding="async"
             src={event.images?.[0] || event.imageUrl || FALLBACK_IMAGE_URL}
             alt={event.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
-            loader={loader}
           />
           
           {/* Overlay Hover Effect */}

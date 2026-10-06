@@ -36,8 +36,22 @@ export default function Header() {
   const primaryColor = themeSettings?.primaryColor || '#D97706';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -78,13 +92,12 @@ export default function Header() {
             <Link href="/" className="group flex items-center gap-3">
               <div className="relative">
                 {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name || 'Sweet Crumbs'}
                     width={140}
                     height={50}
                     className="h-20 w-32 object-contain transition-transform group-hover:scale-105"
-                    loader={imageLoader}
                   />
                 ) : (
                   <div className="flex flex-col items-start">

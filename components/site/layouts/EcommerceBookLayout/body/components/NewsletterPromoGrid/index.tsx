@@ -78,12 +78,11 @@ export default function NewsletterPromoGrid() {
             >
               {/* Image with High-Contrast Editorial Overlay */}
               <div className="absolute inset-0">
-                <Image
+                <Image decoding="async"
                   src={item.image}
                   alt={item.title}
                   fill
                   className="object-cover grayscale-[0.4] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[2s] ease-out"
-                  loader={({ src }) => `${src}?auto=format&fit=crop&w=1200&q=80`}
                 />
                 <div className="absolute inset-0 bg-zinc-900/20 group-hover:bg-zinc-900/10 transition-colors duration-700" />
               </div>

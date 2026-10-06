@@ -85,10 +85,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Logo Area */}
                 <div className="relative w-24 h-24 mb-10 transition-transform duration-700 group-hover:scale-105">
                   {src ? (
-                    <Image
+                    <Image decoding="async"
                       src={src}
                       alt={label}
-                      loader={loader}
                       fill
                       className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700"
                     />

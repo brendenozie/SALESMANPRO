@@ -234,12 +234,11 @@ Please confirm item availability and payment details. Thank you!`;
                           className="flex gap-4 items-center border-b border-gray-100 pb-6 text-left"
                         >
                           <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
-                            <Image 
+                            <Image decoding="async" 
                               src={item.images?.[0] || '/placeholder.png'} 
                               alt={item.name || 'Product'} 
                               fill 
-                              className="object-cover"
-                              loader={({ src }) => src} 
+                              className="object-cover" 
                             />
                           </div>
                           

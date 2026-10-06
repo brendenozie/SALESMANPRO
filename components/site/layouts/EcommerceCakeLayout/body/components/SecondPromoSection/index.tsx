@@ -54,10 +54,9 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               {/* Main Image Frame */}
               <div className="absolute inset-0 rounded-[3rem] rotate-3 bg-slate-100 shadow-inner" />
               <div className="absolute inset-0 rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-105 group-hover:-rotate-2">
-                <Image
+                <Image decoding="async"
                   src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1000&q=80'}
-                  alt={promotion.title}
-                  loader={({ src }) => src} // Use the original URL without optimization
+                  alt={promotion.title} // Use the original URL without optimization
                   fill
                   className="object-cover"
                 />

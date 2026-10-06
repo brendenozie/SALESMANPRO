@@ -173,7 +173,7 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                           className="w-full h-full object-contain p-4 rounded-2xl"
                         />
                       ) : (
-                        <Image
+                        <Image decoding="async"
                           src={currentMediaItem?.url || resolvedMedia.primaryImageUrl}
                           alt={product.name}
                           fill
@@ -196,7 +196,7 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                           }`}
                           style={{ borderColor: selectedImage === idx ? primaryColor : 'transparent' }}
                         >
-                          <Image 
+                          <Image decoding="async" 
                             src={item.type === 'video' ? (item.posterUrl || item.thumbnailUrl || resolvedMedia.primaryImageUrl) : (item.thumbnailUrl || item.url)} 
                             alt="" 
                             fill 

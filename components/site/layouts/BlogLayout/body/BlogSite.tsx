@@ -16,12 +16,12 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 // Loading skeleton
 
 // Dynamically import below-the-fold components
-const FeaturedCategoriesSection = dynamic(() => import('./components/FeaturedCategoriesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const LatestNewsSection = dynamic(() => import('./components/LatestNewsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const StaffWritersSection = dynamic(() => import('./components/StaffWritersSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const LatestPodcastSection = dynamic(() => import('./components/LatestPodcastSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FeaturedCategoriesSection = dynamic(() => import('./components/FeaturedCategoriesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const LatestNewsSection = dynamic(() => import('./components/LatestNewsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const StaffWritersSection = dynamic(() => import('./components/StaffWritersSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const LatestPodcastSection = dynamic(() => import('./components/LatestPodcastSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
 
 
 export default function BlogSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {

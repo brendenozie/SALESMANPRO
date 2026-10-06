@@ -139,12 +139,11 @@ export default function ContactFormSection() {
           >
             {/* Background Image Layer */}
             <div className="absolute inset-0 z-0">
-              <Image
+              <Image decoding="async"
                 src={ctaImageUrl}
                 alt="Connect with us"
                 fill
                 className="object-cover object-center"
-                loader={loader}
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 onError={handleImageError}
               />

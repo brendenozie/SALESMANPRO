@@ -37,7 +37,21 @@ export default function Header() {
   const primaryColor = themeSettings?.primaryColor || '#E62E2E';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -63,7 +77,7 @@ export default function Header() {
       <header
         className={`fixed top-0 left-0 w-full z-[60] transition-all duration-500 ease-in-out ${
           scrolled 
-            ? 'py-3 bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm' 
+            ? 'py-3 bg-white/95 shadow-sm border-b border-black/5 shadow-sm' 
             : 'py-8 bg-transparent'
         }`}
       >
@@ -80,13 +94,12 @@ export default function Header() {
 
             <Link href="/" className="flex items-center gap-3 group">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || ''}
                   width={140}
                   height={40}
                   className="h-20 w-32 transition-all"
-                  loader={imageLoader}
                 />
               ) : (
                 <span className="text-black text-2xl font-black italic tracking-tighter uppercase">

@@ -105,10 +105,9 @@ export default function EventsSection() {
                 className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg dark:shadow-2xl dark:shadow-black/40 border border-gray-100 dark:border-slate-700 overflow-hidden group transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
               >
                 <div className="relative h-56 w-full overflow-hidden">
-                  <Image
+                  <Image decoding="async"
                     src={evt.imageUrl || "https://placehold.co/800x600/1E293B/475569?text=Event"}
                     alt={evt.title || 'Event Image'}
-                    loader={loader}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-110"

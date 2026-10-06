@@ -93,10 +93,9 @@ export default function FabricGallery() {
                 }`}
               >
                 <div className="relative w-full h-full overflow-hidden bg-slate-100">
-                  <Image
+                  <Image decoding="async"
                     src={image.src}
                     alt={image.title}
-                    loader={({ src }) => `${src}?w=800&h=1000&fit=crop&q=85`}
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-105 brightness-[0.95] group-hover:brightness-100"
                   />
@@ -150,10 +149,9 @@ export default function FabricGallery() {
                 className="relative max-w-4xl w-full aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl"
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
-                <Image
+                <Image decoding="async"
                   src={selectedImage.src}
                   alt={selectedImage.title}
-                  loader={({ src }) => `${src}?w=1200&h=1500&fit=crop&q=95`}
                   fill
                   className="object-cover"
                 />

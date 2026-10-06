@@ -150,13 +150,12 @@ export default function WhyDineWithUs({ storeFormData }: { storeFormData: any })
             whileInView={{ x: 0, opacity: 1 }}
             viewport={{ once: true }}
           >
-            <Image
+            <Image decoding="async"
               src={restaurant.aboutImage || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
               alt={`${restaurant.name} kitchen`}
               width={700}
               height={500}
               className="rounded-2xl shadow-xl"
-              loader={loader}
             />
           </motion.div>
 
@@ -175,13 +174,12 @@ export default function WhyDineWithUs({ storeFormData }: { storeFormData: any })
 
             {/* Founder / Head Chef */}
             <div className="flex items-center gap-4 mb-6">
-              <Image
+              <Image decoding="async"
                 src={restaurant.founder.image || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                 alt={restaurant.founder.name}
                 width={64}
                 height={64}
                 className="rounded-full object-cover"
-                loader={loader}
               />
               <div>
                 <p className="font-bold text-gray-900 dark:text-gray-100">

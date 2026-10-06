@@ -61,12 +61,11 @@ export default function SaasHeader() {
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <Image
+              <Image decoding="async"
                 src={siteLogoUrl}
                 alt={siteName}
                 width={40}
                 height={40}
-                loader={loader}
                 className="object-cover"
               />
             </motion.div>
@@ -155,12 +154,11 @@ export default function SaasHeader() {
           >
             <div className="flex justify-between items-center mb-10">
               {siteLogoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={siteLogoUrl}
                   alt={siteName}
                   width={45}
                   height={45}
-                  loader={loader}
                   className="rounded-full  h-20 w-32"
                 />
               ) : (

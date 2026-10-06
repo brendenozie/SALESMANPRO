@@ -76,7 +76,7 @@ const VehicleCard = ({
       >
         {/* Image Area */}
         <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
-          <Image
+          <Image decoding="async"
             src={
               item.images?.[0] ||
               "https://placehold.co/800x600/EEE/31343C?text=Vehicle"
@@ -84,7 +84,6 @@ const VehicleCard = ({
             alt={item.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
-            loader={customLoader}
           />
           
           {/* Gradient Overlay */}

@@ -132,13 +132,12 @@ export default function HeroSection({
           transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
         >
-          <Image
+          <Image decoding="async"
             src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670&auto=format&fit=crop"}
             alt="Premium Ambient Background"
             fill
             className="object-cover brightness-[0.7] dark:brightness-[0.4] saturate-[1.15] scale-105 select-none pointer-events-none"
             priority
-            loader={({ src }) => src}
           />
           {/* Multi-layered radial and linear scrims for robust text contrast masking */}
           <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/90 via-neutral-950/40 to-transparent" />

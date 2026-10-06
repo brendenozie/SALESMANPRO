@@ -146,7 +146,7 @@ export default function AutomotiveDukaHeader() {
         {/* LOGO ENGINE */}
         <Link href="/" className="flex-shrink-0 group">
           {logoUrl ? (
-            <Image src={logoUrl} alt={name} width={150} height={50} loader={imageLoader} className="object-contain h-12 w-auto" />
+            <Image decoding="async" src={logoUrl} alt={name} width={150} height={50} className="object-contain h-12 w-auto" />
           ) : (
             <div className="flex items-center gap-2.5">
               <div className="bg-[var(--primary-color)] p-2 rounded transform group-hover:scale-105 group-hover:rotate-6 transition-all duration-300 shadow-lg shadow-amber-500/10">
@@ -207,7 +207,7 @@ export default function AutomotiveDukaHeader() {
           <button onClick={handleUserAction} className="group flex-shrink-0">
             {user?.image ? (
               <div className="h-9 w-9 relative rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-800 group-hover:border-[var(--primary-color)] transition-all">
-                <Image src={user.image} alt="User Autoprofile" fill className="object-cover" loader={imageLoader} />
+                <Image decoding="async" src={user.image} alt="User Autoprofile" fill className="object-cover" />
               </div>
             ) : (
               <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-lg text-zinc-500 dark:text-zinc-400 group-hover:text-[var(--primary-color)] group-hover:border-[var(--primary-color)]/50 transition-all">
@@ -280,7 +280,7 @@ export default function AutomotiveDukaHeader() {
       <AnimatePresence>
         {isDrawerOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDrawerOpen(false)} className="fixed inset-0 z-[60] bg-zinc-950/80 backdrop-blur-md lg:hidden" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDrawerOpen(false)} className="fixed inset-0 z-[60] bg-zinc-950/95 shadow-sm lg:hidden" />
             <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'tween', duration: 0.25 }} className="fixed inset-y-0 left-0 z-[70] bg-white dark:bg-[#09090b] p-6 w-[280px] border-r border-zinc-200 dark:border-zinc-800 lg:hidden flex flex-col shadow-2xl">
                <div className="flex justify-between items-center mb-8">
                  <span className="font-mono text-xs font-bold text-[var(--primary-color)] uppercase tracking-widest">DRIVE CORE // MENU</span>

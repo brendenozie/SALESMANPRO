@@ -66,9 +66,23 @@ export default function Header() {
 
   // --- Scroll Background Logic ---
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 80);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // --- Disable Body Scroll When Mobile Menu is Open ---
@@ -154,15 +168,12 @@ export default function Header() {
               className="flex items-center gap-2 cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
             >
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name}
                   width={160}
                   height={80}
                   className="h-20 w-32 object-contain rounded-lg"
-                  loader={({ src, width, quality }) =>
-                    `${src}?w=${width}&q=${quality || 75}`
-                  }
                   onError={(e) =>
                     ((e.target as HTMLImageElement).src =
                       'https://placehold.co/40x40/8B5CF6/ffffff?text=L')

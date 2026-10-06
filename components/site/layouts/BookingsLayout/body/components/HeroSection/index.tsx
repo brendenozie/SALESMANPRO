@@ -125,9 +125,8 @@ export default function Hero({
       {/* BACKGROUND VISUAL CONTEXT OVERLAYS */}
       <div className="absolute inset-0 z-0 opacity-15 dark:opacity-40 mix-blend-luminosity pointer-events-none select-none transition-opacity duration-300">
         {heroData.bannerUrl && (
-          <Image
+          <Image decoding="async"
             src={heroData.bannerUrl}
-            loader={loader}
             alt="Context Visual Background"
             fill
             priority

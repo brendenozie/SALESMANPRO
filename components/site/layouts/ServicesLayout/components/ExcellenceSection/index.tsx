@@ -247,10 +247,9 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
 
                       {/* Right Column: Premium Framed Media */}
                       <div className="hidden lg:block lg:col-span-6 relative w-full h-full min-h-[300px] rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-inner">
-                        <Image 
+                        <Image decoding="async" 
                           src={perk.image || defaultPerks[0].image}
                           alt={perk.title}
-                          loader={loader}
                           fill
                           sizes="(max-w-1024px) 100vw, 50vw"
                           priority

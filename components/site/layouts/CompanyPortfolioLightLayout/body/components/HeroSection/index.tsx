@@ -83,10 +83,9 @@ export default function HeroSlider({ heroSlides, themeSettings, name }: HeroSlid
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 via-30% to-transparent dark:from-zinc-950 dark:via-zinc-950/20 z-10 transition-colors duration-300" />
           <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent dark:from-zinc-950 dark:via-transparent z-10 transition-colors duration-300" />
           
-          <Image
+          <Image decoding="async"
             src={currentSlide.imageUrl || '/fallback-logistics.jpg'}
             alt={name || "Trading Commodity Operations"}
-            loader={loader}
             fill
             priority
             className="object-cover object-right lg:object-center opacity-85 dark:opacity-90 brightness-105 dark:brightness-95 contrast-[1.02] transition-all duration-700"

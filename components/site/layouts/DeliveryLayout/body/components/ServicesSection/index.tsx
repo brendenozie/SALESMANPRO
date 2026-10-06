@@ -207,10 +207,9 @@ export default function ServicesGrid({ storeFormData, config, sectionId }: Servi
                                 >
                                     {/* Image Frame */}
                                     <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-slate-100 shadow-2xl">
-                                        <Image
+                                        <Image decoding="async"
                                             src={service.image || SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
                                             alt={service.title}
-                                            loader={loader}
                                             fill
                                             className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
                                         />

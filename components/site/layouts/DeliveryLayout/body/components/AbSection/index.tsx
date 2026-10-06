@@ -70,11 +70,10 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                   style={{ borderColor: `${primaryColor}33` }}
                 />
                 <div className="rounded-[2rem] overflow-hidden shadow-2xl aspect-[4/5] relative border-8 border-white">
-                  <Image 
+                  <Image decoding="async" 
                     src={images.main} 
                     alt="Operations Excellence" 
                     fill
-                    loader={loader}
                     className="object-cover transition-transform duration-1000 group-hover:scale-110" 
                   />
                 </div>
@@ -88,7 +87,7 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                    transition={{ delay: 0.3 }}
                    className="rounded-2xl overflow-hidden shadow-xl aspect-square relative border-4 border-white"
                 >
-                  <Image src={images.sub1} alt="Reliable Fleet" fill loader={loader} className="object-cover" />
+                  <Image decoding="async" src={images.sub1} alt="Reliable Fleet" fill className="object-cover" />
                 </motion.div>
                 <motion.div 
                    initial={{ opacity: 0, y: 30 }}
@@ -96,7 +95,7 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                    transition={{ delay: 0.5 }}
                    className="rounded-2xl overflow-hidden shadow-xl aspect-square relative border-4 border-white"
                 >
-                  <Image src={images.sub2} alt="Global Logistics" fill loader={loader} className="object-cover" />
+                  <Image decoding="async" src={images.sub2} alt="Global Logistics" fill className="object-cover" />
                 </motion.div>
               </div>
             </div>

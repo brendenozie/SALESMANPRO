@@ -130,7 +130,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
               <motion.span 
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl text-zinc-900 dark:text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-[0.25em] rounded-full border border-white/20 shadow-xl"
+                className="bg-white/95 dark:bg-zinc-900/95 shadow-sm text-zinc-900 dark:text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-[0.25em] rounded-full border border-white/20 shadow-xl"
               >
                 New Season
               </motion.span>

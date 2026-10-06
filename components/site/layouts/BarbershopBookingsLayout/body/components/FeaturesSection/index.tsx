@@ -94,12 +94,11 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                             >
                                 {/* Background Image */}
                                 <div className="absolute inset-0 z-0 transition-transform duration-700 ease-out scale-110 group-hover:scale-100">
-                                    <Image
+                                    <Image decoding="async"
                                         src={feature.imageUrl}
                                         alt={feature.title}
                                         fill
                                         className="object-cover opacity-60 dark:opacity-40 group-hover:opacity-80 dark:group-hover:opacity-60 transition-opacity"
-                                        loader={loader}
                                     />
                                     {/* Adaptive Overlay Gradient */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a]/40 to-transparent" />

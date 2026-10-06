@@ -158,12 +158,11 @@ export default function BrightProfessionalHero({storeFormData}: { storeFormData:
                 {/* Main Image Frame */}
                 <div className="relative bg-white p-3 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.07)] border border-gray-100">
                   <div className="relative aspect-[4/5] overflow-hidden">
-                    <Image
+                    <Image decoding="async"
                       src={activeSlide?.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"}
                       alt="Student Excellence"
                       fill
                       className="object-cover"
-                      loader={customLoader}
                       priority
                     />
                     

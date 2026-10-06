@@ -88,12 +88,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
           >
             <div className="relative aspect-[4/5] w-full rounded-[4rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[1px] border-stone-200 dark:border-stone-800 p-4 bg-white dark:bg-stone-900">
               <div className="relative h-full w-full rounded-[3rem] overflow-hidden">
-                <Image
+                <Image decoding="async"
                     src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1551028150-64b9f398f678'}
                     alt={promotion.title}
                     fill
-                    className="object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000 hover:scale-110"
-                    loader={({ src }) => src} 
+                    className="object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000 hover:scale-110" 
                 />
               </div>
               

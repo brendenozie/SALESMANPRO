@@ -60,10 +60,9 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute inset-0"
               >
-                <Image
+                <Image decoding="async"
                   src={current.avatarUrl || `https://ui-avatars.com/api/?name=${current.authorName}`}
                   alt={current.authorName}
-                  loader={({src})=>src}
                   fill
                   className="object-cover grayscale opacity-70 transition-all duration-700 hover:grayscale-0 hover:opacity-100"
                 />

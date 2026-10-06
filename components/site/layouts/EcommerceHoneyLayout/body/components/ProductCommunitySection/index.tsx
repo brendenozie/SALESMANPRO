@@ -40,12 +40,11 @@ export default function ProductCommunitySection() {
               className="group text-center"
             >
               <div className="relative aspect-square mb-6 overflow-hidden bg-[#f9f9f9]">
-                <Image 
+                <Image decoding="async" 
                   src={product.img} 
                   alt={product.name} 
                   fill 
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  loader={loader}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
               </div>
@@ -81,12 +80,11 @@ export default function ProductCommunitySection() {
           <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="relative aspect-square overflow-hidden bg-gray-100">
-                <Image 
+                <Image decoding="async" 
                   src={`https://images.unsplash.com/photo-1590779033100-9f60a05a013d?auto=format&fit=crop&w=400&q=80&sig=${i}`}
                   alt="Gallery"
                   fill
                   className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                  loader={loader}
                 />
               </div>
             ))}

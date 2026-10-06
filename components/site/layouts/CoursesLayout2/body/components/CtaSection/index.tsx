@@ -134,12 +134,11 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className="w-10 h-10 border-2 border-gray-900 overflow-hidden grayscale contrast-125">
-                      <Image 
+                      <Image decoding="async" 
                         src={`https://i.pravatar.cc/100?img=${i + 15}`} 
                         alt="Cohort Candidate" 
                         width={40} 
                         height={40} 
-                        loader={({ src }) => src} 
                         className="object-cover"
                       />
                     </div>

@@ -210,15 +210,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
         {/* Product Display Viewport */}
         <Link href={`/gamingecommerce/products/${product.id}`} className="relative h-60 w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950/60 block">
-          <Image
+          <Image decoding="async"
             src={imageSrc}
             alt={name || "Product Image"}
             fill
-            loader={loader}
             className="object-contain p-6 opacity-90 dark:opacity-85 group-hover:scale-105 transition-transform duration-500"
           />
           {resolvedMedia.hasVideo && (
-            <div className="absolute top-3 left-3 z-10 bg-black/80 backdrop-blur-md px-2 py-0.5 border border-red-600/40 flex items-center gap-1 text-white">
+            <div className="absolute top-3 left-3 z-10 bg-black/95 shadow-sm px-2 py-0.5 border border-red-600/40 flex items-center gap-1 text-white">
               <VideoCameraIcon className="w-3 h-3 text-red-500" />
               <span className="text-[9px] font-mono font-bold uppercase tracking-wider">VIDEO</span>
             </div>
@@ -308,7 +307,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   // VISUAL_LOADOUT
                 </span>
                 <div className="relative h-44 w-44 my-4 opacity-90">
-                  <Image src={imageSrc} alt={name || "Preview"} fill loader={loader} className="object-contain" />
+                  <Image decoding="async" src={imageSrc} alt={name || "Preview"} fill className="object-contain" />
                 </div>
                 <div className="space-y-1 w-full">
                   <h4 className="text-sm font-mono text-zinc-300 uppercase tracking-tight line-clamp-2">{name}</h4>

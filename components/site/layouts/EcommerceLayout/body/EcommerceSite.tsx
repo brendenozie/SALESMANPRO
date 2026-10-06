@@ -15,18 +15,15 @@ import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 // 🧠 Dynamically import client-side product feeds (with skeleton fallback)
 const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
   loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  ssr: false,
-});
+  });
 
 const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
   loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  ssr: false,
-});
+  });
 
 const DynamicTrending = dynamic(() => import('./components/Trending'), {
   loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,
-  ssr: false,
-});
+  });
 
 // Server-renderable sections (SSR preserved)
 const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div> });

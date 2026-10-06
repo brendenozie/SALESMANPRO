@@ -117,8 +117,7 @@ export default function classesGrid({
               <div>
                 {/* HERO VISUAL COVER CONTAINER */}
                 <div className="relative h-72 sm:h-80 w-full overflow-hidden">
-                  <Image
-                    loader={loader}
+                  <Image decoding="async"
                     src={course.imageUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop"}
                     alt={course.title}
                     fill

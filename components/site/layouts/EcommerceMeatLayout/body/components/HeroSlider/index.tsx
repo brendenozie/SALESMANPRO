@@ -123,14 +123,12 @@ export default function TuyiaFarmImmersiveHero({ heroSlides, themeSettings }: Im
             transition={{ duration: 1.5, ease: "easeOut" }}
             className="absolute inset-0 will-change-transform"
           >
-            <Image 
+            <Image decoding="async" 
               src={currentSlide?.image || currentSlide?.productImageUrl || currentSlide?.imageUrl || defaultChapters[0].image} 
               alt={currentSlide?.headline || "Hero Canvas"}
-              loader={({ src }) => src}
               fill 
               className="object-cover"
               priority
-              unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#080807] via-[#080807]/50 to-[#080807]/70" />
           </motion.div>

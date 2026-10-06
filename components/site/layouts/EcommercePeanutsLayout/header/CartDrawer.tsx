@@ -242,12 +242,11 @@ Please confirm item availability and payment details. Thank you!`;
                         >
                           {/* Image Container */}
                           <div className="relative h-24 w-20 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
-                            <Image 
+                            <Image decoding="async" 
                               src={item.images?.[0] || '/placeholder.png'} 
                               alt={item.name || 'Product'} 
                               fill 
                               className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              loader={({ src }) => src}
                             />
                           </div>
                           

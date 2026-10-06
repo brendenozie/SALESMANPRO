@@ -45,8 +45,22 @@ export default function PeanutHeader() {
   const peanutGold = '#F3A852';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -89,7 +103,7 @@ export default function PeanutHeader() {
           px-6 py-3 
           rounded-2xl z-50 transition-all duration-500
           ${scrolled 
-            ? 'bg-white/80 backdrop-blur-xl shadow-[0_10px_40px_rgba(62,39,35,0.1)] border border-white/20 py-2' 
+            ? 'bg-white/95 shadow-sm shadow-[0_10px_40px_rgba(62,39,35,0.1)] border border-white/20 py-2' 
             : 'bg-transparent'} 
         `}
       >
@@ -100,12 +114,11 @@ export default function PeanutHeader() {
             <motion.div whileHover={{ rotate: -5 }} className="relative flex items-center gap-3">
               {logoUrl ? (
                 <div className="w-32 h-20 relative">
-                    <Image
+                    <Image decoding="async"
                     src={logoUrl}
                     alt={name}
                     fill
                     className="object-contain  h-20 w-32"
-                    loader={imageLoader}
                     />
                 </div>
               ) : (

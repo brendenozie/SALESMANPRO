@@ -189,12 +189,11 @@ export default function RestaurantGallery() {
               className={`relative rounded-lg overflow-hidden shadow-md cursor-pointer group ${image.spanClasses || ''}`} // Apply span classes
               onClick={() => handleImageClick(image)}
             >
-              <Image
+              <Image decoding="async"
                 src={image.imageUrl}
                 alt={image.altText}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
-                loader={loader}
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" // Optimize image loading
                 onError={handleImageError}
               />

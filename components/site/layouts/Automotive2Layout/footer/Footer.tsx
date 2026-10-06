@@ -138,7 +138,7 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           <div className="space-y-4">
             <Link href="/automotive" className="inline-flex items-center gap-2">
               {storeFormData?.logo ? (
-                <Image
+                <Image decoding="async"
                   src={storeFormData.logo}
                   alt={storeFormData?.name || "Logo"}
                   width={140}

@@ -214,7 +214,7 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
                     <div className="flex -space-x-2.5">
                       {[1, 2, 3].map((i) => (
                         <div key={i} className="w-8 h-8 rounded-full border-2 border-[#F9F6F2] bg-gray-200 overflow-hidden shrink-0 relative">
-                          <Image src={`https://i.pravatar.cc/100?img=${i + 12}`} alt="User profile illustration" fill loader={imageLoader} className="object-cover" />
+                          <Image decoding="async" src={`https://i.pravatar.cc/100?img=${i + 12}`} alt="User profile illustration" fill className="object-cover" />
                         </div>
                       ))}
                     </div>
@@ -254,9 +254,8 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
                   style={{ x: mousePos.x * 0.4, y: mousePos.y * 0.4 }}
                   className="relative w-full h-full rounded-[32px] sm:rounded-[40px] overflow-hidden shadow-2xl z-10 bg-stone-100"
                 >
-                  <Image 
-                    src={slides[current].imageUrl || ''} 
-                    loader={imageLoader}
+                  <Image decoding="async" 
+                    src={slides[current].imageUrl || ''}
                     alt="Premium Editorial Eyewear" 
                     fill
                     priority
@@ -279,7 +278,7 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
                 >
                   <div className="absolute top-3 right-3 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-md tracking-wider">SALE</div>
                   <div className="h-20 sm:h-24 w-full relative mb-3 bg-stone-50 rounded-xl p-1">
-                    <Image src={slides[current].productImageUrl || ''} loader={imageLoader} alt="Product frame item illustration" fill className="object-contain" />
+                    <Image decoding="async" src={slides[current].productImageUrl || ''} alt="Product frame item illustration" fill className="object-contain" />
                   </div>
                   <div className="space-y-0.5 text-left">
                     <p className="text-[9px] text-[#F3A852] font-bold tracking-widest uppercase">New Arrival</p>

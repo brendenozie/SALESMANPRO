@@ -63,13 +63,12 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl group"
             >
-              <Image
+              <Image decoding="async"
                 src={founderImage || "/image77.png"} // Ensuring your specified path is used
                 alt={founderName || "Founder" }
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
                 priority
-                loader={loader}
               />
               
               {/* Overlay Gradient */}

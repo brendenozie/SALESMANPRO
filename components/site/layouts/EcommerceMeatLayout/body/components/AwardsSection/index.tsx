@@ -76,10 +76,9 @@ export default function HallOfHeritage({ awards }: { awards?: Award[] | null }) 
 
                 <div className="relative w-32 h-32 mb-10 grayscale group-hover:grayscale-0 transition-all duration-1000 transform group-hover:rotate-12 group-hover:scale-110">
                   {src ? (
-                    <Image
+                    <Image decoding="async"
                       src={src}
                       alt={award.name}
-                      loader={loader}
                       fill
                       className="object-contain"
                     />

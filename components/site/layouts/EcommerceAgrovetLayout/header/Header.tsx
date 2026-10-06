@@ -38,8 +38,22 @@ export default function AgrovetHeader() {
   const primaryColor = themeSettings?.primaryColor || '#064e3b'; 
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -68,7 +82,7 @@ export default function AgrovetHeader() {
             className={`
               relative flex items-center justify-between px-6 py-3 transition-all duration-500
               ${scrolled 
-                ? 'bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-full border border-white/40' 
+                ? 'bg-white/95 shadow-sm shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-full border border-white/40' 
                 : 'bg-transparent'}
             `}
           >
@@ -76,12 +90,11 @@ export default function AgrovetHeader() {
             <Link href="/" className="relative z-10 flex items-center gap-3 group">
               <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-xl bg-white shadow-sm transition-transform group-hover:scale-110">
                 {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name || ''}
                     fill
                     className="object-contain p-1  h-20 w-32"
-                    loader={imageLoader}
                   />
                 ) : (
                   <div className={`w-full h-full flex items-center justify-center font-black ${scrolled ? 'text-slate-900' : 'text-white'}`} style={{ background: primaryColor }}>

@@ -142,9 +142,8 @@ export default function Hero({
       {/* 1. BACKGROUND VISUALS */}
       <div className="absolute inset-0 z-0">
         {heroData.bannerUrl && (
-          <Image
+          <Image decoding="async"
             src={heroData.bannerUrl}
-            loader={loader}
             alt="Hero background"
             fill
             priority
@@ -235,9 +234,8 @@ export default function Hero({
                       >
                         <div className="relative w-10 h-10 flex-shrink-0">
                           {item.imageUrl ? (
-                            <Image
+                            <Image decoding="async"
                               src={item.imageUrl}
-                              loader={loader}
                               alt={item.name}
                               fill
                               className="rounded-lg object-cover"

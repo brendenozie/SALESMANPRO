@@ -64,13 +64,12 @@ const EbookCard = ({
       {/* Cover Image - Link to Listing Details */}
       <Link href={`/listing/${id}`} passHref className="block">
         <div className="relative w-full aspect-[3/4] overflow-hidden">
-          <Image
+          <Image decoding="async"
             src={
               images?.[0] ||
               "https://placehold.co/600x800/EEE/31343C?text=No+Cover"
             }
             alt={name}
-            loader={loader}
             fill
             className="object-cover transform transition duration-500 group-hover:scale-105 brightness-95 group-hover:brightness-90"
           />
@@ -286,12 +285,11 @@ export default function FeaturedEbooks({
             <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 items-center">
               {/* Ebook Cover Side */}
               <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl border-4 border-gray-100 mx-auto max-w-[200px] md:max-w-none">
-                <Image
+                <Image decoding="async"
                   src={
                     selected.images?.[0] ||
                     "https://placehold.co/600x800/EEE/31343C?text=No+Cover"
                   }
-                  loader={loader}
                   alt={selected.name}
                   fill
                   className="object-cover"

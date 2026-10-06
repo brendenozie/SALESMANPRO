@@ -188,7 +188,7 @@ const ProgramCard = ({
 
       {/* Image */}
       <div className="relative w-full aspect-video overflow-hidden">
-        <Image
+        <Image decoding="async"
           src={
             images?.[0] ||
             "https://placehold.co/600x400/EEE/31343C?text=Course+Image"
@@ -196,7 +196,6 @@ const ProgramCard = ({
           alt={name}
           layout="fill"
           objectFit="cover"
-          loader={customLoader}
           className="transform transition duration-500 group-hover:scale-110 brightness-90 group-hover:brightness-80"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
@@ -359,12 +358,11 @@ export default function FeaturedProgramsSection({
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="relative w-full h-[300px] md:h-auto rounded-xl overflow-hidden shadow-lg">
-                <Image
+                <Image decoding="async"
                   src={
                     selected.images?.[0] ||
                     "https://placehold.co/600x800/EEE/31343C?text=Program+Image"
                   }
-                  loader={customLoader}
                   alt={selected.name}
                   fill
                   className="object-cover"

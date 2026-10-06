@@ -77,13 +77,12 @@ export default function SocialProofSection() {
                     transition={{ duration: 1.5 }}
                     className="absolute inset-0 z-0"
                 >
-                    <Image 
+                    <Image decoding="async" 
                         src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                         alt="Logistics Background" 
                         fill
                         className="object-cover opacity-40"
                         priority
-                        loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-transparent to-slate-950" />
                 </motion.div>

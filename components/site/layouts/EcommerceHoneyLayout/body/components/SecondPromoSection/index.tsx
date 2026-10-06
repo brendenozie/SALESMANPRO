@@ -42,11 +42,10 @@ export default function SecondPromoSection({ promotions }: { promotions: IPromot
               <div className="absolute inset-4 border border-[#F3A852]/30 rounded-[3rem] -rotate-3 group-hover:rotate-0 transition-transform duration-700" />
               
               <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <Image
+                <Image decoding="async"
                   src={promotion.bannerUrl || "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?q=80&w=1000"}
                   alt={promotion.title}
                   fill
-                  loader={loader}
                   className="object-cover scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#1A1612]/60 to-transparent" />

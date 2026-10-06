@@ -78,10 +78,9 @@ export default function AboutSection() {
             {/* Interactive Hero Image Frame */}
             <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900 p-3 shadow-[0_24px_70px_-15px_rgba(15,23,42,0.12)] border border-slate-100 dark:border-slate-800/80 group">
               <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] lg:aspect-[3/4] bg-slate-100 dark:bg-slate-800">
-                <Image
+                <Image decoding="async"
                   src={aboutImageUrl}
                   alt="Our dedicated healthcare infrastructure"
-                  loader={loader}
                   fill
                   priority
                   className="object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-[1.04]"

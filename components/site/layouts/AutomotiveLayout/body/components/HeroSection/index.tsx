@@ -117,13 +117,12 @@ export default function LuxuryCommandHero({
             transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
-            <Image
+            <Image decoding="async"
               src={heroSlides[current].imageUrl || defaultSlides[0].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
               alt="Hero Background"
               fill
               className="object-cover brightness-[0.5] dark:brightness-[0.35] saturate-[1.1]"
               priority
-              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
             />
             {/* Elegant vignette overlay */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />

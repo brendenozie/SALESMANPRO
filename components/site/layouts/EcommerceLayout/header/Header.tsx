@@ -104,12 +104,11 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="relative z-10 flex items-center gap-3 group">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || 'Store'}
                   width={160}
                   height={80}
-                  loader={imageLoader}
                   className="w-32 h-20 object-contain grayscale group-hover:grayscale-0 transition-all"
                 />
               ) : (

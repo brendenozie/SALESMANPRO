@@ -23,9 +23,8 @@ const CourseCard = ({ course, primaryColor }: any) => {
     >
       {/* 1. Technical Image Header */}
       <div className="relative h-64 w-full overflow-hidden bg-gray-100">
-        <Image
+        <Image decoding="async"
           src={course.imageUrl || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"}
-          loader={({src})=>src}
           alt={course.title}
           fill
           className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"

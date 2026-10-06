@@ -91,10 +91,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 <div className="relative z-10 flex flex-col items-center">
                   <div className="relative w-16 h-16 md:w-24 md:h-24 mb-8">
                     {src ? (
-                      <Image
+                      <Image decoding="async"
                         src={src}
                         alt={award?.name}
-                        loader={loader}
                         fill
                         className="object-contain filter grayscale brightness-75 dark:brightness-50 contrast-125 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700 group-hover:scale-110"
                       />

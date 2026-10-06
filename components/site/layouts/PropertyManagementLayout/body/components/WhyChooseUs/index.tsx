@@ -201,12 +201,11 @@ export default function WhyChooseUs({ CoreValues, metrics, awards }: { CoreValue
                   className="flex flex-col items-center w-28 sm:w-32 cursor-default transition-transform duration-300"
                 >
                   <div className="relative w-20 h-20 filter grayscale hover:grayscale-0 transition-all duration-500 ease-in-out">
-                    <Image
+                    <Image decoding="async"
                       src={a.iconUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=${a.name.slice(0,2)}`}
                       alt={`${a.name} award logo`}
                       layout="fill"
                       objectFit="contain"
-                      loader={customLoader}
                     />
                   </div>
                   <p className="mt-4 text-sm font-semibold text-gray-700 dark:text-gray-300 text-center leading-snug">

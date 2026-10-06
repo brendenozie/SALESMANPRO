@@ -188,12 +188,11 @@ export default function MissionNewsSection({ storeFormData } : {storeFormData: a
               viewport={{ once: true }}
               className="relative aspect-[16/9] w-full overflow-hidden shadow-2xl rounded-2xl"
             >
-              <Image
+              <Image decoding="async"
                 src={missionImage}
                 alt={`${name} mission`}
                 fill
                 className="object-cover"
-                loader={loader}
               />
 
               {/* Overlay */}

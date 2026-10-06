@@ -113,9 +113,8 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl, 
                     {/* Clean Visual Preview Card */}
                     <div className="lg:col-span-5">
                         <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800/80 shadow-md bg-neutral-100 dark:bg-neutral-900 group">
-                            <Image
+                            <Image decoding="async"
                                 src={bannerUrl || sampleData.bannerUrl}
-                                loader={loader}
                                 alt="Service Infrastructure Dashboard"
                                 fill
                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"

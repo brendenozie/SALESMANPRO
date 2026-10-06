@@ -184,12 +184,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: CartDrawerProp
                     >
                       {/* Product Thumbnail Box Frame */}
                       <div className="relative h-20 w-20 rounded-[1.25rem] overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0">
-                        <Image 
+                        <Image decoding="async" 
                           src={item.images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
-                          loader={({ src }) => src}
                         />
                       </div>
                       

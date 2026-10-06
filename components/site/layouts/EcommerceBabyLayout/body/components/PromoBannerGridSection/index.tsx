@@ -151,12 +151,11 @@ export default function PromoBannerGridSection() {
               }}
               className="absolute -right-6 -bottom-6 w-[65%] h-[85%] z-10 pointer-events-none"
             >
-              <Image
+              <Image decoding="async"
                 src={banner.image}
                 alt={banner.title}
                 fill
                 className="object-contain object-right-bottom drop-shadow-[0_30px_40px_rgba(0,0,0,0.15)] group-hover:drop-shadow-[0_40px_60px_rgba(0,0,0,0.3)] transition-all duration-500"
-                loader={loader}
               />
             </motion.div>
           </motion.div>

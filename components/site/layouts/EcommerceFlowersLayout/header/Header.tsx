@@ -40,8 +40,22 @@ export default function Header() {
   const secondaryColor = themeSettings?.secondaryColor || '#0F172A'; // Midnight Slate
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -67,7 +81,7 @@ export default function Header() {
       <header
         className={`
           fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out
-          ${scrolled ? 'py-3 bg-white/80 backdrop-blur-xl border-b border-slate-100 shadow-sm' : 'py-6 bg-transparent'}
+          ${scrolled ? 'py-3 bg-white/95 shadow-sm border-b border-slate-100 shadow-sm' : 'py-6 bg-transparent'}
         `}
       >
         <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex items-center justify-between">
@@ -90,13 +104,12 @@ export default function Header() {
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" className="block">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || 'Logo'}
                   width={120}
                   height={50}
                   className={`object-contain  h-20 w-32 transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-110'}`}
-                  loader={imageLoader}
                 />
               ) : (
                 <span className="text-2xl lg:text-3xl font-serif italic text-slate-900 tracking-tight">

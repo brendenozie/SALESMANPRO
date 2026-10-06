@@ -106,10 +106,9 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
         
         {/* 1. Background Image Layer */}
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800">
-          <Image
+          <Image decoding="async"
             src={imageUrl}
             alt={loc.name}
-            loader={customLoader}
             fill
             className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
             onError={() => setImgError(true)}

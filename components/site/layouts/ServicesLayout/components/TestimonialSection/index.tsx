@@ -115,8 +115,7 @@ export default function TestimonialSection() {
               {/* Avatar and Rating */}
               <div className="flex flex-col items-center mb-6">
                 {testimonial.avatarUrl ? (
-                  <Image
-                    loader={loader}
+                  <Image decoding="async"
                     src={testimonial.avatarUrl}
                     alt={testimonial.authorName || 'Client Avatar'}
                     width={80}

@@ -74,12 +74,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                     className="flex gap-4 items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"
                   >
                     <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100">
-                      <Image 
+                      <Image decoding="async" 
                         src={item.images?.[0] || 'https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=120&auto=format&fit=crop'} 
                         alt={item.name} 
                         fill 
                         className="object-cover"
-                        loader={({ src }) => src}
                       />
                     </div>
                     

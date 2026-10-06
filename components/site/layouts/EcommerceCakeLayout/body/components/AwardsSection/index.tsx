@@ -104,10 +104,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                   <div className="relative z-20">
                     {src ? (
                       <div className="relative w-20 h-20">
-                        <Image
+                        <Image decoding="async"
                           src={src}
                           alt={label}
-                          loader={loader}
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-110"
                         />

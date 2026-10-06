@@ -155,10 +155,9 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
               transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
               className="relative w-full h-full"
             >
-              <Image
+              <Image decoding="async"
                 src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000'}
                 alt="Furniture Concept"
-                loader={({ src }) => src}
                 fill
                 priority
                 className="object-cover grayscale-[0.2] contrast-[1.1]"

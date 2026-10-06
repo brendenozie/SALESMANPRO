@@ -11,11 +11,11 @@ import RestaurantHero from "../components/RestaurantSite";
 import { SkeletonGrid } from './SkeletonGrid/SkeletonGrid';
 
 // Dynamically import below-the-fold components
-const SignatureDishes = dynamic(() => import('../components/SignatureDishes'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const WhyDineWithUs = dynamic(() => import('../components/WhyDineWithUs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const Testimonials = dynamic(() => import('../components/Testimonials'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const RestaurantGallery = dynamic(() => import('../components/RestaurantGallery'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-const RestaurantFAQs = dynamic(() => import('../components/RestaurantFAQs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const SignatureDishes = dynamic(() => import('../components/SignatureDishes'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const WhyDineWithUs = dynamic(() => import('../components/WhyDineWithUs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const Testimonials = dynamic(() => import('../components/Testimonials'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const RestaurantGallery = dynamic(() => import('../components/RestaurantGallery'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+const RestaurantFAQs = dynamic(() => import('../components/RestaurantFAQs'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
 
 import { ThemeSectionContainer } from "@/lib/website-builder/createThemeSectionAdapter";
 

@@ -102,10 +102,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                    
                    <div className="relative z-10 w-full h-full text-zinc-300 dark:text-zinc-700 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-700 ease-out">
                     {src ? (
-                      <Image
+                      <Image decoding="async"
                         src={src}
                         alt={award.name}
-                        loader={loader}
                         fill
                         className="object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
                       />

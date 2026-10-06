@@ -212,10 +212,9 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
 
                 {/* Primary Core Asset Image Container */}
                 <div className="relative w-full h-[60%] my-auto flex items-center justify-center transform group-hover:scale-[1.03] transition-transform duration-700 ease-out">
-                  <Image
+                  <Image decoding="async"
                     src={distinctVisualUrl}
                     alt={`${name || 'Security'} platform engine interface`}
-                    loader={({ src }) => src}
                     fill
                     priority
                     className="object-contain p-4 drop-shadow-[0_16px_24px_rgba(0,0,0,0.04)]"

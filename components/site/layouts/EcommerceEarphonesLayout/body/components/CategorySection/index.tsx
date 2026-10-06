@@ -129,11 +129,10 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-0"
           >
-            <Image
+            <Image decoding="async"
               src={imageUrl}
               alt={cat.displayName || "Category"}
               fill
-              loader={customLoader}
               className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
             />
           </motion.div>

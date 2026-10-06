@@ -80,10 +80,9 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
         >
           <div className="absolute inset-0 bg-black/50 z-10" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent z-10" />
-          <Image
+          <Image decoding="async"
             src={currentSlide.imageUrl || '/fallback-logistics.jpg'}
             alt="Logistics Background"
-            loader={loader}
             fill
             priority
             className="object-cover object-right lg:object-center"

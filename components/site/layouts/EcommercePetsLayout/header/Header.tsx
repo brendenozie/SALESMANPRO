@@ -65,8 +65,22 @@ export default function Header() {
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -101,13 +115,12 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div whileHover={{ scale: 1.05 }} className="relative">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={`${name} logo`}
                   width={40}
                   height={40}
                   className="object-contain  h-20 w-32"
-                  loader={imageLoader}
                 />
               ) : (
                 <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xl">

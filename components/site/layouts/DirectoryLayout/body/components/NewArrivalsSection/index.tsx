@@ -197,8 +197,7 @@ export default function NewArrivalsSection({
                   onClick={() => setSelectedListing(listing)}
                   className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
                 >
-                  <Image
-                    loader={loader}
+                  <Image decoding="async"
                     src={listing.images?.[0] || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
                     alt={listing.title}
                     fill

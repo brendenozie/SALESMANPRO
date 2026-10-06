@@ -107,11 +107,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           
           {/* Floating Product Image Container */}
           <div className="relative w-32 h-32 md:w-36 md:h-36 mt-2 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-4 drop-shadow-xl z-10">
-            <Image
+            <Image decoding="async"
               src={imageUrl}
               alt={cat.displayName || "Category"}
               fill
-              loader={customLoader}
               className="object-contain"
             />
           </div>

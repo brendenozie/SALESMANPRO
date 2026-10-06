@@ -87,10 +87,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                   
                   <div className="absolute inset-2 overflow-hidden rounded-full bg-white flex items-center justify-center">
                     {src ? (
-                      <Image
+                      <Image decoding="async"
                         src={src}
                         alt={label}
-                        loader={loader}
                         fill
                         className="object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
                       />

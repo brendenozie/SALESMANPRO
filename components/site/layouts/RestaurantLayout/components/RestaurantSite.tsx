@@ -130,12 +130,11 @@ export default function RestaurantHero({
           transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
           className="absolute inset-0 z-0"
         >
-          <Image
+          <Image decoding="async"
             src={slides[current].imageUrl}
             alt="Hero Background"
             fill
             priority
-            loader={loader}
             className="object-cover brightness-[0.4] saturate-[0.8]"
           />
           {/* Noise & Texture Overlay */}

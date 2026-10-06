@@ -84,12 +84,11 @@ export default function TestimonialSection({ storeFormData }: any) {
                     exit={{ opacity: 0, x: 20 }}
                     className="absolute inset-0"
                   >
-                    <Image 
+                    <Image decoding="async" 
                       src={active.avatarUrl} 
                       alt={active.name} 
                       fill 
                       className="object-cover"
-                      loader={loader}
                     />
                   </motion.div>
                 </AnimatePresence>

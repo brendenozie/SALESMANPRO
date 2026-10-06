@@ -63,12 +63,11 @@ export default function LatestUpdates() {
             >
               {/* Image Container */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-sm mb-6">
-                <Image
+                <Image decoding="async"
                   src={post.imageUrl}
                   alt={post.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  loader={({ src }) => src} // Use default loader for local images
+                  className="object-cover transition-transform duration-500 group-hover:scale-110" // Use default loader for local images
                 />
               </div>
 

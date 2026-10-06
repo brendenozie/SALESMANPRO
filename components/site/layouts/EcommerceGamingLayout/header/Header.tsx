@@ -48,8 +48,22 @@ export default function Header() {
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -83,13 +97,12 @@ export default function Header() {
           {/* ===== LOGO ===== */}
           <Link href={`/`} className="group flex items-center">
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name || 'Store Logo'}
                 width={120}
                 height={50}
                 className="object-contain dark:invert  h-20 w-32"
-                loader={imageLoader}
               />
             ) : (
               <span className="text-zinc-900 dark:text-white text-2xl font-black italic tracking-tighter transition-colors">

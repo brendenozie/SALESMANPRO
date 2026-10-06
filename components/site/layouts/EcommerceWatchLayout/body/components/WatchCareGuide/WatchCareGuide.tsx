@@ -100,9 +100,8 @@ export default function WatchCareGuide({ isOpen, onClose }: CareGuideProps) {
                 
                     {/* 
                     [Image of a mechanical watch movement diagram] */}
-                    <Image
-                      src="https://images.unsplash.com/photo-1585123334904-845d60e97b29" 
-                      loader={({ src }) => src}
+                    <Image decoding="async"
+                      src="https://images.unsplash.com/photo-1585123334904-845d60e97b29"
                       alt="Mechanical Watch Movement Diagram"
                       width={400}
                       height={300}

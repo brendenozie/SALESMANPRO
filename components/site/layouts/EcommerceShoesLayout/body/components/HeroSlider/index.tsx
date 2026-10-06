@@ -224,7 +224,7 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
                   className="w-full h-full"
                 >
                   {(val) => (
-                    <Image
+                    <Image decoding="async"
                       src={val || slides[current].imageUrl || ""}
                       alt={slides[current].headline || ""}
                       fill

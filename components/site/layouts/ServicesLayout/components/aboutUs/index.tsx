@@ -190,10 +190,9 @@ export default function AboutSectionEditorial() {
                     style={{ y: yImage }}
                     className="absolute inset-0 w-full h-[120%] -top-[10%]"
                  >
-                     <Image 
+                     <Image decoding="async" 
                         src={bannerUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"} 
                         alt={name}
-                        loader={loader}
                         fill
                         className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
                      />

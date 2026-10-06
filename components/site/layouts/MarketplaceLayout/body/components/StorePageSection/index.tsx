@@ -81,10 +81,9 @@ export default function FeaturedProductsSection({ products = [], storeSlug = "si
               >
                 {/* Image */}
                 <div className="relative h-64 w-full overflow-hidden">
-                  <Image
+                  <Image decoding="async"
                     src={product.images?.[0].url || "https://via.placeholder.com/300/300/FFFFFF?text=No+Image"}
                     alt={product.name}
-                    loader={({ src }) => src}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />

@@ -158,10 +158,9 @@ export default function PatientSection({ name, slug, testimonials }: PatientSect
               <div className="flex items-center gap-4 pt-6 border-t border-slate-100 dark:border-slate-800/60 relative z-10">
                 <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 border border-slate-200/20 dark:border-slate-800/40 flex-shrink-0">
                   {t.avatarUrl ? (
-                    <Image 
+                    <Image decoding="async" 
                       src={t.avatarUrl} 
-                      alt={t.authorName} 
-                      loader={customLoader}
+                      alt={t.authorName}
                       fill 
                       className="object-cover" 
                       sizes="48px"

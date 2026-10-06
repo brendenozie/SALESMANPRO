@@ -143,12 +143,11 @@ export default function AutomotivePromoBannerSection() {
               className="absolute -right-8 bottom-4 w-[70%] h-[60%] z-10 pointer-events-none"
             >
               <div className="relative h-full w-full">
-                <Image
+                <Image decoding="async"
                   src={banner.image}
                   alt={banner.title}
                   fill
                   className="object-contain object-right-bottom grayscale group-hover:grayscale-0 transition-all duration-700 drop-shadow-2xl"
-                  loader={loader}
                 />
               </div>
             </motion.div>

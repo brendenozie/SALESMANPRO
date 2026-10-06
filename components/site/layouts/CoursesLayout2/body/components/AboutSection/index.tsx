@@ -51,9 +51,8 @@ export default function ProfessionalAboutSection({ storeFormData }: any) {
               viewport={{ once: true }}
               className="relative h-full min-h-[450px] bg-gray-900"
             >
-              <Image
+              <Image decoding="async"
                 src={videoThumbnail || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f"}
-                loader={({src})=>src}
                 alt="Institutional Video"
                 fill
                 className="object-cover opacity-80 transition-all duration-700 group-hover:opacity-60"

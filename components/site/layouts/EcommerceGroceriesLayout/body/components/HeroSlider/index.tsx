@@ -129,12 +129,11 @@ export default function FullScreenHero({ heroSlides, themeSettings }: FullScreen
             transition={{ duration: autoAdvanceDelay / 1000, ease: 'easeOut' }}
             className="absolute inset-0 w-full h-full"
           >
-            <Image
+            <Image decoding="async"
               src={slides[current].imageUrl || ''}
               alt="Immersive fresh food production preview"
               fill
               priority
-              loader={imageLoader}
               className="object-cover"
             />
           </motion.div>

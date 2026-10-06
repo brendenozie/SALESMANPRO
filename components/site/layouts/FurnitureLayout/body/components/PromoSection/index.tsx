@@ -49,10 +49,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
                 className="w-full h-full"
               >
-                <Image
+                <Image decoding="async"
                   src={promo.bannerUrl || 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000'}
                   alt={promo.title}
-                  loader={loader}
                   fill
                   className="object-cover transition-all duration-1000 group-hover:scale-105"
                 />
@@ -136,7 +135,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
           {promotions.slice(0, 3).map((promo, i) => (
             <div key={i} className="bg-white dark:bg-zinc-950 p-8 lg:p-16 group transition-all duration-700 hover:z-10 relative">
               <div className="relative aspect-square mb-12 overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
-                <Image
+                <Image decoding="async"
                   src={promo.bannerUrl || 'https://picsum.photos/800'}
                   alt={promo.title}
                   fill

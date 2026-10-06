@@ -18,10 +18,9 @@ const CartItem = ({ item, addToCart, decreaseQuantity, removeItem }) => {
   return (
     <div className="flex items-center gap-4 border-b border-gray-300 dark:border-gray-700 py-4">
       {/* <Image className="h-20 w-20 object-cover rounded-lg" loader={loaderProp} src={item.image} alt={item.newName} width={80} height={80} /> */}
-      <Image
+      <Image decoding="async"
             width={80}
             height={80}
-            loader = {loaderProp}
             src={imageError ? load.src : item.image}
             alt={`Product image of ${item.title}`}
             className="h-20 w-20 object-cover rounded-lg"

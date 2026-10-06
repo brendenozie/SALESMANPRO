@@ -37,9 +37,23 @@ export default function Header() {
 
   // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const navLinks = [
@@ -61,7 +75,7 @@ export default function Header() {
       <header
         className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${
           scrolled 
-            ? 'py-3 bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50' 
+            ? 'py-3 bg-white/95 shadow-sm shadow-sm border-b border-gray-200/50' 
             : 'py-6 bg-transparent'
         }`}
       >
@@ -70,11 +84,10 @@ export default function Header() {
           {/* 1. LEFT: LOGO */}
           <Link href="/" className="relative z-[110] flex items-center group">
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name || 'Store Logo'}
                 className={`transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}  h-20 w-32`}
-                loader={imageLoader}
                 width={128}
                 height={80}
               />

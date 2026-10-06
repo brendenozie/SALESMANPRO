@@ -124,14 +124,13 @@ export default function RethoughtAgrovetHero({
             className="absolute inset-0 w-full h-full"
           >
             {currentSlide.imageUrl && (
-              <Image
+              <Image decoding="async"
                 src={currentSlide.imageUrl}
                 alt={currentSlide.headline || 'Agrovet Hero Image'}
                 fill
                 priority
                 className="object-cover opacity-50 grayscale-[15%]"
-                sizes="100vw"                
-                loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+                sizes="100vw"
               />
             )}
           </motion.div>

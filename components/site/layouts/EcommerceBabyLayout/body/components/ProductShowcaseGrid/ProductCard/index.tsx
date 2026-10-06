@@ -142,7 +142,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'grid' }) 
           className="group relative flex items-center gap-4 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/80 p-3.5 rounded-[2rem] transition-all duration-300 hover:shadow-xl hover:shadow-zinc-200/40 dark:hover:shadow-none hover:-translate-y-1 cursor-pointer"
         >
           <div className="relative w-20 h-20 rounded-2xl bg-zinc-50 dark:bg-zinc-800 overflow-hidden flex-shrink-0">
-            <Image src={imageSrc} alt={name} fill loader={loader} className="object-cover group-hover:scale-105 transition-transform duration-500" />
+            <Image decoding="async" src={imageSrc} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
             {discount && (
               <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md text-[8px] font-black text-white bg-blue-500">
                 -{discount}%
@@ -180,7 +180,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'grid' }) 
       <div className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800 hover:shadow-2xl">
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-zinc-50 dark:bg-zinc-800/40">
           <Link href={`/babyecommerce/products/${id}`} className="block h-full w-full">
-            <Image src={imageSrc} alt={name} fill loader={loader} className="object-cover transition-transform duration-700 group-hover:scale-108" />
+            <Image decoding="async" src={imageSrc} alt={name} fill className="object-cover transition-transform duration-700 group-hover:scale-108" />
           </Link>
 
           <div className="absolute top-3 left-3 flex flex-col gap-2">
@@ -195,7 +195,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'grid' }) 
             <WhatsAppIcon className="w-4 h-4" />
           </a>
 
-          <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-zinc-400 hover:text-rose-500 transition-colors shadow-sm">
+          <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/95 dark:bg-zinc-900/95 shadow-sm text-zinc-400 hover:text-rose-500 transition-colors shadow-sm">
             <HeartIcon className="w-4 h-4" />
           </button>
 
@@ -279,7 +279,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'grid' }) 
 
           <div className="flex gap-4 border-b border-zinc-100 dark:border-zinc-800/80 pb-4 mb-4 mt-2">
             <div className="relative w-16 h-16 rounded-xl bg-zinc-50 dark:bg-zinc-800 overflow-hidden flex-shrink-0">
-              <Image src={imageSrc} alt={name} fill className="object-cover" loader={loader} />
+              <Image decoding="async" src={imageSrc} alt={name} fill className="object-cover" />
             </div>
             <div>
               <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Quick Options</span>

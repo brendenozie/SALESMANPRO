@@ -252,13 +252,12 @@ export default function Header() {
                 className="cursor-pointer flex-shrink-0"
               >
                 {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name || 'Logo'}
                     width={120}
                     height={40}
                     className="object-contain  h-20 w-32"
-                    loader={loader}
                     priority
                   />
                 ) : (

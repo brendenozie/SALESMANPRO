@@ -173,10 +173,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                style={{ backgroundImage: `radial-gradient(${primary} 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
           
           <Link href={`/bikeecommerce/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
-              loader={loader}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
             />
@@ -184,7 +183,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Video Indicator Badge */}
           {resolvedMedia.hasVideo && (
-            <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur-md px-2.5 py-1 text-white flex items-center gap-1 border border-white/20 shadow-md">
+            <div className="absolute top-4 left-4 z-10 bg-black/95 shadow-sm px-2.5 py-1 text-white flex items-center gap-1 border border-white/20 shadow-md">
               <VideoCameraIcon className="w-3.5 h-3.5 text-orange-500" />
               <span className="text-[9px] font-mono font-bold uppercase tracking-widest">Video</span>
             </div>

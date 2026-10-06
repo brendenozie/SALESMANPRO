@@ -88,12 +88,11 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
     >
       <div className="flex items-center mb-4">
         <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 mr-4 flex-shrink-0">
-          <Image
+          <Image decoding="async"
             src={testimonial.avatarUrl || `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${testimonial.authorName?.split(' ').map(n => n[0]).join('')}`} // Fallback with initials
             alt={testimonial.authorName || 'authorName'}
             fill
             className="object-cover"
-            loader={loader}
             onError={handleImageError}
           />
         </div>

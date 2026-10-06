@@ -59,8 +59,22 @@ export default function Navbar() {
   }, [user, router, handleGoogleSignIn]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -75,7 +89,7 @@ export default function Navbar() {
   return (
     <header className={`w-full font-sans sticky top-0 z-50 transition-all duration-300 border-b ${
       scrolled 
-        ? 'bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-zinc-200 dark:border-zinc-900 shadow-sm dark:shadow-2xl' 
+        ? 'bg-white/80 dark:bg-zinc-950/95 shadow-sm border-zinc-200 dark:border-zinc-900 shadow-sm dark:shadow-2xl' 
         : 'bg-white dark:bg-zinc-950 border-zinc-200/60 dark:border-zinc-900/50'
     }`}>
       
@@ -119,13 +133,12 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink min-w-0 select-none">
             {logoUrl && (
               <div className="relative w-10 h-10 md:w-12 md:h-12 shrink-0 border border-zinc-200 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/40 rounded-lg p-1.5 overflow-hidden transition-all duration-300 group-hover:border-zinc-300 dark:group-hover:border-zinc-700">
-                <Image 
+                <Image decoding="async" 
                   src={logoUrl} 
                   alt={name || 'Logo'} 
                   fill 
                   priority
-                  sizes="48px"
-                  loader={imageLoader} 
+                  sizes="48px" 
                   className="object-contain p-1 filter dark:brightness-110" 
                 />
               </div>
@@ -209,7 +222,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
               onClick={() => setIsMenuOpen(false)} 
-              className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md lg:hidden z-[60]" 
+              className="fixed inset-0 bg-black/40 dark:bg-black/90 shadow-sm lg:hidden z-[60]" 
             />
             
             <motion.div 

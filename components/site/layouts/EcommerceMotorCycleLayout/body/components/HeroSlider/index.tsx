@@ -233,11 +233,10 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
               exit="exit"
               className="relative w-full h-full flex items-center justify-center"
             >
-              <Image
+              <Image decoding="async"
                 src={activeSlide.productImageUrl || activeSlide.imageUrl || ''}
                 alt={activeSlide.headline || 'Motorsport Variant presentation display'}
                 fill
-                loader={imageLoader}
                 className="object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.16)] scale-105 md:scale-100"
                 priority
               />

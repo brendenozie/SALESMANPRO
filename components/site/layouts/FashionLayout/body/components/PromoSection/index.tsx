@@ -72,11 +72,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               transition={{ duration: 1.5 }}
               className="absolute inset-0"
             >
-              <Image
+              <Image decoding="async"
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80'}
                 alt={promo.title}
                 fill
-                loader={loader}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-zinc-900/10" />
@@ -101,11 +100,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               className="group cursor-pointer"
             >
               <div className="relative aspect-[4/5] overflow-hidden mb-8">
-                <Image
+                <Image decoding="async"
                   src={item.bannerUrl || ''}
                   alt={item.title}
                   fill
-                  loader={loader}
                   className="object-cover transition-transform duration-1000 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />

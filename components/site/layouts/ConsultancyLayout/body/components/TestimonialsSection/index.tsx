@@ -97,10 +97,9 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
             >
               {/* Avatar */}
               <div className="relative w-24 h-24 mb-5">
-                <Image
+                <Image decoding="async"
                   src={item.image || "/images/default-avatar.jpg"}
                   alt={item.author}
-                  loader={loader}
                   fill
                   className="rounded-full object-cover border-4 border-orange-200"
                 />

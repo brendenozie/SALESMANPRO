@@ -143,11 +143,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Image Container */}
         <div className="relative h-64 w-full rounded-[1.5rem] overflow-hidden bg-[#FAF9F6]">
           <Link href={`/honeyecommerce/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
               fill
-              loader={loader}
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </Link>
@@ -155,7 +154,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 border border-white/20 shadow-md">
+              <div className="bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 border border-white/20 shadow-md">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
                 <span>Video</span>
               </div>

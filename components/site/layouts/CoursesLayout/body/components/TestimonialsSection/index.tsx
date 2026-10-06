@@ -82,11 +82,10 @@ export default function TestimonialSection({ storeFormData }: any) {
               {/* Author Info */}
               <div className="flex items-center gap-4 pt-6 border-t border-slate-50">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                  <Image 
+                  <Image decoding="async" 
                     src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName || 'User'}&background=random`}
                     alt={t.authorName || "Author"}
                     fill
-                    loader={loader}
                     className="object-cover"
                   />
                 </div>

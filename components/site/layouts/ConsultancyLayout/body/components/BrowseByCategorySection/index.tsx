@@ -94,10 +94,9 @@ const ProgramCard = ({
         {/* Cover Image */}
         <Link href={linkHref} passHref>
           <div className="relative w-full aspect-[3/4] overflow-hidden flex-shrink-0 cursor-pointer">
-            <Image
+            <Image decoding="async"
               src={images?.[0] || defaultImage}
               alt={name}
-              loader={customLoader}
               fill
               className="object-cover transform transition duration-500 group-hover:scale-110 brightness-95 group-hover:brightness-80"
             />
@@ -316,12 +315,11 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="relative w-full h-[300px] md:h-auto rounded-xl overflow-hidden shadow-lg">
-                <Image
+                <Image decoding="async"
                   src={
                     selected.images?.[0] ||
                     "https://placehold.co/600x800/EEE/31343C?text=Program+Image"
                   }
-                  loader={customLoader}
                   alt={selected.name}
                   fill
                   className="object-cover"

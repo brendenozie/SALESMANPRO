@@ -91,12 +91,11 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
           initial="initial"
           animate="animate"
         >
-          <Image
+          <Image decoding="async"
             src={productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop"}
             alt={headline || "Healthcare Facility"}
             fill
             className="object-cover object-center mix-blend-multiply opacity-[0.25] lg:opacity-100"
-            loader={loader}
             priority
           />
         </motion.div>

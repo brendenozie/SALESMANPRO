@@ -191,9 +191,8 @@ export default function SecurityHeroSectionLight({
                 FRAME_LOCK // CAPTURE
               </div>
               <div className="relative w-full h-full overflow-hidden ">
-                <Image
+                <Image decoding="async"
                   src={distinctVisualUrl}
-                  loader={imageLoader}
                   alt="Professional Security Guard or Cyber Security Expert" 
                   fill
                   priority

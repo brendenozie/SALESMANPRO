@@ -124,13 +124,12 @@ export default function ProfessionalExcellenceSection({ storeFormData }: any) {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="relative aspect-[3/4] bg-gray-200 shadow-[40px_40px_80px_-20px_rgba(0,0,0,0.1)]"
             >
-              <Image
+              <Image decoding="async"
                 src={imageUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f"}
                 alt="Institutional Excellence"
                 fill
                 className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
                 priority
-                loader={({src}) => src}
               />
               
               {/* Data Overlay Badge */}

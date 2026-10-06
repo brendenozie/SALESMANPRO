@@ -29,12 +29,11 @@ const CourseCard = ({ course, primaryColor }: any) => {
       {/* IMAGE CONTAINER with "Museum Frame" padding */}
       <div className="relative aspect-[16/10] overflow-hidden p-3 bg-white">
         <div className="relative w-full h-full overflow-hidden">
-           <Image
+           <Image decoding="async"
             src={course.imageUrl || 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80'}
             alt={course.title}
             fill
             className="object-cover transition-transform duration-1000 group-hover:scale-105"
-            loader={loader}
           />
           {/* Subtle Color Wash on Hover */}
           <div 

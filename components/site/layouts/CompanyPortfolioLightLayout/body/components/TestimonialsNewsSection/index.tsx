@@ -77,10 +77,9 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
       {/* Counterparty Institutional Identity Panel */}
       <div className="flex items-center mt-auto pt-6 border-t border-zinc-200/80 dark:border-zinc-900/60 transition-colors">
         <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 mr-4 border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950">
-          <Image
+          <Image decoding="async"
             src={ver.avatarUrl}
             alt={ver.authorName || 'Asset Counterparty'}
-            loader={({ src }) => `${src}?q=80&w=800&auto=format&fit=crop`}
             fill
             sizes="48px"
             className="object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"

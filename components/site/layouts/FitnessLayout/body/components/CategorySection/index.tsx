@@ -96,11 +96,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
     <motion.div variants={itemVariants} className="group relative h-[460px] w-full rounded-3xl overflow-hidden shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] transition-all duration-500">
       <Link href={`/fitness/programs?category=${cat.category?.id || cat.categoryId || catSlug}`} className="block relative w-full h-full bg-slate-100 dark:bg-slate-800">
         
-        <Image
+        <Image decoding="async"
           src={imageUrl}
           alt={cat.displayName || "Fitness Category"}
           fill
-          loader={customLoader}
           onError={() => setImgError(true)}
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />

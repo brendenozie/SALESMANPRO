@@ -261,12 +261,11 @@ Please confirm item availability and payment details. Thank you!`;
                         </div>
 
                         <div className="relative h-20 w-20 bg-black border border-white/10 overflow-hidden flex-shrink-0">
-                          <Image 
+                          <Image decoding="async" 
                             src={item.images?.[0] || '/placeholder.png'} 
                             alt={item.name || "Item Spec Image"} 
                             fill 
                             className="object-contain p-1 grayscale group-hover:grayscale-0 transition-all duration-500"
-                            loader={({ src }) => src}
                           />
                           <div className="absolute inset-0 bg-red-600/5 mix-blend-overlay" />
                         </div>

@@ -384,8 +384,7 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
                               onClick={() => setSelectedListing(listing)}
                               className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
                             >
-                              <Image
-                                loader={loader}
+                              <Image decoding="async"
                                 src={listing.images?.[0] || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
                                 alt={listing.title}
                                 fill
@@ -499,12 +498,11 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
                 </button>
 
                 <div className="flex-shrink-0 w-full md:w-1/2 relative h-60 md:h-auto rounded-xl overflow-hidden">
-                  <Image
+                  <Image decoding="async"
                     src={selectedListing.imageUrl} // Use imageUrl from the transformed data
                     alt={selectedListing.name}
                     fill
                     className="object-cover"
-                    loader={loader}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     onError={handleImageError}
                   />

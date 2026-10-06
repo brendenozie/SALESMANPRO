@@ -136,10 +136,9 @@ const ProgramCard = ({
               </span>
             )}
             
-            <Image
+            <Image decoding="async"
               src={images?.[0] || defaultImage}
               alt={name}
-              loader={customLoader}
               fill
               // More noticeable scale on hover for image
               className="object-cover transform transition duration-500 group-hover:scale-[1.08]"
@@ -430,12 +429,11 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
               <div className="space-y-6 md:order-1">
                 {/* More pronounced image on modal */}
                 <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl">
-                  <Image
+                  <Image decoding="async"
                     src={
                       selected.images?.[0] ||
                       "https://placehold.co/600x800/EEE/31343C?text=Program+Image"
                     }
-                    loader={customLoader}
                     alt={selected.name}
                     fill
                     className="object-cover"

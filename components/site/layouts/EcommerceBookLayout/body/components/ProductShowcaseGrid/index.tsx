@@ -95,12 +95,11 @@ export default function ProductShowcaseGrid() {
                     <div className="relative w-28 h-28 flex-shrink-0">
                       <div className="absolute inset-0 bg-zinc-50 dark:bg-zinc-900 rounded-tr-[2.5rem] rounded-bl-[2.5rem] rounded-tl-lg rounded-br-lg transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3 shadow-sm group-hover:shadow-xl" />
                       <div className="relative h-full w-full p-4">
-                        <Image 
+                        <Image decoding="async" 
                           src={product.img} 
                           alt={product.name} 
                           fill 
-                          className="object-contain p-2 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6" 
-                          loader={({ src, width }) => `${src}?w=${width}&q=80`}
+                          className="object-contain p-2 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6"
                         />
                       </div>
                     </div>

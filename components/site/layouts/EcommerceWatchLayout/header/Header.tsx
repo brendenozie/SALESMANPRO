@@ -41,8 +41,22 @@ export default function Header() {
   const primaryColor = themeSettings?.primaryColor || '#C5A059'; // Golden accent
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -86,13 +100,12 @@ export default function Header() {
           <div className="flex-1 lg:flex-none order-2 lg:order-1 flex justify-center lg:justify-start">
             <Link href="/" className="group">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || ''}
                   width={120}
                   height={40}
                   className="h-20 w-32 object-contain"
-                  loader={imageLoader}
                 />
               ) : (
                 <span className="text-white text-xl font-bold tracking-[0.2em] uppercase">{name}</span>

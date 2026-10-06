@@ -113,14 +113,12 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
             whileHover={{ scale: 1.02, rotateY: -6, transition: { duration: 0.3 } }}
             className="relative w-[85%] sm:w-[75%] lg:w-[85%] xl:w-[80%] h-[85%] max-h-[580px] lg:max-h-[640px] z-10 cursor-grab active:cursor-grabbing [transform-style:preserve-3d]"
           >
-            <Image
+            <Image decoding="async"
               src={activeSlide.productImgUrl || activeSlide.imageUrl || defaultSlides[0].imageUrl}
               alt={activeSlide.headline || 'Featured Book Cover'}
               fill
               className="object-contain drop-shadow-[20px_30px_45px_rgba(0,0,0,0.22)] dark:drop-shadow-[0_25px_60px_rgba(20,184,166,0.18)] select-none pointer-events-none"
-              loader={loader}
               priority
-              unoptimized
             />
             
             {/* Gesture Overlay HUD for Mobile Screens */}

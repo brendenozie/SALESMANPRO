@@ -207,13 +207,12 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
                   exit="exit"
                   className="absolute inset-0 w-full h-full p-6 sm:p-10"
                 >
-                  <Image
+                  <Image decoding="async"
                     src={slides[current].imageUrl || slides[current].productImageUrl}
                     alt="Premium Jar Showcase"
                     fill
                     className="object-contain drop-shadow-[0_24px_48px_rgba(62,39,35,0.14)] p-4 select-none transition-transform duration-700 hover:scale-[1.03]"
                     priority
-                    loader={loader}
                   />
                 </motion.div>
               </AnimatePresence>

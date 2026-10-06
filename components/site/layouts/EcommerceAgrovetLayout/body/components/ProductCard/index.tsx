@@ -157,18 +157,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         {/* Image Container Component Frame */}
         <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
           <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
-            <Image
+            <Image decoding="async"
               src={resolvedMedia.primaryImageUrl || FALLBACK_IMAGE_URL}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
-              loader={loader}
             />
           </Link>
 
           {/* Video Indicator Badge */}
           {resolvedMedia.hasVideo && (
-            <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+            <div className="absolute top-4 left-4 z-10 bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
               <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Video</span>
             </div>
@@ -349,12 +348,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                 {/* Modal Header */}
                 <div className="flex gap-4 border-b border-slate-100 pb-5">
                   <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border flex-shrink-0">
-                    <Image
+                    <Image decoding="async"
                       src={product.images?.[0] || FALLBACK_IMAGE_URL}
                       alt={product.name}
                       fill
                       className="object-cover"
-                      loader={loader}
                     />
                   </div>
                   <div className="flex flex-col justify-center">

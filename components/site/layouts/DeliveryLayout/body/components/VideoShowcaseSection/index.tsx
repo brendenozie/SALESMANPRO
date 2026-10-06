@@ -142,10 +142,9 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
               onClick={() => blog.videoAlbumId && setIsOpen(blog.id)}
             >
               <div className="relative w-full aspect-video overflow-hidden">
-                <Image
+                <Image decoding="async"
                   src={blog.coverImage}
                   alt={blog.title}
-                  loader={loader}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                 />

@@ -134,10 +134,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         {/* Image Display Wrapper Frame */}
         <div className="relative aspect-[4/5] overflow-hidden bg-[#f9f9f9] dark:bg-stone-900 rounded-sm mb-6 border border-stone-100 dark:border-stone-800/50">
           <Link href={`/motorcycleecommerce/products/${product.id}`}>
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
-              loader={loader}
               fill
               className="object-cover grayscale-[20%] transition-all duration-1000 group-hover:scale-110 group-hover:grayscale-0"
               sizes="(max-width: 768px) 100vw, 25vw"
@@ -147,7 +146,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059] flex items-center gap-1.5 text-white">
+              <div className="bg-black/95 shadow-sm px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059] flex items-center gap-1.5 text-white">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-[#c5a059]" />
                 <span className="text-[9px] font-bold tracking-[0.2em] uppercase">Video</span>
               </div>
@@ -260,7 +259,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-black/70 backdrop-blur-md"
+              className="absolute inset-0 bg-black/90 shadow-sm"
             />
             
             <motion.div

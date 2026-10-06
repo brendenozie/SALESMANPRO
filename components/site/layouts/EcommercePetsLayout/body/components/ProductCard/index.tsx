@@ -121,10 +121,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         {/* Image Area */}
         <div className="relative aspect-[10/11] rounded-[2rem] overflow-hidden bg-slate-50">
           <Link href={`/petsecommerce/products/${product.id}`}>
-            <Image
+            <Image decoding="async"
               src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400'}
               alt={product.name}
-              loader={({ src }) => `${src}?w=400&q=80`}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
@@ -132,7 +131,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Video Indicator Badge */}
           {resolvedMedia.hasVideo && (
-            <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+            <div className="absolute top-4 left-4 z-10 bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
               <VideoCameraIcon className="w-3.5 h-3.5 text-sky-400" />
               <span>Video</span>
             </div>

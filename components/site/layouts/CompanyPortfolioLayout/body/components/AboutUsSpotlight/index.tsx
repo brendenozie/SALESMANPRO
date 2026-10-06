@@ -112,14 +112,13 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             <div className="absolute -inset-3 border border-zinc-900 rounded-2xl pointer-events-none" />
             
             <div className="absolute inset-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-              <Image
+              <Image decoding="async"
                 src={pagedata.bannerUrl || enterpriseData.profileImageUrl}
                 alt="Institutional trading desk operations tracking bulk commodities markets"
                 fill
                 className="w-full h-full object-cover opacity-80 transform hover:scale-102 transition-transform duration-700"
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 priority
-                loader={({ src }) => `${src}?q=80&w=800&auto=format&fit=crop`}
               />
               {/* Internal Bottom Vignette Shield Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-90" />

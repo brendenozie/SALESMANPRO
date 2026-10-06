@@ -91,13 +91,12 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
             viewport={{ once: true, amount: 0.3 }}
             transition={{ type: 'spring', stiffness: 100, damping: 20 }}
           >
-            <Image
+            <Image decoding="async"
               src={imgSrc}
               alt="Data architecture and hardware matrix overview" 
               fill
               sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover object-center transition-transform duration-700 ease-out hover:scale-105"
-              loader={loader}
               priority
             />
           </motion.div>

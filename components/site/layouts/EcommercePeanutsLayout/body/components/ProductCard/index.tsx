@@ -128,10 +128,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Image Container */}
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
           <Link href={`/peanutecommerce/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300'}
               alt={name}
-              loader={loader}
               fill
               className="transition-transform duration-700 group-hover:scale-110 object-cover object-center"
             />
@@ -139,7 +138,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+              <div className="bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
                 <span>Video</span>
               </div>

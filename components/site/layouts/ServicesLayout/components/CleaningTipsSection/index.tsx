@@ -114,10 +114,9 @@ export default function CleaningTipsSection({ blogs, themeSettings }: CleaningTi
             onClick={() => window.location.href = tip.link} // Navigate on card click
           >
             <div className="relative w-full h-60 overflow-hidden">
-              <Image
+              <Image decoding="async"
                 src={tip.image}
                 alt={tip.title}
-                loader={loader}
                 layout="fill"
                 objectFit="cover"
                 className="transition-transform duration-500 hover:scale-110 rounded-t-2xl" // Zoom effect on hover

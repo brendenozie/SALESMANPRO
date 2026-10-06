@@ -75,11 +75,10 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           className="absolute inset-0"
         >
           {/* Background Image with sophisticated darkening overlay */}
-          <Image
+          <Image decoding="async"
             src={data[current].imageUrl || ''}
             alt="Hero Image"
             fill
-            loader={loader}
             className="object-cover"
             priority
           />

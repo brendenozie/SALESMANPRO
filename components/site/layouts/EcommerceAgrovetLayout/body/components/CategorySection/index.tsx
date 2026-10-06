@@ -76,12 +76,11 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
       <Link href={`/agrovetecommerce/products?category=${cat.categoryId || cat.category?.id || catSlug}`} className="block h-full">
         <div className="relative h-[420px] w-full overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 transition-all duration-500 group-hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] group-hover:-translate-y-2">
           <div className="h-3/5 w-full overflow-hidden relative">
-            <Image
+            <Image decoding="async"
               src={FALLBACK_IMAGE_URL}
               // cat.icon || cat.image || 
               alt={cat.displayName || ""}
               fill
-              loader={customLoader}
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white" />

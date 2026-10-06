@@ -118,12 +118,11 @@ const SchoolSection = ({ storeFormData }: any) => {
                 viewport={{ once: true }}
                 className="col-start-1 col-end-10 row-start-1 row-end-11 relative overflow-hidden bg-gray-100 border-[12px] border-white shadow-2xl z-20"
               >
-                <Image 
+                <Image decoding="async" 
                   src={storeFormData.bannerUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop"}
                   alt="Main School Visual"
                   fill
                   className="object-cover"
-                  loader={customLoader}
                 />
               </motion.div>
 
@@ -135,12 +134,11 @@ const SchoolSection = ({ storeFormData }: any) => {
                 transition={{ delay: 0.2 }}
                 className="col-start-8 col-end-13 row-start-6 row-end-13 relative overflow-hidden border-[12px] border-white shadow-2xl z-30 bg-gray-200"
               >
-                <Image 
+                <Image decoding="async" 
                   src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80" 
                   alt="Classroom" 
                   fill 
                   className="object-cover" 
-                  loader={customLoader} 
                 />
               </motion.div>
 

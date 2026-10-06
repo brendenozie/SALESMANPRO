@@ -122,14 +122,14 @@ export default function AutomotiveAccreditations({ awards }: { awards?: Award[] 
                     {/* The icon will inherit the primary color on hover via CSS cascade hack below */}
                     <div className="absolute inset-0 flex items-center justify-center text-zinc-300 dark:text-zinc-800 group-hover:opacity-0 transition-opacity duration-300">
                        {src ? (
-                        <Image src={src} alt={award.name} loader={loader} fill className="object-contain grayscale opacity-50" />
+                        <Image decoding="async" src={src} alt={award.name} fill className="object-contain grayscale opacity-50" />
                       ) : (
                         React.cloneElement(award.icon as React.ReactElement, { className: "w-full h-full" })
                       )}
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ color: primaryColor }}>
                        {src ? (
-                        <Image src={src} alt={award.name} loader={loader} fill className="object-contain drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+                        <Image decoding="async" src={src} alt={award.name} fill className="object-contain drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
                       ) : (
                         React.cloneElement(award.icon as React.ReactElement, { className: "w-full h-full drop-shadow-md" })
                       )}

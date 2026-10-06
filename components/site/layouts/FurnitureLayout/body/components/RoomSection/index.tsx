@@ -114,12 +114,11 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
             className="lg:col-span-7 relative group overflow-hidden"
           >
             <Link href={rooms[0].href} className="block w-full h-full relative">
-              <Image 
+              <Image decoding="async" 
                 src={rooms[0].img} 
                 alt={rooms[0].name} 
                 fill 
-                className="object-cover transition-transform duration-[2s] group-hover:scale-105" 
-                loader={loader}
+                className="object-cover transition-transform duration-[2s] group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-zinc-950/20 group-hover:bg-zinc-950/40 transition-colors duration-700" />
               
@@ -153,12 +152,11 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
                 className="relative group overflow-hidden"
               >
                 <Link href={room.href} className="block w-full h-full relative">
-                  <Image 
+                  <Image decoding="async" 
                     src={room.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000'} 
                     alt={room.name} 
                     fill 
-                    className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" 
-                    loader={loader}
+                    className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/20 to-transparent" />
                   

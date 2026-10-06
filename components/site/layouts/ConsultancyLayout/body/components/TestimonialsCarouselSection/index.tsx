@@ -202,12 +202,11 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                       <div
                         className="w-16 h-16 rounded-full overflow-hidden border-4 border-orange-100 shadow-md mb-3"
                       >
-                        <Image
+                        <Image decoding="async"
                           src={data[current].avatarUrl || 'https://via.placeholder.com/100?text=Avatar'}
                           alt={data[current].authorName || 'Client'}
                           width={64}
                           height={64}
-                          loader={customLoader}
                           className="object-cover"
                         />
                       </div>

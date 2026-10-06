@@ -21,12 +21,11 @@ export default function EyewearStandards() {
               viewport={{ once: true }}
               className="relative h-[500px] w-full overflow-hidden rounded-[3rem] bg-zinc-100"
             >
-              <Image 
+              <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=800&q=80" 
                 alt="Artisan Crafting Frames" 
                 fill 
                 className="object-cover transition-transform duration-1000 hover:scale-105"
-                loader={({ src }) => src}
               />
               <div className="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors duration-500" />
             </motion.div>
@@ -72,23 +71,21 @@ export default function EyewearStandards() {
               viewport={{ once: true }}
               className="relative h-[400px] w-full overflow-hidden rounded-[3rem] bg-[#004743] p-12 flex items-center justify-center shadow-2xl"
             >
-               <Image 
+               <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=1200&q=80" 
                 alt="Precision Lenses" 
                 fill 
                 className="object-contain p-16 rotate-12 group-hover:rotate-0 transition-transform duration-700"
-                loader={({ src }) => src}
               />
               {/* Decorative Glassmorphism Element */}
               <div className="absolute top-8 right-8 w-24 h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
                  <span className="text-white text-[10px] font-black uppercase tracking-tighter text-center px-2">100% UV Protection</span>
               </div>
-              <Image 
+              <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
                 alt="Quality Assurance"
                 fill
                 className="object-contain p-16 rotate-12 group-hover:rotate-0 transition-transform duration-700"
-                loader={({ src }) => src}
               />
             </motion.div>
           </div>

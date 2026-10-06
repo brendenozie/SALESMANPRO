@@ -263,13 +263,12 @@ Please confirm availability and dispatch details. Thank you!`;
                     >
                       {/* Image Thumbnail */}
                       <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
-                        <Image 
+                        <Image decoding="async" 
                           src={item.images?.[0]?.url || item.images?.[0] || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189'} 
                           alt={item.name} 
                           fill 
                           className="object-contain p-2"
                           sizes="80px"
-                          loader={({ src }) => src}
                         />
                       </div>
                       

@@ -75,7 +75,21 @@ export default function HeaderLightMode() {
   const secondaryColor = themeSettings.secondaryColor || '#3B82F6'; 
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -84,7 +98,7 @@ export default function HeaderLightMode() {
     <header
       className={`fixed w-full top-0 z-50 transition-all duration-300 ${
         scrolled 
-          ? 'bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)] py-3' 
+          ? 'bg-white/95 shadow-sm border-b border-gray-100 shadow-[0_2px_20px_rgba(0,0,0,0.02)] py-3' 
           : 'bg-transparent py-5'
       }`}
     >
@@ -93,9 +107,8 @@ export default function HeaderLightMode() {
         {/* LOGO ARCHITECTURE */}
         <Link href="/" className="flex items-center gap-2.5 group relative z-50">
           {logoUrl ? (
-            <Image
+            <Image decoding="async"
               src={logoUrl}
-              loader={loader}
               alt={name}
               width={130}
               height={36}

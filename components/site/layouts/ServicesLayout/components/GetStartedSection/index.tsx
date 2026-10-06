@@ -199,8 +199,7 @@ export default function GetStartedSection() {
               variants={structuralVariants}
               className="relative w-full h-full min-h-[280px] lg:h-[88%] lg:w-[95%] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 group"
             >
-              <Image
-                loader={loader}
+              <Image decoding="async"
                 src={bannerUrl || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80'}
                 alt="Aspirational representation of clear organized results"
                 fill

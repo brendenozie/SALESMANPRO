@@ -81,10 +81,8 @@ const BentoItem = ({
       className={`relative group overflow-hidden bg-zinc-100 dark:bg-zinc-900 ${className}`}
     >
       <Link href={`/fashionecommerce/products?category=${safeSlug(item.id)}`} className="block w-full h-full relative">
-        <Image
+        <Image decoding="async"
           src={FALLBACK_IMAGE_URL}
-          // item.imageUrl || 
-          loader={customLoader}
           alt={item.name}
           fill
           className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"

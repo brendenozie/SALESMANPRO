@@ -138,11 +138,10 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
               <Link href={`/cakeecommerce/products?category=${cat.category?.slug || cat.id}`}>
                 <div className="relative h-[450px] overflow-hidden rounded-2xl mb-6 shadow-xl transition-shadow hover:shadow-2xl">
                   
-                  <Image
+                  <Image decoding="async"
                     src={ FALLBACK_IMAGES[idx % 3]}
                     // cat.image ||
                     alt={cat.displayName || 'Category'}
-                    loader={({ src }) => src}
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />

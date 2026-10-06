@@ -32,12 +32,11 @@ export default function FeatureSection() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full lg:w-1/2 relative aspect-[4/5] sm:aspect-square overflow-hidden"
           >
-            <Image
+            <Image decoding="async"
               src={sectionData.imageUrl}
               alt="Lifestyle product shot"
               fill
               className="object-cover"
-              loader={loader}
             />
           </motion.div>
 

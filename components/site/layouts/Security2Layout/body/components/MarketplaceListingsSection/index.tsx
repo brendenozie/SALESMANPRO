@@ -190,9 +190,8 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                         )}
                         
                         <div className="relative w-full h-full overflow-hidden grayscale filter contrast-[1.04]">
-                          <Image
+                          <Image decoding="async"
                             src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
-                            loader={imageLoader}
                             alt={item.name}
                             fill
                             className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"

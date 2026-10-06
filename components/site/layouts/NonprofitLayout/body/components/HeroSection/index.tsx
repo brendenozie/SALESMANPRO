@@ -263,12 +263,11 @@ export default function HeroSection({storeFormData}: {storeFormData: StoreForm})
               transition={{ duration: 0.3 }}
               className="relative w-full h-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-xl"
             >
-              <Image
+              <Image decoding="async"
                 src={activeSlide.imageUrl}
                 alt="Community Empowerment Visual representation"
                 fill
                 className="object-cover"
-                loader={loader}
                 priority
                 onError={handleImageError}
                 sizes="(max-w-1024px) 100vw, 45vw"

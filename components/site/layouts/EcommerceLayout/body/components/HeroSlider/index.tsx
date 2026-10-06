@@ -111,13 +111,12 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
         >
           {/* Background */}
           <div className="absolute inset-0">
-            <Image
+            <Image decoding="async"
               src={slides[current].imageUrl || ''}
               alt="Hero background"
               fill
               priority
               sizes="100vw"
-              loader={loader}
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-black/50 md:bg-black/40" />

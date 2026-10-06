@@ -153,14 +153,13 @@ export default function HoneyCategorySection({ StoreCategory, themeSettings }: H
                        {cat.icon  ? (
                          <span className="text-4xl group-hover:scale-125 transition-transform duration-500">{cat.icon}</span>
                        ) : (
-                         <Image 
+                         <Image decoding="async" 
                            src={'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=80&q=80'} 
                           //  cat.image ||
                            alt="" 
                            width={80} 
                            height={80}
-                           className="object-contain group-hover:brightness-0 group-hover:invert transition-all"
-                           loader={({ src }) => src} // Bypass Next.js optimization for external URLs
+                           className="object-contain group-hover:brightness-0 group-hover:invert transition-all" // Bypass Next.js optimization for external URLs
                          />
                        )}
                     </div>

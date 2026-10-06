@@ -135,7 +135,7 @@ export default function Header() {
           
           <Link href="/" className="relative flex items-center group">
             {logoUrl ? (
-              <Image src={logoUrl} alt={name} width={140} height={45} loader={imageLoader} className="object-contain transition-transform duration-300 group-hover:scale-105  h-20 w-32" />
+              <Image decoding="async" src={logoUrl} alt={name} width={140} height={45} className="object-contain transition-transform duration-300 group-hover:scale-105  h-20 w-32" />
             ) : (
               <div className="flex flex-col">
                 <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
@@ -190,7 +190,7 @@ export default function Header() {
 
           <button onClick={handleUserAction} className="relative group">
             {user?.image ? (
-              <Image src={user.image} alt="Profile" width={42} height={42} className="rounded-2xl border-2 border-white shadow-sm ring-1 ring-gray-100" loader={imageLoader}/>
+              <Image decoding="async" src={user.image} alt="Profile" width={42} height={42} className="rounded-2xl border-2 border-white shadow-sm ring-1 ring-gray-100"/>
             ) : (
               <div className="bg-gray-100 p-2.5 rounded-2xl text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-all">
                 <UserIcon className="h-6 w-6" />

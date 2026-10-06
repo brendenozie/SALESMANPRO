@@ -196,13 +196,12 @@ export default function FeaturesSection({ features = [] }: { features?: any[] })
               className="flex-1 relative w-full aspect-video md:aspect-[4/3] lg:aspect-[5/4] rounded-2xl overflow-hidden shadow-2xl border border-white/30 dark:border-gray-700 transform hover:scale-[1.02] transition-transform duration-300"
               variants={i % 2 === 0 ? imageVariants : imageVariantsRight}
             >
-              <Image
+              <Image decoding="async"
                 src={f.image || "/images/placeholder-feature.png"} // Fallback image
                 alt={f.alt || f.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-center"
-                loader={customLoader}
                 priority={i === 0} // Prioritize loading the first image
               />
               {/* Subtle overlay for visual depth */}

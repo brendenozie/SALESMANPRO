@@ -94,11 +94,23 @@ export default function Header() {
   ];
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
@@ -160,12 +172,11 @@ export default function Header() {
         >
           {logoUrl && logoUrl !== DEFAULT_LOGO_URL ? (
             <div className="relative h-10 w-28 transition-transform duration-300 group-hover:scale-[1.02]">
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name}
                 fill
                 className="object-contain object-left"
-                loader={loader}
                 priority
               />
             </div>

@@ -118,13 +118,12 @@ export default function HeroCommandSection({
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
-            <Image
+            <Image decoding="async"
               src={slide.imageUrl || defaultSlides[0].imageUrl!}
               alt="Hero Background"
               fill
               className="object-cover brightness-[0.85] dark:brightness-[0.25] saturate-[1.1]"
               priority
-              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
             />
             {/* Visual Overlays & Gradients - Flipped for Light/Dark Mode */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-50/95 via-slate-50/70 to-slate-50/90 dark:from-[#05070A] dark:via-[#080B10]/70 dark:to-[#080B10]/90" />

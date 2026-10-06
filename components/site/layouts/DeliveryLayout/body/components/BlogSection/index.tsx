@@ -90,12 +90,11 @@ export function BlogSection() {
             className="lg:col-span-7 group cursor-pointer"
           >
             <div className="relative overflow-hidden rounded-[3.5rem] bg-slate-100 mb-10 shadow-2xl">
-              <Image 
+              <Image decoding="async" 
                 src={featuredPost?.image || ""} 
                 alt={featuredPost?.title || ""}
                 width={1200}
                 height={800}
-                loader={loader}
                 className="w-full aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-1000"
               />
               <div className="absolute top-8 left-8">
@@ -137,12 +136,11 @@ export function BlogSection() {
                 className="group flex gap-8 items-center cursor-pointer"
               >
                 <div className="w-32 h-32 md:w-44 md:h-44 rounded-[2.5rem] overflow-hidden shrink-0 shadow-lg group-hover:shadow-orange-500/20 transition-all duration-500">
-                  <Image 
+                  <Image decoding="async" 
                     src={post.image} 
                     alt={post.title} 
                     width={200}
                     height={200}
-                    loader={loader}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                 </div>

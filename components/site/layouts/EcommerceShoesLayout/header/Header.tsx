@@ -116,7 +116,7 @@ export default function Header() {
         <div className={`
           flex items-center justify-between px-6 py-3 rounded-2xl transition-all duration-300
           ${scrolled 
-            ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-white/10' 
+            ? 'bg-white/95 dark:bg-zinc-900/95 shadow-sm shadow-2xl border border-gray-200/50 dark:border-white/10' 
             : 'bg-transparent'}
         `}>
           
@@ -124,7 +124,7 @@ export default function Header() {
           <div className="flex items-center gap-12">
             <Link href={buildUrl('/')} className="group relative flex items-center gap-2">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || 'Logo'}
                   width={160}

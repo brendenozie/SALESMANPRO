@@ -46,10 +46,9 @@ const LocationItem = ({ id, name, image, programs, rating, description, index, p
   >
     {/* Immersive Cover Image */}
     <div className="absolute inset-0 z-0">
-      <Image
+      <Image decoding="async"
         src={image || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop"}
         alt={name}
-        loader={({ src }) => src}
         fill
         className="object-cover scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
       />

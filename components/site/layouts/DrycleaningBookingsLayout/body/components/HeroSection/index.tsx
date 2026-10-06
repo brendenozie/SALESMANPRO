@@ -200,9 +200,8 @@ export default function Hero({
             exit="exit"
             className="absolute inset-0 w-full h-full"
           >
-            <Image
+            <Image decoding="async"
               src={activeSlide.bannerUrl}
-              loader={loader}
               alt={activeSlide.name}
               fill
               priority

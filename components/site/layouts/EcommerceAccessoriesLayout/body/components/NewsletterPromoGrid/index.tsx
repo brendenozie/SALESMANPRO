@@ -97,12 +97,11 @@ export default function AutomotivePromoGrid() {
               // --- CENTER CARD STYLING ---
               <>
                 <div className="absolute inset-0 z-0">
-                  <Image
+                  <Image decoding="async"
                     src={item.image}
                     alt={item.highlight || item.title}
                     fill
                     className="object-cover filter brightness-[0.4] group-hover:brightness-[0.6] group-hover:scale-105 transition-all duration-[2s] ease-out"
-                    loader={({ src }) => `${src}`}
                   />
                   {/* Engineered Grid Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
@@ -160,12 +159,11 @@ export default function AutomotivePromoGrid() {
 
                 {/* Central Image Showcase */}
                 <div className="relative flex-1 my-6 w-full rounded-sm overflow-hidden bg-zinc-200 dark:bg-zinc-950 border border-zinc-200/50 dark:border-zinc-800/50 shadow-inner group-hover:border-[var(--primary-color)]/30 transition-colors">
-                   <Image
+                   <Image decoding="async"
                      src={item.image}
                      alt={item.title}
                      fill
                      className="object-cover scale-100 group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                     loader={({ src }) => `${src}`}
                    />
                    {item.discount && (
                      <div className="absolute bottom-3 left-3 bg-[var(--primary-color)] text-zinc-950 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest shadow-md">

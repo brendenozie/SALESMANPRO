@@ -104,13 +104,12 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
           >
             <div className="border border-gray-100 p-2 bg-gray-50/50">
               <div className="relative w-full h-[400px] md:h-[500px] bg-gray-100 border border-gray-200">
-                <Image
+                <Image decoding="async"
                   src={imgSrc}
                   alt="Infrastructure security matrix blueprint" 
                   layout="fill"
                   objectFit="cover"
                   className=" mix-blend-multiply opacity-90 transition-all duration-300 group-hover:scale-102"
-                  loader={loader}
                   priority
                 />
                 {/* System identification overlay anchors */}

@@ -94,10 +94,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Award Visual */}
                 <div className="relative w-full aspect-square mb-8">
                   {src ? (
-                    <Image
+                    <Image decoding="async"
                       src={src}
                       alt={label}
-                      loader={loader}
                       fill
                       className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
                     />

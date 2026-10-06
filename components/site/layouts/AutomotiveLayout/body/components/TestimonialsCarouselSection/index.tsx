@@ -139,12 +139,11 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                       transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
                       className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 dark:border-blue-400 shadow-md mb-6"
                     >
-                      <Image
+                      <Image decoding="async"
                         src={testimonials[current].avatarUrl || 'placeholder.com'}
                         alt={testimonials[current].authorName || 'author name'}
                         width={96}
                         height={96}
-                        loader={customLoader}
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </motion.div>

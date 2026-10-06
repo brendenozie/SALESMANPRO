@@ -101,10 +101,9 @@ export default function IndustrialAccreditations({ awards }: { awards?: Award[] 
                 <div className="flex flex-col items-center justify-center space-y-10">
                   <div className="relative w-24 h-24 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-amber-500 transition-all duration-500 group-hover:scale-110">
                     {src ? (
-                      <Image
+                      <Image decoding="async"
                         src={src}
                         alt={award.name}
-                        loader={loader}
                         fill
                         className="object-contain grayscale contrast-125"
                       />

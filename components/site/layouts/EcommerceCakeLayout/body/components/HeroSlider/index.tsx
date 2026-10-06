@@ -74,13 +74,12 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
                 style={{ x: springX, y: springY, scale: 1.08 }}
                 className="absolute inset-0 w-full h-full"
               >
-                <Image
+                <Image decoding="async"
                   src={slide.imageUrl || ''}
                   alt="Bakery Hero"
                   fill
                   priority
                   className="object-cover brightness-[0.45] md:brightness-[0.6] transition-opacity duration-1000"
-                  loader={loader}
                 />
               </motion.div>
 

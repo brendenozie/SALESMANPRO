@@ -184,12 +184,11 @@ export default function AppPromotion() {
             {/* Device Hardware Wrapper */}
             <div className="relative z-20 group">
               <div className="relative w-[270px] h-[560px] sm:w-[290px] sm:h-[600px] border-[10px] border-neutral-900 dark:border-neutral-900 bg-neutral-900 rounded-[3rem] shadow-2xl overflow-hidden ring-4 ring-neutral-200/50 dark:ring-neutral-900/50">
-                <Image
+                <Image decoding="async"
                   src="/images/app-mockup-main.png"
                   alt="Interface Telemetry Asset"
                   fill
                   className="object-cover grayscale dark:opacity-95 group-hover:grayscale-0 transition-all duration-700 ease-out"
-                  loader={loader}
                   priority
                 />
                 

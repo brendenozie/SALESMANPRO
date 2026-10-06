@@ -98,9 +98,8 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                     <div className="lg:col-span-7 relative group">
                         <div className="relative aspect-[4/5] md:aspect-video rounded-[3rem] overflow-hidden bg-slate-100 border border-slate-200 shadow-2xl">
                             <motion.div style={{ scale: imgScale }} className="h-full w-full">
-                                <Image
+                                <Image decoding="async"
                                     src={bannerUrl || "https://images.unsplash.com/photo-1545173168-9f1947eebb9f?q=80&w=2070"}
-                                    loader={loader}
                                     alt="Textile Care"
                                     fill
                                     className="object-cover transition-all duration-1000 group-hover:scale-105"
@@ -130,7 +129,7 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                                 <div className="flex -space-x-3">
                                     {[1, 2, 3].map(i => (
                                         <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-200 overflow-hidden shadow-sm">
-                                            <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="client" width={40} height={40} loader={loader}/>
+                                            <Image decoding="async" src={`https://i.pravatar.cc/100?img=${i+10}`} alt="client" width={40} height={40}/>
                                         </div>
                                     ))}
                                 </div>

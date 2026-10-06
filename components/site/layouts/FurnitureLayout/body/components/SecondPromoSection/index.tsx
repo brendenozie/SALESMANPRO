@@ -45,10 +45,9 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full max-w-lg aspect-[3/4] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.4)]"
           >
-            <Image
+            <Image decoding="async"
               src={promotion.bannerUrl}
               alt={promotion.title}
-              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
               fill
               className="object-cover"
               sizes="50vw"

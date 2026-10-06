@@ -54,9 +54,8 @@ const CategoryCard = ({ value }: { value: { id: string; name: string; image: str
       prefetch={true}
       className="relative group cursor-pointer h-[380px] md:h-[460px] w-full overflow-hidden rounded-[2.5rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-md block bg-zinc-100 dark:bg-zinc-900"
     >
-      <Image
+      <Image decoding="async"
         fill
-        loader={loaderProp}
         src={imageError ? "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800" : value.image}
         alt={value.name}
         sizes="(max-width: 640px) 85vw, 33vw"

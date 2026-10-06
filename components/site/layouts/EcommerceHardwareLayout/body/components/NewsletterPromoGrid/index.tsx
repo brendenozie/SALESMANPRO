@@ -85,12 +85,11 @@ export default function HardwarePromoGrid() {
           >
             {/* Background Image Layer */}
             <div className="absolute inset-0">
-              <Image
+              <Image decoding="async"
                 src={item.image}
                 alt={item.title}
                 fill
                 className="object-cover opacity-20 dark:opacity-10 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                loader={({ src }) => `${src}?auto=format&fit=crop&w=1200&q=80`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-zinc-950 via-transparent to-transparent opacity-80" />
             </div>

@@ -283,11 +283,10 @@ export default function Header() {
         aria-label={`${name} home`}
       >
         {logoUrl ? (
-          <Image
+          <Image decoding="async"
             src={logoUrl}
             alt={name}
             width={160}
-            loader={loader}
             height={48}
             className="object-contain rounded-md h-12 w-auto dark:brightness-110  h-20 w-32"
             priority

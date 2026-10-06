@@ -135,11 +135,10 @@ export default function PromotionSection({ promotions: dynamicPromotions }: Prom
                 
                 {/* 1. BACKGROUND IMAGE (Zoom Effect) */}
                 <div className="absolute inset-0 z-0">
-                  <Image
+                  <Image decoding="async"
                     src={banner.imgSrc}
                     alt={banner.title}
                     fill
-                    loader={loader}
                     className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, 60vw"
                   />

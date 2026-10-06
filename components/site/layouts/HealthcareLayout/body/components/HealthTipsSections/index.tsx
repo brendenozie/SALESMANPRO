@@ -154,10 +154,9 @@ export default function NewsSection() {
                 {/* INTERACTIVE MEDIA CONTROLLER */}
                 <div className="relative h-64 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
                   <Link href={`/${organizationSlug}/blog/${newsItem.slug}`} className="block h-full w-full">
-                    <Image
+                    <Image decoding="async"
                       src={newsItem.coverImage || "https://images.unsplash.com/photo-1603512193164-9844f77c8e6b?q=80&w=2670&auto=format&fit=crop"}
                       alt={newsItem.title || 'Medical Update'}
-                      loader={loader}
                       fill
                       className="object-cover transform transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

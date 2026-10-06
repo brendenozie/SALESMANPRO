@@ -62,10 +62,9 @@ export default function ProfessionalEvents({ storeFormData }: any) {
             whileInView={{ opacity: 1 }}
             className="lg:col-span-8 bg-white relative group overflow-hidden h-[650px]"
           >
-            <Image 
+            <Image decoding="async" 
               src={featured.imageUrl || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97"} 
-              alt={featured.title} 
-              loader={({src})=>src}
+              alt={featured.title}
               fill 
               className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
             />

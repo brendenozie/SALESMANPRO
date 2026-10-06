@@ -96,12 +96,11 @@ export default function FeaturesSection({ name, description, CoreValues }: any) 
                             >
                                 {/* High-Speed Background Image */}
                                 <div className="absolute inset-0 z-0 overflow-hidden">
-                                    <Image
+                                    <Image decoding="async"
                                         src={feature.imageUrl}
                                         alt={feature.title}
                                         fill
                                         className="object-cover opacity-10 group-hover:opacity-30 group-hover:scale-105 transition-all duration-1000 grayscale group-hover:grayscale-0"
-                                        loader={loader}
                                     />
                                     {/* Glass Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#080a0c] via-transparent to-transparent" />
@@ -156,7 +155,7 @@ export default function FeaturesSection({ name, description, CoreValues }: any) 
                         <div className="flex -space-x-2">
                             {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-[#080a0c] bg-slate-200 overflow-hidden">
-                                    <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={40} height={40} loader={loader} />
+                                    <Image decoding="async" src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={40} height={40} />
                                 </div>
                             ))}
                         </div>

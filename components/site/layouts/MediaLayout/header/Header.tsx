@@ -64,10 +64,24 @@ export default function EnhancedMediaHeader() {
 
     /** Scroll behavior */
     useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 50);
-        window.addEventListener("scroll", onScroll);
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
     /** Close dropdown when clicking outside */
     useEffect(() => {
@@ -116,8 +130,7 @@ export default function EnhancedMediaHeader() {
                     {/* Logo */}
                     <Link href={`/`} className="flex-shrink-0 flex items-center">
                         {storeFormData?.logoUrl ? (
-                            <Image
-                                loader={loader}
+                            <Image decoding="async"
                                 src={storeFormData.logoUrl}
                                 alt={storeFormData.name}
                                 width={140}

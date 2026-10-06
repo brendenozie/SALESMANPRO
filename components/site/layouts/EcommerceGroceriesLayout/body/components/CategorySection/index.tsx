@@ -63,11 +63,10 @@ function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number 
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link href={`/groceriesecommerce/products?category=${cat.category?.id || cat.categoryId || cat.displayName}`} className="block h-full w-full">
-        <Image
+        <Image decoding="async"
           src={getImageUrl(cat)}
           alt={cat.displayName || 'Category Image'}
           fill
-          loader={customLoader}
           className={`object-cover transition-transform duration-1000 ease-out ${
             isHovered ? 'scale-110' : 'scale-100'
           }`}

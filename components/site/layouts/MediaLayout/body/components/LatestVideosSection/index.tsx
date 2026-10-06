@@ -146,10 +146,9 @@ export default function LatestVideosSection({ videos, title }: LatestVideosSecti
               
               {/* Video Thumbnail (16:9) */}
               <div className="relative w-full pb-[56.25%] overflow-hidden">
-                <Image
+                <Image decoding="async"
                   src={vid.imageUrl}
                   alt={vid.title || "Latest Video"}
-                  loader={loader}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover object-center brightness-[.85] group-hover:brightness-[.65] group-hover:scale-105 transition-all duration-500 ease-in-out" // Subtle zoom & darkening

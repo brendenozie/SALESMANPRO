@@ -92,10 +92,9 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
           className="order-1 lg:order-2 relative flex justify-center items-center"
         >
           <div className="relative w-[300px] h-[450px] md:w-[350px] md:h-[525px] rounded-3xl overflow-hidden shadow-2xl transform transition-transform duration-500 hover:scale-105">
-            <Image
+            <Image decoding="async"
               priority
               src={bannerSrc}
-              loader={customLoader}
               layout="fill"
               objectFit="cover"
               alt={eventTitle}

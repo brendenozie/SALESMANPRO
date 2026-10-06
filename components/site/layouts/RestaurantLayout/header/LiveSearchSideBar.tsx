@@ -132,10 +132,9 @@ export default function LiveSearchSideBar({
                       className="flex items-center gap-4 group cursor-pointer"
                     >
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                        <Image 
+                        <Image decoding="async" 
                           src={typeof product.images[0] === 'string' ? product.images[0] : product.images[0]?.url || '/placeholder.png'} 
                           alt={product.name}
-                          loader={({src})=>src}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform"
                         />
@@ -179,9 +178,8 @@ export default function LiveSearchSideBar({
             {/* Bottom Visual Card */}
             <div className="mt-auto pt-10">
                <div className="relative h-32 rounded-2xl overflow-hidden group">
-                  <Image 
-                    src="https://images.unsplash.com/photo-1550966841-3ee323330939" 
-                    loader={({src})=>src}
+                  <Image decoding="async" 
+                    src="https://images.unsplash.com/photo-1550966841-3ee323330939"
                     fill 
                     alt="Promo" 
                     className="object-cover brightness-50 group-hover:scale-105 transition-transform duration-1000"

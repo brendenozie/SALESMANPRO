@@ -195,12 +195,11 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                             {/* RIGHT: Image Background */}
                             <div className="absolute inset-0 md:relative md:w-3/5 h-full z-10 md:z-auto">
                                 <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent md:hidden z-20" /> {/* Mobile text legibility overlay */}
-                                <Image
+                                <Image decoding="async"
                                     src={features[activeIndex].imageUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
                                     alt={features[activeIndex].title}
                                     fill
                                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                    loader={loader}
                                 />
                                 {/* Dark overlay for depth */}
                                 <div className="absolute inset-0 bg-black/10 md:bg-transparent" />

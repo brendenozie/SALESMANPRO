@@ -107,11 +107,10 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
             >
               {/* Image Architecture Layer */}
               <div className="absolute inset-0 w-full h-full">
-                <Image
+                <Image decoding="async"
                   src={doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
                   alt={`Dr. ${doc.name}`}
                   fill
-                  loader={customLoader}
                   className="object-cover object-center grayscale-[15%] group-hover:grayscale-0 transform transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />

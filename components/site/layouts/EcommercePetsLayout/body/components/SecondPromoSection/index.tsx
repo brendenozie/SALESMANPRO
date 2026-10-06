@@ -117,10 +117,9 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 className="relative z-10"
               >
                 <div className="relative aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden border-8 border-white/20 shadow-2xl">
-                  <Image
+                  <Image decoding="async"
                     src={promo.bannerUrl || 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1000'}
-                    alt={promo.title}
-                    loader={({ src }) => src} 
+                    alt={promo.title} 
                     fill
                     className="object-cover"
                   />

@@ -83,10 +83,9 @@ export default function ServicesSpotlightDeck({
               >
                 {/* Image Composition Layer with Micro Parallax Zoom */}
                 <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
-                  <Image
+                  <Image decoding="async"
                     src={service.images?.[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80"}
                     alt={service.name}
-                    loader={loader}
                     fill
                     className="object-cover opacity-60 dark:opacity-40 transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                   />
@@ -152,10 +151,9 @@ export default function ServicesSpotlightDeck({
             >
               {/* Left Column Section: High Impact Background Artwork Visuals */}
               <div className="relative w-full md:w-5/12 h-[30vh] md:h-full bg-gray-100 dark:bg-gray-950 overflow-hidden">
-                <Image
+                <Image decoding="async"
                   src={selectedService.images?.[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80"}
                   alt={selectedService.name}
-                  loader={loader}
                   fill
                   className="object-cover"
                 />

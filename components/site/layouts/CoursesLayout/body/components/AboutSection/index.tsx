@@ -83,11 +83,10 @@ export default function AboutSection({ storeFormData }: any) {
           className="relative group cursor-pointer"
         >
           <div className="relative aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl">
-            <Image 
+            <Image decoding="async" 
               src={aboutVideoThumbnail}
               alt="Campus Culture"
               fill
-              loader={loader}
               className="object-cover transition-transform duration-1000 group-hover:scale-105"
             />
             {/* Subtle Gradient Overlay */}
@@ -110,7 +109,7 @@ export default function AboutSection({ storeFormData }: any) {
 
             {/* Bottom Caption */}
             <div className="absolute bottom-10 left-10 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center backdrop-blur-md">
+              <div className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center bg-black/40">
                 <span className="text-[10px] font-bold text-white">4K</span>
               </div>
               <span className="text-xs font-bold uppercase tracking-widest text-white">Watch Our Story</span>

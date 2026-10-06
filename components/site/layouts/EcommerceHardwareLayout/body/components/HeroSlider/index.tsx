@@ -129,12 +129,11 @@ export default function HardwareHeroSlider({ heroSlides, themeSettings }: any) {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="relative w-full h-full max-h-[220px] sm:max-h-[300px] lg:max-h-[420px]"
                 >
-                  <Image 
+                  <Image decoding="async" 
                     src={activeSlide.imageUrl || defaultSlides[0].imageUrl} 
                     alt="Hardware Engineering Product" 
                     fill 
                     className="object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_25px_40px_rgba(0,0,0,0.4)]"
-                    loader={loader}
                     priority
                   />
                 </motion.div>

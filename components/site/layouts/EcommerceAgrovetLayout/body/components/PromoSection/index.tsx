@@ -48,10 +48,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             className="lg:col-span-8 relative group cursor-pointer"
           >
             <div className="relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl">
-              <Image
+              <Image decoding="async"
                 src={promotions[0].bannerUrl || 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2'}
                 alt={promotions[0].title}
-                loader={({ src }) => src}
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -111,12 +110,11 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                       {promo.ctaText || 'Shop Now'}
                     </a>
                     <div className="h-12 w-12 rounded-2xl overflow-hidden relative grayscale group-hover:grayscale-0 transition-all">
-                        <Image 
+                        <Image decoding="async" 
                             src={promo.bannerUrl || 'https://images.unsplash.com/photo-1595113316349-9fa4ee24f884'} 
                             alt="thumb" 
                             fill 
                             className="object-cover"
-                            loader={({ src }) => src}
                         />
                     </div>
                   </div>

@@ -138,10 +138,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] rounded-sm mb-6">
           <Link href={`/watchecommerce/products/${product.id}`}>
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
-              loader={({ src }) => src}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
               sizes="(max-width: 768px) 100vw, 25vw"
@@ -150,7 +149,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Video Indicator Badge */}
           {resolvedMedia.hasVideo && (
-            <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+            <div className="absolute top-4 left-4 z-10 bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
               <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
               <span>Video</span>
             </div>

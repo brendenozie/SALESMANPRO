@@ -35,12 +35,11 @@ export default function MotoFeatureSection() {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="w-full lg:w-1/2 relative aspect-[4/5] rounded-[2rem] overflow-hidden group perspective-1000 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]"
           >
-            <Image
+            <Image decoding="async"
               src={sectionData.imageUrl}
               alt="Custom Heavyweight Cruiser"
               fill
               className="object-cover transition-transform duration-[2s] group-hover:scale-110"
-              loader={loader}
             />
             {/* Dark Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-black/20 to-transparent" />

@@ -107,13 +107,12 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
           <div className="flex items-center space-x-4">
             <Link href={`/site/${store.slug}`} className="flex items-center space-x-2">
               {store.logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={store.logoUrl}
                   alt={store.name}
                   width={120}
                   height={40}
                   className="object-contain h-20 w-32"
-                  loader={loader}
                 />
               ) : (
                 <span className="text-xl font-bold text-gray-800 dark:text-white">{store.name}</span>

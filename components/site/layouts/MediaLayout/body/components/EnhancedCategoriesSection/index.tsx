@@ -177,11 +177,10 @@ export default function EnhancedCategoriesSection({ categories, slug, isSubPage 
                             aria-label={`Explore ${name}`}
                         >
                             {/* Image */}
-                            <Image
+                            <Image decoding="async"
                                 src={imageUrl}
                                 alt={name || 'Category image'}
                                 fill
-                                loader={loader}
                                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                 // Slightly brighter default image
                                 className="object-cover w-full h-full brightness-[.75] group-hover:brightness-[.6] group-hover:scale-105 transition-all duration-500 ease-in-out"

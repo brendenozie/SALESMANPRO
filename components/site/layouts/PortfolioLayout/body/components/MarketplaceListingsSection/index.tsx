@@ -249,9 +249,8 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
               >
                 {/* Image Container with Crisp Scale Transition */}
                 <div className="relative w-full aspect-[16/10] bg-slate-100 overflow-hidden border-b border-slate-100">
-                  <Image
+                  <Image decoding="async"
                     src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop'}
-                    loader={imageLoader}
                     alt={item.name}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -363,10 +362,9 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                     <SparklesIcon className="w-4 h-4 text-slate-500" /> Operational Integration Map
                   </h4>
                   <div className="relative w-full aspect-[2.5/1] bg-white rounded-lg overflow-hidden border border-slate-200">
-                    <Image
+                    <Image decoding="async"
                       src={activeService.images?.[0]?.url || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80"}
                       alt="Service Integration Flow Chart Graphic"
-                      loader={imageLoader}
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover opacity-80 mix-blend-multiply"

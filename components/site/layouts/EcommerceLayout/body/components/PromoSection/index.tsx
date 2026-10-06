@@ -37,11 +37,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             whileTap={{ scale: 0.99 }}
             className="group relative rounded-[2rem] md:rounded-[3rem] overflow-hidden min-h-[420px] md:h-[500px] w-full bg-slate-100 dark:bg-gray-900 shadow-xl"
           >
-            <Image
+            <Image decoding="async"
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2070'}
               alt={promo.title}
               fill
-              loader={customLoader}
               className="object-cover object-center transition-transform duration-1000 group-hover:scale-105 pointer-events-none"
             />
             {/* Ambient vignette shield overlays */}
@@ -103,11 +102,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   : 'md:col-span-5 md:row-span-1' // Stacked secondary cards
                 }`}
             >
-              <Image
+              <Image decoding="async"
                 src={item.bannerUrl || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070'}
                 alt={item.title}
                 fill
-                loader={customLoader}
                 className="object-cover object-center transition-transform duration-700 group-hover:scale-105 pointer-events-none"
               />
               {/* Darkening bottom shield layer */}

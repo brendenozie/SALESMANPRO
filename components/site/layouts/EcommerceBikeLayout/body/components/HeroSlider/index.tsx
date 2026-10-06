@@ -231,11 +231,10 @@ export default function PerformanceHeroSlider({ heroSlides, themeSettings }: Her
               />
               
               <div className="relative w-full h-full">
-                <Image
+                <Image decoding="async"
                   src={activeSlide.imageUrl || activeSlide.productImageUrl || ''}
                   alt={activeSlide.headline || 'Product Frame Engine Show'}
                   fill
-                  loader={imageLoader}
                   className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.18)]"
                   priority
                 />

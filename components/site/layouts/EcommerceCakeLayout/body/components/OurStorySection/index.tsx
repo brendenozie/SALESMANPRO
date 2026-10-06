@@ -20,12 +20,11 @@ export default function OurStorySection() {
                 viewport={{ once: true }}
                 className="relative z-10 w-full h-full rounded-2xl overflow-hidden shadow-2xl border-[12px] border-white"
               >
-                <Image 
+                <Image decoding="async" 
                   src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80" 
                   alt="Baker at work" 
                   fill
-                  className="object-cover"
-                  loader={({ src }) => src} // Use the URL directly without modification
+                  className="object-cover" // Use the URL directly without modification
                 />
               </motion.div>
 
@@ -37,12 +36,11 @@ export default function OurStorySection() {
                 transition={{ delay: 0.3 }}
                 className="absolute -bottom-12 -right-8 md:-right-16 z-20 w-1/2 aspect-square rounded-2xl overflow-hidden shadow-2xl border-[8px] border-white hidden sm:block"
               >
-                <Image 
+                <Image decoding="async" 
                   src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80" 
                   alt="Fresh bread" 
                   fill
-                  className="object-cover"
-                  loader={({ src }) => src} // Use the URL directly without modification
+                  className="object-cover" // Use the URL directly without modification
                 />
               </motion.div>
 

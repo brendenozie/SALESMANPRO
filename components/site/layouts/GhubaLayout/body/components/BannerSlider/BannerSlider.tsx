@@ -78,7 +78,7 @@ const SlideCard = ({ slide, isPriority }: any) => {
       >
         {/* Layered Background */}
         <div className="absolute inset-0 z-0">
-          <Image
+          <Image decoding="async"
             src={slide.imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'}
             fill
             alt={slide.headline || "Background"}
@@ -86,7 +86,6 @@ const SlideCard = ({ slide, isPriority }: any) => {
             sizes="100vw"
             quality={60}
             className="object-cover opacity-20 dark:opacity-30 grayscale group-hover:scale-105 transition-transform duration-[10s] min-h-[500px] md:min-h-[600px] h-[500px] md:h-[600px]"
-            loader={loader}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/50 via-zinc-50/80 to-zinc-50 dark:from-black/50 dark:via-black/80 dark:to-black" />
         </div>
@@ -144,9 +143,8 @@ const SlideCard = ({ slide, isPriority }: any) => {
         {/* Image Display */}
         <div className={`${!isPriority ? 'animate-zoom-in' : ''} relative z-10 w-full md:w-1/2 h-[250px] sm:h-[300px] md:h-full flex justify-center items-center order-1 md:order-2 p-6 md:p-12`}>
           <div className="relative w-full h-full max-w-[300px] md:max-w-none group-hover:drop-shadow-[0_0_50px_rgba(245,158,11,0.15)] transition-all duration-700">
-            <Image
+            <Image decoding="async"
               src={slide.productImageUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop'}
-              loader={loader}
               alt={slide.headline || "Product Image"}
               fill
               priority={isPriority}

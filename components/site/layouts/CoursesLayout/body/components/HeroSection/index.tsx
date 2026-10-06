@@ -63,14 +63,12 @@ export default function PristineHero({ storeFormData }: PristineHeroProps) {
       
       {/* 1. IMMERSIVE HERO CANVAS BACKGROUND */}
       <div className="absolute inset-0 z-0">
-        <Image
+        <Image decoding="async"
           src={activeHeroSlide?.imageUrl || defaultBanner}
           alt="Academy Campus Environment"
           fill
           className="object-cover object-center transform scale-105 filter brightness-[0.75] md:brightness-100 transition-all duration-700"
-          loader={customLoader}
           priority
-          unoptimized
         />
         {/* Dynamic Vignette Protectors for High Contrast Layout Logic */}
         <div className="absolute inset-0 bg-slate-950/40 md:bg-transparent mix-blend-multiply" />
@@ -85,7 +83,7 @@ export default function PristineHero({ storeFormData }: PristineHeroProps) {
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="w-full lg:max-w-2xl bg-slate-950/40 md:bg-white/80 dark:md:bg-slate-900/80 backdrop-blur-xl md:backdrop-blur-2xl border-y md:border-y-0 md:border-r border-white/10 md:border-white/30 dark:md:border-slate-800/50 p-6 sm:p-12 md:p-16 lg:p-20 flex flex-col justify-center pt-32 pb-24 md:pt-40 shadow-2xl transition-colors duration-300"
+            className="w-full lg:max-w-2xl bg-slate-950/85 md:bg-white/95 dark:md:bg-slate-900/95 border-y md:border-y-0 md:border-r border-white/10 md:border-white/30 dark:md:border-slate-800/50 p-6 sm:p-12 md:p-16 lg:p-20 flex flex-col justify-center pt-32 pb-24 md:pt-40 shadow-2xl transition-colors duration-300"
           >
             {/* Tagline Indicator Frame */}
             <motion.div variants={itemVariants} className="flex items-center gap-3 mb-6">
@@ -219,7 +217,7 @@ export default function PristineHero({ storeFormData }: PristineHeroProps) {
         initial={{ opacity: 0, scale: 0.95, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.9, duration: 0.7, ease: "easeOut" }}
-        className="absolute bottom-6 right-6 lg:bottom-10 lg:right-10 z-40 hidden md:flex items-center gap-4 bg-slate-950/80 dark:bg-slate-900/90 backdrop-blur-xl p-2.5 pl-5 rounded-2xl border border-white/10 shadow-2xl"
+        className="absolute bottom-6 right-6 lg:bottom-10 lg:right-10 z-40 hidden md:flex items-center gap-4 bg-slate-950/95 dark:bg-slate-900/95 p-2.5 pl-5 rounded-2xl border border-white/10 shadow-2xl"
       >
         {/* Safer fallback UI badges without relying on external image configuration domains */}
         <div className="flex -space-x-2.5 pr-2">

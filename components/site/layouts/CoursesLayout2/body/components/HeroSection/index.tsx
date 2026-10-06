@@ -29,13 +29,12 @@ export default function ProfessionalHero({storeFormData}: { storeFormData: any }
       <div className="absolute inset-0 z-0 flex">
         <div className="w-full lg:w-1/2 bg-gray-50" /> {/* Subtle split background */}
         <div className="hidden lg:block w-1/2 relative">
-           <Image
+           <Image decoding="async"
             src={activeHeroSlide?.imageUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"}
             alt="Professional Environment"
             fill
             className="object-cover"
             priority
-            loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
           />
           {/* Professional Overlay: Clean gradient for text legibility if needed */}
           <div className="absolute inset-0 bg-gray-900/10" />
@@ -131,12 +130,11 @@ export default function ProfessionalHero({storeFormData}: { storeFormData: any }
           {/* Right Column: High-Impact Image Card (Mobile only, or inset for desktop) */}
           <div className="lg:col-span-6 lg:hidden">
             <div className="relative aspect-video rounded-none overflow-hidden shadow-2xl">
-               <Image
+               <Image decoding="async"
                 src={activeHeroSlide?.productImageUrl || activeHeroSlide?.imageUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"}
                 alt="Product"
                 fill
                 className="object-cover"
-                loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
               />
             </div>
           </div>

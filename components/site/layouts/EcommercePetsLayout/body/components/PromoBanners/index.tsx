@@ -89,13 +89,12 @@ export default function PromoBanners({
 
               {/* Image */}
               <div className="absolute right-0 bottom-0 h-full w-1/2 md:w-2/5">
-                <Image
+                <Image decoding="async"
                   src={banner.image}
                   alt={banner.title}
                   fill
                   className="object-contain object-bottom scale-110"
                   sizes="(max-width: 768px) 50vw, 40vw"
-                  loader={({ src }) => `${src}?w=600&q=80`}
                 />
               </div>
 

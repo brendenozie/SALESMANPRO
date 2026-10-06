@@ -98,12 +98,11 @@ export default function EnhancedHeroSection({
         animate={{ scale: 1 }}
         transition={{ duration: 15, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
       >
-        <Image
+        <Image decoding="async"
           src={store.bannerUrl || "/images/default-saas-hero.jpg"} // Fallback image
           alt={`${store.name} background`}
           fill
-          className="object-cover opacity-15 blur-md brightness-75 will-change-transform" // Increased blur, reduced opacity
-          loader={loader}
+          className="object-cover opacity-15 blur-md brightness-75 will-change-transform"
           priority
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
@@ -197,12 +196,11 @@ export default function EnhancedHeroSection({
         >
           {/* Placeholder for your actual SaaS / Web App Mockup Image */}
           {/* Use a high-quality, transparent PNG of your app's UI on a device */}
-          <Image
+          <Image decoding="async"
             src="/images/saas-app-mockup.png" // Replace with your actual mockup image
             alt={`${store.name} app interface`}
             width={700} // Adjust width as needed
-            height={450} // Adjust height as needed, maintain aspect ratio
-            loader={loader}
+            height={450}
             priority
             className="rounded-xl shadow-3xl border border-white/10"
             style={{

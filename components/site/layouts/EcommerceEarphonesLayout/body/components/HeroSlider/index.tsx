@@ -137,11 +137,10 @@ export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
                 transition={{ duration: 1 }}
                 className="relative aspect-square"
               >
-                <Image
+                <Image decoding="async"
                   src={slides[current].imageUrl}
                   alt="Product"
                   fill
-                  loader={loader}
                   priority
                   className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)]"
                 />

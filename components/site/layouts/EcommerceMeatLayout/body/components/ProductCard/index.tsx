@@ -144,12 +144,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
         {/* Image Container Layout */}
         <div className="relative aspect-square w-full rounded-[2rem] overflow-hidden bg-stone-100 dark:bg-stone-900 mb-5">
           <Link href={`/meatecommerce/products/${product.id}`} className="block w-full h-full">
-            <Image
+            <Image decoding="async"
               src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400'}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
-              loader={loader}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </Link>
@@ -157,7 +156,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
           {/* Master Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/70 backdrop-blur-md text-white text-[9px] font-bold px-2.5 py-1 rounded-full shadow-xl flex items-center gap-1 border border-white/20">
+              <div className="bg-black/90 shadow-sm text-white text-[9px] font-bold px-2.5 py-1 rounded-full shadow-xl flex items-center gap-1 border border-white/20">
                 <VideoCameraIcon className="w-3 h-3 text-red-500" />
                 <span>VIDEO</span>
               </div>

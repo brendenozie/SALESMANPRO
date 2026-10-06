@@ -201,13 +201,12 @@ export default function CaseStudiesTestimonials({ testimonials }: CaseStudiesTes
                   <div className="flex items-center gap-4 pt-6 border-t border-slate-100 relative z-10">
                     {current.avatarUrl && (
                       <div className="relative h-12 w-12 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 ring-4 ring-slate-50">
-                        <Image
+                        <Image decoding="async"
                           src={current.avatarUrl}
                           alt={current.author}
                           fill
                           sizes="48px"
                           className="object-cover"
-                          loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
                         />
                       </div>
                     )}

@@ -254,12 +254,11 @@ Please confirm availability and dispatch details. Thank you!`;
                       >
                         {/* Image Thumbnail */}
                         <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-900 flex-shrink-0 border border-stone-200 dark:border-stone-800">
-                          <Image 
+                          <Image decoding="async" 
                             src={item.images?.[0] || 'https://via.placeholder.com/150'} 
                             alt={item.name || 'Cut'} 
                             fill 
                             className="object-cover"
-                            loader={({ src }) => src}
                           />
                         </div>
                         

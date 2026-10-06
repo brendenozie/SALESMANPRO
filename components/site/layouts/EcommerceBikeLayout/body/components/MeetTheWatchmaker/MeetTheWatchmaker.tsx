@@ -36,9 +36,8 @@ export default function MeetTheMechanics() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-zinc-900"
             >
-              <Image 
-                src="https://images.unsplash.com/photo-1485965120184-e220f721d03e" 
-                loader={({ src }) => src}
+              <Image decoding="async" 
+                src="https://images.unsplash.com/photo-1485965120184-e220f721d03e"
                 alt="Master bike mechanic at work"
                 fill
                 className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
@@ -53,12 +52,11 @@ export default function MeetTheMechanics() {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="absolute -bottom-8 -right-8 w-72 h-72 border-[12px] border-zinc-50 dark:border-zinc-950 rounded-[2.5rem] overflow-hidden shadow-2xl hidden md:block"
             >
-              <Image 
+              <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1532298229144-0ee050c996bd" 
                 alt="Carbon fiber derailleur close up"
                 fill
                 className="object-cover"
-                loader={({ src }) => src}
               />
             </motion.div>
           </div>
@@ -118,7 +116,7 @@ export default function MeetTheMechanics() {
               <div className="flex -space-x-4">
                 {[1,2,3,4].map(i => (
                   <div key={i} className="w-14 h-14 rounded-full border-4 border-zinc-50 dark:border-zinc-950 overflow-hidden relative grayscale hover:grayscale-0 transition-all cursor-pointer">
-                    <Image src={`https://i.pravatar.cc/150?u=bike${i}`} fill alt="Lead Mechanic" loader={({ src }) => src}/>
+                    <Image decoding="async" src={`https://i.pravatar.cc/150?u=bike${i}`} fill alt="Lead Mechanic"/>
                   </div>
                 ))}
               </div>

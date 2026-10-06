@@ -35,10 +35,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             whileInView={{ opacity: 1, scale: 1 }}
             className="relative group h-[600px] rounded-[3rem] overflow-hidden shadow-2xl border border-white"
           >
-            <Image
+            <Image decoding="async"
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a'}
-              alt={promo.title}
-              loader={({ src }) => src} // Use the original URL without optimization
+              alt={promo.title} // Use the original URL without optimization
               fill
               className="object-cover transition-transform duration-[3000ms] group-hover:scale-110"
             />
@@ -88,10 +87,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               }`}
             >
               {/* Background Layer */}
-              <Image
+              <Image decoding="async"
                 src={item.bannerUrl || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836'}
-                alt={item.title}
-                loader={({ src }) => src} // Use the original URL without optimization
+                alt={item.title} // Use the original URL without optimization
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />

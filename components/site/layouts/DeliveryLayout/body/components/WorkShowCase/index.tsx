@@ -77,10 +77,9 @@ export function WorkShowcase() {
               className={`group relative overflow-hidden rounded-3xl cursor-none ${project.gridClass}`}
             >
               {/* Image with Parallax-like scale */}
-              <Image 
+              <Image decoding="async" 
                 src={project.image} 
                 alt={project.title}
-                loader={loader}
                 fill
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0" 
               />

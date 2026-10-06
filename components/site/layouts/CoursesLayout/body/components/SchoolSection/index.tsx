@@ -102,12 +102,11 @@ export default function SchoolSection({ storeFormData }: any) {
               viewport={{ once: true }}
               className="relative aspect-[4/5] rounded-[0rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)]"
             >
-              <Image 
+              <Image decoding="async" 
                 src={imageUrl} 
                 alt="Campus life" 
                 fill 
-                className="object-cover transition-transform duration-1000 hover:scale-105" 
-                loader={loader}
+                className="object-cover transition-transform duration-1000 hover:scale-105"
               />
               {/* Elegant overlay for the bottom info */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
@@ -118,7 +117,7 @@ export default function SchoolSection({ storeFormData }: any) {
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5 }}
-                className="absolute bottom-8 left-8 right-8 bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl"
+                className="absolute bottom-8 left-8 right-8 bg-white/95 p-8 rounded-3xl shadow-2xl"
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (

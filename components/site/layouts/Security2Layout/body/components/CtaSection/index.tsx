@@ -120,9 +120,8 @@ export default function SecurityCtaSection({
           {/* RIGHT COL: VISUAL PERIMETER TELEMETRY IMAGE GRID */}
           <div className="lg:col-span-5 relative min-h-[300px] lg:min-h-full bg-gray-50 p-2">
             <div className="relative w-full h-full min-h-[284px] bg-gray-100 border border-gray-200 overflow-hidden">
-              <Image
+              <Image decoding="async"
                 src={imageUrl}
-                loader={loader}
                 alt="Digital security blueprint architecture grid matrix"
                 layout="fill"
                 objectFit="cover"

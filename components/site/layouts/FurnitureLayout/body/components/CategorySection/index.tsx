@@ -63,10 +63,9 @@ const BentoCard = ({
       className={`relative group overflow-hidden bg-zinc-100 dark:bg-zinc-900 ${className}`}
     >
       <Link href={item.href} className="block w-full h-full">
-        <Image
+        <Image decoding="async"
           src={item.imageUrl}
           alt={item.name}
-          loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
           fill
           className="object-cover transition-transform duration-[1.5s] cubic-bezier(0.2, 1, 0.3, 1) group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

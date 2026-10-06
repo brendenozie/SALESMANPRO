@@ -131,12 +131,11 @@ const VideoCard = ({ tour, onOpen }: any) => (
     className="relative h-80 w-56 flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group shadow-md"
     onClick={() => onOpen(tour.videoUrl)}
   >
-    <Image
+    <Image decoding="async"
       src={tour.thumbnail}
       alt={tour.title}
       fill
       className="object-cover transition-transform duration-700 group-hover:scale-110"
-      loader={customLoader}
     />
     {/* Dark Gradient */}
     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80" />
@@ -186,7 +185,7 @@ const CostRow = ({ item }: any) => (
 const BlogPostItem = ({ post }: any) => (
   <Link href={post.url || '#'} className="group flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 transition-colors duration-300">
     <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
-        <Image src={post.image} alt={post.title} fill className="object-cover" loader={customLoader}/>
+        <Image decoding="async" src={post.image} alt={post.title} fill className="object-cover"/>
     </div>
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-2 mb-1">

@@ -29,9 +29,8 @@ export default function MeetTheWatchmaker() {
               transition={{ duration: 1 }}
               className="relative aspect-[4/5] rounded-sm overflow-hidden shadow-2xl"
             >
-              <Image 
-                src="https://images.unsplash.com/photo-1585123334904-845d60e97b29" 
-                loader={({ src }) => src}
+              <Image decoding="async" 
+                src="https://images.unsplash.com/photo-1585123334904-845d60e97b29"
                 alt="Master Watchmaker at work"
                 fill
                 className="object-cover"
@@ -46,12 +45,11 @@ export default function MeetTheWatchmaker() {
               transition={{ delay: 0.5, duration: 0.8 }}
               className="absolute -bottom-10 -right-10 w-64 h-64 border-[12px] border-[#faf9f6] dark:border-[#0a0a0a] rounded-sm overflow-hidden shadow-xl hidden md:block"
             >
-              <Image 
+              <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1509048191080-d2984bad6ad5" 
                 alt="Watch movement close up"
                 fill
                 className="object-cover"
-                loader={({ src }) => src}
               />
             </motion.div>
           </div>
@@ -103,7 +101,7 @@ export default function MeetTheWatchmaker() {
               <div className="flex -space-x-3">
                 {[1,2,3].map(i => (
                   <div key={i} className="w-12 h-12 rounded-full border-2 border-white dark:border-zinc-900 overflow-hidden relative">
-                    <Image src={`https://i.pravatar.cc/150?u=${i+10}`} fill alt="Watchmaker" className="grayscale" loader={({ src }) => src}/>
+                    <Image decoding="async" src={`https://i.pravatar.cc/150?u=${i+10}`} fill alt="Watchmaker" className="grayscale"/>
                   </div>
                 ))}
               </div>

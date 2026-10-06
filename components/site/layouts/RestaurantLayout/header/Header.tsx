@@ -50,9 +50,23 @@ export default function Header() {
 
   // --- Scroll Effect ---
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const handleUserAction = () => {
@@ -79,7 +93,7 @@ export default function Header() {
         <div 
           className={`max-w-7xl mx-auto transition-all duration-500 rounded-[2rem] border transition-all ${
             scrolled 
-              ? 'bg-zinc-950/80 backdrop-blur-2xl border-zinc-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.3)] py-2 px-8' 
+              ? 'bg-zinc-950/95 shadow-sm border-zinc-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.3)] py-2 px-8' 
               : 'bg-transparent border-transparent py-2 px-4'
           }`}
         >
@@ -87,13 +101,12 @@ export default function Header() {
             {/* --- LOGO --- */}
             <Link href="/" className="relative z-10 group">
               {logoUrl ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || 'Logo'}
                   width={140}
                   height={45}
                   className="object-contain transition-transform duration-300 group-hover:scale-105  h-20 w-32"
-                  loader={loader}
                 />
               ) : (
                 <EditableElement
@@ -261,7 +274,7 @@ export default function Header() {
                         cart.map((item: any) => (
                             <div key={item.id} className="flex gap-4 group">
                                 <div className="relative h-20 w-20 rounded-2xl overflow-hidden shrink-0 border border-zinc-800">
-                                    <Image src={item.images?.[0]} alt={item.name} fill className="object-cover" loader={loader} />
+                                    <Image decoding="async" src={item.images?.[0]} alt={item.name} fill className="object-cover" />
                                 </div>
                                 <div className="flex flex-col justify-between py-1">
                                     <h4 className="text-white font-bold">{item.name}</h4>

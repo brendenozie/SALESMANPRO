@@ -46,7 +46,7 @@ const Annocument = dynamic(() => import("./components/annocument/Annocument"));
 const Wrapper = dynamic(() => import("./components/wrapper/Wrapper"));
 const GhubaPersonalizedSection = dynamic(
   () => import("@/components/ghuba/recommendations/GhubaPersonalizedSection"),
-  { ssr: false }
+  { }
 );
 
 interface HomePageProps {

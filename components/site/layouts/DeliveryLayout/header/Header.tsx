@@ -64,8 +64,22 @@ export default function Navbar() {
   }, [user, router, handleGoogleSignIn]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -128,13 +142,12 @@ export default function Navbar() {
               {/* Logo Icon Container */}
               {logoUrl && (
                 <div className="relative w-10 h-8 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 shrink-0 filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
-                  <Image 
+                  <Image decoding="async" 
                     src={logoUrl} 
                     alt={name || 'Logo'} 
                     fill 
                     priority
-                    sizes="(max-width: 640px) 40px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px"
-                    loader={imageLoader} 
+                    sizes="(max-width: 640px) 40px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px" 
                     className="object-contain" 
                   />
                 </div>

@@ -179,10 +179,9 @@ export default function TopPicksCarousel({ picks, onSelect }: TopPicksCarouselPr
                             >
                                 {/* Image Section */}
                                 <div className="w-full lg:w-1/2 h-64 md:h-80 lg:h-full relative flex-shrink-0 rounded-2xl overflow-hidden shadow-xl">
-                                    <Image
+                                    <Image decoding="async"
                                         src={item.imageUrl}
                                         alt={item.title}
-                                        loader={loader}
                                         fill
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
                                         // Brighter default image for light theme background

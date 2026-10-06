@@ -132,12 +132,11 @@ export default function IndustrialHeader() {
         {/* BRAND LOGO - Responsive dimensions */}
         <Link href="/" className="flex-shrink-0 group">
           {logoUrl ? (
-            <Image 
+            <Image decoding="async" 
               src={logoUrl} 
               alt={name} 
               width={140} 
               height={45} 
-              loader={imageLoader} 
               className="object-contain h-8 sm:h-11 md:h-14 lg:h-16 w-auto" 
             />
           ) : (
@@ -207,13 +206,12 @@ export default function IndustrialHeader() {
           {/* USER PROFILE */}
           <button onClick={handleUserAction} className="ml-0.5 sm:ml-1 md:ml-2 group">
             {user?.image ? (
-              <Image 
+              <Image decoding="async" 
                 src={user.image} 
                 alt="User" 
                 width={36} 
                 height={36} 
                 className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 border-2 border-gray-200 dark:border-zinc-800 group-hover:border-amber-500 transition-all object-cover" 
-                loader={imageLoader} 
               />
             ) : (
               <div className="bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 p-2 sm:p-2.5 text-gray-500 dark:text-zinc-400 group-hover:text-amber-600 group-hover:border-amber-500 transition-all">

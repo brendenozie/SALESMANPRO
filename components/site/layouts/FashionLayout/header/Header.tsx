@@ -35,9 +35,23 @@ export default function Header() {
   const primaryColor = themeSettings?.primaryColor || '#ef4444';
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const dynamicNavLinks = useMemo(() => {
@@ -97,7 +111,7 @@ export default function Header() {
           {/* --- Center: Brand Identity --- */}
           <Link href="/" className="flex flex-col items-center">
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name || 'Brand'}
                 width={140}
@@ -105,7 +119,6 @@ export default function Header() {
                 className={`object-contain transition-all duration-500  h-20 w-32 ${
                   scrolled ? 'brightness-100 dark:invert' : 'brightness-0 invert'
                 }`}
-                loader={imageLoader}
               />
             ) : (
               <h1 className={`text-2xl md:text-3xl font-black tracking-[0.3em] uppercase transition-all duration-500 ${

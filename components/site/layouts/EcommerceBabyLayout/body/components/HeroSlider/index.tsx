@@ -88,12 +88,11 @@ export default function IntegratedHeroSlider({ heroSlides, themeSettings }: any)
                   }}
                   className="relative w-full h-full max-w-[260px] sm:max-w-sm lg:max-w-full"
                 >
-                  <Image 
+                  <Image decoding="async" 
                     src={slides[current].imageUrl} 
                     alt="Hero Product" 
                     fill 
                     className="object-contain z-10 drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)]"
-                    loader={loader}
                     priority
                   />
                 </motion.div>

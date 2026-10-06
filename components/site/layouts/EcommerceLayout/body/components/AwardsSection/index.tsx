@@ -96,10 +96,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 <div className="relative w-full h-full p-8 flex flex-col items-center justify-center text-center">
                   {src ? (
                     <div className="relative w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out opacity-60 group-hover:opacity-100">
-                      <Image
+                      <Image decoding="async"
                         src={src}
                         alt={award?.name || 'Award'}
-                        loader={loader}
                         fill
                         className="object-contain"
                         sizes="(max-width: 768px) 50vw, 25vw"

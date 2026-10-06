@@ -53,12 +53,11 @@ export default function PromoBannerGridSection() {
             >
               {/* Image Layer with Zoom & Grayscale Logic */}
               <div className="absolute inset-0 z-0">
-                <Image
+                <Image decoding="async"
                   src={banner.image}
                   alt={banner.title}
                   fill
                   className="object-cover grayscale-[0.6] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[2s] ease-out"
-                  loader={loader}
                 />
                 <div className="absolute inset-0 bg-zinc-900/10 group-hover:bg-transparent transition-colors duration-700" />
               </div>

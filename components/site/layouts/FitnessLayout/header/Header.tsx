@@ -57,9 +57,23 @@ export default function Header() {
   );
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const navLinks = [
@@ -98,12 +112,11 @@ export default function Header() {
           {/* LOGO SECTION */}
           <Link href={`/`} className="relative z-10 shrink-0 group flex items-center gap-2">
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name}
                 width={120}
                 height={35}
-                loader={loader}
                 className={`object-contain transition-all duration-300  h-20 w-32 ${scrolled ? 'scale-95' : 'scale-100'}`}
               />
             ) : (
@@ -178,7 +191,7 @@ export default function Header() {
               >
                 <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center overflow-hidden border border-white dark:border-neutral-800 shadow-sm">
                   {user.image ? (
-                    <Image src={user.image} alt="avatar" width={28} height={28} loader={loader} className="object-cover" />
+                    <Image decoding="async" src={user.image} alt="avatar" width={28} height={28} className="object-cover" />
                   ) : (
                     <UserIcon className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
                   )}

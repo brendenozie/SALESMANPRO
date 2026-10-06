@@ -98,9 +98,8 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                     <div className="lg:col-span-7 relative group">
                         <div className="relative aspect-[4/5] md:aspect-video rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 shadow-2xl">
                             <motion.div style={{ scale: imgScale }} className="h-full w-full">
-                                <Image
+                                <Image decoding="async"
                                     src={bannerUrl || "https://images.unsplash.com/photo-1593702275677-f916c8c7c342?q=80&w=2070"}
-                                    loader={loader}
                                     alt="The Craft"
                                     fill
                                     className="object-cover opacity-90 dark:opacity-70 grayscale group-hover:grayscale-0 transition-all duration-1000"
@@ -126,7 +125,7 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                                 <div className="flex -space-x-4">
                                     {[1, 2, 3].map(i => (
                                         <div key={i} className="w-12 h-12 rounded-full border-4 border-white dark:border-zinc-900 bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
-                                            <Image src={`https://i.pravatar.cc/100?img=${i+20}`} alt="client" width={48} height={48} loader={loader}/>
+                                            <Image decoding="async" src={`https://i.pravatar.cc/100?img=${i+20}`} alt="client" width={48} height={48}/>
                                         </div>
                                     ))}
                                 </div>

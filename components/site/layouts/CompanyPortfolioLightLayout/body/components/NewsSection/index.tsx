@@ -183,10 +183,9 @@ export default function NewsSection({ pagedata }: { pagedata: any }) {
               <div>
                 {/* Image Window Architecture */}
                 <div className="relative h-52 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200/80 dark:border-zinc-900 transition-colors">
-                  <Image
+                  <Image decoding="async"
                     src={brief.coverImage || "https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=128"}
                     alt={brief.title || 'INTEL REPORT COVER'}
-                    loader={loader}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover opacity-85 dark:opacity-60 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100 dark:group-hover:opacity-75"

@@ -90,12 +90,11 @@ export default function Testimonials({ testimonials }: Props) {
               whileInView={{ opacity: 1, scale: 1 }}
               className="relative h-[500px] lg:h-[650px] rounded-3xl overflow-hidden shadow-2xl"
             >
-              <Image 
+              <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                 alt="Our Clients" 
                 className="w-full h-full object-cover"
                 fill
-                loader={customLoader}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
             </motion.div>
@@ -161,11 +160,10 @@ export default function Testimonials({ testimonials }: Props) {
 
                       <div className="flex items-center gap-4 pt-6 border-t border-slate-50">
                         <div className="relative w-14 h-14 rounded-full overflow-hidden ring-4 ring-orange-50">
-                          <Image 
+                          <Image decoding="async" 
                             src={data[current].avatarUrl || "https://unsplash.com/photos/mEZ3PoFGs_k/download?ixid=MnwxMjA3fDB8MXxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fA%3D%3D&force=true&w=640"} 
                             alt={data[current].authorName || "Client Avatar"} 
-                            fill 
-                            loader={customLoader}
+                            fill
                             className="object-cover" 
                           />
                         </div>

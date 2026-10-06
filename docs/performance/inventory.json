@@ -1,54 +1,42 @@
 [
   {
     "id": "STORE-001",
-    "name": "Ghuba",
-    "folder": "GhubaLayout",
-    "bodySiteComponent": "GhubaSite",
-    "hasHeader": true,
-    "hasFooter": true,
-    "hasBody": true,
-    "cardComponents": "GhubaProductCard",
-    "backdropFilterOccurrences": 18,
-    "unoptimizedImageOccurrences": 0,
-    "scrollListenerOccurrences": 1,
-    "virtualizerOccurrences": 0,
-    "returnNullOccurrences": 11,
-    "framerMotionOccurrences": 36
-  },
-  {
-    "id": "STORE-002",
     "name": "Automotive2",
     "folder": "Automotive2Layout",
     "bodySiteComponent": "Automotive2Site",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "AutomotiveCard",
+    "cardComponents": [
+      "AutomotiveCard"
+    ],
     "backdropFilterOccurrences": 21,
-    "unoptimizedImageOccurrences": 2,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 2,
     "framerMotionOccurrences": 173
   },
   {
-    "id": "STORE-003",
+    "id": "STORE-002",
     "name": "Automotive",
     "folder": "AutomotiveLayout",
     "bodySiteComponent": "AutomotiveSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "AutomotiveCard",
-    "backdropFilterOccurrences": 18,
-    "unoptimizedImageOccurrences": 3,
+    "cardComponents": [
+      "AutomotiveCard"
+    ],
+    "backdropFilterOccurrences": 17,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 3,
     "framerMotionOccurrences": 163
   },
   {
-    "id": "STORE-004",
+    "id": "STORE-003",
     "name": "BarbershopBookings",
     "folder": "BarbershopBookingsLayout",
     "bodySiteComponent": "BarbershopBookingsSite",
@@ -64,7 +52,7 @@
     "framerMotionOccurrences": 124
   },
   {
-    "id": "STORE-005",
+    "id": "STORE-004",
     "name": "Blog",
     "folder": "BlogLayout",
     "bodySiteComponent": "BlogSite",
@@ -80,7 +68,7 @@
     "framerMotionOccurrences": 86
   },
   {
-    "id": "STORE-006",
+    "id": "STORE-005",
     "name": "Bookings",
     "folder": "BookingsLayout",
     "bodySiteComponent": "BookingsSite",
@@ -96,7 +84,7 @@
     "framerMotionOccurrences": 116
   },
   {
-    "id": "STORE-007",
+    "id": "STORE-006",
     "name": "CompanyPortfolio",
     "folder": "CompanyPortfolioLayout",
     "bodySiteComponent": "CompanyPortfolioSite",
@@ -104,7 +92,7 @@
     "hasFooter": true,
     "hasBody": true,
     "cardComponents": [],
-    "backdropFilterOccurrences": 14,
+    "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -112,7 +100,7 @@
     "framerMotionOccurrences": 114
   },
   {
-    "id": "STORE-008",
+    "id": "STORE-007",
     "name": "CompanyPortfolioLight",
     "folder": "CompanyPortfolioLightLayout",
     "bodySiteComponent": "CompanyPortfolioLightSite",
@@ -120,7 +108,7 @@
     "hasFooter": true,
     "hasBody": true,
     "cardComponents": [],
-    "backdropFilterOccurrences": 14,
+    "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -128,14 +116,16 @@
     "framerMotionOccurrences": 112
   },
   {
-    "id": "STORE-009",
+    "id": "STORE-008",
     "name": "Consultancy",
     "folder": "ConsultancyLayout",
     "bodySiteComponent": "ConsultancySite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ServiceCardSection",
+    "cardComponents": [
+      "ServiceCardSection"
+    ],
     "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
@@ -144,23 +134,25 @@
     "framerMotionOccurrences": 205
   },
   {
-    "id": "STORE-010",
+    "id": "STORE-009",
     "name": "Courses",
     "folder": "CoursesLayout",
     "bodySiteComponent": "CoursesSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "GlassInfoCardsSection",
+    "cardComponents": [
+      "GlassInfoCardsSection"
+    ],
     "backdropFilterOccurrences": 11,
-    "unoptimizedImageOccurrences": 2,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 1,
     "framerMotionOccurrences": 94
   },
   {
-    "id": "STORE-011",
+    "id": "STORE-010",
     "name": "CoursesLayout2",
     "folder": "CoursesLayout2",
     "bodySiteComponent": "",
@@ -169,14 +161,14 @@
     "hasBody": true,
     "cardComponents": [],
     "backdropFilterOccurrences": 6,
-    "unoptimizedImageOccurrences": 1,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 1,
     "framerMotionOccurrences": 101
   },
   {
-    "id": "STORE-012",
+    "id": "STORE-011",
     "name": "CoursesLayout3",
     "folder": "CoursesLayout3",
     "bodySiteComponent": "",
@@ -192,7 +184,7 @@
     "framerMotionOccurrences": 114
   },
   {
-    "id": "STORE-013",
+    "id": "STORE-012",
     "name": "Default",
     "folder": "DefaultLayout",
     "bodySiteComponent": "DefaultSite",
@@ -208,14 +200,16 @@
     "framerMotionOccurrences": 14
   },
   {
-    "id": "STORE-014",
+    "id": "STORE-013",
     "name": "Delivery",
     "folder": "DeliveryLayout",
     "bodySiteComponent": "DeliverySite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ServiceCardSection",
+    "cardComponents": [
+      "ServiceCardSection"
+    ],
     "backdropFilterOccurrences": 17,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
@@ -224,7 +218,7 @@
     "framerMotionOccurrences": 285
   },
   {
-    "id": "STORE-015",
+    "id": "STORE-014",
     "name": "Directory",
     "folder": "DirectoryLayout",
     "bodySiteComponent": "DirectorySite",
@@ -240,7 +234,7 @@
     "framerMotionOccurrences": 138
   },
   {
-    "id": "STORE-016",
+    "id": "STORE-015",
     "name": "DrycleaningBookings",
     "folder": "DrycleaningBookingsLayout",
     "bodySiteComponent": "DrycleaningBookingsSite",
@@ -256,7 +250,7 @@
     "framerMotionOccurrences": 121
   },
   {
-    "id": "STORE-017",
+    "id": "STORE-016",
     "name": "EcommerceAccessories",
     "folder": "EcommerceAccessoriesLayout",
     "bodySiteComponent": "EcommerceAccessoriesSite",
@@ -264,26 +258,28 @@
     "hasFooter": true,
     "hasBody": true,
     "cardComponents": [
-      "SidebarCard",
-      "ProductCard"
+      "ProductCard",
+      "SidebarCard"
     ],
-    "backdropFilterOccurrences": 11,
-    "unoptimizedImageOccurrences": 2,
+    "backdropFilterOccurrences": 9,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 6,
     "framerMotionOccurrences": 174
   },
   {
-    "id": "STORE-018",
+    "id": "STORE-017",
     "name": "EcommerceAgrovet",
     "folder": "EcommerceAgrovetLayout",
     "bodySiteComponent": "EcommerceAgrovetSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 14,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -291,7 +287,7 @@
     "framerMotionOccurrences": 133
   },
   {
-    "id": "STORE-019",
+    "id": "STORE-018",
     "name": "EcommerceBaby",
     "folder": "EcommerceBabyLayout",
     "bodySiteComponent": "EcommerceBabySite",
@@ -302,7 +298,7 @@
       "ProductCard",
       "SidebarCard"
     ],
-    "backdropFilterOccurrences": 21,
+    "backdropFilterOccurrences": 18,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -310,15 +306,17 @@
     "framerMotionOccurrences": 197
   },
   {
-    "id": "STORE-020",
+    "id": "STORE-019",
     "name": "EcommerceBike",
     "folder": "EcommerceBikeLayout",
     "bodySiteComponent": "EcommerceBikeSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 13,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -326,7 +324,7 @@
     "framerMotionOccurrences": 154
   },
   {
-    "id": "STORE-021",
+    "id": "STORE-020",
     "name": "EcommerceBook",
     "folder": "EcommerceBookLayout",
     "bodySiteComponent": "EcommerceBookSite",
@@ -338,22 +336,24 @@
       "SidebarCard"
     ],
     "backdropFilterOccurrences": 10,
-    "unoptimizedImageOccurrences": 2,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 6,
     "framerMotionOccurrences": 137
   },
   {
-    "id": "STORE-022",
+    "id": "STORE-021",
     "name": "EcommerceCake",
     "folder": "EcommerceCakeLayout",
     "bodySiteComponent": "EcommerceCakeSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 17,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 15,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -361,15 +361,17 @@
     "framerMotionOccurrences": 147
   },
   {
-    "id": "STORE-023",
+    "id": "STORE-022",
     "name": "EcommerceEarphones",
     "folder": "EcommerceEarphonesLayout",
     "bodySiteComponent": "EcommerceEarphonesSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 17,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 15,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -377,15 +379,17 @@
     "framerMotionOccurrences": 145
   },
   {
-    "id": "STORE-024",
+    "id": "STORE-023",
     "name": "EcommerceFlowers",
     "folder": "EcommerceFlowersLayout",
     "bodySiteComponent": "EcommerceFlowersSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 24,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 22,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -393,15 +397,17 @@
     "framerMotionOccurrences": 156
   },
   {
-    "id": "STORE-025",
+    "id": "STORE-024",
     "name": "EcommerceGaming",
     "folder": "EcommerceGamingLayout",
     "bodySiteComponent": "EcommerceGamingSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 11,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 10,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -409,15 +415,17 @@
     "framerMotionOccurrences": 110
   },
   {
-    "id": "STORE-026",
+    "id": "STORE-025",
     "name": "EcommerceGlasses",
     "folder": "EcommerceGlassesLayout",
     "bodySiteComponent": "EcommerceGlassesSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 18,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 17,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -425,15 +433,17 @@
     "framerMotionOccurrences": 139
   },
   {
-    "id": "STORE-027",
+    "id": "STORE-026",
     "name": "EcommerceGroceries",
     "folder": "EcommerceGroceriesLayout",
     "bodySiteComponent": "EcommerceGroceriesSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 13,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 11,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -441,7 +451,7 @@
     "framerMotionOccurrences": 193
   },
   {
-    "id": "STORE-028",
+    "id": "STORE-027",
     "name": "EcommerceHardware",
     "folder": "EcommerceHardwareLayout",
     "bodySiteComponent": "EcommerceHardwareSite",
@@ -449,8 +459,8 @@
     "hasFooter": true,
     "hasBody": true,
     "cardComponents": [
-      "SidebarCard",
-      "ProductCard"
+      "ProductCard",
+      "SidebarCard"
     ],
     "backdropFilterOccurrences": 6,
     "unoptimizedImageOccurrences": 0,
@@ -460,15 +470,17 @@
     "framerMotionOccurrences": 165
   },
   {
-    "id": "STORE-029",
+    "id": "STORE-028",
     "name": "EcommerceHoney",
     "folder": "EcommerceHoneyLayout",
     "bodySiteComponent": "EcommerceHoneySite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 12,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 11,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -476,47 +488,53 @@
     "framerMotionOccurrences": 142
   },
   {
-    "id": "STORE-030",
+    "id": "STORE-029",
     "name": "Ecommerce",
     "folder": "EcommerceLayout",
     "bodySiteComponent": "EcommerceSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 19,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 16,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 6,
-    "framerMotionOccurrences": 154
+    "framerMotionOccurrences": 152
   },
   {
-    "id": "STORE-031",
+    "id": "STORE-030",
     "name": "EcommerceMeat",
     "folder": "EcommerceMeatLayout",
     "bodySiteComponent": "EcommerceMeatSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 16,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 15,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 10,
     "framerMotionOccurrences": 142
   },
   {
-    "id": "STORE-032",
+    "id": "STORE-031",
     "name": "EcommerceMotorCycle",
     "folder": "EcommerceMotorCycleLayout",
     "bodySiteComponent": "EcommerceMotorCycleSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 15,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -524,15 +542,17 @@
     "framerMotionOccurrences": 135
   },
   {
-    "id": "STORE-033",
+    "id": "STORE-032",
     "name": "EcommercePeanuts",
     "folder": "EcommercePeanutsLayout",
     "bodySiteComponent": "EcommercePeanutsSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 13,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 11,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -540,15 +560,17 @@
     "framerMotionOccurrences": 154
   },
   {
-    "id": "STORE-034",
+    "id": "STORE-033",
     "name": "EcommercePets",
     "folder": "EcommercePetsLayout",
     "bodySiteComponent": "EcommercePetsSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 15,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 14,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -556,31 +578,35 @@
     "framerMotionOccurrences": 131
   },
   {
-    "id": "STORE-035",
+    "id": "STORE-034",
     "name": "EcommerceShoes",
     "folder": "EcommerceShoesLayout",
     "bodySiteComponent": "EcommerceShoesSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 20,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 17,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 5,
     "framerMotionOccurrences": 178
   },
   {
-    "id": "STORE-036",
+    "id": "STORE-035",
     "name": "EcommerceWatch",
     "folder": "EcommerceWatchLayout",
     "bodySiteComponent": "EcommerceWatchSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 11,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 10,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -588,14 +614,16 @@
     "framerMotionOccurrences": 144
   },
   {
-    "id": "STORE-037",
+    "id": "STORE-036",
     "name": "Events",
     "folder": "EventsLayout",
     "bodySiteComponent": "EventsSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "EventCard",
+    "cardComponents": [
+      "EventCard"
+    ],
     "backdropFilterOccurrences": 10,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
@@ -604,23 +632,25 @@
     "framerMotionOccurrences": 111
   },
   {
-    "id": "STORE-038",
+    "id": "STORE-037",
     "name": "Fashion",
     "folder": "FashionLayout",
     "bodySiteComponent": "FashionSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 15,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 12,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 8,
     "framerMotionOccurrences": 120
   },
   {
-    "id": "STORE-039",
+    "id": "STORE-038",
     "name": "Finance",
     "folder": "FinanceLayout",
     "bodySiteComponent": "FinanceSite",
@@ -636,14 +666,16 @@
     "framerMotionOccurrences": 101
   },
   {
-    "id": "STORE-040",
+    "id": "STORE-039",
     "name": "Fitness",
     "folder": "FitnessLayout",
     "bodySiteComponent": "FitnessSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "FitnessProgramCard",
+    "cardComponents": [
+      "FitnessProgramCard"
+    ],
     "backdropFilterOccurrences": 34,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
@@ -652,20 +684,40 @@
     "framerMotionOccurrences": 213
   },
   {
-    "id": "STORE-041",
+    "id": "STORE-040",
     "name": "Furniture",
     "folder": "FurnitureLayout",
     "bodySiteComponent": "FurnitureSite",
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ProductCard",
-    "backdropFilterOccurrences": 15,
-    "unoptimizedImageOccurrences": 2,
+    "cardComponents": [
+      "ProductCard"
+    ],
+    "backdropFilterOccurrences": 5,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 2,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 8,
     "framerMotionOccurrences": 127
+  },
+  {
+    "id": "STORE-041",
+    "name": "Ghuba",
+    "folder": "GhubaLayout",
+    "bodySiteComponent": "GhubaSite",
+    "hasHeader": true,
+    "hasFooter": true,
+    "hasBody": true,
+    "cardComponents": [
+      "GhubaProductCard"
+    ],
+    "backdropFilterOccurrences": 18,
+    "unoptimizedImageOccurrences": 0,
+    "scrollListenerOccurrences": 1,
+    "virtualizerOccurrences": 0,
+    "returnNullOccurrences": 11,
+    "framerMotionOccurrences": 36
   },
   {
     "id": "STORE-042",
@@ -755,8 +807,10 @@
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "PropertyCard",
-    "backdropFilterOccurrences": 11,
+    "cardComponents": [
+      "PropertyCard"
+    ],
+    "backdropFilterOccurrences": 10,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
@@ -771,7 +825,9 @@
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "ServiceCardSection",
+    "cardComponents": [
+      "ServiceCardSection"
+    ],
     "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
@@ -787,9 +843,11 @@
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "PropertyCard",
-    "backdropFilterOccurrences": 13,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "PropertyCard"
+    ],
+    "backdropFilterOccurrences": 11,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 1,
@@ -803,9 +861,11 @@
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "DishCard",
-    "backdropFilterOccurrences": 8,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "DishCard"
+    ],
+    "backdropFilterOccurrences": 6,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 3,
@@ -836,7 +896,7 @@
     "hasFooter": true,
     "hasBody": true,
     "cardComponents": [],
-    "backdropFilterOccurrences": 13,
+    "backdropFilterOccurrences": 12,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -868,7 +928,7 @@
     "hasFooter": true,
     "hasBody": true,
     "cardComponents": [],
-    "backdropFilterOccurrences": 8,
+    "backdropFilterOccurrences": 7,
     "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 1,
     "virtualizerOccurrences": 0,
@@ -899,9 +959,11 @@
     "hasHeader": true,
     "hasFooter": true,
     "hasBody": true,
-    "cardComponents": "TravelCard",
-    "backdropFilterOccurrences": 27,
-    "unoptimizedImageOccurrences": 1,
+    "cardComponents": [
+      "TravelCard"
+    ],
+    "backdropFilterOccurrences": 24,
+    "unoptimizedImageOccurrences": 0,
     "scrollListenerOccurrences": 0,
     "virtualizerOccurrences": 0,
     "returnNullOccurrences": 1,

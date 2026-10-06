@@ -104,10 +104,9 @@ export default function StyleGallery() {
                 }`}
               >
                 <div className="relative w-full h-full overflow-hidden">
-                  <Image
+                  <Image decoding="async"
                     src={image.src}
                     alt={image.title}
-                    loader={({ src }) => `${src}?w=800&h=1000&fit=crop&q=85`}
                     fill
                     className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1 brightness-[0.95] dark:brightness-[0.8] group-hover:brightness-100"
                   />
@@ -166,10 +165,9 @@ export default function StyleGallery() {
                 className="relative max-w-5xl w-full aspect-square md:aspect-[16/10]"
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
-                <Image
+                <Image decoding="async"
                   src={selectedImage.src}
                   alt={selectedImage.title}
-                  loader={({ src }) => `${src}?w=1200&h=1200&fit=crop&q=95`}
                   fill
                   className="object-contain"
                 />

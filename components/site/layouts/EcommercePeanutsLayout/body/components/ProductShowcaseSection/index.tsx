@@ -50,13 +50,12 @@ export default function ProductShowcaseSection() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="relative z-10 drop-shadow-[0_35px_35px_rgba(139,69,19,0.25)] flex justify-center"
             >
-              <Image
+              <Image decoding="async"
                 src="https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=1000&auto=format&fit=crop"
                 alt="Crunchy Peanut Butter"
                 width={450}
                 height={600}
                 className="object-contain"
-                loader={loader}
               />
             </motion.div>
 

@@ -170,13 +170,12 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen, primaryColor = '
                   return (
                     <motion.div layout key={item.id ? `${item.id}-${index}` : index} className="flex gap-4 items-center border-b border-zinc-100 dark:border-zinc-900/60 pb-6 last:border-0 last:pb-0">
                       <div className="relative h-24 w-18 aspect-[3/4] rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-900 flex-shrink-0 shadow-sm">
-                        <Image 
+                        <Image decoding="async" 
                           src={item.images?.[0]?.url || item.images?.[0] || 'https://via.placeholder.com/150x200'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
                           sizes="96px"
-                          loader={({ src }) => src}
                         />
                       </div>
                       

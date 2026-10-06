@@ -162,13 +162,12 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
         >
           {/* BACKGROUND MEDIA WRAPPER */}
           <div className="absolute inset-0 z-0">
-            <Image
+            <Image decoding="async"
               src={activeSlide.imageUrl || ''}
               alt="Seasonal florist background composition"
               fill
               className="object-cover brightness-[0.93] scale-100"
               priority
-              loader={imageLoader}
             />
             {/* GRADIENT MAP OPTIMIZED FOR MOBILE LEGIBILITY */}
             <div className="absolute inset-0 bg-gradient-to-b via-white/70 from-white/90 to-white/90 md:bg-gradient-to-r md:from-white/95 md:via-white/70 md:to-transparent" />
@@ -238,12 +237,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               >
                 <div className="absolute inset-0 border border-white/30 rounded-3xl z-10 pointer-events-none" />
                 <div className="relative h-full w-full overflow-hidden rounded-3xl border-4 border-white bg-stone-50">
-                   <Image 
+                   <Image decoding="async" 
                     src={activeSlide.productImageUrl || activeSlide.imageUrl || ''} 
                     alt="Artisan floral design variant representation" 
                     fill 
                     className="object-cover transition-transform duration-[4s] ease-out group-hover:scale-105"
-                    loader={imageLoader}
                    />
                 </div>
 

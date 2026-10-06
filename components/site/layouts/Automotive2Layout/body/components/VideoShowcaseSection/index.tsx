@@ -226,10 +226,9 @@ export default function VideoShowcase({ blogs = [] }: VideoShowcaseProps) {
                 >
                   {/* Media / Video Stage */}
                   <div className="relative h-52 w-full overflow-hidden bg-slate-950">
-                    <Image
+                    <Image decoding="async"
                       src={cover}
                       alt={blog.title || "Video thumbnail"}
-                      loader={customLoader}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 dark:opacity-80 group-hover:opacity-70 dark:group-hover:opacity-60"
                     />

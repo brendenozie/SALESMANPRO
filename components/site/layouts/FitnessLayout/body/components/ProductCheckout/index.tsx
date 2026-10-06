@@ -404,10 +404,9 @@ export default function ProductCheckout({
               
               <div className="flex gap-4 items-center">
                 <div className="relative h-16 w-20 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900 flex-shrink-0">
-                  <Image 
+                  <Image decoding="async" 
                     src={currentImage} 
                     alt={product.name} 
-                    loader={loader} 
                     fill 
                     className="object-cover" 
                   />

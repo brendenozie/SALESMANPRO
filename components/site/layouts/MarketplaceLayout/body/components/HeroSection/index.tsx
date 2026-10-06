@@ -66,12 +66,11 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
     <section className="relative overflow-hidden">
       {/* Hero Section */}
       <div className="relative h-[600px] sm:h-[700px]">
-        <Image
+        <Image decoding="async"
           src={slides[0].imageUrl}
           alt={slides[0].headline}
           fill
           className="object-cover"
-          loader={loader}
         />
 
         {/* Gradient Shapes */}
@@ -150,13 +149,12 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
-                <Image
+                <Image decoding="async"
                   src={s.imageUrl}
                   alt={s.headline}
                   width={240}
                   height={160}
                   className="object-cover"
-                  loader={loader}
                 />
                 <div className="p-4 text-center bg-gray-50">
                   <h3 className="font-semibold text-lg mb-2">{s.headline}</h3>

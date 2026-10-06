@@ -107,13 +107,12 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                     {/* Small Visual Card Asset */}
                                     {feature.imageUrl && (
                                         <div className="relative w-full h-36 rounded-xl overflow-hidden mb-5 bg-neutral-100 dark:bg-neutral-800">
-                                            <Image
+                                            <Image decoding="async"
                                                 src={feature.imageUrl}
                                                 alt={feature.title}
                                                 fill
                                                 sizes="(max-w: 768px) 100vw, (max-w: 1200px) 50vw, 25vw"
                                                 className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                                                loader={loader}
                                             />
                                             <div className="absolute inset-0 bg-neutral-950/5 dark:bg-neutral-950/10 mix-blend-multiply" />
                                         </div>

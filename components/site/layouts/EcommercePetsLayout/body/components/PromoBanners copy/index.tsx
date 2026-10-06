@@ -89,10 +89,9 @@ export default function ShopByCategories() {
 
                     {/* Pet image */}
                     <div className="relative w-40 h-40">
-                      <Image
+                      <Image decoding="async"
                         src={category.image}
                         alt={category.title}
-                        loader={({ src }) => `${src}?w=400&q=80`}
                         fill
                         className="object-contain z-10"
                         sizes="160px"

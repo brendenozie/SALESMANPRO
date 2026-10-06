@@ -165,12 +165,11 @@ export default function ServicesSection({ marketplaceListings, name }: any) {
                             className="group cursor-pointer bg-white dark:bg-[#111]/40 rounded-[2rem] border border-slate-200 dark:border-white/5 p-4 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/10 hover:-translate-y-2"
                         >
                             <div className="relative aspect-square overflow-hidden rounded-[1.5rem] mb-6">
-                                <Image
+                                <Image decoding="async"
                                     src={item.images?.[0] || 'https://images.unsplash.com/photo-1545173153-936277f9f80a?q=80&w=2070'}
                                     alt={item.name}
                                     fill
                                     className="object-cover transition-all duration-700 group-hover:scale-110"
-                                    loader={({ src }) => src}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 
@@ -217,12 +216,11 @@ export default function ServicesSection({ marketplaceListings, name }: any) {
                             className="relative w-full max-w-xl h-screen bg-white dark:bg-[#0A0A0A] border-l border-slate-200 dark:border-zinc-800 flex flex-col shadow-2xl"
                         >
                             <div className="relative h-2/5 w-full">
-                                <Image 
+                                <Image decoding="async" 
                                     src={selected.images?.[0] || ''} 
                                     alt={selected.name} 
                                     fill 
-                                    className="object-cover" 
-                                    loader={({ src }) => src}
+                                    className="object-cover"
                                 />
                                 <button 
                                     onClick={() => setSelected(null)}

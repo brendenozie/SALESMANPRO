@@ -111,11 +111,10 @@ export default function GallerySection() {
               className={`relative group overflow-hidden rounded-[2rem] border border-neutral-200/60 dark:border-neutral-900/60 shadow-sm hover:shadow-xl transition-all duration-500 ${item.size}`}
             >
               {/* Core Context Content Image Asset */}
-              <Image
+              <Image decoding="async"
                 src={item.src || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2000"}
                 alt={item.title}
                 fill
-                loader={loader}
                 className="object-cover grayscale dark:opacity-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
               />
               

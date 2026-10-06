@@ -67,11 +67,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <Image
+          <Image decoding="async"
             src={finalBannerUrl}
             alt={finalTitle}
             fill
-            loader={loader}
             className="object-cover object-center"
             priority
           />
@@ -130,11 +129,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + idx * 0.2 }}
           >
-            <Image
+            <Image decoding="async"
               src={item.img}
               alt={item.title}
               fill
-              loader={loader}
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />

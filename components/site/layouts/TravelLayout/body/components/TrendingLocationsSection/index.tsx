@@ -86,12 +86,11 @@ const DestinationCard = ({ data }: { data: any }) => {
       >
         {/* Image Layer */}
         <div className="absolute inset-0 bg-gray-200">
-          <Image
+          <Image decoding="async"
             src={data.image}
             alt={data.name}
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            loader={customLoader}
             placeholder="blur"
             blurDataURL={blurSvg}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw"

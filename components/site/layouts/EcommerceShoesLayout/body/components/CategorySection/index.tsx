@@ -66,7 +66,7 @@ export default function PopularSection({ promotions, themeSettings }: any) {
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               className="relative w-full h-full"
             >
-              <Image
+              <Image decoding="async"
                 src={categoryData.bannerUrl || ''}
                 alt={categoryData.title}
                 fill
@@ -140,7 +140,7 @@ export default function PopularSection({ promotions, themeSettings }: any) {
               {/* Left Secondary Concept Card */}
               <div className="relative w-full sm:w-1/2 h-36 bg-zinc-50 dark:bg-zinc-950 rounded-[2rem] p-4 flex justify-center items-center overflow-hidden border border-transparent dark:border-zinc-800/80 group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <Image
+                <Image decoding="async"
                   src={categoryData.featureImage1 || ''}
                   alt="Feature Silhouette Variant"
                   width={140}
@@ -190,7 +190,7 @@ export default function PopularSection({ promotions, themeSettings }: any) {
               <div className="flex flex-wrap items-center gap-x-6 gap-y-4 grayscale opacity-40 dark:invert transition-all hover:opacity-70">
                 {categoryData.trustLogos.map((logo: string, idx: number) => (
                   <div key={idx} className="h-5 relative w-12 flex items-center">
-                    <Image 
+                    <Image decoding="async" 
                       src={logo || ''} 
                       alt="Brand Partner Identifier" 
                       fill

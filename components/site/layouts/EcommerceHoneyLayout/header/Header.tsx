@@ -43,8 +43,22 @@ export default function Header() {
   const secondaryColor = '#000000';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -76,12 +90,11 @@ export default function Header() {
           <Link href={`/`} className="flex items-center group">
             {logoUrl ? (
               <div className="relative h-20 w-32">
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || 'MEERA'}
                   fill
                   className="object-contain  h-20 w-32"
-                  loader={imageLoader}
                 />
               </div>
             ) : (

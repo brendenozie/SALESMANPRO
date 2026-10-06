@@ -111,12 +111,11 @@ export default function Footer() {
         <motion.div className="md:col-span-4 space-y-6" variants={itemVariants}>
           <Link href={`/${slug}`} className="inline-block group">
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name}
                 width={160}
                 height={40}
-                loader={loader}
                 className="object-contain filter grayscale opacity-80 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-200"
               />
             ) : (

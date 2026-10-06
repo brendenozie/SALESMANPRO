@@ -95,13 +95,12 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   animate={{ scale: 1, y: 0 }}
                   className="relative w-full h-full flex items-center justify-center"
                 >
-                  <Image
+                  <Image decoding="async"
                     src={slide.imageUrl || slide.productImageUrl || 'https://images.unsplash.com/photo-1605898930773-734733052153?q=80&w=1600&auto=format&fit=crop'}
                     alt={slide.headline || 'Product'}
                     fill
                     className="object-contain drop-shadow-[0_20px_50px_rgba(255,0,0,0.2)] dark:drop-shadow-[0_20px_50px_rgba(255,255,255,0.1)]"
                     priority
-                    loader={loader}
                   />
                   {/* Floating Animation Effect */}
                   <motion.div 

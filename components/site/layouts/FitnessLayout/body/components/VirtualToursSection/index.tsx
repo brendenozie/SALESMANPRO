@@ -67,8 +67,7 @@ const VideoItem = ({
     <div>
       {/* Thumbnail Container */}
       <div className="relative h-60 sm:h-64 w-full overflow-hidden">
-        <Image
-          loader={customLoader}
+        <Image decoding="async"
           src={thumbnail}
           alt={title}
           fill

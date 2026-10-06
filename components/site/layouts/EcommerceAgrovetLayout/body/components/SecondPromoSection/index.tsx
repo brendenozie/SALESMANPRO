@@ -79,12 +79,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             transition={{ duration: 0.8 }}
           >
             <div className="relative aspect-[4/5] md:aspect-video lg:aspect-[4/3] w-full rounded-[3rem] overflow-hidden shadow-2xl border-[12px] border-white">
-              <Image
+              <Image decoding="async"
                 src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1622383529984-6d5018432102'}
                 alt={promotion.title}
                 fill
-                className="object-cover transition-transform duration-1000 hover:scale-105"
-                loader={({ src }) => `${src}?w=800&q=80`} // Simple loader for optimization
+                className="object-cover transition-transform duration-1000 hover:scale-105" // Simple loader for optimization
               />
               
               {/* Badge Overlay */}

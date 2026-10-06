@@ -29,8 +29,7 @@ const BannerCard = ({ item }: { item: any }) => {
   return (
     <Link href={link} className="block w-full h-full">
       <div className="relative group overflow-hidden rounded-2xl shadow-xl h-80 border border-yellow-400/30 transition-transform duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-yellow-500/20">
-        <Image
-          loader={loaderProp}
+        <Image decoding="async"
           src={imgError ? FALLBACK_IMAGE : imageSrc}
           alt={`Promotional banner: ${title}`}
           fill

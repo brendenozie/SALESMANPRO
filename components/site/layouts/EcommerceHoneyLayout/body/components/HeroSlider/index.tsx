@@ -221,11 +221,10 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
                   exit="exit"
                   className="relative w-full h-full z-10 rounded-t-[180px] sm:rounded-t-[240px] rounded-b-3xl overflow-hidden border-[12px] sm:border-[16px] border-white shadow-[0_32px_64px_-16px_rgba(120,53,15,0.18)]"
                 >
-                  <Image 
+                  <Image decoding="async" 
                     src={slides[current].imageUrl || slides[current].productImageUrl || ''} 
                     alt="Artisanal Honey Harvest" 
-                    fill 
-                    loader={loader}
+                    fill
                     priority
                     className="object-cover transition-transform duration-[4s] ease-out group-hover:scale-105" 
                   />

@@ -115,10 +115,9 @@ export default function NewsSection({storeFormData}: {storeFormData: any}) {
                   className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 cursor-pointer overflow-hidden"
                   onClick={() => mockRouterPush(`/${organizationSlug}/blog/${newsItem.id}`)}
                 >
-                  <Image
+                  <Image decoding="async"
                     src={newsItem.coverImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600"}
                     alt={newsItem.title || 'News Cover Artwork'}
-                    loader={loader}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-102"

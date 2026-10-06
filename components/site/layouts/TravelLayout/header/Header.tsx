@@ -83,12 +83,11 @@ export default function Header() {
             <div className="flex items-center">
               <Link href={`/`}>
                 {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name}
                     width={130}
                     height={44}
-                    loader={loader}
                     className="object-contain cursor-pointer transition-transform duration-300 hover:scale-102 filter brightness-100 dark:invert-0  h-20 w-32"
                   />
                 ) : (
@@ -245,12 +244,11 @@ export default function Header() {
                 {/* Mobile Menu Top Frame */}
                 <div className="flex items-center justify-between mb-10">
                   {logoUrl ? (
-                    <Image
+                    <Image decoding="async"
                       src={logoUrl}
                       alt={name}
                       width={110}
                       height={36}
-                      loader={loader}
                       className="object-contain  h-20 w-32"
                     />
                   ) : (

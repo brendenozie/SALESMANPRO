@@ -35,8 +35,22 @@ export default function Header() {
   const { name, logoUrl } = storeFormData || {};
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -69,13 +83,12 @@ export default function Header() {
           <div className="flex-1">
             <Link href="/" className="inline-block group">
               {logoUrl ? (
-                <Image 
+                <Image decoding="async" 
                   src={logoUrl} 
                   alt={name || 'Optics'} 
                   width={140} 
                   height={40} 
                   className="object-contain h-20 w-32 transition-transform group-hover:scale-105" 
-                  loader={imageLoader} 
                 />
               ) : (
                 <div className="flex flex-col leading-none">
@@ -160,7 +173,7 @@ export default function Header() {
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]"
+              className="fixed inset-0 bg-black/90 shadow-sm z-[60]"
             />
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}

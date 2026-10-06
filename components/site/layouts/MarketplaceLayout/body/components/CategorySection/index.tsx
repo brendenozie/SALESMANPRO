@@ -167,11 +167,10 @@ function CategoryCard({
       >
         {/* Image */}
         <div className="absolute inset-0 h-full w-full overflow-hidden">
-          <Image
+          <Image decoding="async"
             src={imageUrl}
             alt={cat.displayName || "Category"}
             fill
-            loader={customLoader}
             onError={() => setImgError(true)}
             className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -85,12 +85,11 @@ export default function Footer() {
         <div className="space-y-4">
           <Link href={`/`}>
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name}
                 width={140}
                 height={48}
-                loader={loader}
                 className="object-contain cursor-pointer"
               />
             ) : (

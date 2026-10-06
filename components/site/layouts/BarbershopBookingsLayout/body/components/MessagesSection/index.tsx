@@ -164,12 +164,11 @@ export default function ServicesSection({ marketplaceListings }: any) {
                             className="group cursor-pointer"
                         >
                             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 bg-zinc-100 dark:bg-zinc-900 transition-colors">
-                                <Image
+                                <Image decoding="async"
                                     src={item.images?.[0] || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070'}
                                     alt={item.name}
                                     fill
                                     className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 transition-all duration-700 scale-[1.02] group-hover:scale-110"
-                                    loader={({ src }) => src}
                                 />
                                 {/* Bottom Card Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 dark:opacity-100 transition-opacity" />
@@ -214,12 +213,11 @@ export default function ServicesSection({ marketplaceListings }: any) {
                             className="relative w-full max-w-xl h-screen bg-white dark:bg-[#0A0A0A] border-l border-zinc-200 dark:border-zinc-800 flex flex-col text-zinc-900 dark:text-white"
                         >
                             <div className="relative h-1/3 w-full bg-zinc-100 dark:bg-zinc-900">
-                                <Image 
+                                <Image decoding="async" 
                                     src={selected.images?.[0] || ''} 
                                     alt={selected.name} 
                                     fill 
-                                    className="object-cover opacity-60 dark:opacity-40" 
-                                    loader={({ src }) => src}
+                                    className="object-cover opacity-60 dark:opacity-40"
                                 />
                                 <button 
                                     onClick={() => setSelected(null)}

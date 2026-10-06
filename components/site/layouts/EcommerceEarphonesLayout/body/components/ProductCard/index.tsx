@@ -148,10 +148,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Image Container */}
         <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-50">
           <Link href={`/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={product.name}
-              loader={loader}
               fill
               className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 25vw"
@@ -161,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Status Tags */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-md flex items-center gap-1 text-white">
+              <div className="bg-black/90 shadow-sm px-2.5 py-1 rounded-full border border-white/20 shadow-md flex items-center gap-1 text-white">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="text-[9px] font-bold uppercase tracking-widest">Video</span>
               </div>

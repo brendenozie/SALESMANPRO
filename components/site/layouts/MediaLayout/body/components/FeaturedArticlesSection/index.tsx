@@ -169,11 +169,10 @@ export default function FeaturedArticlesSection({
                 <Link href={`${basePath}/${art.slug}`} passHref className='flex flex-col h-full'>
                     {/* Image Container */}
                     <div className="relative w-full h-64 overflow-hidden">
-                        <Image
+                        <Image decoding="async"
                             src={art.imageUrl}
                             alt={art.name || 'Article Image'}
                             fill
-                            loader={loader}
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
@@ -219,11 +218,10 @@ export default function FeaturedArticlesSection({
                             <div className="flex items-center gap-3">
                                 {art.authorAvatar ? (
                                     <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                                        <Image
+                                        <Image decoding="async"
                                             src={art.authorAvatar}
                                             alt={art.author || 'Author'}
                                             fill
-                                            loader={loader}
                                             className="object-cover"
                                         />
                                     </div>

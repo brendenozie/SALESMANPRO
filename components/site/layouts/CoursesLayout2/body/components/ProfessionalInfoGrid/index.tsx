@@ -43,10 +43,9 @@ const InfoCard = ({ title, description, icon: Icon, image, link, primaryColor }:
       {/* 1. Image Header (Optional) */}
       {image && (
         <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-          <Image
+          <Image decoding="async"
             src={image}
             alt={title}
-            loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Unavailable";

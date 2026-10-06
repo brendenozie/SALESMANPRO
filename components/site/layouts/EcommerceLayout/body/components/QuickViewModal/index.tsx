@@ -169,13 +169,12 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                           className="w-full h-full object-contain bg-black"
                         />
                       ) : (
-                        <Image
+                        <Image decoding="async"
                           src={currentMedia?.url || ''}
                           alt={product.name}
                           fill
                           className="object-contain p-6"
                           sizes="(max-width: 768px) 100vw, 50vw"
-                          loader={({ src }) => src}
                         />
                       )}
                     </motion.div>
@@ -192,7 +191,7 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                             selectedImage === idx ? 'border-indigo-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
                           }`}
                         >
-                          <Image src={item.thumbnailUrl || item.posterUrl || item.url} alt="" fill className="object-cover" loader={({ src }) => src} />
+                          <Image decoding="async" src={item.thumbnailUrl || item.posterUrl || item.url} alt="" fill className="object-cover" />
                           {item.type === 'VIDEO' && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
                               <VideoCameraIcon className="w-4 h-4 text-white drop-shadow-md" />

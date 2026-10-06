@@ -29,7 +29,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             viewport={{ once: true }}
             className="group relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl"
           >
-            <Image
+            <Image decoding="async"
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000'}
               alt={promo.title}
               fill
@@ -94,7 +94,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   isLarge ? 'md:col-span-7 h-[400px] md:h-full' : 'md:col-span-5 h-[300px] md:h-[calc(50%-1rem)]'
                 }`}
               >
-                <Image
+                <Image decoding="async"
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1000'}
                   alt={item.title}
                   fill

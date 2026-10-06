@@ -91,10 +91,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 <div className="relative mb-8 w-full aspect-[4/5] overflow-hidden rounded-full border border-stone-100 bg-white p-2 transition-all duration-700 hover:shadow-2xl hover:shadow-amber-900/5">
                   <div className="relative h-full w-full rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
                     {src ? (
-                      <Image
+                      <Image decoding="async"
                         src={src}
                         alt={label}
-                        loader={loader}
                         fill
                         className="object-cover transition-transform duration-1000 group-hover:scale-110"
                       />

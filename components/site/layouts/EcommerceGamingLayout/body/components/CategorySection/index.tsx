@@ -100,11 +100,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
         <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-600 z-20 group-hover:w-12 group-hover:h-12 transition-all duration-300" />
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-zinc-400 dark:border-white/20 z-20" />
 
-        <Image
+        <Image decoding="async"
           src={imageUrl}
           alt={cat.displayName || "technology"}
           fill
-          loader={customLoader}
           onError={() => setImgError(true)}
           className="object-cover opacity-60 dark:opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-110 group-hover:opacity-100 dark:group-hover:opacity-70 transition-all duration-700"
         />

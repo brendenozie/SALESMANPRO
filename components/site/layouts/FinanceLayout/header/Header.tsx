@@ -94,9 +94,23 @@ export default function FinanceHeader() {
   ];
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
@@ -156,12 +170,11 @@ export default function FinanceHeader() {
             {/* LOGO AREA */}
             <Link href="#" className="flex items-center gap-2 group z-10">
               {logoUrl && !logoUrl.includes("placehold.co") ? (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name}
                   width={130}
                   height={40}
-                  loader={imageLoader}
                   className="object-contain max-h-10 w-auto"
                 />
               ) : (

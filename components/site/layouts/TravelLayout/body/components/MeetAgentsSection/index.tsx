@@ -83,12 +83,9 @@ function ExpertCard({ expert }: { expert: any }) {
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <Image
+        <Image decoding="async"
           src={expert.image || expert.photoUrl || "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format"}// 
           alt={"Travel Expert"}
-          loader={({ src, width, quality }) =>
-            `${src}?w=${width}&q=${quality || 75}`
-          }
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
           sizes="(max-width: 768px) 100vw, 33vw"

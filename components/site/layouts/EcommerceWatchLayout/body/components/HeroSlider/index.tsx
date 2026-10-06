@@ -210,12 +210,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                     transition={{ duration: 0.85, ease: [0.25, 1, 0.5, 1] }}
                     className="absolute inset-0 w-full h-full"
                   >
-                    <Image
+                    <Image decoding="async"
                       src={slides[current].imageUrl}
                       alt={slides[current].headline || 'Timepiece showcase'}
                       fill
                       className="object-cover transition-transform duration-[6000ms] group-hover:scale-105"
-                      loader={loader}
                       priority
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
@@ -234,12 +233,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   className="absolute -left-4 -bottom-6 sm:-left-8 sm:-bottom-8 lg:-left-12 lg:-bottom-12 z-20 w-[42%] aspect-[4/5] bg-[#0c0c0c] border-4 sm:border-8 border-[#050505] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.8)] rounded-md overflow-hidden hidden sm:block group/pip"
                 >
                   <div className="relative w-full h-full">
-                    <Image
+                    <Image decoding="async"
                       src={slides[current].productImageUrl || slides[current].imageUrl}
                       alt="Macro detail review"
                       fill
                       className="object-cover transition-transform duration-700 group-hover/pip:scale-110"
-                      loader={loader}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                     <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center justify-between">

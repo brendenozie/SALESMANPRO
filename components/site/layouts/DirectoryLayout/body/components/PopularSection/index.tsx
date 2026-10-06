@@ -207,7 +207,7 @@ export default function PopularProductsSection({
                   className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
                   onClick={() => setSelectedProduct(product)}
                 >
-                  <Image
+                  <Image decoding="async"
                     src={
                       product.thumbnail ||
                       product.images?.[0] ||
@@ -215,7 +215,6 @@ export default function PopularProductsSection({
                     }
                     alt={product.name}
                     fill
-                    loader={loader}
                     onError={handleImageError}
                     className="object-cover"
                   />

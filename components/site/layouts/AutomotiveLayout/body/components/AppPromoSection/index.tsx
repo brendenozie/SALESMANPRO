@@ -144,12 +144,11 @@ export default  function AppPromoSection() {
                   : "z-20"
               )}
             >
-              <Image
+              <Image decoding="async"
                 src={src}
                 alt={`App screenshot ${idx + 1}`}
                 layout="fill"
                 objectFit="cover"
-                loader={customLoader}
               />
             </div>
           ))}

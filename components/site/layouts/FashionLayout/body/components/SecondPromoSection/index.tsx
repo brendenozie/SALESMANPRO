@@ -49,11 +49,10 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               {/* Decorative Frame */}
               <div className="absolute -inset-4 border border-zinc-100 dark:border-zinc-800 -z-10 translate-x-8 translate-y-8 group-hover:translate-x-4 group-hover:translate-y-4 transition-transform duration-700" />
               
-              <Image
+              <Image decoding="async"
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000'}
                 alt={promo.title}
                 fill
-                loader={customLoader}
                 className="object-cover shadow-2xl transition-transform duration-1000 group-hover:scale-[1.02]"
               />
               

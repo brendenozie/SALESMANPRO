@@ -152,11 +152,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-black/10 z-10" />
           
           <Link href={`/bookecommerce/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
               fill
-              loader={loader}
               className="object-cover transition-all duration-1000 group-hover:brightness-110"
             />
           </Link>

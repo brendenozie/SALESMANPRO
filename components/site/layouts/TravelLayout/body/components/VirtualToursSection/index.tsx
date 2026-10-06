@@ -119,12 +119,11 @@ const TourCard = ({ tour, onPlay }: any) => {
       onClick={() => onPlay(tour.videoUrl)}
     >
       {/* Thumbnail */}
-      <Image
+      <Image decoding="async"
         src={tour.thumbnail}
         alt={tour.title}
         fill
         className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-        loader={customLoader}
         sizes="(max-width: 768px) 100vw, 33vw"
       />
       

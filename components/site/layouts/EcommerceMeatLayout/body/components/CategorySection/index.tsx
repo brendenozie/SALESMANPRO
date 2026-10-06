@@ -83,11 +83,10 @@ function CategoryHeroCard({ cat, index }: { cat: IStoreCategory; index: number }
     <motion.div variants={itemVariants} className="lg:col-span-2 group h-full">
       <Link href={`/meatecommerce/products?category=${cat.id || index}`} className="block h-full">
         <div className={`relative h-[550px] w-full overflow-hidden rounded-[3.5rem] bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-white/5 transition-all duration-700 group-hover:border-red-600/30 group-hover:shadow-2xl`}>
-          <Image
+          <Image decoding="async"
             src={FALLBACK_MEAT_URL}
             alt={cat.displayName || ""}
             fill
-            loader={customLoader}
             className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-80 dark:opacity-60 group-hover:opacity-100 dark:group-hover:opacity-80"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 dark:from-stone-950 via-transparent to-transparent" />

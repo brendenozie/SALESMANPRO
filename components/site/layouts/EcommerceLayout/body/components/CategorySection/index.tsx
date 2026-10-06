@@ -71,11 +71,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
         {/* Adjusted mobile height down to 300px, and reduced edge radius to match compact frame scales */}
         <div className="relative h-[300px] sm:h-[360px] md:h-[420px] w-full overflow-hidden rounded-[1.8rem] sm:rounded-[2.5rem] bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800/60 transition-all duration-500 group-hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] dark:group-hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)] md:group-hover:-translate-y-1.5">
           <div className="h-full w-full overflow-hidden relative">
-            <Image
+            <Image decoding="async"
               src={cat.category?.image || FALLBACK_IMAGE_URL}
               alt={cat.displayName || ""}
               fill
-              loader={customLoader}
               className="object-cover transition-transform duration-1000 group-hover:scale-105 pointer-events-none"
             />
             {/* Smooth dark overlay mask variant across background layer */}

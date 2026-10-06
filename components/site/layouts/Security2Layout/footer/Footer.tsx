@@ -92,12 +92,11 @@ export default function Footer() {
             <div className="space-y-6">
               <Link href={`/${slug}`} className="inline-block">
                 {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name}
                     width={130}
                     height={36}
-                    loader={loader}
                     className="object-contain grayscale contrast-125 mix-blend-multiply max-h-9"
                   />
                 ) : (

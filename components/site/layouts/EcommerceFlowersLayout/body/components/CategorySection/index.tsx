@@ -70,11 +70,10 @@ function CategoryCard({
     >
       <Link href={`/flowersecommerce/products?category=${catSlug}`} className="block h-full w-full">
         {/* Image with subtle parallax zoom */}
-        <Image
+        <Image decoding="async"
           src={imageUrl}
           alt={cat.displayName || "Category"}
           fill
-          loader={customLoader}
           className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
         />
         

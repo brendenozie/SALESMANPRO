@@ -159,9 +159,8 @@ export default function CtaSection({
               variants={itemVariants}
             >
               <div className="relative w-full h-full rounded-lg overflow-hidden">
-                <Image
+                <Image decoding="async"
                   src={imageUrl}
-                  loader={loader}
                   alt={title}
                   fill
                   sizes="(max-w-7xl) 40vw, 90vw"

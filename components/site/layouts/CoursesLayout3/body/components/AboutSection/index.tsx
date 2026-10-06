@@ -116,12 +116,11 @@ export default function AboutSection({ storeFormData }: any) {
               {/* Main Image with Architectural Border */}
               <div className="relative bg-white p-4 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-gray-100">
                 <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
+                  <Image decoding="async"
                     src={aboutVideoThumbnail}
                     alt="About Vision"
                     fill
                     className="object-cover transition-transform duration-1000 hover:scale-105"
-                    loader={loader}
                   />
                   
                   {/* Play Button: Refined Institutional Style */}

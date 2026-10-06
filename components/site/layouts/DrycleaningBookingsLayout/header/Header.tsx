@@ -34,8 +34,22 @@ export default function Header() {
   const tealAccent = '#0D9488'; // Signature Pristine Teal
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -68,13 +82,12 @@ export default function Header() {
           <div className="flex-1">
             <Link href="/" className="inline-block group">
               {logoUrl ? (
-                <Image 
+                <Image decoding="async" 
                   src={logoUrl} 
                   alt={name || 'Pristine'} 
                   width={140} 
                   height={40} 
                   className={`object-contain h-20 w-32 transition-all duration-500 ${scrolled ? 'brightness-100' : 'brightness-100'}`} 
-                  loader={imageLoader} 
                 />
               ) : (
                 <div className="flex flex-col leading-none">

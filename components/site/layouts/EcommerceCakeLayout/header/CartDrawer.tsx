@@ -184,12 +184,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: CartDrawerProp
                       className="flex gap-4 items-center border-b border-gray-50 pb-6"
                     >
                       <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                        <Image 
+                        <Image decoding="async" 
                           src={item.images?.[0] || '/placeholder.png'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
-                          loader={({ src }) => src}
                         />
                       </div>
                       

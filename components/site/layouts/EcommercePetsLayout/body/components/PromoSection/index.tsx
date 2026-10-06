@@ -30,10 +30,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             viewport={{ once: true }}
             className="group relative h-[500px] md:h-[600px] rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)]"
           >
-            <Image
+            <Image decoding="async"
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=2000'}
               alt={promo.title}
-              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
               fill
               className="object-cover transition-transform duration-[3s] group-hover:scale-110"
             />
@@ -98,10 +97,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 ${index === 1 ? 'md:-translate-y-8' : ''}`} // Offset effect
             >
               <div className="relative h-72 overflow-hidden">
-                <Image
+                <Image decoding="async"
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=800'}
                   alt={item.title}
-                  loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />

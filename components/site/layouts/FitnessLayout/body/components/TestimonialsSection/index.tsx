@@ -129,14 +129,13 @@ export default function TestimonialsSection({
                       className="absolute -inset-1.5 rounded-full blur opacity-25 dark:opacity-40 transition-opacity"
                       style={{ backgroundColor: primaryColor }}
                     />
-                    <Image
+                    <Image decoding="async"
                       src={t.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2000'}
                       alt={t.authorName || 'User Avatar'}
                       width={70}
                       height={70}
                       className="relative rounded-full grayscale hover:grayscale-0 transition-all duration-500 object-cover p-0.5 bg-white dark:bg-neutral-900 border-2"
                       style={{ borderColor: primaryColor }}
-                      loader={loader}
                     />
                   </div>
 

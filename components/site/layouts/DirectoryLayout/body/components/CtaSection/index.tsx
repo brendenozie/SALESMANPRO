@@ -191,12 +191,11 @@ export default function HeroCtaSection({
 
         {/* Image Section */}
         <motion.div className="md:w-1/2 relative h-64 sm:h-80 md:h-96 w-full max-w-md mx-auto md:mx-0 rounded-3xl overflow-hidden shadow-2xl z-0" variants={imageVariants}>
-          <Image
+          <Image decoding="async"
             src={finalImageUrl}
             alt={finalImageAlt}
             fill
             className="object-cover object-center"
-            loader={loader}
             sizes="(max-width: 768px) 100vw, 50vw"
             priority // Prioritize loading for a hero section image
             onError={handleImageError} // Image error fallback

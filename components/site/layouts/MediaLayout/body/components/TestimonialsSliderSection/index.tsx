@@ -127,8 +127,7 @@ export default function TestimonialsSection({ title, subtitle, testimonials }: T
               
               <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center">
                 <div className="relative w-12 h-12 flex-shrink-0">
-                  <Image
-                    loader={loader}
+                  <Image decoding="async"
                     src={testimonial.avatarUrl}
                     alt={testimonial.name}
                     fill

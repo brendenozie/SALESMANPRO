@@ -58,11 +58,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
             Index No. {index < 9 ? `0${index + 1}` : index + 1}
           </span>
 
-          <Image
+          <Image decoding="async"
             src={imageUrl}
             alt={cat.displayName || "Category"}
             fill
-            loader={customLoader}
             className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0"
           />
 

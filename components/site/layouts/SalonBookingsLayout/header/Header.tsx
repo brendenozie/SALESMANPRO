@@ -50,9 +50,23 @@ export default function Header() {
   ];
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Auth Handlers
@@ -105,7 +119,7 @@ export default function Header() {
         animate={{ y: 0 }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out ${
           scrolled
-            ? 'py-3 bg-white/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.03)] border-b border-gray-100'
+            ? 'py-3 bg-white/95 shadow-sm shadow-[0_4px_30px_rgba(0,0,0,0.03)] border-b border-gray-100'
             : 'py-6 bg-transparent'
         }`}
       >
@@ -119,12 +133,11 @@ export default function Header() {
                 style={{ backgroundColor: primaryColor }}
               />
               {logoUrl && (
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={`${name} Logo`}
                   width={44}
                   height={44}
-                  loader={loader}
                   className="relative rounded-full object-cover ring-2 ring-white shadow-sm  h-20 w-32"
                 />
               )}

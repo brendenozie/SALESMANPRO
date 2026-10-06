@@ -95,10 +95,9 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
       >
         {/* 1. Image Layer */}
         <div className="absolute inset-0 h-full w-full">
-          <Image
+          <Image decoding="async"
             src={getLocationImage(loc)}
             alt={loc.name}
-            loader={customLoader}
             fill
             className="object-cover transition-transform duration-1000 will-change-transform group-hover:scale-110"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

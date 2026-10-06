@@ -30,11 +30,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
       }`}
     >
       <Link href={`/glassesecommerce/products?category=${cat.category?.id || cat.categoryId || cat.displayName}`} className="block h-full w-full">
-        <Image
+        <Image decoding="async"
           src={(cat as any).imageUrl || (cat as any).image || FALLBACK_IMAGE}
           alt={cat.displayName || ""}
           fill
-          loader={customLoader}
           className="object-cover transition-transform duration-1000 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

@@ -198,12 +198,11 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                   <div className="flex items-center gap-4 pt-6 border-t border-slate-200/80 dark:border-slate-800 w-full justify-center">
                     {activeTestimonial?.avatarUrl && (
                       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500/40 shrink-0 bg-slate-100 dark:bg-slate-900 shadow-sm">
-                        <Image
+                        <Image decoding="async"
                           src={activeTestimonial.avatarUrl}
                           alt={activeTestimonial.authorName || "Author Avatar"}
                           width={48}
                           height={48}
-                          loader={customLoader}
                           className="object-cover w-full h-full"
                         />
                       </div>

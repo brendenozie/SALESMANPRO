@@ -50,17 +50,16 @@ const PropertyCard = ({ item, key, itemVariants, customLoader }: any) => {
       >
         {/* --- Image & Badges Area --- */}
         <div className="relative h-64 w-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-          <Image
+          <Image decoding="async"
             src={resolvedMedia.primaryImageUrl}
             alt={item.name}
             layout="fill"
             objectFit="cover"
             className="transform transition-transform duration-700 group-hover:scale-110"
-            loader={customLoader}
           />
 
           {resolvedMedia.hasVideo && (
-            <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/90 shadow-sm text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
               <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Video</span>
             </div>

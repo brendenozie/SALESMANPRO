@@ -81,7 +81,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
 
       {/* Avatar */}
       <div className="relative w-28 h-28 mb-6 z-10">
-        <Image
+        <Image decoding="async"
           src={
             testimonial.avatarUrl ??
             "https://ui-avatars.com/api/?name=Unknown&background=random"
@@ -90,7 +90,6 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
           layout="fill"
           objectFit="cover"
           className="rounded-full ring-4 ring-indigo-400 ring-offset-4 ring-offset-white"
-          loader={customLoader}
           placeholder="blur"
           blurDataURL={blurSvg}
         />

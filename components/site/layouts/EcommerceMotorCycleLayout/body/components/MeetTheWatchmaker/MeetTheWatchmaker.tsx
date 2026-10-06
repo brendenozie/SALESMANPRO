@@ -31,9 +31,8 @@ export default function MeetTheMechanics() {
               transition={{ duration: 1, ease: "circOut" }}
               className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-zinc-900"
             >
-              <Image 
-                src="https://images.unsplash.com/photo-1485965120184-e220f721d03e" 
-                loader={({ src }) => src}
+              <Image decoding="async" 
+                src="https://images.unsplash.com/photo-1485965120184-e220f721d03e"
                 alt="Master Mechanic tuning a custom engine"
                 fill
                 className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
@@ -48,12 +47,11 @@ export default function MeetTheMechanics() {
               transition={{ delay: 0.5, duration: 0.8 }}
               className="absolute -bottom-8 -right-8 w-72 h-72 border-[16px] border-zinc-50 dark:border-[#050505] rounded-3xl overflow-hidden shadow-2xl hidden md:block"
             >
-              <Image 
+              <Image decoding="async" 
                 src="https://images.unsplash.com/photo-1615172282427-9a57ef2d142e" 
                 alt="Close up of a motorcycle carburetor"
                 fill
                 className="object-cover"
-                loader={({ src }) => src}
               />
               <div className="absolute top-4 left-4 bg-[#E63946] px-3 py-1 rounded-full">
                 <span className="text-[8px] font-black text-white uppercase tracking-widest">Calibration Unit</span>
@@ -116,7 +114,7 @@ export default function MeetTheMechanics() {
               <div className="flex -space-x-4">
                 {[1,2,3,4].map(i => (
                   <div key={i} className="w-14 h-14 rounded-2xl border-4 border-zinc-50 dark:border-[#050505] overflow-hidden relative rotate-3 hover:rotate-0 transition-transform">
-                    <Image src={`https://i.pravatar.cc/150?u=${i+25}`} fill alt="Lead Mechanic" className="grayscale" loader={({ src }) => src}/>
+                    <Image decoding="async" src={`https://i.pravatar.cc/150?u=${i+25}`} fill alt="Lead Mechanic" className="grayscale"/>
                   </div>
                 ))}
               </div>

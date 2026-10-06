@@ -64,12 +64,23 @@ export default function Header() {
 
   // Handle scroll event to shrink header on desktop
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const handleUserAction = () => {
@@ -157,12 +168,11 @@ export default function Header() {
         {/* LOGO - Shrinks on scroll */}
         <Link href="/" className="flex-shrink-0">
           {logoUrl ? (
-            <Image
+            <Image decoding="async"
               src={logoUrl}
               alt={name}
               width={120}
               height={40}
-              loader={imageLoader}
               className={`object-contain transition-all duration-300 ${
                 isScrolled ? 'h-12 w-24' : 'h-20 w-32'
               }`}
@@ -219,13 +229,12 @@ export default function Header() {
 
           <button onClick={handleUserAction}>
             {user?.image ? (
-              <Image
+              <Image decoding="async"
                 src={user.image}
                 alt="User"
                 width={40}
                 height={40}
                 className="rounded-xl border border-gray-200 dark:border-gray-700"
-                loader={imageLoader}
               />
             ) : (
               <div className="bg-gray-100 dark:bg-gray-800 p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">

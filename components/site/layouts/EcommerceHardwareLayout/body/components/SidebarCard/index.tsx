@@ -81,12 +81,11 @@ function SidebarCard({ title, subtitle, img, color }: any) {
         style={{ transform: "translateZ(100px)" }}
         className="absolute -right-6 -bottom-6 w-48 h-48 lg:w-56 lg:h-56 drop-shadow-[0_40px_40px_rgba(0,0,0,0.2)] group-hover:drop-shadow-[0_60px_60px_rgba(0,0,0,0.3)] transition-all duration-700"
       >
-        <Image 
+        <Image decoding="async" 
           src={img} 
           alt={title} 
           fill 
           className="object-contain transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6" 
-          loader={loader} 
         />
       </motion.div>
 

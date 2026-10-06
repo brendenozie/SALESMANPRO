@@ -35,12 +35,11 @@ export default function BikeFeatureSection() {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="w-full lg:w-1/2 relative aspect-[4/5] overflow-hidden rounded-[3rem] bg-zinc-100 dark:bg-zinc-900 group"
           >
-            <Image
+            <Image decoding="async"
               src={sectionData.imageUrl}
               alt="High performance road bike"
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale hover:grayscale-0"
-              loader={loader}
             />
             {/* Speed Lines Overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent pointer-events-none" />

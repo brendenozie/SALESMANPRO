@@ -38,8 +38,22 @@ export default function PremiumMeatHeader() {
   const primaryColor = themeSettings?.primaryColor || '#991b1b'; // Deep Red
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -76,12 +90,11 @@ export default function PremiumMeatHeader() {
             <Link href="/" className="relative z-10 flex items-center gap-4 group">
               <div className="relative w-12 h-12 overflow-hidden rounded-full bg-white p-0.5 transition-transform group-hover:rotate-12 group-hover:scale-110 shadow-lg">
                 {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name || ''}
                     fill
                     className="object-contain  h-20 w-32"
-                    loader={imageLoader}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center font-black text-white rounded-full" style={{ background: primaryColor }}>

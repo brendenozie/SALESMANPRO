@@ -53,12 +53,11 @@ export default function EyewearFeatureGrid() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative w-full h-full"
         >
-          <Image
+          <Image decoding="async"
             src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=1200&q=80" 
             alt="Luxury Eyewear Model"
             fill
             className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
-            loader={({ src }) => src}
           />
           {/* Subtle Glassmorphism Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#004743]/40 to-transparent pointer-events-none" />
@@ -114,7 +113,7 @@ export default function EyewearFeatureGrid() {
             <div className="flex -space-x-3">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="w-8 h-8 rounded-full border-2 border-[#004743] bg-zinc-800 overflow-hidden">
-                   <Image src={`https://i.pravatar.cc/100?u=${i}`} alt="User" width={32} height={32} loader={loader} />
+                   <Image decoding="async" src={`https://i.pravatar.cc/100?u=${i}`} alt="User" width={32} height={32} />
                 </div>
               ))}
             </div>

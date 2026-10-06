@@ -93,10 +93,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Award Icon/Logo */}
                 <div className="relative w-24 h-24 mb-8">
                   {src ? (
-                    <Image
+                    <Image decoding="async"
                       src={src}
                       alt={label}
-                      loader={loader}
                       fill
                       className="object-contain filter grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
                     />

@@ -27,18 +27,17 @@ const CourseCard = ({ course, primaryColor, secondaryColor }: any) => {
     >
       {/* 1. Image Header with Glass Badge */}
       <div className="relative h-64 w-full overflow-hidden">
-        <Image
+        <Image decoding="async"
           src={course.imageUrl || 'https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=800'}
           alt={course.title}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
-          loader={loader}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
         
         {/* Floating Grade Badge */}
         {course.gradeLevel && (
-          <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm">
+          <div className="absolute top-6 left-6 bg-white/95 px-4 py-1.5 rounded-full shadow-sm">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
               {course.gradeLevel}
             </span>
@@ -46,7 +45,7 @@ const CourseCard = ({ course, primaryColor, secondaryColor }: any) => {
         )}
 
         {/* Save/Bookmark Icon */}
-        <button className="absolute top-6 right-6 p-2 rounded-full bg-slate-900/20 backdrop-blur-md text-white hover:bg-white hover:text-slate-900 transition-all">
+        <button className="absolute top-6 right-6 p-2 rounded-full bg-slate-900/60 text-white hover:bg-white hover:text-slate-900 transition-all">
           <BookmarkIcon className="w-4 h-4" />
         </button>
       </div>

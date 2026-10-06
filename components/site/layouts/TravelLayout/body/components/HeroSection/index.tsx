@@ -231,12 +231,11 @@ export default function HeroSection({
                className="h-full w-full object-cover"
              />
           ) : (
-            <Image
+            <Image decoding="async"
               src={heroSlides[currentSlide].imageUrl || heroSlides[currentSlide].productImageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop"}
               alt="Travel Hero"
               fill
               priority
-              loader={loader}
               className="object-cover brightness-[0.65]"
             />
           )}

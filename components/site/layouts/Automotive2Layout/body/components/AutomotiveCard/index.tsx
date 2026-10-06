@@ -79,12 +79,11 @@ export default function AutomotiveCard({ item }: { item: any }) {
       >
         {/* --- IMAGE CONTAINER --- */}
         <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
-          <Image
+          <Image decoding="async"
             src={item.images?.[0] || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d"}
             alt={vehicleName}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
-            loader={imageLoader}
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />

@@ -85,12 +85,11 @@ export default function NewsletterPromoGrid() {
           >
             {/* Image Layer with Parallax-ready Scale */}
             <div className="absolute inset-0">
-              <Image
+              <Image decoding="async"
                 src={item.image}
                 alt={item.title}
                 fill
                 className="object-cover opacity-30 dark:opacity-20 mix-blend-multiply dark:mix-blend-overlay group-hover:scale-110 transition-transform duration-[1.5s]"
-                loader={({ src }) => `${src}?auto=format&fit=crop&w=800&q=80`}
               />
               <div className="absolute inset-0 bg-gradient-to-br from-white/60 dark:from-zinc-900/60 to-transparent" />
             </div>

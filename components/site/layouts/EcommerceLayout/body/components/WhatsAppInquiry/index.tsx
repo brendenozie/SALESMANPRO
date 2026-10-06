@@ -101,12 +101,11 @@ export default function WhatsAppInquiry({
               
               <div className="flex items-center gap-4">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
-                  <Image 
+                  <Image decoding="async" 
                     src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" 
                     alt="Agent" 
                     fill 
                     className="object-cover"
-                    loader={({ src }) => src}
                   />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#075E54] rounded-full" />
                 </div>

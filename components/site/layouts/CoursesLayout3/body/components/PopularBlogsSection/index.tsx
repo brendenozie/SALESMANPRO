@@ -92,12 +92,11 @@ export default function LatestEventsSection({ storeFormData }: any) {
             whileInView={{ opacity: 1, y: 0 }}
             className="lg:col-span-8 group relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-gray-900 aspect-[16/10] md:aspect-auto md:h-[600px]"
           >
-            <Image
+            <Image decoding="async"
               src={mainEvent.imageUrl}
               alt={mainEvent.title}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-              loader={loader}
             />
             
             {/* High-Contrast Date Badge */}
@@ -161,12 +160,11 @@ export default function LatestEventsSection({ storeFormData }: any) {
                 className="group flex gap-5 p-5 bg-gray-50 dark:bg-gray-900 rounded-[2rem] border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all hover:bg-white dark:hover:bg-gray-800 hover:shadow-xl"
               >
                 <div className="relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
-                  <Image
+                  <Image decoding="async"
                     src={event.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2670"}
                     alt={event.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    loader={loader}
                   />
                 </div>
                 

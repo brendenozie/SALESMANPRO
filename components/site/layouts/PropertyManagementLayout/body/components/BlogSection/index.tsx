@@ -85,13 +85,12 @@ export default function BlogSection({ posts, slug }: any) {
               >
                 {post.imageUrl && (
                   <div className="relative h-56 w-full overflow-hidden">
-                    <Image
+                    <Image decoding="async"
                       src={post.imageUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
                       alt={`Cover image for ${post.title}`}
                       layout="fill"
                       objectFit="cover"
                       className="transform transition-transform duration-500 group-hover:scale-115 group-hover:brightness-90"
-                      loader={customLoader}
                     />
                     {/* Image Overlay for text readability */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
@@ -118,13 +117,12 @@ export default function BlogSection({ posts, slug }: any) {
                   <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center space-x-3">
                       {post.author?.avatarUrl ? (
-                        <Image
+                        <Image decoding="async"
                           src={post.author.avatarUrl}
                           alt={post.author.name}
                           width={36} // Slightly larger avatar
                           height={36}
-                          className="rounded-full ring-2 ring-emerald-500 dark:ring-teal-400" // Ring for prominence
-                          loader={customLoader}
+                          className="rounded-full ring-2 ring-emerald-500 dark:ring-teal-400"
                         />
                       ) : (
                         <UserCircleIcon className="w-9 h-9 text-gray-400 dark:text-gray-600" /> // Placeholder if no avatar

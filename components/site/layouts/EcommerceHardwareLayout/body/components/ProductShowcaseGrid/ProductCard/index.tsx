@@ -126,11 +126,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Visual Frame Image Cover Wrapper */}
         <div className="relative aspect-square w-full overflow-hidden bg-zinc-100/60 dark:bg-zinc-900/40 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-center p-6">
           <Link href={`/hardwareecommerce/products/${product.id}`} className="absolute inset-0 z-10">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
               fill
-              loader={loader}
               className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
             />
           </Link>

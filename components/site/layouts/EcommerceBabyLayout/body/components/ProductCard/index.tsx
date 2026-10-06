@@ -158,11 +158,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* --- IMAGE CONTAINER --- */}
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC] dark:bg-zinc-800/50">
           <Link href={`/babyecommerce/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
               fill
-              loader={loader}
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </Link>
@@ -170,7 +169,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Top Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+              <div className="bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-pink-400" />
                 <span>Video</span>
               </div>
@@ -197,7 +196,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </a>
 
           {/* Heart Action */}
-          <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-slate-400 dark:text-zinc-500 hover:text-pink-500 dark:hover:text-pink-400 transition-colors shadow-sm">
+          <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/95 dark:bg-zinc-900/95 shadow-sm text-slate-400 dark:text-zinc-500 hover:text-pink-500 dark:hover:text-pink-400 transition-colors shadow-sm">
             <HeartIcon className="w-5 h-5" />
           </button>
 
@@ -349,12 +348,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 {/* Product Detail Layout Header Section */}
                 <div className="flex gap-4 border-b border-slate-100 dark:border-zinc-800 pb-5 pt-2">
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 dark:bg-zinc-800 border dark:border-zinc-700 flex-shrink-0">
-                    <Image
+                    <Image decoding="async"
                       src={imageSrc}
                       alt={name}
                       fill
                       className="object-cover"
-                      loader={loader}
                     />
                   </div>
                   <div className="flex flex-col justify-center">

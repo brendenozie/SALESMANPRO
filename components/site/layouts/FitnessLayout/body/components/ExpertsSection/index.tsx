@@ -92,12 +92,11 @@ export default function EducatorsSection({ educators = [] }: Props) {
               <div>
                 {/* Image Wrap Card */}
                 <div className="relative h-[420px] sm:h-[480px] w-full rounded-[2rem] overflow-hidden bg-neutral-200 dark:bg-neutral-900 mb-6 border border-neutral-100 dark:border-neutral-800/50 shadow-inner">
-                  <Image
+                  <Image decoding="async"
                     src={edu.photoUrl || edu.profilePicture || `https://images.unsplash.com/photo-${index === 0 ? '1567013127542-490d757e51fc' : index === 1 ? '1548690312-e3b507d17a4d' : '1534438327276-14e5300c3a48'}?q=80&w=2000&auto=format&fit=crop`}
                     alt={edu.user?.name || edu.name}
                     fill
                     className="object-cover scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
-                    loader={loader}
                   />
                   
                   {/* Adaptive Cinematic Overlay */}

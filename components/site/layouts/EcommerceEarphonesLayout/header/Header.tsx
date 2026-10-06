@@ -61,8 +61,22 @@ export default function Header() {
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -82,8 +96,7 @@ export default function Header() {
           ${
             scrolled
               ? `
-                rounded-2xl shadow-2xl backdrop-blur-xl
-                bg-white/80 border-black/10
+                rounded-2xl shadow-2xl bg-white/95 shadow-sm border-black/10
                 dark:bg-black/80 dark:border-white/10
               `
               : 'bg-transparent border-transparent'
@@ -95,11 +108,10 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-2">
             {logoUrl ? (
               <div className="relative w-32 h-20 overflow-hidden rounded-lg">
-                <Image
+                <Image decoding="async"
                   src={logoUrl}
                   alt={name || 'Store Logo'}
                   fill
-                  loader={imageLoader}
                   className="object-contain dark:brightness-0 dark:invert h-20 w-32"
                 />
               </div>

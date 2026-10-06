@@ -137,11 +137,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Image View Window Section */}
         <div className="relative h-80 w-full overflow-hidden bg-gray-50">
           <Link href={`/cakeecommerce/products/${product.id}`} className="block h-full w-full">
-            <Image
+            <Image decoding="async"
               src={imageSrc}
               alt={name}
               fill
-              loader={loader}
               sizes="(max-width: 768px) 100vw, 33vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
             />
@@ -150,7 +149,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Minimalist Promotional Labels & Matrix Count Indicators */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
             {resolvedMedia.hasVideo && (
-              <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
+              <div className="bg-black/90 shadow-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 shadow-md">
                 <VideoCameraIcon className="w-3.5 h-3.5 text-amber-400" />
                 <span>Video</span>
               </div>
@@ -176,7 +175,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-[#128C7E] duration-300 hover:bg-white"
+            className="absolute top-4 right-4 z-10 p-2.5 bg-white/95 shadow-sm rounded-full shadow-sm text-[#128C7E] duration-300 hover:bg-white"
             title="Inquire with Vendor"
           >
             <WhatsAppIcon className="w-4 h-4" />

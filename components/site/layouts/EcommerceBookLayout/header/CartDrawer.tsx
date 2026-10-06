@@ -232,12 +232,11 @@ Please confirm availability and dispatch details. Thank you!`;
                       className="flex gap-4 items-center border-b border-zinc-100 pb-6"
                     >
                       <div className="relative h-24 w-18 aspect-[3/4] overflow-hidden bg-zinc-50 shadow-sm flex-shrink-0 border-l-2 border-black/10">
-                        <Image 
+                        <Image decoding="async" 
                           src={item.images?.[0]?.url || item.images?.[0] || '/placeholder.png'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
-                          unoptimized
                         />
                       </div>
                       

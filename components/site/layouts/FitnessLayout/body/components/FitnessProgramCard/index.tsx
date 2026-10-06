@@ -54,13 +54,12 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
             <span className="sr-only">View program details for {name}</span>
           </Link>
           
-          <Image
+          <Image decoding="async"
             src={imageSrc}
             alt={name}
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-            loader={({ src }) => src}
             priority={false}
           />
 

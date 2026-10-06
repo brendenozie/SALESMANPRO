@@ -94,10 +94,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                   
                   <div className="relative w-16 h-16 transition-transform duration-500 group-hover:scale-110">
                     {src ? (
-                      <Image
+                      <Image decoding="async"
                         src={src || 'https:images.unsplash.com/photo-1508971344143-1c0b9a1e8c9b?auto=format&fit=crop&w=256&q=80'}
                         alt={award.name}
-                        loader={loader}
                         fill
                         className="object-contain grayscale brightness-110 group-hover:grayscale-0"
                       />

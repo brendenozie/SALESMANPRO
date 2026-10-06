@@ -67,11 +67,10 @@ function CategoryCard({ cat, index, primaryColor }: { cat: IStoreCategory; index
                style={{ backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
           
           <div className="relative w-full h-3/5 mt-10 p-8 transition-transform duration-700 group-hover:scale-110">
-            <Image
+            <Image decoding="async"
               src={imageUrl}
               alt={cat.displayName || "Category"}
               fill
-              loader={customLoader}
               className="object-contain drop-shadow-2xl"
             />
           </div>

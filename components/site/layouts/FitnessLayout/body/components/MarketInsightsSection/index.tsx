@@ -111,12 +111,11 @@ export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) 
             >
               {/* Cover Image (Reveals seamlessly on Hover) */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-15 dark:group-hover:opacity-20 transition-opacity duration-700 z-0 pointer-events-none">
-                <Image
+                <Image decoding="async"
                   src={blog.coverImage || "https://images.unsplash.com/photo-1507398941214-57f516d901ca?q=80&w=2000"}
                   alt={blog.title}
                   fill
                   className="object-cover grayscale mix-blend-luminosity"
-                  loader={loader}
                 />
               </div>
 

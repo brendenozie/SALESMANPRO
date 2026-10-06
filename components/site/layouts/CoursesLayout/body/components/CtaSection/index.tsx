@@ -91,11 +91,10 @@ export default function ContactFormSection() {
             
             {/* Left Side: The "Atmosphere" */}
             <div className="relative h-full min-h-[350px] lg:min-h-0 overflow-hidden">
-              <Image
+              <Image decoding="async"
                 src={storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671"}
                 alt="Academy Life"
                 fill
-                loader={loader}
                 className="object-cover transition-transform duration-1000 hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent" />

@@ -166,9 +166,8 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                             boxShadow: `0 40px 80px -20px rgba(0, 0, 0, 0.5), 0 0 0 4px ${primaryColor}40`
                         }}
                     >
-                        <Image
+                        <Image decoding="async"
                             src={bannerUrl || sampleData.bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
-                            loader={loader}
                             alt="A happy customer enjoying a service"
                             fill
                             className="object-cover"

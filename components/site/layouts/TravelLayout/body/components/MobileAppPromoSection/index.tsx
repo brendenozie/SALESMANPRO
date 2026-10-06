@@ -169,12 +169,11 @@ export default function MobileAppPromo() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-black rounded-b-xl z-20" />
             
             {/* Screen Image */}
-            <Image
+            <Image decoding="async"
               src="https://images.unsplash.com/photo-1517400508447-f8dd518b86db?q=80&w=600&auto=format&fit=crop"
               alt="App Screen"
               fill
               className="object-cover opacity-80"
-              loader={loader}
             />
             
             {/* Fake UI Overlay inside phone */}

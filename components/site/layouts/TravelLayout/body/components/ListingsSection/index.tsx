@@ -128,10 +128,9 @@ function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
       <div className="relative h-72 w-full overflow-hidden">
         {/* Image with Zoom Effect */}
         <div className="absolute inset-0 transform transition-transform duration-700 ease-out group-hover:scale-110">
-          <Image
+          <Image decoding="async"
             src={listing.images?.[0] || listing.thumbnail || "https://images.unsplash.com/photo-1533414417583-f0eb64df94e9?q=80&w=3540&auto=format&fit=crop"}
             alt={listing.title || listing.name || "Thumbnail"}
-            loader={customLoader}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -201,12 +201,11 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
                   </blockquote>
                   
                   <div className="flex items-center gap-4 mt-auto pt-6 border-t border-slate-100 dark:border-gray-700">
-                    <Image
+                    <Image decoding="async"
                       src={t.avatarUrl}
                       alt={t.authorName}
                       width={50}
                       height={50}
-                      loader={loader}
                       onError={handleImageError}
                       className="rounded-full object-cover ring-4 ring-slate-50 dark:ring-gray-800"
                     />
@@ -260,12 +259,11 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
                   {/* Author Meta */}
                   <div className="relative z-10 flex items-center gap-4">
                     <div className="relative">
-                       <Image
+                       <Image decoding="async"
                         src={t.avatarUrl}
                         alt={t.authorName}
                         width={56}
                         height={56}
-                        loader={loader}
                         onError={handleImageError}
                         className="rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md group-hover:scale-110 transition-transform duration-300"
                       />

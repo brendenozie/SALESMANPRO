@@ -93,10 +93,9 @@ export default function AgentsSection({ agents, slug }: any) {
                   
                   {/* Agent Photo */}
                   <div className="mx-auto mb-4 relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-amber-500 dark:ring-amber-400 transform transition-all duration-500 group-hover:scale-105 group-hover:ring-emerald-600 dark:group-hover:ring-teal-400">
-                    <Image
+                    <Image decoding="async"
                       src={agent.photoUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=${agent.user.name.slice(0,1)}`}
                       alt={`Portrait of ${agent.user.name}`}
-                      loader={customLoader}
                       layout="fill"
                       objectFit="cover"
                       className="transform transition-transform duration-500 group-hover:scale-110"

@@ -135,12 +135,11 @@ export default function Header() {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <Link href={`/`}>
             {logoUrl ? (
-              <Image
+              <Image decoding="async"
                 src={logoUrl}
                 alt={name}
                 width={160}
                 height={50}
-                loader={loader}
                 className="object-contain  h-20 w-32"
                 priority
               />

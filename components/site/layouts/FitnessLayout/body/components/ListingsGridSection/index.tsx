@@ -139,8 +139,7 @@ export default function ListingsGrid({ programs = [] }: ListingsGridProps) {
                 <div>
                   {/* HERO VISUAL COVER CONTAINER */}
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                    <Image
-                      loader={({ src }) => src}
+                    <Image decoding="async"
                       src={imageSrc}
                       alt={title}
                       fill

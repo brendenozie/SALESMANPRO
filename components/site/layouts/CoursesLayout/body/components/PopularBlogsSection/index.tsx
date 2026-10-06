@@ -81,11 +81,10 @@ export default function LatestEventsSection({ storeFormData }: any) {
             whileHover={{ y: -5 }}
             className="md:col-span-2 relative h-[500px] rounded-[2.5rem] overflow-hidden group shadow-2xl shadow-slate-200 dark:shadow-none"
           >
-            <Image 
+            <Image decoding="async" 
               src={events[0].imageUrl} 
               alt={events[0].title} 
-              fill 
-              loader={loader}
+              fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />

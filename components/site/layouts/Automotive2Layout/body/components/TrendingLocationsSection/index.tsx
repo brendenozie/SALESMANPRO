@@ -111,10 +111,9 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
         
         {/* Background Image & Multi-Stage Gradient Overlay */}
         <div className="absolute inset-0 bg-slate-900">
-          <Image
+          <Image decoding="async"
             src={imageUrl}
             alt={loc.name}
-            loader={customLoader}
             fill
             className="object-cover transition-transform duration-700 opacity-75 group-hover:opacity-90 group-hover:scale-105"
             onError={() => setImgError(true)}

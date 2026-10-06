@@ -40,11 +40,19 @@ export default function Header() {
 
   // --- 3. SCROLL HANDLER ---
   useEffect(() => {
+    let ticking = false;
+    let lastScrolled = false;
     const onScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -94,13 +102,12 @@ export default function Header() {
             
             <Link href="/" className="flex items-center gap-3 group">
               {logoUrl ? (
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={name || 'Store Logo'}
                     className={`transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'} h-20 w-32`}
                     width={128}
                     height={80}
-                    loader={imageLoader}
                   />
                 ) : (
                   <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm transform group-hover:rotate-[15deg] transition-transform duration-300">

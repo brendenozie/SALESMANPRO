@@ -40,9 +40,23 @@ export default function Header() {
   ];
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    let lastScrolled = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== lastScrolled) {
+            lastScrolled = isScrolled;
+            setScrolled(isScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Auth Handlers
@@ -109,12 +123,11 @@ export default function Header() {
               />
               {logoUrl && (
                 <div className="relative w-10 h-10 overflow-hidden rounded-full ring-2 ring-white dark:ring-neutral-900 shadow-sm transition-all duration-300">
-                  <Image
+                  <Image decoding="async"
                     src={logoUrl}
                     alt={`${name || 'Brand'} Logo`}
                     fill
                     sizes="40px"
-                    loader={loader}
                     className="object-cover"
                   />
                 </div>

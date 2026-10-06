@@ -94,10 +94,9 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 />
                 <div className="relative w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-white transition-colors duration-500 overflow-hidden">
                   {award.imageUrl ? (
-                    <Image
+                    <Image decoding="async"
                       src={award.imageUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000'}
                       alt={award.name}
-                      loader={({ src }) => src}
                       fill
                       className="object-contain p-4 group-hover:scale-110 transition-transform"
                     />

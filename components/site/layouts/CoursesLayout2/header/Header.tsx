@@ -101,13 +101,11 @@ export default function MoriahHeader() {
                 style={{ backgroundColor: storeFormData?.logoUrl ? 'transparent' : primaryColor }}
               >
                 {storeFormData?.logoUrl ? (
-                  <Image 
+                  <Image decoding="async" 
                     src={storeFormData.logoUrl}
                     alt={name} 
                     fill
-                    loader={loader}
                     className="object-contain p-1.5 drop-shadow-sm"
-                    unoptimized
                   />
                 ) : (
                   <AcademicCapIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
