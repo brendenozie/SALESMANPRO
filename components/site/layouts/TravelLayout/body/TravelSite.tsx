@@ -427,6 +427,8 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
         }
       />
     ),
+    'filter': <FilterBar />,
+    'travel-filter': <FilterBar />,
     'listings': <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>,
     'trending-locations': <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />,
     'meet-agents': <MeetAgents experts={pageData?.Expert} />,

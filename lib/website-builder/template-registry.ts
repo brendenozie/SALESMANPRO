@@ -193,3 +193,11 @@ export function getTemplatesForCategory(category: string): TemplateDefinition[] 
     );
   });
 }
+
+export {
+  getBuilderCapabilities,
+  getAll56ThemeCapabilities,
+  type ThemeBuilderCapabilities,
+  type SectionBuilderMetadata,
+  type SectionCapabilityModel,
+} from "./builder-capability-registry";

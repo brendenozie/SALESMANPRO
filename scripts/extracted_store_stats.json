@@ -1,0 +1,326 @@
+{
+  "totalThemes": 56,
+  "themesWithStores": 28,
+  "standbyThemes": [
+    {
+      "id": "ecommerce-gaming@v1",
+      "name": "Gaming & Esports Store"
+    },
+    {
+      "id": "ecommerce-agrovet@v1",
+      "name": "Agrovet & Agricultural Supplies"
+    },
+    {
+      "id": "ecommerce-meat@v1",
+      "name": "Modern Meat & Gourmet Butchery"
+    },
+    {
+      "id": "ecommerce-hardware@v1",
+      "name": "Hardware & Tools Store"
+    },
+    {
+      "id": "ecommerce-watch@v1",
+      "name": "Luxury Timepieces & Watches"
+    },
+    {
+      "id": "ecommerce-flowers@v1",
+      "name": "Boutique Florist & Flowers"
+    },
+    {
+      "id": "ecommerce-groceries@v1",
+      "name": "Supermarket & Fresh Groceries"
+    },
+    {
+      "id": "ecommerce-earphones@v1",
+      "name": "Pro Audio & Earphones"
+    },
+    {
+      "id": "ecommerce-glasses@v1",
+      "name": "Eyewear & Optics Studio"
+    },
+    {
+      "id": "ecommerce-honey@v1",
+      "name": "Pure Honey & Organic Bee Products"
+    },
+    {
+      "id": "ecommerce-peanuts@v1",
+      "name": "Organic Nuts & Peanuts"
+    },
+    {
+      "id": "ecommerce-baby@v1",
+      "name": "Baby & Toddler Boutique"
+    },
+    {
+      "id": "ecommerce-cake@v1",
+      "name": "Bakery & Designer Cakes"
+    },
+    {
+      "id": "ecommerce-pets@v1",
+      "name": "Pet Food & Supplies Store"
+    },
+    {
+      "id": "ecommerce-bike@v1",
+      "name": "Bicycles & Cycling Pro Shop"
+    },
+    {
+      "id": "ecommerce-motorcycle@v1",
+      "name": "Motorcycles & Riding Gear"
+    },
+    {
+      "id": "ecommerce-book@v1",
+      "name": "Bookstore & Stationery"
+    },
+    {
+      "id": "ecommerce-accessories@v1",
+      "name": "Auto Accessories & Parts"
+    },
+    {
+      "id": "barbershop@v1",
+      "name": "Classic Barbershop & Grooming"
+    },
+    {
+      "id": "salon-bookings@v1",
+      "name": "Luxury Salon & Spa Bookings"
+    },
+    {
+      "id": "drycleaning@v1",
+      "name": "Drycleaning & Laundry Express"
+    },
+    {
+      "id": "company-portfolio@v1",
+      "name": "Corporate Enterprise Portfolio (Dark)"
+    },
+    {
+      "id": "company-portfolio-light@v1",
+      "name": "Corporate Enterprise Portfolio (Light)"
+    },
+    {
+      "id": "property-management@v1",
+      "name": "Property Asset & Tenancy Management"
+    },
+    {
+      "id": "automotive-2@v1",
+      "name": "Luxury Motors Dealership (Layout 2)"
+    },
+    {
+      "id": "courses-2@v1",
+      "name": "Modern University & Courses (Layout 2)"
+    },
+    {
+      "id": "courses-3@v1",
+      "name": "Executive Bootcamp (Layout 3)"
+    },
+    {
+      "id": "delivery@v1",
+      "name": "Courier & Express Logistics"
+    }
+  ],
+  "totalStores": 41,
+  "allStores": [
+    {
+      "store": "shoes-store",
+      "theme": "ecommerce-shoes@v1",
+      "name": "Modern Shoes Store"
+    },
+    {
+      "store": "thevehicleshop",
+      "theme": "ecommerce-default@v1",
+      "name": "General E-Commerce Storefront"
+    },
+    {
+      "store": "duka-yangu",
+      "theme": "ecommerce-default@v1",
+      "name": "General E-Commerce Storefront"
+    },
+    {
+      "store": "duka-mpya",
+      "theme": "ecommerce-default@v1",
+      "name": "General E-Commerce Storefront"
+    },
+    {
+      "store": "service-provider",
+      "theme": "services@v1",
+      "name": "Professional Agency & Service Provider"
+    },
+    {
+      "store": "booking",
+      "theme": "bookings@v1",
+      "name": "General Appointment & Booking Hub"
+    },
+    {
+      "store": "flourishhub",
+      "theme": "consultancy@v1",
+      "name": "Executive Advisory & Business Coaching"
+    },
+    {
+      "store": "flourishhub-3",
+      "theme": "consultancy@v1",
+      "name": "Executive Advisory & Business Coaching"
+    },
+    {
+      "store": "blog-content",
+      "theme": "blog@v1",
+      "name": "Digital Magazine & Editorial Blog"
+    },
+    {
+      "store": "media-entertainment",
+      "theme": "media@v1",
+      "name": "Film Studio & Media Entertainment"
+    },
+    {
+      "store": "nonprofit-community",
+      "theme": "nonprofit@v1",
+      "name": "Charity, Foundation & NGO"
+    },
+    {
+      "store": "event-ticketing",
+      "theme": "events@v1",
+      "name": "Event Ticketing & Experiences"
+    },
+    {
+      "store": "directory-listings",
+      "theme": "directory@v1",
+      "name": "Local Business Directory"
+    },
+    {
+      "store": "pflourishhub",
+      "theme": "public-speaking@v1",
+      "name": "Keynote Speaker & Author"
+    },
+    {
+      "store": "pflourishhub",
+      "theme": "public-speaking@v1",
+      "name": "Keynote Speaker & Author"
+    },
+    {
+      "store": "flourishhub-2",
+      "theme": "public-speaking@v1",
+      "name": "Keynote Speaker & Author"
+    },
+    {
+      "store": "finance-legal",
+      "theme": "finance@v1",
+      "name": "Wealth Advisory & Financial Solutions"
+    },
+    {
+      "store": "healthcare-clinics",
+      "theme": "healthcare@v1",
+      "name": "Medical Clinic & Health Center"
+    },
+    {
+      "store": "portfolio-personal-branding",
+      "theme": "portfolio@v1",
+      "name": "Creative Portfolio & CV"
+    },
+    {
+      "store": "real-estate",
+      "theme": "real-estate@v1",
+      "name": "Luxury Properties & Realty"
+    },
+    {
+      "store": "automotive",
+      "theme": "automotive@v1",
+      "name": "Premier Car Dealership & Motors (Layout 1)"
+    },
+    {
+      "store": "educational-online-courses",
+      "theme": "courses@v1",
+      "name": "Online Academy & Courses (Layout 1)"
+    },
+    {
+      "store": "thefashionstore",
+      "theme": "fashion@v1",
+      "name": "Modern Fashion & Apparel Boutique"
+    },
+    {
+      "store": "fashion-store",
+      "theme": "fashion@v1",
+      "name": "Modern Fashion & Apparel Boutique"
+    },
+    {
+      "store": "furniture-store",
+      "theme": "furniture@v1",
+      "name": "Contemporary Furniture & Interior Design"
+    },
+    {
+      "store": "restaurant-food-delivery",
+      "theme": "restaurant@v1",
+      "name": "Bistro, Restaurant & Food Delivery"
+    },
+    {
+      "store": "fitness-wellness",
+      "theme": "fitness@v1",
+      "name": "Gym, Fitness & Personal Training"
+    },
+    {
+      "store": "travel-tourism",
+      "theme": "travel@v1",
+      "name": "Safari Expeditions & Travel Agency"
+    },
+    {
+      "store": "marketplace",
+      "theme": "marketplace@v1",
+      "name": "Multi-Vendor Marketplace"
+    },
+    {
+      "store": "ghuba",
+      "theme": "ghuba@v1",
+      "name": "Ghuba Super App Ecosystem"
+    },
+    {
+      "store": "security-services",
+      "theme": "security@v1",
+      "name": "Security Guarding & Systems (Layout 1)"
+    },
+    {
+      "store": "security-services-2",
+      "theme": "security-2@v1",
+      "name": "Cyber & Security Consulting (Layout 2)"
+    },
+    {
+      "store": "saas-web-apps",
+      "theme": "saas@v1",
+      "name": "Cloud Software & Tech Platform"
+    },
+    {
+      "store": "theduka",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "test-shop",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "my-duka",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "other",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "testother",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "students",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "school-head",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    },
+    {
+      "store": "dashboards",
+      "theme": "default-site@v1",
+      "name": "Universal Clean Storefront"
+    }
+  ]
+}

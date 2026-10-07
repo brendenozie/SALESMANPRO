@@ -86,7 +86,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       );
     }
 
-    if (key === 'category' || key.includes('category') || key.includes('categorysection')) {
+    if (key === 'category' || key.includes('category') || key.includes('categories') || key.includes('categorysection')) {
       return (
       <div id="section-category" data-editor-section="category" data-editor-component="CategorySection" key={sec.id || idx}>
         <CategorySection store={pageData} />

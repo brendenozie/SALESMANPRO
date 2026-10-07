@@ -108,6 +108,81 @@ export const COURSES_SECTIONS: AuthenticSectionDefinition[] = [
   },
 ];
 
+export const COURSES_3_SECTIONS: AuthenticSectionDefinition[] = [
+  {
+    id: "courses-hero",
+    name: "Bootcamp Hero Showcase",
+    component: "HeroSection",
+    type: "hero",
+    category: "hero",
+    editableProps: ["headline", "subline", "buttonText"],
+    defaultContent: { headline: "Master Practical Skills for the Future", subline: "Intensive, mentor-led programs designed for career acceleration.", buttonText: "Browse Courses" },
+  },
+  {
+    id: "courses-school",
+    name: "Academy Overview & Vision",
+    component: "SchoolSection",
+    type: "imageWithText",
+    category: "content",
+    editableProps: ["title", "description"],
+    defaultContent: { title: "About Our Academy", description: "Empowering learners through structured curricula and real-world projects." },
+  },
+  {
+    id: "courses-main-courses",
+    name: "Featured Courses Grid",
+    component: "MainCoursesSection",
+    type: "productGrid",
+    category: "commerce",
+    editableProps: ["title", "subtitle"],
+    defaultContent: { title: "Featured Courses", subtitle: "Curated learning paths taught by industry veterans" },
+  },
+  {
+    id: "courses-about",
+    name: "Methodology & Mentorship",
+    component: "AboutSection",
+    type: "imageWithText",
+    category: "content",
+    editableProps: ["title", "description"],
+    defaultContent: { title: "Learning Methodology", description: "Hands-on assignments, 1-on-1 code reviews, and lifelong alumni community." },
+  },
+  {
+    id: "courses-testimonials",
+    name: "Student Testimonials",
+    component: "TestimonialsSection",
+    type: "testimonials",
+    category: "social",
+    editableProps: ["title"],
+    defaultContent: { title: "Success Stories from Graduates" },
+  },
+  {
+    id: "courses-popular-blogs",
+    name: "Learning Resources & Articles",
+    component: "PopularBlogsSection",
+    type: "custom",
+    category: "content",
+    editableProps: ["title"],
+    defaultContent: { title: "Industry Insights & Tutorials" },
+  },
+  {
+    id: "courses-cta",
+    name: "Admissions Call-to-Action",
+    component: "CtaSection",
+    type: "ctaBanner",
+    category: "conversion",
+    editableProps: ["title", "buttonText"],
+    defaultContent: { title: "Take the Next Step in Your Career", buttonText: "Apply Today" },
+  },
+  {
+    id: "courses-faqs",
+    name: "Admissions & Tuition FAQs",
+    component: "FAQSection",
+    type: "faq",
+    category: "content",
+    editableProps: ["title"],
+    defaultContent: { title: "Frequently Asked Questions" },
+  },
+];
+
 /* =========================================================================
    TEMPLATE DEFINITIONS
    ========================================================================= */
@@ -188,7 +263,7 @@ export const EDUCATION_TEMPLATES: Record<string, TemplateDefinition> = {
       cardRadius: "lg",
     },
     defaultPages: makeCoursePages("courses"),
-    authenticSections: COURSES_SECTIONS,
+    authenticSections: COURSES_3_SECTIONS,
     shell: makeShell("Header", "Footer", [
       { id: "nav-courses", label: "Courses", url: "/courses" },
       { id: "nav-about", label: "About", url: "/about" },

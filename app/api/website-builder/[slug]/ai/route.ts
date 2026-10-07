@@ -292,7 +292,7 @@ SAFETY RULES:
         const reg = SECTION_REGISTRY[act.sectionType as SectionType];
         if (reg) {
           const newSection = {
-            id: `sec-${act.sectionType}-${Date.now()}`,
+            id: `sec-${act.sectionType}-${targetPage.sections.length + 1}`,
             type: act.sectionType,
             order: targetPage.sections.length,
             isVisible: true,
@@ -305,6 +305,35 @@ SAFETY RULES:
           targetPage.sections.splice(pos, 0, newSection as any);
           appliedSummaries.push({ action: "Section", summary: `Added new ${reg.title} section` });
         }
+      }
+
+      if (act.type === "duplicate_section" && act.sectionId) {
+        const idx = targetPage.sections.findIndex((s) => s.id === act.sectionId);
+        if (idx !== -1) {
+          const original = targetPage.sections[idx];
+          const duplicated = {
+            ...JSON.parse(JSON.stringify(original)),
+            id: `sec-${original.id}-copy-${targetPage.sections.length + 1}`,
+            name: `${original.name || original.type} (Copy)`,
+            order: idx + 1,
+          };
+          targetPage.sections.splice(idx + 1, 0, duplicated);
+          appliedSummaries.push({ action: "Duplicate", summary: `Duplicated ${original.type} section` });
+        }
+      }
+
+      if ((act.type === "toggle_visibility" || act.type === "update_section_visibility") && act.sectionId) {
+        const sec = targetPage.sections.find((s) => s.id === act.sectionId);
+        if (sec) {
+          sec.isVisible = typeof act.isVisible === "boolean" ? act.isVisible : !sec.isVisible;
+          appliedSummaries.push({ action: "Visibility", summary: `Toggled visibility for ${sec.type} section (${sec.isVisible ? "visible" : "hidden"})` });
+        }
+      }
+
+      if ((act.type === "update_override" || act.type === "update_component_override") && act.targetId) {
+        if (!updatedDraft.componentOverrides) updatedDraft.componentOverrides = {};
+        updatedDraft.componentOverrides[act.targetId] = act.value;
+        appliedSummaries.push({ action: "Override", summary: `Updated override for ${act.targetId}` });
       }
 
       if (act.type === "remove_section" && act.sectionId) {

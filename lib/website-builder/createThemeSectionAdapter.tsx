@@ -52,10 +52,19 @@ export function ThemeSectionContainer({
             })
           : content;
 
+        // If the rendered component already has data-editor-section, return it directly to avoid double wrappers
+        if (React.isValidElement(enhancedContent) && (enhancedContent.props as any)?.['data-editor-section']) {
+          return React.cloneElement(enhancedContent as React.ReactElement<any>, {
+            key: section.id || index,
+          });
+        }
+
+        const domId = (section.id || '').startsWith('section-') ? section.id : `section-${section.id || index}`;
+
         return (
           <div
             key={section.id || index}
-            id={`section-${section.id}`}
+            id={domId}
             data-editor-section={section.id}
             data-editor-component={section.component || section.name || section.id}
           >
@@ -67,20 +76,69 @@ export function ThemeSectionContainer({
         const secId = (section.id || '').toLowerCase();
         const secType = (section.type || '').toLowerCase();
         const secComp = (section.component || '').toLowerCase();
+        const secName = (section.name || '').toLowerCase();
 
+        const cleanSecId = secId.replace(/^sec-/, '').replace(/^[a-z0-9]+-/, '');
+
+        const normalizeStr = (s?: string) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normId = normalizeStr(secId);
+        const normCleanId = normalizeStr(cleanSecId);
+        const normComp = normalizeStr(secComp);
+        const normType = normalizeStr(secType);
+        const normName = normalizeStr(secName);
+
+        // Stage 1: Direct case-insensitive match
         let matchedKey = Object.keys(sectionMap).find((k) => {
           const lk = k.toLowerCase();
-          return lk === secId || lk === secType || secId.startsWith(lk) || lk === secComp;
+          return (
+            lk === secId ||
+            lk === cleanSecId ||
+            lk === secType ||
+            lk === secComp ||
+            secId.startsWith(lk) ||
+            cleanSecId.startsWith(lk) ||
+            lk.startsWith(cleanSecId)
+          );
         });
 
+        // Stage 2: Substring direct match
         if (!matchedKey) {
           matchedKey = Object.keys(sectionMap).find((k) => {
             const lk = k.toLowerCase();
-            return secId.includes(lk) || secComp.includes(lk);
+            return (
+              secId.includes(lk) ||
+              cleanSecId.includes(lk) ||
+              secComp.includes(lk) ||
+              lk.includes(secComp) ||
+              secName.includes(lk)
+            );
           });
         }
 
-        const content = matchedKey ? sectionMap[matchedKey] : null;
+        // Stage 3: Normalized alphanumeric match (ignores hyphens, casing, underscores)
+        if (!matchedKey) {
+          matchedKey = Object.keys(sectionMap).find((k) => {
+            const normKey = normalizeStr(k);
+            if (!normKey) return false;
+            return (
+              normKey === normId ||
+              normKey === normCleanId ||
+              normKey === normComp ||
+              normKey === normType ||
+              normKey === normName ||
+              normId.includes(normKey) ||
+              normKey.includes(normCleanId) ||
+              normComp.includes(normKey) ||
+              normKey.includes(normComp) ||
+              normName.includes(normKey)
+            );
+          });
+        }
+
+        const rawContent = matchedKey ? sectionMap[matchedKey] : null;
+        if (!rawContent) return null;
+
+        const content = typeof rawContent === 'function' ? (rawContent as any)(section, index) : rawContent;
         if (!content) return null;
 
         const enhancedContent = React.isValidElement(content)
@@ -94,10 +152,18 @@ export function ThemeSectionContainer({
             })
           : content;
 
+        if (React.isValidElement(enhancedContent) && (enhancedContent.props as any)?.['data-editor-section']) {
+          return React.cloneElement(enhancedContent as React.ReactElement<any>, {
+            key: section.id || index,
+          });
+        }
+
+        const domId = (section.id || '').startsWith('section-') ? section.id : `section-${section.id || index}`;
+
         return (
           <div
             key={section.id || index}
-            id={`section-${section.id}`}
+            id={domId}
             data-editor-section={section.id}
             data-editor-component={section.component || section.name || matchedKey}
           >

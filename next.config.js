@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 try {
-  require('graceful-fs').gracefulify(fs);
+  require('./scripts/patch-fs.js');
 } catch (e) {}
 
 const { PHASE_PRODUCTION_BUILD } = require('next/constants');

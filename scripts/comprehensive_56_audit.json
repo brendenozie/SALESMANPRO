@@ -1,0 +1,1131 @@
+[
+  {
+    "canonicalId": "automotive@v1",
+    "layoutFolder": "AutomotiveLayout",
+    "bodyComponent": "AutomotiveSite",
+    "mechanism": "renderSection",
+    "totalSections": 9,
+    "matchedCount": 9,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "automotive-2@v1",
+    "layoutFolder": "Automotive2Layout",
+    "bodyComponent": "Automotive2Site",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 8,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "automotive-featured",
+        "component": "AutomotiveFeaturedListingsWrapper",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "services@v1",
+    "layoutFolder": "ServicesLayout",
+    "bodyComponent": "ServiceSite",
+    "mechanism": "sectionMap",
+    "totalSections": 10,
+    "matchedCount": 10,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "bookings@v1",
+    "layoutFolder": "BookingsLayout",
+    "bodyComponent": "BookingsSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 7,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "style-gallery",
+        "component": "StyleGallerySection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "pricing-stats",
+        "component": "PricingAndStatsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "barbershop@v1",
+    "layoutFolder": "BarbershopBookingsLayout",
+    "bodyComponent": "BarbershopBookingsSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 8,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "pricing-stats",
+        "component": "PricingAndStatsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "salon-bookings@v1",
+    "layoutFolder": "SalonBookingsLayout",
+    "bodyComponent": "SalonBookingsSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 7,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "style-gallery",
+        "component": "StyleGallerySection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "pricing-stats",
+        "component": "PricingAndStatsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "drycleaning@v1",
+    "layoutFolder": "DrycleaningBookingsLayout",
+    "bodyComponent": "DrycleaningBookingsSite",
+    "mechanism": "sectionMap",
+    "totalSections": 10,
+    "matchedCount": 3,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "services-about",
+        "component": "AboutSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "services-excellence",
+        "component": "ExcellenceSection",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "services-list",
+        "component": "ServicesSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "services-pricing",
+        "component": "PricingSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "services-tips",
+        "component": "CleaningTipsSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "services-get-started",
+        "component": "GetStartedSection",
+        "type": "ctaBanner",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "services-booking-form",
+        "component": "BookingFormSection",
+        "type": "contact",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "consultancy@v1",
+    "layoutFolder": "ConsultancyLayout",
+    "bodyComponent": "ConsultancySite",
+    "mechanism": "sectionMap",
+    "totalSections": 10,
+    "matchedCount": 5,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "consultancy-socialproofsection",
+        "component": "SocialProofSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "consultancy-featuredlistings",
+        "component": "FeaturedListings",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "consultancy-howitworks",
+        "component": "HowItWorks",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "consultancy-videoshowcasesection",
+        "component": "VideoShowcaseSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "consultancy-calltoactionsection",
+        "component": "CallToActionSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "blog@v1",
+    "layoutFolder": "BlogLayout",
+    "bodyComponent": "BlogSite",
+    "mechanism": "sectionMap",
+    "totalSections": 7,
+    "matchedCount": 2,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "blog-featuredcategoriessection",
+        "component": "FeaturedCategoriesSection",
+        "type": "categoryGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "blog-latestnewssection",
+        "component": "LatestNewsSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "blog-staffwriterssection",
+        "component": "StaffWritersSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "blog-popularblogssection",
+        "component": "PopularBlogsSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "blog-latestpodcastsection",
+        "component": "LatestPodcastSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "media@v1",
+    "layoutFolder": "MediaLayout",
+    "bodyComponent": "MediaSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 5,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "media-toppickscarousel",
+        "component": "TopPicksCarousel",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "media-latestreleasessection",
+        "component": "LatestReleasesSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "media-featuredarticlessection",
+        "component": "FeaturedArticlesSection",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "media-latestvideossection",
+        "component": "LatestVideosSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "nonprofit@v1",
+    "layoutFolder": "NonprofitLayout",
+    "bodyComponent": "NonProfitSite",
+    "mechanism": "sectionMap",
+    "totalSections": 10,
+    "matchedCount": 4,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "nonprofit-corehighlightssection",
+        "component": "CoreHighlightsSection",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "nonprofit-aboutusspotlight",
+        "component": "AboutUsSpotlight",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "nonprofit-programscausessection",
+        "component": "ProgramsCausesSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "nonprofit-impactstatssection",
+        "component": "ImpactStatsSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "nonprofit-eventsupdatessection",
+        "component": "EventsUpdatesSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "nonprofit-ctaboldsection",
+        "component": "CtaBoldSection",
+        "type": "ctaBanner",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "events@v1",
+    "layoutFolder": "EventsLayout",
+    "bodyComponent": "EventsSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 9,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "directory@v1",
+    "layoutFolder": "DirectoryLayout",
+    "bodyComponent": "DirectorySite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 6,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "directory-newarrivalssection",
+        "component": "NewArrivalsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "directory-popularproductssection",
+        "component": "PopularProductsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "directory-featuredlistingsoverviewsection",
+        "component": "FeaturedListingsOverviewSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "default-site@v1",
+    "layoutFolder": "DefaultLayout",
+    "bodyComponent": "DefaultSite",
+    "mechanism": "sectionMap",
+    "totalSections": 1,
+    "matchedCount": 1,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-shoes@v1",
+    "layoutFolder": "EcommerceShoesLayout",
+    "bodyComponent": "EcommerceShoesSite",
+    "mechanism": "renderSection",
+    "totalSections": 15,
+    "matchedCount": 14,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "shoes-category-showcase",
+        "component": "CategorySection",
+        "type": "categoryGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "ecommerce-default@v1",
+    "layoutFolder": "EcommerceLayout",
+    "bodyComponent": "EcommerceSite",
+    "mechanism": "renderSection",
+    "totalSections": 8,
+    "matchedCount": 7,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "categories-grid",
+        "component": "CategoriesSection",
+        "type": "categoryGrid",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "ecommerce-gaming@v1",
+    "layoutFolder": "EcommerceGamingLayout",
+    "bodyComponent": "EcommerceGamingSite",
+    "mechanism": "renderSection",
+    "totalSections": 12,
+    "matchedCount": 12,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-agrovet@v1",
+    "layoutFolder": "EcommerceAgrovetLayout",
+    "bodyComponent": "EcommerceAgrovetSite",
+    "mechanism": "renderSection",
+    "totalSections": 12,
+    "matchedCount": 12,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-meat@v1",
+    "layoutFolder": "EcommerceMeatLayout",
+    "bodyComponent": "EcommerceMeatSite",
+    "mechanism": "renderSection",
+    "totalSections": 12,
+    "matchedCount": 12,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-hardware@v1",
+    "layoutFolder": "EcommerceHardwareLayout",
+    "bodyComponent": "EcommerceHardwareSite",
+    "mechanism": "renderSection",
+    "totalSections": 16,
+    "matchedCount": 16,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-watch@v1",
+    "layoutFolder": "EcommerceWatchLayout",
+    "bodyComponent": "EcommerceWatchSite",
+    "mechanism": "renderSection",
+    "totalSections": 14,
+    "matchedCount": 14,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-flowers@v1",
+    "layoutFolder": "EcommerceFlowersLayout",
+    "bodyComponent": "EcommerceFlowersSite",
+    "mechanism": "renderSection",
+    "totalSections": 12,
+    "matchedCount": 12,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-groceries@v1",
+    "layoutFolder": "EcommerceGroceriesLayout",
+    "bodyComponent": "EcommerceGroceriesSite",
+    "mechanism": "renderSection",
+    "totalSections": 13,
+    "matchedCount": 13,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-earphones@v1",
+    "layoutFolder": "EcommerceEarphonesLayout",
+    "bodyComponent": "EcommerceEarphonesSite",
+    "mechanism": "renderSection",
+    "totalSections": 13,
+    "matchedCount": 13,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-glasses@v1",
+    "layoutFolder": "EcommerceGlassesLayout",
+    "bodyComponent": "EcommerceGlassesSite",
+    "mechanism": "renderSection",
+    "totalSections": 16,
+    "matchedCount": 16,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-honey@v1",
+    "layoutFolder": "EcommerceHoneyLayout",
+    "bodyComponent": "EcommerceHoneySite",
+    "mechanism": "renderSection",
+    "totalSections": 14,
+    "matchedCount": 14,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-peanuts@v1",
+    "layoutFolder": "EcommercePeanutsLayout",
+    "bodyComponent": "EcommercePeanutsSite",
+    "mechanism": "renderSection",
+    "totalSections": 13,
+    "matchedCount": 13,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-baby@v1",
+    "layoutFolder": "EcommerceBabyLayout",
+    "bodyComponent": "EcommerceBabySite",
+    "mechanism": "renderSection",
+    "totalSections": 16,
+    "matchedCount": 16,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-cake@v1",
+    "layoutFolder": "EcommerceCakeLayout",
+    "bodyComponent": "EcommerceCakeSite",
+    "mechanism": "renderSection",
+    "totalSections": 12,
+    "matchedCount": 12,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-pets@v1",
+    "layoutFolder": "EcommercePetsLayout",
+    "bodyComponent": "EcommercePetsSite",
+    "mechanism": "renderSection",
+    "totalSections": 14,
+    "matchedCount": 14,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-bike@v1",
+    "layoutFolder": "EcommerceBikeLayout",
+    "bodyComponent": "EcommerceBikeSite",
+    "mechanism": "renderSection",
+    "totalSections": 14,
+    "matchedCount": 14,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-motorcycle@v1",
+    "layoutFolder": "EcommerceMotorCycleLayout",
+    "bodyComponent": "EcommerceMotorCycleSite",
+    "mechanism": "renderSection",
+    "totalSections": 14,
+    "matchedCount": 14,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-book@v1",
+    "layoutFolder": "EcommerceBookLayout",
+    "bodyComponent": "EcommerceBookSite",
+    "mechanism": "renderSection",
+    "totalSections": 15,
+    "matchedCount": 15,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "ecommerce-accessories@v1",
+    "layoutFolder": "EcommerceAccessoriesLayout",
+    "bodyComponent": "EcommerceAccessoriesSite",
+    "mechanism": "renderSection",
+    "totalSections": 16,
+    "matchedCount": 16,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "courses@v1",
+    "layoutFolder": "CoursesLayout",
+    "bodyComponent": "CoursesSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 9,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "courses-2@v1",
+    "layoutFolder": "CoursesLayout2",
+    "bodyComponent": "CoursesSite2",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 9,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "courses-3@v1",
+    "layoutFolder": "CoursesLayout3",
+    "bodyComponent": "CoursesSite3",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 8,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "glass-info-cards",
+        "component": "GlassInfoCardsSection",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "fashion@v1",
+    "layoutFolder": "FashionLayout",
+    "bodyComponent": "FashionSite",
+    "mechanism": "renderSection",
+    "totalSections": 13,
+    "matchedCount": 13,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "furniture@v1",
+    "layoutFolder": "FurnitureLayout",
+    "bodyComponent": "FurnitureSite",
+    "mechanism": "renderSection",
+    "totalSections": 15,
+    "matchedCount": 15,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "restaurant@v1",
+    "layoutFolder": "RestaurantLayout",
+    "bodyComponent": "RestaurentSite",
+    "mechanism": "renderSection",
+    "totalSections": 6,
+    "matchedCount": 6,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "fitness@v1",
+    "layoutFolder": "FitnessLayout",
+    "bodyComponent": "FitnessSite",
+    "mechanism": "sectionMap",
+    "totalSections": 13,
+    "matchedCount": 11,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "fitness-listings",
+        "component": "ListingsGrid",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "fitness-insights",
+        "component": "MarketInsights",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "travel@v1",
+    "layoutFolder": "TravelLayout",
+    "bodyComponent": "TravelSite",
+    "mechanism": "sectionMap",
+    "totalSections": 10,
+    "matchedCount": 7,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "travel-filter",
+        "component": "FilterBar",
+        "type": "categoryGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "travel-insights",
+        "component": "MarketInsights",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "travel-mobile-app",
+        "component": "MobileAppPromo",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "delivery@v1",
+    "layoutFolder": "DeliveryLayout",
+    "bodyComponent": "DeliverySite",
+    "mechanism": "renderSection",
+    "totalSections": 12,
+    "matchedCount": 12,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "marketplace@v1",
+    "layoutFolder": "MarketplaceLayout",
+    "bodyComponent": "MarketPlaceSite",
+    "mechanism": "sectionMap",
+    "totalSections": 4,
+    "matchedCount": 2,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "marketplace-herobanner",
+        "component": "HeroBanner",
+        "type": "hero",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "marketplace-storepagesection",
+        "component": "StorePageSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "ghuba@v1",
+    "layoutFolder": "GhubaLayout",
+    "bodyComponent": "GhubaSite",
+    "mechanism": "sectionMap",
+    "totalSections": 8,
+    "matchedCount": 8,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "public-speaking@v1",
+    "layoutFolder": "PublicSpeakingLayout",
+    "bodyComponent": "PublicSpeakingSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 9,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "finance@v1",
+    "layoutFolder": "FinanceLayout",
+    "bodyComponent": "FinanceSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 4,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "finance-practiceareassection",
+        "component": "PracticeAreasSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "finance-whychooseussection",
+        "component": "WhyChooseUsSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "finance-processworkflowsection",
+        "component": "ProcessWorkflowSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "finance-meetourexperts",
+        "component": "MeetOurExperts",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "finance-consultationpackagessection",
+        "component": "ConsultationPackagesSection",
+        "type": "pricing",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "healthcare@v1",
+    "layoutFolder": "HealthcareLayout",
+    "bodyComponent": "HealthCareSite",
+    "mechanism": "sectionMap",
+    "totalSections": 9,
+    "matchedCount": 9,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "portfolio@v1",
+    "layoutFolder": "PortfolioLayout",
+    "bodyComponent": "PortfolioSite",
+    "mechanism": "sectionMap",
+    "totalSections": 14,
+    "matchedCount": 8,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "portfolio-marketplacelistingssection",
+        "component": "MarketplaceListingsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-gettingstartedsection",
+        "component": "GettingStartedSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-casestudiessection",
+        "component": "CaseStudiesSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-discoverycallsection",
+        "component": "DiscoveryCallSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-marketlistingform",
+        "component": "MarketListingForm",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-featuredprojectsprops",
+        "component": "FeaturedProjectsProps",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "company-portfolio@v1",
+    "layoutFolder": "CompanyPortfolioLayout",
+    "bodyComponent": "CompanyPortfolioSite",
+    "mechanism": "sectionMap",
+    "totalSections": 12,
+    "matchedCount": 9,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "portfolio-services",
+        "component": "GreyServicesSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "about-spotlight",
+        "component": "AboutUsSpotlight",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-cta",
+        "component": "CallToActionSection",
+        "type": "ctaBanner",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "company-portfolio-light@v1",
+    "layoutFolder": "CompanyPortfolioLightLayout",
+    "bodyComponent": "CompanyPortfolioLightSite",
+    "mechanism": "sectionMap",
+    "totalSections": 12,
+    "matchedCount": 9,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "portfolio-services",
+        "component": "GreyServicesSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "about-spotlight",
+        "component": "AboutUsSpotlight",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "portfolio-cta",
+        "component": "CallToActionSection",
+        "type": "ctaBanner",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "real-estate@v1",
+    "layoutFolder": "RealEstateLayout",
+    "bodyComponent": "RealEstateSite",
+    "mechanism": "sectionMap",
+    "totalSections": 11,
+    "matchedCount": 11,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "property-management@v1",
+    "layoutFolder": "PropertyManagementLayout",
+    "bodyComponent": "PropertyManagementSite",
+    "mechanism": "sectionMap",
+    "totalSections": 11,
+    "matchedCount": 11,
+    "allMatched": true,
+    "unmatched": []
+  },
+  {
+    "canonicalId": "security@v1",
+    "layoutFolder": "SecurityLayout",
+    "bodyComponent": "SecuritySite",
+    "mechanism": "sectionMap",
+    "totalSections": 14,
+    "matchedCount": 8,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "security-marketplacelistingssection",
+        "component": "MarketplaceListingsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security-gettingstartedsection",
+        "component": "GettingStartedSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security-casestudiessection",
+        "component": "CaseStudiesSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security-discoverycallsection",
+        "component": "DiscoveryCallSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security-marketlistingform",
+        "component": "MarketListingForm",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security-featuredprojectsprops",
+        "component": "FeaturedProjectsProps",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "security-2@v1",
+    "layoutFolder": "Security2Layout",
+    "bodyComponent": "Security2Site",
+    "mechanism": "sectionMap",
+    "totalSections": 14,
+    "matchedCount": 8,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "security2-casestudiessection",
+        "component": "CaseStudiesSection",
+        "type": "imageWithText",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security2-marketplacelistingssection",
+        "component": "MarketplaceListingsSection",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security2-gettingstartedsection",
+        "component": "GettingStartedSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security2-discoverycallsection",
+        "component": "DiscoveryCallSection",
+        "type": "custom",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security2-marketlistingform",
+        "component": "MarketListingForm",
+        "type": "productGrid",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "security2-featuredprojectsprops",
+        "component": "FeaturedProjectsProps",
+        "type": "featuresBadges",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  },
+  {
+    "canonicalId": "saas@v1",
+    "layoutFolder": "SaaSLayout",
+    "bodyComponent": "SaaSSite",
+    "mechanism": "sectionMap",
+    "totalSections": 5,
+    "matchedCount": 2,
+    "allMatched": false,
+    "unmatched": [
+      {
+        "sectionId": "saas-enhancedpricingsection",
+        "component": "EnhancedPricingSection",
+        "type": "pricing",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "saas-enhancedtestimonialssection",
+        "component": "EnhancedTestimonialsSection",
+        "type": "testimonials",
+        "matched": false,
+        "matchedBy": ""
+      },
+      {
+        "sectionId": "saas-enhancedfaqssection",
+        "component": "EnhancedFAQsSection",
+        "type": "faq",
+        "matched": false,
+        "matchedBy": ""
+      }
+    ]
+  }
+]
