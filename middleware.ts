@@ -124,18 +124,18 @@ export default async function middleware(
 
   // Legacy /desktop-login handling: route authenticated users to their authorized dashboard,
   // or redirect unauthenticated requests to the modern unified signin page.
-  if (pathname === "/desktop-login") {
-    if (session) {
-      const dest = resolveDestinationFromToken(session);
-      return NextResponse.redirect(new URL(dest, request.url));
-    }
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    const canonicalCallbackUrl = isLocalHost
-      ? request.url
-      : `${proto}://${host}/dashboards`;
-    authUrl.searchParams.set("callbackUrl", canonicalCallbackUrl);
-    return NextResponse.redirect(authUrl);
-  }
+  // if (pathname === "/desktop-login") {
+  //   if (session) {
+  //     const dest = resolveDestinationFromToken(session);
+  //     return NextResponse.redirect(new URL(dest, request.url));
+  //   }
+  //   const authUrl = new URL("https://auth.salesmanpro.site/signin");
+  //   const canonicalCallbackUrl = isLocalHost
+  //     ? request.url
+  //     : `${proto}://${host}/dashboards`;
+  //   authUrl.searchParams.set("callbackUrl", canonicalCallbackUrl);
+  //   return NextResponse.redirect(authUrl);
+  // }
 
   const classified = classifyHost(host);
   const isHub = classified.kind === "hub" || isLocalHost || host === AUTH_HOST;
