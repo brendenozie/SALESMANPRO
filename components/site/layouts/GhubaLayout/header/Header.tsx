@@ -33,14 +33,14 @@ import UniversalSearchBar from "@/components/search/UniversalSearchBar";
 const defaultStoreData = {};
 
 const Header = () => {
-  const { 
-    user, 
-    isDarkMode, 
-    setMode, 
-    cart, 
-    isCartOpen, 
-    setIsCartOpen, 
-    isOpen, 
+  const {
+    user,
+    isDarkMode,
+    setMode,
+    cart,
+    isCartOpen,
+    setIsCartOpen,
+    isOpen,
     setIsOpen
   } = useStateContext();
 
@@ -78,28 +78,27 @@ const Header = () => {
     <>
       <header className="w-full flex flex-col z-50">
         {/* Top Info Bar */}
-        <TopBar 
-          locationName="Nairobi, KE" 
-          isOpen={isOpen} 
-          setIsOpen={setIsOpen} 
+        <TopBar
+          locationName="Nairobi, KE"
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
           phone={contactPhone}
           email={contactEmail}
         />
-        
+
         {/* Main Navigation */}
         <nav
-          className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-            isSticky 
-              ? "bg-white/95 dark:bg-zinc-950/96 shadow-sm border-b border-zinc-200/80 dark:border-zinc-800/80" 
+          className={`sticky top-0 z-40 w-full transition-all duration-300 ${isSticky
+              ? "bg-white/95 dark:bg-zinc-950/96 shadow-sm border-b border-zinc-200/80 dark:border-zinc-800/80"
               : "bg-white dark:bg-zinc-950"
-          }`}
+            }`}
           style={isSticky ? { willChange: 'transform' } : undefined}
         >
           <div className="container mx-auto flex items-center justify-between px-4 md:px-6 py-4">
-            
+
             {/* Logo Section */}
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               prefetch={true}
               className="flex items-center gap-3 cursor-pointer group active:scale-95 transition-transform"
             >
@@ -132,13 +131,13 @@ const Header = () => {
                 isCartOpen={isCartOpen}
                 setIsCartOpen={setIsCartOpen}
               />
-              
+
               {/* Mobile Menu Toggle */}
-              <button 
-                className="md:hidden p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors" 
+              <button
+                className="md:hidden p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
-                 <Bars3BottomRightIcon className="w-6 h-6" />
+                <Bars3BottomRightIcon className="w-6 h-6" />
               </button>
             </div>
           </div>
@@ -154,7 +153,7 @@ const Header = () => {
         <AnimatePresence>
           {isMobileMenuOpen && <MobileMenu setIsMobileMenuOpen={setIsMobileMenuOpen} />}
         </AnimatePresence>
-        
+
         <BottomNav path={path} />
       </header>
 
@@ -177,8 +176,8 @@ const TopBar = ({ locationName, isOpen, setIsOpen, phone, email }: any) => (
         </span>
       </div>
       <div className="flex items-center space-x-6">
-        <span 
-          className="flex items-center space-x-1.5 cursor-pointer hover:text-white dark:hover:text-black transition-colors" 
+        <span
+          className="flex items-center space-x-1.5 cursor-pointer hover:text-white dark:hover:text-black transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
           <MapPinIcon className="w-3.5 h-3.5" />
@@ -220,23 +219,23 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
       </button>
 
       {user && (
-        <button 
-          onClick={() => router.push("/ghuba/profile")} 
+        <button
+          onClick={() => router.push("/ghuba/profile")}
           className="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all"
         >
           <UserIcon className="w-6 h-6" />
         </button>
       )}
-      
-      <button 
-        onClick={() => setMode(isDarkMode ? "Light" : "Dark")} 
+
+      <button
+        onClick={() => setMode(isDarkMode ? "Light" : "Dark")}
         className="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all"
       >
         {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
       </button>
 
-      <button 
-        onClick={() => setIsCartOpen(!isCartOpen)} 
+      <button
+        onClick={() => setIsCartOpen(!isCartOpen)}
         className="relative p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all group"
       >
         <ShoppingBagIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -272,14 +271,13 @@ const DesktopMenu = ({ path }: { path: string }) => {
                   <span className="opacity-70">{icon}</span> {name}
                 </a>
               ) : (
-                <Link 
-                  href={link} 
+                <Link
+                  href={link}
                   prefetch={false}
-                  className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${
-                    isActive
+                  className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${isActive
                       ? "bg-amber-500 text-zinc-950 font-bold shadow-sm"
                       : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
-                  }`}
+                    }`}
                 >
                   <span className={isActive ? "opacity-100" : "opacity-70"}>{icon}</span> {name}
                 </Link>
@@ -297,19 +295,19 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
   useEffect(() => { setMounted(true); }, []);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
       animate={{ opacity: 1, backdropFilter: "blur(16px)" }}
       exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
       className="fixed inset-0 bg-white/90 dark:bg-zinc-950/90 z-[60] flex flex-col justify-center px-8"
     >
-      <button 
-        onClick={() => setIsMobileMenuOpen(false)} 
+      <button
+        onClick={() => setIsMobileMenuOpen(false)}
         className="absolute top-6 right-6 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-full text-zinc-900 dark:text-white active:scale-95"
       >
         <XMarkIcon className="w-6 h-6" />
       </button>
-      
+
       <div className="space-y-6">
         {menuItems.map(({ name, icon, link, isExternal }, i) => {
           const isLocal = mounted && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"));
@@ -334,10 +332,10 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
                   {name}
                 </a>
               ) : (
-                <Link 
-                  href={link} 
+                <Link
+                  href={link}
                   prefetch={false}
-                  onClick={() => setIsMobileMenuOpen(false)} 
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors active:scale-95"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-amber-500">
@@ -355,15 +353,6 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
 };
 
 /* --- UPDATED CREATIVE 5-ITEM BOTTOM NAV BAR --- */
-{/* import Link from "next/link";
-import { useRouter } from "next/navigation"; // or next/router depending on your Next.js version
-import { 
-  HomeIcon, 
-  FilmIcon, 
-  BuildingLibraryIcon, 
-  MagnifyingGlassIcon, 
-  UserIcon 
-} from "@heroicons/react/24/outline"; // Update path if you use solid icons */}
 
 const BottomNav = ({ path }: { path: string }) => {
   const router = useRouter();
@@ -392,30 +381,32 @@ const BottomNav = ({ path }: { path: string }) => {
   ];
 
   return (
-    // Outer wrapper: positions the dock slightly above the bottom of the screen
     <div className="fixed bottom-4 left-0 w-full z-50 md:hidden px-4 pointer-events-none">
-      {/* backdrop-blur-2xl removed: a permanent blur layer on a fixed element forces a
-          GPU backdrop-filter raster pass on every scroll frame, causing severe jank.
-          bg-white/92 is visually identical (slightly opaque) with zero compositor cost. */}
-      <nav className="pointer-events-auto max-w-md mx-auto bg-white/92 dark:bg-zinc-900/92 border border-white/40 dark:border-zinc-700/50 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-between px-2 py-2 relative" style={{ contain: 'layout style paint' }}>
-        
+      <nav className="pointer-events-auto max-w-md mx-auto bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-full shadow-lg shadow-black/10 dark:shadow-black/40 flex items-center justify-around px-2 py-1.5 relative overflow-visible">
         {items.map(({ name, icon: Icon, link, isAction }) => {
-          const isActive = path === link || (link !== "/" && path?.startsWith(link));
+          const isActive =
+            path === link || (link !== "/" && path?.startsWith(link));
 
           if (isAction) {
             return (
-              <div key={name} className="relative flex flex-col items-center">
-                {/* Floating Action Button */}
+              <div
+                key={name}
+                className="relative flex flex-col items-center justify-center w-14"
+              >
+                {/* Floating FAB — No longer clipped */}
                 <button
                   onClick={handleSellClick}
-                  className="group relative -top-6 flex items-center justify-center outline-none"
+                  type="button"
+                  aria-label={name}
+                  className="group relative -top-5 flex items-center justify-center outline-none transition-transform duration-200 active:scale-90"
                 >
-                  {/* box-shadow glow: GPU-composited for free, no separate raster layer unlike blur-md */}
-                  <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 via-amber-400 to-amber-500 flex items-center justify-center border-[3px] border-white/90 dark:border-zinc-800/90 shadow-[0_0_20px_rgba(245,158,11,0.5)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.7)] group-active:scale-90 group-hover:-translate-y-1 transition-all duration-300 ease-out">
-                    <Icon className="w-6 h-6 text-white stroke-[2.5]" />
+                  <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-500 p-0.5 shadow-md shadow-orange-500/30 group-hover:shadow-orange-500/50 transition-shadow">
+                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center border-2 border-white dark:border-zinc-900">
+                      <Icon className="w-6 h-6 text-white stroke-[2.5]" />
+                    </div>
                   </div>
                 </button>
-                <span className="absolute -bottom-1 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                <span className="absolute bottom-0 text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-tight">
                   {name}
                 </span>
               </div>
@@ -427,39 +418,33 @@ const BottomNav = ({ path }: { path: string }) => {
               key={name}
               href={link}
               prefetch={true}
-              className="relative group flex flex-col items-center justify-center w-14 h-12 transition-all duration-300 ease-in-out active:scale-95"
+              className="relative group flex flex-col items-center justify-center w-14 h-11 transition-all duration-200 active:scale-95"
             >
-              {/* Icon Container with smooth Y-axis translation */}
               <div
-                className={`transition-transform duration-300 flex flex-col items-center ${
-                  isActive ? "-translate-y-2" : "translate-y-0 group-hover:-translate-y-1"
-                }`}
+                className={`transition-transform duration-200 flex flex-col items-center ${isActive ? "-translate-y-1" : "translate-y-0"
+                  }`}
               >
                 <Icon
-                  className={`w-6 h-6 transition-colors duration-300 ${
-                    isActive
+                  className={`w-5 h-5 transition-colors duration-200 ${isActive
                       ? "text-amber-500 stroke-[2.5]"
-                      : "text-zinc-500 dark:text-zinc-400 stroke-[1.5] group-hover:text-zinc-800 dark:group-hover:text-zinc-200"
-                  }`}
+                      : "text-zinc-500 dark:text-zinc-400 stroke-[1.8] group-hover:text-zinc-800 dark:group-hover:text-zinc-200"
+                    }`}
                 />
               </div>
 
-              {/* Text fades in and moves up slightly when active */}
               <span
-                className={`absolute bottom-1.5 text-[9px] font-semibold tracking-wide transition-all duration-300 ${
-                  isActive
-                    ? "text-amber-600 dark:text-amber-400 opacity-100 translate-y-0"
-                    : "text-zinc-500 dark:text-zinc-400 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
-                }`}
+                className={`text-[9px] font-medium tracking-tight transition-all duration-200 mt-0.5 ${isActive
+                    ? "text-amber-600 dark:text-amber-400 font-semibold"
+                    : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
+                  }`}
               >
                 {name}
               </span>
 
-              {/* Glowing Active Dot */}
+              {/* Active Dot Indicator */}
               <div
-                className={`absolute -bottom-0.5 w-1 h-1 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)] transition-all duration-300 ${
-                  isActive ? "scale-100 opacity-100" : "scale-0 opacity-0"
-                }`}
+                className={`absolute -bottom-0.5 w-1 h-1 rounded-full bg-amber-500 transition-all duration-200 ${isActive ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                  }`}
               />
             </Link>
           );
@@ -468,8 +453,6 @@ const BottomNav = ({ path }: { path: string }) => {
     </div>
   );
 };
-
-{/* export default BottomNav; */}
 
 const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
   const { addToCart, decreaseQuantity, removeFromCart } = useStateContext();
@@ -500,13 +483,13 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
             <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/20">
               <div>
                 <h3 className="text-xl font-black text-zinc-900 dark:text-white flex items-center gap-3">
-                  Your Cart 
+                  Your Cart
                   <span className="text-xs px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
                     {totalItemCount} Items
                   </span>
                 </h3>
               </div>
-              <button 
+              <button
                 onClick={() => setIsCartOpen(false)}
                 className="p-2 rounded-full bg-white dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white shadow-sm border border-zinc-200 dark:border-zinc-700 transition-colors"
               >
@@ -524,7 +507,7 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
                     <h5 className="font-bold text-lg text-zinc-900 dark:text-zinc-200">Your cart is empty</h5>
                     <p className="text-sm text-zinc-500 mt-2">Looks like you haven't added anything yet.</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsCartOpen(false)}
                     className="mt-4 px-6 py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                   >
@@ -534,20 +517,20 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
               ) : (
                 cart.map((item: any, idx: number) => {
                   const hasSelectedOptions = item.selectedOptions && Object.keys(item.selectedOptions).length > 0;
-                  const itemSignatureId = hasSelectedOptions 
-                    ? `${item.id}-${JSON.stringify(item.selectedOptions)}` 
+                  const itemSignatureId = hasSelectedOptions
+                    ? `${item.id}-${JSON.stringify(item.selectedOptions)}`
                     : item.id;
 
                   return (
-                    <motion.div 
+                    <motion.div
                       key={`${item.id}-${idx}`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="flex gap-4 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow items-center relative group"
                     >
                       <div className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-zinc-100 dark:border-zinc-700/50">
-                        <img 
-                          src={item.images?.[0] || 'https://via.placeholder.com/150'} 
+                        <img
+                          src={item.images?.[0] || 'https://via.placeholder.com/150'}
                           alt={item.name}
                           className="w-full h-full object-cover mix-blend-multiply dark:mix-blend-normal"
                         />
@@ -557,7 +540,7 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
                         <h4 className="text-sm font-bold text-zinc-900 dark:text-white truncate">
                           {item.name || item.title}
                         </h4>
-                        
+
                         {hasSelectedOptions && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {Object.entries(item.selectedOptions).map(([key, val]: any) => (
@@ -574,7 +557,7 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
                       </div>
 
                       <div className="flex flex-col items-end gap-3 h-full shrink-0">
-                        <button 
+                        <button
                           onClick={() => removeFromCart && removeFromCart(itemSignatureId)}
                           className="absolute top-4 right-4 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         >
@@ -582,7 +565,7 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
                         </button>
 
                         <div className="flex items-center bg-zinc-50 dark:bg-zinc-950 rounded-full p-1 border border-zinc-200 dark:border-zinc-800 mt-auto">
-                          <button 
+                          <button
                             onClick={() => decreaseQuantity(itemSignatureId)}
                             className="p-1 rounded-full text-zinc-500 hover:bg-white dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white shadow-sm transition-colors"
                           >
@@ -591,7 +574,7 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
                           <span className="text-xs font-bold w-6 text-center text-zinc-900 dark:text-white">
                             {item.quantity}
                           </span>
-                          <button 
+                          <button
                             onClick={() => addToCart(item)}
                             className="p-1 rounded-full text-zinc-500 hover:bg-white dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white shadow-sm transition-colors"
                           >
@@ -613,7 +596,7 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
                     KSH {cartSubtotal.toLocaleString()}
                   </span>
                 </div>
-                
+
                 <button
                   onClick={() => { setIsCartOpen(false); router.push("/ghuba/checkout"); }}
                   className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-sm uppercase tracking-wide transition-all shadow-lg shadow-amber-500/25 active:scale-[0.98] flex items-center justify-center gap-2"
@@ -641,7 +624,7 @@ const menuItems: MenuItem[] = [
   { name: "Reels Feed", icon: <FilmIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/feed" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
-  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.site/stores", isExternal: true }, 
+  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.site/stores", isExternal: true },
   { name: "Deliver with Us", icon: <TruckIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/rider/join" },
   { name: "Track Order", icon: <TruckIcon className="w-5 h-5" />, link: "/ghuba/orderTracking" },
 ];
