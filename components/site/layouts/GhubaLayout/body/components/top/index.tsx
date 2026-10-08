@@ -47,6 +47,13 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
 
 const CategoryCard = ({ value }: { value: { id: string; name: string; image: string; tags?: string[] } }) => {
   const [imageError, setImageError] = useState(false);
+  const fallbackImage = "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800";
+  const rawImage = value?.image;
+  const safeImage = !rawImage
+    ? fallbackImage
+    : (rawImage.startsWith('http://') || rawImage.startsWith('https://') || rawImage.startsWith('/') || rawImage.startsWith('data:'))
+      ? rawImage
+      : `/${rawImage}`;
 
   return (
     <Link
@@ -56,7 +63,7 @@ const CategoryCard = ({ value }: { value: { id: string; name: string; image: str
     >
       <Image decoding="async"
         fill
-        src={imageError ? "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800" : value.image}
+        src={imageError ? fallbackImage : safeImage}
         alt={value.name}
         sizes="(max-width: 640px) 85vw, 33vw"
         className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"

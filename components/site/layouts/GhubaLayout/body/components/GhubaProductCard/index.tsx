@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 // Contexts
-import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
 
 // Icons
@@ -34,7 +33,6 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 function GhubaProductCardComponent({ product, toggleLike, likedItems, priority = false }: any) {
   const router = useRouter();
   const { cart, addToCart, decreaseQuantity } = useStateContext();
-  const { storeFormData } = useStoreContext();
   const { observeImpression, trackCardClick, trackAddToCart: trackCartTelemetry, trackWhatsAppClick, trackShare } = useProductTelemetry();
 
   const [imageError, setImageError] = useState(false);
@@ -136,7 +134,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
     setIsModalOpen(false);
   };
 
-  const whatsappNumber = `${storeFormData?.contactPhone || "254700000000"}`;
+  const whatsappNumber = `${product.company?.contactPhone || "254700000000"}`;
   const message = encodeURIComponent(`I'm interested in: ${displayTitle}. Could you provide more details?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 

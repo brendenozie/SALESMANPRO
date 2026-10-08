@@ -74,8 +74,8 @@ export default function GhubaPersonalizedSection() {
     };
   }, []);
 
-  if (!loading && recommendations.length === 0) {
-    return null; // Gracefully degrade if no recommendations available
+  if (recommendations.length === 0) {
+    return null; // Gracefully degrade without temporary skeleton pop-in/pop-out layout shifts
   }
 
   return (

@@ -170,22 +170,29 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     };
   }, [activeIndex, items]);
 
-  // Intelligent bounded prefetch for NEXT slide media (current + 1 only)
+  // Intelligent bounded prefetch for NEXT 4 slides' media (WebP feed variant or poster)
   useEffect(() => {
-    const nextItem = items[activeIndex + 1];
-    if (!nextItem || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
 
-    // Check if user has Save-Data enabled or is on slow network
     const nav = navigator as any;
     if (nav?.connection?.saveData || nav?.connection?.effectiveType === "2g") {
       return; // Skip prefetch on Save-Data / slow 2G
     }
 
-    const nextPoster = nextItem.media.poster || nextItem.media.images[0];
-    if (nextPoster && !nextPoster.startsWith("data:")) {
-      const img = new Image();
-      img.src = nextPoster;
-    }
+    [items[activeIndex + 1], items[activeIndex + 2], items[activeIndex + 3], items[activeIndex + 4]].forEach((itemToPrefetch) => {
+      if (!itemToPrefetch) return;
+      const detail = itemToPrefetch.media?.imageDetails?.[0];
+      const mediaUrl =
+        detail?.variants?.feed ||
+        itemToPrefetch.media?.poster ||
+        itemToPrefetch.media?.images?.[0] ||
+        itemToPrefetch.media?.thumbnail;
+
+      if (mediaUrl && !mediaUrl.startsWith("data:")) {
+        const img = new Image();
+        img.src = mediaUrl;
+      }
+    });
   }, [activeIndex, items]);
 
   // Keyboard Navigation: ArrowUp / ArrowDown / Space / M
@@ -264,8 +271,8 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
           </div>
         ) : (
           items.map((item, idx) => {
-            // Virtualization window: render fully if within [activeIndex - 1, activeIndex + 1]
-            const isWithinVirtualWindow = Math.abs(idx - activeIndex) <= 1;
+            // Virtualization window: render fully if within [activeIndex - 2, activeIndex + 4]
+            const isWithinVirtualWindow = idx >= activeIndex - 2 && idx <= activeIndex + 4;
 
             return (
               <div
@@ -280,6 +287,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
                   <GhubaFeedItem
                     item={item}
                     isActive={idx === activeIndex}
+                    isAdjacent={Math.abs(idx - activeIndex) === 1}
                     isMuted={isMuted}
                     onToggleSound={() => setIsMuted((prev) => !prev)}
                     onOpenComments={(it) => setCommentItem(it)}

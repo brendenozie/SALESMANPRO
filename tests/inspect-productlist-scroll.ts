@@ -4,7 +4,11 @@ const BASE_URL = process.env.TEST_BASE_URL || "http://127.0.0.1:3000";
 const PRODUCT_LIST_URL = `${BASE_URL}/site/ghuba/ghuba/productlist`;
 
 async function inspectProductList() {
-  const browser = await chromium.launch({ headless: true, channel: "msedge", args: ["--no-sandbox"] });
+  const browser = await chromium.launch({
+    executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    headless: true,
+    args: ["--no-sandbox"]
+  });
   const ctx = await browser.newContext({
     viewport: { width: 390, height: 844 },
     userAgent: "Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36",

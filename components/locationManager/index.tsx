@@ -50,13 +50,24 @@ const LocationModal: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const hasGoogle = typeof window !== "undefined" && Boolean((window as any).google?.maps?.places);
   const {
     ready,
     value,
     setValue,
     suggestions,
     clearSuggestions,
-  } = usePlacesAutocomplete({ debounce: 300 });
+    init,
+  } = usePlacesAutocomplete({
+    initOnMount: hasGoogle,
+    debounce: 300,
+  });
+
+  useEffect(() => {
+    if (isOpen && hasGoogle && !ready) {
+      init();
+    }
+  }, [isOpen, hasGoogle, ready, init]);
 
   const [isMapVisible, setIsMapVisible] = useState<boolean>(false);
   const suggestionsRef = useRef<HTMLUListElement | null>(null);

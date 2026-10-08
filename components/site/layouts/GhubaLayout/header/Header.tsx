@@ -250,44 +250,52 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
   );
 };
 
-const DesktopMenu = ({ path }: { path: string }) => (
-  <div className="hidden md:block w-full border-t border-zinc-100 dark:border-zinc-800/50">
-    <ul className="container mx-auto flex items-center justify-center space-x-2 text-sm font-semibold text-zinc-600 dark:text-zinc-400 py-2">
-      {menuItems.map(({ name, icon, link, isExternal }) => {
-        const isActive = !isExternal && (path === link || (link !== "/" && path?.startsWith(link)));
-        const href = isExternal && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"))
-          ? "/stores"
-          : link;
-        return (
-          <li key={name}>
-            {isExternal ? (
-              <a
-                href={href}
-                className="flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-              >
-                <span className="opacity-70">{icon}</span> {name}
-              </a>
-            ) : (
-              <Link 
-                href={link} 
-                prefetch={false}
-                className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${
-                  isActive
-                    ? "bg-amber-500 text-zinc-950 font-bold shadow-sm"
-                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
-                }`}
-              >
-                <span className={isActive ? "opacity-100" : "opacity-70"}>{icon}</span> {name}
-              </Link>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  </div>
-);
+const DesktopMenu = ({ path }: { path: string }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  return (
+    <div className="hidden md:block w-full border-t border-zinc-100 dark:border-zinc-800/50">
+      <ul className="container mx-auto flex items-center justify-center space-x-2 text-sm font-semibold text-zinc-600 dark:text-zinc-400 py-2">
+        {menuItems.map(({ name, icon, link, isExternal }) => {
+          const isActive = !isExternal && (path === link || (link !== "/" && path?.startsWith(link)));
+          const isLocal = mounted && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"));
+          const href = isExternal && isLocal ? "/stores" : link;
+          return (
+            <li key={name}>
+              {isExternal ? (
+                <a
+                  href={href}
+                  suppressHydrationWarning
+                  className="flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+                >
+                  <span className="opacity-70">{icon}</span> {name}
+                </a>
+              ) : (
+                <Link 
+                  href={link} 
+                  prefetch={false}
+                  className={`flex items-center px-4 py-2 rounded-full transition-all gap-2 active:scale-95 ${
+                    isActive
+                      ? "bg-amber-500 text-zinc-950 font-bold shadow-sm"
+                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 dark:hover:text-amber-400"
+                  }`}
+                >
+                  <span className={isActive ? "opacity-100" : "opacity-70"}>{icon}</span> {name}
+                </Link>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
 
 const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   return (
     <motion.div 
       initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
@@ -304,9 +312,8 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
       
       <div className="space-y-6">
         {menuItems.map(({ name, icon, link, isExternal }, i) => {
-          const href = isExternal && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"))
-            ? "/stores"
-            : link;
+          const isLocal = mounted && typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".localhost"));
+          const href = isExternal && isLocal ? "/stores" : link;
           return (
             <motion.div
               key={name}
@@ -317,6 +324,7 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
               {isExternal ? (
                 <a
                   href={href}
+                  suppressHydrationWarning
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full text-2xl font-black text-left flex items-center gap-6 text-zinc-800 dark:text-white hover:text-amber-500 dark:hover:text-amber-500 transition-colors active:scale-95"
                 >

@@ -94,5 +94,7 @@ export function useInfiniteProducts({
     staleTime: 1000 * 60 * 3,
     gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    enabled: true,
   });
 }

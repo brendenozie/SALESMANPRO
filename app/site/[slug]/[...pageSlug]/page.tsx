@@ -32,6 +32,19 @@ export async function generateMetadata({ params }: CustomStorePageProps): Promis
     return { title: "Page Not Found" };
   }
 
+  if (["productlist", "ghuba/productlist", "products"].includes(currentSlug)) {
+    return SEOService.generate({
+      siteType: "GHUBA",
+      pageType: "CATEGORY",
+      entity: { name: "All Products" },
+      currentPath: "/ghuba/productlist",
+      breadcrumbs: [
+        { name: "Home", url: "/" },
+        { name: "Marketplace", url: "/ghuba/productlist" },
+      ],
+    }).metadata;
+  }
+
   let activeConfig = raw?.website?.publishedConfig as any;
   if (!activeConfig) {
     activeConfig = compileWebsiteFromCompany(raw);
@@ -97,6 +110,17 @@ export default async function CustomStorePage({ params }: CustomStorePageProps) 
         <div className="pt-6 pb-16">
           <OrderTrackingView storeSlug={slug} storeName={raw?.name} />
         </div>
+      </main>
+    );
+  }
+
+  // Direct render for Ghuba product list requests
+  if (["productlist", "ghuba/productlist", "products"].includes(currentSlug)) {
+    const ProductList = (await import("../ghuba/productlist/page")).default;
+    return (
+      <main className="text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto bg-white dark:bg-gray-950">
+        <StoreDataSync data={pageData} />
+        <ProductList />
       </main>
     );
   }

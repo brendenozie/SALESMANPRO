@@ -48,6 +48,17 @@ interface StoreContextType {
 // 2. Create a context with that type. We start it as null, and will throw
 //    if someone tries to use it outside of a Provider.
 //
+const defaultStoreContext: StoreContextType = {
+  storeFormData: null,
+  setStoreFormData: () => {},
+  inquiryServiceId: null,
+  setInquiryServiceId: () => {},
+  userRole: '',
+  userId: '',
+  buildUrl: (path: string) => path,
+  componentOverrides: {},
+};
+
 const StoreContext = createContext<StoreContextType | null>(null);
 
 //
@@ -55,10 +66,7 @@ const StoreContext = createContext<StoreContextType | null>(null);
 //
 export function useStoreContext(): StoreContextType {
   const context = useContext(StoreContext);
-  if (!context) {
-    throw new Error('useStoreContext must be used within a StoreContextProvider');
-  }
-  return context;
+  return context || defaultStoreContext;
 }
 
 //

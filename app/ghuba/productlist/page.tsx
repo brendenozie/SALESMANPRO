@@ -73,13 +73,11 @@ function ProductListContent() {
     }
     if (filters.sort) params.set('sort', filters.sort);
 
-    startTransition(() => {
-      const paramsString = params.toString();
-      const newUrl = paramsString ? `${pathname}?${paramsString}` : pathname;
-      if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", newUrl);
-      }
-    });
+    const paramsString = params.toString();
+    const newUrl = paramsString ? `${pathname}?${paramsString}` : pathname;
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", newUrl);
+    }
   }, [filters, deferredSearchTerm, pathname]);
 
   const {
@@ -287,7 +285,7 @@ function ProductListContent() {
         </div>
 
         {/* Product Results */}
-        {(isLoading || isPending) && flatProducts.length === 0 ? (
+        {isLoading && flatProducts.length === 0 ? (
           <SkeletonGrid count={8} />
         ) : flatProducts.length > 0 ? (
           <VirtualizedGrid

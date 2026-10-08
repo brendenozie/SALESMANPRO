@@ -1,0 +1,126 @@
+{
+  "startedAt": "2026-10-08T07:12:01.880Z",
+  "status": "COMPLETED",
+  "device": "Samsung Galaxy A13 (412x915, DPR 2.625)",
+  "homepage": {
+    "status": "PASSED",
+    "totalScrolledPx": 9751,
+    "blankFrames": 0,
+    "screenshot": "scripts/playwright_home.png"
+  },
+  "productList": {
+    "status": "PASSED",
+    "totalFlings": 10,
+    "blankViewports": 0,
+    "flingsDetail": [
+      {
+        "fling": 0,
+        "scrollY": 1200,
+        "visibleCards": 9,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 1,
+        "scrollY": 2400,
+        "visibleCards": 9,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 2,
+        "scrollY": 3600,
+        "visibleCards": 9,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 3,
+        "scrollY": 4800,
+        "visibleCards": 9,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 4,
+        "scrollY": 6000,
+        "visibleCards": 9,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 5,
+        "scrollY": 7200,
+        "visibleCards": 9,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 6,
+        "scrollY": 8400,
+        "visibleCards": 10,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 7,
+        "scrollY": 9600,
+        "visibleCards": 12,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 8,
+        "scrollY": 10800,
+        "visibleCards": 12,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      },
+      {
+        "fling": 9,
+        "scrollY": 12000,
+        "visibleCards": 12,
+        "skeletonCards": 0,
+        "isCompletelyBlank": false
+      }
+    ],
+    "screenshot": "scripts/playwright_productlist.png"
+  },
+  "feed": {
+    "status": "PASSED",
+    "slides": [
+      {
+        "slide": 0,
+        "isPlaceholder": false,
+        "hasImageSrc": true,
+        "isImgLoaded": false
+      },
+      {
+        "slide": 1,
+        "isPlaceholder": false,
+        "hasImageSrc": true,
+        "isImgLoaded": false
+      },
+      {
+        "slide": 2,
+        "isPlaceholder": false,
+        "hasImageSrc": true,
+        "isImgLoaded": false
+      },
+      {
+        "slide": 3,
+        "isPlaceholder": false,
+        "hasImageSrc": true,
+        "isImgLoaded": false
+      },
+      {
+        "slide": 4,
+        "isPlaceholder": false,
+        "hasImageSrc": true,
+        "isImgLoaded": false
+      }
+    ],
+    "screenshot": "scripts/playwright_feed.png"
+  },
+  "completedAt": "2026-10-08T07:15:26.533Z"
+}

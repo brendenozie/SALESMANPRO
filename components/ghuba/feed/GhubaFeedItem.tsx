@@ -11,6 +11,7 @@ import { GhubaFeedCommerceBar } from "./GhubaFeedCommerceBar";
 interface GhubaFeedItemProps {
   item: GhubaFeedItemType;
   isActive: boolean;
+  isAdjacent?: boolean;
   isMuted: boolean;
   onToggleSound: () => void;
   onOpenComments: (item: GhubaFeedItemType) => void;
@@ -22,6 +23,7 @@ interface GhubaFeedItemProps {
 export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
   item,
   isActive,
+  isAdjacent = false,
   isMuted,
   onToggleSound,
   onOpenComments,
@@ -242,7 +244,8 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
                         src={variants?.feed || imgUrl}
                         alt={`${item.title} - Slide ${idx + 1}`}
                         className="h-full w-full object-contain pointer-events-none drop-shadow-2xl transition-transform duration-500"
-                        loading={isActive && Math.abs(activeImageIndex - idx) <= 1 ? "eager" : "lazy"}
+                        loading={isActive || (isAdjacent && idx === 0) ? "eager" : "lazy"}
+                        fetchPriority={isActive && idx === 0 ? "high" : (isAdjacent && idx === 0 ? "auto" : "low")}
                         draggable={false}
                         style={detail?.blurDataUrl ? { backgroundImage: `url(${detail.blurDataUrl})`, backgroundSize: "cover" } : undefined}
                       />
@@ -314,7 +317,8 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
                 src={item.media.poster || item.media.thumbnail || ""}
                 alt={item.title}
                 className="h-full w-full object-contain drop-shadow-2xl"
-                loading={isActive ? "eager" : "lazy"}
+                loading={isActive || isAdjacent ? "eager" : "lazy"}
+                fetchPriority={isActive ? "high" : (isAdjacent ? "auto" : "low")}
               />
             </div>
           </div>
