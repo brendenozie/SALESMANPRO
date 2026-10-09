@@ -287,6 +287,11 @@ const commonEcommerce = (
           minTier: "Ghuba Basic",
         },
         {
+          label: "PDF Editor",
+          href: `/admin/${adminSlug}/pdf-editor`,
+          minTier: "Ghuba Basic",
+        },
+        {
           label: "Doc Templates & Print",
           href: `/admin/${adminSlug}/document-settings`,
           minTier: "Ghuba Basic",
@@ -603,16 +608,35 @@ export const getCategoryMenus = (
     ],
   };
 
+  const pdfEditorMenuItem: MenuItem = {
+    label: "PDF Editor",
+    icon: DocumentTextIcon,
+    href: `/admin/${adminSlug}/pdf-editor`,
+    minTier: "Ghuba Basic",
+  };
+
   const filterTiers = (items: MenuItem[]) => {
-    const hasMascot = items.some((i) => i.label === "AI Mascot & Agents" || i.label === "AI Mascot Operations");
-    const mergedItems = hasMascot
-      ? items
-      : items.length > 1
-      ? [items[0], mascotMenuItem, ...items.slice(1)]
-      : [...items, mascotMenuItem];
+    let currentItems = [...items];
+    const hasMascot = currentItems.some((i) => i.label === "AI Mascot & Agents" || i.label === "AI Mascot Operations");
+    if (!hasMascot) {
+      currentItems = currentItems.length > 1
+        ? [currentItems[0], mascotMenuItem, ...currentItems.slice(1)]
+        : [...currentItems, mascotMenuItem];
+    }
+
+    const hasPdfEditor = currentItems.some(
+      (i) =>
+        i.label === "PDF Editor" ||
+        i.href?.includes("/pdf-editor") ||
+        i.subItems?.some((s) => s.href?.includes("/pdf-editor"))
+    );
+    if (!hasPdfEditor) {
+      const insertIdx = Math.min(3, currentItems.length);
+      currentItems.splice(insertIdx, 0, pdfEditorMenuItem);
+    }
 
     return evaluateMenuItemsAccess(
-      mergedItems,
+      currentItems,
       currentTier,
       isSubscriptionActive,
       accessLevel,
