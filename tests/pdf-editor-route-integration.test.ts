@@ -23,6 +23,7 @@ async function main() {
   const { POST: UPLOAD } = await import("../app/api/pdf/upload/route");
   const { POST: OCR } = await import("../app/api/pdf/projects/[id]/ocr/route");
   const { POST: EXPORT } = await import("../app/api/pdf/projects/[id]/export/route");
+  const { setOCRWorkerFactoryForTests } = await import("../lib/pdf-editor/engine/ocr");
   (Module as any)._load = originalLoad;
   const storage = new PDFProjectStorage();
   const projectId = "proj_fedcba9876543210";
@@ -68,10 +69,67 @@ async function main() {
   response = await UPLOAD(new NextRequest("http://localhost/api/pdf/upload?fixture=aurum-offer", {
     method: "POST",
     headers: { "content-type": "application/json" },
+    body: JSON.stringify({ userId: "forged-user", companyId: "forged-company" }),
   }));
   assert.equal(response.status, 200);
   const uploaded = await response.json();
   assert.match(uploaded.data.projectId, /^proj_[a-f0-9]{16}$/);
+  const uploadedId = uploaded.data.projectId as string;
+  const uploadedParams = { params: Promise.resolve({ id: uploadedId }) };
+
+  response = await EXPORT(new NextRequest(`http://localhost/api/pdf/projects/${uploadedId}/export`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ baseRevision: 0, validate: false, document: uploaded.data.document }),
+  }), uploadedParams);
+  assert.equal(response.status, 200);
+  const exportedBytes = new Uint8Array(await response.arrayBuffer());
+  assert.ok(exportedBytes.length > 1000);
+  const exportedProject = await storage.getProject(uploadedId);
+  assert.equal(exportedProject?.revision, 1);
+  assert.equal(exportedProject?.userId, "user-a");
+  assert.deepEqual(await storage.getExportedPdf(uploadedId), exportedBytes);
+
+  session = { user: { id: "user-b", companyId: "company-b" } };
+  response = await EXPORT(new NextRequest(`http://localhost/api/pdf/projects/${uploadedId}/export`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ baseRevision: 1, document: uploaded.data.document }),
+  }), uploadedParams);
+  assert.equal(response.status, 404);
+  assert.equal((await storage.getProject(uploadedId))?.revision, 1);
+
+  session = { user: { id: "user-a", companyId: "company-a" } };
+  response = await POST(new NextRequest(`http://localhost/api/pdf/projects/${uploadedId}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ baseRevision: 1, currentDocument: uploaded.data.document, operations: [] }),
+  }), uploadedParams);
+  assert.equal(response.status, 200);
+  response = await EXPORT(new NextRequest(`http://localhost/api/pdf/projects/${uploadedId}/export`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ baseRevision: 1, validate: false, document: uploaded.data.document }),
+  }), uploadedParams);
+  assert.equal(response.status, 409);
+  assert.deepEqual(await storage.getExportedPdf(uploadedId), exportedBytes);
+
+  process.env.PDF_EDITOR_OCR_TIMEOUT_MS = "20";
+  setOCRWorkerFactoryForTests(async () => ({
+    recognize: () => new Promise(() => undefined),
+    terminate: async () => undefined,
+  }));
+  response = await OCR(new NextRequest(`http://localhost/api/pdf/projects/${uploadedId}/ocr`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ baseRevision: 2, imageBase64: "test-image", pageIndex: 0 }),
+  }), uploadedParams);
+  assert.equal(response.status, 504);
+  const ocrTimeout = await response.json();
+  assert.equal(ocrTimeout.data.error.code, "OCR_TIMEOUT");
+  assert.equal((await storage.getProject(uploadedId))?.revision, 2);
+  setOCRWorkerFactoryForTests(undefined);
+  delete process.env.PDF_EDITOR_OCR_TIMEOUT_MS;
 
   response = await POST(new NextRequest(`http://localhost/api/pdf/projects/${projectId}`, {
     method: "POST",

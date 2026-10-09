@@ -22,6 +22,12 @@ export interface OCRWorker {
   terminate(): Promise<void>;
 }
 
+let configuredWorkerFactory: (() => Promise<OCRWorker>) | undefined;
+
+export function setOCRWorkerFactoryForTests(factory: (() => Promise<OCRWorker>) | undefined): void {
+  configuredWorkerFactory = factory;
+}
+
 /**
  * Runs OCR on an image buffer or base64 image data URL.
  */
@@ -55,8 +61,8 @@ export async function runPageOCR(
     });
     const ret = await Promise.race([
       (async () => {
-        if (workerFactory) {
-          worker = await workerFactory();
+        if (workerFactory || configuredWorkerFactory) {
+          worker = await (workerFactory || configuredWorkerFactory)!();
         } else {
           const { createWorker } = await import("tesseract.js");
           worker = await createWorker("eng");

@@ -10,7 +10,7 @@
  */
 
 import type { RGBColor, PDFDocumentModel } from "../model/types";
-import type { EditorOperation, UpdateElementOperation } from "../model/operations";
+import { applyOperation, type EditorOperation } from "../model/operations";
 
 export interface DocumentTheme {
   id: string;
@@ -59,6 +59,19 @@ export const PRESET_THEMES: DocumentTheme[] = [
     tableHeaderTextColor: { r: 255, g: 255, b: 255 },
   },
 ];
+
+export const BUILTIN_THEMES = PRESET_THEMES;
+
+export function applyTheme(doc: PDFDocumentModel, themeId: string): PDFDocumentModel {
+  const theme = BUILTIN_THEMES.find((candidate) => candidate.id === themeId);
+  if (!theme) {
+    throw new Error(`Unknown PDF theme: ${themeId}`);
+  }
+  return createThemeBatchOperations(doc, theme).reduce(
+    (current, operation) => applyOperation(current, operation),
+    doc,
+  );
+}
 
 /**
  * Creates a batch of operations to apply a theme across a PDFDocumentModel.
