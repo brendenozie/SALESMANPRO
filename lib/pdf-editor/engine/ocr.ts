@@ -10,9 +10,11 @@ import type { PDFTextElement } from "../model/types";
 import { roundRect } from "../model/geometry";
 
 export interface OCRResult {
+  success: boolean;
   confidence: number;
   textElements: PDFTextElement[];
   rawText: string;
+  error?: { code: string; message: string };
 }
 
 /**
@@ -26,9 +28,11 @@ export async function runPageOCR(
 ): Promise<OCRResult> {
   if (!imageBufferOrDataUrl || (typeof imageBufferOrDataUrl === "string" && !imageBufferOrDataUrl.trim())) {
     return {
+      success: false,
       confidence: 0,
       textElements: [],
       rawText: "",
+      error: { code: "OCR_INPUT_MISSING", message: "An image buffer or data URL is required" },
     };
   }
 
@@ -103,16 +107,19 @@ export async function runPageOCR(
     }
 
     return {
+      success: true,
       confidence: Number(((ret.data.confidence || 85) / 100).toFixed(2)),
       textElements,
       rawText: ret.data.text,
     };
   } catch (err: any) {
-    console.warn("OCR recognition encountered an issue, returning fallback:", err);
+    console.error("OCR recognition failed:", err);
     return {
+      success: false,
       confidence: 0,
       textElements: [],
       rawText: "",
+      error: { code: "OCR_RECOGNITION_FAILED", message: err?.message || "OCR recognition failed" },
     };
   } finally {
     if (worker) {

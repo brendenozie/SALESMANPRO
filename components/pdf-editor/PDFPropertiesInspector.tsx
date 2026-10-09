@@ -116,8 +116,8 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
               <option value="Times">Times Roman (Serif)</option>
               <option value="Courier">Courier (Monospace)</option>
               <option value="Arial">Arial</option>
-              <option value="Inter">Inter</option>
-              <option value="Roboto">Roboto</option>
+              <option value="Inter">Inter (fallback: Helvetica)</option>
+              <option value="Roboto">Roboto (fallback: Helvetica)</option>
             </select>
           </div>
 

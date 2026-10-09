@@ -4,6 +4,7 @@ import { exportPDF } from "@/lib/pdf-editor/engine/exporter";
 import { validateExportedPDF, ValidationExpectations } from "@/lib/pdf-editor/engine/validator";
 import { formatResponse } from "@/lib/formatResponse";
 import { getPDFSessionIdentity, ownsPDFProject } from "@/lib/pdf-editor/storage/access";
+import { PDFProjectConflictError } from "@/lib/pdf-editor/storage/project-storage";
 
 export const maxDuration = 60;
 
@@ -27,7 +28,14 @@ export async function POST(
     }
 
     const body = await req.json().catch(() => ({}));
-    const { validate = true, expectations, document: clientDocument } = body;
+    const { validate = true, expectations, document: clientDocument, baseRevision } = body;
+    if (!Number.isInteger(baseRevision) || baseRevision < 0) {
+      return formatResponse(false, null, {
+        code: "REVISION_REQUIRED",
+        message: "baseRevision is required for export persistence",
+        currentRevision: project.revision,
+      }, 400);
+    }
 
     // CRITICAL: use client-submitted document (contains all live user edits).
     // Fall back to the stored snapshot only if the client didn't send one.
@@ -54,15 +62,24 @@ export async function POST(
       validationReport = await validateExportedPDF(exportedBytes, finalExpectations);
     }
 
-    // 3. Persist the live edits and exported snapshot (non-fatal)
+    // 3. Persist the live edits and exported snapshot with revision protection.
+    const exportedKey = await pdfProjectStorage.saveExportedPdf(id, exportedBytes);
     try {
-      const exportedKey = await pdfProjectStorage.saveExportedPdf(id, exportedBytes);
-      project.exportedPdfKey = exportedKey;
-      project.currentDocument = documentModel;
-      project.updatedAt = new Date().toISOString();
-      await pdfProjectStorage.saveProject(project);
-    } catch (_) {
-      // Non-fatal — the binary response still proceeds
+      await pdfProjectStorage.updateProject(id, baseRevision, {
+        exportedPdfKey: exportedKey,
+        currentDocument: documentModel,
+        operations: project.operations,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      if (error instanceof PDFProjectConflictError) {
+        return formatResponse(false, {
+          code: "REVISION_CONFLICT",
+          currentRevision: error.currentProject.revision,
+          currentProject: error.currentProject,
+        }, error.message, 409);
+      }
+      throw error;
     }
 
     // 4. Stream binary PDF bytes directly for download

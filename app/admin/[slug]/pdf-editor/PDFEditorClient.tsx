@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useTransition } from "react";
+import React, { useState, useEffect, useCallback, useTransition, useRef } from "react";
 import type {
   PDFDocumentModel,
   PDFElement,
@@ -47,6 +47,8 @@ export default function PDFEditorClient({
   const [isOcrRunning, setIsOcrRunning] = useState<boolean>(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [validationResult, setValidationResult] = useState<any | null>(null);
+  const [projectRevision, setProjectRevision] = useState(0);
+  const saveSequence = useRef(0);
   const [, startTransition] = useTransition();
 
   // Load Aurum sample by default on initial mount
@@ -98,6 +100,7 @@ export default function PDFEditorClient({
       setActivePageIndex(0);
       setSelectedElementId(null);
       setSaveStatus("saved");
+      setProjectRevision(payload.revision ?? 0);
     } catch (err: any) {
       alert(`Failed to import PDF: ${err.message}`);
     } finally {
@@ -127,6 +130,7 @@ export default function PDFEditorClient({
         setActivePageIndex(0);
         setSelectedElementId(null);
         setSaveStatus("saved");
+        setProjectRevision(payload.revision ?? 0);
       }
     } catch (err: any) {
       console.warn("Could not load sample fixture automatically:", err);
@@ -141,6 +145,7 @@ export default function PDFEditorClient({
       return;
     }
 
+    const requestSequence = ++saveSequence.current;
     const timer = setTimeout(async () => {
       try {
         setSaveStatus("saving");
@@ -150,21 +155,32 @@ export default function PDFEditorClient({
           body: JSON.stringify({
             currentDocument: history.doc,
             operations: history.done,
+            baseRevision: projectRevision,
           }),
         });
         if (res.ok) {
-          setSaveStatus("saved");
+          const payload = await res.json();
+          if (requestSequence === saveSequence.current) {
+            setProjectRevision(payload.data?.revision ?? projectRevision + 1);
+            setSaveStatus("saved");
+          }
+        } else if (res.status === 409) {
+          const payload = await res.json();
+          if (requestSequence === saveSequence.current) {
+            setSaveStatus("unsaved");
+            console.warn("PDF project save conflict; reload or reconcile with the current revision.", payload);
+          }
         } else {
-          setSaveStatus("unsaved");
+          if (requestSequence === saveSequence.current) setSaveStatus("unsaved");
         }
       } catch (e) {
         console.warn("Auto-save failed:", e);
-        setSaveStatus("unsaved");
+        if (requestSequence === saveSequence.current) setSaveStatus("unsaved");
       }
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [history, saveStatus, projectId]);
+  }, [history, saveStatus, projectId, projectRevision]);
 
   // Apply an operation helper
   const applyOp = useCallback((op: EditorOperation) => {
@@ -451,13 +467,14 @@ export default function PDFEditorClient({
       const res = await fetch(`/api/pdf/projects/${projectId}/ocr`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageIndex: activePageIndex }),
+        body: JSON.stringify({ pageIndex: activePageIndex, baseRevision: projectRevision }),
       });
       if (!res.ok) throw new Error("OCR processing failed");
       const resJson = await res.json();
       const payload = resJson.data || resJson;
       if (payload?.document) {
         setHistory(createHistory(payload.document));
+        setProjectRevision(payload.revision ?? projectRevision + 1);
       }
     } catch (err: any) {
       alert(`OCR failed: ${err.message}`);
@@ -476,6 +493,7 @@ export default function PDFEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           document: history.doc,
+          baseRevision: projectRevision,
           validate: true,
         }),
       });

@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
       operations: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      revision: 0,
     };
 
     await pdfProjectStorage.saveProject(projectRecord);
@@ -94,6 +95,7 @@ export async function POST(req: NextRequest) {
       true,
       {
         projectId,
+        revision: projectRecord.revision,
         name,
         sha256,
         document: documentModel,

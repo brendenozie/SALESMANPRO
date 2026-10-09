@@ -3,6 +3,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { pdfProjectStorage } from "@/lib/pdf-editor/storage/project-storage";
 import { replayOperations } from "@/lib/pdf-editor/model/operations";
 import { getPDFSessionIdentity, ownsPDFProject } from "@/lib/pdf-editor/storage/access";
+import { PDFProjectConflictError } from "@/lib/pdf-editor/storage/project-storage";
 
 export async function GET(
   req: NextRequest,
@@ -39,20 +40,35 @@ export async function POST(
     if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
 
     const body = await req.json();
-    const { operations, currentDocument } = body;
-
-    if (operations && Array.isArray(operations)) {
-      project.operations = operations;
+    const { operations, currentDocument, baseRevision } = body;
+    if (!Number.isInteger(baseRevision) || baseRevision < 0) {
+      return formatResponse(false, null, {
+        code: "REVISION_REQUIRED",
+        message: "baseRevision is required for project updates",
+        currentRevision: project.revision,
+      }, 400);
+    }
+    if (!Array.isArray(operations) || !currentDocument) {
+      return formatResponse(false, null, "currentDocument and operations are required", 400);
     }
 
-    if (currentDocument) {
-      project.currentDocument = currentDocument;
+    try {
+      const saved = await pdfProjectStorage.updateProject(id, baseRevision, {
+        currentDocument,
+        operations,
+        updatedAt: new Date().toISOString(),
+      });
+      return formatResponse(true, saved, "Project saved successfully", 200);
+    } catch (error) {
+      if (error instanceof PDFProjectConflictError) {
+        return formatResponse(false, {
+          code: "REVISION_CONFLICT",
+          currentRevision: error.currentProject.revision,
+          currentProject: error.currentProject,
+        }, error.message, 409);
+      }
+      throw error;
     }
-
-    project.updatedAt = new Date().toISOString();
-    await pdfProjectStorage.saveProject(project);
-
-    return formatResponse(true, project, "Project saved successfully", 200);
   } catch (err: any) {
     return formatResponse(false, null, err.message, 500);
   }

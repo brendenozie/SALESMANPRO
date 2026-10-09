@@ -37,11 +37,19 @@ import {
   ContentOp,
   Operand,
 } from "./content-stream";
-import { resolveFont, embedFontInDoc } from "./font-registry";
+import { resolveFontWithReport, embedFontInDoc } from "./font-registry";
 
 export interface ExportOptions {
   /** If false, validation is skipped during export. Default: true. */
   validate?: boolean;
+}
+
+function resolveExportFont(family: string, weight: PDFTextElement["fontWeight"], style: PDFTextElement["fontStyle"]) {
+  const report = resolveFontWithReport(family, weight, style);
+  if (report.fallbackReason) {
+    console.warn("PDF font fallback:", report);
+  }
+  return report.resolved;
 }
 
 export async function exportPDF(
@@ -120,7 +128,7 @@ export async function exportPDF(
         ? op.operands[0].name
         : String(op.operands[0]);
       const fontInfo = baselineModel.fonts[fontKey];
-      const fontDefinition = resolveFont(
+      const fontDefinition = resolveExportFont(
         fontInfo?.family || "Helvetica",
         fontInfo?.weight || "normal",
         fontInfo?.style || "normal"
@@ -184,7 +192,7 @@ export async function exportPDF(
             }
           }
 
-          const fontDefinition = resolveFont(textEl.fontFamily, textEl.fontWeight, textEl.fontStyle);
+          const fontDefinition = resolveExportFont(textEl.fontFamily, textEl.fontWeight, textEl.fontStyle);
           const font = await embedFontInDoc(exportDoc, fontDefinition);
           const resourceName = `SalesmanFont${fontDefinition.postScriptName.replace(/[^A-Za-z0-9]/g, "")}`;
           const resources = targetPage.node.Resources() || exportDoc.context.obj({});
@@ -358,7 +366,7 @@ export async function exportPDF(
       const b = Number((addedText.color.b / 255).toFixed(4));
 
       // Append standard BT ... ET block
-      const addedFont = resolveFont(addedText.fontFamily, addedText.fontWeight, addedText.fontStyle);
+      const addedFont = resolveExportFont(addedText.fontFamily, addedText.fontWeight, addedText.fontStyle);
       const embeddedAddedFont = await embedFontInDoc(exportDoc, addedFont);
       const addedFontName = `SalesmanFont${addedFont.postScriptName.replace(/[^A-Za-z0-9]/g, "")}`;
       const addedResources = targetPage.node.Resources() || exportDoc.context.obj({});

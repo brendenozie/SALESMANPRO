@@ -3,6 +3,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { pdfProjectStorage } from "@/lib/pdf-editor/storage/project-storage";
 import { runPageOCR } from "@/lib/pdf-editor/engine/ocr";
 import { getPDFSessionIdentity, ownsPDFProject } from "@/lib/pdf-editor/storage/access";
+import { PDFProjectConflictError } from "@/lib/pdf-editor/storage/project-storage";
 
 export const maxDuration = 60;
 
@@ -21,7 +22,14 @@ export async function POST(
     if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
 
     const body = await req.json();
-    const { pageId, pageIndex, imageBase64 } = body;
+    const { pageId, pageIndex, imageBase64, baseRevision } = body;
+    if (!Number.isInteger(baseRevision) || baseRevision < 0) {
+      return formatResponse(false, null, {
+        code: "REVISION_REQUIRED",
+        message: "baseRevision is required for OCR project updates",
+        currentRevision: project.revision,
+      }, 400);
+    }
 
     let targetPage = pageId
       ? project.currentDocument.pages.find((p) => p.id === pageId)
@@ -44,16 +52,16 @@ export async function POST(
 
     if (!imageSrc) {
       return formatResponse(
-        true,
+        false,
         {
+          success: false,
           confidence: 0,
           textElements: [],
           rawText: "",
-          document: project.currentDocument,
-          message: "No image layer available on this page to OCR",
+          error: { code: "OCR_IMAGE_MISSING", message: "No image layer available on this page to OCR" },
         },
         "OCR skipped - no image content",
-        200
+        422
       );
     }
 
@@ -63,13 +71,35 @@ export async function POST(
       targetPage.width,
       targetPage.height
     );
+    if (!ocrResult.success) {
+      return formatResponse(false, ocrResult, ocrResult.error || {
+        code: "OCR_FAILED",
+        message: "OCR failed",
+      }, 422);
+    }
 
     // Merge detected OCR text elements into target page
     if (ocrResult.textElements.length > 0) {
       targetPage.elements.push(...ocrResult.textElements);
       targetPage.ocrStatus = "completed";
-      project.updatedAt = new Date().toISOString();
-      await pdfProjectStorage.saveProject(project);
+      try {
+        const saved = await pdfProjectStorage.updateProject(id, baseRevision, {
+          currentDocument: project.currentDocument,
+          operations: project.operations,
+          updatedAt: new Date().toISOString(),
+        });
+        project.currentDocument = saved.currentDocument;
+        project.revision = saved.revision;
+      } catch (error) {
+        if (error instanceof PDFProjectConflictError) {
+          return formatResponse(false, {
+            code: "REVISION_CONFLICT",
+            currentRevision: error.currentProject.revision,
+            currentProject: error.currentProject,
+          }, error.message, 409);
+        }
+        throw error;
+      }
     }
 
     return formatResponse(
@@ -77,6 +107,7 @@ export async function POST(
       {
         ...ocrResult,
         document: project.currentDocument,
+        revision: project.revision,
       },
       "OCR completed successfully",
       200
