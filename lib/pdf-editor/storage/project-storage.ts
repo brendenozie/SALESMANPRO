@@ -7,6 +7,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import type { PDFDocumentModel } from "../model/types";
 import type { EditorOperation } from "../model/operations";
 
@@ -45,13 +46,24 @@ export class PDFProjectStorage {
         "PDF editor storage is not configured for production. Set PDF_EDITOR_STORAGE_ROOT to a shared writable filesystem.",
       );
     }
+    if (configuredRoot && !path.isAbsolute(configuredRoot)) {
+      throw new Error("PDF_EDITOR_STORAGE_ROOT must be an absolute path");
+    }
     this.baseDir = configuredRoot || path.join(process.cwd(), "storage", "pdf-editor");
     if (!fs.existsSync(this.baseDir)) {
       fs.mkdirSync(this.baseDir, { recursive: true });
     }
+    try {
+      fs.accessSync(this.baseDir, fs.constants.R_OK | fs.constants.W_OK);
+    } catch {
+      throw new Error("PDF_EDITOR_STORAGE_ROOT must be readable and writable");
+    }
   }
 
   private getProjectDir(projectId: string): string {
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(projectId)) {
+      throw new Error("Invalid PDF project identifier");
+    }
     const dir = path.join(this.baseDir, projectId);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     return dir;
@@ -62,7 +74,7 @@ export class PDFProjectStorage {
     for (;;) {
       try {
         const handle = fs.openSync(lockPath, "wx");
-        fs.writeFileSync(handle, JSON.stringify({ pid: process.pid, hostname: require("node:os").hostname(), acquiredAt: Date.now() }));
+        fs.writeFileSync(handle, JSON.stringify({ pid: process.pid, hostname: os.hostname(), acquiredAt: Date.now() }));
         fs.closeSync(handle);
         return () => {
           try {
@@ -75,7 +87,7 @@ export class PDFProjectStorage {
         if (error?.code !== "EEXIST") throw error;
         try {
           const lock = JSON.parse(fs.readFileSync(lockPath, "utf8")) as { pid?: number; hostname?: string };
-          const ownerIsLocal = lock.hostname === require("node:os").hostname();
+          const ownerIsLocal = lock.hostname === os.hostname();
           let ownerAlive = true;
           if (ownerIsLocal && lock.pid) {
             try {
@@ -166,8 +178,38 @@ export class PDFProjectStorage {
   async saveExportedPdf(projectId: string, pdfBytes: Uint8Array): Promise<string> {
     const dir = this.getProjectDir(projectId);
     const filePath = path.join(dir, "exported.pdf");
-    fs.writeFileSync(filePath, pdfBytes);
+    const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(tempPath, pdfBytes);
+    fs.renameSync(tempPath, filePath);
     return filePath;
+  }
+
+  async commitExport(
+    projectId: string,
+    expectedRevision: number,
+    exportedPdf: Uint8Array,
+    update: Pick<PDFProjectRecord, "currentDocument" | "operations" | "updatedAt">,
+  ): Promise<PDFProjectRecord> {
+    const release = await this.acquireProjectLock(projectId);
+    try {
+      const current = await this.getProject(projectId);
+      if (!current) throw new Error("PDF project not found");
+      if (current.revision !== expectedRevision) {
+        throw new PDFProjectConflictError(current);
+      }
+
+      const exportedKey = await this.saveExportedPdf(projectId, exportedPdf);
+      const next: PDFProjectRecord = {
+        ...current,
+        ...update,
+        exportedPdfKey: exportedKey,
+        revision: current.revision + 1,
+      };
+      await this.saveProject(next);
+      return next;
+    } finally {
+      release();
+    }
   }
 
   async getExportedPdf(projectId: string): Promise<Uint8Array | null> {

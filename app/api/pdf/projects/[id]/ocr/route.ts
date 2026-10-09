@@ -72,10 +72,11 @@ export async function POST(
       targetPage.height
     );
     if (!ocrResult.success) {
-      return formatResponse(false, ocrResult, ocrResult.error || {
+      const error = ocrResult.error || {
         code: "OCR_FAILED",
         message: "OCR failed",
-      }, 422);
+      };
+      return formatResponse(false, ocrResult, error, error.code === "OCR_TIMEOUT" ? 504 : 422);
     }
 
     // Merge detected OCR text elements into target page

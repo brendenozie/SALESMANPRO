@@ -63,10 +63,8 @@ export async function POST(
     }
 
     // 3. Persist the live edits and exported snapshot with revision protection.
-    const exportedKey = await pdfProjectStorage.saveExportedPdf(id, exportedBytes);
     try {
-      await pdfProjectStorage.updateProject(id, baseRevision, {
-        exportedPdfKey: exportedKey,
+      await pdfProjectStorage.commitExport(id, baseRevision, exportedBytes, {
         currentDocument: documentModel,
         operations: project.operations,
         updatedAt: new Date().toISOString(),

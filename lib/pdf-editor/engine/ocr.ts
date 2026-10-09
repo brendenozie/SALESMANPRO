@@ -17,6 +17,11 @@ export interface OCRResult {
   error?: { code: string; message: string };
 }
 
+export interface OCRWorker {
+  recognize(input: Buffer | Uint8Array | string): Promise<{ data: any }>;
+  terminate(): Promise<void>;
+}
+
 /**
  * Runs OCR on an image buffer or base64 image data URL.
  */
@@ -24,7 +29,8 @@ export async function runPageOCR(
   imageBufferOrDataUrl: Buffer | Uint8Array | string,
   pageId: string,
   pageWidth: number,
-  pageHeight: number
+  pageHeight: number,
+  workerFactory?: () => Promise<OCRWorker>,
 ): Promise<OCRResult> {
   if (!imageBufferOrDataUrl || (typeof imageBufferOrDataUrl === "string" && !imageBufferOrDataUrl.trim())) {
     return {
@@ -37,11 +43,29 @@ export async function runPageOCR(
   }
 
   let worker: any = null;
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
   try {
-    const { createWorker } = await import("tesseract.js");
-    worker = await createWorker("eng");
-
-    const ret = await worker.recognize(imageBufferOrDataUrl);
+    const timeoutMs = Number(process.env.PDF_EDITOR_OCR_TIMEOUT_MS || 45_000);
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        const error = new Error(`OCR timed out after ${timeoutMs}ms`);
+        error.name = "OCRTimeoutError";
+        reject(error);
+      }, timeoutMs);
+    });
+    const ret = await Promise.race([
+      (async () => {
+        if (workerFactory) {
+          worker = await workerFactory();
+        } else {
+          const { createWorker } = await import("tesseract.js");
+          worker = await createWorker("eng");
+        }
+        return worker.recognize(imageBufferOrDataUrl);
+      })(),
+      timeout,
+    ]);
+    if (timeoutHandle) clearTimeout(timeoutHandle);
 
     const textElements: PDFTextElement[] = [];
     const lines = ret.data.lines || [];
@@ -119,13 +143,19 @@ export async function runPageOCR(
       confidence: 0,
       textElements: [],
       rawText: "",
-      error: { code: "OCR_RECOGNITION_FAILED", message: err?.message || "OCR recognition failed" },
+      error: {
+        code: err?.name === "OCRTimeoutError" ? "OCR_TIMEOUT" : "OCR_RECOGNITION_FAILED",
+        message: err?.message || "OCR recognition failed",
+      },
     };
   } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
     if (worker) {
       try {
         await worker.terminate();
-      } catch (_) {}
+      } catch (error) {
+        console.error("OCR worker cleanup failed:", error);
+      }
     }
   }
 }
