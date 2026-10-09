@@ -6,11 +6,11 @@
   "originalPdfKey": "C:\\Users\\Brenden\\Desktop\\SalesForce\\SalesMan\\tests\\fixtures\\pdf-editor\\aurum-offer.pdf",
   "originalPdfSha256": "test_sha",
   "currentDocument": {
-    "id": "doc_6a809a5fdfbe48a9",
+    "id": "doc_84aa5295687a6524",
     "analysisVersion": 1,
     "pages": [
       {
-        "id": "page_1_49cfca85",
+        "id": "page_1_70412338",
         "sourceIndex": 0,
         "width": 595.2756,
         "height": 841.8898,
@@ -18,7 +18,7 @@
         "elements": [
           {
             "id": "txt_1_1",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -80,7 +80,7 @@
           },
           {
             "id": "txt_1_2",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Gold Trading and Transaction Agreement",
             "lines": [
@@ -142,7 +142,7 @@
           },
           {
             "id": "txt_1_3",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -204,7 +204,7 @@
           },
           {
             "id": "txt_1_4",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "1",
             "lines": [
@@ -266,7 +266,7 @@
           },
           {
             "id": "txt_1_5",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -328,7 +328,7 @@
           },
           {
             "id": "txt_1_6",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "AND TRANSACTION PROCEDURE",
             "lines": [
@@ -390,7 +390,7 @@
           },
           {
             "id": "txt_1_7",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Gold and precious metals transaction document",
             "lines": [
@@ -452,7 +452,7 @@
           },
           {
             "id": "txt_1_8",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "SELLER",
             "lines": [
@@ -514,7 +514,7 @@
           },
           {
             "id": "txt_1_9",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Aurum Precious Metals Limited",
             "lines": [
@@ -576,7 +576,7 @@
           },
           {
             "id": "txt_1_10",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "BUYER",
             "lines": [
@@ -638,7 +638,7 @@
           },
           {
             "id": "txt_1_11",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "________________________________________",
             "lines": [
@@ -700,7 +700,7 @@
           },
           {
             "id": "txt_1_12",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Important:",
             "lines": [
@@ -762,7 +762,7 @@
           },
           {
             "id": "txt_1_13",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": " This document is a transaction template prepared from the supplied Aurum company information and",
             "lines": [
@@ -824,7 +824,7 @@
           },
           {
             "id": "txt_1_14",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "procedure. Complete all blank commercial fields, confirm the agreed terms and have the final document reviewed by the",
             "lines": [
@@ -886,7 +886,7 @@
           },
           {
             "id": "txt_1_15",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "parties before signing.",
             "lines": [
@@ -948,7 +948,7 @@
           },
           {
             "id": "txt_1_16",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -1010,7 +1010,7 @@
           },
           {
             "id": "txt_1_17",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Headquarters: Galana Plaza, Galana Road, Kilimani, Nairobi, Kenya",
             "lines": [
@@ -1072,7 +1072,7 @@
           },
           {
             "id": "txt_1_18",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Phone: +254 725 337 598  ",
             "lines": [
@@ -1134,7 +1134,7 @@
           },
           {
             "id": "txt_1_19",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "  |  ",
             "lines": [
@@ -1196,7 +1196,7 @@
           },
           {
             "id": "txt_1_20",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "  Email: info@aurumpreciousmetals.ke",
             "lines": [
@@ -1258,7 +1258,7 @@
           },
           {
             "id": "txt_1_21",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Regional contact: Kinshasa, Congo  ",
             "lines": [
@@ -1320,7 +1320,7 @@
           },
           {
             "id": "txt_1_22",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "  |  ",
             "lines": [
@@ -1382,7 +1382,7 @@
           },
           {
             "id": "txt_1_23",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "  +243 833 751 857",
             "lines": [
@@ -1444,7 +1444,7 @@
           },
           {
             "id": "shp_1_24",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -1477,7 +1477,7 @@
           },
           {
             "id": "shp_1_25",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -1510,7 +1510,7 @@
           },
           {
             "id": "shp_1_26",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -1543,7 +1543,7 @@
           },
           {
             "id": "img_1_27",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "image",
             "bbox": {
               "x": 51.024,
@@ -1573,7 +1573,7 @@
           },
           {
             "id": "txt_added_payment_terms",
-            "pageId": "page_1_49cfca85",
+            "pageId": "page_1_70412338",
             "kind": "text",
             "text": "Payment received in full and verified via escrow.",
             "lines": [
@@ -1615,6 +1615,7 @@
             "renderMode": 0
           }
         ],
+        "tables": [],
         "hasNativeText": true,
         "isScanned": false,
         "ocrStatus": "not-needed",
@@ -1622,7 +1623,7 @@
         "warnings": []
       },
       {
-        "id": "page_2_ae59d5cf",
+        "id": "page_2_6a88af99",
         "sourceIndex": 1,
         "width": 595.2756,
         "height": 841.8898,
@@ -1630,7 +1631,7 @@
         "elements": [
           {
             "id": "txt_2_1",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -1692,7 +1693,7 @@
           },
           {
             "id": "txt_2_2",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -1754,7 +1755,7 @@
           },
           {
             "id": "txt_2_3",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -1816,7 +1817,7 @@
           },
           {
             "id": "txt_2_4",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "2",
             "lines": [
@@ -1878,7 +1879,7 @@
           },
           {
             "id": "txt_2_5",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "1. Full Corporate Offer",
             "lines": [
@@ -1940,7 +1941,7 @@
           },
           {
             "id": "txt_2_6",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Aurum Precious Metals Limited (the Seller) presents this offer to the Buyer identified below, subject to completion and",
             "lines": [
@@ -2002,7 +2003,7 @@
           },
           {
             "id": "txt_2_7",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "mutual acceptance of the commercial terms in this document and the related Sales and Purchase Agreement (SPA).",
             "lines": [
@@ -2064,7 +2065,7 @@
           },
           {
             "id": "txt_2_8",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Transaction detail",
             "lines": [
@@ -2126,7 +2127,7 @@
           },
           {
             "id": "txt_2_9",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "To be completed / mutually agreed",
             "lines": [
@@ -2188,7 +2189,7 @@
           },
           {
             "id": "txt_2_10",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Buyer legal name",
             "lines": [
@@ -2250,7 +2251,7 @@
           },
           {
             "id": "txt_2_11",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2312,7 +2313,7 @@
           },
           {
             "id": "txt_2_12",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Commodity / product form",
             "lines": [
@@ -2374,7 +2375,7 @@
           },
           {
             "id": "txt_2_13",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2436,7 +2437,7 @@
           },
           {
             "id": "txt_2_14",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Quantity and unit",
             "lines": [
@@ -2498,7 +2499,7 @@
           },
           {
             "id": "txt_2_15",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2560,7 +2561,7 @@
           },
           {
             "id": "txt_2_16",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Specification / purity / assay basis",
             "lines": [
@@ -2622,7 +2623,7 @@
           },
           {
             "id": "txt_2_17",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2684,7 +2685,7 @@
           },
           {
             "id": "txt_2_18",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Country of origin",
             "lines": [
@@ -2746,7 +2747,7 @@
           },
           {
             "id": "txt_2_19",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2808,7 +2809,7 @@
           },
           {
             "id": "txt_2_20",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Unit price and currency",
             "lines": [
@@ -2870,7 +2871,7 @@
           },
           {
             "id": "txt_2_21",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2932,7 +2933,7 @@
           },
           {
             "id": "txt_2_22",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Total contract value",
             "lines": [
@@ -2994,7 +2995,7 @@
           },
           {
             "id": "txt_2_23",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3056,7 +3057,7 @@
           },
           {
             "id": "txt_2_24",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Destination refinery / airport",
             "lines": [
@@ -3118,7 +3119,7 @@
           },
           {
             "id": "txt_2_25",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3180,7 +3181,7 @@
           },
           {
             "id": "txt_2_26",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Delivery terms / agreed Incoterm",
             "lines": [
@@ -3242,7 +3243,7 @@
           },
           {
             "id": "txt_2_27",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3304,7 +3305,7 @@
           },
           {
             "id": "txt_2_28",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Seller bank details for settlement",
             "lines": [
@@ -3366,7 +3367,7 @@
           },
           {
             "id": "txt_2_29",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "To be provided securely in the executed SPA or invoice",
             "lines": [
@@ -3428,7 +3429,7 @@
           },
           {
             "id": "txt_2_30",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Offer date / validity",
             "lines": [
@@ -3490,7 +3491,7 @@
           },
           {
             "id": "txt_2_31",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3552,7 +3553,7 @@
           },
           {
             "id": "txt_2_32",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "Offer acceptance",
             "lines": [
@@ -3614,7 +3615,7 @@
           },
           {
             "id": "txt_2_33",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "The Buyer confirms receipt of this offer and, if acceptable, shall sign and return it to the Seller. The parties will then",
             "lines": [
@@ -3676,7 +3677,7 @@
           },
           {
             "id": "txt_2_34",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "text",
             "text": "proceed to prepare and execute the SPA as described in the transaction procedure.",
             "lines": [
@@ -3738,7 +3739,7 @@
           },
           {
             "id": "shp_2_35",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -3771,7 +3772,7 @@
           },
           {
             "id": "shp_2_36",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -3804,7 +3805,7 @@
           },
           {
             "id": "img_2_37",
-            "pageId": "page_2_ae59d5cf",
+            "pageId": "page_2_6a88af99",
             "kind": "image",
             "bbox": {
               "x": 45.354,
@@ -3833,6 +3834,7 @@
             }
           }
         ],
+        "tables": [],
         "hasNativeText": true,
         "isScanned": false,
         "ocrStatus": "not-needed",
@@ -3840,7 +3842,7 @@
         "warnings": []
       },
       {
-        "id": "page_3_47ea9fb2",
+        "id": "page_3_f8109a83",
         "sourceIndex": 2,
         "width": 595.2756,
         "height": 841.8898,
@@ -3848,7 +3850,7 @@
         "elements": [
           {
             "id": "txt_3_1",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -3910,7 +3912,7 @@
           },
           {
             "id": "txt_3_2",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -3972,7 +3974,7 @@
           },
           {
             "id": "txt_3_3",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -4034,7 +4036,7 @@
           },
           {
             "id": "txt_3_4",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "3",
             "lines": [
@@ -4096,7 +4098,7 @@
           },
           {
             "id": "txt_3_5",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "2. Transaction Procedure",
             "lines": [
@@ -4158,7 +4160,7 @@
           },
           {
             "id": "txt_3_6",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The following sequence reflects the procedure supplied for Aurum Precious Metals Limited. Specific timelines and",
             "lines": [
@@ -4220,7 +4222,7 @@
           },
           {
             "id": "txt_3_7",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "responsibilities should be confirmed in the executed SPA.",
             "lines": [
@@ -4282,7 +4284,7 @@
           },
           {
             "id": "txt_3_8",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "01",
             "lines": [
@@ -4344,7 +4346,7 @@
           },
           {
             "id": "txt_3_9",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Proof of Product (POP)",
             "lines": [
@@ -4406,7 +4408,7 @@
           },
           {
             "id": "txt_3_10",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The Seller sends the Proof of Product (POP) to the Buyer.",
             "lines": [
@@ -4468,7 +4470,7 @@
           },
           {
             "id": "txt_3_11",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "02",
             "lines": [
@@ -4530,7 +4532,7 @@
           },
           {
             "id": "txt_3_12",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Full Corporate Offer (FCO)",
             "lines": [
@@ -4592,7 +4594,7 @@
           },
           {
             "id": "txt_3_13",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The Seller issues the FCO. The Buyer reviews, signs, and returns the FCO to the Seller.",
             "lines": [
@@ -4654,7 +4656,7 @@
           },
           {
             "id": "txt_3_14",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "03",
             "lines": [
@@ -4716,7 +4718,7 @@
           },
           {
             "id": "txt_3_15",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Sales and Purchase Agreement (SPA)",
             "lines": [
@@ -4778,7 +4780,7 @@
           },
           {
             "id": "txt_3_16",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The Seller sends the SPA to the Buyer. The Buyer reviews it and identifies any requested",
             "lines": [
@@ -4840,7 +4842,7 @@
           },
           {
             "id": "txt_3_17",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "amendments. The parties agree amendments, if any; the Buyer signs and returns the SPA, and the",
             "lines": [
@@ -4902,7 +4904,7 @@
           },
           {
             "id": "txt_3_18",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "parties retain the executed version.",
             "lines": [
@@ -4964,7 +4966,7 @@
           },
           {
             "id": "txt_3_19",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "04",
             "lines": [
@@ -5026,7 +5028,7 @@
           },
           {
             "id": "txt_3_20",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Customs and shipping fees",
             "lines": [
@@ -5088,7 +5090,7 @@
           },
           {
             "id": "txt_3_21",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The Buyer pays applicable customs and shipping fees directly to the designated shipping company.",
             "lines": [
@@ -5150,7 +5152,7 @@
           },
           {
             "id": "txt_3_22",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The fees, payee, invoice, and payment instructions should be confirmed in writing before payment.",
             "lines": [
@@ -5212,7 +5214,7 @@
           },
           {
             "id": "txt_3_23",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "05",
             "lines": [
@@ -5274,7 +5276,7 @@
           },
           {
             "id": "txt_3_24",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Shipping and export documents",
             "lines": [
@@ -5336,7 +5338,7 @@
           },
           {
             "id": "txt_3_25",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Within 72 hours, the Seller provides the Buyer with the Certificate of Origin, Insurance Certificate,",
             "lines": [
@@ -5398,7 +5400,7 @@
           },
           {
             "id": "txt_3_26",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Export Permit, Packing List, signed Commercial Invoices, and the full set of Air Waybill documents",
             "lines": [
@@ -5460,7 +5462,7 @@
           },
           {
             "id": "txt_3_27",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "marked Freight Paid.",
             "lines": [
@@ -5522,7 +5524,7 @@
           },
           {
             "id": "txt_3_28",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "06",
             "lines": [
@@ -5584,7 +5586,7 @@
           },
           {
             "id": "txt_3_29",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Arrival and final assay",
             "lines": [
@@ -5646,7 +5648,7 @@
           },
           {
             "id": "txt_3_30",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "The goods arrive at the Buyers designated refinery. The refinery conducts the final assay, and the",
             "lines": [
@@ -5708,7 +5710,7 @@
           },
           {
             "id": "txt_3_31",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "result is confirmed in accordance with the SPA.",
             "lines": [
@@ -5770,7 +5772,7 @@
           },
           {
             "id": "txt_3_32",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "07",
             "lines": [
@@ -5832,7 +5834,7 @@
           },
           {
             "id": "txt_3_33",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Final settlement",
             "lines": [
@@ -5894,7 +5896,7 @@
           },
           {
             "id": "txt_3_34",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "Following arrival and confirmation of the final assay, the Buyer remits full payment to the Sellers",
             "lines": [
@@ -5956,7 +5958,7 @@
           },
           {
             "id": "txt_3_35",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "text",
             "text": "designated bank account, in accordance with the executed SPA and commercial invoice.",
             "lines": [
@@ -6018,7 +6020,7 @@
           },
           {
             "id": "shp_3_36",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6051,7 +6053,7 @@
           },
           {
             "id": "shp_3_37",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6084,7 +6086,7 @@
           },
           {
             "id": "shp_3_38",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6117,7 +6119,7 @@
           },
           {
             "id": "shp_3_39",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6150,7 +6152,7 @@
           },
           {
             "id": "shp_3_40",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6183,7 +6185,7 @@
           },
           {
             "id": "shp_3_41",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6216,7 +6218,7 @@
           },
           {
             "id": "shp_3_42",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6249,7 +6251,7 @@
           },
           {
             "id": "shp_3_43",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6282,7 +6284,7 @@
           },
           {
             "id": "img_3_44",
-            "pageId": "page_3_47ea9fb2",
+            "pageId": "page_3_f8109a83",
             "kind": "image",
             "bbox": {
               "x": 45.354,
@@ -6311,6 +6313,7 @@
             }
           }
         ],
+        "tables": [],
         "hasNativeText": true,
         "isScanned": false,
         "ocrStatus": "not-needed",
@@ -6318,7 +6321,7 @@
         "warnings": []
       },
       {
-        "id": "page_4_b3d21708",
+        "id": "page_4_27a58e04",
         "sourceIndex": 3,
         "width": 595.2756,
         "height": 841.8898,
@@ -6326,7 +6329,7 @@
         "elements": [
           {
             "id": "txt_4_1",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -6388,7 +6391,7 @@
           },
           {
             "id": "txt_4_2",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -6450,7 +6453,7 @@
           },
           {
             "id": "txt_4_3",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -6512,7 +6515,7 @@
           },
           {
             "id": "txt_4_4",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "4",
             "lines": [
@@ -6574,7 +6577,7 @@
           },
           {
             "id": "txt_4_5",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "3. Documents, Payment and Delivery",
             "lines": [
@@ -6636,7 +6639,7 @@
           },
           {
             "id": "txt_4_6",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Documents to be provided by the Seller",
             "lines": [
@@ -6698,7 +6701,7 @@
           },
           {
             "id": "txt_4_7",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "  ",
             "lines": [
@@ -6760,7 +6763,7 @@
           },
           {
             "id": "txt_4_8",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Certificate of Origin",
             "lines": [
@@ -6822,7 +6825,7 @@
           },
           {
             "id": "txt_4_9",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "  ",
             "lines": [
@@ -6884,7 +6887,7 @@
           },
           {
             "id": "txt_4_10",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Insurance Certificate",
             "lines": [
@@ -6946,7 +6949,7 @@
           },
           {
             "id": "txt_4_11",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "  ",
             "lines": [
@@ -7008,7 +7011,7 @@
           },
           {
             "id": "txt_4_12",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Export Permit",
             "lines": [
@@ -7070,7 +7073,7 @@
           },
           {
             "id": "txt_4_13",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "  ",
             "lines": [
@@ -7132,7 +7135,7 @@
           },
           {
             "id": "txt_4_14",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Packing List",
             "lines": [
@@ -7194,7 +7197,7 @@
           },
           {
             "id": "txt_4_15",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "  ",
             "lines": [
@@ -7256,7 +7259,7 @@
           },
           {
             "id": "txt_4_16",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Signed Commercial Invoices",
             "lines": [
@@ -7318,7 +7321,7 @@
           },
           {
             "id": "txt_4_17",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "  ",
             "lines": [
@@ -7380,7 +7383,7 @@
           },
           {
             "id": "txt_4_18",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Full set of Air Waybill documents marked Freight Paid",
             "lines": [
@@ -7442,7 +7445,7 @@
           },
           {
             "id": "txt_4_19",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Timing: The supplied procedure states that the Seller provides the listed documents within 72 hours. The event that starts this 72-hour",
             "lines": [
@@ -7504,7 +7507,7 @@
           },
           {
             "id": "txt_4_20",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "period should be expressly confirmed in the SPA (for example, confirmation of the Buyers payment of applicable customs and shipping",
             "lines": [
@@ -7566,7 +7569,7 @@
           },
           {
             "id": "txt_4_21",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "fees).",
             "lines": [
@@ -7628,7 +7631,7 @@
           },
           {
             "id": "txt_4_22",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Fees and final payment",
             "lines": [
@@ -7690,7 +7693,7 @@
           },
           {
             "id": "txt_4_23",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "The Buyer pays customs and shipping fees directly to the designated shipping company, against confirmed written",
             "lines": [
@@ -7752,7 +7755,7 @@
           },
           {
             "id": "txt_4_24",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "payment instructions. Following arrival at the Buyers refinery and confirmation of the final assay, the Buyer pays the full",
             "lines": [
@@ -7814,7 +7817,7 @@
           },
           {
             "id": "txt_4_25",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "amount due to the Sellers designated bank account as stated in the executed SPA and commercial invoice. The parties",
             "lines": [
@@ -7876,7 +7879,7 @@
           },
           {
             "id": "txt_4_26",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "should specify the payment deadline, currency, bank details, and any assay-dispute process in the SPA.",
             "lines": [
@@ -7938,7 +7941,7 @@
           },
           {
             "id": "txt_4_27",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Scope and responsibility",
             "lines": [
@@ -8000,7 +8003,7 @@
           },
           {
             "id": "txt_4_28",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Each party confirms that it has the authority to enter into the transaction and will provide the information and",
             "lines": [
@@ -8062,7 +8065,7 @@
           },
           {
             "id": "txt_4_29",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "documentation required of it under the executed SPA. The Sellers delivery, export, and documentation obligations, and",
             "lines": [
@@ -8124,7 +8127,7 @@
           },
           {
             "id": "txt_4_30",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "the Buyers inspection, fee, and payment obligations, are to be governed by the final signed agreement.",
             "lines": [
@@ -8186,7 +8189,7 @@
           },
           {
             "id": "txt_4_31",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Confidentiality and non-circumvention",
             "lines": [
@@ -8248,7 +8251,7 @@
           },
           {
             "id": "txt_4_32",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Any confidentiality or non-circumvention obligations, including their parties, scope, duration, and governing terms,",
             "lines": [
@@ -8310,7 +8313,7 @@
           },
           {
             "id": "txt_4_33",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "should be expressly set out in the executed SPA or a separately signed agreement. No duration or additional legal term",
             "lines": [
@@ -8372,7 +8375,7 @@
           },
           {
             "id": "txt_4_34",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "is assumed in this template.",
             "lines": [
@@ -8434,7 +8437,7 @@
           },
           {
             "id": "txt_4_35",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Document control",
             "lines": [
@@ -8496,7 +8499,7 @@
           },
           {
             "id": "txt_4_36",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "This template is not a completed offer until all transaction fields are filled, checked, and approved by the parties. Any",
             "lines": [
@@ -8558,7 +8561,7 @@
           },
           {
             "id": "txt_4_37",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "change to the final offer or SPA should be documented in writing and accepted by the parties.",
             "lines": [
@@ -8620,7 +8623,7 @@
           },
           {
             "id": "txt_4_38",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "FOR THE SELLER",
             "lines": [
@@ -8682,7 +8685,7 @@
           },
           {
             "id": "txt_4_39",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "FOR THE BUYER",
             "lines": [
@@ -8744,7 +8747,7 @@
           },
           {
             "id": "txt_4_40",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Aurum Precious Metals Limited",
             "lines": [
@@ -8806,7 +8809,7 @@
           },
           {
             "id": "txt_4_41",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Authorized representative: ___________________",
             "lines": [
@@ -8868,7 +8871,7 @@
           },
           {
             "id": "txt_4_42",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Title: ______________________________________",
             "lines": [
@@ -8930,7 +8933,7 @@
           },
           {
             "id": "txt_4_43",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Signature / Company stamp: __________________",
             "lines": [
@@ -8992,7 +8995,7 @@
           },
           {
             "id": "txt_4_44",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Date: _____________________________________",
             "lines": [
@@ -9054,7 +9057,7 @@
           },
           {
             "id": "txt_4_45",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Buyer legal entity: ___________________________",
             "lines": [
@@ -9116,7 +9119,7 @@
           },
           {
             "id": "txt_4_46",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Authorized representative: ___________________",
             "lines": [
@@ -9178,7 +9181,7 @@
           },
           {
             "id": "txt_4_47",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Title: ______________________________________",
             "lines": [
@@ -9240,7 +9243,7 @@
           },
           {
             "id": "txt_4_48",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Signature / Company stamp: __________________",
             "lines": [
@@ -9302,7 +9305,7 @@
           },
           {
             "id": "txt_4_49",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "text",
             "text": "Date: _____________________________________",
             "lines": [
@@ -9364,7 +9367,7 @@
           },
           {
             "id": "shp_4_50",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -9397,7 +9400,7 @@
           },
           {
             "id": "shp_4_51",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -9430,7 +9433,7 @@
           },
           {
             "id": "img_4_52",
-            "pageId": "page_4_b3d21708",
+            "pageId": "page_4_27a58e04",
             "kind": "image",
             "bbox": {
               "x": 45.354,
@@ -9459,6 +9462,7 @@
             }
           }
         ],
+        "tables": [],
         "hasNativeText": true,
         "isScanned": false,
         "ocrStatus": "not-needed",
@@ -9474,7 +9478,7 @@
       "creator": "(unspecified)",
       "producer": "pdf-lib (https://github.com/Hopding/pdf-lib)",
       "creationDate": "2026-09-30T11:42:47.000Z",
-      "modificationDate": "2026-10-09T16:50:20.000Z"
+      "modificationDate": "2026-10-09T17:17:24.000Z"
     },
     "assets": {},
     "report": {
@@ -9490,7 +9494,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_1_49cfca85",
+      "pageId": "page_1_70412338",
       "elementId": "txt_1_5",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER",
@@ -9518,7 +9522,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_2_ae59d5cf",
+      "pageId": "page_2_6a88af99",
       "elementId": "txt_2_2",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER"
@@ -9530,7 +9534,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_3_47ea9fb2",
+      "pageId": "page_3_f8109a83",
       "elementId": "txt_3_2",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER"
@@ -9542,7 +9546,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_4_b3d21708",
+      "pageId": "page_4_27a58e04",
       "elementId": "txt_4_2",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER"
@@ -9554,7 +9558,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_1_49cfca85",
+      "pageId": "page_1_70412338",
       "elementId": "txt_1_2",
       "patch": {
         "text": "Gold Trading and Transaction Agreement",
@@ -9576,7 +9580,7 @@
     {
       "type": "updateElement",
       "intent": "move",
-      "pageId": "page_1_49cfca85",
+      "pageId": "page_1_70412338",
       "elementId": "txt_1_5",
       "patch": {
         "bbox": {
@@ -9598,7 +9602,7 @@
     {
       "type": "updateElement",
       "intent": "color",
-      "pageId": "page_1_49cfca85",
+      "pageId": "page_1_70412338",
       "elementId": "shp_1_25",
       "patch": {
         "fill": {
@@ -9618,7 +9622,7 @@
     {
       "type": "updateElement",
       "intent": "color",
-      "pageId": "page_1_49cfca85",
+      "pageId": "page_1_70412338",
       "elementId": "shp_1_24",
       "patch": {
         "fill": {
@@ -9637,10 +9641,10 @@
     },
     {
       "type": "addElement",
-      "pageId": "page_1_49cfca85",
+      "pageId": "page_1_70412338",
       "element": {
         "id": "txt_added_payment_terms",
-        "pageId": "page_1_49cfca85",
+        "pageId": "page_1_70412338",
         "kind": "text",
         "text": "Payment received in full and verified via escrow.",
         "lines": [
@@ -9683,6 +9687,6 @@
       }
     }
   ],
-  "createdAt": "2026-10-09T16:50:21.217Z",
-  "updatedAt": "2026-10-09T16:50:21.217Z"
+  "createdAt": "2026-10-09T17:17:27.903Z",
+  "updatedAt": "2026-10-09T17:17:27.903Z"
 }

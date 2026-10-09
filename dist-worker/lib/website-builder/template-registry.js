@@ -10,7 +10,7 @@
  * Guaranteed: Original designs are preserved in full fidelity as the authoritative asset.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTemplatesForCategory = exports.getTemplateForCompany = exports.getAllTemplates = exports.getTemplateById = exports.resolveCanonicalTemplate = exports.TEMPLATE_REGISTRY = exports.resolvePageSlugAlias = exports.PAGE_SLUG_ALIASES = exports.ALIAS_TO_CANONICAL_ID = exports.makeShell = exports.makeCoursePages = exports.makeBookingPages = exports.makeEcommercePages = exports.normalizeKey = void 0;
+exports.getAll56ThemeCapabilities = exports.getBuilderCapabilities = exports.getTemplatesForCategory = exports.getTemplateForCompany = exports.getAllTemplates = exports.getTemplateById = exports.resolveCanonicalTemplate = exports.TEMPLATE_REGISTRY = exports.resolvePageSlugAlias = exports.PAGE_SLUG_ALIASES = exports.ALIAS_TO_CANONICAL_ID = exports.makeShell = exports.makeCoursePages = exports.makeBookingPages = exports.makeEcommercePages = exports.normalizeKey = void 0;
 const ecommerce_1 = require("./registry/ecommerce");
 const bookings_1 = require("./registry/bookings");
 const content_1 = require("./registry/content");
@@ -153,3 +153,6 @@ function getTemplatesForCategory(category) {
     });
 }
 exports.getTemplatesForCategory = getTemplatesForCategory;
+var builder_capability_registry_1 = require("./builder-capability-registry");
+Object.defineProperty(exports, "getBuilderCapabilities", { enumerable: true, get: function () { return builder_capability_registry_1.getBuilderCapabilities; } });
+Object.defineProperty(exports, "getAll56ThemeCapabilities", { enumerable: true, get: function () { return builder_capability_registry_1.getAll56ThemeCapabilities; } });

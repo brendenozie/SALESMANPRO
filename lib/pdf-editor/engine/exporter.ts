@@ -93,7 +93,11 @@ export async function exportPDF(
         if (s.includes("ASCII85")) filters.push("ASCII85Decode");
         if (s.includes("Flate")) filters.push("FlateDecode");
       }
-      const decompressed = decompressContentStream(contents.asUint8Array(), filters);
+      const streamBytes: Uint8Array =
+        typeof (contents as any).getContents === "function"
+          ? (contents as any).getContents()
+          : (contents as any).asUint8Array();
+      const decompressed = decompressContentStream(streamBytes, filters);
       ops = tokenizeContentStream(decompressed);
     }
 

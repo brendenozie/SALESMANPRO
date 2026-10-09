@@ -168,33 +168,6 @@ const SECURITY_SECTIONS = [
             buttonText: "Get in Touch",
         },
     },
-    {
-        id: "security-marketlistingform",
-        name: "Market Listing Form",
-        component: "MarketListingForm",
-        type: "productGrid",
-        category: "commerce",
-        editableProps: ["title", "subtitle", "limit"],
-        defaultContent: {
-            title: "Market Listing Form",
-            subtitle: "Discover our latest and most popular items in Security Solutions",
-            limit: 8,
-        },
-        dataSource: { type: "products", filter: "featured", limit: 8 },
-    },
-    {
-        id: "security-featuredprojectsprops",
-        name: "Featured Projects Props",
-        component: "FeaturedProjectsProps",
-        type: "featuresBadges",
-        category: "content",
-        editableProps: ["title", "subtitle", "description"],
-        defaultContent: {
-            title: "Featured Projects Props",
-            subtitle: "Built with passion and dedication to excellence.",
-            description: "Discover how our Security Solutions experience delivers the highest standards of quality.",
-        },
-    },
 ];
 const SECURITY2_SECTIONS = [
     {
@@ -353,33 +326,6 @@ const SECURITY2_SECTIONS = [
             title: "Contact & Location",
             subtitle: "Reach out to our specialist team for inquiries and bookings.",
             buttonText: "Get in Touch",
-        },
-    },
-    {
-        id: "security2-marketlistingform",
-        name: "Market Listing Form",
-        component: "MarketListingForm",
-        type: "productGrid",
-        category: "commerce",
-        editableProps: ["title", "subtitle", "limit"],
-        defaultContent: {
-            title: "Market Listing Form",
-            subtitle: "Discover our latest and most popular items in Enterprise Security",
-            limit: 8,
-        },
-        dataSource: { type: "products", filter: "featured", limit: 8 },
-    },
-    {
-        id: "security2-featuredprojectsprops",
-        name: "Featured Projects Props",
-        component: "FeaturedProjectsProps",
-        type: "featuresBadges",
-        category: "content",
-        editableProps: ["title", "subtitle", "description"],
-        defaultContent: {
-            title: "Featured Projects Props",
-            subtitle: "Built with passion and dedication to excellence.",
-            description: "Discover how our Enterprise Security experience delivers the highest standards of quality.",
         },
     },
 ];

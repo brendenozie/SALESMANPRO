@@ -48,8 +48,22 @@ const listingSelect = {
 const listingWhere = {
     status: "ACTIVE",
     isAvailable: true,
-    ghubaAdminApproved: true,
-    ghubaStatus: "APPROVED",
+    AND: [
+        {
+            OR: [
+                { ghubaAdminApproved: true },
+                { ghubaAdminApproved: null },
+                { ghubaAdminApproved: { isSet: false } },
+            ],
+        },
+        {
+            OR: [
+                { ghubaStatus: "APPROVED" },
+                { ghubaStatus: null },
+                { ghubaStatus: { isSet: false } },
+            ],
+        },
+    ],
 };
 exports.getGhubaHomepageCached = (0, cache_1.unstable_cache)(async () => {
     const categories = await prismadb_1.default.productCategory.findMany({
@@ -147,7 +161,7 @@ exports.getGhubaHomepageCached = (0, cache_1.unstable_cache)(async () => {
             featuredCategoryProducts,
         },
     };
-}, ["ghuba:homepage:data:v4"], // Updated cache key with company relation
+}, ["ghuba:homepage:data:v5"], // Updated cache key to refresh homepage data with approved listings
 {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300

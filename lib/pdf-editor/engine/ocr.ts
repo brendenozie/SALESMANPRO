@@ -24,15 +24,28 @@ export async function runPageOCR(
   pageWidth: number,
   pageHeight: number
 ): Promise<OCRResult> {
+  if (!imageBufferOrDataUrl || (typeof imageBufferOrDataUrl === "string" && !imageBufferOrDataUrl.trim())) {
+    return {
+      confidence: 0,
+      textElements: [],
+      rawText: "",
+    };
+  }
+
+  let worker: any = null;
   try {
     const { createWorker } = await import("tesseract.js");
-    const worker = await createWorker("eng");
+    worker = await createWorker("eng");
 
     const ret = await worker.recognize(imageBufferOrDataUrl);
-    await worker.terminate();
 
     const textElements: PDFTextElement[] = [];
     const lines = ret.data.lines || [];
+
+    const imgWidth = (ret.data as any)?.width || (ret.data as any)?.image_width || 1240;
+    const imgHeight = (ret.data as any)?.height || (ret.data as any)?.image_height || 1754;
+    const scaleX = pageWidth / imgWidth;
+    const scaleY = pageHeight / imgHeight;
 
     let zIndex = 50;
     for (let i = 0; i < lines.length; i++) {
@@ -41,9 +54,6 @@ export async function runPageOCR(
 
       const bbox = line.bbox;
       // Convert pixel coordinates to PDF point coordinates assuming standard 150 DPI render
-      const scaleX = pageWidth / (ret.data.imageColor?.width || 1240);
-      const scaleY = pageHeight / (ret.data.imageColor?.height || 1754);
-
       const x = (bbox?.x0 || 40) * scaleX;
       const y = (bbox?.y0 || 40) * scaleY;
       const w = Math.max(((bbox?.x1 || 200) - (bbox?.x0 || 40)) * scaleX, 20);
@@ -104,5 +114,11 @@ export async function runPageOCR(
       textElements: [],
       rawText: "",
     };
+  } finally {
+    if (worker) {
+      try {
+        await worker.terminate();
+      } catch (_) {}
+    }
   }
 }

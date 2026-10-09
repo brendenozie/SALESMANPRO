@@ -58,17 +58,17 @@ function createRedisClient(customOptions) {
         return createBuildMockRedis();
     }
     const options = {
-        maxRetriesPerRequest: null,
+        maxRetriesPerRequest: 1,
         enableReadyCheck: false,
+        enableOfflineQueue: false,
         disableClientInfo: true,
-        connectTimeout: 10000,
+        connectTimeout: 2000,
         retryStrategy(times) {
             if (isBuildPhase)
                 return null;
-            // Exponential backoff capped at 5000ms. Never return null in runtime/production
-            // to avoid triggering fatal unhandled error crashes in BullMQ workers.
-            const delay = Math.min(times * 200, 5000);
-            return delay;
+            if (times > 3)
+                return null;
+            return Math.min(times * 200, 2000);
         },
         reconnectOnError(err) {
             const targetError = "READONLY";
@@ -88,9 +88,14 @@ function createRedisClient(customOptions) {
     });
     client.on("error", (err) => {
         if (!isBuildPhase) {
-            if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
+            if (err.message &&
+                (err.message.includes("max requests limit exceeded") ||
+                    err.message.includes("ERR max requests") ||
+                    err.message.includes("ETIMEDOUT") ||
+                    err.message.includes("ECONNREFUSED") ||
+                    err.message.includes("ENOTFOUND"))) {
                 markRedisQuotaExceeded();
-                console.warn("[Redis] Upstash quota limit exceeded. Disabling Redis operations for 5 minutes and falling back to in-memory.");
+                console.warn("[Redis] Upstash quota/connection issue. Disabling Redis operations for 5 minutes and falling back to in-memory.");
             }
             else {
                 console.warn("[Redis] Connection error:", err.message);
@@ -125,11 +130,7 @@ function isRedisAvailable() {
         return false;
     if (isRedisQuotaExceeded())
         return false;
-    const status = exports.redisConnection.status;
-    if (status === "wait") {
-        exports.redisConnection.connect().catch(() => { });
-    }
-    return status === "ready" || status === "connect";
+    return exports.redisConnection.status === "ready";
 }
 exports.isRedisAvailable = isRedisAvailable;
 /**

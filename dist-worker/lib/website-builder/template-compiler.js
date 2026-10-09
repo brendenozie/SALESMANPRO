@@ -692,7 +692,7 @@ function compileHomepageSections(company) {
                 content.buttonUrl = promo.ctaLink || content.buttonUrl;
             }
             return {
-                id: `sec-${sec.id}-${Date.now() + idx}`,
+                id: sec.id.startsWith("sec-") ? sec.id : `sec-${sec.id}`,
                 type: sec.type,
                 name: sec.name,
                 component: sec.component,
@@ -719,7 +719,7 @@ function compileHomepageSections(company) {
     let order = 0;
     // 1. HERO SECTION
     sections.push({
-        id: `sec-hero-${Date.now()}`,
+        id: "sec-hero",
         type: "hero",
         order: order++,
         isVisible: true,
@@ -762,7 +762,7 @@ function compileHomepageSections(company) {
         ? company.CoreValues
         : null;
     sections.push({
-        id: `sec-features-${Date.now() + 1}`,
+        id: "sec-features",
         type: "featuresBadges",
         order: order++,
         isVisible: true,
@@ -792,7 +792,7 @@ function compileHomepageSections(company) {
     });
     // 3. CATEGORY SHOWCASE
     sections.push({
-        id: `sec-categories-${Date.now() + 2}`,
+        id: "sec-categories",
         type: "categoryGrid",
         order: order++,
         isVisible: true,
@@ -822,7 +822,7 @@ function compileHomepageSections(company) {
     });
     // 4. FEATURED PRODUCTS GRID
     sections.push({
-        id: `sec-featured-${Date.now() + 3}`,
+        id: "sec-featured",
         type: "productGrid",
         order: order++,
         isVisible: true,
@@ -857,7 +857,7 @@ function compileHomepageSections(company) {
     });
     // 5. STORY / ABOUT HIGHLIGHT
     sections.push({
-        id: `sec-about-${Date.now() + 4}`,
+        id: "sec-about",
         type: "imageWithText",
         order: order++,
         isVisible: true,
@@ -893,7 +893,7 @@ function compileHomepageSections(company) {
     });
     // 6. TRENDING CAROUSEL
     sections.push({
-        id: `sec-trending-${Date.now() + 5}`,
+        id: "sec-trending",
         type: "productCarousel",
         order: order++,
         isVisible: true,
@@ -931,7 +931,7 @@ function compileHomepageSections(company) {
         ? company.promotions[0]
         : null;
     sections.push({
-        id: `sec-cta-${Date.now() + 6}`,
+        id: "sec-cta",
         type: "ctaBanner",
         order: order++,
         isVisible: true,
@@ -965,7 +965,7 @@ function compileHomepageSections(company) {
         ? company.testimonials
         : null;
     sections.push({
-        id: `sec-testimonials-${Date.now() + 7}`,
+        id: "sec-testimonials",
         type: "testimonials",
         order: order++,
         isVisible: true,
@@ -1002,7 +1002,7 @@ function compileHomepageSections(company) {
         ? company.faqs
         : null;
     sections.push({
-        id: `sec-faq-${Date.now() + 8}`,
+        id: "sec-faq",
         type: "faq",
         order: order++,
         isVisible: true,
@@ -1033,7 +1033,7 @@ function compileHomepageSections(company) {
     });
     // 10. NEWSLETTER CAPTURE
     sections.push({
-        id: `sec-newsletter-${Date.now() + 9}`,
+        id: "sec-newsletter",
         type: "newsletter",
         order: order++,
         isVisible: true,
@@ -1087,7 +1087,7 @@ function compileDefaultPages(company, homepageSections) {
         if (tp.pageType === "PRODUCT_LIST" || tp.slug === "products" || tp.slug === "shop" || tp.slug === "inventory" || tp.slug === "menu") {
             sections = [
                 {
-                    id: `sec-${tp.slug}-grid-${Date.now()}`,
+                    id: `sec-${tp.slug}-grid`,
                     type: "productGrid",
                     order: 0,
                     isVisible: true,
@@ -1111,7 +1111,7 @@ function compileDefaultPages(company, homepageSections) {
         else if (tp.pageType === "CATEGORY_LIST" || tp.slug === "categories") {
             sections = [
                 {
-                    id: `sec-${tp.slug}-grid-${Date.now()}`,
+                    id: `sec-${tp.slug}-grid`,
                     type: "categoryGrid",
                     order: 0,
                     isVisible: true,
@@ -1130,7 +1130,7 @@ function compileDefaultPages(company, homepageSections) {
         else if (tp.pageType === "ABOUT" || tp.slug === "about") {
             sections = [
                 {
-                    id: `sec-${tp.slug}-story-${Date.now()}`,
+                    id: `sec-${tp.slug}-story`,
                     type: "imageWithText",
                     order: 0,
                     isVisible: true,
@@ -1149,7 +1149,7 @@ function compileDefaultPages(company, homepageSections) {
                     responsive: { columnsMobile: 1, columnsTablet: 1, columnsDesktop: 2, hideOnMobile: false, hideOnDesktop: false },
                 },
                 {
-                    id: `sec-${tp.slug}-features-${Date.now()}`,
+                    id: `sec-${tp.slug}-features`,
                     type: "featuresBadges",
                     order: 1,
                     isVisible: true,
@@ -1162,7 +1162,7 @@ function compileDefaultPages(company, homepageSections) {
         else if (tp.pageType === "CONTACT" || tp.slug === "contact") {
             sections = [
                 {
-                    id: `sec-${tp.slug}-main-${Date.now()}`,
+                    id: `sec-${tp.slug}-main`,
                     type: "contact",
                     order: 0,
                     isVisible: true,
@@ -1182,7 +1182,7 @@ function compileDefaultPages(company, homepageSections) {
         else {
             sections = [
                 {
-                    id: `sec-${tp.slug}-content-${Date.now()}`,
+                    id: `sec-${tp.slug}-content`,
                     type: "imageWithText",
                     order: 0,
                     isVisible: true,

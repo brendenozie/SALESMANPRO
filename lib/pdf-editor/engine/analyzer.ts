@@ -126,7 +126,11 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
         if (s.includes("ASCII85")) filters.push("ASCII85Decode");
         if (s.includes("Flate")) filters.push("FlateDecode");
       }
-      const decompressed = decompressContentStream(contents.asUint8Array(), filters);
+      const streamBytes: Uint8Array =
+        typeof (contents as any).getContents === "function"
+          ? (contents as any).getContents()
+          : (contents as any).asUint8Array();
+      const decompressed = decompressContentStream(streamBytes, filters);
       rawOps = tokenizeContentStream(decompressed);
     }
 
@@ -418,6 +422,7 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
       height: pageHeight,
       rotation,
       elements: pageElements,
+      tables: [],
       hasNativeText: pageElements.some((e) => e.kind === "text"),
       isScanned: !pageElements.some((e) => e.kind === "text") && pageElements.some((e) => e.kind === "image"),
       ocrStatus: pageElements.some((e) => e.kind === "text") ? "not-needed" : "available",

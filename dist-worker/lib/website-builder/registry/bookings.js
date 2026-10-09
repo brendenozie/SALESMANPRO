@@ -4,7 +4,7 @@
  * Template group: bookings (6 templates)
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BOOKINGS_TEMPLATES = exports.BARBERSHOP_BOOKINGS_SECTIONS = exports.SERVICES_SECTIONS = void 0;
+exports.BOOKINGS_TEMPLATES = exports.BOOKINGS_APPOINTMENTS_SECTIONS = exports.BARBERSHOP_BOOKINGS_SECTIONS = exports.SERVICES_SECTIONS = void 0;
 const helpers_1 = require("./helpers");
 /* =========================================================================
    AUTHENTIC SECTION DEFINITIONS
@@ -190,6 +190,80 @@ exports.BARBERSHOP_BOOKINGS_SECTIONS = [
         category: "content",
         editableProps: ["title"],
         defaultContent: { title: "Common Questions" },
+    },
+];
+exports.BOOKINGS_APPOINTMENTS_SECTIONS = [
+    {
+        id: "bookings-hero",
+        name: "Booking & Appointment Hero",
+        component: "Hero",
+        type: "hero",
+        category: "hero",
+        editableProps: ["headline", "subline", "buttonText"],
+        defaultContent: { headline: "Effortless Online Bookings & Appointments", subline: "Choose your service, select a provider, and secure your time slot.", buttonText: "Book Now" },
+    },
+    {
+        id: "bookings-features",
+        name: "Key Benefits & Values",
+        component: "FeaturesSection",
+        type: "featuresBadges",
+        category: "content",
+        editableProps: ["title"],
+        defaultContent: { title: "Why Book With Us" },
+    },
+    {
+        id: "bookings-massage-features",
+        name: "Specialized Treatments & Services",
+        component: "MassageFeatures",
+        type: "imageWithText",
+        category: "content",
+        editableProps: ["title"],
+        defaultContent: { title: "Featured Specialties" },
+    },
+    {
+        id: "bookings-pricing-and-stats",
+        name: "Pricing Tiers & Menu",
+        component: "PricingAndStatsSection",
+        type: "productGrid",
+        category: "commerce",
+        editableProps: ["title"],
+        defaultContent: { title: "Transparent Pricing" },
+    },
+    {
+        id: "bookings-benefits",
+        name: "Member Perks & Guarantees",
+        component: "BenefitsSection",
+        type: "imageWithText",
+        category: "content",
+        editableProps: ["title"],
+        defaultContent: { title: "Customer Advantages" },
+    },
+    {
+        id: "bookings-testimonials",
+        name: "Client Reviews",
+        component: "TestimonialsSection",
+        type: "testimonials",
+        category: "social",
+        editableProps: ["title"],
+        defaultContent: { title: "What Clients Say" },
+    },
+    {
+        id: "bookings-cta",
+        name: "Reserve Appointment CTA",
+        component: "CtaSection",
+        type: "ctaBanner",
+        category: "conversion",
+        editableProps: ["title", "buttonText"],
+        defaultContent: { title: "Ready to Book Your Next Appointment?", buttonText: "Schedule Now" },
+    },
+    {
+        id: "bookings-faqs",
+        name: "Frequently Asked Questions",
+        component: "FAQsSection",
+        type: "faq",
+        category: "content",
+        editableProps: ["title"],
+        defaultContent: { title: "Booking FAQs" },
     },
 ];
 const CONSULTANCY_SECTIONS = [
@@ -378,7 +452,7 @@ exports.BOOKINGS_TEMPLATES = {
             cardRadius: "xl",
         },
         defaultPages: (0, helpers_1.makeBookingPages)("bookings"),
-        authenticSections: exports.BARBERSHOP_BOOKINGS_SECTIONS,
+        authenticSections: exports.BOOKINGS_APPOINTMENTS_SECTIONS,
         shell: (0, helpers_1.makeShell)("Header", "Footer", [
             { id: "nav-services", label: "Services", url: "/services" },
             { id: "nav-booking", label: "Book Appointment", url: "/booking" },
@@ -434,7 +508,7 @@ exports.BOOKINGS_TEMPLATES = {
             cardRadius: "xl",
         },
         defaultPages: (0, helpers_1.makeBookingPages)("salon-bookings"),
-        authenticSections: exports.BARBERSHOP_BOOKINGS_SECTIONS,
+        authenticSections: exports.BOOKINGS_APPOINTMENTS_SECTIONS,
         shell: (0, helpers_1.makeShell)("Header", "Footer", [
             { id: "nav-services", label: "Treatments", url: "/services" },
             { id: "nav-gallery", label: "Gallery", url: "/gallery" },
@@ -462,7 +536,7 @@ exports.BOOKINGS_TEMPLATES = {
             cardRadius: "xl",
         },
         defaultPages: (0, helpers_1.makeBookingPages)("bookings"),
-        authenticSections: exports.SERVICES_SECTIONS,
+        authenticSections: exports.BARBERSHOP_BOOKINGS_SECTIONS,
         shell: (0, helpers_1.makeShell)("Header", "Footer", [
             { id: "nav-services", label: "Services", url: "/services" },
             { id: "nav-booking", label: "Schedule Pickup", url: "/booking" },

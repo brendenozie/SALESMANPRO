@@ -497,33 +497,6 @@ const PORTFOLIO_SECTIONS = [
             buttonText: "Get in Touch",
         },
     },
-    {
-        id: "portfolio-marketlistingform",
-        name: "Market Listing Form",
-        component: "MarketListingForm",
-        type: "productGrid",
-        category: "commerce",
-        editableProps: ["title", "subtitle", "limit"],
-        defaultContent: {
-            title: "Market Listing Form",
-            subtitle: "Discover our latest and most popular items in Creative Portfolio",
-            limit: 8,
-        },
-        dataSource: { type: "products", filter: "featured", limit: 8 },
-    },
-    {
-        id: "portfolio-featuredprojectsprops",
-        name: "Featured Projects Props",
-        component: "FeaturedProjectsProps",
-        type: "featuresBadges",
-        category: "content",
-        editableProps: ["title", "subtitle", "description"],
-        defaultContent: {
-            title: "Featured Projects Props",
-            subtitle: "Built with passion and dedication to excellence.",
-            description: "Discover how our Creative Portfolio experience delivers the highest standards of quality.",
-        },
-    },
 ];
 exports.COMPANY_PORTFOLIO_SECTIONS = [
     {

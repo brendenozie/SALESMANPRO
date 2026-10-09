@@ -15,9 +15,21 @@
  * 4. Backward Compatibility: Transparently handles legacy string arrays, object URLs, and modern variant schemas.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resolveProductMedia = void 0;
+exports.resolveProductMedia = exports.sanitizeImageUrl = void 0;
 const media_normalizer_1 = require("./media-normalizer");
 const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80";
+function sanitizeImageUrl(url) {
+    if (!url || typeof url !== 'string')
+        return DEFAULT_FALLBACK_IMAGE;
+    const trimmed = url.trim();
+    if (!trimmed)
+        return DEFAULT_FALLBACK_IMAGE;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/') || trimmed.startsWith('data:')) {
+        return trimmed;
+    }
+    return `/${trimmed}`;
+}
+exports.sanitizeImageUrl = sanitizeImageUrl;
 /**
  * Resolves complete media state for any product or marketplace listing across Ghuba and tenant stores.
  */
@@ -118,9 +130,9 @@ function resolveProductMedia(product) {
         hasVideo,
         videoCount: videoUrls.length,
         imageCount: imageUrls.length,
-        primaryImageUrl,
-        thumbnailUrl: guaranteedThumbnail,
-        posterUrl: guaranteedPoster,
+        primaryImageUrl: sanitizeImageUrl(primaryImageUrl),
+        thumbnailUrl: sanitizeImageUrl(guaranteedThumbnail),
+        posterUrl: sanitizeImageUrl(guaranteedPoster),
         blurDataUrl,
         primaryVideoUrl: hasVideo ? (structuredVideos[0]?.url || videoUrls[0]) : undefined,
         gallery,

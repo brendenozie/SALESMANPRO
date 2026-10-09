@@ -65,9 +65,7 @@ async function cacheGet(key) {
             return null;
         }
         catch (err) {
-            if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
-                (0, redis_1.markRedisQuotaExceeded)();
-            }
+            (0, redis_1.markRedisQuotaExceeded)();
             console.warn(`[Cache] Redis GET failed for key "${key}", falling back to memory:`, err.message);
         }
     }
@@ -110,9 +108,7 @@ async function cacheSet(key, value, ttlSeconds = 60, swrSeconds = 0) {
             }
         }
         catch (err) {
-            if (err.message && (err.message.includes("max requests limit exceeded") || err.message.includes("ERR max requests"))) {
-                (0, redis_1.markRedisQuotaExceeded)();
-            }
+            (0, redis_1.markRedisQuotaExceeded)();
             console.warn(`[Cache] Redis SET failed for key "${key}":`, err.message);
         }
     }
