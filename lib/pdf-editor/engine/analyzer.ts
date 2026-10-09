@@ -50,7 +50,8 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
     if (!resources) continue;
 
     // Font dictionary
-    const fontDict = resources.get(PDFName.of("Font"));
+    const fontRef = resources.get(PDFName.of("Font"));
+    const fontDict = fontRef ? pdfDoc.context.lookup(fontRef) : undefined;
     if (fontDict instanceof PDFDict) {
       for (const [keyName, fontRef] of fontDict.entries()) {
         const k = keyName.asString().replace(/^\//, "");
@@ -305,8 +306,11 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
         const rw = Number(op.operands[2]);
         const rh = Number(op.operands[3]);
 
-        // Convert to top-left coordinates
-        const topY = pageHeight - ry - rh;
+        // Normalize PDF coordinates where width or height can be negative
+        const normX = rw < 0 ? rx + rw : rx;
+        const normY = rh < 0 ? pageHeight - ry : pageHeight - ry - rh;
+        const normW = Math.abs(rw);
+        const normH = Math.abs(rh);
 
         // Check subsequent operator for fill/stroke
         const nextOp = rawOps[opIdx + 1]?.op || "";
@@ -315,11 +319,11 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
 
         // Classify role
         let role: PDFShapeElement["role"] = "panel";
-        if (rh <= 15 && rw >= pageWidth * 0.8) {
+        if (normH <= 15 && normW >= pageWidth * 0.8) {
           role = "accent"; // Top gold accent bar!
-        } else if (rh >= 200 && rw >= pageWidth * 0.8) {
+        } else if (normH >= 200 && normW >= pageWidth * 0.8) {
           role = "background"; // Dark cover panel!
-        } else if (rh <= 2) {
+        } else if (normH <= 2) {
           role = "divider";
         }
 
@@ -328,7 +332,7 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
           pageId,
           kind: "shape",
           shapeType: "rect",
-          bbox: roundRect({ x: rx, y: topY, width: rw, height: rh }),
+          bbox: roundRect({ x: normX, y: normY, width: normW, height: normH }),
           rotation: 0,
           origin: "native",
           zIndex: zCounter++,

@@ -15,13 +15,13 @@
 import {
   PDFDocument,
   PDFName,
+  PDFDict,
   PDFArray,
   PDFRawStream,
   PDFStream,
-  PageSizes,
   degrees,
-  StandardFonts,
 } from "pdf-lib";
+import fs from "node:fs";
 import type {
   PDFDocumentModel,
   PDFTextElement,
@@ -50,6 +50,7 @@ export async function exportPDF(
   options: ExportOptions = {}
 ): Promise<Uint8Array> {
   const originalDoc = await PDFDocument.load(originalPdfBytes, { ignoreEncryption: true });
+  const baselineModel = await import("./analyzer").then(({ analyzePDF }) => analyzePDF(originalPdfBytes));
   const exportDoc = await PDFDocument.create();
 
   // Copy or create pages according to model.pages
@@ -105,6 +106,35 @@ export async function exportPDF(
     const textElements = pageModel.elements.filter((e) => e.kind === "text") as PDFTextElement[];
     const nativeTextElements = textElements.filter((e) => e.origin === "native");
     const addedTextElements = textElements.filter((e) => e.origin === "added");
+    const baselinePage = baselineModel.pages[pageModel.sourceIndex ?? -1];
+    const currentNativeTextOps = new Set(
+      nativeTextElements.flatMap((element) => element.source?.opIndices || [])
+    );
+
+    // Copied pages can retain content streams whose original resource names
+    // are not carried over by pdf-lib. Rebind every existing Tf operator to
+    // an explicit resource before applying edits.
+    for (const op of ops) {
+      if (op.op !== "Tf" || op.operands.length < 2) continue;
+      const fontKey = typeof op.operands[0] === "object" && op.operands[0] !== null && "name" in op.operands[0]
+        ? op.operands[0].name
+        : String(op.operands[0]);
+      const fontInfo = baselineModel.fonts[fontKey];
+      const fontDefinition = resolveFont(
+        fontInfo?.family || "Helvetica",
+        fontInfo?.weight || "normal",
+        fontInfo?.style || "normal"
+      );
+      const font = await embedFontInDoc(exportDoc, fontDefinition);
+      const resourceName = `SalesmanFont${fontDefinition.postScriptName.replace(/[^A-Za-z0-9]/g, "")}`;
+      const resources = targetPage.node.Resources() || exportDoc.context.obj({});
+      const fontDict = resources.get(PDFName.of("Font")) instanceof PDFDict
+        ? resources.get(PDFName.of("Font")) as PDFDict
+        : exportDoc.context.obj({});
+      fontDict.set(PDFName.of(resourceName), font.ref);
+      resources.set(PDFName.of("Font"), fontDict);
+      op.operands[0] = { name: resourceName };
+    }
 
     // Track original op indices of native text elements that were modified or removed
     for (const textEl of nativeTextElements) {
@@ -152,6 +182,33 @@ export async function exportPDF(
                 ops[back].operands[5] = Number(((ops[back].operands[5] as number) - dy).toFixed(3));
               }
             }
+          }
+
+          const fontDefinition = resolveFont(textEl.fontFamily, textEl.fontWeight, textEl.fontStyle);
+          const font = await embedFontInDoc(exportDoc, fontDefinition);
+          const resourceName = `SalesmanFont${fontDefinition.postScriptName.replace(/[^A-Za-z0-9]/g, "")}`;
+          const resources = targetPage.node.Resources() || exportDoc.context.obj({});
+          const fontDict = resources.get(PDFName.of("Font")) instanceof PDFDict
+            ? resources.get(PDFName.of("Font")) as PDFDict
+            : exportDoc.context.obj({});
+          fontDict.set(PDFName.of(resourceName), font.ref);
+          resources.set(PDFName.of("Font"), fontDict);
+          for (let back = opIdx - 1; back >= Math.max(0, opIdx - 8); back--) {
+            if (ops[back].op === "Tf") {
+              ops[back].operands[0] = { name: resourceName };
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Elements removed from the model must no longer paint their original text.
+    if (baselinePage) {
+      for (const baselineText of baselinePage.elements.filter((e) => e.kind === "text")) {
+        for (const opIndex of baselineText.source?.opIndices || []) {
+          if (!currentNativeTextOps.has(opIndex) && ops[opIndex] && (ops[opIndex].op === "Tj" || ops[opIndex].op === "TJ")) {
+            ops[opIndex].operands = ops[opIndex].op === "Tj" ? [""] : [[""]];
           }
         }
       }
@@ -209,8 +266,22 @@ export async function exportPDF(
     for (const imgEl of imageElements) {
       // Check if this image was replaced with a new asset
       if (imgEl.assetId && model.assets[imgEl.assetId]) {
-        // Embed the new asset image and update the XObject reference!
-        // We handle image replacement embedding below
+        const asset = model.assets[imgEl.assetId];
+        const assetBytes = readAssetBytes(asset.storageKey);
+        const embedded = asset.mimeType === "image/png"
+          ? await exportDoc.embedPng(assetBytes)
+          : await exportDoc.embedJpg(assetBytes);
+        const resources = targetPage.node.Resources() || exportDoc.context.obj({});
+        const xObjectDict = resources.get(PDFName.of("XObject")) instanceof PDFDict
+          ? resources.get(PDFName.of("XObject")) as PDFDict
+          : exportDoc.context.obj({});
+        const resourceName = `SalesmanImage${imgEl.id.replace(/[^A-Za-z0-9]/g, "")}`;
+        xObjectDict.set(PDFName.of(resourceName), embedded.ref);
+        resources.set(PDFName.of("XObject"), xObjectDict);
+        const doOpIdx = imgEl.source?.opIndices?.[0];
+        if (doOpIdx !== undefined && ops[doOpIdx]?.op === "Do") {
+          ops[doOpIdx].operands[0] = { name: resourceName };
+        }
       }
 
       // If moved or resized: update preceding cm matrix
@@ -221,19 +292,62 @@ export async function exportPDF(
           for (let back = doOpIdx - 1; back >= Math.max(0, doOpIdx - 4); back--) {
             if (ops[back].op === "cm" && ops[back].operands.length === 6) {
               const pdfY = pageModel.height - imgEl.bbox.y - imgEl.bbox.height;
+              const radians = (imgEl.rotation * Math.PI) / 180;
+              const cos = Math.cos(radians);
+              const sin = Math.sin(radians);
+              const cx = imgEl.bbox.x + imgEl.bbox.width / 2;
+              const cy = pageModel.height - imgEl.bbox.y - imgEl.bbox.height / 2;
               ops[back].operands = [
-                Number(imgEl.bbox.width.toFixed(3)),
-                0,
-                0,
-                Number(imgEl.bbox.height.toFixed(3)),
-                Number(imgEl.bbox.x.toFixed(3)),
-                Number(pdfY.toFixed(3)),
+                Number((imgEl.bbox.width * cos).toFixed(3)),
+                Number((imgEl.bbox.width * sin).toFixed(3)),
+                Number((-imgEl.bbox.height * sin).toFixed(3)),
+                Number((imgEl.bbox.height * cos).toFixed(3)),
+                Number((cx - (imgEl.bbox.width * cos - imgEl.bbox.height * sin) / 2).toFixed(3)),
+                Number((cy - (imgEl.bbox.width * sin + imgEl.bbox.height * cos) / 2).toFixed(3)),
               ];
               break;
             }
           }
         }
       }
+    }
+
+    // Remove native image placements that are no longer in the model.
+    if (baselinePage) {
+      const currentImageOps = new Set(imageElements.flatMap((element) => element.source?.opIndices || []));
+      for (const baselineImage of baselinePage.elements.filter((e) => e.kind === "image")) {
+        for (const opIndex of baselineImage.source?.opIndices || []) {
+          if (!currentImageOps.has(opIndex) && ops[opIndex]?.op === "Do") {
+            ops[opIndex].operands = [{ name: "__SalesmanRemovedImage" }];
+          }
+        }
+      }
+
+      if (baselinePage) {
+        const currentShapeOps = new Set(shapeElements.flatMap((element) => element.source?.opIndices || []));
+        for (const baselineShape of baselinePage.elements.filter((e) => e.kind === "shape")) {
+          for (const opIndex of baselineShape.source?.opIndices || []) {
+            if (!currentShapeOps.has(opIndex) && ops[opIndex]?.op === "re") {
+              ops[opIndex].operands = [0, 0, 0, 0];
+            }
+          }
+        }
+      }
+    }
+
+    const addedShapeElements = shapeElements.filter((element) => element.origin === "added");
+    for (const shape of addedShapeElements) {
+      if (shape.shapeType !== "rect") continue;
+      const pdfY = pageModel.height - shape.bbox.y - shape.bbox.height;
+      if (shape.fill) {
+        ops.push({ op: "rg", operands: [shape.fill.r / 255, shape.fill.g / 255, shape.fill.b / 255] });
+      }
+      if (shape.stroke) {
+        ops.push({ op: "RG", operands: [shape.stroke.r / 255, shape.stroke.g / 255, shape.stroke.b / 255] });
+        ops.push({ op: "w", operands: [shape.lineWidth] });
+      }
+      ops.push({ op: "re", operands: [shape.bbox.x, pdfY, shape.bbox.width, shape.bbox.height] });
+      ops.push({ op: shape.paint === "fillStroke" ? "B" : shape.paint === "stroke" ? "S" : "f", operands: [] });
     }
 
     // ── 4. Append Added Elements (Text, Shapes, Images) ─────────────────────
@@ -244,6 +358,15 @@ export async function exportPDF(
       const b = Number((addedText.color.b / 255).toFixed(4));
 
       // Append standard BT ... ET block
+      const addedFont = resolveFont(addedText.fontFamily, addedText.fontWeight, addedText.fontStyle);
+      const embeddedAddedFont = await embedFontInDoc(exportDoc, addedFont);
+      const addedFontName = `SalesmanFont${addedFont.postScriptName.replace(/[^A-Za-z0-9]/g, "")}`;
+      const addedResources = targetPage.node.Resources() || exportDoc.context.obj({});
+      const addedFontDict = addedResources.get(PDFName.of("Font")) instanceof PDFDict
+        ? addedResources.get(PDFName.of("Font")) as PDFDict
+        : exportDoc.context.obj({});
+      addedFontDict.set(PDFName.of(addedFontName), embeddedAddedFont.ref);
+      addedResources.set(PDFName.of("Font"), addedFontDict);
       ops.push({
         op: "rg",
         operands: [r, g, b],
@@ -254,7 +377,7 @@ export async function exportPDF(
       });
       ops.push({
         op: "Tf",
-        operands: [{ name: addedText.fontWeight === "bold" ? "F2" : "F1" }, addedText.fontSize],
+        operands: [{ name: addedFontName }, addedText.fontSize],
       });
       ops.push({
         op: "Tm",
@@ -270,6 +393,35 @@ export async function exportPDF(
       });
     }
 
+    for (const addedImage of imageElements.filter((element) => element.origin === "added" && element.assetId)) {
+      const asset = model.assets[addedImage.assetId!];
+      if (!asset) throw new Error(`Image asset ${addedImage.assetId} is not registered`);
+      const assetBytes = readAssetBytes(asset.storageKey);
+      const embedded = asset.mimeType === "image/png"
+        ? await exportDoc.embedPng(assetBytes)
+        : await exportDoc.embedJpg(assetBytes);
+      const resourceName = `SalesmanImage${addedImage.id.replace(/[^A-Za-z0-9]/g, "")}`;
+      const resources = targetPage.node.Resources() || exportDoc.context.obj({});
+      const xObjectDict = resources.get(PDFName.of("XObject")) instanceof PDFDict
+        ? resources.get(PDFName.of("XObject")) as PDFDict
+        : exportDoc.context.obj({});
+      xObjectDict.set(PDFName.of(resourceName), embedded.ref);
+      resources.set(PDFName.of("XObject"), xObjectDict);
+      const pdfY = pageModel.height - addedImage.bbox.y - addedImage.bbox.height;
+      ops.push({ op: "q", operands: [] });
+      ops.push({ op: "cm", operands: [addedImage.bbox.width, 0, 0, addedImage.bbox.height, addedImage.bbox.x, pdfY] });
+      ops.push({ op: "Do", operands: [{ name: resourceName }] });
+      ops.push({ op: "Q", operands: [] });
+    }
+
+    ops = ops.filter((op) => !(
+      op.op === "Do" &&
+      op.operands[0] &&
+      typeof op.operands[0] === "object" &&
+      "name" in op.operands[0] &&
+      op.operands[0].name === "__SalesmanRemovedImage"
+    ));
+
     // ── 5. Re-serialize Content Stream with Flate compression ───────────────
     const newStreamBytes = serializeContentStream(ops);
     const compressedBytes = compressContentStream(newStreamBytes);
@@ -277,6 +429,16 @@ export async function exportPDF(
     // Create a new stream and set it on the page node
     const newStream = exportDoc.context.flateStream(newStreamBytes);
     targetPage.node.set(PDFName.of("Contents"), exportDoc.context.register(newStream));
+  }
+
+  function readAssetBytes(storageKey: string): Uint8Array {
+    if (storageKey.startsWith("data:")) {
+      const comma = storageKey.indexOf(",");
+      if (comma < 0) throw new Error("Invalid data URL image asset");
+      return new Uint8Array(Buffer.from(storageKey.slice(comma + 1), "base64"));
+    }
+    if (!fs.existsSync(storageKey)) throw new Error(`Image asset not found: ${storageKey}`);
+    return new Uint8Array(fs.readFileSync(storageKey));
   }
 
   // Preserve metadata

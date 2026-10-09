@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { formatResponse } from "@/lib/formatResponse";
 import { pdfProjectStorage } from "@/lib/pdf-editor/storage/project-storage";
 import { replayOperations } from "@/lib/pdf-editor/model/operations";
+import { getPDFSessionIdentity, ownsPDFProject } from "@/lib/pdf-editor/storage/access";
 
 export async function GET(
   req: NextRequest,
@@ -11,10 +10,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const identity = await getPDFSessionIdentity();
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
     const project = await pdfProjectStorage.getProject(id);
     if (!project) {
       return formatResponse(false, null, "PDF project not found", 404);
     }
+    if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
 
     return formatResponse(true, project, "Project retrieved successfully", 200);
   } catch (err: any) {
@@ -28,10 +30,13 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+    const identity = await getPDFSessionIdentity();
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
     const project = await pdfProjectStorage.getProject(id);
     if (!project) {
       return formatResponse(false, null, "PDF project not found", 404);
     }
+    if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
 
     const body = await req.json();
     const { operations, currentDocument } = body;

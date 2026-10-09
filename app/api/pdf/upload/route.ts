@@ -1,18 +1,17 @@
 import { NextRequest } from "next/server";
 import crypto from "node:crypto";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { formatResponse } from "@/lib/formatResponse";
 import { analyzePDF } from "@/lib/pdf-editor/engine/analyzer";
 import { pdfProjectStorage, PDFProjectRecord } from "@/lib/pdf-editor/storage/project-storage";
+import { getPDFSessionIdentity } from "@/lib/pdf-editor/storage/access";
 
 export const maxDuration = 60; // 60 seconds max timeout for large uploads
 
 export async function POST(req: NextRequest) {
   try {
-    const session: any = await getServerSession(authOptions);
-    const userId = session?.user?.id || "guest_editor";
-    const companyId = session?.user?.companyId || "default_store";
+    const identity = await getPDFSessionIdentity();
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
+    const { userId, companyId } = identity;
 
     let pdfBytes: Uint8Array;
     let name = "Untitled Document.pdf";

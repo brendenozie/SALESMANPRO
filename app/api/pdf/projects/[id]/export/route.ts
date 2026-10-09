@@ -3,6 +3,7 @@ import { pdfProjectStorage } from "@/lib/pdf-editor/storage/project-storage";
 import { exportPDF } from "@/lib/pdf-editor/engine/exporter";
 import { validateExportedPDF, ValidationExpectations } from "@/lib/pdf-editor/engine/validator";
 import { formatResponse } from "@/lib/formatResponse";
+import { getPDFSessionIdentity, ownsPDFProject } from "@/lib/pdf-editor/storage/access";
 
 export const maxDuration = 60;
 
@@ -12,10 +13,13 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+    const identity = await getPDFSessionIdentity();
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
     const project = await pdfProjectStorage.getProject(id);
     if (!project) {
       return formatResponse(false, null, "PDF project not found", 404);
     }
+    if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
 
     const originalBytes = await pdfProjectStorage.getOriginalPdf(id);
     if (!originalBytes) {
