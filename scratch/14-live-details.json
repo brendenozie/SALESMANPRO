@@ -1,0 +1,593 @@
+[
+  {
+    "listingId": "687ae1d3990c2854fe8bcdd2",
+    "productId": "687aab1a7a3350b8944b5a45",
+    "name": "Leather Tent",
+    "store": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu"
+    },
+    "category": {
+      "id": "676bb5ed0de34d386c10d928",
+      "name": "Toys",
+      "subCategory": "Outdoor & Camping Toys"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 20999,
+      "finalPrice": 20999,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 3,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1760525612030-Gx1rtuPWgAApzgm.jpeg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1760525612021-Gx1tpbnW4AErXaW.jpeg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1760525612029-Gx2EkJHXAAAPKsb.jpeg"
+      ]
+    },
+    "description": "Leather tent strong and durable",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6882938ca195c3ed50b3fdaf",
+    "productId": null,
+    "name": "Bata Premium",
+    "store": {
+      "id": "683581bba1bdf6ca3624b546",
+      "name": "Directory & Listings",
+      "slug": "directory-listings"
+    },
+    "category": {
+      "id": "93e002c712ad248bb0ade319",
+      "name": "Fashion",
+      "subCategory": "Shoes"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 2000,
+      "finalPrice": 2000,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 0,
+      "images": []
+    },
+    "description": "Beautiful Bata Premium",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6884b2b6eb9bffc4afd0a22f",
+    "productId": null,
+    "name": "Fish Fry",
+    "store": {
+      "id": "683581bba1bdf6ca3624b532",
+      "name": "Restaurant & Food Delivery",
+      "slug": "restaurant-food-delivery"
+    },
+    "category": {
+      "id": "000000000000000000070001",
+      "name": "Restaurant & Food Delivery",
+      "subCategory": "Mains & Seafood"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 1500,
+      "finalPrice": 1500,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 6,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1772572491502-hawa.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772572491506-prince.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772572491508-beef.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772572491503-paneer.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772572491504-Urban.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772572491500-cheese.png"
+      ]
+    },
+    "description": "Awesome Fried Fish with ugali",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6889c23b24f9f89a608b48fb",
+    "productId": null,
+    "name": "Awesome Apartments",
+    "store": {
+      "id": "683581bba1bdf6ca3624b534",
+      "name": "Real Estate",
+      "slug": "real-estate"
+    },
+    "category": {
+      "id": "93e002c712ad248bb0ade320",
+      "name": "Property",
+      "subCategory": "Apartments"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 5000000,
+      "finalPrice": 5000000,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 3,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1772312898041-pexels-pixabay-259588.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772312898046-pexels-expect-best-79873-323780.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772312898048-pexels-binyaminmellish-106399.jpg"
+      ]
+    },
+    "description": "Very beautiful apartments in a serene place captivating and engaging",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "68c29ab8c4264d75af2ad196",
+    "productId": null,
+    "name": "Corporate & Business Law",
+    "store": {
+      "id": "683581bba1bdf6ca3624b538",
+      "name": "Finance & Legal",
+      "slug": "finance-legal"
+    },
+    "category": {
+      "id": "000000000000000000120001",
+      "name": null,
+      "subCategory": null
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 100,
+      "finalPrice": 100,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 1,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 0,
+      "images": []
+    },
+    "description": "Navigate business formation, M&A, and regulatory compliance with expert legal counsel.",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "68dbfaccead1b2af584e8cda",
+    "productId": "687aa68033ef3c2eb6345eb7",
+    "name": "Fake Teeth",
+    "store": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu"
+    },
+    "category": {
+      "id": "78887de958a4a3296990add4",
+      "name": "Baby Toys",
+      "subCategory": "Novelty & Gag Toys"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 9999.93,
+      "finalPrice": 9999.93,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 1,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1760552799835-original-dfbc5b31aa2c2033d4610f46f7609390.png"
+      ]
+    },
+    "description": "Fake Teeth Description",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "68e17a8016ac60978dc272ed",
+    "productId": "68dbc69966f8979af33efc6d",
+    "name": "Biscuit",
+    "store": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu"
+    },
+    "category": {
+      "id": "69a28ae60a4cb4fcefbabc69",
+      "name": "Groceries",
+      "subCategory": "Biscuits & Confectionery"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 10,
+      "finalPrice": 10,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 5,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1760522426354-Gemini_Generated_Image_ohbgmbohbgmbohbg.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1760512630483-pexels-pixabay-266706.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1760523408949-01cb016eef14e30fc0c4e8b34e8ab92e.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1760524417619-97a789308645005f5c286ef59740233e.png",
+        "https://dozi4r4ug9739.cloudfront.net/images/1760532121651-original-9baa387c6566388c05542d5a4b9fa75a.png"
+      ]
+    },
+    "description": "bisuit",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "68e17a9116ac60978dc272ee",
+    "productId": "687aa49733ef3c2eb6345eb6",
+    "name": "Arm Chair",
+    "store": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu"
+    },
+    "category": {
+      "id": "93e002c712ad248bb0ade334",
+      "name": "Furniture",
+      "subCategory": "Chairs & Seating"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 3999.91,
+      "finalPrice": 3999.91,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 5,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1772222037584-modern-wooden-chair_1303-18304.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772222037579-home-entryway-with-modern-furnishing-design_23-2150791155.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772222037581-still-life-wireless-cyberpunk-headphones_23-2151072202.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772222037582-male-self-care-items-arrangement_23-2150347125.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772222037583-pexels-babydov-7789062.jpg"
+      ]
+    },
+    "description": "Awesom arm chair",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "68fbf52b584c118332856acf",
+    "productId": null,
+    "name": "Executive Coaching & Life Skills Program Guide",
+    "store": {
+      "id": "68f017c25d341681f2b63946",
+      "name": "Executive Coach",
+      "slug": "executive-coach"
+    },
+    "category": {
+      "id": "d1f2e3c4b5a6978877665544",
+      "name": "Digital Goods & Subscriptions",
+      "subCategory": "E-books & Guides"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 500,
+      "finalPrice": 500,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 100,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 1,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1761342754585-1.png"
+      ]
+    },
+    "description": "Sample Programs Description",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "690084dca2172b890cd8f61b",
+    "productId": null,
+    "name": "Stepping Out: Life Skills Program",
+    "store": {
+      "id": "68ff7b9b83da53e461f9ffb8",
+      "name": "Public Speaking",
+      "slug": "public-speaking"
+    },
+    "category": {
+      "id": "d1f2e3c4b5a6978877665544",
+      "name": "Digital Goods & Subscriptions",
+      "subCategory": "Personal Development & Coaching"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 12500,
+      "finalPrice": 12500,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 200,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 2,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1761641677233-pexels-alinevianafoto-2465877.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1761641677232-pexels-marta-dzedyshko-1042863-2067569.jpg"
+      ]
+    },
+    "description": "A structured, 11-module life skills program to help students transition smoothly from high school to college and beyond.",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6903c66bf62463ff473b34c6",
+    "productId": "6903c5eef62463ff473b34c3",
+    "name": "Nike Shoes",
+    "store": {
+      "id": "68b597b7de9bdd2ba7479f34",
+      "name": "Shoes Store",
+      "slug": "shoes-store"
+    },
+    "category": {
+      "id": "93e002c712ad248bb0ade319",
+      "name": "Fashion",
+      "subCategory": "Shoes"
+    },
+    "brand": "Nike",
+    "pricing": {
+      "sellingPrice": 500,
+      "finalPrice": 500,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 7,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357552-xavier-teo-SxAXphIPWeg-unsplash.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357547-maksim-larin-NOpsC3nWTzY-unsplash.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357550-irene-kredenets-dwKiHoqqxk8-unsplash.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357549-usama-akram-kP6knT7tjn4-unsplash.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357551-paul-gaudriault-a-QH9MAAVNI-unsplash.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357551-ryan-waring-164_6wVEHfI-unsplash.jpg",
+        "https://dozi4r4ug9739.cloudfront.net/images/1772223357898-shyam-mishra-nv_od4bRR4Q-unsplash.jpg"
+      ]
+    },
+    "description": "Awesome nike sport shoes",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6928480726d014ca98b8d7d4",
+    "productId": null,
+    "name": "Salad 2",
+    "store": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu"
+    },
+    "category": {
+      "id": "69a28ae60a4cb4fcefbabc69",
+      "name": "Groceries",
+      "subCategory": "Fresh Produce & Salads"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 2000,
+      "finalPrice": 1820,
+      "currency": "KES"
+    },
+    "inventory": {
+      "productStock": null,
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 1,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1764249765667-anna-pelzer-IGfIGP5ONV0-unsplash.jpg"
+      ]
+    },
+    "description": "Salad 2 description",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6a2a7518b03b6fad88aa5e42",
+    "productId": "6a2a7286b03b6fad88aa5e41",
+    "name": "Tronic 1.5mm Electrical cable",
+    "store": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu"
+    },
+    "category": {
+      "id": "63f7c9e2d91b1b2a5e80b005",
+      "name": "Electronics",
+      "subCategory": "Electricals & Wiring"
+    },
+    "brand": "Tronic",
+    "pricing": {
+      "sellingPrice": 4200,
+      "finalPrice": 4200,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 1,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1781166724152-17811664707602056269995232204191.jpg"
+      ]
+    },
+    "description": "Sample description",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "ghubaStatus": "APPROVED",
+      "ghubaAdminApproved": true,
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  },
+  {
+    "listingId": "6a2be7f01642861cd4ad660d",
+    "productId": "6a2be6c41642861cd4ad660c",
+    "name": "DAP Fertilizer 50kg",
+    "store": {
+      "id": "699c7f464d23c222dcedfa12",
+      "name": "Agrovet ",
+      "slug": "agrovet"
+    },
+    "category": {
+      "id": "64a8c9e2d91b1b2a5e80c101",
+      "name": "Agrovet",
+      "subCategory": "Fertilizers"
+    },
+    "brand": null,
+    "pricing": {
+      "sellingPrice": 130,
+      "finalPrice": 130,
+      "currency": "KES"
+    },
+    "inventory": {
+      "quantity": {
+        "high": 0,
+        "low": 0,
+        "unsigned": false
+      }
+    },
+    "imagery": {
+      "count": 1,
+      "images": [
+        "https://dozi4r4ug9739.cloudfront.net/images/1781262015501-IMG_20260611_112756.jpg"
+      ]
+    },
+    "description": "SAMPLE DESCRIPTION",
+    "status": {
+      "listingStatus": "ACTIVE",
+      "ghubaStatus": "APPROVED",
+      "ghubaAdminApproved": true,
+      "isAvailable": true,
+      "showOnGhuba": true
+    }
+  }
+]

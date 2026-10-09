@@ -1,0 +1,3398 @@
+{
+  "generatedAt": "2026-10-08T19:59:09.781Z",
+  "totalStores": 19,
+  "totalListings": 1096,
+  "totalProducts": 11,
+  "stores": {
+    "6825c2c7969ab9f16f620f67": {
+      "storeId": "6825c2c7969ab9f16f620f67",
+      "storeName": "Duka Yangu",
+      "storeSlug": "duka-yangu",
+      "storeCategory": "E-commerce",
+      "storeVariant": "Modern Shop (v1)",
+      "listingCount": 66,
+      "productCount": 10,
+      "missingCategories": 0,
+      "missingSubCategories": 18,
+      "missingBrands": 66,
+      "missingImages": 4,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 56,
+      "linkedListings": 10,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 6,
+        "unsplash": 56,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 4,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 66
+      },
+      "ghubaStatuses": {
+        "APPROVED": 66
+      },
+      "approvalStatuses": {
+        "true": 66
+      },
+      "nameDistribution": {
+        "Samsung Galaxy S23": 7,
+        "Dell XPS 13": 7,
+        "Oak Coffee Table": 5,
+        "JBL Flip 6": 5,
+        "Sony Bravia 43”": 7,
+        "Nike Air Max": 5,
+        "Apple Watch Series 8": 6,
+        "KitchenAid Mixer": 4,
+        "Genuine Leather Wallet": 6,
+        "Ergonomic Gaming Chair": 4,
+        "Jambotron Toy": 1,
+        "Bose By Design": 1,
+        "Fake Teeth": 1,
+        "Leather Tent": 1,
+        "Bata 1": 1,
+        "Biscuit": 2,
+        "Bose and Bass": 1,
+        "Savannah Space": 1,
+        "Arm Chair": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924aec47c3f13aa516ae3f4",
+          "name": "Samsung Galaxy S23",
+          "category": "Fashion",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42a1"
+            },
+            "name": "Clothing",
+            "image": "clothing.jpg",
+            "status": "Active",
+            "brand": [
+              "Nike",
+              "Adidas",
+              "Under Armour"
+            ],
+            "tags": [
+              "fashion",
+              "apparel"
+            ],
+            "subcategories": [],
+            "slug": "clothing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Clothing",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade319",
+            "imageAlt": "Clothing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 445,
+          "images": [
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924b77fb8dec20348b21d2a",
+          "name": "Dell XPS 13",
+          "category": "Health And Beauty",
+          "subCategory": {
+            "_id": {
+              "$oid": "2ae04b8ed9779f2a4e8a1c40"
+            },
+            "name": "Makeup",
+            "image": "makeup.jpg",
+            "status": "Active",
+            "brand": [
+              "MAC",
+              "Fenty Beauty",
+              "Sephora"
+            ],
+            "tags": [
+              "makeup"
+            ],
+            "subcategories": [],
+            "slug": "makeup",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Makeup",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e4763c9e49ba6dd252c3e893",
+            "imageAlt": "Makeup",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1561,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924b77fb8dec20348b21d2b",
+          "name": "Oak Coffee Table",
+          "category": "Health And Beauty",
+          "subCategory": {
+            "_id": {
+              "$oid": "2ae04b8ed9779f2a4e8a1c40"
+            },
+            "name": "Makeup",
+            "image": "makeup.jpg",
+            "status": "Active",
+            "brand": [
+              "MAC",
+              "Fenty Beauty",
+              "Sephora"
+            ],
+            "tags": [
+              "makeup"
+            ],
+            "subcategories": [],
+            "slug": "makeup",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Makeup",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e4763c9e49ba6dd252c3e893",
+            "imageAlt": "Makeup",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1093,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b528": {
+      "storeId": "683581bba1bdf6ca3624b528",
+      "storeName": "Service Provider",
+      "storeSlug": "service-provider",
+      "storeCategory": "Service Provider",
+      "storeVariant": "Agency Portfolio",
+      "listingCount": 51,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 1,
+      "missingBrands": 51,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 1,
+      "unlinkedListings": 51,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 50,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 50,
+        "PENDING": 1
+      },
+      "ghubaStatuses": {
+        "APPROVED": 50,
+        "NOT_SET": 1
+      },
+      "approvalStatuses": {
+        "true": 50,
+        "null": 1
+      },
+      "nameDistribution": {
+        "JBL Flip 6": 4,
+        "Genuine Leather Wallet": 5,
+        "Dell XPS 13": 6,
+        "Nike Air Max": 6,
+        "Ergonomic Gaming Chair": 4,
+        "Samsung Galaxy S23": 6,
+        "KitchenAid Mixer": 4,
+        "Oak Coffee Table": 5,
+        "Sony Bravia 43”": 6,
+        "Apple Watch Series 8": 4,
+        "New Name": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924bba6b8dec20348b21e45",
+          "name": "JBL Flip 6",
+          "category": "Services",
+          "subCategory": {
+            "_id": {
+              "$oid": "b1c2d3e4f5a6789012345678"
+            },
+            "name": "Cleaning",
+            "image": "cleaning.jpg",
+            "status": "Active",
+            "brand": [
+              "SparkleClean",
+              "FreshHome",
+              "ProMaid"
+            ],
+            "tags": [
+              "services",
+              "cleaning"
+            ],
+            "subcategories": [],
+            "slug": "cleaning",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Cleaning Services",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "a1b2c3d4e5f6789012345678",
+            "imageAlt": "Cleaning",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1169,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bba6b8dec20348b21e4e",
+          "name": "Genuine Leather Wallet",
+          "category": "Health And Beauty",
+          "subCategory": {
+            "_id": {
+              "$oid": "2ae04b8ed9779f2a4e8a1c40"
+            },
+            "name": "Makeup",
+            "image": "makeup.jpg",
+            "status": "Active",
+            "brand": [
+              "MAC",
+              "Fenty Beauty",
+              "Sephora"
+            ],
+            "tags": [
+              "makeup"
+            ],
+            "subcategories": [],
+            "slug": "makeup",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Makeup",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e4763c9e49ba6dd252c3e893",
+            "imageAlt": "Makeup",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 76,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bba6b8dec20348b21e4d",
+          "name": "Dell XPS 13",
+          "category": "Health And Beauty",
+          "subCategory": {
+            "_id": {
+              "$oid": "2ae04b8ed9779f2a4e8a1c40"
+            },
+            "name": "Makeup",
+            "image": "makeup.jpg",
+            "status": "Active",
+            "brand": [
+              "MAC",
+              "Fenty Beauty",
+              "Sephora"
+            ],
+            "tags": [
+              "makeup"
+            ],
+            "subcategories": [],
+            "slug": "makeup",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Makeup",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e4763c9e49ba6dd252c3e893",
+            "imageAlt": "Makeup",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 734,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b529": {
+      "storeId": "683581bba1bdf6ca3624b529",
+      "storeName": "Blog & Content",
+      "storeSlug": "blog-content",
+      "storeCategory": "Blog & Content",
+      "storeVariant": "Modern Magazine",
+      "listingCount": 62,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 62,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 62,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 62,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 62
+      },
+      "ghubaStatuses": {
+        "APPROVED": 62
+      },
+      "approvalStatuses": {
+        "true": 62
+      },
+      "nameDistribution": {
+        "JBL Flip 6": 5,
+        "Apple Watch Series 8": 8,
+        "Dell XPS 13": 11,
+        "Nike Air Max": 6,
+        "Genuine Leather Wallet": 8,
+        "Ergonomic Gaming Chair": 7,
+        "Oak Coffee Table": 1,
+        "KitchenAid Mixer": 6,
+        "Samsung Galaxy S23": 5,
+        "Sony Bravia 43”": 5
+      },
+      "sampleItems": [
+        {
+          "id": "6924bcddb8dec20348b21f18",
+          "name": "JBL Flip 6",
+          "category": "Blog & Content",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000040002"
+            },
+            "name": "Article Writing",
+            "image": "article-writing.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "articles",
+              "writing"
+            ],
+            "subcategories": [],
+            "slug": "article-writing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Professional Article Writing",
+            "seoDescription": "",
+            "metaKeywords": [
+              "article writing",
+              "blog post"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000040001",
+            "imageAlt": "Article Writing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "wordCount": 1000,
+              "deliveryDays": 3
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 278,
+          "images": [
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bcddb8dec20348b21f1b",
+          "name": "Apple Watch Series 8",
+          "category": "Blog & Content",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000040002"
+            },
+            "name": "Article Writing",
+            "image": "article-writing.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "articles",
+              "writing"
+            ],
+            "subcategories": [],
+            "slug": "article-writing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Professional Article Writing",
+            "seoDescription": "",
+            "metaKeywords": [
+              "article writing",
+              "blog post"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000040001",
+            "imageAlt": "Article Writing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "wordCount": 1000,
+              "deliveryDays": 3
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 71,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bcddb8dec20348b21f1a",
+          "name": "Dell XPS 13",
+          "category": "Blog & Content",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000040002"
+            },
+            "name": "Article Writing",
+            "image": "article-writing.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "articles",
+              "writing"
+            ],
+            "subcategories": [],
+            "slug": "article-writing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Professional Article Writing",
+            "seoDescription": "",
+            "metaKeywords": [
+              "article writing",
+              "blog post"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000040001",
+            "imageAlt": "Article Writing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "wordCount": 1000,
+              "deliveryDays": 3
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1717,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b532": {
+      "storeId": "683581bba1bdf6ca3624b532",
+      "storeName": "Restaurant & Food Delivery",
+      "storeSlug": "restaurant-food-delivery",
+      "storeCategory": "Restaurant & Food Delivery",
+      "storeVariant": "Food Delivery",
+      "listingCount": 64,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 64,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 64,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 63,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 64
+      },
+      "ghubaStatuses": {
+        "APPROVED": 64
+      },
+      "approvalStatuses": {
+        "true": 64
+      },
+      "nameDistribution": {
+        "KitchenAid Mixer": 8,
+        "JBL Flip 6": 10,
+        "Samsung Galaxy S23": 6,
+        "Genuine Leather Wallet": 6,
+        "Nike Air Max": 13,
+        "Sony Bravia 43”": 3,
+        "Oak Coffee Table": 4,
+        "Dell XPS 13": 4,
+        "Ergonomic Gaming Chair": 4,
+        "Apple Watch Series 8": 5,
+        "Fish Fry": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924be06b8dec20348b21f9c",
+          "name": "KitchenAid Mixer",
+          "category": "Groceries",
+          "subCategory": {
+            "_id": {
+              "$oid": "e826d8cbacdd9dc78989bc68"
+            },
+            "name": "Snacks",
+            "image": "snacks.jpg",
+            "status": "Active",
+            "brand": [
+              "Lays",
+              "Doritos",
+              "Pringles"
+            ],
+            "tags": [
+              "snacks"
+            ],
+            "subcategories": [],
+            "slug": "snacks",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Snacks",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "7c3765bf72361083d820071f",
+            "imageAlt": "Snacks",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1320,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924be06b8dec20348b21f9b",
+          "name": "JBL Flip 6",
+          "category": "Groceries",
+          "subCategory": {
+            "_id": {
+              "$oid": "e826d8cbacdd9dc78989bc68"
+            },
+            "name": "Snacks",
+            "image": "snacks.jpg",
+            "status": "Active",
+            "brand": [
+              "Lays",
+              "Doritos",
+              "Pringles"
+            ],
+            "tags": [
+              "snacks"
+            ],
+            "subcategories": [],
+            "slug": "snacks",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Snacks",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "7c3765bf72361083d820071f",
+            "imageAlt": "Snacks",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 743,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924be06b8dec20348b21f9a",
+          "name": "Samsung Galaxy S23",
+          "category": "Groceries",
+          "subCategory": {
+            "_id": {
+              "$oid": "e826d8cbacdd9dc78989bc68"
+            },
+            "name": "Snacks",
+            "image": "snacks.jpg",
+            "status": "Active",
+            "brand": [
+              "Lays",
+              "Doritos",
+              "Pringles"
+            ],
+            "tags": [
+              "snacks"
+            ],
+            "subcategories": [],
+            "slug": "snacks",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Snacks",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "7c3765bf72361083d820071f",
+            "imageAlt": "Snacks",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1674,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b533": {
+      "storeId": "683581bba1bdf6ca3624b533",
+      "storeName": "Event & Ticketing",
+      "storeSlug": "event-ticketing",
+      "storeCategory": "Event & Ticketing",
+      "storeVariant": "Event Booking",
+      "listingCount": 49,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 49,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 49,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 49,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 49
+      },
+      "ghubaStatuses": {
+        "APPROVED": 49
+      },
+      "approvalStatuses": {
+        "true": 49
+      },
+      "nameDistribution": {
+        "Samsung Galaxy S23": 9,
+        "Dell XPS 13": 4,
+        "JBL Flip 6": 7,
+        "Nike Air Max": 10,
+        "Sony Bravia 43”": 3,
+        "Ergonomic Gaming Chair": 3,
+        "Genuine Leather Wallet": 5,
+        "Apple Watch Series 8": 4,
+        "KitchenAid Mixer": 3,
+        "Oak Coffee Table": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924beb8b8dec20348b21fcd",
+          "name": "Samsung Galaxy S23",
+          "category": "Event & Ticketing",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000080002"
+            },
+            "name": "Event Tickets",
+            "image": "event-tickets.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "tickets",
+              "admission"
+            ],
+            "subcategories": [],
+            "slug": "event-tickets",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Buy Event Tickets",
+            "seoDescription": "",
+            "metaKeywords": [
+              "event tickets",
+              "admission"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000080001",
+            "imageAlt": "Event Tickets",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "eTicket": true,
+              "deliveryMethods": [
+                "email",
+                "mobile"
+              ]
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 440,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924beb8b8dec20348b21fcc",
+          "name": "Dell XPS 13",
+          "category": "Event & Ticketing",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000080002"
+            },
+            "name": "Event Tickets",
+            "image": "event-tickets.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "tickets",
+              "admission"
+            ],
+            "subcategories": [],
+            "slug": "event-tickets",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Buy Event Tickets",
+            "seoDescription": "",
+            "metaKeywords": [
+              "event tickets",
+              "admission"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000080001",
+            "imageAlt": "Event Tickets",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "eTicket": true,
+              "deliveryMethods": [
+                "email",
+                "mobile"
+              ]
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1113,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924beb8b8dec20348b21fcb",
+          "name": "JBL Flip 6",
+          "category": "Event & Ticketing",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000080002"
+            },
+            "name": "Event Tickets",
+            "image": "event-tickets.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "tickets",
+              "admission"
+            ],
+            "subcategories": [],
+            "slug": "event-tickets",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Buy Event Tickets",
+            "seoDescription": "",
+            "metaKeywords": [
+              "event tickets",
+              "admission"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000080001",
+            "imageAlt": "Event Tickets",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "eTicket": true,
+              "deliveryMethods": [
+                "email",
+                "mobile"
+              ]
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 2035,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b534": {
+      "storeId": "683581bba1bdf6ca3624b534",
+      "storeName": "Real Estate",
+      "storeSlug": "real-estate",
+      "storeCategory": "Real Estate",
+      "storeVariant": "Property Listings",
+      "listingCount": 89,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 89,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 89,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 88,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 89
+      },
+      "ghubaStatuses": {
+        "APPROVED": 89
+      },
+      "approvalStatuses": {
+        "true": 89
+      },
+      "nameDistribution": {
+        "JBL Flip 6": 7,
+        "Genuine Leather Wallet": 9,
+        "Nike Air Max": 8,
+        "Oak Coffee Table": 13,
+        "Ergonomic Gaming Chair": 8,
+        "KitchenAid Mixer": 9,
+        "Samsung Galaxy S23": 8,
+        "Dell XPS 13": 14,
+        "Apple Watch Series 8": 4,
+        "Sony Bravia 43”": 8,
+        "Awesome Apartments": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924bf6ab8dec20348b2201a",
+          "name": "JBL Flip 6",
+          "category": "Property",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42b3"
+            },
+            "name": "Houses",
+            "image": "houses.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "houses",
+              "homes",
+              "property"
+            ],
+            "subcategories": [],
+            "slug": "houses",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Houses",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 1,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-22T12:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-22T12:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade320",
+            "imageAlt": "Houses",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1069,
+          "images": [
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bf6bb8dec20348b22025",
+          "name": "Genuine Leather Wallet",
+          "category": "Property",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42b3"
+            },
+            "name": "Houses",
+            "image": "houses.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "houses",
+              "homes",
+              "property"
+            ],
+            "subcategories": [],
+            "slug": "houses",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Houses",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 1,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-22T12:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-22T12:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade320",
+            "imageAlt": "Houses",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1419,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bf6ab8dec20348b2201b",
+          "name": "Nike Air Max",
+          "category": "Property",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42b3"
+            },
+            "name": "Houses",
+            "image": "houses.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "houses",
+              "homes",
+              "property"
+            ],
+            "subcategories": [],
+            "slug": "houses",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Houses",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 1,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-22T12:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-22T12:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade320",
+            "imageAlt": "Houses",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 744,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b535": {
+      "storeId": "683581bba1bdf6ca3624b535",
+      "storeName": "Healthcare & Clinics",
+      "storeSlug": "healthcare-clinics",
+      "storeCategory": "Healthcare & Clinics",
+      "storeVariant": "Clinic Pro",
+      "listingCount": 78,
+      "productCount": 1,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 78,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 78,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 78,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 78
+      },
+      "ghubaStatuses": {
+        "APPROVED": 78
+      },
+      "approvalStatuses": {
+        "true": 78
+      },
+      "nameDistribution": {
+        "KitchenAid Mixer": 7,
+        "Ergonomic Gaming Chair": 4,
+        "JBL Flip 6": 6,
+        "Sony Bravia 43”": 14,
+        "Dell XPS 13": 11,
+        "Oak Coffee Table": 11,
+        "Apple Watch Series 8": 7,
+        "Genuine Leather Wallet": 5,
+        "Nike Air Max": 8,
+        "Samsung Galaxy S23": 5
+      },
+      "sampleItems": [
+        {
+          "id": "6924bfccb8dec20348b2206d",
+          "name": "KitchenAid Mixer",
+          "category": "Health And Beauty",
+          "subCategory": {
+            "id": "828b5f390e8867f83c5c2393",
+            "name": "Fragrances",
+            "slug": "fragrances"
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1150,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bfccb8dec20348b2206c",
+          "name": "Ergonomic Gaming Chair",
+          "category": "Health And Beauty",
+          "subCategory": {
+            "id": "828b5f390e8867f83c5c2393",
+            "name": "Fragrances",
+            "slug": "fragrances"
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1332,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bfccb8dec20348b22073",
+          "name": "JBL Flip 6",
+          "category": "Healthcare & Clinics",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000090002"
+            },
+            "name": "General Practice",
+            "image": "general-practice.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "general",
+              "practice"
+            ],
+            "subcategories": [],
+            "slug": "general-practice",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "General Practice",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T00:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T00:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000090001",
+            "imageAlt": "General Practice",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 99,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b538": {
+      "storeId": "683581bba1bdf6ca3624b538",
+      "storeName": "Finance & Legal",
+      "storeSlug": "finance-legal",
+      "storeCategory": "Finance & Legal",
+      "storeVariant": "Financial Advisor",
+      "listingCount": 1,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 1,
+      "missingBrands": 1,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 1,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 0,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 1
+      },
+      "ghubaStatuses": {
+        "APPROVED": 1
+      },
+      "approvalStatuses": {
+        "true": 1
+      },
+      "nameDistribution": {
+        "Corporate & Business Law": 1
+      },
+      "sampleItems": [
+        {
+          "id": "68c29ab8c4264d75af2ad196",
+          "name": "Corporate & Business Law",
+          "category": null,
+          "subCategory": {},
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 100,
+          "images": [],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b539": {
+      "storeId": "683581bba1bdf6ca3624b539",
+      "storeName": "Automotive",
+      "storeSlug": "automotive",
+      "storeCategory": "Automotive",
+      "storeVariant": "Car Dealership",
+      "listingCount": 41,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 40,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 1,
+      "unlinkedListings": 41,
+      "linkedListings": 0,
+      "zeroPrice": 1,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 40,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 41
+      },
+      "ghubaStatuses": {
+        "APPROVED": 41
+      },
+      "approvalStatuses": {
+        "true": 41
+      },
+      "nameDistribution": {
+        "Dell XPS 13": 3,
+        "Nike Air Max": 5,
+        "Samsung Galaxy S23": 8,
+        "Apple Watch Series 8": 5,
+        "KitchenAid Mixer": 5,
+        "Ergonomic Gaming Chair": 4,
+        "Genuine Leather Wallet": 2,
+        "Oak Coffee Table": 3,
+        "Sony Bravia 43”": 2,
+        "JBL Flip 6": 3,
+        "New Name": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924c202b8dec20348b22092",
+          "name": "Dell XPS 13",
+          "category": "Cars",
+          "subCategory": {
+            "id": null,
+            "name": "Motorcycles",
+            "slug": "motorcycles",
+            "sortOrder": 1,
+            "visible": true
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1479,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924c202b8dec20348b22093",
+          "name": "Nike Air Max",
+          "category": "Cars",
+          "subCategory": {
+            "id": null,
+            "name": "Motorcycles",
+            "slug": "motorcycles",
+            "sortOrder": 1,
+            "visible": true
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 538,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924c202b8dec20348b22094",
+          "name": "Dell XPS 13",
+          "category": "Cars",
+          "subCategory": {
+            "id": null,
+            "name": "Motorcycles",
+            "slug": "motorcycles",
+            "sortOrder": 1,
+            "visible": true
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1965,
+          "images": [
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b540": {
+      "storeId": "683581bba1bdf6ca3624b540",
+      "storeName": "Travel & Tourism",
+      "storeSlug": "travel-tourism",
+      "storeCategory": "Travel & Tourism",
+      "storeVariant": "Travel Agency",
+      "listingCount": 68,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 67,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 68,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 67,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 68
+      },
+      "ghubaStatuses": {
+        "APPROVED": 68
+      },
+      "approvalStatuses": {
+        "true": 68
+      },
+      "nameDistribution": {
+        "JBL Flip 6": 5,
+        "Ergonomic Gaming Chair": 6,
+        "Oak Coffee Table": 8,
+        "Dell XPS 13": 8,
+        "Apple Watch Series 8": 6,
+        "Genuine Leather Wallet": 9,
+        "Nike Air Max": 4,
+        "KitchenAid Mixer": 6,
+        "Sony Bravia 43”": 7,
+        "Samsung Galaxy S23": 8,
+        "7-Day Luxury Safari to Maasai Mara": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924c25ab8dec20348b220d8",
+          "name": "JBL Flip 6",
+          "category": "Travel & Experiences",
+          "subCategory": {
+            "_id": {
+              "$oid": "f7a8b9c0d1e2435587795612"
+            },
+            "name": "Flight Tickets",
+            "image": "flight-tickets.jpg",
+            "status": "Active",
+            "brand": [
+              "Delta",
+              "Emirates",
+              "Kenya Airways"
+            ],
+            "tags": [
+              "flights",
+              "airline"
+            ],
+            "subcategories": [],
+            "slug": "flight-tickets",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Flight Tickets",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e6f7a8b9c0d1325476685501",
+            "imageAlt": "Flight Tickets",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 298,
+          "images": [
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924c25ab8dec20348b220d9",
+          "name": "Ergonomic Gaming Chair",
+          "category": "Travel & Experiences",
+          "subCategory": {
+            "_id": {
+              "$oid": "f7a8b9c0d1e2435587795612"
+            },
+            "name": "Flight Tickets",
+            "image": "flight-tickets.jpg",
+            "status": "Active",
+            "brand": [
+              "Delta",
+              "Emirates",
+              "Kenya Airways"
+            ],
+            "tags": [
+              "flights",
+              "airline"
+            ],
+            "subcategories": [],
+            "slug": "flight-tickets",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Flight Tickets",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e6f7a8b9c0d1325476685501",
+            "imageAlt": "Flight Tickets",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1620,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924c25ab8dec20348b220da",
+          "name": "Oak Coffee Table",
+          "category": "Travel & Experiences",
+          "subCategory": {
+            "_id": {
+              "$oid": "f7a8b9c0d1e2435587795612"
+            },
+            "name": "Flight Tickets",
+            "image": "flight-tickets.jpg",
+            "status": "Active",
+            "brand": [
+              "Delta",
+              "Emirates",
+              "Kenya Airways"
+            ],
+            "tags": [
+              "flights",
+              "airline"
+            ],
+            "subcategories": [],
+            "slug": "flight-tickets",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Flight Tickets",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "e6f7a8b9c0d1325476685501",
+            "imageAlt": "Flight Tickets",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 425,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b542": {
+      "storeId": "683581bba1bdf6ca3624b542",
+      "storeName": "Marketplace",
+      "storeSlug": "marketplace",
+      "storeCategory": "Marketplace",
+      "storeVariant": "Product Marketplace",
+      "listingCount": 71,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 71,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 71,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 71,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 71
+      },
+      "ghubaStatuses": {
+        "APPROVED": 71
+      },
+      "approvalStatuses": {
+        "true": 71
+      },
+      "nameDistribution": {
+        "Ergonomic Gaming Chair": 9,
+        "Oak Coffee Table": 8,
+        "Apple Watch Series 8": 12,
+        "Samsung Galaxy S23": 10,
+        "JBL Flip 6": 5,
+        "Nike Air Max": 7,
+        "Dell XPS 13": 7,
+        "Sony Bravia 43”": 6,
+        "Genuine Leather Wallet": 4,
+        "KitchenAid Mixer": 3
+      },
+      "sampleItems": [
+        {
+          "id": "6924c2f7b8dec20348b22125",
+          "name": "Ergonomic Gaming Chair",
+          "category": "Fashion",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42a1"
+            },
+            "name": "Clothing",
+            "image": "clothing.jpg",
+            "status": "Active",
+            "brand": [
+              "Nike",
+              "Adidas",
+              "Under Armour"
+            ],
+            "tags": [
+              "fashion",
+              "apparel"
+            ],
+            "subcategories": [],
+            "slug": "clothing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Clothing",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade319",
+            "imageAlt": "Clothing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1361,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924c2f7b8dec20348b22124",
+          "name": "Oak Coffee Table",
+          "category": "Fashion",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42a1"
+            },
+            "name": "Clothing",
+            "image": "clothing.jpg",
+            "status": "Active",
+            "brand": [
+              "Nike",
+              "Adidas",
+              "Under Armour"
+            ],
+            "tags": [
+              "fashion",
+              "apparel"
+            ],
+            "subcategories": [],
+            "slug": "clothing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Clothing",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade319",
+            "imageAlt": "Clothing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 431,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924c2f7b8dec20348b22123",
+          "name": "Apple Watch Series 8",
+          "category": "Fashion",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42a1"
+            },
+            "name": "Clothing",
+            "image": "clothing.jpg",
+            "status": "Active",
+            "brand": [
+              "Nike",
+              "Adidas",
+              "Under Armour"
+            ],
+            "tags": [
+              "fashion",
+              "apparel"
+            ],
+            "subcategories": [],
+            "slug": "clothing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Clothing",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade319",
+            "imageAlt": "Clothing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 455,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b544": {
+      "storeId": "683581bba1bdf6ca3624b544",
+      "storeName": "Booking",
+      "storeSlug": "booking",
+      "storeCategory": "Booking & Appointments",
+      "storeVariant": "Scheduler Hub",
+      "listingCount": 76,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 1,
+      "missingBrands": 76,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 1,
+      "unlinkedListings": 76,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 75,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 75,
+        "PENDING": 1
+      },
+      "ghubaStatuses": {
+        "APPROVED": 75,
+        "NOT_SET": 1
+      },
+      "approvalStatuses": {
+        "true": 75,
+        "null": 1
+      },
+      "nameDistribution": {
+        "Sony Bravia 43”": 8,
+        "Ergonomic Gaming Chair": 10,
+        "Dell XPS 13": 5,
+        "Apple Watch Series 8": 9,
+        "Oak Coffee Table": 8,
+        "Nike Air Max": 6,
+        "Samsung Galaxy S23": 10,
+        "Genuine Leather Wallet": 4,
+        "JBL Flip 6": 7,
+        "KitchenAid Mixer": 8,
+        "New Name": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924bc43b8dec20348b21e89",
+          "name": "Sony Bravia 43”",
+          "category": "Booking & Appointments",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000020002"
+            },
+            "name": "One-off Appointment",
+            "image": "one-off-appointment.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "single",
+              "private"
+            ],
+            "subcategories": [],
+            "slug": "one-off-appointment",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Book a Single Appointment",
+            "seoDescription": "",
+            "metaKeywords": [
+              "single appointment",
+              "private booking"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000020001",
+            "imageAlt": "One-off Appointment",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "duration": 30,
+              "priceRange": "30-100",
+              "locationType": "onsite"
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 439,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bc43b8dec20348b21e8a",
+          "name": "Ergonomic Gaming Chair",
+          "category": "Booking & Appointments",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000020002"
+            },
+            "name": "One-off Appointment",
+            "image": "one-off-appointment.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "single",
+              "private"
+            ],
+            "subcategories": [],
+            "slug": "one-off-appointment",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Book a Single Appointment",
+            "seoDescription": "",
+            "metaKeywords": [
+              "single appointment",
+              "private booking"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000020001",
+            "imageAlt": "One-off Appointment",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "duration": 30,
+              "priceRange": "30-100",
+              "locationType": "onsite"
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 305,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bc43b8dec20348b21e8b",
+          "name": "Ergonomic Gaming Chair",
+          "category": "Booking & Appointments",
+          "subCategory": {
+            "_id": {
+              "$oid": "000000000000000000020002"
+            },
+            "name": "One-off Appointment",
+            "image": "one-off-appointment.jpg",
+            "status": "Active",
+            "brand": [],
+            "tags": [
+              "single",
+              "private"
+            ],
+            "subcategories": [],
+            "slug": "one-off-appointment",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Book a Single Appointment",
+            "seoDescription": "",
+            "metaKeywords": [
+              "single appointment",
+              "private booking"
+            ],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "updatedAt": {
+              "$date": "2025-06-19T10:00:00Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "000000000000000000020001",
+            "imageAlt": "One-off Appointment",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {
+              "duration": 30,
+              "priceRange": "30-100",
+              "locationType": "onsite"
+            }
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 768,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b545": {
+      "storeId": "683581bba1bdf6ca3624b545",
+      "storeName": "Portfolio & Personal Branding",
+      "storeSlug": "portfolio-personal-branding",
+      "storeCategory": "Portfolio & Personal Branding",
+      "storeVariant": "Creative CV",
+      "listingCount": 69,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 1,
+      "missingBrands": 69,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 1,
+      "unlinkedListings": 69,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 68,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 68,
+        "PENDING": 1
+      },
+      "ghubaStatuses": {
+        "APPROVED": 68,
+        "NOT_SET": 1
+      },
+      "approvalStatuses": {
+        "true": 68,
+        "null": 1
+      },
+      "nameDistribution": {
+        "JBL Flip 6": 10,
+        "KitchenAid Mixer": 7,
+        "Dell XPS 13": 3,
+        "Apple Watch Series 8": 12,
+        "Sony Bravia 43”": 7,
+        "Ergonomic Gaming Chair": 9,
+        "Samsung Galaxy S23": 7,
+        "Nike Air Max": 7,
+        "Oak Coffee Table": 3,
+        "Genuine Leather Wallet": 3,
+        "New Name": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924bc73b8dec20348b21edc",
+          "name": "JBL Flip 6",
+          "category": "Services",
+          "subCategory": {
+            "id": "b1c2d3e4f5a6789012345678",
+            "name": "Cleaning",
+            "slug": "cleaning"
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1476,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bc73b8dec20348b21edd",
+          "name": "KitchenAid Mixer",
+          "category": "Services",
+          "subCategory": {
+            "id": "b1c2d3e4f5a6789012345678",
+            "name": "Cleaning",
+            "slug": "cleaning"
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1235,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bc73b8dec20348b21edb",
+          "name": "Dell XPS 13",
+          "category": "Services",
+          "subCategory": {
+            "id": "b1c2d3e4f5a6789012345678",
+            "name": "Cleaning",
+            "slug": "cleaning"
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1427,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "683581bba1bdf6ca3624b546": {
+      "storeId": "683581bba1bdf6ca3624b546",
+      "storeName": "Directory & Listings",
+      "storeSlug": "directory-listings",
+      "storeCategory": "Directory & Listings",
+      "storeVariant": "Business Directory",
+      "listingCount": 68,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 50,
+      "missingBrands": 68,
+      "missingImages": 2,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 68,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 66,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 2,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 68
+      },
+      "ghubaStatuses": {
+        "APPROVED": 68
+      },
+      "approvalStatuses": {
+        "true": 68
+      },
+      "nameDistribution": {
+        "Genuine Leather Wallet": 7,
+        "KitchenAid Mixer": 6,
+        "Dell XPS 13": 8,
+        "Samsung Galaxy S23": 8,
+        "Oak Coffee Table": 7,
+        "Sony Bravia 43”": 7,
+        "JBL Flip 6": 6,
+        "Nike Air Max": 6,
+        "Ergonomic Gaming Chair": 8,
+        "Apple Watch Series 8": 3,
+        "Sony Sample Title": 1,
+        "Bata Premium": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924bd21b8dec20348b21f5b",
+          "name": "Genuine Leather Wallet",
+          "category": "Health And Beauty",
+          "subCategory": {},
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1744,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bd21b8dec20348b21f5c",
+          "name": "KitchenAid Mixer",
+          "category": "Fashion",
+          "subCategory": {},
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1022,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bd21b8dec20348b21f5a",
+          "name": "Dell XPS 13",
+          "category": "Health And Beauty",
+          "subCategory": {},
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 443,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "68b597b7de9bdd2ba7479f34": {
+      "storeId": "68b597b7de9bdd2ba7479f34",
+      "storeName": "Shoes Store",
+      "storeSlug": "shoes-store",
+      "storeCategory": "Shoes Store",
+      "storeVariant": "Shoes Store Classic",
+      "listingCount": 79,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 79,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 78,
+      "linkedListings": 1,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 1,
+        "unsplash": 78,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 79
+      },
+      "ghubaStatuses": {
+        "APPROVED": 79
+      },
+      "approvalStatuses": {
+        "true": 79
+      },
+      "nameDistribution": {
+        "Apple Watch Series 8": 12,
+        "KitchenAid Mixer": 13,
+        "Samsung Galaxy S23": 8,
+        "Oak Coffee Table": 10,
+        "Ergonomic Gaming Chair": 8,
+        "JBL Flip 6": 6,
+        "Sony Bravia 43”": 2,
+        "Dell XPS 13": 11,
+        "Genuine Leather Wallet": 6,
+        "Nike Air Max": 2,
+        "Nike Shoes": 1
+      },
+      "sampleItems": [
+        {
+          "id": "6924b924b8dec20348b21d7c",
+          "name": "Apple Watch Series 8",
+          "category": "Gifts",
+          "subCategory": {
+            "_id": {
+              "$oid": "5ead34d84ffd4939edc7a331"
+            },
+            "name": "Gift Cards",
+            "image": "gift-cards.jpg",
+            "status": "Active",
+            "brand": [
+              "Amazon",
+              "Google Play",
+              "Apple"
+            ],
+            "tags": [
+              "gift cards"
+            ],
+            "subcategories": [],
+            "slug": "gift-cards",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Gift Cards",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "67204426ac9de2ade3533836",
+            "imageAlt": "Gift Cards",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1803,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924b924b8dec20348b21d76",
+          "name": "Apple Watch Series 8",
+          "category": "Gifts",
+          "subCategory": {
+            "_id": {
+              "$oid": "5ead34d84ffd4939edc7a331"
+            },
+            "name": "Gift Cards",
+            "image": "gift-cards.jpg",
+            "status": "Active",
+            "brand": [
+              "Amazon",
+              "Google Play",
+              "Apple"
+            ],
+            "tags": [
+              "gift cards"
+            ],
+            "subcategories": [],
+            "slug": "gift-cards",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Gift Cards",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "67204426ac9de2ade3533836",
+            "imageAlt": "Gift Cards",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 676,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924b924b8dec20348b21d77",
+          "name": "KitchenAid Mixer",
+          "category": "Gifts",
+          "subCategory": {
+            "_id": {
+              "$oid": "5ead34d84ffd4939edc7a331"
+            },
+            "name": "Gift Cards",
+            "image": "gift-cards.jpg",
+            "status": "Active",
+            "brand": [
+              "Amazon",
+              "Google Play",
+              "Apple"
+            ],
+            "tags": [
+              "gift cards"
+            ],
+            "subcategories": [],
+            "slug": "gift-cards",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Gift Cards",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "67204426ac9de2ade3533836",
+            "imageAlt": "Gift Cards",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 142,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "68f017c25d341681f2b63946": {
+      "storeId": "68f017c25d341681f2b63946",
+      "storeName": "Flourishhub",
+      "storeSlug": "flourishhub",
+      "storeCategory": "Consultant & Coach",
+      "storeVariant": "Executive Coach (v1)",
+      "listingCount": 2,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 0,
+      "missingImages": 1,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 2,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 1,
+        "unsplash": 0,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 1,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 2
+      },
+      "ghubaStatuses": {
+        "APPROVED": 2
+      },
+      "approvalStatuses": {
+        "true": 2
+      },
+      "nameDistribution": {
+        "Stepping Out: Life Skills Program": 1,
+        "Sample Programs book": 1
+      },
+      "sampleItems": [
+        {
+          "id": "68ff403ec691020fd06b2a8c",
+          "name": "Stepping Out: Life Skills Program",
+          "category": "Consulting & Coaching",
+          "subCategory": {
+            "id": "efe0bd2c212eceec598c4301",
+            "name": "Business Consulting",
+            "slug": "business-consulting",
+            "sortOrder": 0,
+            "visible": true
+          },
+          "subCategoryName": "Business Consulting",
+          "brand": "Tony Robbins",
+          "sellingPrice": 12500,
+          "images": [],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "68fbf52b584c118332856acf",
+          "name": "Sample Programs book",
+          "category": "Digital Goods & Subscriptions",
+          "subCategory": {
+            "id": "b2c3d4e5f6a8071928374655",
+            "name": "E-books",
+            "slug": "ebooks",
+            "sortOrder": 1,
+            "visible": true
+          },
+          "subCategoryName": "E-books",
+          "brand": "Coursera",
+          "sellingPrice": 500,
+          "images": [
+            "https://dozi4r4ug9739.cloudfront.net/images/1761342754585-1.png"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "68ff7b9b83da53e461f9ffb8": {
+      "storeId": "68ff7b9b83da53e461f9ffb8",
+      "storeName": "Flourishhub",
+      "storeSlug": "pflourishhub",
+      "storeCategory": "Public Speaking",
+      "storeVariant": null,
+      "listingCount": 2,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 0,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 2,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 2,
+        "unsplash": 0,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 2
+      },
+      "ghubaStatuses": {
+        "APPROVED": 2
+      },
+      "approvalStatuses": {
+        "true": 2
+      },
+      "nameDistribution": {
+        "Stepping Out: Life Skills Program": 2
+      },
+      "sampleItems": [
+        {
+          "id": "69012ecbcda3cea48b52be7f",
+          "name": "Stepping Out: Life Skills Program",
+          "category": "Consulting & Coaching",
+          "subCategory": {
+            "id": "a60ba1a7a56c9e00252bab11",
+            "name": "Life Coaching",
+            "slug": "life-coaching",
+            "sortOrder": 1,
+            "visible": true
+          },
+          "subCategoryName": "Life Coaching",
+          "brand": "Calm",
+          "sellingPrice": 12500,
+          "images": [
+            "https://dozi4r4ug9739.cloudfront.net/images/1761685186317-pexels-alinevianafoto-2465877.jpg"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "690084dca2172b890cd8f61b",
+          "name": "Stepping Out: Life Skills Program",
+          "category": "Digital Goods & Subscriptions",
+          "subCategory": {
+            "id": "b2c3d4e5f6a8071928374655",
+            "name": "E-books",
+            "slug": "ebooks",
+            "sortOrder": 1,
+            "visible": true
+          },
+          "subCategoryName": "E-books",
+          "brand": "Apple",
+          "sellingPrice": 12500,
+          "images": [
+            "https://dozi4r4ug9739.cloudfront.net/images/1761641677233-pexels-alinevianafoto-2465877.jpg",
+            "https://dozi4r4ug9739.cloudfront.net/images/1761641677232-pexels-marta-dzedyshko-1042863-2067569.jpg"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "69208b02e1811d332eb13f1b": {
+      "storeId": "69208b02e1811d332eb13f1b",
+      "storeName": "Fashion Store",
+      "storeSlug": "fashion-store",
+      "storeCategory": "Fashion Shop",
+      "storeVariant": "Modern Fashion Store",
+      "listingCount": 70,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 70,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 70,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 70,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 70
+      },
+      "ghubaStatuses": {
+        "APPROVED": 70
+      },
+      "approvalStatuses": {
+        "true": 70
+      },
+      "nameDistribution": {
+        "Samsung Galaxy S23": 10,
+        "Nike Air Max": 11,
+        "Ergonomic Gaming Chair": 7,
+        "Dell XPS 13": 10,
+        "Genuine Leather Wallet": 3,
+        "Apple Watch Series 8": 7,
+        "KitchenAid Mixer": 6,
+        "Oak Coffee Table": 2,
+        "JBL Flip 6": 10,
+        "Sony Bravia 43”": 4
+      },
+      "sampleItems": [
+        {
+          "id": "6924ba88b8dec20348b21dc0",
+          "name": "Samsung Galaxy S23",
+          "category": "Clothing",
+          "subCategory": {
+            "_id": {
+              "$oid": "676bb6a00de34d386c10d934"
+            },
+            "name": "Underwear & Lingerie",
+            "image": "underwear-lingerie.jpg",
+            "status": "Active",
+            "brand": [
+              "Calvin Klein",
+              "Victoria’s Secret",
+              "Hanes"
+            ],
+            "tags": [
+              "lingerie",
+              "undergarments",
+              "intimates"
+            ],
+            "subcategories": [],
+            "slug": "underwear-lingerie",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Underwear & Lingerie",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 7,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "63f7c9e2d91b1b2a5e80b006",
+            "imageAlt": "Underwear & Lingerie",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 933,
+          "images": [
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924ba88b8dec20348b21dc1",
+          "name": "Nike Air Max",
+          "category": "Clothing",
+          "subCategory": {
+            "_id": {
+              "$oid": "676bb6a00de34d386c10d934"
+            },
+            "name": "Underwear & Lingerie",
+            "image": "underwear-lingerie.jpg",
+            "status": "Active",
+            "brand": [
+              "Calvin Klein",
+              "Victoria’s Secret",
+              "Hanes"
+            ],
+            "tags": [
+              "lingerie",
+              "undergarments",
+              "intimates"
+            ],
+            "subcategories": [],
+            "slug": "underwear-lingerie",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Underwear & Lingerie",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 7,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "63f7c9e2d91b1b2a5e80b006",
+            "imageAlt": "Underwear & Lingerie",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1971,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924ba88b8dec20348b21dc2",
+          "name": "Nike Air Max",
+          "category": "Fashion",
+          "subCategory": {
+            "_id": {
+              "$oid": "efe0bd2c212eceec598c42a1"
+            },
+            "name": "Clothing",
+            "image": "clothing.jpg",
+            "status": "Active",
+            "brand": [
+              "Nike",
+              "Adidas",
+              "Under Armour"
+            ],
+            "tags": [
+              "fashion",
+              "apparel"
+            ],
+            "subcategories": [],
+            "slug": "clothing",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Clothing",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade319",
+            "imageAlt": "Clothing",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": false,
+            "showInHomepage": false,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1368,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    },
+    "69208b33e1811d332eb13f1c": {
+      "storeId": "69208b33e1811d332eb13f1c",
+      "storeName": "Furniture Store",
+      "storeSlug": "furniture-store",
+      "storeCategory": "Furniture Shop",
+      "storeVariant": "Modern Furniture Store",
+      "listingCount": 90,
+      "productCount": 0,
+      "missingCategories": 0,
+      "missingSubCategories": 0,
+      "missingBrands": 90,
+      "missingImages": 0,
+      "emptyOrPlaceholderNames": 0,
+      "unlinkedListings": 90,
+      "linkedListings": 0,
+      "zeroPrice": 0,
+      "imageTypes": {
+        "cloudfront": 0,
+        "unsplash": 90,
+        "pexels": 0,
+        "placeholder": 0,
+        "empty": 0,
+        "other": 0
+      },
+      "statuses": {
+        "ACTIVE": 90
+      },
+      "ghubaStatuses": {
+        "APPROVED": 90
+      },
+      "approvalStatuses": {
+        "true": 90
+      },
+      "nameDistribution": {
+        "KitchenAid Mixer": 10,
+        "Sony Bravia 43”": 12,
+        "Samsung Galaxy S23": 10,
+        "Ergonomic Gaming Chair": 9,
+        "Dell XPS 13": 8,
+        "Apple Watch Series 8": 13,
+        "Oak Coffee Table": 8,
+        "Nike Air Max": 8,
+        "JBL Flip 6": 6,
+        "Genuine Leather Wallet": 6
+      },
+      "sampleItems": [
+        {
+          "id": "6924bafcb8dec20348b21e1b",
+          "name": "KitchenAid Mixer",
+          "category": "Furniture",
+          "subCategory": {
+            "_id": {
+              "$oid": "afe0bd2c212eceec598c42a2"
+            },
+            "name": "Living Room",
+            "image": "living-room.jpg",
+            "status": "Active",
+            "brand": [
+              "Ikea",
+              "West Elm",
+              "CB2"
+            ],
+            "tags": [
+              "furniture",
+              "living-room",
+              "sofa",
+              "interior"
+            ],
+            "subcategories": [],
+            "slug": "living-room",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Living Room Furniture",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade334",
+            "imageAlt": "Living Room Furniture",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": true,
+            "showInHomepage": true,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 613,
+          "images": [
+            "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bafcb8dec20348b21e1a",
+          "name": "Sony Bravia 43”",
+          "category": "Furniture",
+          "subCategory": {
+            "_id": {
+              "$oid": "afe0bd2c212eceec598c42a2"
+            },
+            "name": "Living Room",
+            "image": "living-room.jpg",
+            "status": "Active",
+            "brand": [
+              "Ikea",
+              "West Elm",
+              "CB2"
+            ],
+            "tags": [
+              "furniture",
+              "living-room",
+              "sofa",
+              "interior"
+            ],
+            "subcategories": [],
+            "slug": "living-room",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Living Room Furniture",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade334",
+            "imageAlt": "Living Room Furniture",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": true,
+            "showInHomepage": true,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 1368,
+          "images": [
+            "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        },
+        {
+          "id": "6924bafcb8dec20348b21e19",
+          "name": "Samsung Galaxy S23",
+          "category": "Furniture",
+          "subCategory": {
+            "_id": {
+              "$oid": "afe0bd2c212eceec598c42a2"
+            },
+            "name": "Living Room",
+            "image": "living-room.jpg",
+            "status": "Active",
+            "brand": [
+              "Ikea",
+              "West Elm",
+              "CB2"
+            ],
+            "tags": [
+              "furniture",
+              "living-room",
+              "sofa",
+              "interior"
+            ],
+            "subcategories": [],
+            "slug": "living-room",
+            "description": "",
+            "longDescription": "",
+            "seoTitle": "Living Room Furniture",
+            "seoDescription": "",
+            "metaKeywords": [],
+            "sortOrder": 0,
+            "visible": true,
+            "createdAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "updatedAt": {
+              "$date": "2025-04-18T20:23:20.053Z"
+            },
+            "createdBy": "system",
+            "updatedBy": "system",
+            "parentId": "93e002c712ad248bb0ade334",
+            "imageAlt": "Living Room Furniture",
+            "thumbnail": null,
+            "bannerImage": null,
+            "localization": {},
+            "productCount": 0,
+            "isFeatured": true,
+            "showInHomepage": true,
+            "attributes": {}
+          },
+          "subCategoryName": null,
+          "brand": null,
+          "sellingPrice": 431,
+          "images": [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80"
+          ],
+          "status": "ACTIVE",
+          "ghubaStatus": "APPROVED",
+          "ghubaAdminApproved": true,
+          "productId": null
+        }
+      ]
+    }
+  }
+}

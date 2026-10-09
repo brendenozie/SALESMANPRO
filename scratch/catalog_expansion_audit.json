@@ -1,0 +1,384 @@
+=== STARTING CATALOG EXPANSION SCRIPT ===
+Verified 65 owned companies in allowlist for userId 67c5b0182e2372b5f2366dbe.
+
+--- EXECUTING BATCH A: Existing Inventory & Unlinked Products ---
+Created missing listing for Panadol: 6ac8de2f7095d311e6d805db
+Linked Salad 2 listing 6928480726d014ca98b8d7d4 to Product 692850af26d014ca98b8d7d5
+Calibrated DAP Fertilizer Product 6a2be6c41642861cd4ad660c and Listing 6a2be7f01642861cd4ad660d
+
+--- EXECUTING BATCH B: Store-by-Store Catalog Expansion ---
+Found 12 candidate additions for Batch B.
+Created Product (6ac8de2f7095d311e6d805dc) and Listing (6ac8de2f7095d311e6d805dd) for "Fresh Roasted Salted Peanuts (250g)" in "Peanut Duka".
+Created Product (6ac8de2f7095d311e6d805de) and Listing (6ac8de2f7095d311e6d805df) for "Pure Natural Creamy Peanut Butter (400g)" in "Peanut Duka".
+Created Product (6ac8de2f7095d311e6d805e0) and Listing (6ac8de2f7095d311e6d805e1) for "Raw Shelled Red Groundnuts (1kg)" in "Peanut Duka".
+Created Product (6ac8de2f7095d311e6d805e2) and Listing (6ac8de2f7095d311e6d805e3) for "Anti-Blue Light Computer Glasses - TR90 Matte Black Frame" in "Glasses Duka".
+Created Product (6ac8de2f7095d311e6d805e4) and Listing (6ac8de2f7095d311e6d805e5) for "Classic Polarized Unisex Sunglasses UV400 Protection" in "Glasses Duka".
+Created Product (6ac8de2f7095d311e6d805e6) and Listing (6ac8de2f7095d311e6d805e7) for "Lightweight Flexible TR90 Reading Glasses (+2.00)" in "Glasses Duka".
+Created Product (6ac8de2f7095d311e6d805e8) and Listing (6ac8de2f7095d311e6d805e9) for "RGB Surround Sound Gaming Headset with Noise-Cancelling Mic" in "Gaming Duka".
+Created Product (6ac8de2f7095d311e6d805ea) and Listing (6ac8de2f7095d311e6d805eb) for "Wireless Ergonomic Gaming Controller for PC & Android" in "Gaming Duka".
+Created Product (6ac8de2f7095d311e6d805ec) and Listing (6ac8de2f7095d311e6d805ed) for "Men's Lightweight Breathable Running Sneakers (Sizes 40-45)" in "Shoes Store".
+Created Product (6ac8de2f7095d311e6d805ee) and Listing (6ac8de2f7095d311e6d805ef) for "Women's Air Cushion Athletic Walking Shoes (Sizes 37-41)" in "Shoes Store".
+Created Product (6ac8de2f7095d311e6d805f0) and Listing (6ac8de2f7095d311e6d805f1) for "Certified Hybrid Maize Seed H614 (2kg)" in "Agrovet ".
+Created Product (6ac8de2f7095d311e6d805f2) and Listing (6ac8de2f7095d311e6d805f3) for "Albendazole 10% Broad Spectrum Livestock Dewormer (500ml)" in "Agrovet ".
+
+--- RUNNING POST-EXECUTION VERIFICATION ---
+=== POST-EXECUTION SUMMARY ===
+{
+  "timestamp": "2026-10-09T12:29:35.067Z",
+  "targetUserId": "67c5b0182e2372b5f2366dbe",
+  "initialCounts": {
+    "orders": 196,
+    "orderItems": 295,
+    "products": 15,
+    "listings": 58
+  },
+  "batchA": [],
+  "batchB": [],
+  "createdProducts": [
+    {
+      "id": "6ac8de2f7095d311e6d805dc",
+      "companyId": "699fefeaccfde3cbdf107c7c",
+      "companyName": "Peanut Duka",
+      "name": "Fresh Roasted Salted Peanuts (250g)",
+      "category": "Peanuts Store",
+      "subCategory": "Roasted Peanuts",
+      "brand": "Nutty Naturals",
+      "sellingPrice": 200,
+      "stock": 50
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805de",
+      "companyId": "699fefeaccfde3cbdf107c7c",
+      "companyName": "Peanut Duka",
+      "name": "Pure Natural Creamy Peanut Butter (400g)",
+      "category": "Peanuts Store",
+      "subCategory": "Peanut Butter",
+      "brand": "Farm Fresh",
+      "sellingPrice": 350,
+      "stock": 30
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e0",
+      "companyId": "699fefeaccfde3cbdf107c7c",
+      "companyName": "Peanut Duka",
+      "name": "Raw Shelled Red Groundnuts (1kg)",
+      "category": "Peanuts Store",
+      "subCategory": "Raw Peanuts",
+      "brand": "Organic Harvest",
+      "sellingPrice": 280,
+      "stock": 40
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e2",
+      "companyId": "699ff330ccfde3cbdf107c7d",
+      "companyName": "Glasses Duka",
+      "name": "Anti-Blue Light Computer Glasses - TR90 Matte Black Frame",
+      "category": "Glasses & Spectacles Store",
+      "subCategory": "Blue Light Glasses",
+      "brand": "Cyxus",
+      "sellingPrice": 1800,
+      "stock": 25
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e4",
+      "companyId": "699ff330ccfde3cbdf107c7d",
+      "companyName": "Glasses Duka",
+      "name": "Classic Polarized Unisex Sunglasses UV400 Protection",
+      "category": "Glasses & Spectacles Store",
+      "subCategory": "Sunglasses",
+      "brand": "Ray-Ban",
+      "sellingPrice": 3500,
+      "stock": 15
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e6",
+      "companyId": "699ff330ccfde3cbdf107c7d",
+      "companyName": "Glasses Duka",
+      "name": "Lightweight Flexible TR90 Reading Glasses (+2.00)",
+      "category": "Glasses & Spectacles Store",
+      "subCategory": "Reading Glasses",
+      "brand": "Foster Grant",
+      "sellingPrice": 1200,
+      "stock": 20
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e8",
+      "companyId": "699ff34bccfde3cbdf107c7e",
+      "companyName": "Gaming Duka",
+      "name": "RGB Surround Sound Gaming Headset with Noise-Cancelling Mic",
+      "category": "Gaming Store",
+      "subCategory": "Gaming Accessories",
+      "brand": "Logitech G",
+      "sellingPrice": 3800,
+      "stock": 15
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805ea",
+      "companyId": "699ff34bccfde3cbdf107c7e",
+      "companyName": "Gaming Duka",
+      "name": "Wireless Ergonomic Gaming Controller for PC & Android",
+      "category": "Gaming Store",
+      "subCategory": "Gaming Accessories",
+      "brand": "Razer",
+      "sellingPrice": 4500,
+      "stock": 12
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805ec",
+      "companyId": "68b597b7de9bdd2ba7479f34",
+      "companyName": "Shoes Store",
+      "name": "Men's Lightweight Breathable Running Sneakers (Sizes 40-45)",
+      "category": "Fashion",
+      "subCategory": "Shoes",
+      "brand": "Puma",
+      "sellingPrice": 3800,
+      "stock": 20
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805ee",
+      "companyId": "68b597b7de9bdd2ba7479f34",
+      "companyName": "Shoes Store",
+      "name": "Women's Air Cushion Athletic Walking Shoes (Sizes 37-41)",
+      "category": "Fashion",
+      "subCategory": "Shoes",
+      "brand": "Nike",
+      "sellingPrice": 4200,
+      "stock": 18
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805f0",
+      "companyId": "699c7f464d23c222dcedfa12",
+      "companyName": "Agrovet ",
+      "name": "Certified Hybrid Maize Seed H614 (2kg)",
+      "category": "Agrovet",
+      "subCategory": "Seeds",
+      "brand": "Kenya Seed Company",
+      "sellingPrice": 550,
+      "stock": 50
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805f2",
+      "companyId": "699c7f464d23c222dcedfa12",
+      "companyName": "Agrovet ",
+      "name": "Albendazole 10% Broad Spectrum Livestock Dewormer (500ml)",
+      "category": "Agrovet",
+      "subCategory": "Livestock Medicine",
+      "brand": "Norbrook",
+      "sellingPrice": 850,
+      "stock": 25
+    }
+  ],
+  "createdListings": [
+    {
+      "id": "6ac8de2f7095d311e6d805db",
+      "productId": "68dd3fc26bf18ce921f6f0f6",
+      "companyId": "683581bba1bdf6ca3624b535",
+      "companyName": "Healthcare & Clinics",
+      "name": "Panadol Extra Pain Relief (16 Tablets)",
+      "action": "CREATE_MISSING_LISTING"
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805dd",
+      "productId": "6ac8de2f7095d311e6d805dc",
+      "companyId": "699fefeaccfde3cbdf107c7c",
+      "companyName": "Peanut Duka",
+      "name": "Fresh Roasted Salted Peanuts (250g)",
+      "category": "Peanuts Store",
+      "subCategory": "Roasted Peanuts",
+      "brand": "Nutty Naturals",
+      "sellingPrice": 200,
+      "stock": 50
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805df",
+      "productId": "6ac8de2f7095d311e6d805de",
+      "companyId": "699fefeaccfde3cbdf107c7c",
+      "companyName": "Peanut Duka",
+      "name": "Pure Natural Creamy Peanut Butter (400g)",
+      "category": "Peanuts Store",
+      "subCategory": "Peanut Butter",
+      "brand": "Farm Fresh",
+      "sellingPrice": 350,
+      "stock": 30
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e1",
+      "productId": "6ac8de2f7095d311e6d805e0",
+      "companyId": "699fefeaccfde3cbdf107c7c",
+      "companyName": "Peanut Duka",
+      "name": "Raw Shelled Red Groundnuts (1kg)",
+      "category": "Peanuts Store",
+      "subCategory": "Raw Peanuts",
+      "brand": "Organic Harvest",
+      "sellingPrice": 280,
+      "stock": 40
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e3",
+      "productId": "6ac8de2f7095d311e6d805e2",
+      "companyId": "699ff330ccfde3cbdf107c7d",
+      "companyName": "Glasses Duka",
+      "name": "Anti-Blue Light Computer Glasses - TR90 Matte Black Frame",
+      "category": "Glasses & Spectacles Store",
+      "subCategory": "Blue Light Glasses",
+      "brand": "Cyxus",
+      "sellingPrice": 1800,
+      "stock": 25
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e5",
+      "productId": "6ac8de2f7095d311e6d805e4",
+      "companyId": "699ff330ccfde3cbdf107c7d",
+      "companyName": "Glasses Duka",
+      "name": "Classic Polarized Unisex Sunglasses UV400 Protection",
+      "category": "Glasses & Spectacles Store",
+      "subCategory": "Sunglasses",
+      "brand": "Ray-Ban",
+      "sellingPrice": 3500,
+      "stock": 15
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e7",
+      "productId": "6ac8de2f7095d311e6d805e6",
+      "companyId": "699ff330ccfde3cbdf107c7d",
+      "companyName": "Glasses Duka",
+      "name": "Lightweight Flexible TR90 Reading Glasses (+2.00)",
+      "category": "Glasses & Spectacles Store",
+      "subCategory": "Reading Glasses",
+      "brand": "Foster Grant",
+      "sellingPrice": 1200,
+      "stock": 20
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805e9",
+      "productId": "6ac8de2f7095d311e6d805e8",
+      "companyId": "699ff34bccfde3cbdf107c7e",
+      "companyName": "Gaming Duka",
+      "name": "RGB Surround Sound Gaming Headset with Noise-Cancelling Mic",
+      "category": "Gaming Store",
+      "subCategory": "Gaming Accessories",
+      "brand": "Logitech G",
+      "sellingPrice": 3800,
+      "stock": 15
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805eb",
+      "productId": "6ac8de2f7095d311e6d805ea",
+      "companyId": "699ff34bccfde3cbdf107c7e",
+      "companyName": "Gaming Duka",
+      "name": "Wireless Ergonomic Gaming Controller for PC & Android",
+      "category": "Gaming Store",
+      "subCategory": "Gaming Accessories",
+      "brand": "Razer",
+      "sellingPrice": 4500,
+      "stock": 12
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805ed",
+      "productId": "6ac8de2f7095d311e6d805ec",
+      "companyId": "68b597b7de9bdd2ba7479f34",
+      "companyName": "Shoes Store",
+      "name": "Men's Lightweight Breathable Running Sneakers (Sizes 40-45)",
+      "category": "Fashion",
+      "subCategory": "Shoes",
+      "brand": "Puma",
+      "sellingPrice": 3800,
+      "stock": 20
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805ef",
+      "productId": "6ac8de2f7095d311e6d805ee",
+      "companyId": "68b597b7de9bdd2ba7479f34",
+      "companyName": "Shoes Store",
+      "name": "Women's Air Cushion Athletic Walking Shoes (Sizes 37-41)",
+      "category": "Fashion",
+      "subCategory": "Shoes",
+      "brand": "Nike",
+      "sellingPrice": 4200,
+      "stock": 18
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805f1",
+      "productId": "6ac8de2f7095d311e6d805f0",
+      "companyId": "699c7f464d23c222dcedfa12",
+      "companyName": "Agrovet ",
+      "name": "Certified Hybrid Maize Seed H614 (2kg)",
+      "category": "Agrovet",
+      "subCategory": "Seeds",
+      "brand": "Kenya Seed Company",
+      "sellingPrice": 550,
+      "stock": 50
+    },
+    {
+      "id": "6ac8de2f7095d311e6d805f3",
+      "productId": "6ac8de2f7095d311e6d805f2",
+      "companyId": "699c7f464d23c222dcedfa12",
+      "companyName": "Agrovet ",
+      "name": "Albendazole 10% Broad Spectrum Livestock Dewormer (500ml)",
+      "category": "Agrovet",
+      "subCategory": "Livestock Medicine",
+      "brand": "Norbrook",
+      "sellingPrice": 850,
+      "stock": 25
+    }
+  ],
+  "updatedProducts": [
+    {
+      "id": "68dd3fc26bf18ce921f6f0f6",
+      "companyId": "683581bba1bdf6ca3624b535",
+      "companyName": "Healthcare & Clinics",
+      "name": "Panadol Extra Pain Relief (16 Tablets)",
+      "action": "ENRICH_EXISTING_PRODUCT",
+      "before": {
+        "category": null,
+        "subCategoryName": "",
+        "productCategoryId": null,
+        "costPrice": 5,
+        "sellingPrice": 10,
+        "images": [
+          [
+            [
+              ""
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "6a2be6c41642861cd4ad660c",
+      "companyId": "699c7f464d23c222dcedfa12",
+      "name": "Yara Diammonium Phosphate (DAP) Fertilizer - 50kg",
+      "action": "CALIBRATE_PRODUCT_PRICING_AND_TAXONOMY"
+    }
+  ],
+  "updatedListings": [
+    {
+      "id": "6928480726d014ca98b8d7d4",
+      "companyId": "6825c2c7969ab9f16f620f67",
+      "name": "Salad 2",
+      "action": "LINK_LISTING_TO_PRODUCT",
+      "linkedProductId": "692850af26d014ca98b8d7d5"
+    },
+    {
+      "id": "6a2be7f01642861cd4ad660d",
+      "companyId": "699c7f464d23c222dcedfa12",
+      "name": "Yara Diammonium Phosphate (DAP) Fertilizer - 50kg",
+      "action": "CALIBRATE_LISTING_PRICING_AND_TAXONOMY"
+    }
+  ],
+  "errors": [],
+  "finalCounts": {
+    "orders": 196,
+    "orderItems": 295,
+    "products": 27,
+    "listings": 71,
+    "activeListings": 11
+  },
+  "deltas": {
+    "newProducts": 12,
+    "newListings": 13,
+    "orderDelta": 0,
+    "orderItemDelta": 0
+  },
+  "durationMs": 536
+}

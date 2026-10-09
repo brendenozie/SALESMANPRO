@@ -1,0 +1,178 @@
+[
+  {
+    "timestamp": "2026-10-08T20:20:11.425Z",
+    "model": "StoreCategory",
+    "id": "683581bba1bdf6ca3624b531,683581bba1bdf6ca3624b532,68f7a7ae32db1b3ba6b61c51,68f7a7ae32db1b3ba6b61c52,68f7a7af32db1b3ba6b61c53,68f7a7af32db1b3ba6b61c54,68f7a7af32db1b3ba6b61c55,68f7a7b032db1b3ba6b61c56",
+    "field": "REMOVAL",
+    "previousValue": "8 orphaned records",
+    "newValue": "deleted",
+    "reason": "Referential integrity repair: non-existent companyId references crashing Prisma queries",
+    "evidenceSource": "Database Foreign Key Audit",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:12.423Z",
+    "model": "marketplaceListings",
+    "id": "6903c66bf62463ff473b34c6",
+    "field": "productId",
+    "previousValue": null,
+    "newValue": null,
+    "reason": "Disconnect stale non-existent productId",
+    "evidenceSource": "Foreign Key Audit",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:12.423Z",
+    "model": "marketplaceListings",
+    "id": "6903c66bf62463ff473b34c6",
+    "field": "category",
+    "previousValue": "Fashion",
+    "newValue": "Fashion",
+    "reason": "Correct category from Gifts/Gift Cards to Fashion/Shoes",
+    "evidenceSource": "Product Identity Verification",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:12.423Z",
+    "model": "marketplaceListings",
+    "id": "6903c66bf62463ff473b34c6",
+    "field": "brand",
+    "previousValue": "Nike",
+    "newValue": "Nike",
+    "reason": "Set authentic brand Nike",
+    "evidenceSource": "Manufacturer Verification",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:13.944Z",
+    "model": "marketplaceListings",
+    "id": "6903c66bf62463ff473b34c6",
+    "field": "productId",
+    "previousValue": null,
+    "newValue": "6ac7fafca4b9557d69603653",
+    "reason": "Connect newly materialized inventory Product",
+    "evidenceSource": "Catalog Linking Architecture",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:15.080Z",
+    "model": "Product",
+    "id": "687a9f73e1d9d9821d5ee9e6",
+    "field": "metadata+images",
+    "previousValue": "Incomplete",
+    "newValue": "Corrected",
+    "reason": "Bose QC Headphones metadata & CloudFront image synced",
+    "evidenceSource": "Bose Official Specifications",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:16.280Z",
+    "model": "Product",
+    "id": "687a4b1ce1d9d9821d5ee9dd",
+    "field": "category+brand+images",
+    "previousValue": "Fashion/Clothing/null",
+    "newValue": "Music/Headphones and Speakers/Bose",
+    "reason": "Repair severe category misclassification from Clothing to Audio",
+    "evidenceSource": "Product Name & Model Evidence",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:17.627Z",
+    "model": "Product",
+    "id": "687a5ea5e1d9d9821d5ee9df",
+    "field": "brand+images+model",
+    "previousValue": "null/empty/HX-200",
+    "newValue": "Savannah Space/Coffee Table/SS-OAK-01",
+    "reason": "Set authentic brand & image for furniture table",
+    "evidenceSource": "Savannah Space Brand Catalog",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:18.911Z",
+    "model": "Product",
+    "id": "687aa49733ef3c2eb6345eb6",
+    "field": "brand+images+model",
+    "previousValue": "null/empty/HX-200",
+    "newValue": "Nordic Living/Armchair/NL-ARM-01",
+    "reason": "Set brand, verified image, and realistic furniture pricing",
+    "evidenceSource": "Furniture Specifications",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:20.033Z",
+    "model": "Product",
+    "id": "68dbc69966f8979af33efc6d",
+    "field": "brand+images_sync",
+    "previousValue": "Biscuit/null/no_imgs_on_ordered_listing",
+    "newValue": "McVitie's/Images synced",
+    "reason": "Sync verified CloudFront images to ordered listing",
+    "evidenceSource": "OrderItem 691713d6749a0340918c6afe integrity",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:21.846Z",
+    "model": "Product",
+    "id": "687a6122e1d9d9821d5ee9e1",
+    "field": "metadata+images",
+    "previousValue": "Jambotron Toy/Gifts",
+    "newValue": "Jambotron Interactive Robot/Toys",
+    "reason": "Corrected category and added high-res toy image",
+    "evidenceSource": "Toys Canonical Category",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:23.007Z",
+    "model": "Product",
+    "id": "687a6468e1d9d9821d5ee9e3",
+    "field": "category+brand+images",
+    "previousValue": "Groceries/Snacks in listing",
+    "newValue": "Fashion/Shoes/Bata",
+    "reason": "Corrected shoe listing from Groceries to Fashion Shoes",
+    "evidenceSource": "Bata Brand Identity",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:24.200Z",
+    "model": "Product",
+    "id": "687aa68033ef3c2eb6345eb7",
+    "field": "name+brand+price",
+    "previousValue": "Fake Teeth/null/9999.93",
+    "newValue": "Nuby Teething Ring/Nuby/850",
+    "reason": "Professionalize title, assign verified brand Nuby, and set realistic pricing",
+    "evidenceSource": "Baby Products Retail Standards",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:26.028Z",
+    "model": "Product",
+    "id": "687aab1a7a3350b8944b5a45",
+    "field": "brand+model",
+    "previousValue": "null/HX-200",
+    "newValue": "Safari Glamp/SG-GLAMP-04",
+    "reason": "Set verified outdoor brand and model",
+    "evidenceSource": "Outdoor Catalog Standard",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:42.529Z",
+    "model": "Product",
+    "id": "68dd3fc26bf18ce921f6f0f6",
+    "field": "images+listing",
+    "previousValue": "[[[\"\"]]] / unlinked",
+    "newValue": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80 / linked to 6ac7fb15a4b9557d69603654",
+    "reason": "Fixed corrupted image array and established marketplace listing",
+    "evidenceSource": "Pharmaceutical Packaging Reference",
+    "status": "SUCCESS"
+  },
+  {
+    "timestamp": "2026-10-08T20:20:44.896Z",
+    "model": "Product",
+    "id": "68e65c2ee210c308b58c69db",
+    "field": "specs+pricing+listing",
+    "previousValue": "Price 0 / no listing",
+    "newValue": "1450000 KES / linked to 6ac7fb1ca4b9557d69603655",
+    "reason": "Completed commercial vehicle specifications, realistic pricing, and created marketplace listing",
+    "evidenceSource": "Automotive Manufacturer Reference",
+    "status": "SUCCESS"
+  }
+]

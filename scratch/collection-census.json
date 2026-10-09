@@ -1,0 +1,550 @@
+=== COMPLETE SALESMANPRODB COLLECTION INVENTORY ===
+Total Collections: 136
+Total Documents:   6092
+
+[
+  {
+    "collection": "AIAgent",
+    "count": 70
+  },
+  {
+    "collection": "AIAgentTask",
+    "count": 355
+  },
+  {
+    "collection": "AIPackage",
+    "count": 4
+  },
+  {
+    "collection": "AcademicLevel",
+    "count": 7
+  },
+  {
+    "collection": "AcademicYear",
+    "count": 2
+  },
+  {
+    "collection": "Account",
+    "count": 257
+  },
+  {
+    "collection": "ActivityType",
+    "count": 5
+  },
+  {
+    "collection": "Address",
+    "count": 1
+  },
+  {
+    "collection": "AgentInventory",
+    "count": 2
+  },
+  {
+    "collection": "AgentInventoryLog",
+    "count": 3
+  },
+  {
+    "collection": "AnalyticsConfig",
+    "count": 34
+  },
+  {
+    "collection": "AttendanceRecord",
+    "count": 2
+  },
+  {
+    "collection": "AuditLog",
+    "count": 1
+  },
+  {
+    "collection": "BackupSystemConfig",
+    "count": 1
+  },
+  {
+    "collection": "Banner",
+    "count": 69
+  },
+  {
+    "collection": "Blog",
+    "count": 11
+  },
+  {
+    "collection": "Case",
+    "count": 1
+  },
+  {
+    "collection": "ClassSchedule",
+    "count": 6
+  },
+  {
+    "collection": "Classroom",
+    "count": 5
+  },
+  {
+    "collection": "ClientInventory",
+    "count": 3
+  },
+  {
+    "collection": "Company",
+    "count": 78
+  },
+  {
+    "collection": "CompanyAddress",
+    "count": 2
+  },
+  {
+    "collection": "CompanyCategory",
+    "count": 46
+  },
+  {
+    "collection": "CompanyLocation",
+    "count": 19
+  },
+  {
+    "collection": "Consumer",
+    "count": 13
+  },
+  {
+    "collection": "Content",
+    "count": 2
+  },
+  {
+    "collection": "Conversation",
+    "count": 4
+  },
+  {
+    "collection": "ConversationParticipant",
+    "count": 8
+  },
+  {
+    "collection": "CoreValues",
+    "count": 71
+  },
+  {
+    "collection": "Course",
+    "count": 7
+  },
+  {
+    "collection": "CourseAssignment",
+    "count": 5
+  },
+  {
+    "collection": "CourseEducatorAssignment",
+    "count": 8
+  },
+  {
+    "collection": "CourseEnrollment",
+    "count": 17
+  },
+  {
+    "collection": "CourseMaterial",
+    "count": 1
+  },
+  {
+    "collection": "CustomerOrder",
+    "count": 196
+  },
+  {
+    "collection": "DatabaseBackup",
+    "count": 103
+  },
+  {
+    "collection": "Delivery",
+    "count": 1
+  },
+  {
+    "collection": "Department",
+    "count": 3
+  },
+  {
+    "collection": "Destination",
+    "count": 1
+  },
+  {
+    "collection": "Doctor",
+    "count": 2
+  },
+  {
+    "collection": "Educator",
+    "count": 5
+  },
+  {
+    "collection": "EducatorAcademicLevelAssignment",
+    "count": 3
+  },
+  {
+    "collection": "EmailDeliveryLog",
+    "count": 15
+  },
+  {
+    "collection": "Event",
+    "count": 2
+  },
+  {
+    "collection": "Exam",
+    "count": 7
+  },
+  {
+    "collection": "ExamCategory",
+    "count": 1
+  },
+  {
+    "collection": "Expert",
+    "count": 3
+  },
+  {
+    "collection": "FAQ",
+    "count": 56
+  },
+  {
+    "collection": "FinanceAppointment",
+    "count": 4
+  },
+  {
+    "collection": "GhubaDailyMetric",
+    "count": 12
+  },
+  {
+    "collection": "Grade",
+    "count": 2
+  },
+  {
+    "collection": "HostelAllocation",
+    "count": 8
+  },
+  {
+    "collection": "HostelMember",
+    "count": 6
+  },
+  {
+    "collection": "HostelStaff",
+    "count": 1
+  },
+  {
+    "collection": "HostelVisitor",
+    "count": 1
+  },
+  {
+    "collection": "InventoryItem",
+    "count": 18
+  },
+  {
+    "collection": "InventoryLog",
+    "count": 27
+  },
+  {
+    "collection": "Invoice",
+    "count": 2
+  },
+  {
+    "collection": "Lead",
+    "count": 1615
+  },
+  {
+    "collection": "LeavePolicy",
+    "count": 3
+  },
+  {
+    "collection": "LeaveRequest",
+    "count": 1
+  },
+  {
+    "collection": "LibraryBook",
+    "count": 2
+  },
+  {
+    "collection": "LibraryCategory",
+    "count": 2
+  },
+  {
+    "collection": "LibraryIssuance",
+    "count": 1
+  },
+  {
+    "collection": "LibraryMember",
+    "count": 1
+  },
+  {
+    "collection": "LibrarySupplier",
+    "count": 2
+  },
+  {
+    "collection": "LibrarySupplierCategory",
+    "count": 1
+  },
+  {
+    "collection": "ListingDailyMetric",
+    "count": 236
+  },
+  {
+    "collection": "Location",
+    "count": 24
+  },
+  {
+    "collection": "Locations",
+    "count": 48
+  },
+  {
+    "collection": "MarketplaceListingLike",
+    "count": 2
+  },
+  {
+    "collection": "Message",
+    "count": 4
+  },
+  {
+    "collection": "MonitoringAlert",
+    "count": 7
+  },
+  {
+    "collection": "MonitoringError",
+    "count": 9
+  },
+  {
+    "collection": "MonitoringExternalServiceCheck",
+    "count": 8
+  },
+  {
+    "collection": "MonitoringMetricAggregate",
+    "count": 44
+  },
+  {
+    "collection": "MonitoringRequest",
+    "count": 51
+  },
+  {
+    "collection": "MonitoringServer",
+    "count": 1
+  },
+  {
+    "collection": "Notification",
+    "count": 6
+  },
+  {
+    "collection": "NotificationDevice",
+    "count": 4
+  },
+  {
+    "collection": "NotificationRecipient",
+    "count": 1
+  },
+  {
+    "collection": "OrderItem",
+    "count": 295
+  },
+  {
+    "collection": "Package",
+    "count": 1
+  },
+  {
+    "collection": "Parent",
+    "count": 2
+  },
+  {
+    "collection": "Patient",
+    "count": 1
+  },
+  {
+    "collection": "PaymentSettings",
+    "count": 35
+  },
+  {
+    "collection": "Plan",
+    "count": 5
+  },
+  {
+    "collection": "PlatformAIModel",
+    "count": 7
+  },
+  {
+    "collection": "PlatformAIProvider",
+    "count": 3
+  },
+  {
+    "collection": "PlatformAIServiceConfig",
+    "count": 4
+  },
+  {
+    "collection": "Podcast",
+    "count": 1
+  },
+  {
+    "collection": "Policy",
+    "count": 59
+  },
+  {
+    "collection": "Prescription",
+    "count": 1
+  },
+  {
+    "collection": "Product",
+    "count": 15
+  },
+  {
+    "collection": "ProductCategory",
+    "count": 70
+  },
+  {
+    "collection": "ProductInteractionEvent",
+    "count": 766
+  },
+  {
+    "collection": "Project",
+    "count": 1
+  },
+  {
+    "collection": "Promotion",
+    "count": 63
+  },
+  {
+    "collection": "RestaurantArea",
+    "count": 8
+  },
+  {
+    "collection": "RestaurantTable",
+    "count": 8
+  },
+  {
+    "collection": "Role",
+    "count": 1
+  },
+  {
+    "collection": "SEO",
+    "count": 18
+  },
+  {
+    "collection": "SalaryHistory",
+    "count": 1
+  },
+  {
+    "collection": "SalesAgent",
+    "count": 7
+  },
+  {
+    "collection": "SeoBlog",
+    "count": 11
+  },
+  {
+    "collection": "Service",
+    "count": 1
+  },
+  {
+    "collection": "Session",
+    "count": 1
+  },
+  {
+    "collection": "ShippingSettings",
+    "count": 34
+  },
+  {
+    "collection": "SocialLink",
+    "count": 63
+  },
+  {
+    "collection": "Sponsor",
+    "count": 1
+  },
+  {
+    "collection": "StaffAttendanceRecord",
+    "count": 5
+  },
+  {
+    "collection": "StaffProfile",
+    "count": 7
+  },
+  {
+    "collection": "StoreCategory",
+    "count": 157
+  },
+  {
+    "collection": "StoreDailyMetric",
+    "count": 57
+  },
+  {
+    "collection": "StoreSettlementBalance",
+    "count": 1
+  },
+  {
+    "collection": "StudentAcademicLevel",
+    "count": 6
+  },
+  {
+    "collection": "SubscriptionCompany",
+    "count": 134
+  },
+  {
+    "collection": "SubscriptionPayment",
+    "count": 79
+  },
+  {
+    "collection": "Term",
+    "count": 4
+  },
+  {
+    "collection": "Testimonial",
+    "count": 56
+  },
+  {
+    "collection": "TourPackage",
+    "count": 1
+  },
+  {
+    "collection": "TransportDriver",
+    "count": 1
+  },
+  {
+    "collection": "TransportRoute",
+    "count": 1
+  },
+  {
+    "collection": "TransportShift",
+    "count": 1
+  },
+  {
+    "collection": "User",
+    "count": 17
+  },
+  {
+    "collection": "UserActivity",
+    "count": 251
+  },
+  {
+    "collection": "Variant",
+    "count": 72
+  },
+  {
+    "collection": "VerificationToken",
+    "count": 1
+  },
+  {
+    "collection": "Website",
+    "count": 8
+  },
+  {
+    "collection": "WebsiteRevision",
+    "count": 8
+  },
+  {
+    "collection": "Wishlist",
+    "count": 1
+  },
+  {
+    "collection": "WishlistItem",
+    "count": 1
+  },
+  {
+    "collection": "Writer",
+    "count": 1
+  },
+  {
+    "collection": "marketplaceListings",
+    "count": 58
+  },
+  {
+    "collection": "studentFeeRecords",
+    "count": 3
+  },
+  {
+    "collection": "students",
+    "count": 6
+  }
+]

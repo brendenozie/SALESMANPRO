@@ -1,0 +1,17 @@
+{
+  "backupTimestamp": "2026-10-08T20-09-13-053Z",
+  "counts": {
+    "products": 11,
+    "marketplaceListings": 1096,
+    "storeCategories": 73,
+    "productCategories": 49,
+    "companies": 41
+  },
+  "files": [
+    "products.json",
+    "marketplaceListings.json",
+    "storeCategories.json",
+    "productCategories.json",
+    "companies.json"
+  ]
+}

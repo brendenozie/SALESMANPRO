@@ -1,0 +1,3922 @@
+[
+  {
+    "id": "6825c2c7969ab9f16f620f67",
+    "name": "Duka Yangu",
+    "slug": "duka-yangu",
+    "tagline": "My Duka tagline",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "E-commerce",
+    "variant": "Modern Shop (v1)",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762420967614-bird_2.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762420967610-bird_2.jpg",
+    "videoUrl": "",
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "Obama Estate, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2571832,
+      "lng": 36.9187036
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "duka-yangu.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#F59E0B",
+      "secondaryColor": "#FEF3C7"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-15T10:32:39.178Z",
+    "updatedAt": "2025-11-26T00:25:15.754Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller ",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "Timon ",
+    "founderQuote": "Timon Founder Quote",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "Our Global Impact",
+    "sectionTitle": "Proven Expertise, Verified Results 🏆",
+    "sectionDescription": "Sample Descriptive paragraph",
+    "sEOId": "6825c2c7969ab9f16f620f66",
+    "analyticsConfigId": "683ed73cdd27c8735ae0df60",
+    "paymentSettingsId": "683ed73cdd27c8735ae0df61",
+    "shippingSettingsId": "683ed73cdd27c8735ae0df62",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b545",
+    "name": "Portfolio & Personal Branding",
+    "slug": "portfolio-personal-branding",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Portfolio & Personal Branding",
+    "variant": "Creative CV",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762532392584-2499873.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762532392705-pexels-andrew-3178938.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.254595,
+      "lng": 36.9352866
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "portfolio-personal-branding.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [
+      {
+        "name": "",
+        "price": 0,
+        "features": [],
+        "isFeatured": false
+      }
+    ],
+    "themeSettings": {
+      "primaryColor": "#78350F",
+      "secondaryColor": "#FBBF24"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-07T17:14:01.520Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller",
+        "iconUrl": "https://img.icons8.com/?size=100&id=oLGOEuq0KsVx&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=81473&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=81473&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68472fa1019423066deb8090",
+    "paymentSettingsId": "68472fa1019423066deb8091",
+    "shippingSettingsId": "68472fa1019423066deb8092",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b546",
+    "name": "Directory & Listings",
+    "slug": "directory-listings",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Directory & Listings",
+    "variant": "Business Directory",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762607899138-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762607899136-pexels-andrew-3178938.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "directory-listings.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#10B981",
+      "secondaryColor": "#F97316"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T13:18:52.264Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "AWARD 1",
+        "iconUrl": "https://icons8.com/icon/SCGkWM7vqwuO/foundation"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "SALES",
+        "value": 500000,
+        "iconUrl": "https://icons8.com/icon/SCGkWM7vqwuO/foundation"
+      }
+    ],
+    "stats": [
+      {
+        "label": "FOUNDED",
+        "value": "2015",
+        "iconUrl": "https://icons8.com/icon/SCGkWM7vqwuO/foundation"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68474a50019423066deb80a6",
+    "paymentSettingsId": "68474a50019423066deb80a7",
+    "shippingSettingsId": "68474a51019423066deb80a8",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b530",
+    "name": "Educational & Online Courses",
+    "slug": "educational-online-courses",
+    "tagline": "Unlock Your Potential",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Educational & Online Courses",
+    "variant": "Online Learning",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762612953938-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762612953940-wooden-shelf-tropical-forest-product-presentation-dark-green-background.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "educational-online-courses.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T14:42:48.321Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "AWARD 1",
+        "iconUrl": "https://img.icons8.com/color/96/000000/diamond.png"
+      },
+      {
+        "name": "AWARD 2",
+        "iconUrl": "https://img.icons8.com/color/96/000000/prize.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/color/96/money-bag.png"
+      },
+      {
+        "label": "Employees",
+        "value": 12,
+        "iconUrl": "https://img.icons8.com/color/96/increase.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Label",
+        "value": "21",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "label": "Founded",
+        "value": "2018",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6847f49ce97163f3ad22af10",
+    "paymentSettingsId": "6847f49ce97163f3ad22af11",
+    "shippingSettingsId": "6847f49ce97163f3ad22af12",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b531",
+    "name": "Nonprofit & Community",
+    "slug": "nonprofit-community",
+    "tagline": "Empowering Communities, Transforming Futures",
+    "description": "Join us in our mission to create sustainable change and uplift lives across the globe.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Nonprofit & Community",
+    "variant": "Charity Connect",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762615544061-2499873.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762615544064-pexels-anastasia-shuraeva-8466783.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "nonprofit-community.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#78350F",
+      "secondaryColor": "#FBBF24"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T15:26:05.286Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "AWARDS 1",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "name": "AWARDS 2",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "SALES",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "label": "SALES2",
+        "value": 15,
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "FOUNDED",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "label": "FOUNDED2",
+        "value": "12",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68481ec7e97163f3ad22af22",
+    "paymentSettingsId": "68481ec7e97163f3ad22af23",
+    "shippingSettingsId": "68481ec7e97163f3ad22af24",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b533",
+    "name": "Event & Ticketing",
+    "slug": "event-ticketing",
+    "tagline": "Connecting You to Unforgettable Experiencess",
+    "description": "We're a passionate team dedicated to bridging the gap between event organizers and attendees. Our platform is more than just a marketplace; it's a community built around the magic of live events. Discover, connect, and create memories that last a lifetime..",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Event & Ticketing",
+    "variant": "Event Booking",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762617685814-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762617685812-pexels-edotommo99-2034851.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "event-ticketing.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T16:01:40.215Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller Awards",
+        "iconUrl": "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2020",
+        "iconUrl": "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6874c0e4f3a4354df41cf4ae",
+    "paymentSettingsId": "6874c0e4f3a4354df41cf4af",
+    "shippingSettingsId": "6874c0e4f3a4354df41cf4b0",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b537",
+    "name": "Media & Entertainment",
+    "slug": "media-entertainment",
+    "tagline": "Your hub for inspiring stories, videos, and insights.",
+    "description": "Your hub for inspiring stories, videos, and insights.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Media & Entertainment",
+    "variant": "Film Studio",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762620199348-pexels-marleneleppanen-1925099.jpg",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762620199346-pexels-tima-miroshnichenko-6826046.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "media-entertainment.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#10B981",
+      "secondaryColor": "#F97316"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-13T19:51:48.783Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2024",
+        "iconUrl": "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=undefined&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68762624a3e842dcf1db3f13",
+    "paymentSettingsId": "68762624a3e842dcf1db3f14",
+    "shippingSettingsId": "68762624a3e842dcf1db3f15",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b541",
+    "name": "Fitness & Wellness",
+    "slug": "fitness-wellness",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Fitness & Wellness",
+    "variant": "Gym & Fitness",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762621793733-bird_2.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762621793730-pexels-pixabay-236171.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "fitness-wellness.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T17:13:26.543Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "",
+        "iconUrl": ""
+      }
+    ],
+    "metrics": [
+      {
+        "label": "",
+        "value": 0
+      }
+    ],
+    "stats": [
+      {
+        "label": "",
+        "value": ""
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b528",
+    "name": "Service Provider",
+    "slug": "service-provider",
+    "tagline": "We make your space shine! ",
+    "description": "We make your space shine! Professional, reliable cleaning services for homes and businesses — satisfaction guaranteed.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Service Provider",
+    "variant": "Agency Portfolio",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762517907399-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762517907394-pexels-negativespace-34577.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "Obama Estate, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2571557,
+      "lng": 36.9186936
+    },
+    "openingHours": {
+      "mon": {
+        "open": "11:02",
+        "close": "21:00"
+      },
+      "tue": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "service-provider.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [
+      {
+        "name": "Basic Package",
+        "price": 1000,
+        "features": [
+          "Carpet Cleaning",
+          "Bathroom Cleaning",
+          "Floor Cleaning",
+          "Bedroom Cleaning"
+        ],
+        "duration": "1 hour",
+        "description": "Brief Description"
+      }
+    ],
+    "themeSettings": {
+      "primaryColor": "#f29a02",
+      "secondaryColor": "#ffffff"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-07T14:24:19.214Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "BEST SELLER 2023",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded ",
+        "value": "2018",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "683d895f57cd0fee82f18fd6",
+    "paymentSettingsId": "683d895f57cd0fee82f18fd7",
+    "shippingSettingsId": "683d895f57cd0fee82f18fd8",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b544",
+    "name": "Booking",
+    "slug": "booking",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Booking & Appointments",
+    "variant": "Scheduler Hub",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762526213198-2499873.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762526213197-3d-render-grunge-style-interior-design.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.254595,
+      "lng": 36.9352866
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "booking.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [
+      {
+        "name": "Basic Package ",
+        "price": 1500,
+        "features": [
+          "Ebooks",
+          "Books",
+          "Books"
+        ],
+        "duration": "1 hour",
+        "isFeatured": true,
+        "description": "Brief package description"
+      }
+    ],
+    "themeSettings": {
+      "primaryColor": "#3c82c3",
+      "secondaryColor": "#fafafa"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-07T14:37:21.527Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Booking site ever",
+        "iconUrl": "https://img.icons8.com/?size=100&id=G3MPf1VS9RTH&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 5000000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=kyxx2mKjaITz&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2018",
+        "iconUrl": "https://img.icons8.com/?size=100&id=SCGkWM7vqwuO&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6846f90c954fb3c2da47c982",
+    "paymentSettingsId": "6846f90c954fb3c2da47c983",
+    "shippingSettingsId": "6846f90c954fb3c2da47c984",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b534",
+    "name": "Real Estate",
+    "slug": "real-estate",
+    "tagline": "Your journey to the perfect home starts here",
+    "description": "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Real Estate",
+    "variant": "Property Listings",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762618784407-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762618784403-pexels-binyaminmellish-106399.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "real-estate.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T16:20:04.774Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller",
+        "iconUrl": "https://img.icons8.com/?size=100&id=ExhRP5bb2VcM&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 10000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=ExhRP5bb2VcM&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=ExhRP5bb2VcM&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6874ec3fa194544d55196109",
+    "paymentSettingsId": "6874ec3fa194544d5519610a",
+    "shippingSettingsId": "6874ec3fa194544d5519610b",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b539",
+    "name": "Automotive",
+    "slug": "automotive",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Automotive",
+    "variant": "Car Dealership",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762620730579-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762620730583-pexels-vadutskevich-16350080.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "automotive.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T16:52:41.665Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller ",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68773f6ab94c13557dee2faf",
+    "paymentSettingsId": "68773f6ab94c13557dee2fb0",
+    "shippingSettingsId": "68773f6ab94c13557dee2fb1",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68a4420ea20efd318d51db70",
+    "name": "Dashboards",
+    "slug": "dashboards",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "dashboards",
+    "variant": null,
+    "logoUrl": "https://ghubabucket.s3.amazonaws.com/images/24612a46-003e-46d7-9786-32ffaab96ebd.jpeg",
+    "bannerUrl": "https://ghubabucket.s3.amazonaws.com/images/49d6fc8b-551e-4125-962f-61cc29a862a7.jpeg",
+    "videoUrl": null,
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "",
+    "geoLocation": {
+      "lat": 0,
+      "lng": 0
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "https://www.saas-web-apps.ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#0e36d8"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-07-15T06:04:48.301Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2023",
+        "iconUrl": "https://img.icons8.com/?size=100&id=z657ovoGgS2o&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=z657ovoGgS2o&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=z657ovoGgS2o&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6875ef817892f90f5bb9c320",
+    "paymentSettingsId": "6875ef817892f90f5bb9c321",
+    "shippingSettingsId": "6875ef827892f90f5bb9c322",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "690522c37ead72226e8a38bd",
+    "name": "Duka Mpya",
+    "slug": "duka-mpya",
+    "tagline": "We’re in business to improve lives",
+    "description": "Some things that awesome slogans and taglines have in common is that they’re simple, memorable and creative positive feelings for shoppers. And in some cases, they mention a specific benefit of choosing a particular brand. ",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "E-commerce",
+    "variant": "Modern Shop (v1)",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1761060693399-pexels-pixabay-266706.jpg",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1761060693714-GvhMMx0WgAEIASd.jpeg",
+    "videoUrl": "https://dozi4r4ug9739.cloudfront.net/videos/1761060695193-original-c78aa3df3bf0f1c0a0af12ea2efcff03.mp4",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706449146",
+    "site": "default",
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2584029,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "https://www.duka-mpya.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [
+      {
+        "name": "Basic",
+        "price": 0,
+        "features": [],
+        "description": "A great starting point.",
+        "duration": "monthly"
+      }
+    ],
+    "themeSettings": {
+      "secondaryColor": "#E2E8F0",
+      "primaryColor": "#000000"
+    },
+    "userId": "68f621ab935d7795a46249ca",
+    "sslStatus": "PENDING",
+    "createdAt": "2025-10-31T20:57:38.417Z",
+    "updatedAt": "2025-10-31T20:57:38.417Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller",
+        "iconUrl": "https://img.icons8.com/color/96/000000/trophy.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 20000,
+        "iconUrl": "https://img.icons8.com/color/96/sales-performance.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2020",
+        "iconUrl": "https://img.icons8.com/color/96/company.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "690522c27ead72226e8a38bc",
+    "analyticsConfigId": "690522c27ead72226e8a38bb",
+    "paymentSettingsId": "690522c27ead72226e8a38ba",
+    "shippingSettingsId": "690522c27ead72226e8a38b9",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "6818d7715526443bb3999c81",
+    "name": "TheDuka",
+    "slug": "theduka",
+    "tagline": null,
+    "description": "test description test description test description test description test description test description test description test description test description test description test descriptiontest description test description test description test description test description test description test description test description test description test description test descriptiontest description test description test description test description test description test description test description test description test description test description test descriptiontest description test description test description test description test description test description test description test description test description test description test descriptiontest description test description test description test description test description test description test description test description test description test description test description",
+    "hasWebsite": null,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Tech Gadgets",
+    "variant": null,
+    "logoUrl": "https://www.theduka.com/logo",
+    "bannerUrl": "https://www.theduka.com/banner",
+    "videoUrl": null,
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "nairobi",
+    "geoLocation": null,
+    "openingHours": null,
+    "domain": null,
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": null,
+    "userId": "67c5b0192e2372b5f2366dbf",
+    "sslStatus": null,
+    "createdAt": "2025-05-05T15:21:21.285Z",
+    "updatedAt": "2025-05-05T15:21:21.285Z",
+    "deletedAt": null,
+    "awards": null,
+    "metrics": null,
+    "stats": null,
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": null,
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68193adfab67ac0915b51a20",
+    "name": "theFashionStore",
+    "slug": "thefashionstore",
+    "tagline": null,
+    "description": "the fashion store description the fashion store description the fashion store description the fashion store description the fashion store description the fashion store description the fashion store description the fashion store description the fashion store description ",
+    "hasWebsite": null,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Fashion",
+    "variant": null,
+    "logoUrl": "https://www.thefashionstore.com/logo",
+    "bannerUrl": "https://www.thefashionstore.com/banner",
+    "videoUrl": null,
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "nairobi",
+    "geoLocation": null,
+    "openingHours": null,
+    "domain": null,
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": null,
+    "userId": "67c5b0192e2372b5f2366dbf",
+    "sslStatus": null,
+    "createdAt": "2025-05-05T22:25:34.867Z",
+    "updatedAt": "2025-05-05T22:25:34.867Z",
+    "deletedAt": null,
+    "awards": null,
+    "metrics": null,
+    "stats": null,
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": null,
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68227ab884e7fc699d8b0e4d",
+    "name": "Test Shop",
+    "slug": "test-shop",
+    "tagline": "tagline",
+    "description": "test description",
+    "hasWebsite": null,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Vehicles",
+    "variant": null,
+    "logoUrl": "blob:http://127.0.0.1:3000/15cf47d9-1ce9-4d30-9c51-70e4949010e3",
+    "bannerUrl": "blob:http://127.0.0.1:3000/c53d1f83-34bf-454b-b836-25e029c68ee3",
+    "videoUrl": null,
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "Thika Road, Utalii, Utalii ward, Roysambu division, Kasarani, Nairobi, Nairobi County, 00620, Kenya",
+    "geoLocation": {
+      "lat": -1.2550144,
+      "lng": 36.8574464
+    },
+    "openingHours": {
+      "mon": "",
+      "tue": "",
+      "wed": "",
+      "thu": "",
+      "fri": "",
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "https://www.test.com/test",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#e54848",
+      "secondaryColor": "#ffffff"
+    },
+    "userId": null,
+    "sslStatus": null,
+    "createdAt": "2025-05-12T22:48:22.033Z",
+    "updatedAt": "2025-05-12T22:48:22.033Z",
+    "deletedAt": null,
+    "awards": null,
+    "metrics": null,
+    "stats": null,
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "68227ab684e7fc699d8b0e4c",
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "6825bb95969ab9f16f620f57",
+    "name": "My Duka",
+    "slug": "my-duka",
+    "tagline": "Best Vehicles",
+    "description": "My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description My Duka Description",
+    "hasWebsite": null,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Vehicles",
+    "variant": null,
+    "logoUrl": "blob:http://127.0.0.1:3000/373a309b-10c5-4aaa-a12b-cedd10b1d7ac",
+    "bannerUrl": "blob:http://127.0.0.1:3000/05eb1ab2-3eb0-4821-989d-b0b1cd3fcac4",
+    "videoUrl": null,
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "Kimathi sublocation, Maringo/Hamza ward, Makadara subcounty, Nairobi, Nairobi County, 00610, Kenya",
+    "geoLocation": {
+      "lat": -1.2877824,
+      "lng": 36.8574464
+    },
+    "openingHours": {
+      "mon": "",
+      "tue": "",
+      "wed": "",
+      "thu": "",
+      "fri": "",
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "https://www.myduka.com",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#2adcdf",
+      "secondaryColor": "#0f0f0f"
+    },
+    "userId": null,
+    "sslStatus": null,
+    "createdAt": "2025-05-15T10:01:56.857Z",
+    "updatedAt": "2025-05-15T10:01:56.857Z",
+    "deletedAt": null,
+    "awards": null,
+    "metrics": null,
+    "stats": null,
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "6825bb94969ab9f16f620f56",
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b532",
+    "name": "Restaurant & Food Delivery",
+    "slug": "restaurant-food-delivery",
+    "tagline": "Experience culinary excellence with our exquisite dishes",
+    "description": "Fresh ingredients, mouth-watering recipes, and a passion for good food delivered to your door or ready for pick-up.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Restaurant & Food Delivery",
+    "variant": "Food Delivery",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762616074582-8011901.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762616074584-pexels-pixabay-260922.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "restaurant-food-delivery.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#78350F",
+      "secondaryColor": "#FBBF24"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T15:34:51.416Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller",
+        "iconUrl": "https://img.icons8.com/?size=100&id=23549&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 5000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=23549&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=23549&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "687210d20ba61fdfd2ea2c1b",
+    "paymentSettingsId": "687210d20ba61fdfd2ea2c1c",
+    "shippingSettingsId": "687210d20ba61fdfd2ea2c1d",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b536",
+    "name": "SaaS & Web Apps",
+    "slug": "saas-web-apps",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "SaaS & Web Apps",
+    "variant": null,
+    "logoUrl": "https://ghubabucket.s3.amazonaws.com/images/24612a46-003e-46d7-9786-32ffaab96ebd.jpeg",
+    "bannerUrl": "https://ghubabucket.s3.amazonaws.com/images/49d6fc8b-551e-4125-962f-61cc29a862a7.jpeg",
+    "videoUrl": null,
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "",
+    "geoLocation": {
+      "lat": 0,
+      "lng": 0
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "https://www.saas-web-apps.ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#0e36d8"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-07-15T06:04:48.301Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2023",
+        "iconUrl": "https://img.icons8.com/?size=100&id=z657ovoGgS2o&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=z657ovoGgS2o&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=z657ovoGgS2o&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6875ef817892f90f5bb9c320",
+    "paymentSettingsId": "6875ef817892f90f5bb9c321",
+    "shippingSettingsId": "6875ef827892f90f5bb9c322",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b542",
+    "name": "Marketplace",
+    "slug": "marketplace",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Marketplace",
+    "variant": "Product Marketplace",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762622330327-2499873.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762622330332-pexels-tomfisk-1692693.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "marketplace.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#10B981",
+      "secondaryColor": "#F97316"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T17:19:14.956Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "",
+        "iconUrl": ""
+      }
+    ],
+    "metrics": [
+      {
+        "label": "",
+        "value": 0
+      }
+    ],
+    "stats": [
+      {
+        "label": "",
+        "value": ""
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "685086104da288b5c3156e52",
+    "name": "School Head",
+    "slug": "school-head",
+    "tagline": "School head tagline",
+    "description": "School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head ",
+    "hasWebsite": false,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "School Head",
+    "variant": null,
+    "logoUrl": "https://logourl.com",
+    "bannerUrl": "https://bannerurl.com",
+    "videoUrl": null,
+    "contactEmail": "schoolhead@gmail.com",
+    "contactPhone": "0706448146",
+    "site": "default",
+    "address": "",
+    "geoLocation": {
+      "lat": 0,
+      "lng": 0
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "https://www.school-head.ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {},
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-06-16T21:01:04.434Z",
+    "updatedAt": "2025-06-16T21:01:04.434Z",
+    "deletedAt": null,
+    "awards": [],
+    "metrics": [],
+    "stats": [],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "685086104da288b5c3156e51",
+    "analyticsConfigId": "685086104da288b5c3156e50",
+    "paymentSettingsId": "685086104da288b5c3156e4f",
+    "shippingSettingsId": "685086104da288b5c3156e4e",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68fe798fa4fc1c44efb55336",
+    "name": "Flourishhub",
+    "slug": "flourishhub-3",
+    "tagline": "Empowering Communities, Transforming Futures",
+    "description": "Empowering Communities, Transforming Futures",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Consultant & Coach",
+    "variant": "Executive Coach (v1)",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1760565173513-Gemini_Generated_Image_m1i9abm1i9abm1i9.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1760565173516-Gemini_Generated_Image_d4audyd4audyd4au.png",
+    "videoUrl": "",
+    "contactEmail": "brendenozie@gmail.com",
+    "contactPhone": "+254706448146",
+    "site": "default",
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2554496,
+      "lng": 36.9339428
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "flourishhub-3.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#057f07",
+      "secondaryColor": "#a4b5f9"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": "PENDING",
+    "createdAt": "2025-10-26T19:42:01.513Z",
+    "updatedAt": "2025-11-13T19:01:31.093Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2025",
+        "iconUrl": ""
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 1000
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2020"
+      }
+    ],
+    "highlights": null,
+    "founderName": "aaaaaaaaaaaaaaaa",
+    "founderQuote": "aaaaaaaaaaaaaaaa",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "saaaaaaaa",
+    "sectionTitle": "saaaaaaaa",
+    "sectionDescription": "saaaaaaaa",
+    "sEOId": "68fe798da4fc1c44efb55335",
+    "analyticsConfigId": "68fe798da4fc1c44efb55334",
+    "paymentSettingsId": "68fe798ca4fc1c44efb55333",
+    "shippingSettingsId": "68fe798ba4fc1c44efb55332",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68ff7b9b83da53e462f1ffb8",
+    "name": "Flourishhub",
+    "slug": "flourishhub-2",
+    "tagline": "Empowering Communities, Transforming Futures",
+    "description": "At Flourishhub, our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy.\nWe believe that when one soul flourishes, the ripple of transformation expands — touching families, strengthening communities, and inspiring nations to thrive.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Public Speaking",
+    "variant": "Standard Speaker Site",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1761584051723-1.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1761598694776-pexels-rebrand-cities-581004-1367272.jpg",
+    "videoUrl": "",
+    "contactEmail": "flourishhubint@yahoo.com",
+    "contactPhone": "+254 721 299 385",
+    "site": "default",
+    "address": "Matopeni ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2605043,
+      "lng": 36.9285676
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "flourishhub-2.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#001400",
+      "secondaryColor": "#F59E0B",
+      "fontFamily": "Lato, sans-serif"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-10-15T21:53:06.087Z",
+    "updatedAt": "2025-11-13T20:00:24.875Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Success Rates",
+        "iconUrl": "https://img.icons8.com/color/96/medal.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Students Coached",
+        "value": 1000,
+        "iconUrl": "https://img.icons8.com/color/96/money-bag.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Years of Experience",
+        "value": "2020",
+        "iconUrl": "https://img.icons8.com/color/96/conference.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": "Jackie Wegoki",
+    "founderQuote": "At Flourishhub, we believe every soul deserves to thrive. This is a sanctuary for growth, compassion, and authentic living — where hearts are nourished, communities are strengthened, and human flourishing becomes a shared reality.",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "Our Global Impact",
+    "sectionTitle": "Recognized. Respected. Results-Driven.",
+    "sectionDescription": "Our impact spans continents — empowering thousands to rise higher in purpose and performance. With recognition from top global platforms, our mission continues to shape leaders, innovators, and changemakers across the world.",
+    "sEOId": "68f017c25d341681f2b63945",
+    "analyticsConfigId": "68f017c25d341681f2b63944",
+    "paymentSettingsId": "68f017c25d341681f2b63943",
+    "shippingSettingsId": "68f017c25d341681f2b63942",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "6818d4e95526443bb3999c80",
+    "name": "TheVehicleShop",
+    "slug": "thevehicleshop",
+    "tagline": null,
+    "description": "description test description test description test description test description test description test description test description test description test description test ",
+    "hasWebsite": null,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Vehicles",
+    "variant": null,
+    "logoUrl": "https://logoimg",
+    "bannerUrl": "https://bannerimg",
+    "videoUrl": null,
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "nairobi",
+    "geoLocation": null,
+    "openingHours": null,
+    "domain": null,
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": null,
+    "userId": "67c5b0192e2372b5f2366dbf",
+    "sslStatus": null,
+    "createdAt": "2025-05-05T15:10:33.376Z",
+    "updatedAt": "2025-05-05T15:10:33.376Z",
+    "deletedAt": null,
+    "awards": null,
+    "metrics": null,
+    "stats": null,
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": null,
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b529",
+    "name": "Blog & Content",
+    "slug": "blog-content",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Blog & Content",
+    "variant": "Modern Magazine",
+    "logoUrl": "blob:http://127.0.0.1:3000/924e0e6d-b2a6-4dea-bc63-5b7ca3e82928",
+    "bannerUrl": "blob:http://127.0.0.1:3000/2f5475f3-685b-44d9-add4-bccdd421719c",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "blog-content.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T12:05:27.300Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "BEST SELLER AWARD",
+        "iconUrl": "https://img.icons8.com/?size=100&id=JCDjQ3zAwdDu&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "SALES",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=fm5ufOhp58gK&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "FOUNDED",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=SCGkWM7vqwuO&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "6847435a019423066deb809b",
+    "paymentSettingsId": "6847435a019423066deb809c",
+    "shippingSettingsId": "6847435a019423066deb809d",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b535",
+    "name": "Healthcare & Clinics",
+    "slug": "healthcare-clinics",
+    "tagline": "At Harmony Healthcare & Clinics, we believe in a holistic approach to wellness. ",
+    "description": "At Harmony Healthcare & Clinics, we believe in a holistic approach to wellness. Our dedicated team of healthcare professionals is committed to providing personalized, compassionate care that addresses your unique needs. From preventive care to specialized treatments, we empower you to achieve optimal health and well-being. We combine cutting-edge medical practices with a warm, patient-centered environment, ensuring every visit is comfortable and effective. Your journey to better health starts here, with a team that truly cares.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Healthcare & Clinics",
+    "variant": "Clinic Pro",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762619412108-2499873.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762619412110-pexels-fr3nks-287237.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "healthcare-clinics.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#3B82F6",
+      "secondaryColor": "#9CA3AF"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T16:30:39.713Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 5000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "687531a4f791576a6a4e7b94",
+    "paymentSettingsId": "687531a4f791576a6a4e7b95",
+    "shippingSettingsId": "687531a4f791576a6a4e7b96",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b538",
+    "name": "Finance & Legal",
+    "slug": "finance-legal",
+    "tagline": "Your Partner in Legal & Financial Excellence",
+    "description": "Your Partner in Legal & Financial Excellence",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Finance & Legal",
+    "variant": "Financial Advisor",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762863843082-logowh.53d4786c099aef864116.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762863634011-c5fa252e-0483-4844-8d9f-574920cba654.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2562391,
+      "lng": 36.9393177
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "finance-legal.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#0F172A",
+      "secondaryColor": "#E2E8F0"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-11T16:32:33.388Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2023",
+        "iconUrl": "https://img.icons8.com/?size=100&id=h8kFdtYHEG6i&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 100000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=h8kFdtYHEG6i&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=h8kFdtYHEG6i&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68762c2ba3e842dcf1db3f1d",
+    "paymentSettingsId": "68762c2ba3e842dcf1db3f1e",
+    "shippingSettingsId": "68762c2ba3e842dcf1db3f1f",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b540",
+    "name": "Travel & Tourism",
+    "slug": "travel-tourism",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Travel & Tourism",
+    "variant": "Travel Agency",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762621132470-OFAAX40.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762621133080-pexels-elurias-34639395.jpg",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2536948,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "travel-tourism.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#0837c4"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-08T16:59:16.899Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2023",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 20000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2019",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68777220d05dd53c816d7d0d",
+    "paymentSettingsId": "68777220d05dd53c816d7d0e",
+    "shippingSettingsId": "68777220d05dd53c816d7d0f",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "683581bba1bdf6ca3624b543",
+    "name": "Other",
+    "slug": "other",
+    "tagline": "the best jambo tron tag",
+    "description": "sample description",
+    "hasWebsite": null,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Other",
+    "variant": null,
+    "logoUrl": "https://logourl.com",
+    "bannerUrl": "https://bannerurl.com",
+    "videoUrl": null,
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "",
+    "geoLocation": {
+      "lat": 0,
+      "lng": 0
+    },
+    "openingHours": {
+      "mon": "",
+      "tue": "",
+      "wed": "",
+      "thu": "",
+      "fri": "",
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "https://www.other.ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {},
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-05-27T09:11:21.971Z",
+    "deletedAt": null,
+    "awards": null,
+    "metrics": null,
+    "stats": null,
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": null,
+    "paymentSettingsId": null,
+    "shippingSettingsId": null,
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "685018d708b38f9635fb3a03",
+    "name": "Teacher",
+    "slug": "testother",
+    "tagline": "TestOtherTagline",
+    "description": "TestOtherTagline",
+    "hasWebsite": false,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Teacher",
+    "variant": null,
+    "logoUrl": "https://logourl.com",
+    "bannerUrl": "https://bannerurl.com",
+    "videoUrl": null,
+    "contactEmail": "testother@gmail.com",
+    "contactPhone": "0706448146",
+    "site": "default",
+    "address": "",
+    "geoLocation": {
+      "lat": 0,
+      "lng": 0
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "https://www.testother.ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {},
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-06-16T13:15:02.355Z",
+    "updatedAt": "2025-06-16T20:58:25.511Z",
+    "deletedAt": null,
+    "awards": [],
+    "metrics": [],
+    "stats": [],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "685018d708b38f9635fb3a02",
+    "analyticsConfigId": "685018d708b38f9635fb3a01",
+    "paymentSettingsId": "685018d708b38f9635fb3a00",
+    "shippingSettingsId": "685018d708b38f9635fb39ff",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "685084cc4da288b5c3156e4a",
+    "name": "Students",
+    "slug": "students",
+    "tagline": "Students super tagline",
+    "description": "Students super tagline Students super tagline Students super tagline Students super tagline Students super tagline",
+    "hasWebsite": false,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Students",
+    "variant": null,
+    "logoUrl": "https://logourl.com",
+    "bannerUrl": "https://bannerurl.com",
+    "videoUrl": null,
+    "contactEmail": "student@gmail.com",
+    "contactPhone": "0706448146",
+    "site": "default",
+    "address": "",
+    "geoLocation": {
+      "lat": 0,
+      "lng": 0
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "https://www.students.ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {},
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-06-16T20:55:39.629Z",
+    "updatedAt": "2025-06-16T20:56:41.069Z",
+    "deletedAt": null,
+    "awards": [],
+    "metrics": [],
+    "stats": [],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "685084cc4da288b5c3156e49",
+    "analyticsConfigId": "685084cc4da288b5c3156e48",
+    "paymentSettingsId": "685084cc4da288b5c3156e47",
+    "shippingSettingsId": "685084cb4da288b5c3156e46",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68aee69e4858810a3b44d848",
+    "name": "Ghuba",
+    "slug": "ghuba",
+    "tagline": "Ghuba tagline",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Ghuba",
+    "variant": null,
+    "logoUrl": "https://ghubabucket.s3.amazonaws.com/images/c97fadd1-16da-44f6-b8a0-ff7ac5d79da9.png",
+    "bannerUrl": "https://ghubabucket.s3.amazonaws.com/images/adeb7911-5364-46f0-bb5b-ca1479ed9779.jpeg",
+    "videoUrl": null,
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "General Waruingi Street, Airbase ward, Kamukunji, Nairobi, Nairobi County, 00610, Kenya",
+    "geoLocation": {
+      "lat": -1.277952,
+      "lng": 36.8574464
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "ghuba.shop",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#f50000",
+      "secondaryColor": "#d4d4d4"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-15T10:32:39.178Z",
+    "updatedAt": "2025-07-18T04:12:19.382Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller ",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": null,
+    "founderQuote": null,
+    "founderImage": null,
+    "partnerLogos": null,
+    "sectionSubtitle": null,
+    "sectionTitle": null,
+    "sectionDescription": null,
+    "sEOId": "6825c2c7969ab9f16f620f66",
+    "analyticsConfigId": "683ed73cdd27c8735ae0df60",
+    "paymentSettingsId": "683ed73cdd27c8735ae0df61",
+    "shippingSettingsId": "683ed73cdd27c8735ae0df62",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68b597b7de9bdd2ba7479f34",
+    "name": "Shoes Store",
+    "slug": "shoes-store",
+    "tagline": "My Duka tagline",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Shoes Store",
+    "variant": "Shoes Store Classic",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762508560102-8011901.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762508560101-pexels-andrew-3178938.jpg",
+    "videoUrl": "",
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.254595,
+      "lng": 36.9352866
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "shoes-store.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#f50000",
+      "secondaryColor": "#d4d4d4"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-15T10:32:39.178Z",
+    "updatedAt": "2025-11-13T19:39:14.487Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller ",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "6825c2c7969ab9f16f620f66",
+    "analyticsConfigId": "683ed73cdd27c8735ae0df60",
+    "paymentSettingsId": "683ed73cdd27c8735ae0df61",
+    "shippingSettingsId": "683ed73cdd27c8735ae0df62",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68f017c25d341681f2b63946",
+    "name": "Flourishhub",
+    "slug": "flourishhub",
+    "tagline": "Empowering Communities, Transforming Futures",
+    "description": "Our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes, the ripple of transformation touches families, communities, and nations.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Consultant & Coach",
+    "variant": "Executive Coach (v1)",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1760565173513-Gemini_Generated_Image_m1i9abm1i9abm1i9.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1760565173516-Gemini_Generated_Image_d4audyd4audyd4au.png",
+    "videoUrl": "",
+    "contactEmail": "brendenozie@gmail.com",
+    "contactPhone": "+254706448146",
+    "site": "default",
+    "address": "Mathare Road, Huruma, Ngei ward, Mathare, Nairobi, Nairobi County, 57935, Kenya",
+    "geoLocation": {
+      "lat": -1.261568,
+      "lng": 36.8738304
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "flourishhub.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#001400",
+      "secondaryColor": "#F59E0B",
+      "fontFamily": "Lato, sans-serif"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-10-15T21:53:06.087Z",
+    "updatedAt": "2025-11-13T18:57:09.048Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller 2025",
+        "iconUrl": "https://img.icons8.com/color/96/000000/trophy.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 1000,
+        "iconUrl": "https://img.icons8.com/color/96/money-bag.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2020",
+        "iconUrl": "https://img.icons8.com/color/96/conference.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": "Jackie Wegoki",
+    "founderQuote": "FlourisHub is a nurturing space for all beautiful souls committed to the art of human flourishing. Guided by compassion and purpose, Jackie envisions a world where every individual is nourished to grow and thrive in wholeness.\n",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "Our Global Impact",
+    "sectionTitle": "Proven Expertise, Verified Results 🏆",
+    "sectionDescription": "My commitment to excellence has earned recognition on world-leading platforms and fueled the success of thousands of ambitious individuals and organizations globally.",
+    "sEOId": "68f017c25d341681f2b63945",
+    "analyticsConfigId": "68f017c25d341681f2b63944",
+    "paymentSettingsId": "68f017c25d341681f2b63943",
+    "shippingSettingsId": "68f017c25d341681f2b63942",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68ff7b9b83da64e461f9ffb8",
+    "name": "Flourishhub",
+    "slug": "pflourishhub",
+    "tagline": "Empowering Communities, Transforming Futures",
+    "description": "Our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes, the ripple of transformation touches families, communities, and nations.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Public Speaking",
+    "variant": null,
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1760565173513-Gemini_Generated_Image_m1i9abm1i9abm1i9.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1760565173516-Gemini_Generated_Image_d4audyd4audyd4au.png",
+    "videoUrl": "",
+    "contactEmail": "brendenozie@gmail.com",
+    "contactPhone": "+254706448146",
+    "site": "default",
+    "address": "Matopeni ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2605043,
+      "lng": 36.9285676
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "pflourishhub.salesmanpro.site",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#001400",
+      "secondaryColor": "#F59E0B",
+      "fontFamily": "Lato, sans-serif"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-10-15T21:53:06.087Z",
+    "updatedAt": "2025-10-28T08:46:14.457Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Success Rates",
+        "iconUrl": "https://img.icons8.com/color/96/000000/trophy.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Students Coached",
+        "value": 1000,
+        "iconUrl": "https://img.icons8.com/color/96/money-bag.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Years of Experience",
+        "value": "2020",
+        "iconUrl": "https://img.icons8.com/color/96/conference.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": "Jackie Wegoki",
+    "founderQuote": "FlourisHub is a nurturing space for all beautiful souls committed to the art of human flourishing. Guided by compassion and purpose, Jackie envisions a world where every individual is nourished to grow and thrive in wholeness.\n",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "Our Global Impact",
+    "sectionTitle": "Proven Expertise, Verified Results 🏆",
+    "sectionDescription": "My commitment to excellence has earned recognition on world-leading platforms and fueled the success of thousands of ambitious individuals and organizations globally.",
+    "sEOId": "68f017c25d341681f2b63945",
+    "analyticsConfigId": "68f017c25d341681f2b63944",
+    "paymentSettingsId": "68f017c25d341681f2b63943",
+    "shippingSettingsId": "68f017c25d341681f2b63942",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "68ff7b9b83da53e461f9ffb8",
+    "name": "Flourishhub",
+    "slug": "pflourishhub",
+    "tagline": "Empowering Communities, Transforming Futures",
+    "description": "At Flourishhub, our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy.\nWe believe that when one soul flourishes, the ripple of transformation expands — touching families, strengthening communities, and inspiring nations to thrive.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Public Speaking",
+    "variant": null,
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1761584051723-1.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1761598694776-pexels-rebrand-cities-581004-1367272.jpg",
+    "videoUrl": "",
+    "contactEmail": "flourishhubint@yahoo.com",
+    "contactPhone": "+254 721 299 385",
+    "site": "default",
+    "address": "Matopeni ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2605043,
+      "lng": 36.9285676
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "",
+        "close": ""
+      },
+      "sun": {
+        "open": "",
+        "close": ""
+      }
+    },
+    "domain": "flourishhub.co.ke",
+    "currency": "USD",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#001400",
+      "secondaryColor": "#F59E0B",
+      "fontFamily": "Lato, sans-serif"
+    },
+    "userId": "690932e57a487840b180f13e",
+    "sslStatus": null,
+    "createdAt": "2025-10-15T21:53:06.087Z",
+    "updatedAt": "2025-10-31T10:27:08.042Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Success Rates",
+        "iconUrl": "https://img.icons8.com/color/96/medal.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Students Coached",
+        "value": 1000,
+        "iconUrl": "https://img.icons8.com/color/96/money-bag.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Years of Experience",
+        "value": "2020",
+        "iconUrl": "https://img.icons8.com/color/96/conference.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": "Jackie Wegoki",
+    "founderQuote": "At Flourishhub, we believe every soul deserves to thrive. This is a sanctuary for growth, compassion, and authentic living — where hearts are nourished, communities are strengthened, and human flourishing becomes a shared reality.",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "Our Global Impact",
+    "sectionTitle": "Recognized. Respected. Results-Driven.",
+    "sectionDescription": "Our impact spans continents — empowering thousands to rise higher in purpose and performance. With recognition from top global platforms, our mission continues to shape leaders, innovators, and changemakers across the world.",
+    "sEOId": "68f017c25d341681f2b63945",
+    "analyticsConfigId": "68f017c25d341681f2b63944",
+    "paymentSettingsId": "68f017c25d341681f2b63943",
+    "shippingSettingsId": "68f017c25d341681f2b63942",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "6910b0c98d4060cdc792feb7",
+    "name": "Securiry Services",
+    "slug": "security-services",
+    "tagline": "**Protect What Matters Most** with Expert Security Services",
+    "description": "Offering comprehensive security solutions including surveillance systems, alarm installations, and 24/7 monitoring to safeguard your home and business.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Security",
+    "variant": "Security Services",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762806851475-7cfeffcf1067e58762a3fb879fd7e3f7.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762806851471-7cfeffcf1067e58762a3fb879fd7e3f7.webp",
+    "videoUrl": "",
+    "contactEmail": "brendenodhiambo@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "Matopeni ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2602631,
+      "lng": 36.9312553
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "security-services.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#78350F",
+      "secondaryColor": "#FBBF24"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-10T21:14:53.355Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "AWARDS 1",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "name": "AWARDS 2",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "SALES",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "label": "SALES2",
+        "value": 15,
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "FOUNDED",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      },
+      {
+        "label": "FOUNDED2",
+        "value": "12",
+        "iconUrl": "https://img.icons8.com/?size=100&id=jYoz6VN1oJoI&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68481ec7e97163f3ad22af22",
+    "paymentSettingsId": "68481ec7e97163f3ad22af23",
+    "shippingSettingsId": "68481ec7e97163f3ad22af24",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "691b5ca1236bdf9e4b7aaf70",
+    "name": "CUDA",
+    "slug": "security-services-2",
+    "tagline": "**Protect What Matters Most** with Expert Security Services",
+    "description": "A leading provider of comprehensive security solutions, dedicated to safeguard individuals, businesses and assets. With a commitment to excellence, innovation and customer satisfaction, CUDA security and logistics has emerged as a trusted name in the security industry.",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Security",
+    "variant": "Security Consulting",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1763407847818-2.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1763407847815-6.png",
+    "videoUrl": "",
+    "contactEmail": "swaweru@gmail.com",
+    "contactPhone": "0725766457",
+    "site": null,
+    "address": "Obama Estate, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.257179,
+      "lng": 36.9187008
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sun": ""
+    },
+    "domain": "security-services-2.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#6366F1",
+      "secondaryColor": "#F59E0B",
+      "fontFamily": "\"Open Sans\", sans-serif"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-27T09:11:21.971Z",
+    "updatedAt": "2025-11-18T05:35:06.264Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "AWARDS 1",
+        "iconUrl": "https://img.icons8.com/color/96/000000/diamond.png"
+      },
+      {
+        "name": "AWARDS 2",
+        "iconUrl": "https://img.icons8.com/color/96/000000/prize.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "SALES",
+        "value": 50000,
+        "iconUrl": "https://img.icons8.com/color/96/money-bag.png"
+      },
+      {
+        "label": "SALES2",
+        "value": 15,
+        "iconUrl": "https://img.icons8.com/color/96/sales-performance.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "FOUNDED",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/color/96/company.png"
+      },
+      {
+        "label": "FOUNDED2",
+        "value": "12",
+        "iconUrl": "https://img.icons8.com/color/96/teamwork.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "Mission Statement",
+    "sectionDescription": "Our mission at CUDA Security and logistics is to create a secure environment for our clients by delivering cutting edge security solutions with integrity, professionalism and unparalleled customer service.",
+    "sEOId": "683581baa1bdf6ca3624b525",
+    "analyticsConfigId": "68481ec7e97163f3ad22af22",
+    "paymentSettingsId": "68481ec7e97163f3ad22af23",
+    "shippingSettingsId": "68481ec7e97163f3ad22af24",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "69208b33e1811d332eb13f1c",
+    "name": "Furniture Store",
+    "slug": "furniture-store",
+    "tagline": "My Duka tagline",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Furniture Shop",
+    "variant": "Modern Furniture Store",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762508560102-8011901.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762508560101-pexels-andrew-3178938.jpg",
+    "videoUrl": "",
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "Matopeni ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.259074,
+      "lng": 36.9299114
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "furniture-store.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#E11D48",
+      "secondaryColor": "#FCD34D"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-15T10:32:39.178Z",
+    "updatedAt": "2025-11-21T16:55:04.858Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller ",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/?size=100&id=118466&format=png&color=000000"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "6825c2c7969ab9f16f620f66",
+    "analyticsConfigId": "683ed73cdd27c8735ae0df60",
+    "paymentSettingsId": "683ed73cdd27c8735ae0df61",
+    "shippingSettingsId": "683ed73cdd27c8735ae0df62",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  },
+  {
+    "id": "69208b02e1811d332eb13f1b",
+    "name": "Fashion Store",
+    "slug": "fashion-store",
+    "tagline": "My Duka tagline",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "hasWebsite": true,
+    "showOnGhuba": null,
+    "companyCategoryId": null,
+    "category": "Fashion Shop",
+    "variant": "Modern Fashion Store",
+    "logoUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762508560102-8011901.png",
+    "bannerUrl": "https://dozi4r4ug9739.cloudfront.net/images/1762508560101-pexels-andrew-3178938.jpg",
+    "videoUrl": "",
+    "contactEmail": "test@gmail.com",
+    "contactPhone": "0706448146",
+    "site": null,
+    "address": "New Njiru Town, Njiru ward, Njiru, Nairobi, Nairobi County, 55145, Kenya",
+    "geoLocation": {
+      "lat": -1.2602499,
+      "lng": 36.9366303
+    },
+    "openingHours": {
+      "mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "wed": {
+        "open": "08:00",
+        "close": "17:00"
+      },
+      "thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "sat": "",
+      "sun": ""
+    },
+    "domain": "fashion-store.salesmanpro.site",
+    "currency": "KES",
+    "locale": "en-US",
+    "lat": null,
+    "lng": null,
+    "radius": 200,
+    "pricingTiers": [],
+    "themeSettings": {
+      "primaryColor": "#E11D48",
+      "secondaryColor": "#FCD34D",
+      "fontFamily": "Inter, sans-serif"
+    },
+    "userId": "68f1e945dcb9542a6b0a08eb",
+    "sslStatus": null,
+    "createdAt": "2025-05-15T10:32:39.178Z",
+    "updatedAt": "2025-11-26T15:59:28.510Z",
+    "deletedAt": null,
+    "awards": [
+      {
+        "name": "Best Seller ",
+        "iconUrl": "https://img.icons8.com/color/96/000000/trophy.png"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Sales",
+        "value": 500000,
+        "iconUrl": "https://img.icons8.com/color/96/sales-performance.png"
+      }
+    ],
+    "stats": [
+      {
+        "label": "Founded",
+        "value": "2015",
+        "iconUrl": "https://img.icons8.com/color/96/company.png"
+      }
+    ],
+    "highlights": null,
+    "founderName": "",
+    "founderQuote": "",
+    "founderImage": "",
+    "partnerLogos": [],
+    "sectionSubtitle": "",
+    "sectionTitle": "",
+    "sectionDescription": "",
+    "sEOId": "6825c2c7969ab9f16f620f66",
+    "analyticsConfigId": "683ed73cdd27c8735ae0df60",
+    "paymentSettingsId": "683ed73cdd27c8735ae0df61",
+    "shippingSettingsId": "683ed73cdd27c8735ae0df62",
+    "domainVerified": false,
+    "sslError": null,
+    "aiCreditBalance": 0
+  }
+]

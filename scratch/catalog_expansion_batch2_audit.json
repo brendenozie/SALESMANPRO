@@ -1,0 +1,325 @@
+=== STARTING CATALOG EXPANSION BATCH 2 SCRIPT ===
+Verified 65 owned companies in allowlist for userId 67c5b0182e2372b5f2366dbe.
+Found 12 candidate additions for Batch 2.
+Created Product (6ac8e1bec23b24b9e6d805db) and Listing (6ac8e1bec23b24b9e6d805dc) for "Pure Natural Raw Acacia Honey (500g)" in "Honey Duka".
+Created Product (6ac8e1bec23b24b9e6d805dd) and Listing (6ac8e1bec23b24b9e6d805de) for "Organic Natural Raw Honeycomb Block (400g)" in "Honey Duka".
+Created Product (6ac8e1bec23b24b9e6d805df) and Listing (6ac8e1bec23b24b9e6d805e0) for "Pampers Premium Protection Diaper Pants Size 3 (56 Count)" in "Baby Duka".
+Created Product (6ac8e1bec23b24b9e6d805e1) and Listing (6ac8e1bec23b24b9e6d805e2) for "Gentle Head-to-Toe Baby Wash & Shampoo (500ml)" in "Baby Duka".
+Created Product (6ac8e1bec23b24b9e6d805e3) and Listing (6ac8e1bec23b24b9e6d805e4) for "Classic Stainless Steel Quartz Men's Dress Watch" in "Watch Duka".
+Created Product (6ac8e1bec23b24b9e6d805e5) and Listing (6ac8e1bec23b24b9e6d805e6) for "Waterproof Bluetooth Fitness Smart Watch with Heart Rate Monitor" in "Watch Duka".
+Created Product (6ac8e1bec23b24b9e6d805e7) and Listing (6ac8e1bec23b24b9e6d805e8) for "Complete Adult Dog Dry Food - Beef & Vegetable (10kg)" in "Pets Duka".
+Created Product (6ac8e1bec23b24b9e6d805e9) and Listing (6ac8e1bec23b24b9e6d805ea) for "Durable Rubber Chew & Fetch Dog Toy (Large)" in "Pets Duka".
+Created Product (6ac8e1bec23b24b9e6d805eb) and Listing (6ac8e1bec23b24b9e6d805ec) for "True Wireless Stereo Earbuds with Charging Case" in "Earphones Duka".
+Created Product (6ac8e1bec23b24b9e6d805ed) and Listing (6ac8e1bec23b24b9e6d805ee) for "Deep Bass Over-Ear Wireless Bluetooth Headphones" in "Earphones Duka".
+Created Product (6ac8e1bec23b24b9e6d805ef) and Listing (6ac8e1bec23b24b9e6d805f0) for "Heavy Duty 800W Rotary Hammer Drill with SDS-Plus Bits" in "Hardware Store".
+Created Product (6ac8e1bec23b24b9e6d805f1) and Listing (6ac8e1bec23b24b9e6d805f2) for "Professional 24-Piece Combination Spanner & Socket Tool Set" in "Hardware Store".
+
+--- RUNNING POST-EXECUTION VERIFICATION ---
+=== POST-EXECUTION SUMMARY BATCH 2 ===
+{
+  "timestamp": "2026-10-09T12:44:46.490Z",
+  "batch": 2,
+  "targetUserId": "67c5b0182e2372b5f2366dbe",
+  "initialCounts": {
+    "orders": 196,
+    "orderItems": 295,
+    "products": 27,
+    "listings": 71,
+    "activeListings": 11
+  },
+  "createdProducts": [
+    {
+      "id": "6ac8e1bec23b24b9e6d805db",
+      "companyId": "699fefdbccfde3cbdf107c7b",
+      "companyName": "Honey Duka",
+      "name": "Pure Natural Raw Acacia Honey (500g)",
+      "category": "Honey Store",
+      "subCategory": "Raw & Organic Honey",
+      "brand": "Kitui Pure Honey",
+      "sellingPrice": 650,
+      "stock": 40
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805dd",
+      "companyId": "699fefdbccfde3cbdf107c7b",
+      "companyName": "Honey Duka",
+      "name": "Organic Natural Raw Honeycomb Block (400g)",
+      "category": "Honey Store",
+      "subCategory": "Honey Comb",
+      "brand": "Kitui Pure Honey",
+      "sellingPrice": 850,
+      "stock": 25
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805df",
+      "companyId": "699fea3fccfde3cbdf107c77",
+      "companyName": "Baby Duka",
+      "name": "Pampers Premium Protection Diaper Pants Size 3 (56 Count)",
+      "category": "Baby Store",
+      "subCategory": "Diapers & Care",
+      "brand": "Pampers",
+      "sellingPrice": 2100,
+      "stock": 35
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e1",
+      "companyId": "699fea3fccfde3cbdf107c77",
+      "companyName": "Baby Duka",
+      "name": "Gentle Head-to-Toe Baby Wash & Shampoo (500ml)",
+      "category": "Baby Store",
+      "subCategory": "Baby Care & Health",
+      "brand": "Johnson's Baby",
+      "sellingPrice": 850,
+      "stock": 40
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e3",
+      "companyId": "699fef6accfde3cbdf107c7a",
+      "companyName": "Watch Duka",
+      "name": "Classic Stainless Steel Quartz Men's Dress Watch",
+      "category": "Watch Store",
+      "subCategory": "Classic Watches",
+      "brand": "Casio",
+      "sellingPrice": 4500,
+      "stock": 20
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e5",
+      "companyId": "699fef6accfde3cbdf107c7a",
+      "companyName": "Watch Duka",
+      "name": "Waterproof Bluetooth Fitness Smart Watch with Heart Rate Monitor",
+      "category": "Watch Store",
+      "subCategory": "Smart Watches",
+      "brand": "Huawei",
+      "sellingPrice": 6500,
+      "stock": 15
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e7",
+      "companyId": "699fea6eccfde3cbdf107c79",
+      "companyName": "Pets Duka",
+      "name": "Complete Adult Dog Dry Food - Beef & Vegetable (10kg)",
+      "category": "Pets Store",
+      "subCategory": "Dog Food",
+      "brand": "Pedigree",
+      "sellingPrice": 4200,
+      "stock": 20
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e9",
+      "companyId": "699fea6eccfde3cbdf107c79",
+      "companyName": "Pets Duka",
+      "name": "Durable Rubber Chew & Fetch Dog Toy (Large)",
+      "category": "Pets Store",
+      "subCategory": "Pet Toys",
+      "brand": "KONG",
+      "sellingPrice": 1000,
+      "stock": 30
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805eb",
+      "companyId": "699ff3a4ccfde3cbdf107c80",
+      "companyName": "Earphones Duka",
+      "name": "True Wireless Stereo Earbuds with Charging Case",
+      "category": "Earphones Store",
+      "subCategory": "Wireless Earbuds",
+      "brand": "Oraimo",
+      "sellingPrice": 2500,
+      "stock": 30
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805ed",
+      "companyId": "699ff3a4ccfde3cbdf107c80",
+      "companyName": "Earphones Duka",
+      "name": "Deep Bass Over-Ear Wireless Bluetooth Headphones",
+      "category": "Earphones Store",
+      "subCategory": "Sports Earphones",
+      "brand": "JBL",
+      "sellingPrice": 4800,
+      "stock": 15
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805ef",
+      "companyId": "69d54251b5abc7c341772e52",
+      "companyName": "Hardware Store",
+      "name": "Heavy Duty 800W Rotary Hammer Drill with SDS-Plus Bits",
+      "category": "Hardware Store",
+      "subCategory": "Power Tools",
+      "brand": "Bosch",
+      "sellingPrice": 8500,
+      "stock": 12
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805f1",
+      "companyId": "69d54251b5abc7c341772e52",
+      "companyName": "Hardware Store",
+      "name": "Professional 24-Piece Combination Spanner & Socket Tool Set",
+      "category": "Hardware Store",
+      "subCategory": "Hand Tools",
+      "brand": "TotalTools",
+      "sellingPrice": 3800,
+      "stock": 20
+    }
+  ],
+  "createdListings": [
+    {
+      "id": "6ac8e1bec23b24b9e6d805dc",
+      "productId": "6ac8e1bec23b24b9e6d805db",
+      "companyId": "699fefdbccfde3cbdf107c7b",
+      "companyName": "Honey Duka",
+      "name": "Pure Natural Raw Acacia Honey (500g)",
+      "category": "Honey Store",
+      "subCategory": "Raw & Organic Honey",
+      "brand": "Kitui Pure Honey",
+      "sellingPrice": 650,
+      "stock": 40
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805de",
+      "productId": "6ac8e1bec23b24b9e6d805dd",
+      "companyId": "699fefdbccfde3cbdf107c7b",
+      "companyName": "Honey Duka",
+      "name": "Organic Natural Raw Honeycomb Block (400g)",
+      "category": "Honey Store",
+      "subCategory": "Honey Comb",
+      "brand": "Kitui Pure Honey",
+      "sellingPrice": 850,
+      "stock": 25
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e0",
+      "productId": "6ac8e1bec23b24b9e6d805df",
+      "companyId": "699fea3fccfde3cbdf107c77",
+      "companyName": "Baby Duka",
+      "name": "Pampers Premium Protection Diaper Pants Size 3 (56 Count)",
+      "category": "Baby Store",
+      "subCategory": "Diapers & Care",
+      "brand": "Pampers",
+      "sellingPrice": 2100,
+      "stock": 35
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e2",
+      "productId": "6ac8e1bec23b24b9e6d805e1",
+      "companyId": "699fea3fccfde3cbdf107c77",
+      "companyName": "Baby Duka",
+      "name": "Gentle Head-to-Toe Baby Wash & Shampoo (500ml)",
+      "category": "Baby Store",
+      "subCategory": "Baby Care & Health",
+      "brand": "Johnson's Baby",
+      "sellingPrice": 850,
+      "stock": 40
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e4",
+      "productId": "6ac8e1bec23b24b9e6d805e3",
+      "companyId": "699fef6accfde3cbdf107c7a",
+      "companyName": "Watch Duka",
+      "name": "Classic Stainless Steel Quartz Men's Dress Watch",
+      "category": "Watch Store",
+      "subCategory": "Classic Watches",
+      "brand": "Casio",
+      "sellingPrice": 4500,
+      "stock": 20
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e6",
+      "productId": "6ac8e1bec23b24b9e6d805e5",
+      "companyId": "699fef6accfde3cbdf107c7a",
+      "companyName": "Watch Duka",
+      "name": "Waterproof Bluetooth Fitness Smart Watch with Heart Rate Monitor",
+      "category": "Watch Store",
+      "subCategory": "Smart Watches",
+      "brand": "Huawei",
+      "sellingPrice": 6500,
+      "stock": 15
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805e8",
+      "productId": "6ac8e1bec23b24b9e6d805e7",
+      "companyId": "699fea6eccfde3cbdf107c79",
+      "companyName": "Pets Duka",
+      "name": "Complete Adult Dog Dry Food - Beef & Vegetable (10kg)",
+      "category": "Pets Store",
+      "subCategory": "Dog Food",
+      "brand": "Pedigree",
+      "sellingPrice": 4200,
+      "stock": 20
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805ea",
+      "productId": "6ac8e1bec23b24b9e6d805e9",
+      "companyId": "699fea6eccfde3cbdf107c79",
+      "companyName": "Pets Duka",
+      "name": "Durable Rubber Chew & Fetch Dog Toy (Large)",
+      "category": "Pets Store",
+      "subCategory": "Pet Toys",
+      "brand": "KONG",
+      "sellingPrice": 1000,
+      "stock": 30
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805ec",
+      "productId": "6ac8e1bec23b24b9e6d805eb",
+      "companyId": "699ff3a4ccfde3cbdf107c80",
+      "companyName": "Earphones Duka",
+      "name": "True Wireless Stereo Earbuds with Charging Case",
+      "category": "Earphones Store",
+      "subCategory": "Wireless Earbuds",
+      "brand": "Oraimo",
+      "sellingPrice": 2500,
+      "stock": 30
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805ee",
+      "productId": "6ac8e1bec23b24b9e6d805ed",
+      "companyId": "699ff3a4ccfde3cbdf107c80",
+      "companyName": "Earphones Duka",
+      "name": "Deep Bass Over-Ear Wireless Bluetooth Headphones",
+      "category": "Earphones Store",
+      "subCategory": "Sports Earphones",
+      "brand": "JBL",
+      "sellingPrice": 4800,
+      "stock": 15
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805f0",
+      "productId": "6ac8e1bec23b24b9e6d805ef",
+      "companyId": "69d54251b5abc7c341772e52",
+      "companyName": "Hardware Store",
+      "name": "Heavy Duty 800W Rotary Hammer Drill with SDS-Plus Bits",
+      "category": "Hardware Store",
+      "subCategory": "Power Tools",
+      "brand": "Bosch",
+      "sellingPrice": 8500,
+      "stock": 12
+    },
+    {
+      "id": "6ac8e1bec23b24b9e6d805f2",
+      "productId": "6ac8e1bec23b24b9e6d805f1",
+      "companyId": "69d54251b5abc7c341772e52",
+      "companyName": "Hardware Store",
+      "name": "Professional 24-Piece Combination Spanner & Socket Tool Set",
+      "category": "Hardware Store",
+      "subCategory": "Hand Tools",
+      "brand": "TotalTools",
+      "sellingPrice": 3800,
+      "stock": 20
+    }
+  ],
+  "errors": [],
+  "finalCounts": {
+    "orders": 196,
+    "orderItems": 295,
+    "products": 39,
+    "listings": 83,
+    "activeListings": 11
+  },
+  "deltas": {
+    "newProducts": 12,
+    "newListings": 12,
+    "orderDelta": 0,
+    "orderItemDelta": 0
+  },
+  "durationMs": 409
+}

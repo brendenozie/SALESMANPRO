@@ -1,0 +1,4958 @@
+{
+  "grocer": [
+    {
+      "id": "000000000000000000070001",
+      "name": "Restaurant & Food Delivery",
+      "slug": "restaurant-food-delivery",
+      "subcategories": [
+        {
+          "id": "000000000000000000070002",
+          "name": "Groceries",
+          "slug": "groceries",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070003",
+          "name": "Kitchenware",
+          "slug": "kitchenware",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070004",
+          "name": "Dining",
+          "slug": "dining",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070005",
+          "name": "Gift Cards",
+          "slug": "gift-cards",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070006",
+          "name": "Meal Kits",
+          "slug": "meal-kits",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070007",
+          "name": "Catering Services",
+          "slug": "catering-services",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "69a28ae60a4cb4fcefbabc69",
+      "name": "Groceries Store",
+      "slug": "groceries-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807081",
+          "name": "Fresh Produce",
+          "slug": "fresh-produce",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807082",
+          "name": "Pantry Staples",
+          "slug": "pantry-staples",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807083",
+          "name": "Beverages",
+          "slug": "beverages",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807084",
+          "name": "Household Essentials",
+          "slug": "household-essentials",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807085",
+          "name": "Snacks & Sweets",
+          "slug": "snacks-sweets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807086",
+          "name": "Dairy & Eggs",
+          "slug": "dairy-eggs",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807087",
+          "name": "Meat & Seafood",
+          "slug": "meat-seafood",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807088",
+          "name": "Frozen Foods",
+          "slug": "frozen-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807089",
+          "name": "Baby & Kids",
+          "slug": "baby-kids",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807081",
+          "name": "Health & Wellness",
+          "slug": "health-wellness",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b2b2a5e807082",
+          "name": "International Foods",
+          "slug": "international-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807585",
+          "name": "Bakery & Bread",
+          "slug": "bakery-bread",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d92b1b2a5e807083",
+          "name": "Organic & Natural",
+          "slug": "organic-natural",
+          "brands": []
+        },
+        {
+          "id": "64e3a4c2d91b1b2a5e807084",
+          "name": "Gluten-Free",
+          "slug": "gluten-free",
+          "brands": []
+        },
+        {
+          "id": "64e3b4e2d91b1b2a5e807085",
+          "name": "Vegan & Vegetarian",
+          "slug": "vegan-vegetarian",
+          "brands": []
+        },
+        {
+          "id": "64c3a4e2d91b1b2a5e807086",
+          "name": "Specialty Diets",
+          "slug": "specialty-diets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4c2d91b1b2a5e807088",
+          "name": "Alcohol & Spirits",
+          "slug": "alcohol-spirits",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91c1b2a5e807089",
+          "name": "Grains & Legumes",
+          "slug": "grains-legumes",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1c2a5e80708a",
+          "name": "Condiments & Sauces",
+          "slug": "condiments-sauces",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2b5e807080",
+          "name": "Breakfast Foods",
+          "slug": "breakfast-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5c807081",
+          "name": "Canned & Jarred Goods",
+          "slug": "canned-jarred-goods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2e91b1b2a5e80708f",
+          "name": "Deli & Prepared Foods",
+          "slug": "deli-prepared-foods",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807080",
+          "name": "Fresh Produce",
+          "slug": "fresh-produce",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807282",
+          "name": "Pantry Staples",
+          "slug": "pantry-staples",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807383",
+          "name": "Beverages",
+          "slug": "beverages",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807484",
+          "name": "Household Essentials",
+          "slug": "household-essentials",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Breakfast Cereals",
+          "slug": "breakfast-cereals",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Spices & Seasonings",
+          "slug": "spices-and-seasonings",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Gourmet Foods",
+          "slug": "gourmet-foods",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "peanut": [
+    {
+      "id": "64e3a4e2d91b1b2a5e809001",
+      "name": "Peanuts Store",
+      "slug": "peanuts-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e809002",
+          "name": "Raw Peanuts",
+          "slug": "raw-peanuts",
+          "brands": [
+            "Farm Fresh",
+            "Organic Harvest",
+            "Nutty Naturals"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809003",
+          "name": "Roasted Peanuts",
+          "slug": "roasted-peanuts",
+          "brands": [
+            "Nutty Naturals",
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809004",
+          "name": "Flavored Peanuts",
+          "slug": "flavored-peanuts",
+          "brands": [
+            "Golden Crunch",
+            "SnackPro",
+            "Spicy Treats"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809005",
+          "name": "Peanut Butter",
+          "slug": "peanut-butter",
+          "brands": [
+            "Farm Fresh",
+            "Organic Harvest",
+            "Nutty Naturals"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809006",
+          "name": "Peanut Snacks",
+          "slug": "peanut-snacks",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch",
+            "Spicy Treats"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809007",
+          "name": "Peanut Flour",
+          "slug": "peanut-flour",
+          "brands": [
+            "Farm Fresh",
+            "Organic Harvest"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809008",
+          "name": "Peanut Oil",
+          "slug": "peanut-oil",
+          "brands": [
+            "Farm Fresh",
+            "Organic Harvest"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809009",
+          "name": "Peanut Brittle",
+          "slug": "peanut-brittle",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80900a",
+          "name": "Peanut Candy",
+          "slug": "peanut-candy",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80900b",
+          "name": "Peanut Granola Bars",
+          "slug": "peanut-granola-bars",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80900c",
+          "name": "Peanut Energy Bites",
+          "slug": "peanut-energy-bites",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80900d",
+          "name": "Peanut Trail Mix",
+          "slug": "peanut-trail-mix",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80900e",
+          "name": "Peanut Granola",
+          "slug": "peanut-granola",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80900f",
+          "name": "Peanut Butter Cookies",
+          "slug": "peanut-butter-cookies",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809010",
+          "name": "Peanut Butter Brownies",
+          "slug": "peanut-butter-brownies",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809011",
+          "name": "Peanut Butter Cups",
+          "slug": "peanut-butter-cups",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809012",
+          "name": "Peanut Butter Fudge",
+          "slug": "peanut-butter-fudge",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809013",
+          "name": "Peanut Butter Ice Cream",
+          "slug": "peanut-butter-ice-cream",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809014",
+          "name": "Peanut Butter Smoothie",
+          "slug": "peanut-butter-smoothie",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e809015",
+          "name": "Peanut Butter Protein Bars",
+          "slug": "peanut-butter-protein-bars",
+          "brands": [
+            "SnackPro",
+            "Golden Crunch"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "food": [
+    {
+      "id": "000000000000000000040001",
+      "name": "Blog & Content",
+      "slug": "blog-content",
+      "subcategories": [
+        {
+          "id": "000000000000000000040002",
+          "name": "Article Writing",
+          "slug": "article-writing",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040003",
+          "name": "Newsletter Creation",
+          "slug": "newsletter-creation",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040004",
+          "name": "Case Studies",
+          "slug": "case-studies",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040005",
+          "name": "Whitepapers",
+          "slug": "whitepapers",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040006",
+          "name": "Social Media Posts",
+          "slug": "social-media-posts",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050000",
+          "name": "Lifestyle",
+          "slug": "lifestyle",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050001",
+          "name": "Travel",
+          "slug": "travel",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050002",
+          "name": "Health & Wellness",
+          "slug": "health-wellness",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050003",
+          "name": "Technology",
+          "slug": "technology",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050004",
+          "name": "Finance & Money",
+          "slug": "finance-money",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050005",
+          "name": "Education",
+          "slug": "education",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050006",
+          "name": "Career & Business",
+          "slug": "career-business",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050007",
+          "name": "Food & Drink",
+          "slug": "food-drink",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050008",
+          "name": "Fashion & Beauty",
+          "slug": "fashion-beauty",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050009",
+          "name": "Parenting & Family",
+          "slug": "parenting-family",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000a",
+          "name": "Relationships",
+          "slug": "relationships",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000b",
+          "name": "Entertainment & Pop Culture",
+          "slug": "entertainment",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000c",
+          "name": "Marketing",
+          "slug": "marketing",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000d",
+          "name": "Creative Writing",
+          "slug": "creative-writing",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000e",
+          "name": "News & Opinion",
+          "slug": "news-opinion",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "000000000000000000070001",
+      "name": "Restaurant & Food Delivery",
+      "slug": "restaurant-food-delivery",
+      "subcategories": [
+        {
+          "id": "000000000000000000070002",
+          "name": "Groceries",
+          "slug": "groceries",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070003",
+          "name": "Kitchenware",
+          "slug": "kitchenware",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070004",
+          "name": "Dining",
+          "slug": "dining",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070005",
+          "name": "Gift Cards",
+          "slug": "gift-cards",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070006",
+          "name": "Meal Kits",
+          "slug": "meal-kits",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000070007",
+          "name": "Catering Services",
+          "slug": "catering-services",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "64e3a4e2d91b1b2a5e807171",
+      "name": "Pets Store",
+      "slug": "pets-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807172",
+          "name": "Dog Food",
+          "slug": "dog-food",
+          "brands": [
+            "Pedigree",
+            "Royal Canin",
+            "Purina",
+            "Acana"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807173",
+          "name": "Cat Food",
+          "slug": "cat-food",
+          "brands": [
+            "Whiskas",
+            "Hills",
+            "Purina"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807174",
+          "name": "Pet Accessories",
+          "slug": "pet-accessories",
+          "brands": [
+            "PetSafe",
+            "KONG",
+            "Nylabone"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807175",
+          "name": "Pet Healthcare",
+          "slug": "pet-healthcare",
+          "brands": [
+            "Frontline",
+            "Advocate",
+            "Seresto"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807176",
+          "name": "Pet Grooming",
+          "slug": "pet-grooming",
+          "brands": [
+            "FURminator",
+            "Andis",
+            "Oster"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807177",
+          "name": "Pet Toys",
+          "slug": "pet-toys",
+          "brands": [
+            "KONG",
+            "Nylabone",
+            "Chuckit!"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807178",
+          "name": "Pet Beds",
+          "slug": "pet-beds",
+          "brands": [
+            "K&H",
+            "MidWest",
+            "Best Friends by Sheri"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807179",
+          "name": "Pet Training",
+          "slug": "pet-training",
+          "brands": [
+            "PetSafe",
+            "KONG",
+            "Nylabone"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80717a",
+          "name": "Pet Travel",
+          "slug": "pet-travel",
+          "brands": [
+            "Sleepypod",
+            "Petmate",
+            "Sherpa"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80717b",
+          "name": "Pet Clothing",
+          "slug": "pet-clothing",
+          "brands": [
+            "RC Pets",
+            "Frisco",
+            "PetRageous"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "69a28ae60a4cb4fcefbabc69",
+      "name": "Groceries Store",
+      "slug": "groceries-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807081",
+          "name": "Fresh Produce",
+          "slug": "fresh-produce",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807082",
+          "name": "Pantry Staples",
+          "slug": "pantry-staples",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807083",
+          "name": "Beverages",
+          "slug": "beverages",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807084",
+          "name": "Household Essentials",
+          "slug": "household-essentials",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807085",
+          "name": "Snacks & Sweets",
+          "slug": "snacks-sweets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807086",
+          "name": "Dairy & Eggs",
+          "slug": "dairy-eggs",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807087",
+          "name": "Meat & Seafood",
+          "slug": "meat-seafood",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807088",
+          "name": "Frozen Foods",
+          "slug": "frozen-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807089",
+          "name": "Baby & Kids",
+          "slug": "baby-kids",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807081",
+          "name": "Health & Wellness",
+          "slug": "health-wellness",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b2b2a5e807082",
+          "name": "International Foods",
+          "slug": "international-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807585",
+          "name": "Bakery & Bread",
+          "slug": "bakery-bread",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d92b1b2a5e807083",
+          "name": "Organic & Natural",
+          "slug": "organic-natural",
+          "brands": []
+        },
+        {
+          "id": "64e3a4c2d91b1b2a5e807084",
+          "name": "Gluten-Free",
+          "slug": "gluten-free",
+          "brands": []
+        },
+        {
+          "id": "64e3b4e2d91b1b2a5e807085",
+          "name": "Vegan & Vegetarian",
+          "slug": "vegan-vegetarian",
+          "brands": []
+        },
+        {
+          "id": "64c3a4e2d91b1b2a5e807086",
+          "name": "Specialty Diets",
+          "slug": "specialty-diets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4c2d91b1b2a5e807088",
+          "name": "Alcohol & Spirits",
+          "slug": "alcohol-spirits",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91c1b2a5e807089",
+          "name": "Grains & Legumes",
+          "slug": "grains-legumes",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1c2a5e80708a",
+          "name": "Condiments & Sauces",
+          "slug": "condiments-sauces",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2b5e807080",
+          "name": "Breakfast Foods",
+          "slug": "breakfast-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5c807081",
+          "name": "Canned & Jarred Goods",
+          "slug": "canned-jarred-goods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2e91b1b2a5e80708f",
+          "name": "Deli & Prepared Foods",
+          "slug": "deli-prepared-foods",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807080",
+          "name": "Fresh Produce",
+          "slug": "fresh-produce",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807282",
+          "name": "Pantry Staples",
+          "slug": "pantry-staples",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807383",
+          "name": "Beverages",
+          "slug": "beverages",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807484",
+          "name": "Household Essentials",
+          "slug": "household-essentials",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Breakfast Cereals",
+          "slug": "breakfast-cereals",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Spices & Seasonings",
+          "slug": "spices-and-seasonings",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Gourmet Foods",
+          "slug": "gourmet-foods",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "glass": [
+    {
+      "id": "64e3a5e2d91b1b2a5e80c711",
+      "name": "Glasses & Spectacles Store",
+      "slug": "glasses-spectacles-store",
+      "subcategories": [
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7021",
+          "name": "Prescription Glasses",
+          "slug": "prescription-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Oakley",
+            "Carrera",
+            "Police"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7022",
+          "name": "Sunglasses",
+          "slug": "sunglasses",
+          "brands": [
+            "Ray-Ban",
+            "Gucci",
+            "Prada",
+            "Tommy Hilfiger"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7023",
+          "name": "Blue Light Glasses",
+          "slug": "blue-light-glasses",
+          "brands": [
+            "Cyxus",
+            "Gunnar",
+            "Livho",
+            "Feisedy"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7025",
+          "name": "Reading Glasses",
+          "slug": "reading-glasses",
+          "brands": [
+            "Foster Grant",
+            "Peepers",
+            "ThinOptics",
+            "Eyekepper"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7024",
+          "name": "Sports & Safety Glasses",
+          "slug": "sports-safety-glasses",
+          "brands": [
+            "Oakley",
+            "Uvex",
+            "3M",
+            "Bolle"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7026",
+          "name": "Eyewear Accessories",
+          "slug": "eyewear-accessories",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7027",
+          "name": "Designer & Luxury Glasses",
+          "slug": "designer-luxury-glasses",
+          "brands": [
+            "Gucci",
+            "Prada",
+            "Tommy Hilfiger"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7028",
+          "name": "Kids' Glasses",
+          "slug": "kids-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Oakley",
+            "Carrera",
+            "Police"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7029",
+          "name": "Vintage & Retro Glasses",
+          "slug": "vintage-retro-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Gucci",
+            "Prada"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7030",
+          "name": "Custom & Personalized Glasses",
+          "slug": "custom-personalized-glasses",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7031",
+          "name": "Eco-Friendly Glasses",
+          "slug": "eco-friendly-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Gucci"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7032",
+          "name": "Affordable & Budget Glasses",
+          "slug": "affordable-budget-glasses",
+          "brands": [
+            "Foster Grant",
+            "Peepers"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7033",
+          "name": "Limited Edition & Collaborations",
+          "slug": "limited-edition-collaborations",
+          "brands": [
+            "Ray-Ban",
+            "Gucci"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7034",
+          "name": "Virtual Try-On & Smart Glasses",
+          "slug": "virtual-try-on-smart-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Oakley"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7035",
+          "name": "Other Eyewear",
+          "slug": "other-eyewear",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7036",
+          "name": "Eyewear Services",
+          "slug": "eyewear-services",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7037",
+          "name": "Clearance & Sale Items",
+          "slug": "clearance-sale-items",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7038",
+          "name": "Other Services",
+          "slug": "other-services",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7039",
+          "name": "All Glasses & Spectacles",
+          "slug": "all-glasses-spectacles",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7040",
+          "name": "All Brands",
+          "slug": "all-brands",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "eyewear": [
+    {
+      "id": "64e3a5e2d91b1b2a5e80c711",
+      "name": "Glasses & Spectacles Store",
+      "slug": "glasses-spectacles-store",
+      "subcategories": [
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7021",
+          "name": "Prescription Glasses",
+          "slug": "prescription-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Oakley",
+            "Carrera",
+            "Police"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7022",
+          "name": "Sunglasses",
+          "slug": "sunglasses",
+          "brands": [
+            "Ray-Ban",
+            "Gucci",
+            "Prada",
+            "Tommy Hilfiger"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7023",
+          "name": "Blue Light Glasses",
+          "slug": "blue-light-glasses",
+          "brands": [
+            "Cyxus",
+            "Gunnar",
+            "Livho",
+            "Feisedy"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7025",
+          "name": "Reading Glasses",
+          "slug": "reading-glasses",
+          "brands": [
+            "Foster Grant",
+            "Peepers",
+            "ThinOptics",
+            "Eyekepper"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7024",
+          "name": "Sports & Safety Glasses",
+          "slug": "sports-safety-glasses",
+          "brands": [
+            "Oakley",
+            "Uvex",
+            "3M",
+            "Bolle"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7026",
+          "name": "Eyewear Accessories",
+          "slug": "eyewear-accessories",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7027",
+          "name": "Designer & Luxury Glasses",
+          "slug": "designer-luxury-glasses",
+          "brands": [
+            "Gucci",
+            "Prada",
+            "Tommy Hilfiger"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7028",
+          "name": "Kids' Glasses",
+          "slug": "kids-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Oakley",
+            "Carrera",
+            "Police"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7029",
+          "name": "Vintage & Retro Glasses",
+          "slug": "vintage-retro-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Gucci",
+            "Prada"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7030",
+          "name": "Custom & Personalized Glasses",
+          "slug": "custom-personalized-glasses",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7031",
+          "name": "Eco-Friendly Glasses",
+          "slug": "eco-friendly-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Gucci"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7032",
+          "name": "Affordable & Budget Glasses",
+          "slug": "affordable-budget-glasses",
+          "brands": [
+            "Foster Grant",
+            "Peepers"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7033",
+          "name": "Limited Edition & Collaborations",
+          "slug": "limited-edition-collaborations",
+          "brands": [
+            "Ray-Ban",
+            "Gucci"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7034",
+          "name": "Virtual Try-On & Smart Glasses",
+          "slug": "virtual-try-on-smart-glasses",
+          "brands": [
+            "Ray-Ban",
+            "Oakley"
+          ]
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7035",
+          "name": "Other Eyewear",
+          "slug": "other-eyewear",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7036",
+          "name": "Eyewear Services",
+          "slug": "eyewear-services",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7037",
+          "name": "Clearance & Sale Items",
+          "slug": "clearance-sale-items",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7038",
+          "name": "Other Services",
+          "slug": "other-services",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7039",
+          "name": "All Glasses & Spectacles",
+          "slug": "all-glasses-spectacles",
+          "brands": []
+        },
+        {
+          "id": "64e4a4e3d91b1b2a5e6c7040",
+          "name": "All Brands",
+          "slug": "all-brands",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "93e002c712ad248bb0ade319",
+      "name": "Fashion",
+      "slug": "fashion",
+      "subcategories": [
+        {
+          "id": "efe0bd2c212eceec598c42a1",
+          "name": "Clothing",
+          "slug": "clothing",
+          "brands": [
+            "Nike",
+            "Adidas",
+            "Under Armour"
+          ]
+        },
+        {
+          "id": "a60ba1a7a56c9e00252baebe",
+          "name": "Shoes",
+          "slug": "shoes",
+          "brands": [
+            "Puma",
+            "Reebok",
+            "New Balance"
+          ]
+        },
+        {
+          "id": "3a481bee83219f662b6f0785",
+          "name": "Watches",
+          "slug": "watches",
+          "brands": [
+            "Rolex",
+            "Casio",
+            "Omega"
+          ]
+        },
+        {
+          "id": "565631402af79df42f22a117",
+          "name": "Jewelry",
+          "slug": "jewelry",
+          "brands": [
+            "Tiffany",
+            "Cartier",
+            "Pandora"
+          ]
+        },
+        {
+          "id": "98edb85b00d9527ad5acebe4",
+          "name": "Accessories",
+          "slug": "accessories",
+          "brands": []
+        },
+        {
+          "id": "624000000000000000000001",
+          "name": "Eyewear",
+          "slug": "eyewear",
+          "brands": [
+            "Ray-Ban",
+            "Oakley",
+            "Gucci"
+          ]
+        },
+        {
+          "id": "624000000000000000000002",
+          "name": "Handbags",
+          "slug": "handbags",
+          "brands": [
+            "Prada",
+            "Michael Kors",
+            "Chanel"
+          ]
+        },
+        {
+          "id": "624000000000000000000003",
+          "name": "Streetwear",
+          "slug": "streetwear",
+          "brands": [
+            "Supreme",
+            "Off-White",
+            "BAPE"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "opt": [],
+  "game": [
+    {
+      "id": "54c1e2d91b1b2a5e80e50112",
+      "name": "Gaming Store",
+      "slug": "gaming-store",
+      "subcategories": [
+        {
+          "id": "64c1e2d91b1b2a5e80e50201",
+          "name": "Gaming Consoles",
+          "slug": "gaming-consoles",
+          "brands": [
+            "PlayStation",
+            "Xbox",
+            "Nintendo",
+            "Steam Deck"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50202",
+          "name": "Gaming PCs & Laptops",
+          "slug": "gaming-pcs-laptops",
+          "brands": [
+            "Asus ROG",
+            "Alienware",
+            "MSI",
+            "HP Omen"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50203",
+          "name": "Gaming Accessories",
+          "slug": "gaming-accessories",
+          "brands": [
+            "Razer",
+            "Logitech G",
+            "SteelSeries",
+            "HyperX"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50204",
+          "name": "Video Games",
+          "slug": "video-games",
+          "brands": [
+            "EA Sports",
+            "Ubisoft",
+            "Activision",
+            "Sony Interactive"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50205",
+          "name": "Gaming Chairs & Desks",
+          "slug": "gaming-chairs-desks",
+          "brands": [
+            "Secretlab",
+            "DXRacer",
+            "AndaSeat",
+            "Cougar"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50206",
+          "name": "Esports Gear",
+          "slug": "esports-gear",
+          "brands": [
+            "Razer",
+            "Logitech G",
+            "SteelSeries",
+            "HyperX"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50207",
+          "name": "Gaming Merchandise",
+          "slug": "gaming-merchandise",
+          "brands": [
+            "PlayStation",
+            "Xbox",
+            "Nintendo",
+            "EA Sports"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50208",
+          "name": "Virtual Reality (VR)",
+          "slug": "virtual-reality-vr",
+          "brands": [
+            "Oculus",
+            "HTC Vive",
+            "Valve Index",
+            "PlayStation VR"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50209",
+          "name": "Gaming Subscriptions & Services",
+          "slug": "gaming-subscriptions-services",
+          "brands": [
+            "Xbox Game Pass",
+            "PlayStation Plus",
+            "EA Play",
+            "Ubisoft+"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020a",
+          "name": "Retro Gaming",
+          "slug": "retro-gaming",
+          "brands": [
+            "Nintendo",
+            "Sega",
+            "Atari",
+            "Sony"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020b",
+          "name": "Mobile Gaming",
+          "slug": "mobile-gaming",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "OnePlus",
+            "Xiaomi"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020c",
+          "name": "Gaming Audio",
+          "slug": "gaming-audio",
+          "brands": [
+            "Bose",
+            "Sony",
+            "Sennheiser",
+            "Audio-Technica"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020d",
+          "name": "Streaming & Content Creation",
+          "slug": "streaming-content-creation",
+          "brands": [
+            "Elgato",
+            "Razer",
+            "Logitech",
+            "Blue Microphones"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020e",
+          "name": "Gaming Collectibles & Art",
+          "slug": "gaming-collectibles-art",
+          "brands": [
+            "Funko Pop",
+            "Sideshow Collectibles",
+            "Kotobukiya",
+            "First 4 Figures"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020f",
+          "name": "Indie Games & Developers",
+          "slug": "indie-games-developers",
+          "brands": [
+            "Devolver Digital",
+            "Annapurna Interactive",
+            "Team17",
+            "Raw Fury"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50210",
+          "name": "Gaming Events & Experiences",
+          "slug": "gaming-events-experiences",
+          "brands": [
+            "E3 Expo",
+            "Gamescom",
+            "PAX",
+            "Tokyo Game Show"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50211",
+          "name": "Gaming Subscriptions & Services",
+          "slug": "gaming-subscriptions-services",
+          "brands": [
+            "Xbox Game Pass",
+            "PlayStation Plus",
+            "EA Play",
+            "Ubisoft+"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50212",
+          "name": "Gaming Software & Tools",
+          "slug": "gaming-software-tools",
+          "brands": [
+            "NVIDIA GeForce Experience",
+            "AMD Radeon Software",
+            "OBS Studio",
+            "Discord"
+          ]
+        },
+        {
+          "id": null,
+          "name": "Gaming Monitor",
+          "slug": "gaming-monitor",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "67204426ac9de2ade3533836",
+      "name": "Gifts",
+      "slug": "gifts",
+      "subcategories": [
+        {
+          "id": "5ead34d84ffd4939edc7a331",
+          "name": "Gift Cards",
+          "slug": "gift-cards",
+          "brands": [
+            "Amazon",
+            "Google Play",
+            "Apple"
+          ]
+        },
+        {
+          "id": "f09f14df64b71b91c984007c",
+          "name": "Personalized Gifts",
+          "slug": "personalized-gifts",
+          "brands": [
+            "Etsy",
+            "Shutterfly"
+          ]
+        },
+        {
+          "id": "472a15a57fdecd29c72a0224",
+          "name": "Flowers",
+          "slug": "flowers",
+          "brands": []
+        },
+        {
+          "name": "Candles and Fragrance",
+          "slug": "candles-and-fragrance",
+          "brands": [
+            "Yankee Candle",
+            "Bath & Body Works",
+            "Lush"
+          ]
+        },
+        {
+          "name": "Toys and Games",
+          "slug": "toys-and-games",
+          "brands": [
+            "Lego",
+            "Funko"
+          ]
+        },
+        {
+          "name": "Cultural and Local Gifts",
+          "slug": "cultural-and-local-gifts",
+          "brands": [
+            "Jumia",
+            "Woolworths",
+            "Naivas"
+          ]
+        },
+        {
+          "name": "Stationery and Keepsakes",
+          "slug": "stationery-and-keepsakes",
+          "brands": [
+            "Typo",
+            "Paper Source",
+            "Miniso"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "676bb5ed0de34d386c10d928",
+      "name": "Toys",
+      "slug": "toys",
+      "subcategories": [
+        {
+          "id": "676bb5ed0de34d386c10d92d",
+          "name": "Musical Instruments",
+          "slug": "musical-instruments",
+          "brands": [
+            "Yamaha",
+            "Fender",
+            "Gibson"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d93d",
+          "name": "Action Figures",
+          "slug": "action-figures",
+          "brands": [
+            "Hasbro",
+            "Mattel",
+            "Bandai"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d93e",
+          "name": "Dolls & Accessories",
+          "slug": "dolls-accessories",
+          "brands": [
+            "Mattel",
+            "MGA Entertainment",
+            "Barbie"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d93f",
+          "name": "Puzzles & Games",
+          "slug": "puzzles-games",
+          "brands": [
+            "Ravensburger",
+            "Hasbro",
+            "Mattel"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d940",
+          "name": "Educational Toys",
+          "slug": "educational-toys",
+          "brands": [
+            "LeapFrog",
+            "VTech",
+            "Fisher-Price"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d941",
+          "name": "Outdoor & Activity",
+          "slug": "outdoor-activity",
+          "brands": [
+            "Little Tikes",
+            "Step2",
+            "Nerf"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d942",
+          "name": "Building Sets",
+          "slug": "building-sets",
+          "brands": [
+            "LEGO",
+            "Mega Bloks",
+            "K’NEX"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d943",
+          "name": "Plush Toys",
+          "slug": "plush-toys",
+          "brands": [
+            "Ty",
+            "Build-A-Bear",
+            "GUND"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "gaming": [
+    {
+      "id": "000000000000000000110001",
+      "name": "Media & Entertainment",
+      "slug": "media-entertainment",
+      "subcategories": [
+        {
+          "id": "000000000000000000110002",
+          "name": "Streaming Services",
+          "slug": "streaming-services",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110003",
+          "name": "Live Events",
+          "slug": "live-events",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110004",
+          "name": "Music Platforms",
+          "slug": "music-platforms",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110005",
+          "name": "Podcasts",
+          "slug": "podcasts",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110006",
+          "name": "Gaming Platforms",
+          "slug": "gaming-platforms",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110007",
+          "name": "Digital Magazines",
+          "slug": "digital-magazines",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110008",
+          "name": "News Platforms",
+          "slug": "news-platforms",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000110009",
+          "name": "Animation Studios",
+          "slug": "animation-studios",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "54c1e2d91b1b2a5e80e50112",
+      "name": "Gaming Store",
+      "slug": "gaming-store",
+      "subcategories": [
+        {
+          "id": "64c1e2d91b1b2a5e80e50201",
+          "name": "Gaming Consoles",
+          "slug": "gaming-consoles",
+          "brands": [
+            "PlayStation",
+            "Xbox",
+            "Nintendo",
+            "Steam Deck"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50202",
+          "name": "Gaming PCs & Laptops",
+          "slug": "gaming-pcs-laptops",
+          "brands": [
+            "Asus ROG",
+            "Alienware",
+            "MSI",
+            "HP Omen"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50203",
+          "name": "Gaming Accessories",
+          "slug": "gaming-accessories",
+          "brands": [
+            "Razer",
+            "Logitech G",
+            "SteelSeries",
+            "HyperX"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50204",
+          "name": "Video Games",
+          "slug": "video-games",
+          "brands": [
+            "EA Sports",
+            "Ubisoft",
+            "Activision",
+            "Sony Interactive"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50205",
+          "name": "Gaming Chairs & Desks",
+          "slug": "gaming-chairs-desks",
+          "brands": [
+            "Secretlab",
+            "DXRacer",
+            "AndaSeat",
+            "Cougar"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50206",
+          "name": "Esports Gear",
+          "slug": "esports-gear",
+          "brands": [
+            "Razer",
+            "Logitech G",
+            "SteelSeries",
+            "HyperX"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50207",
+          "name": "Gaming Merchandise",
+          "slug": "gaming-merchandise",
+          "brands": [
+            "PlayStation",
+            "Xbox",
+            "Nintendo",
+            "EA Sports"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50208",
+          "name": "Virtual Reality (VR)",
+          "slug": "virtual-reality-vr",
+          "brands": [
+            "Oculus",
+            "HTC Vive",
+            "Valve Index",
+            "PlayStation VR"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50209",
+          "name": "Gaming Subscriptions & Services",
+          "slug": "gaming-subscriptions-services",
+          "brands": [
+            "Xbox Game Pass",
+            "PlayStation Plus",
+            "EA Play",
+            "Ubisoft+"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020a",
+          "name": "Retro Gaming",
+          "slug": "retro-gaming",
+          "brands": [
+            "Nintendo",
+            "Sega",
+            "Atari",
+            "Sony"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020b",
+          "name": "Mobile Gaming",
+          "slug": "mobile-gaming",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "OnePlus",
+            "Xiaomi"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020c",
+          "name": "Gaming Audio",
+          "slug": "gaming-audio",
+          "brands": [
+            "Bose",
+            "Sony",
+            "Sennheiser",
+            "Audio-Technica"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020d",
+          "name": "Streaming & Content Creation",
+          "slug": "streaming-content-creation",
+          "brands": [
+            "Elgato",
+            "Razer",
+            "Logitech",
+            "Blue Microphones"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020e",
+          "name": "Gaming Collectibles & Art",
+          "slug": "gaming-collectibles-art",
+          "brands": [
+            "Funko Pop",
+            "Sideshow Collectibles",
+            "Kotobukiya",
+            "First 4 Figures"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e5020f",
+          "name": "Indie Games & Developers",
+          "slug": "indie-games-developers",
+          "brands": [
+            "Devolver Digital",
+            "Annapurna Interactive",
+            "Team17",
+            "Raw Fury"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50210",
+          "name": "Gaming Events & Experiences",
+          "slug": "gaming-events-experiences",
+          "brands": [
+            "E3 Expo",
+            "Gamescom",
+            "PAX",
+            "Tokyo Game Show"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50211",
+          "name": "Gaming Subscriptions & Services",
+          "slug": "gaming-subscriptions-services",
+          "brands": [
+            "Xbox Game Pass",
+            "PlayStation Plus",
+            "EA Play",
+            "Ubisoft+"
+          ]
+        },
+        {
+          "id": "64c1e2d91b1b2a5e80e50212",
+          "name": "Gaming Software & Tools",
+          "slug": "gaming-software-tools",
+          "brands": [
+            "NVIDIA GeForce Experience",
+            "AMD Radeon Software",
+            "OBS Studio",
+            "Discord"
+          ]
+        },
+        {
+          "id": null,
+          "name": "Gaming Monitor",
+          "slug": "gaming-monitor",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "63f7c9e2d91b1b2a5e80b005",
+      "name": "Electronics",
+      "slug": "electronics",
+      "subcategories": [
+        {
+          "id": "676bb5ed0de34d386c10a1f9",
+          "name": "Drones",
+          "slug": "drones",
+          "brands": [
+            "DJI",
+            "Autel Robotics",
+            "BrowZIs Technologies"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10a1fa",
+          "name": "Smart Home",
+          "slug": "smart-home",
+          "brands": [
+            "Philips",
+            "Google",
+            "Amazon",
+            "BRCK"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10a1fb",
+          "name": "Power Banks",
+          "slug": "power-banks",
+          "brands": [
+            "Anker",
+            "Baseus",
+            "Oraimo"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d916",
+          "name": "Smartphones",
+          "slug": "smartphones",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "OnePlus"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d917",
+          "name": "Laptops",
+          "slug": "laptops",
+          "brands": [
+            "Dell",
+            "HP",
+            "Apple"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d918",
+          "name": "Tablets",
+          "slug": "tablets",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "Microsoft"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d919",
+          "name": "Wearables",
+          "slug": "wearables",
+          "brands": [
+            "Fitbit",
+            "Garmin",
+            "Apple"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91b",
+          "name": "Cameras",
+          "slug": "cameras",
+          "brands": [
+            "Canon",
+            "Nikon",
+            "Sony"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91c",
+          "name": "Gaming Consoles",
+          "slug": "gaming-consoles",
+          "brands": [
+            "PlayStation",
+            "Xbox",
+            "Nintendo"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91d",
+          "name": "Televisions",
+          "slug": "televisions",
+          "brands": [
+            "Sony",
+            "Samsung",
+            "LG"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91e",
+          "name": "Audio Systems",
+          "slug": "audio-systems",
+          "brands": [
+            "Bose",
+            "Sony",
+            "JBL"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "65d2a3e2d91b1b2a5e80a611",
+      "name": "Earphones Store",
+      "slug": "earphones-store",
+      "subcategories": [
+        {
+          "id": "65d2a3e2d91b1b2a5e80a621",
+          "name": "Wireless Earbuds",
+          "slug": "wireless-earbuds",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "JBL",
+            "Xiaomi"
+          ]
+        },
+        {
+          "id": "65d2a3e2d91b1b2a5e80a622",
+          "name": "Wired Earphones",
+          "slug": "wired-earphones",
+          "brands": [
+            "Sony",
+            "Panasonic",
+            "Oraimo",
+            "Anker"
+          ]
+        },
+        {
+          "id": "65d2a3e2d91b1b2a5e80a623",
+          "name": "Noise Cancelling Earphones",
+          "slug": "noise-cancelling-earphones",
+          "brands": [
+            "Sony",
+            "Bose",
+            "Sennheiser",
+            "Jabra"
+          ]
+        },
+        {
+          "id": "65d2a3e2d91b1b2a5e80a624",
+          "name": "Sports Earphones",
+          "slug": "sports-earphones",
+          "brands": [
+            "JBL",
+            "Beats",
+            "Skullcandy",
+            "Anker Soundcore"
+          ]
+        },
+        {
+          "id": "65d2a3e2d91b1b2a5e80a625",
+          "name": "Gaming Earphones",
+          "slug": "gaming-earphones",
+          "brands": [
+            "Razer",
+            "HyperX",
+            "Logitech G",
+            "SteelSeries"
+          ]
+        },
+        {
+          "id": "65d2a3e2d91b1b2a5e80a626",
+          "name": "Budget Earphones",
+          "slug": "budget-earphones",
+          "brands": [
+            "Xiaomi",
+            "Oraimo",
+            "Anker",
+            "Skullcandy"
+          ]
+        },
+        {
+          "id": "65d2a3e2d91b1b2a5e80a627",
+          "name": "Premium Earphones",
+          "slug": "premium-earphones",
+          "brands": [
+            "Apple",
+            "Bose",
+            "Sennheiser",
+            "Jabra"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "agro": [
+    {
+      "id": "64a8c9e2d91b1b2a5e80c101",
+      "name": "Agrovet",
+      "slug": "agrovet",
+      "subcategories": [
+        {
+          "id": "64a8c9e2d91b1b2a5e80c201",
+          "name": "Seeds",
+          "slug": "seeds",
+          "brands": [
+            "Simlaw Seeds",
+            "Kenya Seed Company",
+            "East African Seed",
+            "Freshco Seeds"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c202",
+          "name": "Fertilizers",
+          "slug": "fertilizers",
+          "brands": [
+            "Yara",
+            "MEA Fertilizers",
+            "Toyota Tsusho Fertilizer Africa",
+            "NPK"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c203",
+          "name": "Animal Feeds",
+          "slug": "animal-feeds",
+          "brands": [
+            "Unga Farm Care",
+            "Pembe Feeds",
+            "Sigma Feeds",
+            "Chania Feeds"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c204",
+          "name": "Veterinary Products",
+          "slug": "veterinary-products",
+          "brands": [
+            "Osho Chemicals",
+            "Bayer",
+            "Oxyvet",
+            "Norbrook"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c205",
+          "name": "Farm Tools & Equipment",
+          "slug": "farm-tools-equipment",
+          "brands": [
+            "Amiran",
+            "Husqvarna",
+            "Total Tools",
+            "Ingco"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c206",
+          "name": "Pest Control",
+          "slug": "pest-control",
+          "brands": [
+            "Bayer",
+            "Syngenta",
+            "Adama",
+            "Corteva"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c207",
+          "name": "Irrigation Systems",
+          "slug": "irrigation-systems",
+          "brands": [
+            "Amiran",
+            "Netafim",
+            "Toro",
+            "Rain Bird"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c208",
+          "name": "Greenhouse Supplies",
+          "slug": "greenhouse-supplies",
+          "brands": [
+            "Amiran",
+            "Husqvarna",
+            "Total Tools",
+            "Ingco"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c209",
+          "name": "Agricultural Chemicals",
+          "slug": "agricultural-chemicals",
+          "brands": [
+            "Bayer",
+            "Syngenta",
+            "Adama",
+            "Corteva"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c20a",
+          "name": "Livestock Medicine",
+          "slug": "livestock-medicine",
+          "brands": [
+            "Osho Chemicals",
+            "Bayer",
+            "Oxyvet",
+            "Norbrook"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c20b",
+          "name": "Farm Machinery",
+          "slug": "farm-machinery",
+          "brands": [
+            "John Deere",
+            "Case IH",
+            "New Holland",
+            "Massey Ferguson"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c20c",
+          "name": "Agribusiness Services",
+          "slug": "agribusiness-services",
+          "brands": [
+            "Amiran",
+            "Kenya Seed Company",
+            "Yara",
+            "Unga Farm Care"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c20d",
+          "name": "Organic Farming",
+          "slug": "organic-farming",
+          "brands": [
+            "Kenya Organic Agriculture Network",
+            "Organic Farmers Association of Kenya",
+            "Ecological Organic Agriculture Initiative",
+            "Organic Trade Association"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c20e",
+          "name": "Agroforestry",
+          "slug": "agroforestry",
+          "brands": [
+            "World Agroforestry Centre",
+            "Kenya Forestry Research Institute",
+            "Agroforestry Research Trust",
+            "Trees for the Future"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c20f",
+          "name": "Hydroponics & Aquaponics",
+          "slug": "hydroponics-aquaponics",
+          "brands": [
+            "Amiran",
+            "Netafim",
+            "Toro",
+            "Rain Bird"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c210",
+          "name": "Agro-Processing Equipment",
+          "slug": "agro-processing-equipment",
+          "brands": [
+            "John Deere",
+            "Case IH",
+            "New Holland",
+            "Massey Ferguson"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c211",
+          "name": "Agricultural Finance & Insurance",
+          "slug": "agricultural-finance-insurance",
+          "brands": [
+            "Equity Bank",
+            "KCB Bank",
+            "Co-operative Bank",
+            "Britam"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c212",
+          "name": "Agricultural Technology",
+          "slug": "agricultural-technology",
+          "brands": [
+            "John Deere",
+            "Case IH",
+            "New Holland",
+            "Massey Ferguson"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c213",
+          "name": "Sustainable Agriculture",
+          "slug": "sustainable-agriculture",
+          "brands": [
+            "Kenya Organic Agriculture Network",
+            "Organic Farmers Association of Kenya",
+            "Ecological Organic Agriculture Initiative",
+            "Organic Trade Association"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c214",
+          "name": "Agro-Inputs",
+          "slug": "agro-inputs",
+          "brands": [
+            "Simlaw Seeds",
+            "Kenya Seed Company",
+            "Yara",
+            "Unga Farm Care"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c215",
+          "name": "Farm Safety & PPE",
+          "slug": "farm-safety-ppe",
+          "brands": [
+            "3M",
+            "Honeywell",
+            "DuPont",
+            "MSA Safety"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c216",
+          "name": "Agricultural Research & Development",
+          "slug": "agricultural-research-development",
+          "brands": [
+            "Kenya Agricultural and Livestock Research Organization (KALRO)",
+            "International Maize and Wheat Improvement Center (CIMMYT)",
+            "International Rice Research Institute (IRRI)",
+            "International Food Policy Research Institute (IFPRI)"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c217",
+          "name": "Agricultural Education & Training",
+          "slug": "agricultural-education-training",
+          "brands": [
+            "University of Nairobi - Faculty of Agriculture",
+            "Egerton University - Faculty of Agriculture",
+            "Kenya Agricultural and Livestock Research Organization (KALRO)",
+            "International Institute of Tropical Agriculture (IITA)"
+          ]
+        },
+        {
+          "id": "64a8c9e2d91b1b2a5e80c218",
+          "name": "Agricultural Policy & Advocacy",
+          "slug": "agricultural-policy-advocacy",
+          "brands": [
+            "Kenya National Farmers' Federation (KENAFF)",
+            "Alliance for a Green Revolution in Africa (AGRA)",
+            "African Union Inter-African Bureau for Animal Resources (AU-IBAR)",
+            "Food and Agriculture Organization of the United Nations (FAO)"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "shoe": [
+    {
+      "id": "63f7c9e2d91b1b2a5e80b006",
+      "name": "Clothing",
+      "slug": "clothing",
+      "subcategories": [
+        {
+          "id": "676bb6a00de34d386c10d934",
+          "name": "Underwear & Lingerie",
+          "slug": "underwear-lingerie",
+          "brands": [
+            "Calvin Klein",
+            "Victoria’s Secret",
+            "Hanes"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d935",
+          "name": "Sportswear & Activewear",
+          "slug": "sportswear-activewear",
+          "brands": [
+            "Nike",
+            "Adidas",
+            "Under Armour",
+            "Reebok"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d936",
+          "name": "Traditional & Cultural Wear",
+          "slug": "traditional-cultural-wear",
+          "brands": [
+            "Kitenge Fashion",
+            "Dashiki Style",
+            "FabIndia"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d937",
+          "name": "Accessories",
+          "slug": "accessories",
+          "brands": [
+            "Fossil",
+            "Ray-Ban",
+            "Oakley",
+            "Guess"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d922",
+          "name": "Shoes",
+          "slug": "shoes",
+          "brands": [
+            "Nike",
+            "Adidas",
+            "Puma"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d923",
+          "name": "Watches",
+          "slug": "watches",
+          "brands": [
+            "Rolex",
+            "Casio",
+            "Tag Heuer"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d924",
+          "name": "Jewelry",
+          "slug": "jewelry",
+          "brands": [
+            "Tiffany",
+            "Cartier"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d930",
+          "name": "Men's Clothing",
+          "slug": "mens-clothing",
+          "brands": [
+            "Levi’s",
+            "H&M",
+            "Zara",
+            "Uniqlo"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d931",
+          "name": "Women's Clothing",
+          "slug": "womens-clothing",
+          "brands": [
+            "Forever 21",
+            "Mango",
+            "Shein",
+            "Fashion Nova"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d932",
+          "name": "Kids & Baby",
+          "slug": "kids-baby",
+          "brands": [
+            "Carter’s",
+            "OshKosh",
+            "H&M Kids"
+          ]
+        },
+        {
+          "id": "676bb6a00de34d386c10d933",
+          "name": "Outerwear",
+          "slug": "outerwear",
+          "brands": [
+            "The North Face",
+            "Columbia",
+            "Patagonia"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "93e002c712ad248bb0ade319",
+      "name": "Fashion",
+      "slug": "fashion",
+      "subcategories": [
+        {
+          "id": "efe0bd2c212eceec598c42a1",
+          "name": "Clothing",
+          "slug": "clothing",
+          "brands": [
+            "Nike",
+            "Adidas",
+            "Under Armour"
+          ]
+        },
+        {
+          "id": "a60ba1a7a56c9e00252baebe",
+          "name": "Shoes",
+          "slug": "shoes",
+          "brands": [
+            "Puma",
+            "Reebok",
+            "New Balance"
+          ]
+        },
+        {
+          "id": "3a481bee83219f662b6f0785",
+          "name": "Watches",
+          "slug": "watches",
+          "brands": [
+            "Rolex",
+            "Casio",
+            "Omega"
+          ]
+        },
+        {
+          "id": "565631402af79df42f22a117",
+          "name": "Jewelry",
+          "slug": "jewelry",
+          "brands": [
+            "Tiffany",
+            "Cartier",
+            "Pandora"
+          ]
+        },
+        {
+          "id": "98edb85b00d9527ad5acebe4",
+          "name": "Accessories",
+          "slug": "accessories",
+          "brands": []
+        },
+        {
+          "id": "624000000000000000000001",
+          "name": "Eyewear",
+          "slug": "eyewear",
+          "brands": [
+            "Ray-Ban",
+            "Oakley",
+            "Gucci"
+          ]
+        },
+        {
+          "id": "624000000000000000000002",
+          "name": "Handbags",
+          "slug": "handbags",
+          "brands": [
+            "Prada",
+            "Michael Kors",
+            "Chanel"
+          ]
+        },
+        {
+          "id": "624000000000000000000003",
+          "name": "Streetwear",
+          "slug": "streetwear",
+          "brands": [
+            "Supreme",
+            "Off-White",
+            "BAPE"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "7766554433221100aabbccdd",
+      "name": "Dry Cleaning",
+      "slug": "dry-cleaning",
+      "subcategories": [
+        {
+          "id": "aa2233445566778899001122",
+          "name": "Clothes Dry Cleaning",
+          "slug": "clothes-dry-cleaning",
+          "brands": [
+            "CleanWear",
+            "FreshPress",
+            "SparkleLaundry"
+          ]
+        },
+        {
+          "id": "bb3344556677889900112233",
+          "name": "Laundry Services",
+          "slug": "laundry-services",
+          "brands": [
+            "QuickWash",
+            "LaundryPro",
+            "FreshFold"
+          ]
+        },
+        {
+          "id": "cc4455667788990011223344",
+          "name": "Ironing Services",
+          "slug": "ironing-services",
+          "brands": [
+            "PressMaster",
+            "IronEase",
+            "SmoothFinish"
+          ]
+        },
+        {
+          "id": "dd5566778899001122334455",
+          "name": "Carpet & Upholstery Cleaning",
+          "slug": "carpet-upholstery-cleaning",
+          "brands": [
+            "DeepClean",
+            "HomeFresh",
+            "CleanCare"
+          ]
+        },
+        {
+          "id": "ee6677889900112233445566",
+          "name": "Curtain Cleaning",
+          "slug": "curtain-cleaning",
+          "brands": [
+            "CurtainCare",
+            "FreshDrape",
+            "CleanCurtains"
+          ]
+        },
+        {
+          "id": "ff7788990011223344556677",
+          "name": "Shoe Cleaning",
+          "slug": "shoe-cleaning",
+          "brands": [
+            "ShoeShine",
+            "FootFresh",
+            "CleanKicks"
+          ]
+        },
+        {
+          "id": "00112233445566778899aabb",
+          "name": "Leather Cleaning",
+          "slug": "leather-cleaning",
+          "brands": [
+            "LeatherCare",
+            "SoftTouch",
+            "CleanLeather"
+          ]
+        },
+        {
+          "id": "112233445566778899aabbcc",
+          "name": "Specialty Item Cleaning",
+          "slug": "specialty-item-cleaning",
+          "brands": [
+            "SpecialClean",
+            "UniqueCare",
+            "CustomClean"
+          ]
+        },
+        {
+          "id": "2233445566778899aabbccdd",
+          "name": "Pickup & Delivery",
+          "slug": "pickup-delivery",
+          "brands": [
+            "DoorStep",
+            "QuickPickup",
+            "FastDelivery"
+          ]
+        },
+        {
+          "id": "334455667789aabbccddeeff",
+          "name": "Express Services",
+          "slug": "express-services",
+          "brands": [
+            "ExpressClean",
+            "FastService",
+            "QuickTurnaround"
+          ]
+        },
+        {
+          "id": "44556677889abbccddeeff00",
+          "name": "Eco-Friendly Cleaning",
+          "slug": "eco-friendly-cleaning",
+          "brands": [
+            "GreenClean",
+            "EcoCare",
+            "SustainableWash"
+          ]
+        },
+        {
+          "id": "5566778899abccddeeff0011",
+          "name": "Stain Removal",
+          "slug": "stain-removal",
+          "brands": [
+            "StainAway",
+            "SpotClean",
+            "StainMaster"
+          ]
+        },
+        {
+          "id": "66778899aabbcdeeff001122",
+          "name": "Alterations & Repairs",
+          "slug": "alterations-repairs",
+          "brands": [
+            "TailorFix",
+            "AlterationPro",
+            "RepairMaster"
+          ]
+        },
+        {
+          "id": "778899aabbccdeff00112233",
+          "name": "Commercial Services",
+          "slug": "commercial-services",
+          "brands": [
+            "BusinessClean",
+            "OfficeCare",
+            "CommercialPro"
+          ]
+        },
+        {
+          "id": "8899aabbccddef0011223344",
+          "name": "Special Event Services",
+          "slug": "special-event-services",
+          "brands": [
+            "EventClean",
+            "SpecialCare",
+            "OccasionPro"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "health": [
+    {
+      "id": "000000000000000000040001",
+      "name": "Blog & Content",
+      "slug": "blog-content",
+      "subcategories": [
+        {
+          "id": "000000000000000000040002",
+          "name": "Article Writing",
+          "slug": "article-writing",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040003",
+          "name": "Newsletter Creation",
+          "slug": "newsletter-creation",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040004",
+          "name": "Case Studies",
+          "slug": "case-studies",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040005",
+          "name": "Whitepapers",
+          "slug": "whitepapers",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000040006",
+          "name": "Social Media Posts",
+          "slug": "social-media-posts",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050000",
+          "name": "Lifestyle",
+          "slug": "lifestyle",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050001",
+          "name": "Travel",
+          "slug": "travel",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050002",
+          "name": "Health & Wellness",
+          "slug": "health-wellness",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050003",
+          "name": "Technology",
+          "slug": "technology",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050004",
+          "name": "Finance & Money",
+          "slug": "finance-money",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050005",
+          "name": "Education",
+          "slug": "education",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050006",
+          "name": "Career & Business",
+          "slug": "career-business",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050007",
+          "name": "Food & Drink",
+          "slug": "food-drink",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050008",
+          "name": "Fashion & Beauty",
+          "slug": "fashion-beauty",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000050009",
+          "name": "Parenting & Family",
+          "slug": "parenting-family",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000a",
+          "name": "Relationships",
+          "slug": "relationships",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000b",
+          "name": "Entertainment & Pop Culture",
+          "slug": "entertainment",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000c",
+          "name": "Marketing",
+          "slug": "marketing",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000d",
+          "name": "Creative Writing",
+          "slug": "creative-writing",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000005000e",
+          "name": "News & Opinion",
+          "slug": "news-opinion",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "000000000000000000090001",
+      "name": "Healthcare & Clinics",
+      "slug": "healthcare-clinics",
+      "subcategories": [
+        {
+          "id": "000000000000000000090002",
+          "name": "General Practice",
+          "slug": "general-practice",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090003",
+          "name": "Dental Clinics",
+          "slug": "dental-clinics",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090004",
+          "name": "Laboratory Services",
+          "slug": "laboratory-services",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090005",
+          "name": "Pediatrics",
+          "slug": "pediatrics",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090006",
+          "name": "Radiology",
+          "slug": "radiology",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090007",
+          "name": "Physiotherapy",
+          "slug": "physiotherapy",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090008",
+          "name": "Dermatology",
+          "slug": "dermatology",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090009",
+          "name": "ENT Clinics",
+          "slug": "ent-clinics",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000090010",
+          "name": "Ophthalmology",
+          "slug": "ophthalmology",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "000000000000000000130001",
+      "name": "Fitness & Wellness",
+      "slug": "fitness-wellness",
+      "subcategories": [
+        {
+          "id": "000000000000000000130002",
+          "name": "Fitness Gear",
+          "slug": "fitness-gear",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130003",
+          "name": "Wellness & Self‑Care",
+          "slug": "wellness-self-care",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130004",
+          "name": "Personal Training",
+          "slug": "personal-training",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130005",
+          "name": "Nutrition & Supplements",
+          "slug": "nutrition-supplements",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130006",
+          "name": "Yoga & Meditation",
+          "slug": "yoga-meditation",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130007",
+          "name": "Group Fitness Classes",
+          "slug": "group-fitness-classes",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130008",
+          "name": "Mental Health & Therapy",
+          "slug": "mental-health-therapy",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000130009",
+          "name": "Fitness Apps & Trackers",
+          "slug": "fitness-apps-trackers",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000013000a",
+          "name": "Spa & Recovery Services",
+          "slug": "spa-recovery",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000013000b",
+          "name": "Physiotherapy",
+          "slug": "physiotherapy",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000013000c",
+          "name": "Massage Therapy",
+          "slug": "massage-therapy",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000013000d",
+          "name": "Weight Loss Programs",
+          "slug": "weight-loss-programs",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000013000e",
+          "name": "Home Workouts",
+          "slug": "home-workouts",
+          "brands": []
+        },
+        {
+          "id": "00000000000000000013000f",
+          "name": "Gym Memberships",
+          "slug": "gym-memberships",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "64e3a4e2d91b1b2a5e807030",
+      "name": "Honey Store",
+      "slug": "honey-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807032",
+          "name": "Raw & Organic Honey",
+          "slug": "raw-organic-honey",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807033",
+          "name": "Infused Honey",
+          "slug": "infused-honey",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807034",
+          "name": "Honey Comb",
+          "slug": "honey-comb",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807035",
+          "name": "Honey Gift Sets",
+          "slug": "honey-gift-sets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807036",
+          "name": "Honey Accessories",
+          "slug": "honey-accessories",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807037",
+          "name": "Honey Samplers",
+          "slug": "honey-samplers",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807038",
+          "name": "Honey Spreads",
+          "slug": "honey-spreads",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807039",
+          "name": "Honey for Cooking",
+          "slug": "honey-for-cooking",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80703a",
+          "name": "Honey for Health",
+          "slug": "honey-for-health",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80703b",
+          "name": "Honey for Beauty",
+          "slug": "honey-for-beauty",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80703c",
+          "name": "Honey for Pets",
+          "slug": "honey-for-pets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80703d",
+          "name": "Honey for Beekeeping",
+          "slug": "honey-for-beekeeping",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80703e",
+          "name": "Honey for Home Remedies",
+          "slug": "honey-for-home-remedies",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80703f",
+          "name": "Honey for Beverages",
+          "slug": "honey-for-beverages",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807040",
+          "name": "Honey for Baking",
+          "slug": "honey-for-baking",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807041",
+          "name": "Honey for Grilling",
+          "slug": "honey-for-grilling",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807042",
+          "name": "Honey for Sauces & Dressings",
+          "slug": "honey-for-sauces-dressings",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807043",
+          "name": "Honey for Marinades",
+          "slug": "honey-for-marinades",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "64e3a4e2d91b1b2a5e807061",
+      "name": "Baby Store",
+      "slug": "baby-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807062",
+          "name": "Baby Clothing",
+          "slug": "baby-clothing",
+          "brands": [
+            "Carter's",
+            "Mothercare",
+            "Gerber",
+            "H&M"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807063",
+          "name": "Diapers & Care",
+          "slug": "diapers-care",
+          "brands": [
+            "Pampers",
+            "Johnson's Baby"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807064",
+          "name": "Baby Toys & Nursery",
+          "slug": "baby-toys-nursery",
+          "brands": [
+            "Fisher-Price",
+            "Bright Starts"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807065",
+          "name": "Feeding Accessories",
+          "slug": "feeding-accessories",
+          "brands": [
+            "Philips Avent",
+            "Dr. Brown's"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807066",
+          "name": "Strollers & Car Seats",
+          "slug": "strollers-car-seats",
+          "brands": [
+            "Graco",
+            "Chicco"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807067",
+          "name": "Nursery Furniture",
+          "slug": "nursery-furniture",
+          "brands": [
+            "IKEA",
+            "Delta Children"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807068",
+          "name": "Baby Care & Health",
+          "slug": "baby-care-health",
+          "brands": [
+            "Johnson's Baby",
+            "Pampers",
+            "Huggies"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807069",
+          "name": "Maternity & Nursing",
+          "slug": "maternity-nursing",
+          "brands": [
+            "Bravado Designs",
+            "Medela"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80706a",
+          "name": "Baby Gear & Travel",
+          "slug": "baby-gear-travel",
+          "brands": [
+            "Graco",
+            "Chicco"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80706b",
+          "name": "Baby Feeding & Nursing",
+          "slug": "baby-feeding-nursing",
+          "brands": [
+            "Philips Avent",
+            "Dr. Brown's"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80706c",
+          "name": "Baby Safety & Health",
+          "slug": "baby-safety-health",
+          "brands": [
+            "Johnson's Baby",
+            "Pampers"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80706d",
+          "name": "Baby Bath & Skincare",
+          "slug": "baby-bath-skincare",
+          "brands": [
+            "Johnson's Baby",
+            "Pampers"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80706e",
+          "name": "Baby Gear & Travel",
+          "slug": "baby-gear-travel",
+          "brands": [
+            "Graco",
+            "Chicco"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80706f",
+          "name": "Baby Feeding & Nursing",
+          "slug": "baby-feeding-nursing",
+          "brands": [
+            "Philips Avent",
+            "Dr. Brown's"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807070",
+          "name": "Baby Safety & Health",
+          "slug": "baby-safety-health",
+          "brands": [
+            "Johnson's Baby",
+            "Pampers"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807071",
+          "name": "Baby Bath & Skincare",
+          "slug": "baby-bath-skincare",
+          "brands": [
+            "Johnson's Baby",
+            "Pampers"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807072",
+          "name": "Baby Toys & Nursery",
+          "slug": "baby-toys-nursery",
+          "brands": [
+            "Fisher-Price",
+            "Bright Starts"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807073",
+          "name": "Nursery Furniture",
+          "slug": "nursery-furniture",
+          "brands": [
+            "IKEA",
+            "Delta Children"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807074",
+          "name": "Maternity & Nursing",
+          "slug": "maternity-nursing",
+          "brands": [
+            "Bravado Designs",
+            "Medela"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807075",
+          "name": "Diapers & Care",
+          "slug": "diapers-care",
+          "brands": [
+            "Pampers",
+            "Johnson's Baby"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807076",
+          "name": "Baby Clothing",
+          "slug": "baby-clothing",
+          "brands": [
+            "Carter's",
+            "Mothercare",
+            "Gerber",
+            "H&M"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807077",
+          "name": "Baby Gear",
+          "slug": "baby-gear",
+          "brands": [
+            "Graco",
+            "Britax",
+            "Chicco"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807078",
+          "name": "Baby Store",
+          "slug": "baby-store",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "64e3a4e2d91b1b2a5e807171",
+      "name": "Pets Store",
+      "slug": "pets-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807172",
+          "name": "Dog Food",
+          "slug": "dog-food",
+          "brands": [
+            "Pedigree",
+            "Royal Canin",
+            "Purina",
+            "Acana"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807173",
+          "name": "Cat Food",
+          "slug": "cat-food",
+          "brands": [
+            "Whiskas",
+            "Hills",
+            "Purina"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807174",
+          "name": "Pet Accessories",
+          "slug": "pet-accessories",
+          "brands": [
+            "PetSafe",
+            "KONG",
+            "Nylabone"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807175",
+          "name": "Pet Healthcare",
+          "slug": "pet-healthcare",
+          "brands": [
+            "Frontline",
+            "Advocate",
+            "Seresto"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807176",
+          "name": "Pet Grooming",
+          "slug": "pet-grooming",
+          "brands": [
+            "FURminator",
+            "Andis",
+            "Oster"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807177",
+          "name": "Pet Toys",
+          "slug": "pet-toys",
+          "brands": [
+            "KONG",
+            "Nylabone",
+            "Chuckit!"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807178",
+          "name": "Pet Beds",
+          "slug": "pet-beds",
+          "brands": [
+            "K&H",
+            "MidWest",
+            "Best Friends by Sheri"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807179",
+          "name": "Pet Training",
+          "slug": "pet-training",
+          "brands": [
+            "PetSafe",
+            "KONG",
+            "Nylabone"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80717a",
+          "name": "Pet Travel",
+          "slug": "pet-travel",
+          "brands": [
+            "Sleepypod",
+            "Petmate",
+            "Sherpa"
+          ]
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e80717b",
+          "name": "Pet Clothing",
+          "slug": "pet-clothing",
+          "brands": [
+            "RC Pets",
+            "Frisco",
+            "PetRageous"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "68fbd9b9312d85c98ea7fdf4",
+      "name": "Consulting & Coaching",
+      "slug": "consulting-and-coaching",
+      "subcategories": [
+        {
+          "id": "efe0bd2c212eceec598c4301",
+          "name": "Business Consulting",
+          "slug": "business-consulting",
+          "brands": [
+            "McKinsey",
+            "Bain",
+            "Deloitte"
+          ]
+        },
+        {
+          "id": "a60ba1a7a56c9e00252bab11",
+          "name": "Life Coaching",
+          "slug": "life-coaching",
+          "brands": [
+            "Tony Robbins",
+            "BetterUp",
+            "CoachHub"
+          ]
+        },
+        {
+          "id": "3a481bee83219f662b6f0790",
+          "name": "Career Coaching",
+          "slug": "career-coaching",
+          "brands": [
+            "LinkedIn Learning",
+            "CareerFoundry"
+          ]
+        },
+        {
+          "id": "565631402af79df42f22a200",
+          "name": "Health & Wellness Coaching",
+          "slug": "health-wellness-coaching",
+          "brands": [
+            "Noom",
+            "Headspace",
+            "Calm"
+          ]
+        },
+        {
+          "id": "624000000000000000000100",
+          "name": "Leadership Coaching",
+          "slug": "leadership-coaching",
+          "brands": [
+            "John Maxwell",
+            "Harvard Leadership"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "69a28ae60a4cb4fcefbabc69",
+      "name": "Groceries Store",
+      "slug": "groceries-store",
+      "subcategories": [
+        {
+          "id": "64e3a4e2d91b1b2a5e807081",
+          "name": "Fresh Produce",
+          "slug": "fresh-produce",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807082",
+          "name": "Pantry Staples",
+          "slug": "pantry-staples",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807083",
+          "name": "Beverages",
+          "slug": "beverages",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807084",
+          "name": "Household Essentials",
+          "slug": "household-essentials",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807085",
+          "name": "Snacks & Sweets",
+          "slug": "snacks-sweets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807086",
+          "name": "Dairy & Eggs",
+          "slug": "dairy-eggs",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807087",
+          "name": "Meat & Seafood",
+          "slug": "meat-seafood",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807088",
+          "name": "Frozen Foods",
+          "slug": "frozen-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807089",
+          "name": "Baby & Kids",
+          "slug": "baby-kids",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807081",
+          "name": "Health & Wellness",
+          "slug": "health-wellness",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b2b2a5e807082",
+          "name": "International Foods",
+          "slug": "international-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5e807585",
+          "name": "Bakery & Bread",
+          "slug": "bakery-bread",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d92b1b2a5e807083",
+          "name": "Organic & Natural",
+          "slug": "organic-natural",
+          "brands": []
+        },
+        {
+          "id": "64e3a4c2d91b1b2a5e807084",
+          "name": "Gluten-Free",
+          "slug": "gluten-free",
+          "brands": []
+        },
+        {
+          "id": "64e3b4e2d91b1b2a5e807085",
+          "name": "Vegan & Vegetarian",
+          "slug": "vegan-vegetarian",
+          "brands": []
+        },
+        {
+          "id": "64c3a4e2d91b1b2a5e807086",
+          "name": "Specialty Diets",
+          "slug": "specialty-diets",
+          "brands": []
+        },
+        {
+          "id": "64e3a4c2d91b1b2a5e807088",
+          "name": "Alcohol & Spirits",
+          "slug": "alcohol-spirits",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91c1b2a5e807089",
+          "name": "Grains & Legumes",
+          "slug": "grains-legumes",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1c2a5e80708a",
+          "name": "Condiments & Sauces",
+          "slug": "condiments-sauces",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2b5e807080",
+          "name": "Breakfast Foods",
+          "slug": "breakfast-foods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2d91b1b2a5c807081",
+          "name": "Canned & Jarred Goods",
+          "slug": "canned-jarred-goods",
+          "brands": []
+        },
+        {
+          "id": "64e3a4e2e91b1b2a5e80708f",
+          "name": "Deli & Prepared Foods",
+          "slug": "deli-prepared-foods",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807080",
+          "name": "Fresh Produce",
+          "slug": "fresh-produce",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807282",
+          "name": "Pantry Staples",
+          "slug": "pantry-staples",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807383",
+          "name": "Beverages",
+          "slug": "beverages",
+          "brands": []
+        },
+        {
+          "id": "65e3a4e2d91b1b2a5e807484",
+          "name": "Household Essentials",
+          "slug": "household-essentials",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Breakfast Cereals",
+          "slug": "breakfast-cereals",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Spices & Seasonings",
+          "slug": "spices-and-seasonings",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Gourmet Foods",
+          "slug": "gourmet-foods",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "e4763c9e49ba6dd252c3e893",
+      "name": "Health And Beauty",
+      "slug": "health-and-beauty",
+      "subcategories": [
+        {
+          "id": "2ae04b8ed9779f2a4e8a1c40",
+          "name": "Makeup",
+          "slug": "makeup",
+          "brands": [
+            "MAC",
+            "Fenty Beauty",
+            "Sephora"
+          ]
+        },
+        {
+          "id": "828b5f390e8867f83c5c2393",
+          "name": "Fragrances",
+          "slug": "fragrances",
+          "brands": [
+            "Chanel",
+            "Dior",
+            "Calvin Klein"
+          ]
+        },
+        {
+          "id": "bcee5313b03efa4f33459d4a",
+          "name": "Skincare",
+          "slug": "skincare",
+          "brands": [
+            "Neutrogena",
+            "Cetaphil",
+            "The Ordinary"
+          ]
+        },
+        {
+          "id": "78148ff5abd29d57a792f1ff",
+          "name": "Haircare",
+          "slug": "haircare",
+          "brands": [
+            "L'Oreal",
+            "Pantene",
+            "Tresemme"
+          ]
+        },
+        {
+          "id": "459072c2e37ba108a9b621ac",
+          "name": "Beauty Products",
+          "slug": "beauty-products",
+          "brands": [
+            "Sephora",
+            "MAC",
+            "Estee Lauder"
+          ]
+        },
+        {
+          "id": "56c169f96b0046984d1e8d5e",
+          "name": "Supplements",
+          "slug": "supplements",
+          "brands": [
+            "GNC",
+            "Optimum Nutrition",
+            "Nature Made"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d93d",
+          "name": "Supplements",
+          "slug": "supplements",
+          "brands": [
+            "GNC",
+            "Optimum Nutrition",
+            "Nature Made"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d93e",
+          "name": "Baby Products",
+          "slug": "baby-products",
+          "brands": [
+            "Pampers",
+            "Huggies",
+            "Johnson & Johnson"
+          ]
+        },
+        {
+          "name": "Wellness and Self-Care",
+          "slug": "wellness-and-self-care",
+          "brands": [
+            "Bio-Oil",
+            "Aveeno",
+            "Oriki",
+            "Arami Essentials"
+          ]
+        },
+        {
+          "name": "Nail Care and Tools",
+          "slug": "nail-care-and-tools",
+          "brands": [
+            "Revlon",
+            "House of Tara",
+            "Sally Hansen"
+          ]
+        },
+        {
+          "name": "Men's Grooming",
+          "slug": "mens-grooming",
+          "brands": [
+            "Gillette",
+            "Old Spice",
+            "Nivea",
+            "Clearasil"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "6a39210805c37115c2d9291c",
+      "name": "Company Services",
+      "slug": "company-services",
+      "subcategories": [
+        {
+          "id": "000000000000000000160002",
+          "name": "Professional & Business Services",
+          "slug": "professional-business-services",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000160003",
+          "name": "Technology & Digital Services",
+          "slug": "technology-digital-services",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000160004",
+          "name": "Marketing, Media & Creative",
+          "slug": "marketing-media-creative",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000160005",
+          "name": "Logistics & Supply Chain",
+          "slug": "logistics-supply-chain",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000160006",
+          "name": "Real Estate & Property Services",
+          "slug": "real-estate-property-services",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000160007",
+          "name": "Health, Wellness & Medical",
+          "slug": "health-wellness-medical",
+          "brands": []
+        },
+        {
+          "id": "000000000000000000160008",
+          "name": "Metals & Mining Services",
+          "slug": "metals-mining-services",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    }
+  ],
+  "pharma": [],
+  "electr": [
+    {
+      "id": "63f7c9e2d91b1b2a5e80b005",
+      "name": "Electronics",
+      "slug": "electronics",
+      "subcategories": [
+        {
+          "id": "676bb5ed0de34d386c10a1f9",
+          "name": "Drones",
+          "slug": "drones",
+          "brands": [
+            "DJI",
+            "Autel Robotics",
+            "BrowZIs Technologies"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10a1fa",
+          "name": "Smart Home",
+          "slug": "smart-home",
+          "brands": [
+            "Philips",
+            "Google",
+            "Amazon",
+            "BRCK"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10a1fb",
+          "name": "Power Banks",
+          "slug": "power-banks",
+          "brands": [
+            "Anker",
+            "Baseus",
+            "Oraimo"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d916",
+          "name": "Smartphones",
+          "slug": "smartphones",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "OnePlus"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d917",
+          "name": "Laptops",
+          "slug": "laptops",
+          "brands": [
+            "Dell",
+            "HP",
+            "Apple"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d918",
+          "name": "Tablets",
+          "slug": "tablets",
+          "brands": [
+            "Apple",
+            "Samsung",
+            "Microsoft"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d919",
+          "name": "Wearables",
+          "slug": "wearables",
+          "brands": [
+            "Fitbit",
+            "Garmin",
+            "Apple"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91b",
+          "name": "Cameras",
+          "slug": "cameras",
+          "brands": [
+            "Canon",
+            "Nikon",
+            "Sony"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91c",
+          "name": "Gaming Consoles",
+          "slug": "gaming-consoles",
+          "brands": [
+            "PlayStation",
+            "Xbox",
+            "Nintendo"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91d",
+          "name": "Televisions",
+          "slug": "televisions",
+          "brands": [
+            "Sony",
+            "Samsung",
+            "LG"
+          ]
+        },
+        {
+          "id": "676bb5ed0de34d386c10d91e",
+          "name": "Audio Systems",
+          "slug": "audio-systems",
+          "brands": [
+            "Bose",
+            "Sony",
+            "JBL"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "671f00000000000000000102",
+      "name": "Electronic Security Systems",
+      "slug": "electronic-security-systems",
+      "subcategories": [
+        {
+          "id": "671f00000000000000000301",
+          "name": "CCTV Surveillance",
+          "slug": "cctv-surveillance",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "94b002c712ad248bb0ade500",
+      "name": "Bike Store",
+      "slug": "bike-store",
+      "subcategories": [
+        {
+          "id": "94b002c712ad248bb0ade501",
+          "name": "Mountain Bikes",
+          "slug": "mountain-bikes",
+          "brands": [
+            "Trek",
+            "Giant",
+            "Specialized"
+          ]
+        },
+        {
+          "id": "94b002c712ad248bb0ade502",
+          "name": "Road Bikes",
+          "slug": "road-bikes",
+          "brands": [
+            "Cannondale",
+            "Bianchi",
+            "Giant"
+          ]
+        },
+        {
+          "id": "94b002c712ad248bb0ade503",
+          "name": "Electric Bikes",
+          "slug": "electric-bikes",
+          "brands": [
+            "Rad Power Bikes",
+            "Specialized",
+            "Bosch"
+          ]
+        },
+        {
+          "id": "94b002c712ad248bb0ade504",
+          "name": "Bike Accessories",
+          "slug": "bike-accessories",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "a1b2c3d4e5f6789012345678",
+      "name": "Services",
+      "slug": "services",
+      "subcategories": [
+        {
+          "id": "b1c2d3e4f5a6789012345678",
+          "name": "Cleaning",
+          "slug": "cleaning",
+          "brands": [
+            "SparkleClean",
+            "FreshHome",
+            "ProMaid"
+          ]
+        },
+        {
+          "id": "c2d3e4f5a6b7890123456789",
+          "name": "Plumbing",
+          "slug": "plumbing",
+          "brands": [
+            "PipeFix",
+            "RapidFlow",
+            "WaterWorks"
+          ]
+        },
+        {
+          "id": "d3e4f5a6b7c8901234567890",
+          "name": "Electrical",
+          "slug": "electrical",
+          "brands": [
+            "VoltMasters",
+            "BrightSpark",
+            "ElecPro"
+          ]
+        },
+        {
+          "id": "e4f5a6b7c8d9012345678901",
+          "name": "Landscaping",
+          "slug": "landscaping",
+          "brands": [
+            "GreenThumb",
+            "LushLawns",
+            "GardenPros"
+          ]
+        },
+        {
+          "id": "f5a6b7c8d9e0123456789012",
+          "name": "Catering",
+          "slug": "catering",
+          "brands": [
+            "GourmetChef",
+            "EventDelights",
+            "TasteBuds"
+          ]
+        },
+        {
+          "id": "a6b7c8d9e0f1234567890123",
+          "name": "Transportation",
+          "slug": "transportation",
+          "brands": [
+            "CityRide",
+            "FastTransit",
+            "GoShuttle"
+          ]
+        },
+        {
+          "id": "b7c8d9e0f1a2345678901234",
+          "name": "IT Services",
+          "slug": "it-services",
+          "brands": [
+            "TechFix",
+            "NetSolutions",
+            "CodeCrafters"
+          ]
+        },
+        {
+          "id": "c8d9e0f1a2b3456789012345",
+          "name": "Beauty Services",
+          "slug": "beauty-services",
+          "brands": [
+            "StyleMakers",
+            "GlowUp",
+            "EleganceSalon"
+          ]
+        },
+        {
+          "id": "d9e0f1a2b3c4567890123456",
+          "name": "Tutoring",
+          "slug": "tutoring",
+          "brands": [
+            "LearnPro",
+            "EduMaster",
+            "TutorEase"
+          ]
+        },
+        {
+          "id": "e0f1a2b3c4d5678901234567",
+          "name": "Event Planning",
+          "slug": "event-planning",
+          "brands": [
+            "PartyPros",
+            "EventMasters",
+            "CelebrateAll"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "f2b545a8abb14f8706f808a7",
+      "name": "Cars",
+      "slug": "cars",
+      "subcategories": [
+        {
+          "id": null,
+          "name": "Motorcycles",
+          "slug": "motorcycles",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Electric Vehicles",
+          "slug": "electric-vehicles",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Accessories",
+          "slug": "car-accessories",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Performance Parts",
+          "slug": "performance-parts",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Care",
+          "slug": "car-care",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Charging Stations",
+          "slug": "charging-stations",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Tires & Wheels",
+          "slug": "car-tires-wheels",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Audio & Navigation",
+          "slug": "car-audio-navigation",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Interior Accessories",
+          "slug": "car-interior-accessories",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Exterior Accessories",
+          "slug": "car-exterior-accessories",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Safety & Emergency Equipment",
+          "slug": "safety-emergency-equipment",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Fluids & Oils",
+          "slug": "car-fluids-oils",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Luxury Cars",
+          "slug": "luxury-cars",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Off-road Vehicles",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Classic & Vintage Cars",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Used Cars ",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Salvage Vehicles",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "New Cars",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Pickup Trucks",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Commercial Vehicles",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Sports Cars",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Vans",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "delivery trucks",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "buses",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Rental & Leasing ",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Vehicle Auctions",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Insurance Services",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Car Batteries",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Power Systems",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": " Car Lighting",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Bulbs",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Dash Cams ",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Vehicle Cameras",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Vehicle Security",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Tracking Systems",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Diagnostic Tools ",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Vehicle Electronics",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Auto Tools",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Truck Parts & Accessories",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "RV & Camper Accessories",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Convertible & Sunroof Accessories",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Windshield Wipers & Washers",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Steering Wheels & Pedal Accessories",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Seat Covers & Floor Mats",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Vehicle Wraps & Decals",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Towing Equipment & Trailers",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Exhaust Systems & Mufflers",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Transmission & Drivetrain Components",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Cooling Systems & Radiators",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Suspension & Steering Components",
+          "slug": "",
+          "brands": []
+        },
+        {
+          "id": null,
+          "name": "Engine Parts & Mounts",
+          "slug": "",
+          "brands": []
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "1122aabbccddeeff00112233",
+      "name": "Hardware Store",
+      "slug": "hardware-store",
+      "subcategories": [
+        {
+          "id": "2233bbccddeeff0011223344",
+          "name": "Tools",
+          "slug": "tools",
+          "brands": [
+            "TotalTools",
+            "Ingco",
+            "Makita"
+          ]
+        },
+        {
+          "id": "3344ccddeeff001122334455",
+          "name": "Building Materials",
+          "slug": "building-materials",
+          "brands": [
+            "Bamburi",
+            "BlueTriangle",
+            "Savannah"
+          ]
+        },
+        {
+          "id": "4455ddeeff00112233445566",
+          "name": "Electrical Supplies",
+          "slug": "electrical-supplies",
+          "brands": [
+            "Philips",
+            "Schneider",
+            "Havells"
+          ]
+        },
+        {
+          "id": "5566eeff0011223344556677",
+          "name": "Plumbing Supplies",
+          "slug": "plumbing-supplies",
+          "brands": [
+            "Pedrollo",
+            "PipeFix",
+            "WaterTech"
+          ]
+        },
+        {
+          "id": "6677ff001122334455667788",
+          "name": "Paint & Finishing",
+          "slug": "paint-finishing",
+          "brands": [
+            "CrownPaints",
+            "Dulux",
+            "Plascon"
+          ]
+        },
+        {
+          "id": "778800112233445566778899",
+          "name": "Fasteners & Fittings",
+          "slug": "fasteners-fittings",
+          "brands": [
+            "FixIt",
+            "BoltMaster",
+            "SecureHold"
+          ]
+        },
+        {
+          "id": "889900112233445566778899",
+          "name": "Safety & Security",
+          "slug": "safety-security",
+          "brands": [
+            "SafeGuard",
+            "SecureHome",
+            "ProtectIt"
+          ]
+        },
+        {
+          "id": "990011223344556677889900",
+          "name": "Garden Tools",
+          "slug": "garden-tools",
+          "brands": [
+            "GardenPro",
+            "GreenThumb",
+            "PlantCare"
+          ]
+        },
+        {
+          "id": "aabb00112233445566778899",
+          "name": "Power Tools",
+          "slug": "power-tools",
+          "brands": [
+            "Bosch",
+            "DeWalt",
+            "Hitachi"
+          ]
+        },
+        {
+          "id": "bbcc00112233445566778899",
+          "name": "Hand Tools",
+          "slug": "hand-tools",
+          "brands": [
+            "Stanley",
+            "Craftsman",
+            "Irwin"
+          ]
+        },
+        {
+          "id": "ccdd00112233445566778899",
+          "name": "Hardware Accessories",
+          "slug": "hardware-accessories",
+          "brands": [
+            "AccessoryPro",
+            "HardwarePlus",
+            "ToolMate"
+          ]
+        },
+        {
+          "id": "ddee00112233445566778899",
+          "name": "Outdoor Hardware",
+          "slug": "outdoor-hardware",
+          "brands": [
+            "OutdoorPro",
+            "GardenGear",
+            "PatioPlus"
+          ]
+        },
+        {
+          "id": "eeff00112233445566778899",
+          "name": "Home Improvement",
+          "slug": "home-improvement",
+          "brands": [
+            "HomePro",
+            "ImprovementPlus",
+            "RenovationGear"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    },
+    {
+      "id": "aabbccddeeff001122334455",
+      "name": "Automotive Accessories",
+      "slug": "automotive-accessories",
+      "subcategories": [
+        {
+          "id": "11223344556677889900aabb",
+          "name": "Car Electronics",
+          "slug": "car-electronics",
+          "brands": [
+            "Pioneer",
+            "Sony",
+            "JVC"
+          ]
+        },
+        {
+          "id": "223344556677889900aabbcc",
+          "name": "Interior Accessories",
+          "slug": "interior-accessories",
+          "brands": [
+            "AutoStyle",
+            "CarLux",
+            "InteriorPro"
+          ]
+        },
+        {
+          "id": "3344556677889900aabbccdd",
+          "name": "Exterior Accessories",
+          "slug": "exterior-accessories",
+          "brands": [
+            "AutoGuard",
+            "CarShield",
+            "ExteriorPro"
+          ]
+        },
+        {
+          "id": "44556677889900aabbccddee",
+          "name": "Car Care Products",
+          "slug": "car-care-products",
+          "brands": [
+            "ArmorAll",
+            "TurtleWax",
+            "Meguiars"
+          ]
+        },
+        {
+          "id": "556677889900aabbccddeeff",
+          "name": "Lighting & Bulbs",
+          "slug": "lighting-bulbs",
+          "brands": [
+            "Philips",
+            "Osram",
+            "Hella"
+          ]
+        },
+        {
+          "id": "6677889900aabbccddeeff11",
+          "name": "Car Tools & Emergency",
+          "slug": "car-tools-emergency",
+          "brands": [
+            "ToolPro",
+            "AutoFix",
+            "SafeDrive"
+          ]
+        },
+        {
+          "id": "77889900aabbccddeeff1122",
+          "name": "Performance Parts",
+          "slug": "performance-parts",
+          "brands": [
+            "PerformancePro",
+            "SpeedMaster",
+            "PowerDrive"
+          ]
+        },
+        {
+          "id": "889900aabbccddeeff112233",
+          "name": "Tires & Wheels",
+          "slug": "tires-wheels",
+          "brands": [
+            "TirePro",
+            "WheelMaster",
+            "AutoTire"
+          ]
+        },
+        {
+          "id": "9900aabbccddeeff11223344",
+          "name": "Roof Racks & Carriers",
+          "slug": "roof-racks-carriers",
+          "brands": [
+            "RoofPro",
+            "CarrierMaster",
+            "AutoRack"
+          ]
+        },
+        {
+          "id": "aabbccddeeff112233445566",
+          "name": "Car Audio & Video",
+          "slug": "car-audio-video",
+          "brands": [
+            "AudioPro",
+            "VideoMaster",
+            "CarMedia"
+          ]
+        },
+        {
+          "id": "bbccddeeff11223344556677",
+          "name": "Car Covers & Sunshades",
+          "slug": "car-covers-sunshades",
+          "brands": [
+            "CoverPro",
+            "ShadeMaster",
+            "AutoCover"
+          ]
+        },
+        {
+          "id": "ccddeeff1122334455667788",
+          "name": "Car Security & Alarms",
+          "slug": "car-security-alarms",
+          "brands": [
+            "SecurityPro",
+            "AlarmMaster",
+            "SafeCar"
+          ]
+        },
+        {
+          "id": "ddeeff112233445566778899",
+          "name": "Car Maintenance & Repair",
+          "slug": "car-maintenance-repair",
+          "brands": [
+            "MaintenancePro",
+            "RepairMaster",
+            "AutoCare"
+          ]
+        },
+        {
+          "id": "eeff11223344556677889900",
+          "name": "Car Accessories Gift Sets",
+          "slug": "car-accessories-gift-sets",
+          "brands": [
+            "GiftPro",
+            "SetMaster",
+            "AutoGift"
+          ]
+        },
+        {
+          "id": "ff11223344556677889900aa",
+          "name": "Car Accessories for Trucks & SUVs",
+          "slug": "car-accessories-trucks-suvs",
+          "brands": [
+            "TruckPro",
+            "SUVMaster",
+            "AutoTruck"
+          ]
+        },
+        {
+          "id": "0011223344556677889900bb",
+          "name": "Car Accessories for Motorcycles",
+          "slug": "car-accessories-motorcycles",
+          "brands": [
+            "MotorcyclePro",
+            "BikeMaster",
+            "AutoMotorcycle"
+          ]
+        },
+        {
+          "id": "11223344556677889900bbcc",
+          "name": "Car Accessories for Electric Vehicles",
+          "slug": "car-accessories-electric-vehicles",
+          "brands": [
+            "EVPro",
+            "ElectricMaster",
+            "AutoEV"
+          ]
+        },
+        {
+          "id": "223344556677889900aabbcc",
+          "name": "Car Accessories for Classic Cars",
+          "slug": "car-accessories-classic-cars",
+          "brands": [
+            "ClassicPro",
+            "VintageMaster",
+            "AutoClassic"
+          ]
+        },
+        {
+          "id": "3344556677889900aabbccdd",
+          "name": "Car Accessories for RVs & Campers",
+          "slug": "car-accessories-rvs-campers",
+          "brands": [
+            "RVPro",
+            "CamperMaster",
+            "AutoRV"
+          ]
+        },
+        {
+          "id": "44556677889900aabbccddee",
+          "name": "Car Accessories for Off-Road Vehicles",
+          "slug": "car-accessories-off-road-vehicles",
+          "brands": [
+            "OffRoadPro",
+            "AdventureMaster",
+            "AutoOffRoad"
+          ]
+        },
+        {
+          "id": "556677889900aabbccddeeff",
+          "name": "Car Accessories for Boats & Marine",
+          "slug": "car-accessories-boats-marine",
+          "brands": [
+            "MarinePro",
+            "BoatMaster",
+            "AutoMarine"
+          ]
+        },
+        {
+          "id": "6677889900aabbccddeeff11",
+          "name": "Car Accessories for Bicycles",
+          "slug": "car-accessories-bicycles",
+          "brands": [
+            "BikePro",
+            "CycleMaster",
+            "AutoBike"
+          ]
+        },
+        {
+          "id": "77889900aabbccddeeff1122",
+          "name": "Car Accessories for Pets",
+          "slug": "car-accessories-pets",
+          "brands": [
+            "PetPro",
+            "AnimalMaster",
+            "AutoPets"
+          ]
+        },
+        {
+          "id": "889900aabbccddeeff112233",
+          "name": "Car Accessories for Travel & Road Trips",
+          "slug": "car-accessories-travel-road-trips",
+          "brands": [
+            "TravelPro",
+            "RoadMaster",
+            "AutoTravel"
+          ]
+        },
+        {
+          "id": "9900aabbccddeeff11223344",
+          "name": "Car Accessories for Car Enthusiasts",
+          "slug": "car-accessories-car-enthusiasts",
+          "brands": [
+            "EnthusiastPro",
+            "CarLoverMaster",
+            "AutoEnthusiast"
+          ]
+        },
+        {
+          "id": "aabbccddeeff112233445566",
+          "name": "Car Accessories for Automotive Enthusiasts",
+          "slug": "car-accessories-automotive-enthusiasts",
+          "brands": [
+            "AutoEnthusiastPro",
+            "CarFanMaster",
+            "AutoFan"
+          ]
+        }
+      ],
+      "categoryBrands": []
+    }
+  ]
+}

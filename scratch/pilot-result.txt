@@ -1,0 +1,38 @@
+=================================================
+STAGE B PILOT EXECUTION: CATALOG CORRECTION & ACTIVATION
+Timestamp: 2026-10-09T07:47:17.671Z
+=================================================
+
+Verified owned companies for brendenozie@gmail.com: 65
+
+--- BATCH 1: BRAND & METADATA CORRECTIONS ---
+OK: [CORRECT_BRAND_METADATA] marketplaceListings 6a2a7518b03b6fad88aa5e42 -> updated successfully.
+OK: [CORRECT_BRAND_METADATA] Product 6a2a7286b03b6fad88aa5e41 -> updated successfully.
+OK: [CORRECT_BRAND_METADATA] marketplaceListings 690084dca2172b890cd8f61b -> updated successfully.
+OK: [CORRECT_METADATA] marketplaceListings 68fbf52b584c118332856acf -> updated successfully.
+
+--- BATCH 2: IMAGERY CORRECTIONS & UNPUBLISHING IN DUKA YANGU ---
+OK: [REPLACE_PRODUCT_IMAGES] marketplaceListings 687ae1d3990c2854fe8bcdd2 -> updated successfully.
+OK: [REPLACE_PRODUCT_IMAGES] marketplaceListings 68e17a8016ac60978dc272ed -> updated successfully.
+OK: [REPLACE_PRODUCT_IMAGES] marketplaceListings 68dbfaccead1b2af584e8cda -> updated successfully.
+OK: [VALIDATE_CATEGORY] marketplaceListings 68e17a9116ac60978dc272ee -> updated successfully.
+OK: [UNPUBLISH_PENDING_MERCHANT_IMAGES] marketplaceListings 68e17abb16ac60978dc272ef -> updated successfully.
+OK: [UNPUBLISH_PENDING_MERCHANT_IMAGES] marketplaceListings 68e17ae416ac60978dc272f0 -> updated successfully.
+OK: [UNPUBLISH_PENDING_MERCHANT_IMAGES] marketplaceListings 68e17af116ac60978dc272f1 -> updated successfully.
+OK: [UNPUBLISH_PENDING_MERCHANT_IMAGES] marketplaceListings 68e17afe16ac60978dc272f2 -> updated successfully.
+OK: [UNPUBLISH_PENDING_MERCHANT_IMAGES] marketplaceListings 68e17b2f16ac60978dc272f3 -> updated successfully.
+OK: [UNPUBLISH_PENDING_MERCHANT_IMAGES] marketplaceListings 68ef880790cac14a0f2897a9 -> updated successfully.
+
+--- BATCH 3: STORE ACTIVATIONS (Shoes Store, Agrovet, Duka Yangu Salad) ---
+OK: [ACTIVATE_RELATIONSHIPS] marketplaceListings 6903c66bf62463ff473b34c6 -> updated successfully.
+OK: [ACTIVATE_LISTING] marketplaceListings 6a2be7f01642861cd4ad660d -> updated successfully.
+OK: [ACTIVATE_LISTING] marketplaceListings 6928480726d014ca98b8d7d4 -> updated successfully.
+OK: [CORRECT_RESTAURANT_CATEGORY] marketplaceListings 6884b2b6eb9bffc4afd0a22f -> updated successfully.
+OK: [VALIDATE_PROPERTY_CATEGORY] marketplaceListings 6889c23b24f9f89a608b48fb -> updated successfully.
+
+--- AUDIT SUMMARY ---
+Total logged pilot actions: 19
+Writing audit log to /var/www/salesmanpro/population_execution_audit.json...
+--- BEGIN PILOT AUDIT LOG ---
+[{"timestamp":"2026-10-09T07:47:17.735Z","action":"CORRECT_BRAND_METADATA","target":"marketplaceListings","id":"6a2a7518b03b6fad88aa5e42","before":{"brand":"Asus","subCategoryName":"Wearables","productCategoryId":"63f7c9e2d91b1b2a5e80b005"},"after":{"brand":"Tronic","subCategoryName":"Electricals & Wiring","productCategoryId":"63f7c9e2d91b1b2a5e80b005","category":"Electronics"}},{"timestamp":"2026-10-09T07:47:17.752Z","action":"CORRECT_BRAND_METADATA","target":"Product","id":"6a2a7286b03b6fad88aa5e41","before":{"brand":"Asus"},"after":{"brand":"Tronic"}},{"timestamp":"2026-10-09T07:47:17.769Z","action":"CORRECT_BRAND_METADATA","target":"marketplaceListings","id":"690084dca2172b890cd8f61b","before":{"brand":"Apple","productCategoryId":"d1f2e3c4b5a6978877665544"},"after":{"brand":null,"subCategoryName":"Personal Development & Coaching","productCategoryId":"d1f2e3c4b5a6978877665544"}},{"timestamp":"2026-10-09T07:47:17.782Z","action":"CORRECT_METADATA","target":"marketplaceListings","id":"68fbf52b584c118332856acf","before":{"name":"Sample Programs book","brand":"Coursera","productCategoryId":"d1f2e3c4b5a6978877665544"},"after":{"name":"Executive Coaching & Life Skills Program Guide","brand":null,"subCategoryName":"E-books & Guides"}},{"timestamp":"2026-10-09T07:47:17.800Z","action":"REPLACE_PRODUCT_IMAGES","target":"marketplaceListings","id":"687ae1d3990c2854fe8bcdd2","before":{"count":5},"after":{"count":3,"sample":"https://dozi4r4ug9739.cloudfront.net/images/1760525612030-Gx1rtuPWgAApzgm.jpeg"}},{"timestamp":"2026-10-09T07:47:17.816Z","action":"REPLACE_PRODUCT_IMAGES","target":"marketplaceListings","id":"68e17a8016ac60978dc272ed","before":{"count":5},"after":{"count":5,"sample":"https://dozi4r4ug9739.cloudfront.net/images/1760522426354-Gemini_Generated_Image_ohbgmbohbgmbohbg.png"}},{"timestamp":"2026-10-09T07:47:17.837Z","action":"REPLACE_PRODUCT_IMAGES","target":"marketplaceListings","id":"68dbfaccead1b2af584e8cda","before":{"count":5},"after":{"count":1,"sample":"https://dozi4r4ug9739.cloudfront.net/images/1760552799835-original-dfbc5b31aa2c2033d4610f46f7609390.png"}},{"timestamp":"2026-10-09T07:47:17.851Z","action":"VALIDATE_CATEGORY","target":"marketplaceListings","id":"68e17a9116ac60978dc272ee","before":{},"after":{"category":"Furniture","subCategoryName":"Chairs & Seating"}},{"timestamp":"2026-10-09T07:47:17.865Z","action":"UNPUBLISH_PENDING_MERCHANT_IMAGES","target":"marketplaceListings","id":"68e17abb16ac60978dc272ef","before":{"showOnGhuba":true,"isAvailable":true},"after":{"showOnGhuba":false,"isAvailable":false}},{"timestamp":"2026-10-09T07:47:17.875Z","action":"UNPUBLISH_PENDING_MERCHANT_IMAGES","target":"marketplaceListings","id":"68e17ae416ac60978dc272f0","before":{"showOnGhuba":true,"isAvailable":true},"after":{"showOnGhuba":false,"isAvailable":false}},{"timestamp":"2026-10-09T07:47:17.886Z","action":"UNPUBLISH_PENDING_MERCHANT_IMAGES","target":"marketplaceListings","id":"68e17af116ac60978dc272f1","before":{"showOnGhuba":true,"isAvailable":true},"after":{"showOnGhuba":false,"isAvailable":false}},{"timestamp":"2026-10-09T07:47:17.896Z","action":"UNPUBLISH_PENDING_MERCHANT_IMAGES","target":"marketplaceListings","id":"68e17afe16ac60978dc272f2","before":{"showOnGhuba":true,"isAvailable":true},"after":{"showOnGhuba":false,"isAvailable":false}},{"timestamp":"2026-10-09T07:47:17.907Z","action":"UNPUBLISH_PENDING_MERCHANT_IMAGES","target":"marketplaceListings","id":"68e17b2f16ac60978dc272f3","before":{"showOnGhuba":true,"isAvailable":true},"after":{"showOnGhuba":false,"isAvailable":false}},{"timestamp":"2026-10-09T07:47:17.918Z","action":"UNPUBLISH_PENDING_MERCHANT_IMAGES","target":"marketplaceListings","id":"68ef880790cac14a0f2897a9","before":{"showOnGhuba":true,"isAvailable":true},"after":{"showOnGhuba":false,"isAvailable":false}},{"timestamp":"2026-10-09T07:47:17.937Z","action":"ACTIVATE_RELATIONSHIPS","target":"marketplaceListings","id":"6903c66bf62463ff473b34c6","before":{},"after":{"category":"Fashion","brand":"Nike","subCategoryName":"Shoes"}},{"timestamp":"2026-10-09T07:47:17.960Z","action":"ACTIVATE_LISTING","target":"marketplaceListings","id":"6a2be7f01642861cd4ad660d","before":{},"after":{"name":"DAP Fertilizer 50kg","category":"Agrovet","showOnGhuba":true,"isAvailable":true}},{"timestamp":"2026-10-09T07:47:17.972Z","action":"ACTIVATE_LISTING","target":"marketplaceListings","id":"6928480726d014ca98b8d7d4","before":{},"after":{"category":"Groceries","subCategoryName":"Fresh Produce & Salads","showOnGhuba":true,"isAvailable":true}},{"timestamp":"2026-10-09T07:47:17.981Z","action":"CORRECT_RESTAURANT_CATEGORY","target":"marketplaceListings","id":"6884b2b6eb9bffc4afd0a22f","before":{},"after":{"category":"Restaurant & Food Delivery","subCategoryName":"Mains & Seafood"}},{"timestamp":"2026-10-09T07:47:17.993Z","action":"VALIDATE_PROPERTY_CATEGORY","target":"marketplaceListings","id":"6889c23b24f9f89a608b48fb","before":{},"after":{"category":"Property","subCategoryName":"Apartments"}}]
+--- END PILOT AUDIT LOG ---

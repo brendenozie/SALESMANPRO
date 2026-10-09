@@ -1,0 +1,6086 @@
+[
+  {
+    "id": "687a9f73e1d9d9821d5ee9e6",
+    "name": "Bose By Design",
+    "description": "Awesome Bose ",
+    "longDescription": null,
+    "category": null,
+    "subCategory": {
+      "id": "He0",
+      "name": "Headphones and Speakers",
+      "slug": "headphones-and-speakers"
+    },
+    "subCategoryName": "",
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "popular"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "47dcbd834e669233d7eb8a51",
+    "model": "HX-200",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 10,
+    "costPrice": 1000,
+    "sellingPrice": 2999.94,
+    "discount": 0,
+    "finalPrice": 2999.94,
+    "profitMargin": 199.994,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": true,
+    "isDiscounted": true,
+    "startDealDate": "2025-07-19T19:23:00.000Z",
+    "endDealDate": "2025-07-24T19:23:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": true,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": "2025-07-23T19:23:00.000Z",
+    "availabilityEnd": "2025-07-24T19:23:00.000Z",
+    "location": {},
+    "locationName": "-1.28778, 36.85745",
+    "latitude": -1.2877824,
+    "longitude": 36.8574464,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "user@test.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T19:24:33.678Z",
+    "updatedAt": "2025-07-18T19:24:33.678Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "47dcbd834e669233d7eb8a51",
+      "name": "Music",
+      "slug": "music",
+      "subcategories": [
+        {
+          "name": "Headphones and Speakers",
+          "image": "headphones-speakers.jpg",
+          "brand": [
+            "JBL",
+            "Bose",
+            "Beats by Dre",
+            "Sennheiser",
+            "Shure"
+          ],
+          "tags": [
+            "headphones",
+            "speakers",
+            "audio"
+          ],
+          "slug": "headphones-and-speakers"
+        },
+        {
+          "name": "Music Production",
+          "image": "music-production.jpg",
+          "brand": [
+            "FL Studio",
+            "Ableton",
+            "Native Instruments"
+          ],
+          "tags": [
+            "production",
+            "software",
+            "studio"
+          ],
+          "slug": "music-production"
+        },
+        {
+          "name": "African & Local Music",
+          "image": "african-music.jpg",
+          "brand": [
+            "Boomplay",
+            "MTN MusicTime",
+            "Trace",
+            "Mdundo",
+            "Gospel Vibes Africa"
+          ],
+          "tags": [
+            "africa",
+            "local music",
+            "streaming"
+          ],
+          "slug": "african-and-local-music"
+        },
+        {
+          "_id": {
+            "$oid": "9dcc17e02793050e3b97f07c"
+          },
+          "name": "Musical Instruments",
+          "image": "musical-instruments.jpg",
+          "status": "Active",
+          "brand": [
+            "Yamaha",
+            "Fender",
+            "Gibson"
+          ],
+          "tags": [
+            "musical instruments"
+          ],
+          "subcategories": [],
+          "slug": "musical-instruments",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Musical Instruments",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "47dcbd834e669233d7eb8a51",
+          "imageAlt": "Musical Instruments",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "030b5468fbb8f217b5b2fabe"
+          },
+          "name": "Vinyl Records",
+          "image": "vinyl-records.jpg",
+          "status": "Active",
+          "brand": [
+            "Sony Music",
+            "Universal",
+            "Warner"
+          ],
+          "tags": [
+            "vinyl records"
+          ],
+          "subcategories": [],
+          "slug": "vinyl-records",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Vinyl Records",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "47dcbd834e669233d7eb8a51",
+          "imageAlt": "Vinyl Records",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "ab6383fcc40a96643c833e5f"
+          },
+          "name": "Audio Systems",
+          "image": "audio-systems.jpg",
+          "status": "Active",
+          "brand": [],
+          "tags": [
+            "audio systems"
+          ],
+          "subcategories": [],
+          "slug": "audio-systems",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Audio Systems",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "47dcbd834e669233d7eb8a51",
+          "imageAlt": "Audio Systems",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17abb16ac60978dc272ef",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687a9f73e1d9d9821d5ee9e6",
+        "productCategoryId": "47dcbd834e669233d7eb8a51",
+        "category": "Music",
+        "subCategory": {
+          "id": "He0",
+          "name": "Headphones and Speakers",
+          "slug": "headphones-and-speakers"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "popular"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Bose By Design",
+        "description": "Awesome Bose ",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [],
+        "size": [],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [],
+        "quantity": 0,
+        "images": [
+          "https://dozi4r4ug9739.cloudfront.net/images/1763766455101-pexels-jakubzerdzicki-27574914.jpg"
+        ],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 2999.94,
+        "sellingPrice": 2999.94,
+        "finalPrice": 2999.94,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": true,
+        "isNewArrival": true,
+        "isDiscounted": true,
+        "isFeatured": true,
+        "startDealDate": "2025-07-19T19:23:00.000Z",
+        "endDealDate": "2025-07-24T19:23:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": "2025-07-23T19:23:00.000Z",
+        "availabilityEnd": "2025-07-24T19:23:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "user@test.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-11-21T23:07:40.596Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.28778, 36.85745",
+        "latitude": -1.2877824,
+        "longitude": 36.8574464,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "68dd3fc26bf18ce921f6f0f6",
+    "name": "Panadol",
+    "description": "sample description",
+    "longDescription": null,
+    "category": null,
+    "subCategory": {
+      "id": "676bb5ed0de34d386c10d93d",
+      "name": "Supplements",
+      "slug": "supplements"
+    },
+    "subCategoryName": "",
+    "images": [
+      [
+        [
+          ""
+        ]
+      ]
+    ],
+    "videos": [],
+    "ebooks": [],
+    "tags": [],
+    "brand": null,
+    "companyId": "683581bba1bdf6ca3624b535",
+    "productCategoryId": "e4763c9e49ba6dd252c3e893",
+    "model": "HX-200",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 100,
+    "costPrice": 5,
+    "sellingPrice": 10,
+    "discount": 0,
+    "finalPrice": 10,
+    "profitMargin": 100,
+    "pricingTiers": [],
+    "isOnOffer": false,
+    "isFlashDeal": false,
+    "isDiscounted": false,
+    "startDealDate": null,
+    "endDealDate": null,
+    "isAvailable": true,
+    "isNewArrival": false,
+    "isFeatured": false,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [
+      []
+    ],
+    "studios": [
+      []
+    ],
+    "bathrooms": "NaN",
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": null,
+    "availabilityEnd": null,
+    "location": {},
+    "locationName": "Nairobi",
+    "latitude": -1.2615472,
+    "longitude": 36.9231918,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "sjob@gmail.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-10-01T14:50:40.507Z",
+    "updatedAt": "2025-10-01T14:50:40.507Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "683581bba1bdf6ca3624b535",
+      "name": "Healthcare & Clinics",
+      "slug": "healthcare-clinics",
+      "category": "Healthcare & Clinics",
+      "variant": "Clinic Pro"
+    },
+    "productCategory": {
+      "id": "e4763c9e49ba6dd252c3e893",
+      "name": "Health And Beauty",
+      "slug": "health-and-beauty",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "2ae04b8ed9779f2a4e8a1c40"
+          },
+          "name": "Makeup",
+          "image": "makeup.jpg",
+          "status": "Active",
+          "brand": [
+            "MAC",
+            "Fenty Beauty",
+            "Sephora"
+          ],
+          "tags": [
+            "makeup"
+          ],
+          "subcategories": [],
+          "slug": "makeup",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Makeup",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Makeup",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "828b5f390e8867f83c5c2393"
+          },
+          "name": "Fragrances",
+          "image": "fragrances.jpg",
+          "status": "Active",
+          "brand": [
+            "Chanel",
+            "Dior",
+            "Calvin Klein"
+          ],
+          "tags": [
+            "fragrances"
+          ],
+          "subcategories": [],
+          "slug": "fragrances",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Fragrances",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Fragrances",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "bcee5313b03efa4f33459d4a"
+          },
+          "name": "Skincare",
+          "image": "skincare.jpg",
+          "status": "Active",
+          "brand": [
+            "Neutrogena",
+            "Cetaphil",
+            "The Ordinary"
+          ],
+          "tags": [
+            "skincare"
+          ],
+          "subcategories": [],
+          "slug": "skincare",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Skincare",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Skincare",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "78148ff5abd29d57a792f1ff"
+          },
+          "name": "Haircare",
+          "image": "haircare.jpg",
+          "status": "Active",
+          "brand": [
+            "L'Oreal",
+            "Pantene",
+            "Tresemme"
+          ],
+          "tags": [
+            "haircare"
+          ],
+          "subcategories": [],
+          "slug": "haircare",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Haircare",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Haircare",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "459072c2e37ba108a9b621ac"
+          },
+          "name": "Beauty Products",
+          "image": "beauty-products.jpg",
+          "status": "Active",
+          "brand": [
+            "Sephora",
+            "MAC",
+            "Estee Lauder"
+          ],
+          "tags": [
+            "beauty products"
+          ],
+          "subcategories": [],
+          "slug": "beauty-products",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Beauty Products",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 4,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Beauty Products",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "56c169f96b0046984d1e8d5e"
+          },
+          "name": "Supplements",
+          "image": "supplements.jpg",
+          "status": "Active",
+          "brand": [
+            "GNC",
+            "Optimum Nutrition",
+            "Nature Made"
+          ],
+          "tags": [
+            "supplements"
+          ],
+          "subcategories": [],
+          "slug": "supplements",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Supplements",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 5,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Supplements",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d93d"
+          },
+          "name": "Supplements",
+          "image": "supplements.jpg",
+          "status": "Active",
+          "brand": [
+            "GNC",
+            "Optimum Nutrition",
+            "Nature Made"
+          ],
+          "tags": [
+            "health",
+            "fitness",
+            "nutrition"
+          ],
+          "subcategories": [],
+          "slug": "supplements",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Supplements",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 6,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Supplements",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d93e"
+          },
+          "name": "Baby Products",
+          "image": "baby-products.jpg",
+          "status": "Active",
+          "brand": [
+            "Pampers",
+            "Huggies",
+            "Johnson & Johnson"
+          ],
+          "tags": [
+            "infants",
+            "care",
+            "essentials"
+          ],
+          "subcategories": [],
+          "slug": "baby-products",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Baby Products",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 7,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "e4763c9e49ba6dd252c3e893",
+          "imageAlt": "Baby Products",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "name": "Wellness and Self-Care",
+          "image": "wellness.jpg",
+          "brand": [
+            "Bio-Oil",
+            "Aveeno",
+            "Oriki",
+            "Arami Essentials"
+          ],
+          "tags": [
+            "wellness",
+            "self-care",
+            "relaxation"
+          ],
+          "slug": "wellness-and-self-care"
+        },
+        {
+          "name": "Nail Care and Tools",
+          "image": "nailcare-tools.jpg",
+          "brand": [
+            "Revlon",
+            "House of Tara",
+            "Sally Hansen"
+          ],
+          "tags": [
+            "nails",
+            "tools",
+            "beauty accessories"
+          ],
+          "slug": "nail-care-and-tools"
+        },
+        {
+          "name": "Men's Grooming",
+          "image": "mens-grooming.jpg",
+          "brand": [
+            "Gillette",
+            "Old Spice",
+            "Nivea",
+            "Clearasil"
+          ],
+          "tags": [
+            "grooming",
+            "men",
+            "beard care"
+          ],
+          "slug": "mens-grooming"
+        }
+      ]
+    },
+    "marketplaceListings": []
+  },
+  {
+    "id": "687a4b1ce1d9d9821d5ee9dd",
+    "name": "Bose and Bass",
+    "description": "Awesome and amazing",
+    "longDescription": null,
+    "category": "Fashion",
+    "subCategory": {
+      "id": "Cl0",
+      "name": "Clothing",
+      "slug": "clothing"
+    },
+    "subCategoryName": null,
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "awesome",
+      "popular",
+      "amazing"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "93e002c712ad248bb0ade319",
+    "model": "HX-200",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 10000,
+    "costPrice": 10000,
+    "sellingPrice": 14999.91,
+    "discount": 1,
+    "finalPrice": 14849.9109,
+    "profitMargin": 48.49910899999999,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": true,
+    "isDiscounted": false,
+    "startDealDate": "2025-07-18T13:23:00.000Z",
+    "endDealDate": "2025-07-31T13:24:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": false,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": null,
+    "availabilityEnd": null,
+    "location": {},
+    "locationName": "-1.28778, 36.85745",
+    "latitude": -1.2877824,
+    "longitude": 36.8574464,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "user@test.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": true,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T13:24:44.265Z",
+    "updatedAt": "2025-07-18T13:24:44.264Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "93e002c712ad248bb0ade319",
+      "name": "Fashion",
+      "slug": "fashion",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "efe0bd2c212eceec598c42a1"
+          },
+          "name": "Clothing",
+          "image": "clothing.jpg",
+          "status": "Active",
+          "brand": [
+            "Nike",
+            "Adidas",
+            "Under Armour"
+          ],
+          "tags": [
+            "fashion",
+            "apparel"
+          ],
+          "subcategories": [],
+          "slug": "clothing",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Clothing",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Clothing",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "a60ba1a7a56c9e00252baebe"
+          },
+          "name": "Shoes",
+          "image": "shoes.jpg",
+          "status": "Active",
+          "brand": [
+            "Puma",
+            "Reebok",
+            "New Balance"
+          ],
+          "tags": [
+            "fashion",
+            "footwear"
+          ],
+          "subcategories": [],
+          "slug": "shoes",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Shoes",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Shoes",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "3a481bee83219f662b6f0785"
+          },
+          "name": "Watches",
+          "image": "watches.jpg",
+          "status": "Active",
+          "brand": [
+            "Rolex",
+            "Casio",
+            "Omega"
+          ],
+          "tags": [
+            "fashion",
+            "timepieces"
+          ],
+          "subcategories": [],
+          "slug": "watches",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Watches",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Watches",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "565631402af79df42f22a117"
+          },
+          "name": "Jewelry",
+          "image": "jewelry.jpg",
+          "status": "Active",
+          "brand": [
+            "Tiffany",
+            "Cartier",
+            "Pandora"
+          ],
+          "tags": [
+            "fashion",
+            "luxury"
+          ],
+          "subcategories": [],
+          "slug": "jewelry",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Jewelry",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Jewelry",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "98edb85b00d9527ad5acebe4"
+          },
+          "name": "Accessories",
+          "image": "accessories.jpg",
+          "status": "Active",
+          "brand": [],
+          "tags": [
+            "accessories"
+          ],
+          "subcategories": [],
+          "slug": "accessories",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Accessories",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 4,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Accessories",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000001"
+          },
+          "name": "Eyewear",
+          "image": "eyewear.jpg",
+          "status": "Active",
+          "brand": [
+            "Ray-Ban",
+            "Oakley",
+            "Gucci"
+          ],
+          "tags": [
+            "fashion",
+            "accessories",
+            "eyewear"
+          ],
+          "subcategories": [],
+          "slug": "eyewear",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Eyewear",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 5,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Eyewear",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000002"
+          },
+          "name": "Handbags",
+          "image": "handbags.jpg",
+          "status": "Active",
+          "brand": [
+            "Prada",
+            "Michael Kors",
+            "Chanel"
+          ],
+          "tags": [
+            "fashion",
+            "bags",
+            "luxury"
+          ],
+          "subcategories": [],
+          "slug": "handbags",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Handbags",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 6,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Handbags",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000003"
+          },
+          "name": "Streetwear",
+          "image": "streetwear.jpg",
+          "status": "Active",
+          "brand": [
+            "Supreme",
+            "Off-White",
+            "BAPE"
+          ],
+          "tags": [
+            "fashion",
+            "urban",
+            "trendy"
+          ],
+          "subcategories": [],
+          "slug": "streetwear",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Streetwear",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 7,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Streetwear",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17b2f16ac60978dc272f3",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687a4b1ce1d9d9821d5ee9dd",
+        "productCategoryId": "93e002c712ad248bb0ade319",
+        "category": "Fashion",
+        "subCategory": {
+          "id": "Cl0",
+          "name": "Clothing",
+          "slug": "clothing"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "awesome",
+          "popular",
+          "amazing"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Bose and Bass",
+        "description": "Awesome and amazing",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [],
+        "size": [],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [],
+        "quantity": 0,
+        "images": [],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": -1.000000000000006,
+        "buyingPrice": 14999.91,
+        "sellingPrice": 14999.91,
+        "finalPrice": 14849.9109,
+        "discount": 1,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": true,
+        "isNewArrival": false,
+        "isDiscounted": false,
+        "isFeatured": true,
+        "startDealDate": "2025-07-18T13:23:00.000Z",
+        "endDealDate": "2025-07-31T13:24:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": null,
+        "availabilityEnd": null,
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "user@test.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-10-04T19:53:19.759Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.28778, 36.85745",
+        "latitude": -1.2877824,
+        "longitude": 36.8574464,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "687a5ea5e1d9d9821d5ee9df",
+    "name": "Savannah Space",
+    "description": "Best Furniture store ever",
+    "longDescription": null,
+    "category": "Home And Garden",
+    "subCategory": {
+      "id": "Fu0",
+      "name": "Furniture",
+      "slug": "furniture"
+    },
+    "subCategoryName": null,
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "popular"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "a2e5784ae0bdcdb1b0379b1e",
+    "model": "HX-200",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 94,
+    "costPrice": 10000,
+    "sellingPrice": 20000,
+    "discount": 0,
+    "finalPrice": 20000,
+    "profitMargin": 100,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": true,
+    "isDiscounted": true,
+    "startDealDate": "2025-07-19T14:47:00.000Z",
+    "endDealDate": "2025-07-24T14:47:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": true,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": null,
+    "availabilityEnd": null,
+    "location": {},
+    "locationName": "-1.25710, 36.91871",
+    "latitude": -1.2571001,
+    "longitude": 36.9187064,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "user@test.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": true,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T14:48:05.127Z",
+    "updatedAt": "2025-07-18T14:48:05.122Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "a2e5784ae0bdcdb1b0379b1e",
+      "name": "Home And Garden",
+      "slug": "home-and-garden",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "bb3a8b2e390142074e49741a"
+          },
+          "name": "Furniture",
+          "image": "furniture.jpg",
+          "status": "Active",
+          "brand": [
+            "IKEA",
+            "Ashley",
+            "La-Z-Boy"
+          ],
+          "tags": [
+            "furniture"
+          ],
+          "subcategories": [],
+          "slug": "furniture",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Furniture",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Furniture",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "e953e8671da3a0647c0939df"
+          },
+          "name": "Decor",
+          "image": "decor.jpg",
+          "status": "Active",
+          "brand": [
+            "West Elm",
+            "Wayfair",
+            "Home Depot"
+          ],
+          "tags": [
+            "decor"
+          ],
+          "subcategories": [],
+          "slug": "decor",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Decor",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Decor",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "45e064f832435bbcc69deed8"
+          },
+          "name": "Gardening",
+          "image": "gardening.jpg",
+          "status": "Active",
+          "brand": [
+            "Scotts",
+            "Fiskars",
+            "Miracle-Gro"
+          ],
+          "tags": [
+            "gardening"
+          ],
+          "subcategories": [],
+          "slug": "gardening",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Gardening",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Gardening",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "c50e69f58a92d5ee720db791"
+          },
+          "name": "Kitchenware",
+          "image": "kitchenware.jpg",
+          "status": "Active",
+          "brand": [
+            "Tefal",
+            "Prestige",
+            "Cuisinart"
+          ],
+          "tags": [
+            "kitchenware"
+          ],
+          "subcategories": [],
+          "slug": "kitchenware",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Kitchenware",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Kitchenware",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000021"
+          },
+          "name": "Bedding and Bath",
+          "image": "bedding-bath.jpg",
+          "status": "Active",
+          "brand": [
+            "Crate & Barrel",
+            "Pottery Barn",
+            "Wayfair"
+          ],
+          "tags": [
+            "bedding",
+            "bathroom",
+            "comfort"
+          ],
+          "slug": "bedding-and-bath",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Bedding and Bath",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 4,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Bedding and Bath",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000022"
+          },
+          "name": "Outdoor Living",
+          "image": "outdoor-living.jpg",
+          "status": "Active",
+          "brand": [
+            "Weber",
+            "Char-Broil",
+            "Sun Joe"
+          ],
+          "tags": [
+            "garden",
+            "outdoor",
+            "furniture"
+          ],
+          "slug": "outdoor-living",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Outdoor Living",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 5,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Outdoor Living",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000023"
+          },
+          "name": "Home Appliances",
+          "image": "home-appliances.jpg",
+          "status": "Active",
+          "brand": [
+            "Samsung",
+            "LG",
+            "GE Appliances",
+            "KitchenAid"
+          ],
+          "tags": [
+            "appliances",
+            "home",
+            "electronics"
+          ],
+          "slug": "home-appliances",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Home Appliances",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 6,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Home Appliances",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17afe16ac60978dc272f2",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687a5ea5e1d9d9821d5ee9df",
+        "productCategoryId": "a2e5784ae0bdcdb1b0379b1e",
+        "category": "Home And Garden",
+        "subCategory": {
+          "id": "Fu0",
+          "name": "Furniture",
+          "slug": "furniture"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "popular"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Savannah Space",
+        "description": "Best Furniture store ever",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [],
+        "size": [],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [],
+        "quantity": 0,
+        "images": [],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 20000,
+        "sellingPrice": 20000,
+        "finalPrice": 20000,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": true,
+        "isNewArrival": true,
+        "isDiscounted": true,
+        "isFeatured": true,
+        "startDealDate": "2025-07-19T14:47:00.000Z",
+        "endDealDate": "2025-07-24T14:47:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": null,
+        "availabilityEnd": null,
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "user@test.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-10-04T19:52:30.797Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.25710, 36.91871",
+        "latitude": -1.2571001,
+        "longitude": 36.9187064,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "687aa49733ef3c2eb6345eb6",
+    "name": "Arm Chair",
+    "description": "Awesom arm chair",
+    "longDescription": null,
+    "category": null,
+    "subCategory": {
+      "id": "Fu0",
+      "name": "Furniture",
+      "slug": "furniture"
+    },
+    "subCategoryName": "",
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "popular"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "a2e5784ae0bdcdb1b0379b1e",
+    "model": "HX-200",
+    "color": [
+      "Red",
+      "Blue",
+      "Green",
+      "Black",
+      "White"
+    ],
+    "size": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "weight": [
+      "Light",
+      "Medium",
+      "Heavy"
+    ],
+    "condition": null,
+    "dimensions": null,
+    "material": [
+      "Cotton",
+      "Leather",
+      "Metal",
+      "Plastic"
+    ],
+    "quantity": 23,
+    "costPrice": 2000,
+    "sellingPrice": 3999.91,
+    "discount": 0,
+    "finalPrice": 3999.91,
+    "profitMargin": 99.99549999999999,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": true,
+    "isDiscounted": true,
+    "startDealDate": "2025-07-19T19:32:00.000Z",
+    "endDealDate": "2025-07-20T19:32:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": true,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": "2025-07-24T19:32:00.000Z",
+    "availabilityEnd": "2025-07-31T19:32:00.000Z",
+    "location": {},
+    "locationName": "-1.28123, 36.83779",
+    "latitude": -1.2812288,
+    "longitude": 36.8377856,
+    "contact": "0791535314",
+    "contactName": "Brenden Odhiambo",
+    "email": "user@test.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T19:46:31.640Z",
+    "updatedAt": "2025-07-18T19:46:31.636Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "a2e5784ae0bdcdb1b0379b1e",
+      "name": "Home And Garden",
+      "slug": "home-and-garden",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "bb3a8b2e390142074e49741a"
+          },
+          "name": "Furniture",
+          "image": "furniture.jpg",
+          "status": "Active",
+          "brand": [
+            "IKEA",
+            "Ashley",
+            "La-Z-Boy"
+          ],
+          "tags": [
+            "furniture"
+          ],
+          "subcategories": [],
+          "slug": "furniture",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Furniture",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Furniture",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "e953e8671da3a0647c0939df"
+          },
+          "name": "Decor",
+          "image": "decor.jpg",
+          "status": "Active",
+          "brand": [
+            "West Elm",
+            "Wayfair",
+            "Home Depot"
+          ],
+          "tags": [
+            "decor"
+          ],
+          "subcategories": [],
+          "slug": "decor",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Decor",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Decor",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "45e064f832435bbcc69deed8"
+          },
+          "name": "Gardening",
+          "image": "gardening.jpg",
+          "status": "Active",
+          "brand": [
+            "Scotts",
+            "Fiskars",
+            "Miracle-Gro"
+          ],
+          "tags": [
+            "gardening"
+          ],
+          "subcategories": [],
+          "slug": "gardening",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Gardening",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Gardening",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "c50e69f58a92d5ee720db791"
+          },
+          "name": "Kitchenware",
+          "image": "kitchenware.jpg",
+          "status": "Active",
+          "brand": [
+            "Tefal",
+            "Prestige",
+            "Cuisinart"
+          ],
+          "tags": [
+            "kitchenware"
+          ],
+          "subcategories": [],
+          "slug": "kitchenware",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Kitchenware",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Kitchenware",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000021"
+          },
+          "name": "Bedding and Bath",
+          "image": "bedding-bath.jpg",
+          "status": "Active",
+          "brand": [
+            "Crate & Barrel",
+            "Pottery Barn",
+            "Wayfair"
+          ],
+          "tags": [
+            "bedding",
+            "bathroom",
+            "comfort"
+          ],
+          "slug": "bedding-and-bath",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Bedding and Bath",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 4,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Bedding and Bath",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000022"
+          },
+          "name": "Outdoor Living",
+          "image": "outdoor-living.jpg",
+          "status": "Active",
+          "brand": [
+            "Weber",
+            "Char-Broil",
+            "Sun Joe"
+          ],
+          "tags": [
+            "garden",
+            "outdoor",
+            "furniture"
+          ],
+          "slug": "outdoor-living",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Outdoor Living",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 5,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Outdoor Living",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000023"
+          },
+          "name": "Home Appliances",
+          "image": "home-appliances.jpg",
+          "status": "Active",
+          "brand": [
+            "Samsung",
+            "LG",
+            "GE Appliances",
+            "KitchenAid"
+          ],
+          "tags": [
+            "appliances",
+            "home",
+            "electronics"
+          ],
+          "slug": "home-appliances",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Home Appliances",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 6,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "a2e5784ae0bdcdb1b0379b1e",
+          "imageAlt": "Home Appliances",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17a9116ac60978dc272ee",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687aa49733ef3c2eb6345eb6",
+        "productCategoryId": "a2e5784ae0bdcdb1b0379b1e",
+        "category": "Home And Garden",
+        "subCategory": {
+          "id": "Fu0",
+          "name": "Furniture",
+          "slug": "furniture"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "popular"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Arm Chair",
+        "description": "Awesom arm chair",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [
+          "Red",
+          "Blue",
+          "Green",
+          "Black",
+          "White"
+        ],
+        "size": [
+          "S",
+          "M",
+          "L",
+          "XL"
+        ],
+        "weight": [
+          "Light",
+          "Medium",
+          "Heavy"
+        ],
+        "condition": null,
+        "dimensions": null,
+        "material": [
+          "Cotton",
+          "Leather",
+          "Metal",
+          "Plastic"
+        ],
+        "quantity": 0,
+        "images": [],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 3999.91,
+        "sellingPrice": 3999.91,
+        "finalPrice": 3999.91,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": true,
+        "isNewArrival": true,
+        "isDiscounted": true,
+        "isFeatured": true,
+        "startDealDate": "2025-07-19T19:32:00.000Z",
+        "endDealDate": "2025-07-20T19:32:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": "2025-07-24T19:32:00.000Z",
+        "availabilityEnd": "2025-07-31T19:32:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "0791535314",
+        "email": "user@test.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-10-04T19:50:41.050Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.28123, 36.83779",
+        "latitude": -1.2812288,
+        "longitude": 36.8377856,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "68dbc69966f8979af33efc6d",
+    "name": "Biscuit",
+    "description": "bisuit",
+    "longDescription": null,
+    "category": "Groceries",
+    "subCategory": {
+      "_id": {
+        "$oid": "e826d8cbacdd9dc78989bc68"
+      },
+      "name": "Snacks",
+      "image": "snacks.jpg",
+      "status": "Active",
+      "brand": [
+        "Lays",
+        "Doritos",
+        "Pringles"
+      ],
+      "tags": [
+        "snacks"
+      ],
+      "subcategories": [],
+      "slug": "snacks",
+      "description": "",
+      "longDescription": "",
+      "seoTitle": "Snacks",
+      "seoDescription": "",
+      "metaKeywords": [],
+      "sortOrder": 0,
+      "visible": true,
+      "createdAt": {
+        "$date": "2025-04-18T20:23:20.053Z"
+      },
+      "updatedAt": {
+        "$date": "2025-04-18T20:23:20.053Z"
+      },
+      "createdBy": "system",
+      "updatedBy": "system",
+      "parentId": "7c3765bf72361083d820071f",
+      "imageAlt": "Snacks",
+      "thumbnail": null,
+      "bannerImage": null,
+      "localization": {},
+      "productCount": 0,
+      "isFeatured": false,
+      "showInHomepage": false,
+      "attributes": {}
+    },
+    "subCategoryName": "",
+    "images": [
+      {
+        "index": 0,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760522426354-Gemini_Generated_Image_ohbgmbohbgmbohbg.png"
+      },
+      {
+        "index": 1,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760512630483-pexels-pixabay-266706.jpg"
+      },
+      {
+        "index": 2,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760523408949-01cb016eef14e30fc0c4e8b34e8ab92e.png"
+      },
+      {
+        "index": 3,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760524417619-97a789308645005f5c286ef59740233e.png"
+      },
+      {
+        "index": 4,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760532121651-original-9baa387c6566388c05542d5a4b9fa75a.png"
+      }
+    ],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "sale"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "7c3765bf72361083d820071f",
+    "model": null,
+    "color": [
+      "Green"
+    ],
+    "size": [
+      "M"
+    ],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [
+      "Metal"
+    ],
+    "quantity": 1,
+    "costPrice": 5,
+    "sellingPrice": 10,
+    "discount": 0,
+    "finalPrice": 10,
+    "profitMargin": 100,
+    "pricingTiers": [],
+    "isOnOffer": false,
+    "isFlashDeal": false,
+    "isDiscounted": false,
+    "startDealDate": "2025-09-18T10:48:00.000Z",
+    "endDealDate": "2025-09-25T10:48:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": false,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [
+      [
+        [
+          [
+            [
+              [
+                [
+                  [
+                    [
+                      [
+                        [
+                          [
+                            [
+                              [
+                                [
+                                  [
+                                    [
+                                      []
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "studios": [
+      [
+        [
+          [
+            [
+              [
+                [
+                  [
+                    [
+                      [
+                        [
+                          [
+                            [
+                              [
+                                [
+                                  [
+                                    [
+                                      []
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "bathrooms": "0",
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": "2025-09-30T10:55:00.000Z",
+    "availabilityEnd": "2025-09-30T10:54:00.000Z",
+    "location": {},
+    "locationName": "Nairobi",
+    "latitude": -1.256585,
+    "longitude": 36.9339428,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "sjob@gmail.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": 0,
+    "minimumHours": 0,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": 0,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": 0,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-09-30T12:01:29.362Z",
+    "updatedAt": "2025-10-15T17:31:43.375Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "7c3765bf72361083d820071f",
+      "name": "Groceries",
+      "slug": "groceries",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "e826d8cbacdd9dc78989bc68"
+          },
+          "name": "Snacks",
+          "image": "snacks.jpg",
+          "status": "Active",
+          "brand": [
+            "Lays",
+            "Doritos",
+            "Pringles"
+          ],
+          "tags": [
+            "snacks"
+          ],
+          "subcategories": [],
+          "slug": "snacks",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Snacks",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Snacks",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "e0e8b1de3583536cb5f8e70d"
+          },
+          "name": "Beverages",
+          "image": "beverages.jpg",
+          "status": "Active",
+          "brand": [
+            "Coca-Cola",
+            "Pepsi",
+            "Nestle"
+          ],
+          "tags": [
+            "beverages"
+          ],
+          "subcategories": [],
+          "slug": "beverages",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Beverages",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Beverages",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "374441213f60e52d60fed027"
+          },
+          "name": "Alcohol",
+          "image": "alcohol.jpg",
+          "status": "Active",
+          "brand": [
+            "Jack Daniel's",
+            "Johnnie Walker",
+            "Grey Goose"
+          ],
+          "tags": [
+            "alcohol"
+          ],
+          "subcategories": [],
+          "slug": "alcohol",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Alcohol",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Alcohol",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "423b6ac0a76262d388aed494"
+          },
+          "name": "Gourmet Foods",
+          "image": "gourmet-foods.jpg",
+          "status": "Active",
+          "brand": [
+            "Godiva",
+            "Lindt",
+            "Ferrero Rocher"
+          ],
+          "tags": [
+            "gourmet foods"
+          ],
+          "subcategories": [],
+          "slug": "gourmet-foods",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Gourmet Foods",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Gourmet Foods",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d944"
+          },
+          "name": "Gourmet Foods",
+          "image": "gourmet-foods.jpg",
+          "status": "Active",
+          "brand": [
+            "Godiva",
+            "Lindt",
+            "Ferrero Rocher"
+          ],
+          "tags": [
+            "food",
+            "luxury",
+            "cuisine"
+          ],
+          "subcategories": [],
+          "slug": "gourmet-foods",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Gourmet Foods",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 7,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Gourmet Foods",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "name": "Pantry & Staples",
+          "image": "pantry-staples.jpg",
+          "brand": [
+            "Heinz",
+            "Barilla",
+            "Unilever",
+            "Maggi",
+            "Golden Penny"
+          ],
+          "tags": [
+            "pantry",
+            "staples",
+            "groceries"
+          ],
+          "slug": "pantry-and-staples"
+        },
+        {
+          "name": "Dairy & Eggs",
+          "image": "dairy-eggs.jpg",
+          "brand": [
+            "Nestle",
+            "Dano",
+            "Hollandia"
+          ],
+          "tags": [
+            "milk",
+            "eggs",
+            "cheese"
+          ],
+          "slug": "dairy-and-eggs"
+        },
+        {
+          "name": "Frozen Foods",
+          "image": "frozen-foods.jpg",
+          "brand": [
+            "Birds Eye",
+            "Green Giant",
+            "McCain"
+          ],
+          "tags": [
+            "frozen",
+            "prepared foods"
+          ],
+          "slug": "frozen-foods"
+        },
+        {
+          "name": "Breakfast Cereals",
+          "image": "cereals.jpg",
+          "brand": [
+            "Kellogg's",
+            "Quaker",
+            "General Mills"
+          ],
+          "tags": [
+            "cereals",
+            "breakfast"
+          ],
+          "slug": "breakfast-cereals"
+        },
+        {
+          "name": "Spices & Seasonings",
+          "image": "spices.jpg",
+          "brand": [
+            "Maggi",
+            "Dangote",
+            "Knorr"
+          ],
+          "tags": [
+            "spices",
+            "seasonings"
+          ],
+          "slug": "spices-and-seasonings"
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17a8016ac60978dc272ed",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "68dbc69966f8979af33efc6d",
+        "productCategoryId": "7c3765bf72361083d820071f",
+        "category": "Groceries",
+        "subCategory": {
+          "_id": {
+            "$oid": "e826d8cbacdd9dc78989bc68"
+          },
+          "name": "Snacks",
+          "image": "snacks.jpg",
+          "status": "Active",
+          "brand": [
+            "Lays",
+            "Doritos",
+            "Pringles"
+          ],
+          "tags": [
+            "snacks"
+          ],
+          "subcategories": [],
+          "slug": "snacks",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Snacks",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Snacks",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "sale"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Biscuit",
+        "description": "bisuit",
+        "longDescription": null,
+        "model": null,
+        "color": [
+          "Green"
+        ],
+        "size": [
+          "M"
+        ],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [
+          "Metal"
+        ],
+        "quantity": 0,
+        "images": [],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 10,
+        "sellingPrice": 10,
+        "finalPrice": 10,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": false,
+        "isFlashDeal": false,
+        "isNewArrival": false,
+        "isDiscounted": false,
+        "isFeatured": true,
+        "startDealDate": "2025-09-18T10:48:00.000Z",
+        "endDealDate": "2025-09-25T10:48:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": "2025-09-30T10:55:00.000Z",
+        "availabilityEnd": "2025-09-30T10:54:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "sjob@gmail.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-10-04T19:50:24.546Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "Nairobi",
+        "latitude": -1.256585,
+        "longitude": 36.9339428,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      },
+      {
+        "id": "68ef880790cac14a0f2897a9",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "68dbc69966f8979af33efc6d",
+        "productCategoryId": "7c3765bf72361083d820071f",
+        "category": "Groceries",
+        "subCategory": {
+          "_id": {
+            "$oid": "e826d8cbacdd9dc78989bc68"
+          },
+          "name": "Snacks",
+          "image": "snacks.jpg",
+          "status": "Active",
+          "brand": [
+            "Lays",
+            "Doritos",
+            "Pringles"
+          ],
+          "tags": [
+            "snacks"
+          ],
+          "subcategories": [],
+          "slug": "snacks",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Snacks",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Snacks",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "sale"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Biscuit",
+        "description": "bisuit",
+        "longDescription": null,
+        "model": null,
+        "color": [
+          "Green"
+        ],
+        "size": [
+          "M"
+        ],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [
+          "Metal"
+        ],
+        "quantity": 0,
+        "images": [
+          {
+            "index": 0,
+            "url": "https://dozi4r4ug9739.cloudfront.net/images/1760522426354-Gemini_Generated_Image_ohbgmbohbgmbohbg.png"
+          },
+          {
+            "index": 1,
+            "url": "https://dozi4r4ug9739.cloudfront.net/images/1760512630483-pexels-pixabay-266706.jpg"
+          },
+          {
+            "index": 2,
+            "url": "https://dozi4r4ug9739.cloudfront.net/images/1760523408949-01cb016eef14e30fc0c4e8b34e8ab92e.png"
+          },
+          {
+            "index": 3,
+            "url": "https://dozi4r4ug9739.cloudfront.net/images/1760524417619-97a789308645005f5c286ef59740233e.png"
+          }
+        ],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 10,
+        "sellingPrice": 10,
+        "finalPrice": 10,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": false,
+        "isFlashDeal": false,
+        "isNewArrival": false,
+        "isDiscounted": false,
+        "isFeatured": true,
+        "startDealDate": "2025-09-18T10:48:00.000Z",
+        "endDealDate": "2025-09-25T10:48:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [
+          [
+            [
+              [
+                [
+                  []
+                ]
+              ]
+            ]
+          ]
+        ],
+        "studios": [
+          [
+            [
+              [
+                [
+                  []
+                ]
+              ]
+            ]
+          ]
+        ],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": 0,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": 2025,
+        "availabilityStart": "2025-09-30T10:55:00.000Z",
+        "availabilityEnd": "2025-09-30T10:54:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "sjob@gmail.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-10-15T11:39:50.634Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "Nairobi",
+        "latitude": -1.256585,
+        "longitude": 36.9339428,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "687a6122e1d9d9821d5ee9e1",
+    "name": "Jambotron Toy",
+    "description": "Jambotron toy for kids aged 10",
+    "longDescription": null,
+    "category": "Gifts",
+    "subCategory": {
+      "id": "To4",
+      "name": "Toys and Games",
+      "slug": "toys-and-games"
+    },
+    "subCategoryName": null,
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "popular"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "67204426ac9de2ade3533836",
+    "model": "HX-200",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 9993,
+    "costPrice": 10000,
+    "sellingPrice": 20000,
+    "discount": 5,
+    "finalPrice": 19000,
+    "profitMargin": 90,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": true,
+    "isDiscounted": true,
+    "startDealDate": "2025-07-19T14:57:00.000Z",
+    "endDealDate": "2025-07-22T14:58:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": true,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": null,
+    "availabilityEnd": null,
+    "location": {},
+    "locationName": "Nairobi",
+    "latitude": null,
+    "longitude": null,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "user@test.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": true,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T14:58:42.402Z",
+    "updatedAt": "2025-07-18T14:58:42.401Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "67204426ac9de2ade3533836",
+      "name": "Gifts",
+      "slug": "gifts",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "5ead34d84ffd4939edc7a331"
+          },
+          "name": "Gift Cards",
+          "image": "gift-cards.jpg",
+          "status": "Active",
+          "brand": [
+            "Amazon",
+            "Google Play",
+            "Apple"
+          ],
+          "tags": [
+            "gift cards"
+          ],
+          "subcategories": [],
+          "slug": "gift-cards",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Gift Cards",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "67204426ac9de2ade3533836",
+          "imageAlt": "Gift Cards",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "f09f14df64b71b91c984007c"
+          },
+          "name": "Personalized Gifts",
+          "image": "personalized-gifts.jpg",
+          "status": "Active",
+          "brand": [
+            "Etsy",
+            "Shutterfly"
+          ],
+          "tags": [
+            "personalized gifts"
+          ],
+          "subcategories": [],
+          "slug": "personalized-gifts",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Personalized Gifts",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "67204426ac9de2ade3533836",
+          "imageAlt": "Personalized Gifts",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "472a15a57fdecd29c72a0224"
+          },
+          "name": "Flowers",
+          "image": "flowers.jpg",
+          "status": "Active",
+          "brand": [],
+          "tags": [
+            "flowers"
+          ],
+          "subcategories": [],
+          "slug": "flowers",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Flowers",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "67204426ac9de2ade3533836",
+          "imageAlt": "Flowers",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "name": "Candles and Fragrance",
+          "image": "candles-fragrance.jpg",
+          "brand": [
+            "Yankee Candle",
+            "Bath & Body Works",
+            "Lush"
+          ],
+          "tags": [
+            "candles",
+            "fragrance",
+            "aromatherapy"
+          ],
+          "slug": "candles-and-fragrance"
+        },
+        {
+          "name": "Toys and Games",
+          "image": "toys-games.jpg",
+          "brand": [
+            "Lego",
+            "Funko"
+          ],
+          "tags": [
+            "games",
+            "toys",
+            "fun"
+          ],
+          "slug": "toys-and-games"
+        },
+        {
+          "name": "Cultural and Local Gifts",
+          "image": "cultural-gifts.jpg",
+          "brand": [
+            "Jumia",
+            "Woolworths",
+            "Naivas"
+          ],
+          "tags": [
+            "african",
+            "cultural",
+            "traditional"
+          ],
+          "slug": "cultural-and-local-gifts"
+        },
+        {
+          "name": "Stationery and Keepsakes",
+          "image": "stationery-keepsakes.jpg",
+          "brand": [
+            "Typo",
+            "Paper Source",
+            "Miniso"
+          ],
+          "tags": [
+            "stationery",
+            "journals",
+            "creative"
+          ],
+          "slug": "stationery-and-keepsakes"
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17af116ac60978dc272f1",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687a6122e1d9d9821d5ee9e1",
+        "productCategoryId": "67204426ac9de2ade3533836",
+        "category": "Gifts",
+        "subCategory": {
+          "id": "To4",
+          "name": "Toys and Games",
+          "slug": "toys-and-games"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "popular"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Jambotron Toy",
+        "description": "Jambotron toy for kids aged 10",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [],
+        "size": [],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [],
+        "quantity": 0,
+        "images": [
+          "https://dozi4r4ug9739.cloudfront.net/images/1763766936261-anna-pelzer-IGfIGP5ONV0-unsplash.jpg"
+        ],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": -5,
+        "buyingPrice": 20000,
+        "sellingPrice": 20000,
+        "finalPrice": 19000,
+        "discount": 5,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": true,
+        "isNewArrival": true,
+        "isDiscounted": true,
+        "isFeatured": true,
+        "startDealDate": "2025-07-19T14:57:00.000Z",
+        "endDealDate": "2025-07-22T14:58:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": null,
+        "availabilityEnd": null,
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "user@test.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-11-21T23:15:42.076Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "Nairobi",
+        "latitude": 0,
+        "longitude": 0,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "687a6468e1d9d9821d5ee9e3",
+    "name": "Bata 1",
+    "description": "Bata Shoes best shoes",
+    "longDescription": null,
+    "category": null,
+    "subCategory": {
+      "id": "Sh1",
+      "name": "Shoes",
+      "slug": "shoes"
+    },
+    "subCategoryName": "",
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "sale"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "93e002c712ad248bb0ade319",
+    "model": "HX-200",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 10,
+    "costPrice": 1000,
+    "sellingPrice": 1499.91,
+    "discount": 0,
+    "finalPrice": 1499.91,
+    "profitMargin": 49.99100000000001,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": true,
+    "isDiscounted": true,
+    "startDealDate": "2025-07-19T15:12:00.000Z",
+    "endDealDate": "2025-07-22T15:12:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": true,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": "2025-07-23T15:12:00.000Z",
+    "availabilityEnd": "2025-07-24T15:12:00.000Z",
+    "location": {},
+    "locationName": "-1.28778, 36.85745",
+    "latitude": -1.2877824,
+    "longitude": 36.8574464,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "studenttest4@gmail.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T15:12:40.985Z",
+    "updatedAt": "2025-07-18T15:12:40.984Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "93e002c712ad248bb0ade319",
+      "name": "Fashion",
+      "slug": "fashion",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "efe0bd2c212eceec598c42a1"
+          },
+          "name": "Clothing",
+          "image": "clothing.jpg",
+          "status": "Active",
+          "brand": [
+            "Nike",
+            "Adidas",
+            "Under Armour"
+          ],
+          "tags": [
+            "fashion",
+            "apparel"
+          ],
+          "subcategories": [],
+          "slug": "clothing",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Clothing",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Clothing",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "a60ba1a7a56c9e00252baebe"
+          },
+          "name": "Shoes",
+          "image": "shoes.jpg",
+          "status": "Active",
+          "brand": [
+            "Puma",
+            "Reebok",
+            "New Balance"
+          ],
+          "tags": [
+            "fashion",
+            "footwear"
+          ],
+          "subcategories": [],
+          "slug": "shoes",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Shoes",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Shoes",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "3a481bee83219f662b6f0785"
+          },
+          "name": "Watches",
+          "image": "watches.jpg",
+          "status": "Active",
+          "brand": [
+            "Rolex",
+            "Casio",
+            "Omega"
+          ],
+          "tags": [
+            "fashion",
+            "timepieces"
+          ],
+          "subcategories": [],
+          "slug": "watches",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Watches",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Watches",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "565631402af79df42f22a117"
+          },
+          "name": "Jewelry",
+          "image": "jewelry.jpg",
+          "status": "Active",
+          "brand": [
+            "Tiffany",
+            "Cartier",
+            "Pandora"
+          ],
+          "tags": [
+            "fashion",
+            "luxury"
+          ],
+          "subcategories": [],
+          "slug": "jewelry",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Jewelry",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Jewelry",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "98edb85b00d9527ad5acebe4"
+          },
+          "name": "Accessories",
+          "image": "accessories.jpg",
+          "status": "Active",
+          "brand": [],
+          "tags": [
+            "accessories"
+          ],
+          "subcategories": [],
+          "slug": "accessories",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Accessories",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 4,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Accessories",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000001"
+          },
+          "name": "Eyewear",
+          "image": "eyewear.jpg",
+          "status": "Active",
+          "brand": [
+            "Ray-Ban",
+            "Oakley",
+            "Gucci"
+          ],
+          "tags": [
+            "fashion",
+            "accessories",
+            "eyewear"
+          ],
+          "subcategories": [],
+          "slug": "eyewear",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Eyewear",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 5,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Eyewear",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000002"
+          },
+          "name": "Handbags",
+          "image": "handbags.jpg",
+          "status": "Active",
+          "brand": [
+            "Prada",
+            "Michael Kors",
+            "Chanel"
+          ],
+          "tags": [
+            "fashion",
+            "bags",
+            "luxury"
+          ],
+          "subcategories": [],
+          "slug": "handbags",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Handbags",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 6,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Handbags",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "624000000000000000000003"
+          },
+          "name": "Streetwear",
+          "image": "streetwear.jpg",
+          "status": "Active",
+          "brand": [
+            "Supreme",
+            "Off-White",
+            "BAPE"
+          ],
+          "tags": [
+            "fashion",
+            "urban",
+            "trendy"
+          ],
+          "subcategories": [],
+          "slug": "streetwear",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Streetwear",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 7,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "93e002c712ad248bb0ade319",
+          "imageAlt": "Streetwear",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68e17ae416ac60978dc272f0",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687a6468e1d9d9821d5ee9e3",
+        "productCategoryId": "7c3765bf72361083d820071f",
+        "category": "Groceries",
+        "subCategory": {
+          "_id": {
+            "$oid": "e826d8cbacdd9dc78989bc68"
+          },
+          "name": "Snacks",
+          "image": "snacks.jpg",
+          "status": "Active",
+          "brand": [
+            "Lays",
+            "Doritos",
+            "Pringles"
+          ],
+          "tags": [
+            "snacks"
+          ],
+          "subcategories": [],
+          "slug": "snacks",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Snacks",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "7c3765bf72361083d820071f",
+          "imageAlt": "Snacks",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        "subCategoryName": "Snacks",
+        "tags": [
+          "new",
+          "sale"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Bata 1",
+        "description": "Bata Shoes best shoes",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [],
+        "size": [],
+        "weight": [],
+        "condition": null,
+        "dimensions": null,
+        "material": [],
+        "quantity": 0,
+        "images": [
+          "https://dozi4r4ug9739.cloudfront.net/images/1760558642272-original-ed79a0da16c2ec7db12c0b4c6d4204d4.png"
+        ],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 1499.91,
+        "sellingPrice": 1499.91,
+        "finalPrice": 1499.91,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": true,
+        "isNewArrival": true,
+        "isDiscounted": true,
+        "isFeatured": true,
+        "startDealDate": "2025-07-19T15:12:00.000Z",
+        "endDealDate": "2025-07-22T15:12:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": "2025-07-23T15:12:00.000Z",
+        "availabilityEnd": "2025-07-24T15:12:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "studenttest4@gmail.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-10-15T20:04:19.283Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.28778, 36.85745",
+        "latitude": -1.2877824,
+        "longitude": 36.8574464,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "687aa68033ef3c2eb6345eb7",
+    "name": "Fake Teeth",
+    "description": "Fake Teeth Description",
+    "longDescription": null,
+    "category": "Baby Toys",
+    "subCategory": {
+      "id": "Ra0",
+      "name": "Rattles and Teethers",
+      "slug": "rattles-and-teethers"
+    },
+    "subCategoryName": "",
+    "images": [
+      {
+        "index": 0,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760552799835-original-dfbc5b31aa2c2033d4610f46f7609390.png"
+      }
+    ],
+    "videos": [
+      {
+        "index": 0,
+        "url": "https://dozi4r4ug9739.cloudfront.net/videos/1760552865795-original-c78aa3df3bf0f1c0a0af12ea2efcff03.mp4"
+      }
+    ],
+    "ebooks": [],
+    "tags": [
+      "new",
+      "sale"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "78887de958a4a3296990add4",
+    "model": "HX-200",
+    "color": [
+      "Blue"
+    ],
+    "size": [
+      "M"
+    ],
+    "weight": [
+      "Light"
+    ],
+    "condition": null,
+    "dimensions": null,
+    "material": [
+      "Metal"
+    ],
+    "quantity": 1,
+    "costPrice": 5000,
+    "sellingPrice": 9999.93,
+    "discount": 0,
+    "finalPrice": 9999.93,
+    "profitMargin": 99.99860000000001,
+    "pricingTiers": [],
+    "isOnOffer": true,
+    "isFlashDeal": false,
+    "isDiscounted": false,
+    "startDealDate": "2025-07-23T19:54:00.000Z",
+    "endDealDate": "2025-07-30T19:54:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": false,
+    "isFeatured": false,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [
+      [
+        [
+          [
+            []
+          ]
+        ]
+      ]
+    ],
+    "studios": [
+      [
+        [
+          [
+            []
+          ]
+        ]
+      ]
+    ],
+    "bathrooms": "0",
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": "2025-07-30T19:54:00.000Z",
+    "availabilityEnd": "2025-07-31T19:54:00.000Z",
+    "location": {},
+    "locationName": "-1.28123, 36.83779",
+    "latitude": -1.2812288,
+    "longitude": 36.8377856,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "user@test.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": 0,
+    "minimumHours": 0,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": 0,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": 0,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T19:54:40.780Z",
+    "updatedAt": "2025-10-15T18:29:36.294Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "78887de958a4a3296990add4",
+      "name": "Baby Toys",
+      "slug": "baby-toys",
+      "subcategories": [
+        {
+          "name": "Rattles and Teethers",
+          "image": "rattles-teethers.jpg",
+          "brand": [
+            "Nuby",
+            "Chicco",
+            "Fisher-Price"
+          ],
+          "tags": [
+            "baby rattles",
+            "teething toys"
+          ],
+          "slug": "rattles-and-teethers"
+        },
+        {
+          "name": "Activity Gyms and Mats",
+          "image": "activity-gyms.jpg",
+          "brand": [
+            "Bright Starts",
+            "Skip Hop",
+            "Baby Einstein"
+          ],
+          "tags": [
+            "play gym",
+            "activity mat",
+            "developmental toys"
+          ],
+          "slug": "activity-gyms-and-mats"
+        },
+        {
+          "name": "Montessori Toys",
+          "image": "montessori-toys.jpg",
+          "brand": [
+            "PlanToys",
+            "Hape",
+            "Melissa & Doug"
+          ],
+          "tags": [
+            "montessori",
+            "wooden toys",
+            "educational"
+          ],
+          "slug": "montessori-toys"
+        },
+        {
+          "_id": {
+            "$oid": "7ea87e8d41c372c9721563ab"
+          },
+          "name": "Baby Products",
+          "image": "baby-products.jpg",
+          "status": "Active",
+          "brand": [
+            "Pampers",
+            "Huggies",
+            "Gerber"
+          ],
+          "tags": [
+            "baby products"
+          ],
+          "subcategories": [],
+          "slug": "baby-products",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Baby Products",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "78887de958a4a3296990add4",
+          "imageAlt": "Baby Products",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "66d0af2d5da0109dc2aae678"
+          },
+          "name": "Toys",
+          "image": "toys.jpg",
+          "status": "Active",
+          "brand": [
+            "Lego",
+            "Mattel",
+            "Hasbro"
+          ],
+          "tags": [
+            "toys"
+          ],
+          "subcategories": [],
+          "slug": "toys",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Toys",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "78887de958a4a3296990add4",
+          "imageAlt": "Toys",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "5769d79437ba000ee06f43be"
+          },
+          "name": "Educational Toys",
+          "image": "educational-toys.jpg",
+          "status": "Active",
+          "brand": [
+            "Melissa & Doug",
+            "LeapFrog",
+            "VTech"
+          ],
+          "tags": [
+            "educational toys"
+          ],
+          "subcategories": [],
+          "slug": "educational-toys",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Educational Toys",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "78887de958a4a3296990add4",
+          "imageAlt": "Educational Toys",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "68dbfaccead1b2af584e8cda",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687aa68033ef3c2eb6345eb7",
+        "productCategoryId": "78887de958a4a3296990add4",
+        "category": "Baby Toys",
+        "subCategory": {
+          "id": "Ra0",
+          "name": "Rattles and Teethers",
+          "slug": "rattles-and-teethers"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new",
+          "sale"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Fake Teeth",
+        "description": "Fake Teeth Description",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [
+          "Blue"
+        ],
+        "size": [
+          "M"
+        ],
+        "weight": [
+          "Light"
+        ],
+        "condition": null,
+        "dimensions": null,
+        "material": [
+          "Metal"
+        ],
+        "quantity": 0,
+        "images": [
+          "https://dozi4r4ug9739.cloudfront.net/images/1763766073776-pexels-matthiaszomer-68798.jpg"
+        ],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 0,
+        "buyingPrice": 9999.93,
+        "sellingPrice": 9999.93,
+        "finalPrice": 9999.93,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": true,
+        "isFlashDeal": false,
+        "isNewArrival": false,
+        "isDiscounted": false,
+        "isFeatured": false,
+        "startDealDate": "2025-07-23T19:54:00.000Z",
+        "endDealDate": "2025-07-30T19:54:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": "2025-07-30T19:54:00.000Z",
+        "availabilityEnd": "2025-07-31T19:54:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": null,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "user@test.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-11-21T23:01:20.497Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.28123, 36.83779",
+        "latitude": -1.2812288,
+        "longitude": 36.8377856,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "687aab1a7a3350b8944b5a45",
+    "name": "Leather Tent",
+    "description": "Leather tent strong and durable",
+    "longDescription": null,
+    "category": "Toys",
+    "subCategory": {
+      "id": "Ou5",
+      "name": "Outdoor & Activity",
+      "slug": "outdoor-activity"
+    },
+    "subCategoryName": "",
+    "images": [
+      {
+        "index": 0,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760525612030-Gx1rtuPWgAApzgm.jpeg"
+      },
+      {
+        "index": 1,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760525612021-Gx1tpbnW4AErXaW.jpeg"
+      },
+      {
+        "index": 2,
+        "url": "https://dozi4r4ug9739.cloudfront.net/images/1760525612029-Gx2EkJHXAAAPKsb.jpeg"
+      }
+    ],
+    "videos": [],
+    "ebooks": [],
+    "tags": [
+      "new"
+    ],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": "676bb5ed0de34d386c10d928",
+    "model": "HX-200",
+    "color": [
+      "Blue"
+    ],
+    "size": [
+      "M"
+    ],
+    "weight": [
+      "Heavy"
+    ],
+    "condition": null,
+    "dimensions": null,
+    "material": [
+      "Metal"
+    ],
+    "quantity": 1,
+    "costPrice": 10000,
+    "sellingPrice": 19999.93,
+    "discount": 0,
+    "finalPrice": 19999.93,
+    "profitMargin": 99.9993,
+    "pricingTiers": [],
+    "isOnOffer": false,
+    "isFlashDeal": false,
+    "isDiscounted": false,
+    "startDealDate": "2025-07-11T20:13:00.000Z",
+    "endDealDate": "2025-07-09T20:13:00.000Z",
+    "isAvailable": true,
+    "isNewArrival": false,
+    "isFeatured": true,
+    "make": null,
+    "trim": null,
+    "type": null,
+    "mileage": null,
+    "engineType": null,
+    "engineSize": 0,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": null,
+    "logbookStatus": "Available",
+    "serviceHistory": "Full",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [
+      []
+    ],
+    "studios": [
+      []
+    ],
+    "bathrooms": "0",
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": "2025-07-18T11:13:00.000Z",
+    "availabilityEnd": "2025-07-24T20:13:00.000Z",
+    "location": {},
+    "locationName": "-1.28123, 36.83779",
+    "latitude": -1.2812288,
+    "longitude": 36.8377856,
+    "contact": "07003456778",
+    "contactName": "Brenden Odhiambo",
+    "email": "brendenozie@gmail.com",
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": false,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": 0,
+    "minimumHours": 0,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": 0,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": 0,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-07-18T20:14:18.419Z",
+    "updatedAt": "2025-10-15T10:53:43.433Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": {
+      "id": "676bb5ed0de34d386c10d928",
+      "name": "Toys",
+      "slug": "toys",
+      "subcategories": [
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d92d"
+          },
+          "name": "Musical Instruments",
+          "image": "musical-instruments.jpg",
+          "status": "Active",
+          "brand": [
+            "Yamaha",
+            "Fender",
+            "Gibson"
+          ],
+          "tags": [
+            "gear",
+            "music",
+            "hobby"
+          ],
+          "subcategories": [],
+          "slug": "musical-instruments",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Musical Instruments",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 0,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Musical Instruments",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d93d"
+          },
+          "name": "Action Figures",
+          "image": "action-figures.jpg",
+          "status": "Active",
+          "brand": [
+            "Hasbro",
+            "Mattel",
+            "Bandai"
+          ],
+          "tags": [
+            "collectibles",
+            "figures",
+            "play"
+          ],
+          "subcategories": [],
+          "slug": "action-figures",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Action Figures",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 1,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Action Figures",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d93e"
+          },
+          "name": "Dolls & Accessories",
+          "image": "dolls.jpg",
+          "status": "Active",
+          "brand": [
+            "Mattel",
+            "MGA Entertainment",
+            "Barbie"
+          ],
+          "tags": [
+            "dolls",
+            "pretend play",
+            "accessories"
+          ],
+          "subcategories": [],
+          "slug": "dolls-accessories",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Dolls & Accessories",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 2,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Dolls & Accessories",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d93f"
+          },
+          "name": "Puzzles & Games",
+          "image": "puzzles-games.jpg",
+          "status": "Active",
+          "brand": [
+            "Ravensburger",
+            "Hasbro",
+            "Mattel"
+          ],
+          "tags": [
+            "brain teaser",
+            "board games",
+            "family"
+          ],
+          "subcategories": [],
+          "slug": "puzzles-games",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Puzzles & Games",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 3,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Puzzles & Games",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d940"
+          },
+          "name": "Educational Toys",
+          "image": "educational-toys.jpg",
+          "status": "Active",
+          "brand": [
+            "LeapFrog",
+            "VTech",
+            "Fisher-Price"
+          ],
+          "tags": [
+            "learning",
+            "education",
+            "development"
+          ],
+          "subcategories": [],
+          "slug": "educational-toys",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Educational Toys",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 4,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Educational Toys",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d941"
+          },
+          "name": "Outdoor & Activity",
+          "image": "outdoor-activity.jpg",
+          "status": "Active",
+          "brand": [
+            "Little Tikes",
+            "Step2",
+            "Nerf"
+          ],
+          "tags": [
+            "outdoor",
+            "play",
+            "sports"
+          ],
+          "subcategories": [],
+          "slug": "outdoor-activity",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Outdoor & Activity Toys",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 5,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Outdoor & Activity Toys",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d942"
+          },
+          "name": "Building Sets",
+          "image": "building-sets.jpg",
+          "status": "Active",
+          "brand": [
+            "LEGO",
+            "Mega Bloks",
+            "K’NEX"
+          ],
+          "tags": [
+            "construction",
+            "creativity",
+            "blocks"
+          ],
+          "subcategories": [],
+          "slug": "building-sets",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Building Sets",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 6,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Building Sets",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        },
+        {
+          "_id": {
+            "$oid": "676bb5ed0de34d386c10d943"
+          },
+          "name": "Plush Toys",
+          "image": "plush-toys.jpg",
+          "status": "Active",
+          "brand": [
+            "Ty",
+            "Build-A-Bear",
+            "GUND"
+          ],
+          "tags": [
+            "soft",
+            "stuffed",
+            "collectible"
+          ],
+          "subcategories": [],
+          "slug": "plush-toys",
+          "description": "",
+          "longDescription": "",
+          "seoTitle": "Plush Toys",
+          "seoDescription": "",
+          "metaKeywords": [],
+          "sortOrder": 7,
+          "visible": true,
+          "createdAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "updatedAt": {
+            "$date": "2025-04-18T20:23:20.053Z"
+          },
+          "createdBy": "system",
+          "updatedBy": "system",
+          "parentId": "676bb5ed0de34d386c10d928",
+          "imageAlt": "Plush Toys",
+          "thumbnail": null,
+          "bannerImage": null,
+          "localization": {},
+          "productCount": 0,
+          "isFeatured": false,
+          "showInHomepage": false,
+          "attributes": {}
+        }
+      ]
+    },
+    "marketplaceListings": [
+      {
+        "id": "687ae1d3990c2854fe8bcdd2",
+        "companyId": "6825c2c7969ab9f16f620f67",
+        "sellerId": null,
+        "sellerType": "ADMIN",
+        "productId": "687aab1a7a3350b8944b5a45",
+        "productCategoryId": "676bb5ed0de34d386c10d928",
+        "category": "Toys",
+        "subCategory": {
+          "id": "Ou5",
+          "name": "Outdoor & Activity",
+          "slug": "outdoor-activity"
+        },
+        "subCategoryName": null,
+        "tags": [
+          "new"
+        ],
+        "brand": null,
+        "option": [],
+        "name": "Leather Tent",
+        "description": "Leather tent strong and durable",
+        "longDescription": null,
+        "model": "HX-200",
+        "color": [
+          "Blue"
+        ],
+        "size": [
+          "M"
+        ],
+        "weight": [
+          "Heavy"
+        ],
+        "condition": null,
+        "dimensions": null,
+        "material": [
+          "Metal"
+        ],
+        "quantity": 0,
+        "images": [
+          "https://dozi4r4ug9739.cloudfront.net/images/1763764661659-pexels-howard-senton-2148272793-30707531.jpg"
+        ],
+        "videos": [],
+        "ebooks": [],
+        "profitMargin": 4.995367483786191,
+        "buyingPrice": 19999.93,
+        "sellingPrice": 20999,
+        "finalPrice": 20999,
+        "discount": 0,
+        "tax": 0,
+        "shippingCost": 0,
+        "pricingTiers": [],
+        "duration": null,
+        "isAvailable": true,
+        "isOnOffer": false,
+        "isFlashDeal": false,
+        "isNewArrival": false,
+        "isDiscounted": false,
+        "isFeatured": true,
+        "startDealDate": "2025-07-11T20:13:00.000Z",
+        "endDealDate": "2025-07-09T20:13:00.000Z",
+        "author": null,
+        "publisher": null,
+        "isbn": null,
+        "fabricComposition": null,
+        "careInstructions": null,
+        "energyRating": null,
+        "warrantyPeriod": null,
+        "applianceDimensions": null,
+        "ingredients": null,
+        "usageInstructions": null,
+        "expirationDate": null,
+        "area": null,
+        "propertyTypeId": null,
+        "serviceSchedule": null,
+        "bedrooms": [],
+        "studios": [],
+        "bathrooms": "0",
+        "digitalUrl": null,
+        "autoDeliver": false,
+        "make": null,
+        "trim": null,
+        "type": null,
+        "mileage": null,
+        "engineType": null,
+        "engineSize": 0,
+        "horsepower": 0,
+        "torque": 0,
+        "fuelType": null,
+        "fuelEconomy": null,
+        "transmission": null,
+        "drivetrain": null,
+        "vin": null,
+        "logbookStatus": "Full",
+        "serviceHistory": null,
+        "negotiable": false,
+        "financingAvailable": false,
+        "tradeIn": false,
+        "features": [],
+        "previousOwners": null,
+        "tireCondition": null,
+        "accidentalHistory": false,
+        "year": null,
+        "availabilityStart": "2025-07-18T11:13:00.000Z",
+        "availabilityEnd": "2025-07-24T20:13:00.000Z",
+        "bookingSlots": [],
+        "minNoticePeriod": null,
+        "maxBookingAhead": null,
+        "requiredClientInfo": [],
+        "fulfillmentStatus": null,
+        "totalCapacity": 0,
+        "currentBookedCount": 0,
+        "providerRating": 0,
+        "hourlyRate": 0,
+        "minimumHours": 0,
+        "deliveryMethod": null,
+        "contact": "07003456778",
+        "email": "brendenozie@gmail.com",
+        "contactName": "Brenden Odhiambo",
+        "amenities": [],
+        "delivery": false,
+        "paymentOption": "AT SHOP",
+        "showOnGhuba": true,
+        "ghubaAdminApproved": true,
+        "ghubaStatus": "APPROVED",
+        "status": "ACTIVE",
+        "createdAt": "2025-11-21T22:38:11.037Z",
+        "updatedAt": "2026-10-05T12:04:04.224Z",
+        "location": {},
+        "locationName": "-1.28123, 36.83779",
+        "latitude": -1.2812288,
+        "longitude": 36.8377856,
+        "locationId": null,
+        "collectionId": null,
+        "commissionRateId": null,
+        "listingMarketStatus": "AVAILABLE",
+        "listingSystemStatus": "DRAFT",
+        "listingTransactionType": "SALE",
+        "whatsappEnabled": true,
+        "whatsappDescription": null,
+        "whatsappKeywords": [],
+        "whatsappSearchable": true,
+        "whatsappLastSyncedAt": null
+      }
+    ]
+  },
+  {
+    "id": "68e65c2ee210c308b58c69db",
+    "name": "2025 Toyota Probox",
+    "description": null,
+    "longDescription": null,
+    "category": null,
+    "subCategory": null,
+    "subCategoryName": null,
+    "images": [],
+    "videos": [],
+    "ebooks": [],
+    "tags": [],
+    "brand": null,
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "productCategoryId": null,
+    "model": "Probox",
+    "color": [],
+    "size": [],
+    "weight": [],
+    "condition": null,
+    "dimensions": null,
+    "material": [],
+    "quantity": 1,
+    "costPrice": 0,
+    "sellingPrice": 0,
+    "discount": 0,
+    "finalPrice": 0,
+    "profitMargin": 0,
+    "pricingTiers": [],
+    "isOnOffer": false,
+    "isFlashDeal": false,
+    "isDiscounted": false,
+    "startDealDate": null,
+    "endDealDate": null,
+    "isAvailable": true,
+    "isNewArrival": false,
+    "isFeatured": false,
+    "make": "Toyota",
+    "trim": null,
+    "type": "Car",
+    "mileage": "0 km",
+    "engineType": null,
+    "engineSize": null,
+    "horsepower": null,
+    "torque": null,
+    "fuelType": null,
+    "fuelEconomy": null,
+    "transmission": null,
+    "drivetrain": null,
+    "vin": "KDE 505Y",
+    "logbookStatus": null,
+    "serviceHistory": "2025-10-08T00:00:00.000Z",
+    "negotiable": false,
+    "financingAvailable": false,
+    "tradeIn": false,
+    "features": [],
+    "previousOwners": null,
+    "tireCondition": null,
+    "accidentalHistory": false,
+    "author": null,
+    "publisher": null,
+    "isbn": null,
+    "fabricComposition": null,
+    "careInstructions": null,
+    "energyRating": null,
+    "warrantyPeriod": null,
+    "applianceDimensions": null,
+    "ingredients": null,
+    "usageInstructions": null,
+    "expirationDate": null,
+    "option": [],
+    "amenities": [],
+    "propertyTypeId": null,
+    "area": null,
+    "bedrooms": [],
+    "studios": [],
+    "bathrooms": null,
+    "serviceSchedule": null,
+    "year": 2025,
+    "availabilityStart": null,
+    "availabilityEnd": null,
+    "location": null,
+    "locationName": null,
+    "latitude": null,
+    "longitude": null,
+    "contact": "68e64bf748e2778871306842",
+    "contactName": "JDeo",
+    "email": null,
+    "delivery": false,
+    "paymentOption": "AT SHOP",
+    "showOnGhuba": true,
+    "digitalUrl": null,
+    "autoDeliver": false,
+    "hourlyRate": null,
+    "minimumHours": null,
+    "minNoticePeriod": null,
+    "maxBookingAhead": null,
+    "totalCapacity": null,
+    "deliveryMethod": null,
+    "fulfillmentStatus": null,
+    "providerRating": null,
+    "bookingSlots": [],
+    "status": "ACTIVE",
+    "listingMarketStatus": "AVAILABLE",
+    "listingSystemStatus": "DRAFT",
+    "listingTransactionType": "SALE",
+    "active": true,
+    "collectionId": null,
+    "createdAt": "2025-10-08T12:42:22.102Z",
+    "updatedAt": "2025-10-08T12:42:22.102Z",
+    "tax": 0,
+    "shippingCost": 0,
+    "locationId": null,
+    "company": {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "slug": "duka-yangu",
+      "category": "E-commerce",
+      "variant": "Modern Shop (v1)"
+    },
+    "productCategory": null,
+    "marketplaceListings": []
+  }
+]
