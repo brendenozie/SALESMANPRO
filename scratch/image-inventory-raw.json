@@ -1,0 +1,839 @@
+﻿rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> Auditing Image Coverage for 65 owned companies...
+
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | | 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> | | | | | | | | | | | | | | | 
+rs0 [direct: primary] salesmanprodb> 
+rs0 [direct: primary] salesmanprodb> {
+  "timestamp": "2026-10-10T18:13:50.231Z",
+  "targetUserId": "67c5b0182e2372b5f2366dbe",
+  "ownedCompaniesCount": 65,
+  "totals": {
+    "totalProducts": 1262,
+    "productsWithImages": 29,
+    "productsWithoutImages": 1233,
+    "totalListings": 1301,
+    "listingsWithImages": 75,
+    "listingsWithoutImages": 1226
+  },
+  "domainCounts": {
+    "dozi4r4ug9739.cloudfront.net": 28,
+    "images.unsplash.com": 1
+  },
+  "sampleExistingImages": [
+    {
+      "store": "Duka Yangu",
+      "name": "Salad 2",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1764249765667-anna-pelzer-IGfIGP5ONV0-unsplash.jpg"
+    },
+    {
+      "store": "Duka Yangu",
+      "name": "Tronic 1.5mm Electrical cable",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1781166724152-17811664707602056269995232204191.jpg"
+    },
+    {
+      "store": "Healthcare & Clinics",
+      "name": "Panadol Extra Pain Relief (16 Tablets)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772312005666-towfiqu-barbhuiya-q-RyWM8uYwY-unsplash.jpg"
+    },
+    {
+      "store": "Shoes Store",
+      "name": "Nike Shoes",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1761854927042-shop - Copy.png"
+    },
+    {
+      "store": "Shoes Store",
+      "name": "Men's Lightweight Breathable Running Sneakers (Sizes 40-45)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772223357547-maksim-larin-NOpsC3nWTzY-unsplash.jpg"
+    },
+    {
+      "store": "Shoes Store",
+      "name": "Women's Air Cushion Athletic Walking Shoes (Sizes 37-41)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772223357549-usama-akram-kP6knT7tjn4-unsplash.jpg"
+    },
+    {
+      "store": "Agrovet ",
+      "name": "Yara Diammonium Phosphate (DAP) Fertilizer - 50kg",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1781262015501-IMG_20260611_112756.jpg"
+    },
+    {
+      "store": "Agrovet ",
+      "name": "Certified Hybrid Maize Seed H614 (2kg)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772278646360-sam-moghadam-SRzVKw8l_tA-unsplash.jpg"
+    },
+    {
+      "store": "Agrovet ",
+      "name": "Albendazole 10% Broad Spectrum Livestock Dewormer (500ml)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772312005666-towfiqu-barbhuiya-q-RyWM8uYwY-unsplash.jpg"
+    },
+    {
+      "store": "Baby Duka",
+      "name": "Pampers Premium Protection Diaper Pants Size 3 (56 Count)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1779983928821-pexels-ketut-subiyanto-4720807.jpg"
+    },
+    {
+      "store": "Baby Duka",
+      "name": "Gentle Head-to-Toe Baby Wash & Shampoo (500ml)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772222037583-pexels-babydov-7789062.jpg"
+    },
+    {
+      "store": "Pets Duka",
+      "name": "Complete Adult Dog Dry Food - Beef & Vegetable (10kg)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1780466319431-pexels-yvon-gallant-81432586-8941515.jpg"
+    },
+    {
+      "store": "Pets Duka",
+      "name": "Durable Rubber Chew & Fetch Dog Toy (Large)",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772312388807-kari-shea-1SAnrIxw5OY-unsplash.jpg"
+    },
+    {
+      "store": "Watch Duka",
+      "name": "Classic Stainless Steel Quartz Men's Dress Watch",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772312388704-stefen-tan-KYw1eUx1J7Y-unsplash.jpg"
+    },
+    {
+      "store": "Watch Duka",
+      "name": "Waterproof Bluetooth Fitness Smart Watch with Heart Rate Monitor",
+      "url": "https://dozi4r4ug9739.cloudfront.net/images/1772312388804-kitai-zhvaeh-R9rA-unsplash.jpg"
+    }
+  ],
+  "storeBreakdown": [
+    {
+      "id": "6825c2c7969ab9f16f620f67",
+      "name": "Duka Yangu",
+      "category": "E-commerce",
+      "totalProducts": 12,
+      "productsWithImages": 2,
+      "productsWithoutImages": 10,
+      "totalListings": 21,
+      "listingsWithImages": 21,
+      "listingsWithoutImages": 0
+    },
+    {
+      "id": "683581bba1bdf6ca3624b528",
+      "name": "Service Provider",
+      "category": "Service Provider",
+      "totalProducts": 17,
+      "productsWithImages": 0,
+      "productsWithoutImages": 17,
+      "totalListings": 20,
+      "listingsWithImages": 3,
+      "listingsWithoutImages": 17
+    },
+    {
+      "id": "683581bba1bdf6ca3624b529",
+      "name": "Blog & Content",
+      "category": "Blog & Content",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b530",
+      "name": "Mount Moriah International School",
+      "category": "Educational & Online Courses",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b531",
+      "name": "Nonprofit & Community",
+      "category": "Nonprofit & Community",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b532",
+      "name": "Restaurant & Food Delivery",
+      "category": "Restaurant & Food Delivery",
+      "totalProducts": 18,
+      "productsWithImages": 0,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "683581bba1bdf6ca3624b533",
+      "name": "Event & Ticketing",
+      "category": "Event & Ticketing",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b534",
+      "name": "Real Estate",
+      "category": "Real Estate",
+      "totalProducts": 19,
+      "productsWithImages": 0,
+      "productsWithoutImages": 19,
+      "totalListings": 20,
+      "listingsWithImages": 1,
+      "listingsWithoutImages": 19
+    },
+    {
+      "id": "683581bba1bdf6ca3624b535",
+      "name": "Healthcare & Clinics",
+      "category": "Healthcare & Clinics",
+      "totalProducts": 18,
+      "productsWithImages": 1,
+      "productsWithoutImages": 17,
+      "totalListings": 20,
+      "listingsWithImages": 3,
+      "listingsWithoutImages": 17
+    },
+    {
+      "id": "683581bba1bdf6ca3624b536",
+      "name": "SaaS & Web Apps",
+      "category": "SaaS & Web Apps",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b537",
+      "name": "Media & Entertainment",
+      "category": "Media & Entertainment",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b538",
+      "name": "Finance & Legal",
+      "category": "Finance & Legal",
+      "totalProducts": 19,
+      "productsWithImages": 0,
+      "productsWithoutImages": 19,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b539",
+      "name": "Automotive",
+      "category": "Automotive",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b540",
+      "name": "Travel & Tourism",
+      "category": "Travel & Tourism",
+      "totalProducts": 19,
+      "productsWithImages": 0,
+      "productsWithoutImages": 19,
+      "totalListings": 20,
+      "listingsWithImages": 1,
+      "listingsWithoutImages": 19
+    },
+    {
+      "id": "683581bba1bdf6ca3624b541",
+      "name": "Fitness & Wellness",
+      "category": "Fitness & Wellness",
+      "totalProducts": 19,
+      "productsWithImages": 0,
+      "productsWithoutImages": 19,
+      "totalListings": 20,
+      "listingsWithImages": 1,
+      "listingsWithoutImages": 19
+    },
+    {
+      "id": "683581bba1bdf6ca3624b542",
+      "name": "Marketplace",
+      "category": "Marketplace",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b543",
+      "name": "Other",
+      "category": "Other",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b544",
+      "name": "Booking",
+      "category": "Booking & Appointments",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b545",
+      "name": "Portfolio & Personal Branding",
+      "category": "Portfolio & Personal Branding",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "683581bba1bdf6ca3624b546",
+      "name": "Directory & Listings",
+      "category": "Directory & Listings",
+      "totalProducts": 19,
+      "productsWithImages": 0,
+      "productsWithoutImages": 19,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "685018d708b38f9635fb3a03",
+      "name": "Teacher",
+      "category": "Teacher",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "685084cc4da288b5c3156e4a",
+      "name": "Students",
+      "category": "Students",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "685086104da288b5c3156e52",
+      "name": "School Head",
+      "category": "School Head",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "68a4420ea20efd318d51db70",
+      "name": "Dashboards",
+      "category": "dashboards",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "68aee69e4858810a3b44d848",
+      "name": "Ghuba",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "68b597b7de9bdd2ba7479f34",
+      "name": "Shoes Store",
+      "category": "Shoes Store",
+      "totalProducts": 18,
+      "productsWithImages": 3,
+      "productsWithoutImages": 15,
+      "totalListings": 20,
+      "listingsWithImages": 5,
+      "listingsWithoutImages": 15
+    },
+    {
+      "id": "68f017c25d341681f2b63946",
+      "name": "Executive Coach",
+      "category": "Consultant & Coach",
+      "totalProducts": 18,
+      "productsWithImages": 0,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 1,
+      "listingsWithoutImages": 19
+    },
+    {
+      "id": "68fe798fa4fc1c44efb55336",
+      "name": "Flourishhub",
+      "category": "Consultant & Coach",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "68ff7b9b83da53e461f9ffb8",
+      "name": "Public Speaking",
+      "category": "Public Speaking",
+      "totalProducts": 18,
+      "productsWithImages": 0,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "6910b0c98d4060cdc792feb7",
+      "name": "Securiry Services",
+      "category": "Security",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "691b5ca1236bdf9e4b7aaf70",
+      "name": "CUDA",
+      "category": "Security",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69208b02e1811d332eb13f1b",
+      "name": "Fashion Store",
+      "category": "Fashion Shop",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69208b33e1811d332eb13f1c",
+      "name": "Furniture Store",
+      "category": "Furniture Shop",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "699c1b8a93aaa138e0428082",
+      "name": "Mount Moriah International School3",
+      "category": "Educational & Online Courses",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "699c1b9e93aaa138e0428083",
+      "name": "Mount Moriah International School2",
+      "category": "Educational & Online Courses",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "699c7f464d23c222dcedfa12",
+      "name": "Agrovet ",
+      "category": "E-commerce",
+      "totalProducts": 18,
+      "productsWithImages": 3,
+      "productsWithoutImages": 15,
+      "totalListings": 20,
+      "listingsWithImages": 5,
+      "listingsWithoutImages": 15
+    },
+    {
+      "id": "699d6d7645391012a1d2b38a",
+      "name": "LOGISTICS",
+      "category": "Delivery & Logistics",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "699fea3fccfde3cbdf107c77",
+      "name": "Baby Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 2,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "699fea58ccfde3cbdf107c78",
+      "name": "Cake Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "699fea6eccfde3cbdf107c79",
+      "name": "Pets Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 2,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "699fef6accfde3cbdf107c7a",
+      "name": "Watch Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 2,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "699fefdbccfde3cbdf107c7b",
+      "name": "Honey Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 2,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "699fefeaccfde3cbdf107c7c",
+      "name": "Peanut Duka",
+      "category": "E-commerce",
+      "totalProducts": 16,
+      "productsWithImages": 3,
+      "productsWithoutImages": 13,
+      "totalListings": 20,
+      "listingsWithImages": 7,
+      "listingsWithoutImages": 13
+    },
+    {
+      "id": "699ff330ccfde3cbdf107c7d",
+      "name": "Glasses Duka",
+      "category": "E-commerce",
+      "totalProducts": 17,
+      "productsWithImages": 3,
+      "productsWithoutImages": 14,
+      "totalListings": 20,
+      "listingsWithImages": 6,
+      "listingsWithoutImages": 14
+    },
+    {
+      "id": "699ff34bccfde3cbdf107c7e",
+      "name": "Gaming Duka",
+      "category": "E-commerce",
+      "totalProducts": 18,
+      "productsWithImages": 2,
+      "productsWithoutImages": 16,
+      "totalListings": 20,
+      "listingsWithImages": 4,
+      "listingsWithoutImages": 16
+    },
+    {
+      "id": "699ff378ccfde3cbdf107c7f",
+      "name": "Flowers Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "699ff3a4ccfde3cbdf107c80",
+      "name": "Earphones Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 2,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "69a0c4efc246c2b7bc07942d",
+      "name": "Groceries Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69a1abf6b93e92f627551eb4",
+      "name": "Barbershop",
+      "category": "Booking & Appointments",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69a71d2e5cb2d0d386a4682c",
+      "name": "Bike Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69a725b95cb2d0d386a46831",
+      "name": "Motorcycle Duka",
+      "category": "E-commerce",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69a7612d5cb2d0d386a46833",
+      "name": "Property Management",
+      "category": "Property Management",
+      "totalProducts": 19,
+      "productsWithImages": 0,
+      "productsWithoutImages": 19,
+      "totalListings": 20,
+      "listingsWithImages": 1,
+      "listingsWithoutImages": 19
+    },
+    {
+      "id": "69d54218b5abc7c341772e51",
+      "name": "Meat Store",
+      "category": "Meat Store",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69d54251b5abc7c341772e52",
+      "name": "Hardware Store",
+      "category": "Hardware Shop",
+      "totalProducts": 20,
+      "productsWithImages": 2,
+      "productsWithoutImages": 18,
+      "totalListings": 20,
+      "listingsWithImages": 2,
+      "listingsWithoutImages": 18
+    },
+    {
+      "id": "69dea845ca510013073d8a9f",
+      "name": "Checptulu School2",
+      "category": "Educational & Online Courses",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69dea860ca510013073d8aa0",
+      "name": "Cheptulu School",
+      "category": "Educational & Online Courses",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69dea89eca510013073d8aa1",
+      "name": "Cheptulu School3",
+      "category": "Educational & Online Courses",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69e0e39ca20f8565b384bb93",
+      "name": "Book Store",
+      "category": "Book Store",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "69e3f321e1d67c4f44c94f4d",
+      "name": "Drycleaning",
+      "category": "Drycleaning",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "6a2ad25448da02aefa4be81c",
+      "name": "Imevo Limited",
+      "category": "Delivery & Logistics",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "6a3ad79ba367860e7c48c5a0",
+      "name": "Automotive Store",
+      "category": "Automotive",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "6a3d2aaac35bd250ca6d56c4",
+      "name": "Aurum Precious Metals Limitedl",
+      "category": "Company Portfolio",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "6a61170257f24e2bb1dd0d06",
+      "name": "Automotive 2",
+      "category": "Automotive",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "6a5f136d7f8f5d73a68053e7",
+      "name": "Company Portfolio Light",
+      "category": "Company Portfolio",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    },
+    {
+      "id": "6a6859b99c35dd9bd56c02cc",
+      "name": "Bens",
+      "category": "Shoes Store",
+      "totalProducts": 20,
+      "productsWithImages": 0,
+      "productsWithoutImages": 20,
+      "totalListings": 20,
+      "listingsWithImages": 0,
+      "listingsWithoutImages": 20
+    }
+  ]
+}
+
+rs0 [direct: primary] salesmanprodb> 

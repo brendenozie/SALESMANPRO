@@ -4,6 +4,7 @@ import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 import { StoreDataSync } from '@/contexts/StoreContext';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import DiagnosticHudLoader from '@/components/website-builder/DiagnosticHudLoader';
+import { applyWebsiteConfigToStoreData } from '@/lib/website-builder/applyWebsiteConfigToStoreData';
 
 export const revalidate = 300;
 
@@ -31,32 +32,12 @@ export default async function StorePage({ params }: StorePageProps) {
   // Blend published config overrides into pageData if present (without destroying template structure)
   const publishedConfig = raw?.website?.publishedConfig as any;
   if (publishedConfig) {
-    if (publishedConfig.theme) {
-      pageData.themeSettings = {
-        ...(pageData.themeSettings || {}),
-        primaryColor: publishedConfig.theme.primaryColor || pageData.themeSettings?.primaryColor,
-        secondaryColor: publishedConfig.theme.secondaryColor || pageData.themeSettings?.secondaryColor,
-        fontFamily: publishedConfig.theme.headingFont || pageData.themeSettings?.fontFamily,
-      };
-    }
-
-    // Attach component overrides directly to pageData
-    if (publishedConfig.componentOverrides) {
-      pageData.componentOverrides = {
-        ...(pageData.componentOverrides || {}),
-        ...publishedConfig.componentOverrides,
-      };
-    }
-
-    // Resolve sections from publishedConfig (checking pages[0].sections or top-level sections)
-    const activeSections =
-      publishedConfig.pages?.[0]?.sections || publishedConfig.sections || [];
-    pageData.sections = activeSections;
-    pageData.websiteConfig = publishedConfig;
+    pageData = applyWebsiteConfigToStoreData(pageData, publishedConfig, 'home');
 
     // Guard: For Ghuba, ensure activeSections contains authentic Ghuba marketplace sections.
     // If activeSections only contains generic store sections (e.g. sec-hero, sec-features),
     // re-seed pageData.sections from canonicalTemplate.authenticSections
+    const activeSections = pageData.sections || [];
     if (isGhuba) {
       const hasGhubaSections = activeSections.some((s: any) => {
         const id = (s.id || '').toLowerCase();
@@ -87,25 +68,6 @@ export default async function StorePage({ params }: StorePageProps) {
           visible: true,
           order: sec.defaultOrder,
           content: sec.defaultContent ? JSON.parse(JSON.stringify(sec.defaultContent)) : {},
-        }));
-      }
-    }
-
-    // Merge structured hero configuration if present
-    const heroSection = activeSections.find(
-      (s: any) => s.type === 'hero' || s.id?.includes('hero')
-    );
-    if (heroSection?.content) {
-      pageData.heroConfig = heroSection.content;
-      if (heroSection.content.slides?.length) {
-        pageData.heroSlides = heroSection.content.slides.map((s: any) => ({
-          id: s.id,
-          imageUrl: s.imageUrl || pageData.bannerUrl,
-          headline: s.headline || s.title,
-          subline: s.subline || s.eyebrow || s.description,
-          badgeText: s.badgeText || s.description,
-          ctaText: s.ctaText || s.primaryButtonText || 'Shop Now',
-          ctaLink: s.ctaLink || s.primaryButtonUrl || '/products',
         }));
       }
     }

@@ -7,6 +7,7 @@ import {
 } from "@/lib/website-builder/template-registry";
 import { CompiledWebsiteConfig, SectionType } from "@/types/website-builder";
 import { StoreForm } from "@/types/typings";
+import { applyWebsiteConfigToStoreData } from "@/lib/website-builder/applyWebsiteConfigToStoreData";
 import { StoreContextProvider, StoreDataSync } from "@/contexts/StoreContext";
 import { EditableContentProvider, SelectedElementInfo } from "@/contexts/EditableContentContext";
 import { BodyComponentMap } from "@/components/site/BodyComponentMap";
@@ -209,121 +210,25 @@ export default function AuthenticTemplateRenderer({
 
   // 4. Merge live config and overrides into storeFormData
   const mergedStoreData = useMemo(() => {
-    const base: StoreForm = storeFormData
+    const rawBase: StoreForm = storeFormData
       ? {
           ...storeFormData,
           themeSettings: { ...(storeFormData.themeSettings || {}) },
           heroSlides: storeFormData.heroSlides
-            ? storeFormData.heroSlides.map((s) => ({ ...s }))
+            ? storeFormData.heroSlides.map((s: any) => ({ ...s }))
             : [],
         }
       : createSyntheticStoreForm(config, canonicalTemplate, companyId);
 
-    // Apply live theme overrides
-    if (config.theme) {
-      base.themeSettings = {
-        ...(base.themeSettings || {}),
-        primaryColor: config.theme.primaryColor || base.themeSettings?.primaryColor,
-        secondaryColor: config.theme.secondaryColor || base.themeSettings?.secondaryColor,
-        fontFamily: config.theme.headingFont || base.themeSettings?.fontFamily,
-      };
-    }
-
     // Apply store info overrides from props
-    if (storeLogoUrl) base.logoUrl = storeLogoUrl;
-    if (contactPhone) (base as any).contactPhone = contactPhone;
-    if (contactEmail) (base as any).contactEmail = contactEmail;
-    if (address) (base as any).address = address;
-    if (socialLinks && socialLinks.length > 0) base.socialLinks = socialLinks;
+    if (storeLogoUrl) rawBase.logoUrl = storeLogoUrl;
+    if (contactPhone) (rawBase as any).contactPhone = contactPhone;
+    if (contactEmail) (rawBase as any).contactEmail = contactEmail;
+    if (address) (rawBase as any).address = address;
+    if (socialLinks && socialLinks.length > 0) rawBase.socialLinks = socialLinks;
 
-    // Apply live Header & Footer component overrides
-    const ov = config.componentOverrides || {};
-    const headerBrand =
-      ov["Header.brandName"] ||
-      ov["Header.storeName"] ||
-      ov["header.brandName"] ||
-      ov["header.storeName"] ||
-      ov["header.title"];
-    if (headerBrand) base.name = headerBrand;
-
-    const headerLogo = ov["Header.logoUrl"] || ov["header.logoUrl"];
-    if (headerLogo) base.logoUrl = headerLogo;
-
-    const footerBio = ov["Footer.bio"] || ov["footer.bio"] || ov["footer.description"];
-    if (footerBio) base.description = footerBio;
-
-    const footerPhone = ov["Footer.contactPhone"] || ov["footer.contactPhone"] || ov["footer.phone"];
-    if (footerPhone) (base as any).contactPhone = footerPhone;
-
-    const footerEmail = ov["Footer.contactEmail"] || ov["footer.contactEmail"] || ov["footer.email"];
-    if (footerEmail) (base as any).contactEmail = footerEmail;
-
-    const footerAddr = ov["Footer.address"] || ov["footer.address"];
-    if (footerAddr) (base as any).address = footerAddr;
-
-    const announcement = ov["Header.announcementText"] || ov["header.announcementText"];
-    if (announcement) (base as any).tagline = announcement;
-
-    // 1. Ensure base.heroSlides has at least 1 slide
-    if (!base.heroSlides || base.heroSlides.length === 0) {
-      base.heroSlides = [
-        {
-          id: "slide-1",
-          imageUrl: base.bannerUrl || "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670",
-          headline: base.name ? `Welcome to ${base.name}` : "Experience Excellence",
-          subline: base.description || "Discover premium products and exceptional service.",
-          type: null,
-          companyId: companyId || "",
-          productImageUrl: null,
-          ctaText: "Explore Now",
-          ctaLink: "/products",
-          videoLink: null,
-          badgeText: "Featured",
-          price: null,
-          endsAt: null,
-          order: 0,
-          iconKey: null,
-          backgroundColor: null,
-          textColor: null,
-          stats: null,
-        },
-      ];
-    } else {
-      // Shallow-clone heroSlides to avoid mutating external references
-      base.heroSlides = base.heroSlides.map((s) => ({ ...s }));
-    }
-
-    // 2. Apply hero slide overrides from config sections if edited
-    const activePage = (config.pages || []).find(
-      (p) => (p.isHomepage && (pageSlug === "home" || pageSlug === "")) || p.slug === pageSlug
-    );
-    const heroSec = (activePage?.sections || []).find(
-      (s: any) => s.type === "hero" || s.id?.includes("hero")
-    );
-    if (heroSec?.content) {
-      (base as any).heroConfig = heroSec.content;
-      if (heroSec.content.slides?.length) {
-        base.heroSlides = heroSec.content.slides.map((s: any) => ({
-          id: s.id,
-          imageUrl: s.imageUrl,
-          headline: s.headline || s.title,
-          subline: s.subline || s.eyebrow || s.description,
-          badgeText: s.badgeText || s.description,
-          ctaText: s.ctaText || s.primaryButtonText || "Shop Now",
-          ctaLink: s.ctaLink || s.primaryButtonUrl || "/products",
-        }));
-      }
-    }
-    (base as any).sections = activePage?.sections || [];
-    (base as any).websiteConfig = config;
-
-    // 3. Expose componentOverrides on base so any StoreContext consumer can access them
-    // NOTE: Physical components that use EditableElement read overrides directly via
-    // getOverride() from EditableContentContext — NOT from mergedStoreData properties.
-    // The deterministic header/footer overrides above (lines 233-259) handle the
-    // StoreContext path for components that read storeFormData fields (e.g. base.name).
-    // No fuzzy guessing is needed or desired here.
-    (base as any).componentOverrides = ov;
+    // Apply comprehensive website config, component overrides, and section bridging
+    const base = applyWebsiteConfigToStoreData(rawBase, config, pageSlug);
 
     return base;
   }, [

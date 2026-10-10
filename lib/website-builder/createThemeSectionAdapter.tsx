@@ -32,45 +32,105 @@ export function ThemeSectionContainer({
     return <>{actualFallback}</>;
   }
 
+  const normalizeSectionContent = (sec: any) => {
+    if (!sec || !sec.content || typeof sec.content !== 'object' || Array.isArray(sec.content)) return;
+    const c = sec.content;
+    if (c.slides && !c.heroSlides) c.heroSlides = c.slides;
+    if ((c.headline || c.title) && !c.heroSlides) {
+      c.heroSlides = [
+        {
+          id: 'slide-1',
+          headline: c.headline || c.title,
+          subline: c.subline || c.eyebrow || c.description || '',
+          badgeText: c.badgeText || '',
+          ctaText: c.ctaText || c.primaryButtonText || 'Shop Now',
+          ctaLink: c.ctaLink || c.primaryButtonUrl || '/products',
+          imageUrl: c.imageUrl,
+        },
+      ];
+    }
+    if (c.items && !c.features) c.features = c.items;
+    if (c.items && !c.testimonials) c.testimonials = c.items;
+    if (c.items && !c.faqs) c.faqs = c.items;
+  };
+
+  const enhanceElement = (content: React.ReactNode, section: any, index: number, matchedKey?: string) => {
+    if (!React.isValidElement(content)) return content;
+
+    const childProps = (content.props as any) || {};
+    const c = section.content && typeof section.content === 'object' && !Array.isArray(section.content)
+      ? section.content
+      : {};
+
+    const mergedStoreFormData = childProps.storeFormData
+      ? {
+          ...childProps.storeFormData,
+          ...c,
+          ...(c.features || c.items ? { CoreValues: c.features || c.items, features: c.features || c.items } : {}),
+          ...(c.testimonials || c.items ? { testimonials: c.testimonials || c.items } : {}),
+          ...(c.faqs || c.items ? { faqs: c.faqs || c.items } : {}),
+          ...(c.heroSlides || c.slides ? { heroSlides: c.heroSlides || c.slides } : {}),
+        }
+      : undefined;
+
+    const injections: Record<string, any> = {
+      sectionId: section.id,
+      sectionType: section.type,
+      sectionContent: section.content,
+      ...c,
+    };
+
+    if (mergedStoreFormData) injections.storeFormData = mergedStoreFormData;
+    if (c.heroSlides || c.slides) {
+      injections.heroSlides = c.heroSlides || c.slides;
+    }
+    if (c.features || c.items) {
+      injections.features = c.features || c.items;
+      injections.CoreValues = c.features || c.items;
+    }
+    if (c.testimonials || c.items) {
+      injections.testimonials = c.testimonials || c.items;
+    }
+    if (c.faqs || c.items) {
+      injections.faqs = c.faqs || c.items;
+    }
+    if (c.promotions || c.items) {
+      injections.promotions = c.promotions || c.items;
+    }
+
+    const enhanced = React.cloneElement(content as React.ReactElement<any>, injections);
+
+    if (enhanced.props?.['data-editor-section']) {
+      return React.cloneElement(enhanced, {
+        key: section.id || index,
+      });
+    }
+
+    const domId = (section.id || '').startsWith('section-') ? section.id : `section-${section.id || index}`;
+
+    return (
+      <div
+        key={section.id || index}
+        id={domId}
+        data-editor-section={section.id}
+        data-editor-component={section.component || section.name || matchedKey || section.id}
+      >
+        {enhanced}
+      </div>
+    );
+  };
+
   const renderedElements = sections
     .map((section, index) => {
       if (section.visible === false || section.isVisible === false) {
         return null;
       }
+      normalizeSectionContent(section);
+
       if (renderSection) {
         const content = renderSection(section, index);
         if (!content) return null;
-
-        const enhancedContent = React.isValidElement(content)
-          ? React.cloneElement(content as React.ReactElement<any>, {
-              sectionId: section.id,
-              sectionType: section.type,
-              sectionContent: section.content,
-              ...(section.content && typeof section.content === 'object' && !Array.isArray(section.content)
-                ? section.content
-                : {}),
-            })
-          : content;
-
-        // If the rendered component already has data-editor-section, return it directly to avoid double wrappers
-        if (React.isValidElement(enhancedContent) && (enhancedContent.props as any)?.['data-editor-section']) {
-          return React.cloneElement(enhancedContent as React.ReactElement<any>, {
-            key: section.id || index,
-          });
-        }
-
-        const domId = (section.id || '').startsWith('section-') ? section.id : `section-${section.id || index}`;
-
-        return (
-          <div
-            key={section.id || index}
-            id={domId}
-            data-editor-section={section.id}
-            data-editor-component={section.component || section.name || section.id}
-          >
-            {enhancedContent}
-          </div>
-        );
+        return enhanceElement(content, section, index);
       }
       if (sectionMap) {
         const secId = (section.id || '').toLowerCase();
@@ -141,35 +201,7 @@ export function ThemeSectionContainer({
         const content = typeof rawContent === 'function' ? (rawContent as any)(section, index) : rawContent;
         if (!content) return null;
 
-        const enhancedContent = React.isValidElement(content)
-          ? React.cloneElement(content as React.ReactElement<any>, {
-              sectionId: section.id,
-              sectionType: section.type,
-              sectionContent: section.content,
-              ...(section.content && typeof section.content === 'object' && !Array.isArray(section.content)
-                ? section.content
-                : {}),
-            })
-          : content;
-
-        if (React.isValidElement(enhancedContent) && (enhancedContent.props as any)?.['data-editor-section']) {
-          return React.cloneElement(enhancedContent as React.ReactElement<any>, {
-            key: section.id || index,
-          });
-        }
-
-        const domId = (section.id || '').startsWith('section-') ? section.id : `section-${section.id || index}`;
-
-        return (
-          <div
-            key={section.id || index}
-            id={domId}
-            data-editor-section={section.id}
-            data-editor-component={section.component || section.name || matchedKey}
-          >
-            {enhancedContent}
-          </div>
-        );
+        return enhanceElement(content, section, index, matchedKey);
       }
       return null;
     })
