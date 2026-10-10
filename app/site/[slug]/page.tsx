@@ -18,7 +18,9 @@ export default async function StorePage({ params }: StorePageProps) {
   const { slug } = await params;
   
   // Extract pre-resolved store data & canonical template memoized in loadStore
-  const { componentName, pageData, raw, ghubaData, canonicalTemplate } = await loadStore(slug);
+  const loaded = await loadStore(slug);
+  const { componentName, raw, ghubaData, canonicalTemplate } = loaded;
+  let pageData = loaded.pageData;
 
   const isGhuba = isGhubaMarketplace(slug, raw) || componentName === 'GhubaSite';
 
