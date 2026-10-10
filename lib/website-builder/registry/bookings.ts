@@ -207,7 +207,7 @@ export const BOOKINGS_APPOINTMENTS_SECTIONS: AuthenticSectionDefinition[] = [
   {
     id: "bookings-hero",
     name: "Booking & Appointment Hero",
-    component: "Hero",
+    component: "HeroSection",
     type: "hero",
     category: "hero",
     editableProps: ["headline", "subline", "buttonText"],
@@ -225,7 +225,7 @@ export const BOOKINGS_APPOINTMENTS_SECTIONS: AuthenticSectionDefinition[] = [
   {
     id: "bookings-massage-features",
     name: "Specialized Treatments & Services",
-    component: "MassageFeatures",
+    component: "MessagesSection",
     type: "imageWithText",
     category: "content",
     editableProps: ["title"],

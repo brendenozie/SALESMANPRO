@@ -180,6 +180,8 @@ export function getEditableComponent(componentKey: string): EditableComponentDef
     "bookingformsection": "ContactSection",
     "booking-form": "ContactSection",
     "massagefeatures": "FeaturesSection",
+    "messagessection": "FeaturesSection",
+    "messages-section": "FeaturesSection",
     "pricingandstatssection": "PricingSection",
     "benefitssection": "FeaturesSection",
     "trendinglocationssection": "TrendingLocations",
