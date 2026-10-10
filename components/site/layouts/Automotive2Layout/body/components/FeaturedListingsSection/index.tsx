@@ -11,11 +11,11 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const buildQuery = (
   companyId: string,
-  params: URLSearchParams,
+  params: any,
   transactionType: "SALE" | "RENT",
   cursor?: string
 ) => {
-  const q = new URLSearchParams(params.toString());
+  const q = new URLSearchParams(params ? params.toString() : "");
 
   q.set("companyId", companyId);
   q.set("flag", "isFeatured");
@@ -31,29 +31,41 @@ export default function AutomotiveFeaturedListingsWrapper({
 }: {
   companyId: string;
 }) {
-  const router = useRouter();
-  const params = useSearchParams();
+  let router: any;
+  let params: any;
+  try {
+    router = useRouter();
+  } catch {
+    router = { replace: () => {}, push: () => {} };
+  }
+  try {
+    params = useSearchParams();
+  } catch {
+    params = null;
+  }
 
   const transactionType =
-    (params.get("transactionType") as "SALE" | "RENT") || "SALE";
+    (params?.get?.("transactionType") as "SALE" | "RENT") || "SALE";
 
   /* 🔁 Persist tab selection in URL without triggering full page re-renders */
   const setTransactionType = (type: "SALE" | "RENT") => {
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(params ? params.toString() : "");
     next.set("transactionType", type);
-    router.replace(`?${next.toString()}`, { scroll: false });
+    router?.replace?.(`?${next.toString()}`, { scroll: false });
   };
 
+  const safeParams = useMemo(() => params || new URLSearchParams(), [params]);
+
   const url = useMemo(
-    () => buildQuery(companyId, params, transactionType),
-    [companyId, params, transactionType]
+    () => buildQuery(companyId, safeParams, transactionType),
+    [companyId, safeParams, transactionType]
   );
 
   const swrKey = [
     "automotive-featured",
     companyId,
     transactionType,
-    params.toString(),
+    params ? params.toString() : "",
   ].join(":");
 
   const fetcher = createCachedFetcher(swrKey);

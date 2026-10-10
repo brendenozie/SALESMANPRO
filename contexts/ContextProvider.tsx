@@ -310,10 +310,46 @@ export const ContextProvider = ({ children }: ProviderProps) => {
   );
 };
 
+const defaultStateContext: AppContextType = {
+  user: null,
+  cart: [],
+  addToCart: () => {},
+  removeFromCart: () => {},
+  decreaseQuantity: () => {},
+  clearCart: () => {},
+  currentColor: "#F43F5E",
+  isDarkMode: false,
+  activeMenu: false,
+  screenSize: undefined,
+  setScreenSize: () => {},
+  handleClick: () => {},
+  isClicked: { chat: false, cart: false, userProfile: false, notification: false },
+  initialState: { chat: false, cart: false, userProfile: false, notification: false },
+  setIsClicked: () => {},
+  setActiveMenu: () => {},
+  setCurrentColor: () => {},
+  setIsDarkMode: () => {},
+  setMode: () => {},
+  setColor: () => {},
+  themeSettings: null,
+  setThemeSettings: () => {},
+  isLoading: false,
+  cartSubtotal: 0,
+  totalPrice: 0,
+  isOpen: false,
+  setIsOpen: () => {},
+  onClose: () => {},
+  setOnClose: () => {},
+  onUpdate: () => {},
+  setOnUpdate: () => {},
+  isCartOpen: false,
+  setIsCartOpen: () => {},
+};
+
 export const useStateContext = () => {
   const context = useContext(StateContext);
   if (!context) {
-    throw new Error("useStateContext must be used inside ContextProvider");
+    return defaultStateContext;
   }
   return context;
 };

@@ -1,3 +1,4 @@
+import React from 'react';
 // In a separate file (e.g. siteLayoutMap.ts)
 import dynamic from 'next/dynamic';
 

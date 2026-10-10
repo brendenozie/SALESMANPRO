@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';

@@ -1,3 +1,4 @@
+import React from 'react';
 // components/site/layouts/DynamicStoreBody.tsx
 
 'use client';

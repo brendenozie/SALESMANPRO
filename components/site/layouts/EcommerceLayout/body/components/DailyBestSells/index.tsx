@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import useSWR from 'swr';
 import Link from 'next/link';
 import ProductCard from '../ProductCard';

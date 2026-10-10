@@ -37,7 +37,11 @@ export default function PopularSection({ promotions, themeSettings }: any) {
   const primary = themeSettings?.primaryColor || '#18181b'; // Aligned back to zinc aesthetic or dynamic overrides
 
   const categoryData = promotions && promotions.length > 0
-    ? { ...promotions[0], trustLogos: dummyPromotionData.trustLogos }
+    ? {
+        ...promotions[0],
+        trustLogos: promotions[0].trustLogos ?? dummyPromotionData.trustLogos,
+        perks: promotions[0].perks ?? dummyPromotionData.perks,
+      }
     : dummyPromotionData;
 
   return (

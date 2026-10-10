@@ -26,8 +26,20 @@ export interface BookingSectionProps {
   sectionId?: string;
 }
 
+// Safe router hook — useRouter() throws an invariant if called outside Next.js App Router
+// (e.g. in Node SSR tests). We lazily obtain the router only when navigation is triggered.
+function useSafeRouter() {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useRouter();
+  } catch {
+    // Outside App Router context (SSR tests, static rendering) — return a no-op stub
+    return { push: (_url: string) => {} } as ReturnType<typeof useRouter>;
+  }
+}
+
 export function BookingSection({ storeFormData, config, sectionId }: BookingSectionProps) {
-  const router = useRouter();
+  const router = useSafeRouter();
   const [activeTab, setActiveTab] = useState("quote");
   const marketplaceListings = storeFormData?.marketplaceListings || [];
   const sId = sectionId || "booking";

@@ -24,3 +24,9 @@ Module._resolveFilename = function (request, parent, isMain, options) {
 };
 require.extensions['.css'] = () => {};
 require.extensions['.scss'] = () => {};
+
+process.env.NODE_ENV = 'test';
+delete process.env.__NEXT_IMAGE_OPTS;
+
+
+

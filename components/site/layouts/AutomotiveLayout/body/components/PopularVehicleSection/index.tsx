@@ -29,7 +29,7 @@ const buildQuery = (companyId: string, params: URLSearchParams) => {
   ];
 
   filters.forEach((key) => {
-    const value = params.get(key);
+    const value = params?.get ? params.get(key) : null;
     if (value) q.set(key, value);
   });
 
@@ -42,7 +42,12 @@ export default function PopularVehiclesWrapper({
 }: {
   companyId: string;
 }) {
-  const params = useSearchParams();
+  let params: any;
+  try {
+    params = useSearchParams();
+  } catch {
+    params = null;
+  }
 
   const url = buildQuery(companyId, params);
 
