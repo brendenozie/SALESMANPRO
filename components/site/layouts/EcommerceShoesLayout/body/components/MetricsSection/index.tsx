@@ -125,7 +125,7 @@ export default function MetricsSection({ coreValues }: MetricsSectionProps) {
     },
   ];
 
-  const data = coreValues && coreValues.length > 0 ? coreValues : defaultValues;
+  const data = coreValues != null ? coreValues : defaultValues;
 
   return (
     <section className="relative py-28 bg-gray-50 dark:bg-black overflow-hidden transition-colors duration-500">

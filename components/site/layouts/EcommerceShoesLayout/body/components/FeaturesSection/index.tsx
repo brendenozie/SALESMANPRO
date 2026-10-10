@@ -64,7 +64,7 @@ const cardVariants: Variants = {
 
 export default function FeaturesSection({ features, themeSettings }: FeaturesSectionProps) {
   const primary = themeSettings?.primaryColor || '#18181b'; 
-  const displayFeatures = features && features.length > 0 ? features : DEFAULT_FEATURES;
+  const displayFeatures = features != null ? features : DEFAULT_FEATURES;
 
   return (
     <section className="py-24 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500 overflow-hidden border-t border-zinc-200/50 dark:border-zinc-900/60">

@@ -60,7 +60,7 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
   const { buildUrl } = useEditableContent();
   const slides = (heroSlides?.length ? heroSlides : defaultSlides).map((s, i) => ({
     ...s,
-    imageUrl: s.productImageUrl || s.imageUrl || defaultSlides[i % defaultSlides.length].imageUrl,
+    imageUrl: s.imageUrl || s.productImageUrl || defaultSlides[i % defaultSlides.length].imageUrl,
   })) as HeroSlide[];
 
   const [current, setCurrent] = useState(0);
