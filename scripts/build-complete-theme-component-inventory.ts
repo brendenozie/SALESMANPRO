@@ -70,6 +70,20 @@ async function runInventory() {
       }
     }
 
+    // Fallback: match by shellLayout name (e.g., "SalonBookingsLayout" -> directory "SalonBookingsLayout")
+    if (!layoutDirName && tpl.shellLayout) {
+      for (const sub of layoutSubdirs) {
+        if (sub === tpl.shellLayout) {
+          layoutDirName = sub;
+          break;
+        }
+        if (sub.toLowerCase().replace(/[^a-z0-9]/g, '') === tpl.shellLayout.toLowerCase().replace(/[^a-z0-9]/g, '')) {
+          layoutDirName = sub;
+          break;
+        }
+      }
+    }
+
     if (!layoutDirName) {
       // Fallback heuristics
       for (const sub of layoutSubdirs) {
@@ -182,7 +196,7 @@ async function runInventory() {
         sectionType: sec.type,
         componentName: compName,
         componentFilePath: compFilePath ? path.relative(process.cwd(), compFilePath).replace(/\\/g, '/') : null,
-        componentFileExists,
+        componentFileExists: compFileExists,
         adapterFound,
         adapterStatus,
         adapterPropertiesCount,
