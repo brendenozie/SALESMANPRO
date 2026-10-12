@@ -99,54 +99,78 @@ export function applyWebsiteConfigToStoreData(
     ];
   }
 
-  // Apply hero overrides from componentOverrides if present
-  const heroHeadlineOv =
-    ov['hero.headline'] ||
-    ov['hero.title'] ||
-    ov['Hero.headline'] ||
-    ov['HeroSlider.headline'] ||
-    ov['hero-slider.headline'] ||
-    ov['RestaurantHero.headline'];
-  if (heroHeadlineOv && data.heroSlides[0]) {
-    data.heroSlides[0].headline = heroHeadlineOv;
-  }
+  // Apply hero overrides from componentOverrides across all slides
+  for (let idx = 0; idx < data.heroSlides.length; idx++) {
+    const s = data.heroSlides[idx];
+    const headline =
+      ov[`home.hero-slider.slides.${idx}.headline`] ||
+      ov[`slides.${idx}.headline`] ||
+      ov[`HeroSlider.slide${idx}.headline`] ||
+      ov[`HeroSlider.slide-${idx}.headline`] ||
+      (idx === 0
+        ? ov['hero.headline'] ||
+          ov['hero.title'] ||
+          ov['Hero.headline'] ||
+          ov['HeroSlider.headline'] ||
+          ov['hero-slider.headline'] ||
+          ov['RestaurantHero.headline']
+        : undefined);
+    if (headline) s.headline = headline;
 
-  const heroSublineOv =
-    ov['hero.subline'] ||
-    ov['hero.description'] ||
-    ov['Hero.subline'] ||
-    ov['HeroSlider.subline'] ||
-    ov['hero-slider.subline'] ||
-    ov['RestaurantHero.subline'];
-  if (heroSublineOv && data.heroSlides[0]) {
-    data.heroSlides[0].subline = heroSublineOv;
-  }
+    const subline =
+      ov[`home.hero-slider.slides.${idx}.subline`] ||
+      ov[`home.hero-slider.slides.${idx}.badgeText`] ||
+      ov[`slides.${idx}.subline`] ||
+      ov[`HeroSlider.slide${idx}.subline`] ||
+      ov[`HeroSlider.slide-${idx}.subline`] ||
+      (idx === 0
+        ? ov['hero.subline'] ||
+          ov['hero.description'] ||
+          ov['Hero.subline'] ||
+          ov['HeroSlider.subline'] ||
+          ov['hero-slider.subline'] ||
+          ov['RestaurantHero.subline']
+        : undefined);
+    if (subline) s.subline = subline;
 
-  const heroCtaTextOv =
-    ov['hero.ctaText'] ||
-    ov['Hero.ctaText'] ||
-    ov['HeroSlider.ctaText'] ||
-    ov['hero-slider.ctaText'];
-  if (heroCtaTextOv && data.heroSlides[0]) {
-    data.heroSlides[0].ctaText = heroCtaTextOv;
-  }
+    const ctaText =
+      ov[`home.hero-slider.slides.${idx}.ctaText`] ||
+      ov[`slides.${idx}.ctaText`] ||
+      ov[`HeroSlider.slide${idx}.ctaText`] ||
+      ov[`HeroSlider.slide-${idx}.ctaText`] ||
+      (idx === 0
+        ? ov['hero.ctaText'] ||
+          ov['Hero.ctaText'] ||
+          ov['HeroSlider.ctaText'] ||
+          ov['hero-slider.ctaText']
+        : undefined);
+    if (ctaText) s.ctaText = ctaText;
 
-  const heroCtaLinkOv =
-    ov['hero.ctaLink'] ||
-    ov['Hero.ctaLink'] ||
-    ov['HeroSlider.ctaLink'] ||
-    ov['hero-slider.ctaLink'];
-  if (heroCtaLinkOv && data.heroSlides[0]) {
-    data.heroSlides[0].ctaLink = heroCtaLinkOv;
-  }
+    const ctaLink =
+      ov[`home.hero-slider.slides.${idx}.ctaLink`] ||
+      ov[`slides.${idx}.ctaLink`] ||
+      ov[`HeroSlider.slide${idx}.ctaLink`] ||
+      ov[`HeroSlider.slide-${idx}.ctaLink`] ||
+      (idx === 0
+        ? ov['hero.ctaLink'] ||
+          ov['Hero.ctaLink'] ||
+          ov['HeroSlider.ctaLink'] ||
+          ov['hero-slider.ctaLink']
+        : undefined);
+    if (ctaLink) s.ctaLink = ctaLink;
 
-  const heroImageUrlOv =
-    ov['hero.imageUrl'] ||
-    ov['Hero.imageUrl'] ||
-    ov['HeroSlider.imageUrl'] ||
-    ov['hero-slider.imageUrl'];
-  if (heroImageUrlOv && data.heroSlides[0]) {
-    data.heroSlides[0].imageUrl = heroImageUrlOv;
+    const imageUrl =
+      ov[`home.hero-slider.slides.${idx}.imageUrl`] ||
+      ov[`slides.${idx}.imageUrl`] ||
+      ov[`HeroSlider.slide${idx}.imageUrl`] ||
+      ov[`HeroSlider.slide-${idx}.imageUrl`] ||
+      (idx === 0
+        ? ov['hero.imageUrl'] ||
+          ov['Hero.imageUrl'] ||
+          ov['HeroSlider.imageUrl'] ||
+          ov['hero-slider.imageUrl']
+        : undefined);
+    if (imageUrl) s.imageUrl = imageUrl;
   }
 
   // 3. Find active page sections
@@ -218,12 +242,25 @@ export function applyWebsiteConfigToStoreData(
     ) {
       const rawItems = c.items || c.features || c.values || c.coreValues;
       if (Array.isArray(rawItems) && rawItems.length > 0) {
-        const normalized = rawItems.map((item: any, idx: number) => ({
-          id: item.id || `val-${idx + 1}`,
-          title: item.title || item.headline || item.name || `Feature ${idx + 1}`,
-          description: item.description || item.subline || item.text || '',
-          icon: item.icon,
-        }));
+        const normalized = rawItems.map((item: any, idx: number) => {
+          const titleOv =
+            ov[`home.features.items.${idx}.title`] ||
+            ov[`features.items.${idx}.title`] ||
+            ov[`FeaturesSection.items.${idx}.title`] ||
+            ov[`CoreValues.${idx}.title`];
+          const descOv =
+            ov[`home.features.items.${idx}.description`] ||
+            ov[`features.items.${idx}.description`] ||
+            ov[`FeaturesSection.items.${idx}.description`] ||
+            ov[`CoreValues.${idx}.description`];
+
+          return {
+            id: item.id || `val-${idx + 1}`,
+            title: titleOv || item.title || item.headline || item.name || `Feature ${idx + 1}`,
+            description: descOv || item.description || item.subline || item.text || '',
+            icon: item.icon,
+          };
+        });
         data.CoreValues = normalized;
         (data as any).features = normalized;
         (data as any).values = normalized;
@@ -237,14 +274,28 @@ export function applyWebsiteConfigToStoreData(
     else if (key.includes('testimonial') || key.includes('review')) {
       const rawItems = c.items || c.testimonials || c.reviews;
       if (Array.isArray(rawItems) && rawItems.length > 0) {
-        const normalized = rawItems.map((t: any, idx: number) => ({
-          id: t.id || `test-${idx + 1}`,
-          name: t.name || t.author || `Customer ${idx + 1}`,
-          quote: t.quote || t.content || t.text || t.description || '',
-          role: t.role || t.title || 'Verified Customer',
-          avatar: t.avatar || t.imageUrl || t.image || null,
-          rating: t.rating || 5,
-        }));
+        const normalized = rawItems.map((t: any, idx: number) => {
+          const quoteOv =
+            ov[`home.testimonials.items.${idx}.quote`] ||
+            ov[`testimonials.${idx}.quote`] ||
+            ov[`testimonials.${idx}.content`];
+          const nameOv =
+            ov[`home.testimonials.items.${idx}.name`] ||
+            ov[`testimonials.${idx}.name`] ||
+            ov[`testimonials.${idx}.author`];
+          const roleOv =
+            ov[`home.testimonials.items.${idx}.role`] ||
+            ov[`testimonials.${idx}.role`];
+
+          return {
+            id: t.id || `test-${idx + 1}`,
+            name: nameOv || t.name || t.author || `Customer ${idx + 1}`,
+            quote: quoteOv || t.quote || t.content || t.text || t.description || '',
+            role: roleOv || t.role || t.title || 'Verified Customer',
+            avatar: t.avatar || t.imageUrl || t.image || null,
+            rating: t.rating || 5,
+          };
+        });
         data.testimonials = normalized;
         (data as any).reviews = normalized;
         c.testimonials = normalized;
@@ -257,11 +308,22 @@ export function applyWebsiteConfigToStoreData(
     else if (key.includes('faq')) {
       const rawItems = c.items || c.faqs || c.questions;
       if (Array.isArray(rawItems) && rawItems.length > 0) {
-        const normalized = rawItems.map((f: any, idx: number) => ({
-          id: f.id || `faq-${idx + 1}`,
-          question: f.question || f.title || f.q || '',
-          answer: f.answer || f.description || f.content || f.a || '',
-        }));
+        const normalized = rawItems.map((f: any, idx: number) => {
+          const qOv =
+            ov[`home.faqs.items.${idx}.question`] ||
+            ov[`faqs.${idx}.question`] ||
+            ov[`faqs.${idx}.q`];
+          const aOv =
+            ov[`home.faqs.items.${idx}.answer`] ||
+            ov[`faqs.${idx}.answer`] ||
+            ov[`faqs.${idx}.a`];
+
+          return {
+            id: f.id || `faq-${idx + 1}`,
+            question: qOv || f.question || f.title || f.q || '',
+            answer: aOv || f.answer || f.description || f.content || f.a || '',
+          };
+        });
         data.faqs = normalized;
         c.faqs = normalized;
         c.items = normalized;
@@ -289,10 +351,42 @@ export function applyWebsiteConfigToStoreData(
 
     // --- PROMOTIONS / BANNER / DEALS ---
     else if (key.includes('promo') || key.includes('banner') || key.includes('deal')) {
-      const rawItems = c.items || c.promotions || c.deals;
-      if (Array.isArray(rawItems) && rawItems.length > 0) {
-        data.promotions = rawItems;
-        c.promotions = rawItems;
+      const rawItems = c.items || c.promotions || c.deals || data.promotions || [];
+      const basePromos = Array.isArray(rawItems) && rawItems.length > 0 ? rawItems : (data.promotions || []);
+      if (basePromos.length > 0) {
+        const reconciled = basePromos.map((p: any, idx: number) => {
+          const titleOv =
+            ov[`home.promo-section.promotions.${idx}.title`] ||
+            ov[`promotions.${idx}.title`] ||
+            ov[`PromoSection.promotions.${idx}.title`];
+          const descOv =
+            ov[`home.promo-section.promotions.${idx}.description`] ||
+            ov[`promotions.${idx}.description`] ||
+            ov[`PromoSection.promotions.${idx}.description`];
+          const bannerOv =
+            ov[`home.promo-section.promotions.${idx}.bannerUrl`] ||
+            ov[`promotions.${idx}.bannerUrl`] ||
+            ov[`PromoSection.promotions.${idx}.bannerUrl`];
+          const ctaTextOv =
+            ov[`home.promo-section.promotions.${idx}.ctaText`] ||
+            ov[`promotions.${idx}.ctaText`] ||
+            ov[`PromoSection.promotions.${idx}.ctaText`];
+          const ctaLinkOv =
+            ov[`home.promo-section.promotions.${idx}.ctaLink`] ||
+            ov[`promotions.${idx}.ctaLink`] ||
+            ov[`PromoSection.promotions.${idx}.ctaLink`];
+
+          return {
+            ...p,
+            ...(titleOv ? { title: titleOv } : {}),
+            ...(descOv ? { description: descOv } : {}),
+            ...(bannerOv ? { bannerUrl: bannerOv } : {}),
+            ...(ctaTextOv ? { ctaText: ctaTextOv } : {}),
+            ...(ctaLinkOv ? { ctaLink: ctaLinkOv } : {}),
+          };
+        });
+        data.promotions = reconciled;
+        c.promotions = reconciled;
       }
       if (c.imageUrl) data.bannerUrl = c.imageUrl;
       if (c.title || c.headline) {

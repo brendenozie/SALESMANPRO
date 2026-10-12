@@ -57,7 +57,7 @@ const slideVariants = {
 };
 
 export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] }) {
-  const { buildUrl } = useEditableContent();
+  const { buildUrl, isEditorMode } = useEditableContent();
   const slides = (heroSlides?.length ? heroSlides : defaultSlides).map((s, i) => ({
     ...s,
     imageUrl: s.imageUrl || s.productImageUrl || defaultSlides[i % defaultSlides.length].imageUrl,
@@ -68,7 +68,7 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
   const [isHovering, setIsHovering] = useState(false);
   const [isPausedByUser, setIsPausedByUser] = useState(false);
   
-  const isAutoplayActive = !isHovering && !isPausedByUser;
+  const isAutoplayActive = !isEditorMode && !isHovering && !isPausedByUser;
   const timeoutRef = useRef<number | null>(null);
   const autoDelay = 6000;
 
@@ -239,6 +239,32 @@ export default function HeroSlider({ heroSlides }: { heroSlides?: HeroSlide[] })
 
           </motion.div>
         </AnimatePresence>
+
+        {/* Editor Mode Slide Switcher Toolbar: guarantees merchants can select and edit every slide */}
+        {isEditorMode && (
+          <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-zinc-950/90 dark:bg-zinc-900/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+            <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+              Edit Slide:
+            </span>
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToSlide(idx, idx > current ? 1 : -1);
+                }}
+                className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                  current === idx
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                }`}
+              >
+                #{idx + 1}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* FLOATING CONTROL HUD MATRIX */}
         <div className="absolute bottom-6 left-6 right-6 z-20 flex items-center justify-between pointer-events-none">
